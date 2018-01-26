@@ -222,7 +222,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     String ifName = inputFormat.getClass().getCanonicalName();
     boolean isSupported = inputFormat instanceof LlapWrappableInputFormatInterface;
     boolean isCacheOnly = inputFormat instanceof LlapCacheOnlyInputFormatInterface;
-    boolean isVectorized = Utilities.getUseVectorizedInputFileFormat(conf);
+    boolean isVectorized = Utilities.getIsVectorized(conf);
     if (!isVectorized) {
       // Pretend it's vectorized if the non-vector wrapped is enabled.
       isVectorized = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_NONVECTOR_WRAPPER_ENABLED)

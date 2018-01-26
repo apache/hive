@@ -74,7 +74,7 @@ public class MapredParquetInputFormat extends FileInputFormat<NullWritable, Arra
       final org.apache.hadoop.mapred.Reporter reporter
       ) throws IOException {
     try {
-      if (Utilities.getUseVectorizedInputFileFormat(job)) {
+      if (Utilities.getIsVectorized(job)) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Using vectorized record reader");
         }

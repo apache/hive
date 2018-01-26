@@ -422,7 +422,7 @@ STAGE PLANS:
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Map Vectorization:
                 enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.row.serde.deserialize IS true AND hive.vectorized.row.serde.inputformat.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false, hive.vectorized.use.vectorized.input.format IS true AND hive.vectorized.input.format.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false
+                enabledConditionsNotMet: Row deserialization of vectorized input format not supported IS false, hive.vectorized.use.vectorized.input.format IS true AND hive.vectorized.input.format.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false
                 inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
 
   Stage: Stage-0
@@ -511,7 +511,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: int), _col2 (type: smallint), _col3 (type: bigint), _col4 (type: struct<count:bigint,sum:double,input:float>), _col5 (type: struct<count:bigint,sum:double,variance:double>)
             Map Vectorization:
                 enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.row.serde.deserialize IS true AND hive.vectorized.row.serde.inputformat.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false, hive.vectorized.use.vectorized.input.format IS true AND hive.vectorized.input.format.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false
+                enabledConditionsNotMet: Row deserialization of vectorized input format not supported IS false, hive.vectorized.use.vectorized.input.format IS true AND hive.vectorized.input.format.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false
                 inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
         Reducer 2 
             Execution mode: vectorized
@@ -1442,16 +1442,10 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
             Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                enabled: false
+                enabledConditionsNotMet: Row deserialization of vectorized input format not supported IS false, hive.vectorized.use.vectorized.input.format IS true AND hive.vectorized.input.format.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.orc.OrcInputFormat IS false
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
 
   Stage: Stage-0
     Fetch Operator
@@ -1524,16 +1518,10 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
             Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                enabled: false
+                enabledConditionsNotMet: Row deserialization of vectorized input format not supported IS false, hive.vectorized.use.vectorized.input.format IS true AND hive.vectorized.input.format.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false
                 inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
 
   Stage: Stage-0
     Fetch Operator

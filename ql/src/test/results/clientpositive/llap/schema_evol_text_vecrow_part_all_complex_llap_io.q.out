@@ -1,0 +1,385 @@
+PREHOOK: query: CREATE TABLE part_change_various_various_struct1(insert_num int, s1 STRUCT<c1:BOOLEAN, c2:TINYINT, c3:SMALLINT, c4:INT, c5:BIGINT, c6:FLOAT, c7:DOUBLE, c8:DECIMAL(38,18), c9:CHAR(25), c10:VARCHAR(25), c11:TIMESTAMP, c12:DATE, c13:BINARY>, b STRING) PARTITIONED BY(part INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_change_various_various_struct1
+POSTHOOK: query: CREATE TABLE part_change_various_various_struct1(insert_num int, s1 STRUCT<c1:BOOLEAN, c2:TINYINT, c3:SMALLINT, c4:INT, c5:BIGINT, c6:FLOAT, c7:DOUBLE, c8:DECIMAL(38,18), c9:CHAR(25), c10:VARCHAR(25), c11:TIMESTAMP, c12:DATE, c13:BINARY>, b STRING) PARTITIONED BY(part INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_change_various_various_struct1
+PREHOOK: query: CREATE TABLE complex_struct1_a_txt(insert_num int, s1 STRUCT<c1:BOOLEAN, c2:TINYINT, c3:SMALLINT, c4:INT, c5:BIGINT, c6:FLOAT, c7:DOUBLE, c8:DECIMAL(38,18), c9:CHAR(25), c10:VARCHAR(25), c11:TIMESTAMP, c12:DATE, c13:BINARY>, b STRING)
+row format delimited fields terminated by '|'
+collection items terminated by ','
+map keys terminated by ':' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@complex_struct1_a_txt
+POSTHOOK: query: CREATE TABLE complex_struct1_a_txt(insert_num int, s1 STRUCT<c1:BOOLEAN, c2:TINYINT, c3:SMALLINT, c4:INT, c5:BIGINT, c6:FLOAT, c7:DOUBLE, c8:DECIMAL(38,18), c9:CHAR(25), c10:VARCHAR(25), c11:TIMESTAMP, c12:DATE, c13:BINARY>, b STRING)
+row format delimited fields terminated by '|'
+collection items terminated by ','
+map keys terminated by ':' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@complex_struct1_a_txt
+PREHOOK: query: load data local inpath '../../data/files/schema_evolution/complex_struct1_a.txt' overwrite into table complex_struct1_a_txt
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@complex_struct1_a_txt
+POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/complex_struct1_a.txt' overwrite into table complex_struct1_a_txt
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@complex_struct1_a_txt
+PREHOOK: query: insert into table part_change_various_various_struct1 partition(part=1) select * from complex_struct1_a_txt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_struct1_a_txt
+PREHOOK: Output: default@part_change_various_various_struct1@part=1
+POSTHOOK: query: insert into table part_change_various_various_struct1 partition(part=1) select * from complex_struct1_a_txt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_struct1_a_txt
+POSTHOOK: Output: default@part_change_various_various_struct1@part=1
+POSTHOOK: Lineage: part_change_various_various_struct1 PARTITION(part=1).b SIMPLE [(complex_struct1_a_txt)complex_struct1_a_txt.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_struct1 PARTITION(part=1).insert_num SIMPLE [(complex_struct1_a_txt)complex_struct1_a_txt.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Lineage: part_change_various_various_struct1 PARTITION(part=1).s1 SIMPLE [(complex_struct1_a_txt)complex_struct1_a_txt.FieldSchema(name:s1, type:struct<c1:boolean,c2:tinyint,c3:smallint,c4:int,c5:bigint,c6:float,c7:double,c8:decimal(38,18),c9:char(25),c10:varchar(25),c11:timestamp,c12:date,c13:binary>, comment:null), ]
+complex_struct1_a_txt.insert_num	complex_struct1_a_txt.s1	complex_struct1_a_txt.b
+PREHOOK: query: explain vectorization detail
+select insert_num,part,s1,b from part_change_various_various_struct1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select insert_num,part,s1,b from part_change_various_various_struct1
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: part_change_various_various_struct1
+                  Statistics: Num rows: 4 Data size: 4423 Basic stats: COMPLETE Column stats: PARTIAL
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:s1:struct<c1:boolean,c2:tinyint,c3:smallint,c4:int,c5:bigint,c6:float,c7:double,c8:decimal(38,18),c9:char(25),c10:varchar(25),c11:timestamp,c12:date,c13:binary>, 2:b:string, 3:part:int, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: insert_num (type: int), part (type: int), s1 (type: struct<c1:boolean,c2:tinyint,c3:smallint,c4:int,c5:bigint,c6:float,c7:double,c8:decimal(38,18),c9:char(25),c10:varchar(25),c11:timestamp,c12:date,c13:binary>), b (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 3, 1, 2]
+                    Statistics: Num rows: 4 Data size: 3736 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 4 Data size: 3736 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    includeColumns: [0, 1, 2]
+                    dataColumns: insert_num:int, s1:struct<c1:boolean,c2:tinyint,c3:smallint,c4:int,c5:bigint,c6:float,c7:double,c8:decimal(38,18),c9:char(25),c10:varchar(25),c11:timestamp,c12:date,c13:binary>, b:string
+                    partitionColumnCount: 1
+                    partitionColumns: part:int
+                    scratchColumnTypeNames: []
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select insert_num,part,s1,b from part_change_various_various_struct1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_change_various_various_struct1
+PREHOOK: Input: default@part_change_various_various_struct1@part=1
+#### A masked pattern was here ####
+POSTHOOK: query: select insert_num,part,s1,b from part_change_various_various_struct1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_change_various_various_struct1
+POSTHOOK: Input: default@part_change_various_various_struct1@part=1
+#### A masked pattern was here ####
+insert_num	part	s1	b
+1	1	{"c1":true,"c2":null,"c3":null,"c4":3244222,"c5":-99999999999,"c6":-29.0764,"c7":4.70614135E8,"c8":470614135,"c9":"dynamic reptile          ","c10":"dynamic reptile  ","c11":"0004-09-22 18:26:29.519542222","c12":"2007-02-09","c13":n)گ}	original
+2	1	{"c1":null,"c2":100,"c3":null,"c4":14,"c5":-23866739993,"c6":-3651.672,"c7":46114.284799488,"c8":46114.284799488,"c9":"  baffling               ","c10":"  baffling    ","c11":"2007-02-09 05:17:29.368756876","c12":"0004-09-22","c13":n)گ}	original
+3	1	{"c1":false,"c2":72,"c3":null,"c4":-93222,"c5":30,"c6":-66475.56,"c7":-66475.561431,"c8":0.561431,"c9":"1                        ","c10":"1","c11":"6229-06-28 02:54:28.970117179","c12":"5966-07-09","c13":n)گ}	original
+4	1	{"c1":null,"c2":-90,"c3":null,"c4":3289094,"c5":46114,"c6":9250341.0,"c7":9250340.75,"c8":9250340.75,"c9":"junkyard                 ","c10":"junkyard","c11":"2002-05-10 05:29:48.990818073","c12":"1815-05-06","c13":n)گ}	original
+PREHOOK: query: drop table part_change_various_various_struct1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@part_change_various_various_struct1
+PREHOOK: Output: default@part_change_various_various_struct1
+POSTHOOK: query: drop table part_change_various_various_struct1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@part_change_various_various_struct1
+POSTHOOK: Output: default@part_change_various_various_struct1
+PREHOOK: query: CREATE TABLE part_add_various_various_struct2(insert_num int, b STRING) PARTITIONED BY(part INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_add_various_various_struct2
+POSTHOOK: query: CREATE TABLE part_add_various_various_struct2(insert_num int, b STRING) PARTITIONED BY(part INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_add_various_various_struct2
+PREHOOK: query: insert into table part_add_various_various_struct2 partition(part=1)
+    values(1, 'original'),
+          (2, 'original')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@part_add_various_various_struct2@part=1
+POSTHOOK: query: insert into table part_add_various_various_struct2 partition(part=1)
+    values(1, 'original'),
+          (2, 'original')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@part_add_various_various_struct2@part=1
+POSTHOOK: Lineage: part_add_various_various_struct2 PARTITION(part=1).b SCRIPT []
+POSTHOOK: Lineage: part_add_various_various_struct2 PARTITION(part=1).insert_num SCRIPT []
+col1	col2
+PREHOOK: query: explain vectorization detail
+select insert_num,part,b from part_add_various_various_struct2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select insert_num,part,b from part_add_various_various_struct2
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: part_add_various_various_struct2
+                  Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:b:string, 2:part:int, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: insert_num (type: int), part (type: int), b (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 2, 1]
+                    Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: insert_num:int, b:string
+                    partitionColumnCount: 1
+                    partitionColumns: part:int
+                    scratchColumnTypeNames: []
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select insert_num,part,b from part_add_various_various_struct2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_add_various_various_struct2
+PREHOOK: Input: default@part_add_various_various_struct2@part=1
+#### A masked pattern was here ####
+POSTHOOK: query: select insert_num,part,b from part_add_various_various_struct2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_add_various_various_struct2
+POSTHOOK: Input: default@part_add_various_various_struct2@part=1
+#### A masked pattern was here ####
+insert_num	part	b
+1	1	original
+2	1	original
+PREHOOK: query: drop table part_add_various_various_struct2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@part_add_various_various_struct2
+PREHOOK: Output: default@part_add_various_various_struct2
+POSTHOOK: query: drop table part_add_various_various_struct2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@part_add_various_various_struct2
+POSTHOOK: Output: default@part_add_various_various_struct2
+PREHOOK: query: CREATE TABLE part_add_to_various_various_struct4(insert_num int, b STRING, s3 STRUCT<c1:BOOLEAN, c2:TINYINT, c3:SMALLINT, c4:INT, c5:BIGINT>) PARTITIONED BY(part INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@part_add_to_various_various_struct4
+POSTHOOK: query: CREATE TABLE part_add_to_various_various_struct4(insert_num int, b STRING, s3 STRUCT<c1:BOOLEAN, c2:TINYINT, c3:SMALLINT, c4:INT, c5:BIGINT>) PARTITIONED BY(part INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@part_add_to_various_various_struct4
+PREHOOK: query: CREATE TABLE complex_struct4_a_txt(insert_num int, b STRING, s3 STRUCT<c1:BOOLEAN, c2:TINYINT, c3:SMALLINT, c4:INT, c5:BIGINT>)
+row format delimited fields terminated by '|'
+collection items terminated by ','
+map keys terminated by ':' stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@complex_struct4_a_txt
+POSTHOOK: query: CREATE TABLE complex_struct4_a_txt(insert_num int, b STRING, s3 STRUCT<c1:BOOLEAN, c2:TINYINT, c3:SMALLINT, c4:INT, c5:BIGINT>)
+row format delimited fields terminated by '|'
+collection items terminated by ','
+map keys terminated by ':' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@complex_struct4_a_txt
+PREHOOK: query: load data local inpath '../../data/files/schema_evolution/complex_struct4_a.txt' overwrite into table complex_struct4_a_txt
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@complex_struct4_a_txt
+POSTHOOK: query: load data local inpath '../../data/files/schema_evolution/complex_struct4_a.txt' overwrite into table complex_struct4_a_txt
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@complex_struct4_a_txt
+PREHOOK: query: insert into table part_add_to_various_various_struct4 partition(part=1) select * from complex_struct4_a_txt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@complex_struct4_a_txt
+PREHOOK: Output: default@part_add_to_various_various_struct4@part=1
+POSTHOOK: query: insert into table part_add_to_various_various_struct4 partition(part=1) select * from complex_struct4_a_txt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@complex_struct4_a_txt
+POSTHOOK: Output: default@part_add_to_various_various_struct4@part=1
+POSTHOOK: Lineage: part_add_to_various_various_struct4 PARTITION(part=1).b SIMPLE [(complex_struct4_a_txt)complex_struct4_a_txt.FieldSchema(name:b, type:string, comment:null), ]
+POSTHOOK: Lineage: part_add_to_various_various_struct4 PARTITION(part=1).insert_num SIMPLE [(complex_struct4_a_txt)complex_struct4_a_txt.FieldSchema(name:insert_num, type:int, comment:null), ]
+POSTHOOK: Lineage: part_add_to_various_various_struct4 PARTITION(part=1).s3 SIMPLE [(complex_struct4_a_txt)complex_struct4_a_txt.FieldSchema(name:s3, type:struct<c1:boolean,c2:tinyint,c3:smallint,c4:int,c5:bigint>, comment:null), ]
+complex_struct4_a_txt.insert_num	complex_struct4_a_txt.b	complex_struct4_a_txt.s3
+PREHOOK: query: explain vectorization detail
+select insert_num,part,b,s3 from part_add_to_various_various_struct4
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select insert_num,part,b,s3 from part_add_to_various_various_struct4
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: part_add_to_various_various_struct4
+                  Statistics: Num rows: 2 Data size: 654 Basic stats: COMPLETE Column stats: PARTIAL
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:b:string, 2:s3:struct<c1:boolean,c2:tinyint,c3:smallint,c4:int,c5:bigint>, 3:part:int, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: insert_num (type: int), part (type: int), b (type: string), s3 (type: struct<c1:boolean,c2:tinyint,c3:smallint,c4:int,c5:bigint>)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 3, 1, 2]
+                    Statistics: Num rows: 2 Data size: 576 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 2 Data size: 576 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    includeColumns: [0, 1, 2]
+                    dataColumns: insert_num:int, b:string, s3:struct<c1:boolean,c2:tinyint,c3:smallint,c4:int,c5:bigint>
+                    partitionColumnCount: 1
+                    partitionColumns: part:int
+                    scratchColumnTypeNames: []
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select insert_num,part,b,s3 from part_add_to_various_various_struct4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_add_to_various_various_struct4
+PREHOOK: Input: default@part_add_to_various_various_struct4@part=1
+#### A masked pattern was here ####
+POSTHOOK: query: select insert_num,part,b,s3 from part_add_to_various_various_struct4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_add_to_various_various_struct4
+POSTHOOK: Input: default@part_add_to_various_various_struct4@part=1
+#### A masked pattern was here ####
+insert_num	part	b	s3
+1	1	original	{"c1":true,"c2":null,"c3":null,"c4":3244222,"c5":-99999999999}
+2	1	original	{"c1":null,"c2":100,"c3":null,"c4":14,"c5":-23866739993}
+PREHOOK: query: drop table part_add_to_various_various_struct4
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@part_add_to_various_various_struct4
+PREHOOK: Output: default@part_add_to_various_various_struct4
+POSTHOOK: query: drop table part_add_to_various_various_struct4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@part_add_to_various_various_struct4
+POSTHOOK: Output: default@part_add_to_various_various_struct4
