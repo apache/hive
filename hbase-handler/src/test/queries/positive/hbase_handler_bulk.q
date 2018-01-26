@@ -6,7 +6,7 @@ drop table if exists hb_target;
 create table hb_target(key int, val string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 with serdeproperties ('hbase.columns.mapping' = ':key,cf:val')
-tblproperties ('hbase.mapreduce.hfileoutputformat.table.name' = 'positive_hbase_handler_bulk');
+tblproperties ('hbase.table.name' = 'positive_hbase_handler_bulk');
 
 set hive.hbase.generatehfiles=true;
 set hfile.family.path=/tmp/hb_target/cf;
@@ -30,7 +30,7 @@ dfs -rmr /tmp/hb_target/cf;
 create table hb_target(key int, val string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 with serdeproperties ('hbase.columns.mapping' = ':key,cf:val')
-tblproperties ('hbase.mapreduce.hfileoutputformat.table.name' = 'positive_hbase_handler_bulk');
+tblproperties ('hbase.table.name' = 'positive_hbase_handler_bulk');
 
 -- do it twice - regression test for HIVE-18607
 
