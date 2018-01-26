@@ -926,6 +926,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     CreateResourcePlanDesc desc = new CreateResourcePlanDesc(
         resourcePlanName, queryParallelism, likeName);
+    addServiceOutput();
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
   }
 
@@ -938,6 +939,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Invalid syntax for SHOW RESOURCE PLAN statement");
     }
     ShowResourcePlanDesc showResourcePlanDesc = new ShowResourcePlanDesc(rpName, ctx.getResFile());
+    addServiceOutput();
     rootTasks.add(TaskFactory.get(
         new DDLWork(getInputs(), getOutputs(), showResourcePlanDesc), conf));
     setFetchTask(createFetchTask(showResourcePlanDesc.getSchema(rpName)));
@@ -957,6 +959,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       anyRp.setStatus(WMResourcePlanStatus.ENABLED);
       AlterResourcePlanDesc desc = new AlterResourcePlanDesc(
           anyRp, null, false, false, true, false);
+      addServiceOutput();
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
       return;
     default: // Continue to handle changes to a specific plan.
@@ -1053,6 +1056,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ctx.setResFile(ctx.getLocalTmpPath());
       desc.setResFile(ctx.getResFile().toString());
     }
+    addServiceOutput();
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
     if (validate) {
       setFetchTask(createFetchTask(AlterResourcePlanDesc.getSchema()));
@@ -1065,6 +1069,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     String rpName = unescapeIdentifier(ast.getChild(0).getText());
     DropResourcePlanDesc desc = new DropResourcePlanDesc(rpName);
+    addServiceOutput();
     rootTasks.add(TaskFactory.get(
         new DDLWork(getInputs(), getOutputs(), desc), conf));
   }
@@ -1083,6 +1088,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     trigger.setActionExpression(actionExpression);
 
     CreateWMTriggerDesc desc = new CreateWMTriggerDesc(trigger);
+    addServiceOutput();
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
   }
 
@@ -1138,6 +1144,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     trigger.setActionExpression(actionExpression);
 
     AlterWMTriggerDesc desc = new AlterWMTriggerDesc(trigger);
+    addServiceOutput();
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
   }
 
@@ -1149,6 +1156,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String triggerName = unescapeIdentifier(ast.getChild(1).getText());
 
     DropWMTriggerDesc desc = new DropWMTriggerDesc(rpName, triggerName);
+    addServiceOutput();
     rootTasks.add(TaskFactory.get(
         new DDLWork(getInputs(), getOutputs(), desc), conf));
   }
@@ -1189,6 +1197,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("alloc_fraction should be specified for a pool");
     }
     CreateOrAlterWMPoolDesc desc = new CreateOrAlterWMPoolDesc(pool, poolPath, false);
+    addServiceOutput();
     rootTasks.add(TaskFactory.get(
         new DDLWork(getInputs(), getOutputs(), desc), conf));
   }
@@ -1209,16 +1218,16 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     WMNullablePool poolChanges = null;
+    boolean hasTrigger = false;
     for (int i = 2; i < ast.getChildCount(); ++i) {
       Tree child = ast.getChild(i);
-                    LOG.error("TODO# got2 " + child.toStringTree());
-
       if (child.getChildCount() != 1) {
         throw new SemanticException("Invalid syntax in alter pool expected parameter.");
       }
       Tree param = child.getChild(0);
       if (child.getType() == HiveParser.TOK_ADD_TRIGGER
           || child.getType() == HiveParser.TOK_DROP_TRIGGER) {
+        hasTrigger = true;
         boolean drop = child.getType() == HiveParser.TOK_DROP_TRIGGER;
         String triggerName = unescapeIdentifier(param.getText());
         rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
@@ -1252,6 +1261,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    if (poolChanges != null || hasTrigger) {
+      addServiceOutput();
+    }
     if (poolChanges != null) {
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           new CreateOrAlterWMPoolDesc(poolChanges, poolPath, true)), conf));
@@ -1266,6 +1278,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String poolPath = poolPath(ast.getChild(1));
 
     DropWMPoolDesc desc = new DropWMPoolDesc(rpName, poolPath);
+    addServiceOutput();
     rootTasks.add(TaskFactory.get(
         new DDLWork(getInputs(), getOutputs(), desc), conf));
   }
@@ -1287,6 +1300,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     CreateOrAlterWMMappingDesc desc = new CreateOrAlterWMMappingDesc(mapping, update);
+    addServiceOutput();
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
   }
 
@@ -1299,6 +1313,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String entityName = PlanUtils.stripQuotes(ast.getChild(2).getText());
 
     DropWMMappingDesc desc = new DropWMMappingDesc(new WMMapping(rpName, entityType, entityName));
+    addServiceOutput();
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
   }
 
@@ -3139,12 +3154,16 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     for (int i = 0; i < numChildren; i++) {
       queryIds.add(stripQuotes(ast.getChild(i).getText()));
     }
+    addServiceOutput();
     KillQueryDesc desc = new KillQueryDesc(queryIds);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
+  }
+
+  private void addServiceOutput() throws SemanticException {
     String hs2Hostname = getHS2Host();
     if (hs2Hostname != null) {
       outputs.add(new WriteEntity(hs2Hostname, Type.SERVICE_NAME));
     }
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc), conf));
   }
 
   private String getHS2Host() throws SemanticException {
