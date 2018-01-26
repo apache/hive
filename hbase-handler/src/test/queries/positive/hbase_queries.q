@@ -2,7 +2,7 @@ DROP TABLE hbase_table_1;
 CREATE TABLE hbase_table_1(key int comment 'It is a column key', value string comment 'It is the column string value')
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name" = "hbase_table_0");
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0");
 
 DESCRIBE EXTENDED hbase_table_1;
 
@@ -15,7 +15,7 @@ DROP TABLE hbase_table_2;
 CREATE EXTERNAL TABLE hbase_table_2(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = "cf:string")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name" = "hbase_table_0");
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0");
 
 EXPLAIN 
 SELECT Y.* 
@@ -107,7 +107,7 @@ DROP TABLE hbase_table_5;
 CREATE EXTERNAL TABLE hbase_table_5(key int, value map<string,string>) 
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = "a:")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name" = "hbase_table_4");
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_4");
 
 SELECT * FROM hbase_table_5 ORDER BY key;
 
