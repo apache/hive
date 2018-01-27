@@ -662,7 +662,8 @@ public class DagUtils {
             .setCustomInitializerDescriptor(descriptor).build();
       } else {
         // Not HiveInputFormat, or a custom VertexManager will take care of grouping splits
-        if (vertexHasCustomInput) {
+        if (vertexHasCustomInput && vertexType == VertexType.MULTI_INPUT_UNINITIALIZED_EDGES) {
+          // SMB Join.
           dataSource =
               MultiMRInput.createConfigBuilder(conf, inputFormatClass).groupSplits(false).build();
         } else {
