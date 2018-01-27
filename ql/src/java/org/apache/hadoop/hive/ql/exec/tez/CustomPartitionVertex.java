@@ -20,20 +20,12 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 import com.google.common.collect.LinkedListMultimap;
 import org.apache.hadoop.mapred.split.SplitLocationProvider;
+import org.apache.tez.runtime.api.events.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -62,10 +54,6 @@ import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRInputUserPayloadProto;
 import org.apache.tez.mapreduce.protos.MRRuntimeProtos.MRSplitProto;
 import org.apache.tez.runtime.api.Event;
 import org.apache.tez.runtime.api.InputSpecUpdate;
-import org.apache.tez.runtime.api.events.InputConfigureVertexTasksEvent;
-import org.apache.tez.runtime.api.events.InputDataInformationEvent;
-import org.apache.tez.runtime.api.events.InputUpdatePayloadEvent;
-import org.apache.tez.runtime.api.events.VertexManagerEvent;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
@@ -249,7 +237,9 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
       }
     }
 
-    LOG.info("Path file splits map for input name: " + inputName + " is " + pathFileSplitsMap);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Path file splits map for input name: " + inputName + " is " + pathFileSplitsMap);
+    }
 
     Multimap<Integer, InputSplit> bucketToInitialSplitMap =
         getBucketSplitMapForPath(pathFileSplitsMap);
@@ -263,8 +253,10 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
 
       int availableSlots = totalResource / taskResource;
 
-      LOG.info("Grouping splits. " + availableSlots + " available slots, " + waves
-          + " waves. Bucket initial splits map: " + bucketToInitialSplitMap);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Grouping splits. " + availableSlots + " available slots, " + waves
+                + " waves. Bucket initial splits map: " + bucketToInitialSplitMap);
+      }
       JobConf jobConf = new JobConf(conf);
       ShimLoader.getHadoopShims().getMergedCredentials(jobConf);
 
@@ -458,7 +450,8 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     // Set the actual events for the tasks.
     LOG.info("For input name: " + inputName + " task events size is " + taskEvents.size());
     context.addRootInputEvents(inputName, taskEvents);
-    if (inputToGroupedSplitMap.isEmpty() == false) {
+
+    if (!inputToGroupedSplitMap.isEmpty()) {
       for (Entry<String, Multimap<Integer, InputSplit>> entry : inputToGroupedSplitMap.entrySet()) {
         processAllSideEvents(entry.getKey(), entry.getValue());
       }
@@ -469,6 +462,24 @@ public class CustomPartitionVertex extends VertexManagerPlugin {
     // Only done when it is a bucket map join only no SMB.
     if (numInputsAffectingRootInputSpecUpdate == 1) {
       setVertexParallelismAndRootInputSpec(inputNameInputSpecMap);
+      // Send the bucket IDs associated with the tasks, must happen after parallelism is set.
+      sendBucketIdsToProcessor();
+    }
+  }
+
+  private void sendBucketIdsToProcessor() {
+    for (Entry<Integer, Collection<Integer>> entry : bucketToTaskMap.asMap().entrySet()) {
+      int bucketNum = entry.getKey();
+      for (Integer taskId : entry.getValue()) {
+        // Create payload
+        ByteBuffer buffer = ByteBuffer.allocate(8);
+        buffer.putInt(numBuckets);
+        buffer.putInt(bucketNum);
+        buffer.flip();
+        // Create the event and send it tez. Tez will route it to appropriate processor
+        CustomProcessorEvent cpEvent = CustomProcessorEvent.create(buffer);
+        context.sendEventToProcessor(Collections.singletonList(cpEvent), taskId);
+      }
     }
   }
 

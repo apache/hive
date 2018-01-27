@@ -22,6 +22,8 @@ public class Constants {
   public static final String LLAP_LOGGER_NAME_QUERY_ROUTING = "query-routing";
   public static final String LLAP_LOGGER_NAME_CONSOLE = "console";
   public static final String LLAP_LOGGER_NAME_RFA = "RFA";
+  public static final String LLAP_NUM_BUCKETS = "llap.num.buckets";
+  public static final String LLAP_BUCKET_ID = "llap.bucket.id";
 
   /* Constants for Druid storage handler */
   public static final String DRUID_HIVE_STORAGE_HANDLER_ID =

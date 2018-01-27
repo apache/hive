@@ -3027,7 +3027,8 @@ public class HiveConf extends Configuration {
     HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ("hive.convert.join.bucket.mapjoin.tez", false,
         "Whether joins can be automatically converted to bucket map joins in hive \n" +
         "when tez is used as the execution engine."),
-
+    HIVE_TEZ_BMJ_USE_SUBCACHE("hive.tez.bmj.use.subcache", true,
+        "Use subcache to reuse hashtable across multiple tasks"),
     HIVE_CHECK_CROSS_PRODUCT("hive.exec.check.crossproducts", true,
         "Check if a plan contains a Cross Product. If there is one, output a warning to the Session's console."),
     HIVE_LOCALIZE_RESOURCE_WAIT_INTERVAL("hive.localize.resource.wait.interval", "5000ms",
