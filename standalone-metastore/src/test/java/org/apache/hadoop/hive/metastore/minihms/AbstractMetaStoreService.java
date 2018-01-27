@@ -62,16 +62,24 @@ public abstract class AbstractMetaStoreService {
 
   /**
    * Starts the service with adding extra configuration to the default ones. Be aware, as the
-   * current MetaStore does not implement clean shutdown, starting MetaStoreService is possible
-   * only once per test.
+   * current MetaStore does not implement clean shutdown, starting MetaStoreService is possible only
+   * once per test.
    *
-   * @param confOverlay The extra parameters which should be set before starting the service
+   * @param metastoreOverlay The extra metastore parameters which should be set before starting the
+   *          service
+   * @param configurationOverlay The extra other parameters which should be set before starting the
+   *          service
    * @throws Exception if any Exception occurs
    */
-  public void start(Map<MetastoreConf.ConfVars, String> confOverlay) throws Exception {
-    // Set confOverlay parameters
-    for (Map.Entry<MetastoreConf.ConfVars, String> entry : confOverlay.entrySet()) {
+  public void start(Map<MetastoreConf.ConfVars, String> metastoreOverlay,
+      Map<String, String> configurationOverlay) throws Exception {
+    // Set metastoreOverlay parameters
+    for (Map.Entry<MetastoreConf.ConfVars, String> entry : metastoreOverlay.entrySet()) {
       MetastoreConf.setVar(configuration, entry.getKey(), entry.getValue());
+    }
+    // Set other configurationOverlay parameters
+    for (Map.Entry<String, String> entry : configurationOverlay.entrySet()) {
+      configuration.set(entry.getKey(), entry.getValue());
     }
     // Start the service
     start();
