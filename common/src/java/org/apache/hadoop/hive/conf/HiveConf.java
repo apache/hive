@@ -2952,7 +2952,9 @@ public class HiveConf extends Configuration {
         "internal use only, used for creating small group key vectorized row batches to exercise more logic\n" +
         "The default value is -1 which means don't restrict for testing",
         true),
-
+    HIVE_VECTORIZATION_TESTING_REUSE_SCRATCH_COLUMNS("hive.vectorized.reuse.scratch.columns", true,
+         "internal use only. Disable this to debug scratch column state issues",
+         true),
     HIVE_VECTORIZATION_COMPLEX_TYPES_ENABLED("hive.vectorized.complex.types.enabled", true,
         "This flag should be set to true to enable vectorization\n" +
         "of expressions with complex types.\n" +
