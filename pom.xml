@@ -1293,6 +1293,7 @@
 	    <exclude>**/*.properties</exclude>
 	    <exclude>**/*.q</exclude>
 	    <exclude>**/*.q.out</exclude>
+	    <exclude>**/*.q.out_*</exclude>
 	    <exclude>**/*.xml</exclude>
 	    <exclude>**/gen/**</exclude>
 	    <exclude>**/scripts/**</exclude>
