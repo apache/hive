@@ -95,6 +95,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hive.druid.MiniDruidCluster;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.apache.hadoop.hive.llap.LlapItUtils;
 import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
@@ -2172,17 +2173,6 @@ public class QTestUtil {
         "./ql/target/surefire-reports or ./itests/qtest/target/surefire-reports/ for specific " +
         "test cases logs.");
     System.err.flush();
-  }
-
-  public static String ensurePathEndsInSlash(String path) {
-    if(path == null) {
-      throw new NullPointerException("Path cannot be null");
-    }
-    if(path.endsWith(File.separator)) {
-      return path;
-    } else {
-      return path + File.separator;
-    }
   }
 
   private static String[] cachedQvFileList = null;
