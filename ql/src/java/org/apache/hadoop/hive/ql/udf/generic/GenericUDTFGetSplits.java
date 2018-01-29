@@ -345,7 +345,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     Path scratchDir = utils.createTezDir(ctx.getMRScratchDir(), job);
     FileSystem fs = scratchDir.getFileSystem(job);
     try {
-      LocalResource appJarLr = createJarLocalResource(utils.getExecJarPathLocal(), utils, job);
+      LocalResource appJarLr = createJarLocalResource(utils.getExecJarPathLocal(ctx.getConf()), utils, job);
 
       LlapCoordinator coordinator = LlapCoordinator.getInstance();
       if (coordinator == null) {
