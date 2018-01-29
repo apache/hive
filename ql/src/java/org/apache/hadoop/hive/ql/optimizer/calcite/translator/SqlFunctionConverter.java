@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunc
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveConcat;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
@@ -235,6 +236,8 @@ public class SqlFunctionConverter {
         case CASE:
         case EXTRACT:
         case FLOOR:
+        case CEIL:
+        case LIKE:
         case OTHER_FUNCTION:
           node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
           node.addChild((ASTNode) ParseDriver.adaptor.create(hToken.type, hToken.text));
@@ -398,6 +401,44 @@ public class SqlFunctionConverter {
           hToken(HiveParser.Identifier, "floor_minute"));
       registerFunction("floor_second", HiveFloorDate.SECOND,
           hToken(HiveParser.Identifier, "floor_second"));
+      registerFunction("power", SqlStdOperatorTable.POWER, hToken(HiveParser.Identifier, "power"));
+      registerDuplicateFunction("pow", SqlStdOperatorTable.POWER,
+          hToken(HiveParser.Identifier, "power")
+      );
+      registerFunction("ceil", SqlStdOperatorTable.CEIL, hToken(HiveParser.Identifier, "ceil"));
+      registerDuplicateFunction("ceiling", SqlStdOperatorTable.CEIL,
+          hToken(HiveParser.Identifier, "ceil")
+      );
+      registerFunction("floor", SqlStdOperatorTable.FLOOR, hToken(HiveParser.Identifier, "floor"));
+      registerFunction("log10", SqlStdOperatorTable.LOG10, hToken(HiveParser.Identifier, "log10"));
+      registerFunction("ln", SqlStdOperatorTable.LN, hToken(HiveParser.Identifier, "ln"));
+      registerFunction("cos", SqlStdOperatorTable.COS, hToken(HiveParser.Identifier, "cos"));
+      registerFunction("sin", SqlStdOperatorTable.SIN, hToken(HiveParser.Identifier, "sin"));
+      registerFunction("tan", SqlStdOperatorTable.TAN, hToken(HiveParser.Identifier, "tan"));
+      registerFunction("concat", HiveConcat.INSTANCE,
+          hToken(HiveParser.Identifier, "concat")
+      );
+      registerFunction("substring", SqlStdOperatorTable.SUBSTRING,
+          hToken(HiveParser.Identifier, "substring")
+      );
+      registerFunction("like", SqlStdOperatorTable.LIKE, hToken(HiveParser.Identifier, "like"));
+      registerFunction("exp", SqlStdOperatorTable.EXP, hToken(HiveParser.Identifier, "exp"));
+      registerFunction("div", SqlStdOperatorTable.DIVIDE_INTEGER,
+          hToken(HiveParser.DIV, "div")
+      );
+      registerFunction("sqrt", SqlStdOperatorTable.SQRT, hToken(HiveParser.Identifier, "sqrt"));
+      registerFunction("lower", SqlStdOperatorTable.LOWER, hToken(HiveParser.Identifier, "lower"));
+      registerFunction("upper", SqlStdOperatorTable.UPPER, hToken(HiveParser.Identifier, "upper"));
+      registerFunction("abs", SqlStdOperatorTable.ABS, hToken(HiveParser.Identifier, "abs"));
+      registerFunction("char_length", SqlStdOperatorTable.CHAR_LENGTH,
+          hToken(HiveParser.Identifier, "char_length")
+      );
+      registerDuplicateFunction("character_length", SqlStdOperatorTable.CHAR_LENGTH,
+          hToken(HiveParser.Identifier, "char_length")
+      );
+      registerFunction("length", SqlStdOperatorTable.CHARACTER_LENGTH,
+          hToken(HiveParser.Identifier, "length")
+      );
     }
 
     private void registerFunction(String name, SqlOperator calciteFn, HiveToken hiveToken) {
