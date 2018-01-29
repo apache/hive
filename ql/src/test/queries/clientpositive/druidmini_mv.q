@@ -18,7 +18,7 @@ CREATE MATERIALIZED VIEW cmv_mat_view ENABLE REWRITE
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 AS
-SELECT cast(current_timestamp() as timestamp with local time zone) as `__time`, a, b, c
+SELECT cast(current_timestamp() as timestamp with local time zone) as `__time`, a, b, cast(c as double)
 FROM cmv_basetable
 WHERE a = 2;
 
@@ -30,7 +30,7 @@ CREATE MATERIALIZED VIEW IF NOT EXISTS cmv_mat_view2 ENABLE REWRITE
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
 AS
-SELECT cast(current_timestamp() as timestamp with local time zone) as `__time`, a, c
+SELECT cast(current_timestamp() as timestamp with local time zone) as `__time`, a, cast(c as double)
 FROM cmv_basetable
 WHERE a = 3;
 

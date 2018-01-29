@@ -129,6 +129,7 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
     }
     ArrayList<TypeInfo> columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
 
+    final boolean approximationAllowed = HiveConf.getBoolVar(jc, HiveConf.ConfVars.HIVE_DRUID_APPROX_RESULT);
     // Default, all columns that are not metrics or timestamp, are treated as dimensions
     final List<DimensionSchema> dimensions = new ArrayList<>();
     ImmutableList.Builder<AggregatorFactory> aggregatorFactoryBuilder = ImmutableList.builder();
@@ -145,8 +146,17 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
           break;
         case FLOAT:
         case DOUBLE:
-        case DECIMAL:
           af = new DoubleSumAggregatorFactory(columnNames.get(i), columnNames.get(i));
+          break;
+        case DECIMAL:
+          if (approximationAllowed) {
+            af = new DoubleSumAggregatorFactory(columnNames.get(i), columnNames.get(i));
+          } else {
+            throw new UnsupportedOperationException(
+                String.format("Druid does not support decimal column type." +
+                        "Either cast column [%s] to double or Enable Approximate Result for Druid by setting property [%s] to true",
+                    columnNames.get(i), HiveConf.ConfVars.HIVE_DRUID_APPROX_RESULT.varname));
+          }
           break;
         case TIMESTAMP:
           // Granularity column
