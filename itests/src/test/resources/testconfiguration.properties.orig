@@ -731,7 +731,6 @@ minillaplocal.query.files=\
   vector_mapjoin_reduce.q,\
   vector_number_compare_projection.q,\
   vector_partitioned_date_time.q,\
-  vector_ptf_1.q,\
   vector_ptf_part_simple.q,\
   vector_udf_adaptor_1,\
   vector_udf1.q,\

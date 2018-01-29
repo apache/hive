@@ -1277,7 +1277,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: lag not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
+                notVectorizedReason: PTF operator: Only PTF directly under reduce-shuffle is supported
                 vectorized: false
             Reduce Operator Tree:
               Group By Operator
@@ -3533,7 +3533,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: NOOP not supported
+                notVectorizedReason: PTF operator: Only PTF directly under reduce-shuffle is supported
                 vectorized: false
             Reduce Operator Tree:
               Group By Operator
