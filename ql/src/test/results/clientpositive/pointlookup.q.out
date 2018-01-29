@@ -2,35 +2,33 @@ PREHOOK: query: explain
 SELECT key
 FROM src
 WHERE
-   ((key = '0'
-   AND value = '8') OR (key = '1'
-   AND value = '5') OR (key = '2'
-   AND value = '6') OR (key = '3'
-   AND value = '8') OR (key = '4'
-   AND value = '1') OR (key = '5'
-   AND value = '6') OR (key = '6'
-   AND value = '1') OR (key = '7'
-   AND value = '1') OR (key = '8'
-   AND value = '1') OR (key = '9'
-   AND value = '1') OR (key = '10'
-   AND value = '3'))
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 SELECT key
 FROM src
 WHERE
-   ((key = '0'
-   AND value = '8') OR (key = '1'
-   AND value = '5') OR (key = '2'
-   AND value = '6') OR (key = '3'
-   AND value = '8') OR (key = '4'
-   AND value = '1') OR (key = '5'
-   AND value = '6') OR (key = '6'
-   AND value = '1') OR (key = '7'
-   AND value = '1') OR (key = '8'
-   AND value = '1') OR (key = '9'
-   AND value = '1') OR (key = '10'
-   AND value = '3'))
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -44,7 +42,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((key = '0') and (value = '8')) or ((key = '1') and (value = '5')) or ((key = '10') and (value = '3')) or ((key = '2') and (value = '6')) or ((key = '3') and (value = '8')) or ((key = '4') and (value = '1')) or ((key = '5') and (value = '6')) or ((key = '6') and (value = '1')) or ((key = '7') and (value = '1')) or ((key = '8') and (value = '1')) or ((key = '9') and (value = '1'))) (type: boolean)
+              predicate: (((key = '0') and (value = 'val_0')) or ((key = '1') and (value = 'val_1')) or ((key = '10') and (value = 'val_10')) or ((key = '2') and (value = 'val_2')) or ((key = '3') and (value = 'val_3')) or ((key = '4') and (value = 'val_4')) or ((key = '5') and (value = 'val_5')) or ((key = '6') and (value = 'val_6')) or ((key = '7') and (value = 'val_7')) or ((key = '8') and (value = 'val_8')) or ((key = '9') and (value = 'val_9'))) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -64,39 +62,76 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: create table orOutput as
+SELECT key
+FROM src
+WHERE
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orOutput
+POSTHOOK: query: create table orOutput as
+SELECT key
+FROM src
+WHERE
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orOutput
+POSTHOOK: Lineage: oroutput.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: explain
 SELECT key
 FROM src
 WHERE
-   ((key = '0'
-   AND value = '8') OR (key = '1'
-   AND value = '5') OR (key = '2'
-   AND value = '6') OR (key = '3'
-   AND value = '8') OR (key = '4'
-   AND value = '1') OR (key = '5'
-   AND value = '6') OR (key = '6'
-   AND value = '1') OR (key = '7'
-   AND value = '1') OR (key = '8'
-   AND value = '1') OR (key = '9'
-   AND value = '1') OR (key = '10'
-   AND value = '3'))
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 SELECT key
 FROM src
 WHERE
-   ((key = '0'
-   AND value = '8') OR (key = '1'
-   AND value = '5') OR (key = '2'
-   AND value = '6') OR (key = '3'
-   AND value = '8') OR (key = '4'
-   AND value = '1') OR (key = '5'
-   AND value = '6') OR (key = '6'
-   AND value = '1') OR (key = '7'
-   AND value = '1') OR (key = '8'
-   AND value = '1') OR (key = '9'
-   AND value = '1') OR (key = '10'
-   AND value = '3'))
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -110,7 +145,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (struct(key,value)) IN (const struct('0','8'), const struct('1','5'), const struct('2','6'), const struct('3','8'), const struct('4','1'), const struct('5','6'), const struct('6','1'), const struct('7','1'), const struct('8','1'), const struct('9','1'), const struct('10','3')) (type: boolean)
+              predicate: (struct(key,value)) IN (const struct('0','val_0'), const struct('1','val_1'), const struct('2','val_2'), const struct('3','val_3'), const struct('4','val_4'), const struct('5','val_5'), const struct('6','val_6'), const struct('7','val_7'), const struct('8','val_8'), const struct('9','val_9'), const struct('10','val_10')) (type: boolean)
               Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -130,39 +165,76 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: create table inOutput as
+SELECT key
+FROM src
+WHERE
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@inOutput
+POSTHOOK: query: create table inOutput as
+SELECT key
+FROM src
+WHERE
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@inOutput
+POSTHOOK: Lineage: inoutput.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: explain
 SELECT key
 FROM src
 WHERE
-   ((key = '0'
-   AND value = '8') OR (key = '1'
-   AND value = '5') OR (key = '2'
-   AND value = '6') OR (key = '3'
-   AND value = '8') OR (key = '4'
-   AND value = '1') OR (key = '5'
-   AND value = '6') OR (key = '6'
-   AND value = '1') OR (key = '7'
-   AND value = '1') OR (key = '8'
-   AND value = '1') OR (key = '9'
-   AND value = '1') OR (key = '10'
-   AND value = '3'))
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
 PREHOOK: type: QUERY
 POSTHOOK: query: explain
 SELECT key
 FROM src
 WHERE
-   ((key = '0'
-   AND value = '8') OR (key = '1'
-   AND value = '5') OR (key = '2'
-   AND value = '6') OR (key = '3'
-   AND value = '8') OR (key = '4'
-   AND value = '1') OR (key = '5'
-   AND value = '6') OR (key = '6'
-   AND value = '1') OR (key = '7'
-   AND value = '1') OR (key = '8'
-   AND value = '1') OR (key = '9'
-   AND value = '1') OR (key = '10'
-   AND value = '3'))
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -176,7 +248,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (struct(key,value)) IN (const struct('0','8'), const struct('1','5'), const struct('2','6'), const struct('3','8'), const struct('4','1'), const struct('5','6'), const struct('6','1'), const struct('7','1'), const struct('8','1'), const struct('9','1'), const struct('10','3')) (type: boolean)
+              predicate: (struct(key,value)) IN (const struct('0','val_0'), const struct('1','val_1'), const struct('2','val_2'), const struct('3','val_3'), const struct('4','val_4'), const struct('5','val_5'), const struct('6','val_6'), const struct('7','val_7'), const struct('8','val_8'), const struct('9','val_9'), const struct('10','val_10')) (type: boolean)
               Statistics: Num rows: 125 Data size: 1328 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -196,3 +268,125 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: create table inOutputOpt as
+SELECT key
+FROM src
+WHERE
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src
+PREHOOK: Output: database:default
+PREHOOK: Output: default@inOutputOpt
+POSTHOOK: query: create table inOutputOpt as
+SELECT key
+FROM src
+WHERE
+   ((key = '0'  AND value = 'val_0') OR
+    (key = '1'  AND value = 'val_1') OR
+    (key = '2'  AND value = 'val_2') OR
+    (key = '3'  AND value = 'val_3') OR
+    (key = '4'  AND value = 'val_4') OR
+    (key = '5'  AND value = 'val_5') OR
+    (key = '6'  AND value = 'val_6') OR
+    (key = '7'  AND value = 'val_7') OR
+    (key = '8'  AND value = 'val_8') OR
+    (key = '9'  AND value = 'val_9') OR
+    (key = '10' AND value = 'val_10'))
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@inOutputOpt
+POSTHOOK: Lineage: inoutputopt.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: select count(*) from orOutput
+PREHOOK: type: QUERY
+PREHOOK: Input: default@oroutput
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from orOutput
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@oroutput
+#### A masked pattern was here ####
+11
+PREHOOK: query: select count(*) from inOutput
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inoutput
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from inOutput
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inoutput
+#### A masked pattern was here ####
+11
+PREHOOK: query: select count(*) from inOutputOpt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inoutputopt
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from inOutputOpt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inoutputopt
+#### A masked pattern was here ####
+11
+PREHOOK: query: select orOutput.key, inOutput.key
+from orOutput full outer join inOutput on (orOutput.key = inOutput.key)
+where orOutput.key = null
+or inOutput.key = null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inoutput
+PREHOOK: Input: default@oroutput
+#### A masked pattern was here ####
+POSTHOOK: query: select orOutput.key, inOutput.key
+from orOutput full outer join inOutput on (orOutput.key = inOutput.key)
+where orOutput.key = null
+or inOutput.key = null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inoutput
+POSTHOOK: Input: default@oroutput
+#### A masked pattern was here ####
+PREHOOK: query: select orOutput.key, inOutputOpt.key
+from orOutput full outer join inOutputOpt on (orOutput.key = inOutputOpt.key)
+where orOutput.key = null
+or inOutputOpt.key = null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inoutputopt
+PREHOOK: Input: default@oroutput
+#### A masked pattern was here ####
+POSTHOOK: query: select orOutput.key, inOutputOpt.key
+from orOutput full outer join inOutputOpt on (orOutput.key = inOutputOpt.key)
+where orOutput.key = null
+or inOutputOpt.key = null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inoutputopt
+POSTHOOK: Input: default@oroutput
+#### A masked pattern was here ####
+PREHOOK: query: drop table orOutput
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@oroutput
+PREHOOK: Output: default@oroutput
+POSTHOOK: query: drop table orOutput
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@oroutput
+POSTHOOK: Output: default@oroutput
+PREHOOK: query: drop table inOutput
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@inoutput
+PREHOOK: Output: default@inoutput
+POSTHOOK: query: drop table inOutput
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@inoutput
+POSTHOOK: Output: default@inoutput
+PREHOOK: query: drop table inOutputOpt
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@inoutputopt
+PREHOOK: Output: default@inoutputopt
+POSTHOOK: query: drop table inOutputOpt
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@inoutputopt
+POSTHOOK: Output: default@inoutputopt
