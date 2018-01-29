@@ -2442,6 +2442,26 @@ public class Vectorizer implements PhysicalPlanResolver {
       setOperatorIssue("PTF Mapper not supported");
       return false;
     }
+    List<Operator<? extends OperatorDesc>> ptfParents = op.getParentOperators();
+    if (ptfParents != null && ptfParents.size() > 0) {
+      Operator<? extends OperatorDesc> ptfParent = op.getParentOperators().get(0);
+      if (!(ptfParent instanceof ReduceSinkOperator)) {
+        boolean isReduceShufflePtf = false;
+        if (ptfParent instanceof SelectOperator) {
+          ptfParents = ptfParent.getParentOperators();
+          if (ptfParents == null || ptfParents.size() == 0) {
+            isReduceShufflePtf = true;
+          } else {
+            ptfParent = ptfParent.getParentOperators().get(0);
+            isReduceShufflePtf = (ptfParent instanceof ReduceSinkOperator);
+          }
+        }
+        if (!isReduceShufflePtf) {
+          setOperatorIssue("Only PTF directly under reduce-shuffle is supported");
+          return false;
+        }
+      }
+    }
     boolean forNoop = ptfDesc.forNoop();
     if (forNoop) {
       setOperatorIssue("NOOP not supported");
