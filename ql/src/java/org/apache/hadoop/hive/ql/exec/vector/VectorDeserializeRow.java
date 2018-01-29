@@ -179,6 +179,10 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       return dataTypePhysicalVariation;
     }
 
+    public void setMaxLength(int maxLength) {
+      this.maxLength = maxLength;
+    }
+
     public int getMaxLength() {
       return maxLength;
     }
@@ -339,13 +343,25 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
   /*
    * Initialize the conversion related arrays.  Assumes initTopLevelField has already been called.
    */
-  private void addTopLevelConversion(int logicalColumnIndex) {
+  private void addTopLevelConversion(int logicalColumnIndex, TypeInfo targetTypeInfo) {
 
     final Field field = topLevelFields[logicalColumnIndex];
     field.setIsConvert(true);
 
     if (field.getIsPrimitive()) {
 
+      PrimitiveTypeInfo targetPrimitiveTypeInfo = (PrimitiveTypeInfo) targetTypeInfo;
+      switch (targetPrimitiveTypeInfo.getPrimitiveCategory()) {
+      case CHAR:
+        field.setMaxLength(((CharTypeInfo) targetPrimitiveTypeInfo).getLength());
+        break;
+      case VARCHAR:
+        field.setMaxLength(((VarcharTypeInfo) targetPrimitiveTypeInfo).getLength());
+        break;
+      default:
+        // No additional data type specific setting.
+        break;
+      }
       field.setConversionWritable(
           VectorizedBatchUtil.getPrimitiveWritable(field.getPrimitiveCategory()));
     }
@@ -482,7 +498,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
             initTopLevelField(i, i, sourceTypeInfo, dataTypePhysicalVariations[i]);
 
             // UNDONE: No for List and Map; Yes for Struct and Union when field count different...
-            addTopLevelConversion(i);
+            addTopLevelConversion(i, targetTypeInfo);
             atLeastOneConvert = true;
 
           }
