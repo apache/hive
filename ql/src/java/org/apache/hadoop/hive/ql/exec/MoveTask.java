@@ -503,8 +503,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         (tbd.getLbCtx() == null) ? 0 : tbd.getLbCtx().calculateListBucketingLevel(),
         work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
             !tbd.isMmTable(),
-        work.getLoadTableWork().getTxnId(), tbd.getStmtId(), hasFollowingStatsTask(),
-        work.getLoadTableWork().getWriteType());
+        work.getLoadTableWork().getTxnId(),
+        tbd.getStmtId(),
+        hasFollowingStatsTask(),
+        work.getLoadTableWork().getWriteType(),
+        tbd.isInsertOverwrite());
 
     // publish DP columns to its subscribers
     if (dps != null && dps.size() > 0) {
