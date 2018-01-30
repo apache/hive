@@ -773,6 +773,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
           }
         }
         outputs.removeAll(toRemove);
+        // TODO: why is this like that?
         for(ReadEntity re : partitionsRead) {
           for(WriteEntity original : toRemove) {
             //since we may have both Update and Delete branches, Auth needs to know
