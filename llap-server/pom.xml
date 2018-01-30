@@ -86,6 +86,11 @@
       <version>${netty.version}</version>
     </dependency>
     <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty</artifactId>
+      <version>${netty3.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.avro</groupId>
       <artifactId>avro</artifactId>
       <version>${avro.version}</version>
@@ -132,6 +137,11 @@
         <exclusion>
           <groupId>io.netty</groupId>
           <artifactId>netty-all</artifactId>
+        </exclusion>
+        <!-- netty 3 too -->
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>netty</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
