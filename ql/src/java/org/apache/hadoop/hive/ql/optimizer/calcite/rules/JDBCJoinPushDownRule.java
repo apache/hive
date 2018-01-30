@@ -8,7 +8,6 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.sql.SqlDialect;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJdbcConverter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.slf4j.Logger;
@@ -39,16 +38,15 @@ public class JDBCJoinPushDownRule extends RelOptRule {
     final HiveJdbcConverter converter1 = call.rel(1);
     final HiveJdbcConverter converter2 = call.rel(2);
     
-    final SqlDialect dialect = converter1.getJdbcDialect();
-    if (dialect.equals(converter2.getJdbcConvention().dialect) == false) {
-      return false;//TODOY ask
+    if (converter1.getJdbcConvention().equals(converter2.getJdbcConvention()) == false) {
+      return false;
     }
 
     if (cond.isAlwaysTrue()) {
       return false;//We don't want to push cross join
     }
     
-    boolean visitorRes = JDBCRexCallValidator.isValidJdbcOperation(cond, dialect);
+    boolean visitorRes = JDBCRexCallValidator.isValidJdbcOperation(cond, converter1.getJdbcDialect());
     return visitorRes;
   }
   

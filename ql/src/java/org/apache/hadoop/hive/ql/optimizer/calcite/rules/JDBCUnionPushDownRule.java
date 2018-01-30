@@ -38,8 +38,8 @@ public class JDBCUnionPushDownRule extends RelOptRule {
     final HiveJdbcConverter converter1 = call.rel(1);
     final HiveJdbcConverter converter2 = call.rel(2);
     
-    if (converter1.getJdbcDialect().equals(converter2.getJdbcDialect()) == false) {
-      return false;//TODOY ask
+    if (converter1.getJdbcConvention().equals(converter2.getJdbcConvention()) == false) {
+      return false;
     }
     
     return union.getInputs().size() == 2;

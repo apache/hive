@@ -14,18 +14,16 @@ import org.apache.calcite.rel.RelVisitor;
 import org.apache.calcite.rel.convert.ConverterImpl;
 import org.apache.calcite.sql.SqlDialect;
 
+
+/**
+ * This is a designated RelNode that splits the Hive operators and the Jdbc operators,
+ * every successor of this node will be Jdbc operator. 
+ *
+ */
 public class HiveJdbcConverter extends ConverterImpl implements HiveRelNode {
 
   final private JdbcConvention _convention;
   
-  public JdbcConvention getJdbcConvention () {
-    return _convention;
-  }
-
-  public SqlDialect getJdbcDialect() {
-    return _convention.dialect;
-  }
-
   public HiveJdbcConverter(RelOptCluster cluster,  RelTraitSet traits,
       JdbcRel input, JdbcConvention jc) {
     super(cluster, ConventionTraitDef.INSTANCE, traits, input);
@@ -36,6 +34,14 @@ public class HiveJdbcConverter extends ConverterImpl implements HiveRelNode {
       RelNode input, JdbcConvention jc) {
     super(cluster, ConventionTraitDef.INSTANCE, traits, input);
     _convention = jc;
+  }
+  
+  public JdbcConvention getJdbcConvention () {
+    return _convention;
+  }
+
+  public SqlDialect getJdbcDialect() {
+    return _convention.dialect;
   }
 
   @Override

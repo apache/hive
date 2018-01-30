@@ -3,6 +3,11 @@ package org.apache.hive.storage.jdbc.dao;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hive.storage.jdbc.conf.JdbcStorageConfigManager;
 
+/**
+ * JethroData specific data accessor. This is needed because JethroData JDBC drivers do not support generic LIMIT and OFFSET
+ * escape functions, and has  some special optimization for getting the query metadata using limit 0.
+ */
+
 public class JethroDatabaseAccessor extends GenericJdbcDatabaseAccessor {
 
   @Override
