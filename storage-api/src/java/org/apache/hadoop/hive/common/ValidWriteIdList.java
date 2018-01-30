@@ -26,7 +26,7 @@ package org.apache.hadoop.hive.common;
 public interface ValidWriteIdList {
 
   /**
-   * Key used to store valid txn list in a
+   * Key used to store valid write id list in a
    * {@link org.apache.hadoop.conf.Configuration} object.
    */
   public static final String VALID_WRITEIDS_KEY = "hive.txn.valid.writeids";

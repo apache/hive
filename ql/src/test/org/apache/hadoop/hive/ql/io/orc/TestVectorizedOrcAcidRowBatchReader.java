@@ -216,7 +216,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     List<OrcSplit> splits = getSplits();
     // Mark one of the transactions as an exception to test that invalid transactions
     // are being handled properly.
-    conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY, "14:1:1:5"); // Exclude transaction 5
+    conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY, "tbl:14:1:1:5"); // Exclude transaction 5
 
     VectorizedOrcAcidRowBatchReader vectorizedReader = new VectorizedOrcAcidRowBatchReader(splits.get(0), conf, Reporter.NULL, new VectorizedRowBatchCtx());
     if (deleteEventRegistry.equals(ColumnizedDeleteEventRegistry.class.getName())) {

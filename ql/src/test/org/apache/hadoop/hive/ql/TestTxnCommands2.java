@@ -34,6 +34,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
@@ -861,7 +862,7 @@ public class TestTxnCommands2 {
   public void testValidTxnsBookkeeping() throws Exception {
     // 1. Run a query against a non-ACID table, and we shouldn't have txn logged in conf
     runStatementOnDriver("select * from " + Table.NONACIDORCTBL);
-    String value = hiveConf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
+    String value = hiveConf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
     Assert.assertNull("The entry should be null for query that doesn't involve ACID tables", value);
   }
 
@@ -874,7 +875,7 @@ public class TestTxnCommands2 {
     //this will cause next txn to be marked aborted but the data is still written to disk
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
     runStatementOnDriver("insert into " + Table.ACIDTBL + " " + makeValuesClause(tableData2));
-    assert hiveConf.get(ValidWriteIdList.VALID_WRITEIDS_KEY) == null : "previous txn should've cleaned it";
+    assert hiveConf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY) == null : "previous txn should've cleaned it";
     //so now if HIVEFETCHTASKCONVERSION were to use a stale value, it would use a
     //ValidWriteIdList with HWM=MAX_LONG, i.e. include the data for aborted txn
     List<String> rs = runStatementOnDriver("select * from " + Table.ACIDTBL);

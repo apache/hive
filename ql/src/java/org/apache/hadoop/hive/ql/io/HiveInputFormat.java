@@ -478,12 +478,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       InputFormat inputFormat, Class<? extends InputFormat> inputFormatClass, int splits,
       TableDesc table, List<InputSplit> result)
           throws IOException {
-    ValidWriteIdList validTxnList;
+    ValidWriteIdList validTxnList = AcidUtils.getTableValidWriteIdList(conf, table.getTableName());
+    ValidWriteIdList validMmTxnList;
     if (AcidUtils.isInsertOnlyTable(table.getProperties())) {
-      String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
-      validTxnList = txnString == null ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList( txnString);
+      validMmTxnList = validTxnList;
     } else {
-      validTxnList = null;  // for non-MM case
+      validMmTxnList = null;  // for non-MM case
     }
 
     try {
@@ -491,6 +491,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       if (tableScan != null) {
         AcidUtils.setAcidOperationalProperties(conf, tableScan.getConf().isTranscationalTable(),
             tableScan.getConf().getAcidOperationalProperties());
+        AcidUtils.setValidWriteIdList(conf, validTxnList);
       }
     } catch (HiveException e) {
       throw new IOException(e);
@@ -500,7 +501,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       pushFilters(conf, tableScan, this.mrwork);
     }
 
-    Path[] finalDirs = processPathsForMmRead(dirs, conf, validTxnList);
+    Path[] finalDirs = processPathsForMmRead(dirs, conf, validMmTxnList);
     if (finalDirs == null) {
       return; // No valid inputs.
     }

@@ -25,6 +25,12 @@ import java.util.HashMap;
  * transaction
  */
 public class ValidTxnWriteIdList {
+  /**
+   * Key used to store valid write id list for all the operated tables in a
+   * {@link org.apache.hadoop.conf.Configuration} object.
+   */
+  public static final String VALID_TABLES_WRITEIDS_KEY = "hive.txn.tables.valid.writeids";
+
   private HashMap<String, ValidWriteIdList> validTablesWriteIdList = new HashMap<>();
   public ValidTxnWriteIdList() {
   }
@@ -42,19 +48,40 @@ public class ValidTxnWriteIdList {
     validTablesWriteIdList.put(validWriteIds.getTableName(), validWriteIds);
   }
 
-  private void readFromString(String value) {
-    // TODO (Sankar): Need to extend for multiple tables from the string
-    ValidWriteIdList validWriteIdList = new ValidReaderWriteIdList(value);
-    validTablesWriteIdList.put(validWriteIdList.getTableName(), validWriteIdList);
+  public ValidWriteIdList getTableWriteIdList(String tableName) {
+    if (validTablesWriteIdList.containsKey(tableName)) {
+      return validTablesWriteIdList.get(tableName);
+    } else {
+      return new ValidReaderWriteIdList();
+    }
+  }
+
+  public int getNumOfTables() {
+    return validTablesWriteIdList.size();
+  }
+
+  private void readFromString(String src) {
+    if ((src == null) || (src.length() == 0)) {
+      return;
+    }
+    String[] tblWriteIdStrList = src.split("\\$");
+    for (String tableStr : tblWriteIdStrList) {
+      ValidWriteIdList validWriteIdList = new ValidReaderWriteIdList(tableStr);
+      addTableWriteId(validWriteIdList);
+    }
   }
 
   private String writeToString() {
-    if (validTablesWriteIdList.isEmpty()) {
-      return new String();
-    }
     StringBuilder buf = new StringBuilder();
+    int index = 0;
     for (HashMap.Entry<String, ValidWriteIdList> entry : validTablesWriteIdList.entrySet()) {
       buf.append(entry.getValue().writeToString());
+
+      // Separator for multiple tables' ValidWriteIdList. Also, skip it for last entry.
+      index++;
+      if (index < validTablesWriteIdList.size()) {
+        buf.append('$');
+      }
     }
     return buf.toString();
   }

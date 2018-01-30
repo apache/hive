@@ -36,6 +36,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -1488,6 +1489,22 @@ public class AcidUtils {
     boolean hasTxn = removedSet.contains(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL),
         hasProps = removedSet.contains(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
     return hasTxn || hasProps;
+  }
+
+  /**
+   * Extract the ValidWriteIdList for the given table from the list of tables' ValidWriteIdList
+   */
+  public static ValidWriteIdList getTableValidWriteIdList(Configuration conf, String tableName) {
+    String txnString = conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
+    ValidTxnWriteIdList validTxnList = new ValidTxnWriteIdList(txnString);
+    return validTxnList.getTableWriteIdList(tableName);
+  }
+
+  /**
+   * Set the valid write id list for the current table scan
+   */
+  public static void setValidWriteIdList(Configuration conf, ValidWriteIdList validWriteIds) {
+    conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY, validWriteIds.toString());
   }
 
   public static String getFullTableName(String dbName, String tableName) {

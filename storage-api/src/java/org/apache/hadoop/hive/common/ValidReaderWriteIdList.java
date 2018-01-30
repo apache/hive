@@ -108,11 +108,16 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
     return writeToString();
   }
 
-  // TODO (Sankar): Need to modify the format to include table name and parenthesis to encapsulate
-  // each ValidReaderWriteIdList
+  // Format is <table_name>:<hwm>:<minOpenWriteId>:<open_txns>:<abort_txns>
   @Override
   public String writeToString() {
     StringBuilder buf = new StringBuilder();
+    if (tableName == null) {
+      buf.append("null");
+    } else {
+      buf.append(tableName);
+    }
+    buf.append(':');
     buf.append(highWatermark);
     buf.append(':');
     buf.append(minOpenWriteId);
@@ -143,7 +148,6 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
     return buf.toString();
   }
 
-  // TODO (Sankar): Need to modify to read new format to include table name
   @Override
   public void readFromString(String src) {
     if (src == null || src.length() == 0) {
@@ -152,23 +156,27 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
       abortedBits = new BitSet();
     } else {
       String[] values = src.split(":");
-      highWatermark = Long.parseLong(values[0]);
-      minOpenWriteId = Long.parseLong(values[1]);
+      tableName = values[0];
+      if (tableName.equalsIgnoreCase("null")) {
+        tableName = null;
+      }
+      highWatermark = Long.parseLong(values[1]);
+      minOpenWriteId = Long.parseLong(values[2]);
       String[] openWriteIds = new String[0];
       String[] abortedWriteIds = new String[0];
-      if (values.length < 3) {
+      if (values.length < 4) {
         openWriteIds = new String[0];
         abortedWriteIds = new String[0];
-      } else if (values.length == 3) {
-        if (!values[2].isEmpty()) {
-          openWriteIds = values[2].split(",");
+      } else if (values.length == 4) {
+        if (!values[3].isEmpty()) {
+          openWriteIds = values[3].split(",");
         }
       } else {
-        if (!values[2].isEmpty()) {
-          openWriteIds = values[2].split(",");
-        }
         if (!values[3].isEmpty()) {
-          abortedWriteIds = values[3].split(",");
+          openWriteIds = values[3].split(",");
+        }
+        if (!values[4].isEmpty()) {
+          abortedWriteIds = values[4].split(",");
         }
       }
       exceptions = new long[openWriteIds.length + abortedWriteIds.length];

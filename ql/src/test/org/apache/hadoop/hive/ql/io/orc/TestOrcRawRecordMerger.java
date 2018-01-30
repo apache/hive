@@ -593,7 +593,7 @@ public class TestOrcRawRecordMerger {
         AcidUtils.baseDir(100)), BUCKET), wo);
       w.close();
     }
-    ValidWriteIdList writeIdList = new ValidReaderWriteIdList("200:" + Long.MAX_VALUE);
+    ValidWriteIdList writeIdList = new ValidReaderWriteIdList("testEmpty:200:" + Long.MAX_VALUE);
     AcidUtils.Directory directory = AcidUtils.getAcidState(root, conf, writeIdList);
 
     Path basePath = AcidUtils.createBucketFile(directory.getBaseDirectory(),
@@ -662,7 +662,7 @@ public class TestOrcRawRecordMerger {
     ru.delete(200, new MyRow("", 8, 0, BUCKET_PROPERTY));
     ru.close(false);
 
-    ValidWriteIdList writeIdList = new ValidReaderWriteIdList("200:" + Long.MAX_VALUE);
+    ValidWriteIdList writeIdList = new ValidReaderWriteIdList("testNewBaseAndDelta:200:" + Long.MAX_VALUE);
     AcidUtils.Directory directory = AcidUtils.getAcidState(root, conf, writeIdList);
 
     assertEquals(new Path(root, "base_0000100"), directory.getBaseDirectory());
@@ -978,7 +978,7 @@ public class TestOrcRawRecordMerger {
     merger.close();
 
     // try ignoring the 200 transaction and make sure it works still
-    ValidWriteIdList writeIds = new ValidReaderWriteIdList("2000:200:200");
+    ValidWriteIdList writeIds = new ValidReaderWriteIdList("testNewBaseAndDelta:2000:200:200");
     //again 1st split is for base/
     baseReader = OrcFile.createReader(basePath,
       OrcFile.readerOptions(conf));

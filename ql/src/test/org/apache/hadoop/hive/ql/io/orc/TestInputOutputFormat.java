@@ -3895,7 +3895,7 @@ public class TestInputOutputFormat {
     long fileLength = fs.getFileStatus(testFilePath).getLen();
 
     // test with same schema with include
-    conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY, "100:99:");
+    conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY, "tbl:100:99:");
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, "a,b,d");
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, "int,struct<c:int>,string");
     conf.set(ColumnProjectionUtils.READ_ALL_COLUMNS, "false");

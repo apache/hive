@@ -1196,7 +1196,7 @@ public class Driver implements IDriver {
   // the input format.
   private void recordValidTxns(HiveTxnManager txnMgr) throws LockException {
     ValidTxnWriteIdList oldList = null;
-    String s = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
+    String s = conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
     if(s != null && s.length() > 0) {
       oldList = new ValidTxnWriteIdList(s);
     }
@@ -1209,30 +1209,25 @@ public class Driver implements IDriver {
         JavaUtils.txnIdToString(txnMgr.getCurrentTxnId()));
     }
     String writeIdStr = txnWriteIds.toString();
-    conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY, writeIdStr);
-    if(plan.getFetchTask() != null) {
-      // TODO (Sankar): Need to validate this usecase to see if only one table is being read
+    conf.set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, writeIdStr);
+    if ((plan.getFetchTask() != null) && (txnWriteIds.getNumOfTables() <= 1)) {
       /**
        * This is needed for {@link HiveConf.ConfVars.HIVEFETCHTASKCONVERSION} optimization which
        * initializes JobConf in FetchOperator before recordValidTxns() but this has to be done
        * after locks are acquired to avoid race conditions in ACID.
+       * This case is supported only for single source query.
        */
       plan.getFetchTask().setValidWriteIdList(writeIdStr);
     }
     LOG.debug("Encoding valid write ids info " + writeIdStr + " txnid:" + txnMgr.getCurrentTxnId());
   }
 
-  // TODO (Sankar): Need to see if it make sense to traverse the operator tree to find TableScanOperator
   // Make the list of transactional tables list which are getting read or written by current txn
   private List<String> getTransactionalTableList(QueryPlan plan) {
     List<String> tableList = new ArrayList<>();
 
     for (ReadEntity input : plan.getInputs()) {
       addTableFromEntity(input, tableList);
-    }
-    // TODO (Sankar): Need to check if WriteEntity need to be traversed
-    for (WriteEntity output : plan.getOutputs()) {
-      addTableFromEntity(output, tableList);
     }
     return tableList;
   }
@@ -1360,7 +1355,7 @@ public class Driver implements IDriver {
     }
     // If we've opened a transaction we need to commit or rollback rather than explicitly
     // releasing the locks.
-    conf.unset(ValidWriteIdList.VALID_WRITEIDS_KEY);
+    conf.unset(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
     if(!checkConcurrency()) {
       return;
     }
