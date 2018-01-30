@@ -1896,6 +1896,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
       calciteOptimizedPlan = hepPlan(calciteOptimizedPlan, false, mdProvider.getMetadataProvider(), null,
           HepMatchOrder.BOTTOM_UP,
+          HiveDruidRules.FILTER_DATE_RANGE_RULE,
           HiveDruidRules.FILTER, HiveDruidRules.PROJECT_FILTER_TRANSPOSE,
           HiveDruidRules.AGGREGATE_FILTER_TRANSPOSE,
           HiveDruidRules.AGGREGATE_PROJECT,
