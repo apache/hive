@@ -2178,7 +2178,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws HiveException
    */
   private Set<Path> getValidPartitionsInPath(
-      int numDP, int numLB, Path loadPath, Long txnId, int stmtId, boolean isMmTable) throws HiveException {
+      int numDP, int numLB, Path loadPath, Long txnId, int stmtId,
+      boolean isMmTable, boolean isInsertOverwrite) throws HiveException {
     Set<Path> validPartitions = new HashSet<Path>();
     try {
       FileSystem fs = loadPath.getFileSystem(conf);
@@ -2199,7 +2200,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         //       where this is used; we always want to load everything; also the only case where
         //       we have multiple statements anyway is union.
         Path[] leafStatus = Utilities.getMmDirectoryCandidates(
-            fs, loadPath, numDP, numLB, null, txnId, -1, conf, false);
+            fs, loadPath, numDP, numLB, null, txnId, -1, conf, isInsertOverwrite);
         for (Path p : leafStatus) {
           Path dpPath = p.getParent(); // Skip the MM directory that we have found.
           for (int i = 0; i < numLB; ++i) {
@@ -2247,7 +2248,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public Map<Map<String, String>, Partition> loadDynamicPartitions(final Path loadPath,
       final String tableName, final Map<String, String> partSpec, final LoadFileType loadFileType,
       final int numDP, final int numLB, final boolean isAcid, final long txnId, final int stmtId,
-      final boolean hasFollowingStatsTask, final AcidUtils.Operation operation)
+      final boolean hasFollowingStatsTask, final AcidUtils.Operation operation, boolean isInsertOverwrite)
       throws HiveException {
 
     final Map<Map<String, String>, Partition> partitionsMap =
@@ -2263,7 +2264,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     // Get all valid partition paths and existing partitions for them (if any)
     final Table tbl = getTable(tableName);
     final Set<Path> validPartitions = getValidPartitionsInPath(numDP, numLB, loadPath, txnId, stmtId,
-        AcidUtils.isInsertOnlyTable(tbl.getParameters()));
+        AcidUtils.isInsertOnlyTable(tbl.getParameters()), isInsertOverwrite);
 
     final int partsToLoad = validPartitions.size();
     final AtomicInteger partitionsLoaded = new AtomicInteger(0);

@@ -4075,7 +4075,7 @@ public final class Utilities {
           throws IOException {
     int skipLevels = dpLevels + lbLevels;
     if (filter == null) {
-      filter = new JavaUtils.IdPathFilter(txnId, stmtId, true);
+      filter = new JavaUtils.IdPathFilter(txnId, stmtId, true, false, isBaseDir);
     }
     if (skipLevels == 0) {
       return statusToPath(fs.listStatus(path, filter));
