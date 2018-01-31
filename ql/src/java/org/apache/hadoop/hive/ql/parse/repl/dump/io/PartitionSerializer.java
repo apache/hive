@@ -55,6 +55,8 @@ public class PartitionSerializer implements JsonWriter.Serializer {
           partition.putToParameters("EXTERNAL", "FALSE");
         }
       }
+      partition.setDbName(partition.getDbName().toLowerCase());
+      partition.setTableName(partition.getTableName().toLowerCase());
       writer.jsonGenerator.writeString(serializer.toString(partition, UTF_8));
       writer.jsonGenerator.flush();
     } catch (TException e) {

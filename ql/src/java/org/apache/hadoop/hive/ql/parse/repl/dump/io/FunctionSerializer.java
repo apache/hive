@@ -63,6 +63,8 @@ public class FunctionSerializer implements JsonWriter.Serializer {
       }
     }
     Function copyObj = new Function(this.function);
+    copyObj.setFunctionName(copyObj.getFunctionName().toLowerCase());
+    copyObj.setDbName(copyObj.getDbName().toLowerCase());
     if (!resourceUris.isEmpty()) {
       assert resourceUris.size() == this.function.getResourceUris().size();
       copyObj.setResourceUris(resourceUris);

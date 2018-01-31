@@ -234,11 +234,11 @@ public class TestReplicationScenariosAcrossInstances {
     WarehouseInstance.Tuple tuple = primary
         .run("use " + primaryDbName)
         .run("create table t1 (id int)")
-        .run("create table t2 (place string) partitioned by (country string)")
+        .run("create table T2 (place string) partitioned by (country string)")
         .run("insert into table t2 partition(country='india') values ('bangalore')")
         .run("insert into table t2 partition(country='us') values ('austin')")
         .run("insert into table t2 partition(country='france') values ('paris')")
-        .run("create table t3 (rank int)")
+        .run("create table T3 (rank int)")
         .dump(primaryDbName, null);
 
     // each table creation itself takes more than one task, give we are giving a max of 1, we should hit multiple runs.

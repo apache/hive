@@ -52,12 +52,14 @@ public class TableSerializer implements JsonWriter.Serializer {
       return;
     }
 
-    Table tTable = tableHandle.getTTable();
-    tTable = addPropertiesToTable(tTable, additionalPropertiesProvider);
+    Table table = tableHandle.getTTable();
+    table = addPropertiesToTable(table, additionalPropertiesProvider);
     try {
       TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
+      table.setDbName(table.getDbName().toLowerCase());
+      table.setTableName(table.getTableName().toLowerCase());
       writer.jsonGenerator
-          .writeStringField(FIELD_NAME, serializer.toString(tTable, UTF_8));
+          .writeStringField(FIELD_NAME, serializer.toString(table, UTF_8));
       writer.jsonGenerator.writeFieldName(PartitionSerializer.FIELD_NAME);
       writePartitions(writer, additionalPropertiesProvider);
     } catch (TException e) {
