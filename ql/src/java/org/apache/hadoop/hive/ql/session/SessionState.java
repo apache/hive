@@ -380,6 +380,7 @@ public class SessionState {
     // if there isn't already a session name, go ahead and create it.
     if (StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HIVESESSIONID))) {
       conf.setVar(HiveConf.ConfVars.HIVESESSIONID, makeSessionId());
+      getConsole().printInfo("Hive Session ID = " + getSessionId());
     }
     // Using system classloader as the parent. Using thread context
     // classloader as parent can pollute the session. See HIVE-11878
