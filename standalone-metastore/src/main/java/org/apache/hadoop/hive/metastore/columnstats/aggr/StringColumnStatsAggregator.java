@@ -178,7 +178,7 @@ public class StringColumnStatsAggregator extends ColumnStatsAggregator implement
           if (aggregateData == null) {
             aggregateData = newData.deepCopy();
           } else {
-            aggregateData.setAvgColLen(Math.min(aggregateData.getAvgColLen(),
+            aggregateData.setAvgColLen(Math.max(aggregateData.getAvgColLen(),
                 newData.getAvgColLen()));
             aggregateData.setMaxColLen(Math.max(aggregateData.getMaxColLen(),
                 newData.getMaxColLen()));
