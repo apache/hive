@@ -17,7 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
@@ -31,7 +34,15 @@ class AlterDatabaseHandler extends AbstractEventHandler {
   public void handle(Context withinContext) throws Exception {
     LOG.info("Processing#{} ALTER_DATABASE message : {}", fromEventId(), event.getMessage());
     DumpMetaData dmd = withinContext.createDmd(this);
-    dmd.setPayload(event.getMessage());
+
+    AlterDatabaseMessage alterDatabaseMessage =
+        deserializer.getAlterDatabaseMessage(event.getMessage());
+    Database dbObjBefore = alterDatabaseMessage.getDbObjBefore();
+    dbObjBefore.setName(dbObjBefore.getName().toLowerCase());
+    Database dbObjAfter = alterDatabaseMessage.getDbObjAfter();
+    dbObjAfter.setName(dbObjAfter.getName().toLowerCase());
+    dmd.setPayload(
+        MessageFactory.getInstance().buildAlterDatabaseMessage(dbObjBefore, dbObjAfter).toString());
     dmd.write();
   }
 
