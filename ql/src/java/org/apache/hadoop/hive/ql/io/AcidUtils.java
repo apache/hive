@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -1494,10 +1495,10 @@ public class AcidUtils {
   /**
    * Extract the ValidWriteIdList for the given table from the list of tables' ValidWriteIdList
    */
-  public static ValidWriteIdList getTableValidWriteIdList(Configuration conf, String tableName) {
+  public static ValidWriteIdList getTableValidWriteIdList(Configuration conf, String fullTableName) {
     String txnString = conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
     ValidTxnWriteIdList validTxnList = new ValidTxnWriteIdList(txnString);
-    return validTxnList.getTableWriteIdList(tableName);
+    return validTxnList.getTableWriteIdList(fullTableName);
   }
 
   /**
@@ -1505,6 +1506,19 @@ public class AcidUtils {
    */
   public static void setValidWriteIdList(Configuration conf, ValidWriteIdList validWriteIds) {
     conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY, validWriteIds.toString());
+  }
+
+  /**
+   * Set the valid write id list for the current table scan
+   */
+  public static void setValidWriteIdList(Configuration conf, TableScanDesc tsDesc) {
+    String dbName = tsDesc.getDatabaseName();
+    String tableName = tsDesc.getTableName();
+    if ((dbName != null) && (tableName != null)) {
+      ValidWriteIdList validWriteIdList = AcidUtils.getTableValidWriteIdList(conf,
+                                                    AcidUtils.getFullTableName(dbName, tableName));
+      setValidWriteIdList(conf, validWriteIdList);
+    }
   }
 
   public static String getFullTableName(String dbName, String tableName) {

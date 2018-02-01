@@ -158,10 +158,6 @@ public final class JavaUtils {
     return "txnid:" + txnId;
   }
 
-  /**
-   * Utility method for ACID to normalize logging info.  Matches
-   * org.apache.hadoop.hive.metastore.api.LockResponse#toString
-   */
   public static String writeIdToString(long writeId) {
     return "writeid:" + writeId;
   }

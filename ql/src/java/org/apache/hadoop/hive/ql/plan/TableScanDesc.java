@@ -102,6 +102,9 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   // input file name (big) to bucket number
   private Map<String, Integer> bucketFileNameMapping;
 
+  private String dbName = null;
+  private String tableName = null;
+
   private boolean isMetadataOnly = false;
 
   private boolean isTranscationalTable;
@@ -135,6 +138,11 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
     this.alias = alias;
     this.virtualCols = vcs;
     this.tableMetadata = tblMetadata;
+
+    if (tblMetadata != null) {
+      dbName = tblMetadata.getDbName();
+      tableName = tblMetadata.getTableName();
+    }
     isTranscationalTable = AcidUtils.isTransactionalTable(this.tableMetadata);
     if (isTranscationalTable) {
       acidOperationalProperties = AcidUtils.getAcidOperationalProperties(this.tableMetadata);
@@ -154,12 +162,12 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   @Explain(displayName = "table", jsonOnly = true)
   public String getTableName() {
-    return this.tableMetadata.getTableName();
+    return this.tableName;
   }
 
   @Explain(displayName = "database", jsonOnly = true)
   public String getDatabaseName() {
-    return this.tableMetadata.getDbName();
+    return this.dbName;
   }
 
   @Explain(displayName = "columns", jsonOnly = true)
