@@ -1881,7 +1881,7 @@ public class Hive {
           // base_x.  (there is Insert Overwrite and Load Data Overwrite)
           boolean isAutoPurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
           replaceFiles(tbl.getPath(), loadPath, destPath, oldPartPath, getConf(),
-              isSrcLocal, isAutoPurge, newFiles, filter, isMmTableWrite?true:false);
+              isSrcLocal, isAutoPurge, newFiles, filter, isMmTableWrite?true:false, !tbl.isTemporary());
         } else {
           FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
           copyFiles(conf, loadPath, destPath, fs, isSrcLocal, isAcidIUDoperation,
@@ -2427,7 +2427,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         //todo:  should probably do the same for MM IOW
         boolean isAutopurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
         replaceFiles(tblPath, loadPath, destPath, tblPath,
-            sessionConf, isSrcLocal, isAutopurge, newFiles, filter, isMmTable?true:false);
+            sessionConf, isSrcLocal, isAutopurge, newFiles, filter, isMmTable?true:false, !tbl.isTemporary());
       } else {
         try {
           FileSystem fs = tbl.getDataLocation().getFileSystem(sessionConf);
@@ -3963,7 +3963,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   protected void replaceFiles(Path tablePath, Path srcf, Path destf, Path oldPath, HiveConf conf,
           boolean isSrcLocal, boolean purge, List<Path> newFiles, PathFilter deletePathFilter,
-          boolean isMmTableOverwrite) throws HiveException {
+          boolean isMmTableOverwrite, boolean isNeedRecycle) throws HiveException {
     try {
 
       FileSystem destFs = destf.getFileSystem(conf);
@@ -3984,7 +3984,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       if (oldPath != null) {
         // Note: we assume lbLevels is 0 here. Same as old code for non-MM.
         //       For MM tables, this can only be a LOAD command. Does LOAD even support LB?
-        deleteOldPathForReplace(destf, oldPath, conf, purge, deletePathFilter, isMmTableOverwrite, 0);
+        deleteOldPathForReplace(destf, oldPath, conf, purge, deletePathFilter, isMmTableOverwrite, 0, isNeedRecycle);
       }
 
       // first call FileUtils.mkdir to make sure that destf directory exists, if not, it creates
@@ -4030,7 +4030,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   private void deleteOldPathForReplace(Path destPath, Path oldPath, HiveConf conf, boolean purge,
-      PathFilter pathFilter, boolean isMmTableOverwrite, int lbLevels) throws HiveException {
+      PathFilter pathFilter, boolean isMmTableOverwrite, int lbLevels, boolean isNeedRecycle) throws HiveException {
     Utilities.FILE_OP_LOGGER.debug("Deleting old paths for replace in " + destPath
         + " and old path " + oldPath);
     boolean isOldPathUnderDestf = false;
@@ -4044,7 +4044,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       isOldPathUnderDestf = isSubDir(oldPath, destPath, oldFs, destFs, false);
       if (isOldPathUnderDestf || isMmTableOverwrite) {
         if (lbLevels == 0 || !isMmTableOverwrite) {
-          cleanUpOneDirectoryForReplace(oldPath, oldFs, pathFilter, conf, purge);
+          cleanUpOneDirectoryForReplace(oldPath, oldFs, pathFilter, conf, purge, isNeedRecycle);
         }
       }
     } catch (IOException e) {
@@ -4061,8 +4061,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
 
   private void cleanUpOneDirectoryForReplace(Path path, FileSystem fs,
-      PathFilter pathFilter, HiveConf conf, boolean purge) throws IOException, HiveException {
-    if (conf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
+      PathFilter pathFilter, HiveConf conf, boolean purge, boolean isNeedRecycle) throws IOException, HiveException {
+    if (isNeedRecycle && conf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
       recycleDirToCmPath(path, purge);
     }
     FileStatus[] statuses = fs.listStatus(path, pathFilter);

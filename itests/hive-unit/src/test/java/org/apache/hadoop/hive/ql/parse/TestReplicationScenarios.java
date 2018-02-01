@@ -22,6 +22,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -3505,6 +3506,57 @@ public class TestReplicationScenarios {
       hconf.set(proxySettingName, "*");
       ProxyUsers.refreshSuperUserGroupsConfiguration(hconf);
     }
+  }
+
+  @Test
+  public void testRecycleFileDropTempTable() throws IOException {
+    String dbName = createDB(testName.getMethodName(), driver);
+
+    run("CREATE TABLE " + dbName + ".normal(a int)", driver);
+    run("INSERT INTO " + dbName + ".normal values (1)", driver);
+    run("DROP TABLE " + dbName + ".normal", driver);
+
+    String cmDir = hconf.getVar(HiveConf.ConfVars.REPLCMDIR);
+    Path path = new Path(cmDir);
+    FileSystem fs = path.getFileSystem(hconf);
+    ContentSummary cs = fs.getContentSummary(path);
+    long fileCount = cs.getFileCount();
+
+    assertTrue(fileCount != 0);
+
+    run("CREATE TABLE " + dbName + ".normal(a int)", driver);
+    run("INSERT INTO " + dbName + ".normal values (1)", driver);
+
+    run("CREATE TEMPORARY TABLE " + dbName + ".temp(a int)", driver);
+    run("INSERT INTO " + dbName + ".temp values (2)", driver);
+    run("INSERT OVERWRITE TABLE " + dbName + ".temp select * from " + dbName + ".normal", driver);
+
+    cs = fs.getContentSummary(path);
+    long fileCountAfter = cs.getFileCount();
+
+    assertTrue(fileCount == fileCountAfter);
+
+    run("INSERT INTO " + dbName + ".temp values (3)", driver);
+    run("TRUNCATE TABLE " + dbName + ".temp", driver);
+
+    cs = fs.getContentSummary(path);
+    fileCountAfter = cs.getFileCount();
+    assertTrue(fileCount == fileCountAfter);
+
+    run("INSERT INTO " + dbName + ".temp values (4)", driver);
+    run("ALTER TABLE " + dbName + ".temp RENAME to " + dbName + ".temp1", driver);
+    verifyRun("SELECT count(*) from " + dbName + ".temp1", new String[]{"1"}, driver);
+
+    cs = fs.getContentSummary(path);
+    fileCountAfter = cs.getFileCount();
+    assertTrue(fileCount == fileCountAfter);
+
+    run("INSERT INTO " + dbName + ".temp1 values (5)", driver);
+    run("DROP TABLE " + dbName + ".temp1", driver);
+
+    cs = fs.getContentSummary(path);
+    fileCountAfter = cs.getFileCount();
+    assertTrue(fileCount == fileCountAfter);
   }
 
   private NotificationEvent createDummyEvent(String dbname, String tblname, long evid) {
