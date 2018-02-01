@@ -18,8 +18,14 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
+import org.apache.hadoop.hive.metastore.messaging.AddForeignKeyMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AddForeignKeyHandler extends AbstractConstraintEventHandler {
   AddForeignKeyHandler(NotificationEvent event) {
@@ -32,7 +38,19 @@ public class AddForeignKeyHandler extends AbstractConstraintEventHandler {
         event.getMessage());
     if (shouldReplicate(withinContext)) {
       DumpMetaData dmd = withinContext.createDmd(this);
-      dmd.setPayload(event.getMessage());
+
+      AddForeignKeyMessage message = deserializer.getAddForeignKeyMessage(event.getMessage());
+      List<SQLForeignKey> foreignKeys = message.getForeignKeys();
+      ArrayList<SQLForeignKey> result = new ArrayList<>();
+      for (SQLForeignKey fk : foreignKeys) {
+        fk.setFktable_db(fk.getFktable_db().toLowerCase());
+        fk.setFktable_name(fk.getFktable_name().toLowerCase());
+        fk.setPktable_db(fk.getPktable_db().toLowerCase());
+        fk.setPktable_name(fk.getPktable_name().toLowerCase());
+        result.add(fk);
+      }
+
+      dmd.setPayload(MessageFactory.getInstance().buildAddForeignKeyMessage(result).toString());
       dmd.write();
     }
   }

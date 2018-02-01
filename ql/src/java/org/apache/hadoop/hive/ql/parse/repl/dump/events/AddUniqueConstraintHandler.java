@@ -18,8 +18,14 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.messaging.AddUniqueConstraintMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AddUniqueConstraintHandler extends AbstractConstraintEventHandler {
   AddUniqueConstraintHandler(NotificationEvent event) {
@@ -33,7 +39,17 @@ public class AddUniqueConstraintHandler extends AbstractConstraintEventHandler {
 
     if (shouldReplicate(withinContext)) {
       DumpMetaData dmd = withinContext.createDmd(this);
-      dmd.setPayload(event.getMessage());
+      AddUniqueConstraintMessage message =
+          deserializer.getAddUniqueConstraintMessage(event.getMessage());
+      List<SQLUniqueConstraint> uniqueConstraints = message.getUniqueConstraints();
+      List<SQLUniqueConstraint> results = new ArrayList<>();
+      for (SQLUniqueConstraint constraint : uniqueConstraints) {
+        constraint.setTable_db(constraint.getTable_db().toLowerCase());
+        constraint.setTable_name(constraint.getTable_name().toLowerCase());
+        results.add(constraint);
+      }
+      dmd.setPayload(
+          MessageFactory.getInstance().buildAddUniqueConstraintMessage(results).toString());
       dmd.write();
     }
   }

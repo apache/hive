@@ -18,8 +18,14 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
+import org.apache.hadoop.hive.metastore.messaging.AddNotNullConstraintMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AddNotNullConstraintHandler extends AbstractConstraintEventHandler {
   AddNotNullConstraintHandler(NotificationEvent event) {
@@ -30,10 +36,20 @@ public class AddNotNullConstraintHandler extends AbstractConstraintEventHandler 
   public void handle(Context withinContext) throws Exception {
     LOG.debug("Processing#{} ADD_NOTNULLCONSTRAINT_MESSAGE message : {}", fromEventId(),
         event.getMessage());
-
     if (shouldReplicate(withinContext)) {
       DumpMetaData dmd = withinContext.createDmd(this);
-      dmd.setPayload(event.getMessage());
+
+      AddNotNullConstraintMessage message =
+          deserializer.getAddNotNullConstraintMessage(event.getMessage());
+      List<SQLNotNullConstraint> notNullConstraints = message.getNotNullConstraints();
+      ArrayList<SQLNotNullConstraint> result = new ArrayList<>();
+      for (SQLNotNullConstraint constraint : notNullConstraints) {
+        constraint.setTable_db(constraint.getTable_db().toLowerCase());
+        constraint.setTable_name(constraint.getTable_name().toLowerCase());
+        result.add(constraint);
+      }
+      dmd.setPayload(
+          MessageFactory.getInstance().buildAddNotNullConstraintMessage(result).toString());
       dmd.write();
     }
   }

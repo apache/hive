@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.DropConstraintMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
@@ -28,9 +30,15 @@ public class DropConstraintHandler extends AbstractEventHandler {
 
   @Override
   public void handle(Context withinContext) throws Exception {
-    LOG.info("Processing#{} DROP_CONSTRAINT_MESSAGE message : {}", fromEventId(), event.getMessage());
+    LOG.info("Processing#{} DROP_CONSTRAINT_MESSAGE message : {}", fromEventId(),
+        event.getMessage());
     DumpMetaData dmd = withinContext.createDmd(this);
-    dmd.setPayload(event.getMessage());
+    DropConstraintMessage message = deserializer.getDropConstraintMessage(event.getMessage());
+    String payload = MessageFactory.getInstance()
+        .buildDropConstraintMessage(message.getDB().toLowerCase(), message.getTable().toLowerCase(),
+            message.getConstraint()).toString();
+
+    dmd.setPayload(payload);
     dmd.write();
   }
 

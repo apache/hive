@@ -18,8 +18,14 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+import org.apache.hadoop.hive.metastore.messaging.AddPrimaryKeyMessage;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AddPrimaryKeyHandler extends AbstractConstraintEventHandler {
   AddPrimaryKeyHandler(NotificationEvent event) {
@@ -33,7 +39,16 @@ public class AddPrimaryKeyHandler extends AbstractConstraintEventHandler {
 
     if (shouldReplicate(withinContext)) {
       DumpMetaData dmd = withinContext.createDmd(this);
-      dmd.setPayload(event.getMessage());
+      AddPrimaryKeyMessage message = deserializer.getAddPrimaryKeyMessage(event.getMessage());
+      List<SQLPrimaryKey> primaryKeys = message.getPrimaryKeys();
+      List<SQLPrimaryKey> results = new ArrayList<>();
+      for (SQLPrimaryKey pk : primaryKeys) {
+        pk.setTable_db(pk.getTable_db().toLowerCase());
+        pk.setTable_name(pk.getTable_name().toLowerCase());
+        results.add(pk);
+      }
+
+      dmd.setPayload(MessageFactory.getInstance().buildAddPrimaryKeyMessage(results).toString());
       dmd.write();
     }
   }
