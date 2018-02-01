@@ -24,14 +24,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 // Validate the metastore client call validatePartitionNameCharacters to ensure it throws
 // an exception if partition fields contain Unicode characters or commas
 
+@Category(MetastoreUnitTest.class)
 public class TestPartitionNameWhitelistValidation {
 
   private static final String partitionValidationPattern = "[\\x20-\\x7E&&[^,]]*";

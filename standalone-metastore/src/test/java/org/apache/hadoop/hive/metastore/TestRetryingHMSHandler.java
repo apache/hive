@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
@@ -30,11 +31,13 @@ import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * TestRetryingHMSHandler. Test case for
  * {@link org.apache.hadoop.hive.metastore.RetryingHMSHandler}
  */
+@Category(MetastoreCheckinTest.class)
 public class TestRetryingHMSHandler {
   private Configuration conf;
   private HiveMetaStoreClient msc;

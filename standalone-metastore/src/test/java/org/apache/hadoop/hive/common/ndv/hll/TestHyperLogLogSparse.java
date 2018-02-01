@@ -25,12 +25,15 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(value = Parameterized.class)
+@Category(MetastoreUnitTest.class)
 public class TestHyperLogLogSparse {
 
   // 5% tolerance for long range bias and 1% for short range bias

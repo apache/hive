@@ -17,9 +17,11 @@
  */
 package org.apache.hadoop.hive.metastore.messaging.json;
 
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.json.JSONException;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import java.io.IOException;
@@ -28,6 +30,7 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
+@Category(MetastoreUnitTest.class)
 public class TestJSONMessageDeserializer {
 
   public static class MyClass {

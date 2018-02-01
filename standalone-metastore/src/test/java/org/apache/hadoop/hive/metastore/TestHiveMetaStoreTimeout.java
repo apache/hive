@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -30,11 +31,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * Test long running request timeout functionality in MetaStore Server
  * HiveMetaStore.HMSHandler.create_database() is used to simulate a long running method.
  */
+@Category(MetastoreCheckinTest.class)
 public class TestHiveMetaStoreTimeout {
   protected static HiveMetaStoreClient client;
   protected static Configuration conf;

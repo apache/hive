@@ -18,10 +18,13 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.util.StringUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
 
+@Category(MetastoreUnitTest.class)
 public class TestEmbeddedHiveMetaStore extends TestHiveMetaStore {
 
   @Before

@@ -24,9 +24,13 @@ import static org.junit.Assert.assertNull;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
+import org.junit.experimental.categories.Category;
+
+@Category(MetastoreUnitTest.class)
 public class TestStatsSetupConst {
 
   @Test

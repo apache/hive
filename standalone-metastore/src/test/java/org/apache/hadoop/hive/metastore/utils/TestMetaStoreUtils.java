@@ -18,9 +18,11 @@
 
 package org.apache.hadoop.hive.metastore.utils;
 
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,6 +30,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
+@Category(MetastoreUnitTest.class)
 public class TestMetaStoreUtils {
 
   @Test
