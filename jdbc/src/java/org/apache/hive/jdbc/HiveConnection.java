@@ -378,13 +378,17 @@ public class HiveConnection implements java.sql.Connection {
     // Request interceptor for any request pre-processing logic
     HttpRequestInterceptor requestInterceptor;
     Map<String, String> additionalHttpHeaders = new HashMap<String, String>();
+    Map<String, String> customCookies = new HashMap<String, String>();
 
     // Retrieve the additional HttpHeaders
     for (Map.Entry<String, String> entry : sessConfMap.entrySet()) {
       String key = entry.getKey();
-
       if (key.startsWith(JdbcConnectionParams.HTTP_HEADER_PREFIX)) {
         additionalHttpHeaders.put(key.substring(JdbcConnectionParams.HTTP_HEADER_PREFIX.length()),
+          entry.getValue());
+      }
+      if (key.startsWith(JdbcConnectionParams.HTTP_COOKIE_PREFIX)) {
+        customCookies.put(key.substring(JdbcConnectionParams.HTTP_COOKIE_PREFIX.length()),
           entry.getValue());
       }
     }
@@ -396,25 +400,22 @@ public class HiveConnection implements java.sql.Connection {
        * for sending to the server before every request.
        * In https mode, the entire information is encrypted
        */
-      requestInterceptor =
-          new HttpKerberosRequestInterceptor(sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL),
-              host, getServerHttpUrl(useSsl), assumeSubject, cookieStore, cookieName, useSsl,
-              additionalHttpHeaders);
+      requestInterceptor = new HttpKerberosRequestInterceptor(
+          sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL), host, getServerHttpUrl(useSsl),
+          assumeSubject, cookieStore, cookieName, useSsl, additionalHttpHeaders, customCookies);
     } else {
       // Check for delegation token, if present add it in the header
       String tokenStr = getClientDelegationToken(sessConfMap);
       if (tokenStr != null) {
-        requestInterceptor =
-            new HttpTokenAuthInterceptor(tokenStr, cookieStore, cookieName, useSsl,
-                additionalHttpHeaders);
+        requestInterceptor = new HttpTokenAuthInterceptor(tokenStr, cookieStore, cookieName, useSsl,
+            additionalHttpHeaders, customCookies);
       } else {
       /**
        * Add an interceptor to pass username/password in the header.
        * In https mode, the entire information is encrypted
        */
-        requestInterceptor =
-            new HttpBasicAuthInterceptor(getUserName(), getPassword(), cookieStore, cookieName,
-                useSsl, additionalHttpHeaders);
+        requestInterceptor = new HttpBasicAuthInterceptor(getUserName(), getPassword(), cookieStore,
+            cookieName, useSsl, additionalHttpHeaders, customCookies);
       }
     }
     // Configure http client for cookie based authentication
