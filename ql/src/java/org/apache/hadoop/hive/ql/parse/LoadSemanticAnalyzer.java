@@ -159,14 +159,6 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast,
               "source contains directory: " + oneSrc.getPath().toString()));
         }
-        if(AcidUtils.isAcidTable(table)) {
-          if(!AcidUtils.originalBucketFilter.accept(oneSrc.getPath())) {
-            //acid files (e.g. bucket_0000) have ROW_ID embedded in them and so can't be simply
-            //copied to a table so only allow non-acid files for now
-            throw new SemanticException(ErrorMsg.ACID_LOAD_DATA_INVALID_FILE_NAME,
-              oneSrc.getPath().getName(), table.getFullyQualifiedName());
-          }
-        }
       }
     } catch (IOException e) {
       // Has to use full name to make sure it does not conflict with

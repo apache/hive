@@ -31,18 +31,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -1881,11 +1871,12 @@ public class Hive {
           // base_x.  (there is Insert Overwrite and Load Data Overwrite)
           boolean isAutoPurge = "true".equalsIgnoreCase(tbl.getProperty("auto.purge"));
           replaceFiles(tbl.getPath(), loadPath, destPath, oldPartPath, getConf(),
-              isSrcLocal, isAutoPurge, newFiles, filter, isMmTableWrite?true:false, !tbl.isTemporary());
+              isSrcLocal, isAutoPurge, newFiles, filter, isMmTableWrite, !tbl.isTemporary());
         } else {
           FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
           copyFiles(conf, loadPath, destPath, fs, isSrcLocal, isAcidIUDoperation,
-            (loadFileType == LoadFileType.OVERWRITE_EXISTING), newFiles);
+            (loadFileType == LoadFileType.OVERWRITE_EXISTING), newFiles, tbl.getNumBuckets() > 0,
+                  isFullAcidTable);
         }
       }
       perfLogger.PerfLogEnd("MoveTask", "FileMoves");
@@ -2432,7 +2423,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
         try {
           FileSystem fs = tbl.getDataLocation().getFileSystem(sessionConf);
           copyFiles(sessionConf, loadPath, destPath, fs, isSrcLocal, isAcidIUDoperation,
-            loadFileType == LoadFileType.OVERWRITE_EXISTING, newFiles);
+            loadFileType == LoadFileType.OVERWRITE_EXISTING, newFiles,
+                  tbl.getNumBuckets() > 0 ? true : false, isFullAcidTable);
         } catch (IOException e) {
           throw new HiveException("addFiles: filesystem error in check phase", e);
         }
@@ -3302,8 +3294,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   private static void copyFiles(final HiveConf conf, final FileSystem destFs,
-            FileStatus[] srcs, final FileSystem srcFs, final Path destf, final boolean isSrcLocal,
-            boolean isOverwrite, final List<Path> newFiles) throws HiveException {
+            FileStatus[] srcs, final FileSystem srcFs, final Path destf,
+            final boolean isSrcLocal, boolean isOverwrite,
+            final List<Path> newFiles, boolean acidRename) throws HiveException {
 
     final HdfsUtils.HadoopFileStatus fullDestStatus;
     try {
@@ -3319,6 +3312,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
     final ExecutorService pool = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25) > 0 ?
         Executors.newFixedThreadPool(conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25),
         new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Move-Thread-%d").build()) : null;
+    // For ACID non-bucketed case, the filenames have to be in the format consistent with INSERT/UPDATE/DELETE Ops,
+    // i.e, like 000000_0, 000001_0_copy_1, 000002_0.gz etc.
+    // The extension is only maintained for files which are compressed.
+    int taskId = 0;
+    // Sort the files
+    Arrays.sort(srcs);
     for (FileStatus src : srcs) {
       FileStatus[] files;
       if (src.isDirectory()) {
@@ -3333,6 +3332,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
 
       final SessionState parentSession = SessionState.get();
+      // Sort the files
+      Arrays.sort(files);
       for (final FileStatus srcFile : files) {
         final Path srcP = srcFile.getPath();
         final boolean needToCopy = needToCopy(srcP, destf, srcFs, destFs);
@@ -3346,7 +3347,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
         // copy from source to destination, we will inherit the destination's parent group ownership.
         if (null == pool) {
           try {
-            Path destPath = mvFile(conf, srcFs, srcP, destFs, destf, isSrcLocal, isOverwrite, isRenameAllowed);
+            Path destPath = mvFile(conf, srcFs, srcP, destFs, destf, isSrcLocal, isOverwrite, isRenameAllowed,
+                    acidRename ? taskId++ : -1);
 
             if (null != newFiles) {
               newFiles.add(destPath);
@@ -3355,6 +3357,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
             throw getHiveException(e, msg, "Failed to move: {}");
           }
         } else {
+          // future only takes final or seemingly final values. Make a final copy of taskId
+          final int finalTaskId = acidRename ? taskId++ : -1;
           futures.add(pool.submit(new Callable<ObjectPair<Path, Path>>() {
             @Override
             public ObjectPair<Path, Path> call() throws HiveException {
@@ -3362,7 +3366,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
               try {
                 Path destPath =
-                    mvFile(conf, srcFs, srcP, destFs, destf, isSrcLocal, isOverwrite, isRenameAllowed);
+                    mvFile(conf, srcFs, srcP, destFs, destf, isSrcLocal, isOverwrite, isRenameAllowed, finalTaskId);
 
                 if (null != newFiles) {
                   newFiles.add(destPath);
@@ -3432,6 +3436,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return ShimLoader.getHadoopShims().getPathWithoutSchemeAndAuthority(path);
   }
 
+  private static String getPathName(int taskId) {
+    return Utilities.replaceTaskId("000000", taskId) + "_0";
+  }
+
   /**
    * <p>
    *   Moves a file from one {@link Path} to another. If {@code isRenameAllowed} is true then the
@@ -3459,15 +3467,22 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws IOException if there was an issue moving the file
    */
   private static Path mvFile(HiveConf conf, FileSystem sourceFs, Path sourcePath, FileSystem destFs, Path destDirPath,
-                             boolean isSrcLocal, boolean isOverwrite, boolean isRenameAllowed) throws IOException {
+                             boolean isSrcLocal, boolean isOverwrite, boolean isRenameAllowed,
+                             int taskId) throws IOException {
 
     // Strip off the file type, if any so we don't make:
     // 000000_0.gz -> 000000_0.gz_copy_1
     final String fullname = sourcePath.getName();
-    final String name = FilenameUtils.getBaseName(sourcePath.getName());
+    final String name;
+    if (taskId == -1) { // non-acid
+      name = FilenameUtils.getBaseName(sourcePath.getName());
+    } else { // acid
+      name = getPathName(taskId);
+    }
     final String type = FilenameUtils.getExtension(sourcePath.getName());
 
-    Path destFilePath = new Path(destDirPath, fullname);
+    // Incase of ACID, the file is ORC so the extension is not relevant and should not be inherited.
+    Path destFilePath = new Path(destDirPath, taskId == -1 ? fullname : name);
 
     /*
     * The below loop may perform bad when the destination file already exists and it has too many _copy_
@@ -3482,7 +3497,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
         destFs.delete(destFilePath, false);
         break;
       }
-      destFilePath =  new Path(destDirPath, name + (Utilities.COPY_KEYWORD + counter) + (!type.isEmpty() ? "." + type : ""));
+      destFilePath =  new Path(destDirPath, name + (Utilities.COPY_KEYWORD + counter) +
+              ((taskId == -1 && !type.isEmpty()) ? "." + type : ""));
     }
 
     if (isRenameAllowed) {
@@ -3769,15 +3785,16 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param destf directory to move files into
    * @param fs Filesystem
    * @param isSrcLocal true if source is on local file system
-   * @param isAcid true if this is an ACID based write
+   * @param isAcidIUD true if this is an ACID based Insert/Update/Delete
    * @param isOverwrite if true, then overwrite if destination file exist, else add a duplicate copy
    * @param newFiles if this is non-null, a list of files that were created as a result of this
    *                 move will be returned.
    * @throws HiveException
    */
   static protected void copyFiles(HiveConf conf, Path srcf, Path destf, FileSystem fs,
-                                  boolean isSrcLocal, boolean isAcid,
-                                  boolean isOverwrite, List<Path> newFiles) throws HiveException {
+                                  boolean isSrcLocal, boolean isAcidIUD,
+                                  boolean isOverwrite, List<Path> newFiles, boolean isBucketed,
+                                  boolean isFullAcidTable) throws HiveException {
     try {
       // create the destination if it does not exist
       if (!fs.exists(destf)) {
@@ -3806,10 +3823,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     // If we're moving files around for an ACID write then the rules and paths are all different.
     // You can blame this on Owen.
-    if (isAcid) {
+    if (isAcidIUD) {
       moveAcidFiles(srcFs, srcs, destf, newFiles);
     } else {
-      copyFiles(conf, fs, srcs, srcFs, destf, isSrcLocal, isOverwrite, newFiles);
+      // For ACID non-bucketed case, the filenames have to be in the format consistent with INSERT/UPDATE/DELETE Ops,
+      // i.e, like 000000_0, 000001_0_copy_1, 000002_0.gz etc.
+      // The extension is only maintained for files which are compressed.
+      copyFiles(conf, fs, srcs, srcFs, destf, isSrcLocal, isOverwrite,
+              newFiles, isFullAcidTable && !isBucketed);
     }
   }
 

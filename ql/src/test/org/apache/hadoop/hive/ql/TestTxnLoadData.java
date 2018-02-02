@@ -264,10 +264,10 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
       //from Load Data into acid converted table
       {"{\"transactionid\":24,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "t/delta_0000024_0000024_0000/000000_0"},
       {"{\"transactionid\":24,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "t/delta_0000024_0000024_0000/000000_0"},
-      {"{\"transactionid\":24,\"bucketid\":536870912,\"rowid\":2}\t2\t2", "t/delta_0000024_0000024_0000/000000_0_copy_1"},
-      {"{\"transactionid\":24,\"bucketid\":536870912,\"rowid\":3}\t3\t3", "t/delta_0000024_0000024_0000/000000_0_copy_1"},
-      {"{\"transactionid\":24,\"bucketid\":536870912,\"rowid\":4}\t4\t4", "t/delta_0000024_0000024_0000/000000_0_copy_2"},
-      {"{\"transactionid\":24,\"bucketid\":536870912,\"rowid\":5}\t5\t5", "t/delta_0000024_0000024_0000/000000_0_copy_2"},
+      {"{\"transactionid\":24,\"bucketid\":536936448,\"rowid\":0}\t2\t2", "t/delta_0000024_0000024_0000/000001_0"},
+      {"{\"transactionid\":24,\"bucketid\":536936448,\"rowid\":1}\t3\t3", "t/delta_0000024_0000024_0000/000001_0"},
+      {"{\"transactionid\":24,\"bucketid\":537001984,\"rowid\":0}\t4\t4", "t/delta_0000024_0000024_0000/000002_0"},
+      {"{\"transactionid\":24,\"bucketid\":537001984,\"rowid\":1}\t5\t5", "t/delta_0000024_0000024_0000/000002_0"},
     };
     checkResult(expected, testQuery, isVectorized, "load data inpath");
 
@@ -281,7 +281,7 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     String[][] expected2 = new String[][] {
       {"{\"transactionid\":30,\"bucketid\":536870912,\"rowid\":0}\t5\t6", "t/base_0000030/000000_0"},
       {"{\"transactionid\":30,\"bucketid\":536870912,\"rowid\":1}\t7\t8", "t/base_0000030/000000_0"},
-      {"{\"transactionid\":30,\"bucketid\":536870912,\"rowid\":2}\t8\t8", "t/base_0000030/000000_0_copy_1"}
+      {"{\"transactionid\":30,\"bucketid\":536936448,\"rowid\":0}\t8\t8", "t/base_0000030/000001_0"}
     };
     checkResult(expected2, testQuery, isVectorized, "load data inpath overwrite");
 
@@ -293,7 +293,7 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     String[][] expected3 = new String[][] {
       {"{\"transactionid\":30,\"bucketid\":536870912,\"rowid\":0}\t5\t6", "t/base_0000033/bucket_00000"},
       {"{\"transactionid\":30,\"bucketid\":536870912,\"rowid\":1}\t7\t8", "t/base_0000033/bucket_00000"},
-      {"{\"transactionid\":30,\"bucketid\":536870912,\"rowid\":2}\t8\t8", "t/base_0000033/bucket_00000"},
+      {"{\"transactionid\":30,\"bucketid\":536936448,\"rowid\":0}\t8\t8", "t/base_0000033/bucket_00001"},
       {"{\"transactionid\":33,\"bucketid\":536870912,\"rowid\":0}\t9\t9", "t/base_0000033/bucket_00000"}
 
     };
