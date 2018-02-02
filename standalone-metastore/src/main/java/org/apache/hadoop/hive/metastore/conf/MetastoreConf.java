@@ -718,6 +718,12 @@ public class MetastoreConf {
         "Number of retries upon failure of Thrift metastore calls"),
     THRIFT_URIS("metastore.thrift.uris", "hive.metastore.uris", "",
         "Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore."),
+    THRIFT_URI_SELECTION("metastore.thrift.uri.selection", "hive.metastore.uri.selection", "RANDOM",
+        new Validator.StringSet("RANDOM", "SEQUENTIAL"),
+        "Determines the selection mechanism used by metastore client to connect to remote " +
+        "metastore.  SEQUENTIAL implies that the first valid metastore from the URIs specified " +
+        "as part of hive.metastore.uris will be picked.  RANDOM implies that the metastore " +
+        "will be picked randomly"),
     TIMEDOUT_TXN_REAPER_START("metastore.timedout.txn.reaper.start",
         "hive.timedout.txn.reaper.start", 100, TimeUnit.SECONDS,
         "Time delay of 1st reaper run after metastore start"),

@@ -216,6 +216,7 @@ public class HiveConf extends Configuration {
       HiveConf.ConfVars.METASTOREWAREHOUSE,
       HiveConf.ConfVars.REPLDIR,
       HiveConf.ConfVars.METASTOREURIS,
+      HiveConf.ConfVars.METASTORESELECTION,
       HiveConf.ConfVars.METASTORE_SERVER_PORT,
       HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES,
       HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES,
@@ -632,7 +633,12 @@ public class HiveConf extends Configuration {
         "location of default database for the warehouse"),
     METASTOREURIS("hive.metastore.uris", "",
         "Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore."),
-
+    METASTORESELECTION("hive.metastore.uri.selection", "RANDOM",
+        new StringSet("SEQUENTIAL", "RANDOM"),
+        "Determines the selection mechanism used by metastore client to connect to remote " +
+            "metastore.  SEQUENTIAL implies that the first valid metastore from the URIs specified " +
+            "as part of hive.metastore.uris will be picked.  RANDOM implies that the metastore " +
+            "will be picked randomly"),
     METASTORE_CAPABILITY_CHECK("hive.metastore.client.capability.check", true,
         "Whether to check client capabilities for potentially breaking API usage."),
     METASTORE_FASTPATH("hive.metastore.fastpath", false,
