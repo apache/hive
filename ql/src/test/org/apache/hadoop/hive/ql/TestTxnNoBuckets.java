@@ -178,6 +178,7 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
    */
   @Test
   public void testCTAS() throws Exception {
+    runStatementOnDriver("drop table if exists myctas");
     int[][] values = {{1,2},{3,4}};
     runStatementOnDriver("insert into " + Table.NONACIDORCTBL +  makeValuesClause(values));
     runStatementOnDriver("create table myctas stored as ORC TBLPROPERTIES ('transactional" +
@@ -221,6 +222,16 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
     };
     checkExpected(rs, expected4, "Unexpected row count after ctas from union distinct query");
   }
+  @Test
+  public void testCtasEmpty() throws Exception {
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);
+    runStatementOnDriver("drop table if exists myctas");
+    runStatementOnDriver("create table myctas stored as ORC as" +
+        " select a, b from " + Table.NONACIDORCTBL);
+    List<String> rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME" +
+        " from myctas order by ROW__ID");
+  }
+
   /**
    * Insert into unbucketed acid table from union all query
    * Union All is flattend so nested subdirs are created and acid move drops them since
