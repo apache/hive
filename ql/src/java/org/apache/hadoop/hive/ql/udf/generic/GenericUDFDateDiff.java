@@ -21,8 +21,8 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.sql.Date;
-import java.util.TimeZone;
 
+import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
@@ -33,15 +33,19 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateDiffColSca
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFDateDiffScalarCol;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.TimestampConverter;
 import org.apache.hadoop.io.IntWritable;
+
+import javax.annotation.Nullable;
 
 /**
  * UDFDateDiff.
@@ -98,6 +102,7 @@ public class GenericUDFDateDiff extends GenericUDF {
     return getStandardDisplayString("datediff", children);
   }
 
+  @Nullable
   private Date convertToDate(PrimitiveCategory inputType, Converter converter, DeferredObject argument)
     throws HiveException {
     assert(converter != null);
@@ -105,32 +110,31 @@ public class GenericUDFDateDiff extends GenericUDF {
     if (argument.get() == null) {
       return null;
     }
-    Date date = new Date(0);
     switch (inputType) {
     case STRING:
     case VARCHAR:
     case CHAR:
       String dateString = converter.convert(argument.get()).toString();
       try {
-        date.setTime(formatter.parse(dateString).getTime());
+        return new Date(formatter.parse(dateString).getTime());
       } catch (ParseException e) {
         return null;
       }
-      break;
     case TIMESTAMP:
       Timestamp ts = ((TimestampWritable) converter.convert(argument.get()))
         .getTimestamp();
-      date.setTime(ts.getTime());
-      break;
+      return new Date(ts.getTime());
     case DATE:
       DateWritable dw = (DateWritable) converter.convert(argument.get());
-      date = dw.get();
-      break;
+      return dw.get();
+    case TIMESTAMPLOCALTZ:
+      TimestampTZ tsz = ((TimestampLocalTZWritable) converter.convert(argument.get()))
+          .getTimestampTZ();
+      return new Date(tsz.getEpochSecond() * 1000l);
     default:
       throw new UDFArgumentException(
-        "TO_DATE() only takes STRING/TIMESTAMP/DATEWRITABLE types, got " + inputType);
+        "TO_DATE() only takes STRING/TIMESTAMP/TIMESTAMPLOCALTZ types, got " + inputType);
     }
-    return date;
   }
 
   private Converter checkArguments(ObjectInspector[] arguments, int i) throws UDFArgumentException {
@@ -139,30 +143,30 @@ public class GenericUDFDateDiff extends GenericUDF {
         "Only primitive type arguments are accepted but "
         + arguments[i].getTypeName() + " is passed. as first arguments");
     }
-    PrimitiveCategory inputType = ((PrimitiveObjectInspector) arguments[i]).getPrimitiveCategory();
-    Converter converter;
+    final PrimitiveCategory inputType =
+        ((PrimitiveObjectInspector) arguments[i]).getPrimitiveCategory();
     switch (inputType) {
     case STRING:
     case VARCHAR:
     case CHAR:
-      converter = ObjectInspectorConverters.getConverter(
-        (PrimitiveObjectInspector) arguments[i],
+      return ObjectInspectorConverters.getConverter(arguments[i],
         PrimitiveObjectInspectorFactory.writableStringObjectInspector);
-      break;
     case TIMESTAMP:
-      converter = new TimestampConverter((PrimitiveObjectInspector) arguments[i],
+      return new TimestampConverter((PrimitiveObjectInspector) arguments[i],
         PrimitiveObjectInspectorFactory.writableTimestampObjectInspector);
-      break;
+    case TIMESTAMPLOCALTZ:
+      return new PrimitiveObjectInspectorConverter.TimestampLocalTZConverter(
+          (PrimitiveObjectInspector) arguments[i],
+          PrimitiveObjectInspectorFactory.writableTimestampTZObjectInspector
+      );
     case DATE:
-      converter = ObjectInspectorConverters.getConverter((PrimitiveObjectInspector)arguments[i],
+      return ObjectInspectorConverters.getConverter(arguments[i],
         PrimitiveObjectInspectorFactory.writableDateObjectInspector);
-      break;
     default:
       throw new UDFArgumentException(
-          " DATEDIFF() only takes STRING/TIMESTAMP/DATEWRITABLE types as " + (i + 1)
+          " DATEDIFF() only takes STRING/TIMESTAMP/DATEWRITABLE/TIMESTAMPLOCALTZ types as " + (i + 1)
               + "-th argument, got " + inputType);
     }
-    return converter;
   }
 
   private IntWritable evaluate(Date date, Date date2) {
