@@ -1067,12 +1067,20 @@ public class AcidUtils {
    * snapshot for this reader.
    * Note that such base is NOT obsolete.  Obsolete files are those that are "covered" by other
    * files within the snapshot.
+   * A base produced by Insert Overwrite is different.  Logically it's a delta file but one that
+   * causes anything written previously is ignored (hence the overwrite).  In this case, base_x
+   * is visible if txnid:x is committed for current reader.
    */
-  private static boolean isValidBase(long baseTxnId, ValidTxnList txnList) {
+  private static boolean isValidBase(long baseTxnId, ValidTxnList txnList, Path baseDir,
+      FileSystem fs) throws IOException {
     if(baseTxnId == Long.MIN_VALUE) {
       //such base is created by 1st compaction in case of non-acid to acid table conversion
       //By definition there are no open txns with id < 1.
       return true;
+    }
+    if(!MetaDataFile.isCompacted(baseDir, fs)) {
+      //this is the IOW case
+      return txnList.isTxnValid(baseTxnId);
     }
     return txnList.isValidBase(baseTxnId);
   }
@@ -1091,12 +1099,12 @@ public class AcidUtils {
         bestBase.oldestBaseTxnId = txn;
       }
       if (bestBase.status == null) {
-        if(isValidBase(txn, txnList)) {
+        if(isValidBase(txn, txnList, p, fs)) {
           bestBase.status = child;
           bestBase.txn = txn;
         }
       } else if (bestBase.txn < txn) {
-        if(isValidBase(txn, txnList)) {
+        if(isValidBase(txn, txnList, p, fs)) {
           obsolete.add(bestBase.status);
           bestBase.status = child;
           bestBase.txn = txn;
@@ -1484,6 +1492,8 @@ public class AcidUtils {
   }
 
   /**
+   * General facility to place a metadta file into a dir created by acid/compactor write.
+   *
    * Load Data commands against Acid tables write {@link AcidBaseFileType#ORIGINAL_BASE} type files
    * into delta_x_x/ (or base_x in case there is Overwrite clause).  {@link MetaDataFile} is a
    * small JSON file in this directory that indicates that these files don't have Acid metadata
@@ -1499,17 +1509,14 @@ public class AcidUtils {
       String DATA_FORMAT = "dataFormat";
     }
     private interface Value {
-      //plain ORC file
-      String RAW = "raw";
-      //result of acid write, i.e. decorated with ROW__ID info
-      String NATIVE = "native";
+      //written by Major compaction
+      String COMPACTED = "compacted";
     }
 
     /**
      * @param baseOrDeltaDir detla or base dir, must exist
      */
-    public static void createMetaFile(Path baseOrDeltaDir, FileSystem fs, boolean isRawFormat)
-      throws IOException {
+    public static void createCompactorMarker(Path baseOrDeltaDir, FileSystem fs) throws IOException {
       /**
        * create _meta_data json file in baseOrDeltaDir
        * write thisFileVersion, dataFormat
@@ -1519,7 +1526,7 @@ public class AcidUtils {
       Path formatFile = new Path(baseOrDeltaDir, METADATA_FILE);
       Map<String, String> metaData = new HashMap<>();
       metaData.put(Field.VERSION, CURRENT_VERSION);
-      metaData.put(Field.DATA_FORMAT, isRawFormat ? Value.RAW : Value.NATIVE);
+      metaData.put(Field.DATA_FORMAT, Value.COMPACTED);
       try (FSDataOutputStream strm = fs.create(formatFile, false)) {
         new ObjectMapper().writeValue(strm, metaData);
       } catch (IOException ioe) {
@@ -1529,8 +1536,7 @@ public class AcidUtils {
         throw ioe;
       }
     }
-    //should be useful for import/export
-    public static boolean isImport(Path baseOrDeltaDir, FileSystem fs) throws IOException {
+    static boolean isCompacted(Path baseOrDeltaDir, FileSystem fs) throws IOException {
       Path formatFile = new Path(baseOrDeltaDir, METADATA_FILE);
       if(!fs.exists(formatFile)) {
         return false;
@@ -1543,9 +1549,7 @@ public class AcidUtils {
         }
         String dataFormat = metaData.getOrDefault(Field.DATA_FORMAT, "null");
         switch (dataFormat) {
-          case Value.NATIVE:
-            return false;
-          case Value.RAW:
+          case Value.COMPACTED:
             return true;
           default:
             throw new IllegalArgumentException("Unexpected value for " + Field.DATA_FORMAT
