@@ -1084,9 +1084,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
         }
 
-        long numOfWriteIds = newAllocTxns.size();
-
         // If all the txns in the list have already allocated write ids, then just skip new allocations
+        long numOfWriteIds = newAllocTxns.size();
         if (0 == numOfWriteIds) {
           return new AllocateTableWriteIdResponse(txnToWriteIds);
         }
@@ -1094,18 +1093,22 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         // Get the next write ID for the given table and increment it
         s = sqlGenerator.addForUpdateClause(
                 "select nwi_next from NEXT_WRITE_ID where nwi_table = " + quoteString(fullTableName));
-
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         if (!rs.next()) {
-          throw new MetaException("Transaction database not properly " +
-                  "configured, can't find next per table write id.");
+          // First allocation of write id should add the table to the next_write_id meta table
+          s = "insert into NEXT_WRITE_ID (nwi_table, nwi_next) values ("
+                  + quoteString(fullTableName) + "," + String.valueOf(numOfWriteIds + 1) + ")";
+          LOG.debug("Going to execute insert <" + s + ">");
+          stmt.execute(s);
+          writeId = 1;
+        } else {
+          writeId = rs.getLong(1);
+          s = "update NEXT_WRITE_ID set nwi_next = " + (writeId + numOfWriteIds)
+                  + " where nwi_table = " + quoteString(fullTableName);
+          LOG.debug("Going to execute update <" + s + ">");
+          stmt.executeUpdate(s);
         }
-        writeId = rs.getLong(1);
-        s = "update NEXT_WRITE_ID set nwi_next = " + (writeId + numOfWriteIds)
-                + " where nwi_table = " + quoteString(fullTableName);
-        LOG.debug("Going to execute update <" + s + ">");
-        stmt.executeUpdate(s);
 
         for (long txnId : newAllocTxns) {
           s = "insert into TXN_TO_WRITE_ID (t2w_txnid, t2w_table, t2w_writeid) values ("

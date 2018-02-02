@@ -38,7 +38,7 @@ public class TestValidReaderWriteIdList {
   public void noExceptions() throws Exception {
     ValidWriteIdList writeIdList = new ValidReaderWriteIdList(tableName, new long[0], new BitSet(), 1, Long.MAX_VALUE);
     String str = writeIdList.writeToString();
-    Assert.assertEquals("1:" + Long.MAX_VALUE + "::", str);
+    Assert.assertEquals(tableName + ":1:" + Long.MAX_VALUE + "::", str);
     ValidWriteIdList newList = new ValidReaderWriteIdList();
     newList.readFromString(str);
     Assert.assertTrue(newList.isWriteIdValid(1));
@@ -49,7 +49,7 @@ public class TestValidReaderWriteIdList {
   public void exceptions() throws Exception {
     ValidWriteIdList writeIdList = new ValidReaderWriteIdList(tableName, new long[]{2L,4L}, new BitSet(), 5, 4L);
     String str = writeIdList.writeToString();
-    Assert.assertEquals("5:4:2,4:", str);
+    Assert.assertEquals(tableName + ":5:4:2,4:", str);
     ValidWriteIdList newList = new ValidReaderWriteIdList();
     newList.readFromString(str);
     Assert.assertTrue(newList.isWriteIdValid(1));
@@ -100,7 +100,7 @@ public class TestValidReaderWriteIdList {
     bitSet.set(3);  // mark txn "8L" aborted
     ValidWriteIdList writeIdList = new ValidReaderWriteIdList(tableName, exceptions, bitSet, 11, 4L);
     String str = writeIdList.writeToString();
-    Assert.assertEquals("11:4:4,6,10:2,8", str);
+    Assert.assertEquals(tableName + ":11:4:4,6,10:2,8", str);
     Assert.assertTrue(writeIdList.isWriteIdAborted(2L));
     Assert.assertFalse(writeIdList.isWriteIdAborted(4L));
     Assert.assertFalse(writeIdList.isWriteIdAborted(6L));

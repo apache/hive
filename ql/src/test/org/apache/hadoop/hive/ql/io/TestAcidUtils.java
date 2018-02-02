@@ -381,7 +381,7 @@ public class TestAcidUtils {
         new MockFile("mock:/tbl/part1/delta_2_5/bucket_0", 500, new byte[0]));
     Path part = new MockPath(fs, "mock:/tbl/part1");
     AcidUtils.Directory dir =
-        AcidUtils.getAcidState(part, conf, new ValidCompactorWriteIdList("4:" + Long.MAX_VALUE));
+        AcidUtils.getAcidState(part, conf, new ValidCompactorWriteIdList("tbl:4:" + Long.MAX_VALUE));
     List<AcidUtils.ParsedDelta> delts = dir.getCurrentDirectories();
     assertEquals(1, delts.size());
     assertEquals("mock:/tbl/part1/delta_1_1", delts.get(0).getPath().toString());
@@ -398,7 +398,7 @@ public class TestAcidUtils {
         new MockFile("mock:/tbl/part1/delta_6_10/bucket_0", 500, new byte[0]));
     Path part = new MockPath(fs, "mock:/tbl/part1");
     AcidUtils.Directory dir =
-        AcidUtils.getAcidState(part, conf, new ValidCompactorWriteIdList("3:" + Long.MAX_VALUE));
+        AcidUtils.getAcidState(part, conf, new ValidCompactorWriteIdList("tbl:3:" + Long.MAX_VALUE));
     List<AcidUtils.ParsedDelta> delts = dir.getCurrentDirectories();
     assertEquals(1, delts.size());
     assertEquals("mock:/tbl/part1/delta_1_1", delts.get(0).getPath().toString());
@@ -516,7 +516,7 @@ public class TestAcidUtils {
         new MockFile("mock:/tbl/part1/delta_6_10/bucket_0", 500, new byte[0]));
     Path part = new MockPath(fs, "mock:/tbl/part1");
     AcidUtils.Directory dir =
-        AcidUtils.getAcidState(part, conf, new ValidCompactorWriteIdList("4:" + Long.MAX_VALUE + ":"));
+        AcidUtils.getAcidState(part, conf, new ValidCompactorWriteIdList("tbl:4:" + Long.MAX_VALUE + ":"));
     List<AcidUtils.ParsedDelta> delts = dir.getCurrentDirectories();
     assertEquals(2, delts.size());
     assertEquals("mock:/tbl/part1/delta_1_1", delts.get(0).getPath().toString());

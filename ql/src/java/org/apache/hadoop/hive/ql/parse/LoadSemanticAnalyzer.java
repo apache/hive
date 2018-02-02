@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -319,7 +320,12 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     Long txnId = null;
     int stmtId = -1;
     if (AcidUtils.isTransactionalTable(ts.tableHandle)) {
-      txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
+      try {
+        txnId = SessionState.get().getTxnMgr().getTableWriteId(ts.tableHandle.getDbName(),
+                ts.tableHandle.getTableName());
+      } catch (LockException ex) {
+        throw new SemanticException("Failed to allocate the write id", ex);
+      }
       stmtId = SessionState.get().getTxnMgr().getStmtIdAndIncrement();
     }
 

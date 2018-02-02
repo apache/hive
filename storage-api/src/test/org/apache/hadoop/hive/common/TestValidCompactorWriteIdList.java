@@ -91,20 +91,21 @@ public class TestValidCompactorWriteIdList {
     BitSet bitSet = new BitSet(4);
     bitSet.set(0, 4);
     ValidWriteIdList writeIds = new ValidCompactorWriteIdList(tableName, new long[]{7, 9, 10, Long.MAX_VALUE}, bitSet, 8);
-    Assert.assertEquals("8:" + Long.MAX_VALUE + "::7", writeIds.writeToString());
+    Assert.assertEquals(tableName + ":8:" + Long.MAX_VALUE + "::7", writeIds.writeToString());
     writeIds = new ValidCompactorWriteIdList();
-    Assert.assertEquals(Long.toString(Long.MAX_VALUE) + ":" + Long.MAX_VALUE + "::", writeIds.writeToString());
+    Assert.assertEquals("null:" + Long.toString(Long.MAX_VALUE) + ":" + Long.MAX_VALUE + "::", writeIds.writeToString());
     writeIds = new ValidCompactorWriteIdList(tableName, new long[0], new BitSet(), 23);
-    Assert.assertEquals("23:" + Long.MAX_VALUE + "::", writeIds.writeToString());
+    Assert.assertEquals(tableName + ":23:" + Long.MAX_VALUE + "::", writeIds.writeToString());
   }
 
   @Test
   public void readFromString() {
-    ValidCompactorWriteIdList writeIds = new ValidCompactorWriteIdList("37:" + Long.MAX_VALUE + "::7,9,10");
+    ValidCompactorWriteIdList writeIds = new ValidCompactorWriteIdList(tableName + ":37:" + Long.MAX_VALUE + "::7,9,10");
+    Assert.assertEquals(tableName, writeIds.getTableName());
     Assert.assertEquals(37L, writeIds.getHighWatermark());
     Assert.assertNull(writeIds.getMinOpenWriteId());
     Assert.assertArrayEquals(new long[]{7L, 9L, 10L}, writeIds.getInvalidWriteIds());
-    writeIds = new ValidCompactorWriteIdList("21:" + Long.MAX_VALUE + ":");
+    writeIds = new ValidCompactorWriteIdList(tableName + ":21:" + Long.MAX_VALUE + ":");
     Assert.assertEquals(21L, writeIds.getHighWatermark());
     Assert.assertNull(writeIds.getMinOpenWriteId());
     Assert.assertEquals(0, writeIds.getInvalidWriteIds().length);
@@ -112,7 +113,7 @@ public class TestValidCompactorWriteIdList {
 
   @Test
   public void testAbortedTxn() throws Exception {
-    ValidCompactorWriteIdList writeIdList = new ValidCompactorWriteIdList("5:4::1,2,3");
+    ValidCompactorWriteIdList writeIdList = new ValidCompactorWriteIdList(tableName + ":5:4::1,2,3");
     Assert.assertEquals(5L, writeIdList.getHighWatermark());
     Assert.assertEquals(4, writeIdList.getMinOpenWriteId().longValue());
     Assert.assertArrayEquals(new long[]{1L, 2L, 3L}, writeIdList.getInvalidWriteIds());
@@ -120,7 +121,7 @@ public class TestValidCompactorWriteIdList {
 
   @Test
   public void testAbortedRange() throws Exception {
-    ValidCompactorWriteIdList writeIdList = new ValidCompactorWriteIdList("11:4::5,6,7,8");
+    ValidCompactorWriteIdList writeIdList = new ValidCompactorWriteIdList(tableName + ":11:4::5,6,7,8");
     ValidWriteIdList.RangeResponse rsp = writeIdList.isWriteIdRangeAborted(1L, 3L);
     Assert.assertEquals(ValidWriteIdList.RangeResponse.NONE, rsp);
     rsp = writeIdList.isWriteIdRangeAborted(9L, 10L);

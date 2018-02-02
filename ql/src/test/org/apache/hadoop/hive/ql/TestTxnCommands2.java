@@ -368,14 +368,14 @@ public class TestTxnCommands2 {
      */
     String[][] expected = {
       {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":0}\t0\t13",  "bucket_00000"},
-      {"{\"transactionid\":20,\"bucketid\":536870912,\"rowid\":0}\t0\t15", "bucket_00000"},
-      {"{\"transactionid\":22,\"bucketid\":536870912,\"rowid\":0}\t0\t17", "bucket_00000"},
-      {"{\"transactionid\":21,\"bucketid\":536870912,\"rowid\":0}\t0\t120", "bucket_00000"},
+      {"{\"transactionid\":1,\"bucketid\":536870912,\"rowid\":0}\t0\t15", "bucket_00000"},
+      {"{\"transactionid\":3,\"bucketid\":536870912,\"rowid\":0}\t0\t17", "bucket_00000"},
+      {"{\"transactionid\":2,\"bucketid\":536870912,\"rowid\":0}\t0\t120", "bucket_00000"},
       {"{\"transactionid\":0,\"bucketid\":536936448,\"rowid\":1}\t1\t2",   "bucket_00001"},
       {"{\"transactionid\":0,\"bucketid\":536936448,\"rowid\":3}\t1\t4",   "bucket_00001"},
       {"{\"transactionid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5",   "bucket_00001"},
       {"{\"transactionid\":0,\"bucketid\":536936448,\"rowid\":4}\t1\t6",   "bucket_00001"},
-      {"{\"transactionid\":20,\"bucketid\":536936448,\"rowid\":0}\t1\t16", "bucket_00001"}
+      {"{\"transactionid\":1,\"bucketid\":536936448,\"rowid\":0}\t1\t16", "bucket_00001"}
     };
     Assert.assertEquals("Unexpected row count before compaction", expected.length, rs.size());
     for(int i = 0; i < expected.length; i++) {
@@ -760,11 +760,11 @@ public class TestTxnCommands2 {
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Arrays.sort(buckets);
         if (numDelta == 1) {
-          Assert.assertEquals("delta_0000024_0000024_0000", status[i].getPath().getName());
+          Assert.assertEquals("delta_0000001_0000001_0000", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         } else if (numDelta == 2) {
-          Assert.assertEquals("delta_0000025_0000025_0000", status[i].getPath().getName());
+          Assert.assertEquals("delta_0000002_0000002_0000", status[i].getPath().getName());
           Assert.assertEquals(1, buckets.length);
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         }
@@ -773,7 +773,7 @@ public class TestTxnCommands2 {
         FileStatus[] buckets = fs.listStatus(status[i].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
         Arrays.sort(buckets);
         if (numDeleteDelta == 1) {
-          Assert.assertEquals("delete_delta_0000024_0000024_0000", status[i].getPath().getName());
+          Assert.assertEquals("delete_delta_0000001_0000001_0000", status[i].getPath().getName());
           Assert.assertEquals(BUCKET_COUNT - 1, buckets.length);
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         }
@@ -820,7 +820,7 @@ public class TestTxnCommands2 {
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         } else if (numBase == 2) {
           // The new base dir now has two bucket files, since the delta dir has two bucket files
-          Assert.assertEquals("base_0000025", status[i].getPath().getName());
+          Assert.assertEquals("base_0000002", status[i].getPath().getName());
           Assert.assertEquals(1, buckets.length);
           Assert.assertEquals("bucket_00001", buckets[0].getPath().getName());
         }
@@ -846,7 +846,7 @@ public class TestTxnCommands2 {
     status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
       (Table.NONACIDORCTBL).toString().toLowerCase()), FileUtils.HIDDEN_FILES_PATH_FILTER);
     Assert.assertEquals(1, status.length);
-    Assert.assertEquals("base_0000025", status[0].getPath().getName());
+    Assert.assertEquals("base_0000002", status[0].getPath().getName());
     FileStatus[] buckets = fs.listStatus(status[0].getPath(), FileUtils.HIDDEN_FILES_PATH_FILTER);
     Arrays.sort(buckets);
     Assert.assertEquals(1, buckets.length);
