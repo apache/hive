@@ -1345,7 +1345,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     CreateDatabaseDesc createDatabaseDesc =
-        new CreateDatabaseDesc(dbName, dbComment, dbLocation, ifNotExists, new ReplicationSpec());
+        new CreateDatabaseDesc(dbName, dbComment, dbLocation, ifNotExists);
     if (dbProps != null) {
       createDatabaseDesc.setDatabaseProperties(dbProps);
     }
