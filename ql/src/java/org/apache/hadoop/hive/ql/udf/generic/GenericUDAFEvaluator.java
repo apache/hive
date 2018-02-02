@@ -70,6 +70,17 @@ public abstract class GenericUDAFEvaluator implements Closeable {
   }
 
   /**
+   * Although similar to AbstractAggregationBuffer::estimate(), it differs from it in 2 aspects
+   * 1) This avoids creation of AggregationBuffer which may result in large memory allocation
+   * 2) This is used only while compiling query as oppose to AbstractAggregationBuffer version
+   * which may be used in both runtime as well as compile time.
+   * @return
+   */
+  public int estimate() {
+    return -1;
+  }
+
+  /**
    * Mode.
    *
    */

@@ -82,7 +82,7 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
     private PrimitiveObjectInspector inputOI;
 
     // Bloom filter rest
-    private ByteArrayOutputStream result = new ByteArrayOutputStream();
+    private final ByteArrayOutputStream result = new ByteArrayOutputStream();
 
     private transient byte[] scratchBuffer = new byte[HiveDecimal.SCRATCH_BUFFER_LEN_TO_BYTES];
 
@@ -100,6 +100,16 @@ public class GenericUDAFBloomFilter implements GenericUDAFResolver2 {
       // Output will be same in both partial or full aggregation modes.
       // It will be a BloomFilter in ByteWritable
       return PrimitiveObjectInspectorFactory.writableBinaryObjectInspector;
+    }
+
+    @Override
+    public int estimate() {
+      long entries = Math.min(getExpectedEntries(), maxEntries);
+      long numBits = (long) (-entries * Math.log(BloomKFilter.DEFAULT_FPP) / (Math.log(2) * Math.log(2)));
+      int nLongs = (int) Math.ceil((double) numBits / (double) Long.SIZE);
+      // additional bits to pad long array to block size
+      int padLongs = 8 - nLongs % 8;
+      return (nLongs + padLongs) * Long.SIZE / 8;
     }
 
     /**

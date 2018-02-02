@@ -36,15 +36,15 @@ import java.util.Arrays;
  * This implementation has much lesser L1 data cache misses than {@link BloomFilter}.
  */
 public class BloomKFilter {
-  private byte[] BYTE_ARRAY_4 = new byte[4];
-  private byte[] BYTE_ARRAY_8 = new byte[8];
+  private final byte[] BYTE_ARRAY_4 = new byte[4];
+  private final byte[] BYTE_ARRAY_8 = new byte[8];
   public static final float DEFAULT_FPP = 0.05f;
   private static final int DEFAULT_BLOCK_SIZE = 8;
   private static final int DEFAULT_BLOCK_SIZE_BITS = (int) (Math.log(DEFAULT_BLOCK_SIZE) / Math.log(2));
   private static final int DEFAULT_BLOCK_OFFSET_MASK = DEFAULT_BLOCK_SIZE - 1;
   private static final int DEFAULT_BIT_OFFSET_MASK = Long.SIZE - 1;
   private final long[] masks = new long[DEFAULT_BLOCK_SIZE];
-  private BitSet bitSet;
+  private final BitSet bitSet;
   private final int m;
   private final int k;
   // spread k-1 bits to adjacent longs, default is 8
