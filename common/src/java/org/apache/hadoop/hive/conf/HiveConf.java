@@ -1096,11 +1096,14 @@ public class HiveConf extends Configuration {
         "hive.txn.valid.txns,hive.script.operator.env.blacklist",
         "Comma separated list of keys from the configuration file not to convert to environment " +
         "variables when invoking the script operator"),
-    HIVE_STRICT_CHECKS_LARGE_QUERY("hive.strict.checks.large.query", false,
+    HIVE_STRICT_CHECKS_ORDERBY_NO_LIMIT("hive.strict.checks.orderby.no.limit", false,
         "Enabling strict large query checks disallows the following:\n" +
         "  Orderby without limit.\n" +
+        "Note that this check currently does not consider data size, only the query pattern."),
+    HIVE_STRICT_CHECKS_NO_PARTITION_FILTER("hive.strict.checks.no.partition.filter", false,
+        "Enabling strict large query checks disallows the following:\n" +
         "  No partition being picked up for a query against partitioned table.\n" +
-        "Note that these checks currently do not consider data size, only the query pattern."),
+        "Note that this check currently does not consider data size, only the query pattern."),
     HIVE_STRICT_CHECKS_TYPE_SAFETY("hive.strict.checks.type.safety", true,
         "Enabling strict type safety checks disallows the following:\n" +
         "  Comparing bigints and strings.\n" +
@@ -4971,10 +4974,10 @@ public class HiveConf extends Configuration {
   public static class StrictChecks {
 
     private static final String NO_LIMIT_MSG = makeMessage(
-        "Order by-s without limit", ConfVars.HIVE_STRICT_CHECKS_LARGE_QUERY);
+        "Order by-s without limit", ConfVars.HIVE_STRICT_CHECKS_ORDERBY_NO_LIMIT);
     public static final String NO_PARTITIONLESS_MSG = makeMessage(
         "Queries against partitioned tables without a partition filter",
-        ConfVars.HIVE_STRICT_CHECKS_LARGE_QUERY);
+        ConfVars.HIVE_STRICT_CHECKS_NO_PARTITION_FILTER);
     private static final String NO_COMPARES_MSG = makeMessage(
         "Unsafe compares between different types", ConfVars.HIVE_STRICT_CHECKS_TYPE_SAFETY);
     private static final String NO_CARTESIAN_MSG = makeMessage(
@@ -4984,17 +4987,17 @@ public class HiveConf extends Configuration {
 
     private static String makeMessage(String what, ConfVars setting) {
       return what + " are disabled for safety reasons. If you know what you are doing, please set "
-          + setting.varname + " to false and that " + ConfVars.HIVEMAPREDMODE.varname + " is not"
-          + " set to 'strict' to proceed. Note that if you may get errors or incorrect results if"
-          + " you make a mistake while using some of the unsafe features.";
+          + setting.varname + " to false and make sure that " + ConfVars.HIVEMAPREDMODE.varname +
+              " is not set to 'strict' to proceed. Note that you may get errors or incorrect " +
+              "results if you make a mistake while using some of the unsafe features.";
     }
 
     public static String checkNoLimit(Configuration conf) {
-      return isAllowed(conf, ConfVars.HIVE_STRICT_CHECKS_LARGE_QUERY) ? null : NO_LIMIT_MSG;
+      return isAllowed(conf, ConfVars.HIVE_STRICT_CHECKS_ORDERBY_NO_LIMIT) ? null : NO_LIMIT_MSG;
     }
 
     public static String checkNoPartitionFilter(Configuration conf) {
-      return isAllowed(conf, ConfVars.HIVE_STRICT_CHECKS_LARGE_QUERY)
+      return isAllowed(conf, ConfVars.HIVE_STRICT_CHECKS_NO_PARTITION_FILTER)
           ? null : NO_PARTITIONLESS_MSG;
     }
 
