@@ -1,7 +1,5 @@
-set hive.strict.checks.bucketing=false; 
-
 reset hive.mapred.mode;
-set hive.strict.checks.large.query=true;
+set hive.strict.checks.no.partition.filter=true;
 
 EXPLAIN
 SELECT count(1) FROM srcPART;
