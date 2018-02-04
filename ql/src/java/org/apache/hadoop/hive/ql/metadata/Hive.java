@@ -1987,13 +1987,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param loadFileType
    * @param numDP number of dynamic partitions
    * @param isAcid true if this is an ACID operation
-   * @param txnId txnId, can be 0 unless isAcid == true
+   * @param writeId writeId, can be 0 unless isAcid == true
    * @return partition map details (PartitionSpec and Partition)
    * @throws HiveException
    */
   public Map<Map<String, String>, Partition> loadDynamicPartitions(final Path loadPath,
       final String tableName, final Map<String, String> partSpec, final LoadFileType loadFileType,
-      final int numDP, final int numLB, final boolean isAcid, final long txnId, final int stmtId,
+      final int numDP, final int numLB, final boolean isAcid, final long writeId, final int stmtId,
       final boolean hasFollowingStatsTask, final AcidUtils.Operation operation, boolean isInsertOverwrite)
       throws HiveException {
 
@@ -2009,7 +2009,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     // Get all valid partition paths and existing partitions for them (if any)
     final Table tbl = getTable(tableName);
-    final Set<Path> validPartitions = getValidPartitionsInPath(numDP, numLB, loadPath, txnId, stmtId,
+    final Set<Path> validPartitions = getValidPartitionsInPath(numDP, numLB, loadPath, writeId, stmtId,
         AcidUtils.isInsertOnlyTable(tbl.getParameters()), isInsertOverwrite);
 
     final int partsToLoad = validPartitions.size();
@@ -2044,7 +2044,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
               // load the partition
               Partition newPartition = loadPartition(partPath, tbl, fullPartSpec,
                   loadFileType, true, numLB > 0,
-                  false, isAcid, hasFollowingStatsTask, txnId, stmtId);
+                  false, isAcid, hasFollowingStatsTask, writeId, stmtId);
               partitionsMap.put(fullPartSpec, newPartition);
 
               if (inPlaceEligible) {
@@ -2103,8 +2103,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
         for (Partition p : partitionsMap.values()) {
           partNames.add(p.getName());
         }
-        getMSC().addDynamicPartitions(txnId, tbl.getDbName(), tbl.getTableName(),
-          partNames, AcidUtils.toDataOperationType(operation));
+        getMSC().addDynamicPartitions(parentSession.getTxnMgr().getCurrentTxnId(),
+                tbl.getDbName(), tbl.getTableName(), partNames,
+                AcidUtils.toDataOperationType(operation));
       }
       LOG.info("Loaded " + partitionsMap.size() + " partitions");
       return partitionsMap;

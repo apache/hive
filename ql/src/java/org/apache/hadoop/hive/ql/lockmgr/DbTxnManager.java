@@ -906,18 +906,21 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public long getTableWriteId(String dbName, String tableName) throws LockException {
-    assert isTxnOpen();
     String fullTableName = AcidUtils.getFullTableName(dbName, tableName);
-    if (!tableWriteIds.containsKey(fullTableName)) {
-      try {
-        long writeId = getMS().allocateTableWriteId(txnId, dbName, tableName);
-        tableWriteIds.put(fullTableName, writeId);
-        return writeId;
-      } catch (TException e) {
-        throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
-      }
+    if (tableWriteIds.containsKey(fullTableName)) {
+      return tableWriteIds.get(fullTableName);
     }
-    return tableWriteIds.get(fullTableName);
+
+    try {
+      long writeId = 0; // If not called within a txn, then just return default Id of 0
+      if (isTxnOpen()) {
+        writeId = getMS().allocateTableWriteId(txnId, dbName, tableName);
+        tableWriteIds.put(fullTableName, writeId);
+      }
+      return writeId;
+    } catch (TException e) {
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+    }
   }
 
   private static long getHeartbeatInterval(Configuration conf) throws LockException {

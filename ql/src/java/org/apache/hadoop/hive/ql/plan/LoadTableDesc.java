@@ -120,9 +120,9 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
    */
   public LoadTableDesc(final Path sourcePath,
                        final org.apache.hadoop.hive.ql.plan.TableDesc table,
-                       final Map<String, String> partitionSpec, Long txnId) {
+                       final Map<String, String> partitionSpec) {
     this(sourcePath, table, partitionSpec, LoadFileType.REPLACE_ALL,
-      AcidUtils.Operation.NOT_ACID, txnId);
+      AcidUtils.Operation.NOT_ACID, null);
   }
 
   public LoadTableDesc(final Path sourcePath,
