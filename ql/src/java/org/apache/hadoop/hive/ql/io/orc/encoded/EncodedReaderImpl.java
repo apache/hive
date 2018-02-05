@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamD
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.orc.CompressionCodec;
+import org.apache.orc.CompressionKind;
 import org.apache.orc.DataReader;
 import org.apache.orc.OrcConf;
 import org.apache.orc.OrcFile.WriterVersion;
@@ -1242,6 +1243,7 @@ class EncodedReaderImpl implements EncodedReader {
       LOG.trace("Decompressing " + src.remaining() + " bytes to dest buffer pos "
           + dest.position() + ", limit " + dest.limit());
     }
+    codec.reset(); // We always need to call reset on the codec.
     codec.decompress(src, dest);
     dest.position(startPos);
     int newLim = dest.limit();
@@ -1249,49 +1251,11 @@ class EncodedReaderImpl implements EncodedReader {
       throw new AssertionError("After codec, buffer [" + startPos + ", " + startLim
           + ") became [" + dest.position() + ", " + newLim + ")");
     }
-    if (dest.remaining() > 0) return;
-
-    // There's a bug in native decompressor. See HADOOP-15171
-    dest.limit(startLim);
-    src.position(startSrcPos);
-    src.limit(startSrcLim);
-    LOG.warn("The codec has produced 0 bytes for " + src.remaining() + " bytes at pos "
-        + src.position() + ", data hash " + src.hashCode() + ": [" +  logSomeBytes(src));
-    ByteBuffer srcHeap = ByteBuffer.allocate(src.remaining()),
-        destHeap = ByteBuffer.allocate(dest.remaining());
-    int destHeapPos = destHeap.position();
-    srcHeap.put(src);
-    srcHeap.position(startSrcPos);
-    codec.decompress(srcHeap, destHeap);
-    destHeap.position(destHeapPos);
-    int newLen = destHeap.remaining();
-    LOG.warn("Fell back to JDK decompressor with memcopy; got " + newLen + " bytes");
-    dest.put(destHeap);
-    dest.position(startPos);
-    dest.limit(startPos + newLen);
-  }
-
-  private static String logSomeBytes(ByteBuffer src) {
-    final int max = 500;
-    StringBuilder sb = new StringBuilder();
-    int base = src.position(), end = base + Math.min(max, src.remaining());
-    for (int i = base; i < end; ++i) {
-      if (i != base) {
-        sb.append(' ');
-      }
-      int b = src.get(i) & 0xff;
-      if (b <= 0xf) {
-        sb.append('0');
-      }
-      sb.append(Integer.toHexString(b));
+    if (dest.remaining() == 0) {
+      throw new IOException("The codec has produced 0 bytes for {" + src.isDirect() + ", "
+        + src.position() + ", " + src.remaining() + "} into {" + dest.isDirect() + ", "
+        + dest.position()  + ", " + dest.remaining() + "}");
     }
-    int rem = src.remaining() - max;
-    if (rem > 0) {
-      sb.append(" ... (").append(rem).append(" bytes)]");
-    } else {
-      sb.append("]");
-    }
-    return sb.toString();
   }
 
   private void ponderReleaseInitialRefcount(
