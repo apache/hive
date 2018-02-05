@@ -60,17 +60,17 @@ POSTHOOK: Output: default@cttas1_mm
 PREHOOK: query: select * from cttas1_mm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cttas1_mm
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select * from cttas1_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cttas1_mm
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 98	455
 97	455
-100	457
-103	457
 0	456
 10	456
+100	457
+103	457
 PREHOOK: query: drop table cttas1_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@cttas1_mm
