@@ -3941,13 +3941,13 @@ public class ObjectStore implements RawStore, Configurable {
     }
 
     boolean success = false;
-    QueryWrapper queryWrapper = new QueryWrapper();
+    Query query = null;
 
     try {
       openTransaction();
       LOG.debug("execute removeUnusedColumnDescriptor");
 
-      Query query = pm.newQuery("select count(1) from " +
+      query = pm.newQuery("select count(1) from " +
         "org.apache.hadoop.hive.metastore.model.MStorageDescriptor where (this.cd == inCD)");
       query.declareParameters("MColumnDescriptor inCD");
       long count = ((Long)query.execute(oldCD)).longValue();
@@ -3960,7 +3960,7 @@ public class ObjectStore implements RawStore, Configurable {
       success = commitTransaction();
       LOG.debug("successfully deleted a CD in removeUnusedColumnDescriptor");
     } finally {
-      rollbackAndCleanup(success, queryWrapper);
+      rollbackAndCleanup(success, query);
     }
   }
 
@@ -8819,14 +8819,13 @@ public class ObjectStore implements RawStore, Configurable {
   public Function getFunction(String dbName, String funcName) throws MetaException {
     boolean commited = false;
     Function func = null;
+    Query query = null;
     try {
       openTransaction();
       func = convertToFunction(getMFunction(dbName, funcName));
       commited = commitTransaction();
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, query);
     }
     return func;
   }
@@ -8834,17 +8833,16 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<Function> getAllFunctions() throws MetaException {
     boolean commited = false;
+    Query query = null;
     try {
       openTransaction();
-      Query query = pm.newQuery(MFunction.class);
+      query = pm.newQuery(MFunction.class);
       List<MFunction> allFunctions = (List<MFunction>) query.execute();
       pm.retrieveAll(allFunctions);
       commited = commitTransaction();
       return convertToFunctions(allFunctions);
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
+      rollbackAndCleanup(commited, query);
     }
   }
 
@@ -8905,10 +8903,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       return result;
     } finally {
-      if (!commited) {
-        rollbackAndCleanup(commited, query);
-        return null;
-      }
+      rollbackAndCleanup(commited, query);
     }
   }
 
@@ -8938,6 +8933,7 @@ public class ObjectStore implements RawStore, Configurable {
       query.setUnique(true);
       // only need to execute it to get db Lock
       query.execute();
+      query.closeAll();
     }).run();
   }
 
@@ -9003,8 +8999,8 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       lockForUpdate();
-      Query objectQuery = pm.newQuery(MNotificationNextId.class);
-      Collection<MNotificationNextId> ids = (Collection) objectQuery.execute();
+      query = pm.newQuery(MNotificationNextId.class);
+      Collection<MNotificationNextId> ids = (Collection) query.execute();
       MNotificationNextId mNotificationNextId = null;
       boolean needToPersistId;
       if (CollectionUtils.isEmpty(ids)) {
@@ -9533,12 +9529,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       commited = commitTransaction();
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
-      if (query != null) {
-        query.closeAll();
-      }
+      rollbackAndCleanup(commited, query);
     }
     return uniqueConstraints;
   }
@@ -9603,12 +9594,7 @@ public class ObjectStore implements RawStore, Configurable {
       }
       commited = commitTransaction();
     } finally {
-      if (!commited) {
-        rollbackTransaction();
-      }
-      if (query != null) {
-        query.closeAll();
-      }
+      rollbackAndCleanup(commited, query);
     }
     return notNullConstraints;
   }
