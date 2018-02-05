@@ -442,7 +442,7 @@ public class TestObjectStore {
     spy.getAllFunctions();
     spy.getAllTables(DB1);
     spy.getPartitionCount();
-    Mockito.verify(spy, Mockito.times(2))
+    Mockito.verify(spy, Mockito.times(3))
         .rollbackAndCleanup(Mockito.anyBoolean(), Mockito.<Query>anyObject());
   }
 
