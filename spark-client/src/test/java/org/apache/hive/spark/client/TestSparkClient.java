@@ -68,6 +68,10 @@ public class TestSparkClient {
   private static final long TIMEOUT = 20;
   private static final HiveConf HIVECONF = new HiveConf();
 
+  static {
+    HIVECONF.set("hive.spark.client.connect.timeout", "30000ms");
+  }
+
   private Map<String, String> createConf() {
     Map<String, String> conf = new HashMap<String, String>();
 
