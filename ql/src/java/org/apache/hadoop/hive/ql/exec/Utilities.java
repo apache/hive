@@ -2588,14 +2588,14 @@ public final class Utilities {
     if (ctx != null) {
       ContentSummary cs = ctx.getCS(dirPath);
       if (cs != null) {
-        if (LOG.isInfoEnabled()) {
-          LOG.info("Content Summary {} length: {} num files: {}" +
-            " num directories: {}", dirPath, cs.getLength(), cs.getFileCount(),
-            cs.getDirectoryCount());
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Content Summary cached for {} length: {} num files: {} " +
+              "num directories: {}", dirPath, cs.getLength(), cs.getFileCount(),
+              cs.getDirectoryCount());
         }
         return (cs.getLength() == 0 && cs.getFileCount() == 0 && cs.getDirectoryCount() <= 1);
       } else {
-        LOG.info("Content Summary not cached for {}", dirPath);
+        LOG.debug("Content Summary not cached for {}", dirPath);
       }
     }
     return isEmptyPath(job, dirPath);
