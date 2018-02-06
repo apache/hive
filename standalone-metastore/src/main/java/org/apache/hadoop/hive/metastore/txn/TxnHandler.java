@@ -70,7 +70,6 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
-import org.apache.hadoop.hive.metastore.api.AddTransactionalTableRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdResponse;
 import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
@@ -902,8 +901,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         stmt = dbConn.createStatement();
 
         List<OpenWriteIds> openWriteIdsList = new ArrayList<>();
-        for (String table : rqst.getTableNames()) {
-          OpenWriteIds writeIds = getOpenWriteIdsForTable(stmt, table, validTxnList);
+        for (String fullTableName : rqst.getTableNames()) {
+          OpenWriteIds writeIds = getOpenWriteIdsForTable(stmt, fullTableName, validTxnList);
           openWriteIdsList.add(writeIds);
         }
 
@@ -925,9 +924,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private OpenWriteIds getOpenWriteIdsForTable(Statement stmt, String tableName,
+  private OpenWriteIds getOpenWriteIdsForTable(Statement stmt, String fullTableName,
                                                ValidTxnList validTxnList) throws SQLException {
     ResultSet rs = null;
+    String[] names = TxnUtils.getDbTableName(fullTableName);
     try {
       // Need to initialize to 0 to make sure if nobody modified this table, then current txn
       // shouldn't read any data
@@ -938,7 +938,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       // The output includes all the txns which are under the high water mark. It includes
       // the committed transactions as well.
       String s = "select t2w_txnid, t2w_writeid from TXN_TO_WRITE_ID where t2w_txnid <= " + txnHwm
-              + " and t2w_table = " + quoteString(tableName) + " order by t2w_writeid";
+              + " and t2w_database = " + quoteString(names[0])
+              + " and t2w_table = " + quoteString(names[1])
+              + " order by t2w_writeid";
       LOG.debug("Going to execute query<" + s + ">");
       rs = stmt.executeQuery(s);
       long minOpenWriteId = Long.MAX_VALUE;
@@ -964,7 +966,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
 
       ByteBuffer byteBuffer = ByteBuffer.wrap(abortedBits.toByteArray());
-      OpenWriteIds owi = new OpenWriteIds(tableName, writeIdHwm, openWriteIdList, byteBuffer);
+      OpenWriteIds owi = new OpenWriteIds(fullTableName, writeIdHwm, openWriteIdList, byteBuffer);
       if (minOpenWriteId < Long.MAX_VALUE) {
         owi.setMinWriteId(minOpenWriteId);
       }
@@ -975,57 +977,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   @Override
-  public void addTransactionalTable(AddTransactionalTableRequest rqst) throws MetaException {
-    String fullTableName = TxnUtils.getFullTableName(rqst.getDbName(), rqst.getTableName());
-
-    try {
-      Connection dbConn = null;
-      Statement stmt = null;
-      ResultSet rs = null;
-      try {
-        lockInternal();
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        stmt = dbConn.createStatement();
-
-        // Check if any entry already exist for the given table name,
-        // If yes, then reset next ID to 1 else create a new entry with initial value as 1
-        String s = sqlGenerator.addForUpdateClause(
-                "select nwi_next from NEXT_WRITE_ID where nwi_table = " + quoteString(fullTableName));
-
-        LOG.debug("Going to execute query <" + s + ">");
-        rs = stmt.executeQuery(s);
-        if (rs.next()) {
-          s = "update NEXT_WRITE_ID set nwi_next = 1 where nwi_table = " + quoteString(fullTableName);
-          LOG.debug("Going to execute update <" + s + ">");
-          stmt.executeUpdate(s);
-        } else {
-          s = "insert into NEXT_WRITE_ID (nwi_table, nwi_next) values (" + quoteString(fullTableName) + ", 1)";
-          LOG.debug("Going to execute insert <" + s + ">");
-          stmt.execute(s);
-        }
-
-        LOG.debug("Going to commit");
-        dbConn.commit();
-      } catch (SQLException e) {
-        LOG.debug("Going to rollback");
-        rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "addTransactionalTable(" + rqst + ")");
-        throw new MetaException("Unable to update transaction database "
-                + StringUtils.stringifyException(e));
-      } finally {
-        close(rs, stmt, dbConn);
-        unlockInternal();
-      }
-    } catch (RetryException e) {
-      addTransactionalTable(rqst);
-    }
-  }
-
-  @Override
   public AllocateTableWriteIdResponse allocateTableWriteId(AllocateTableWriteIdRequest rqst)
           throws NoSuchTxnException, TxnAbortedException, MetaException {
     List<Long> txnIds = rqst.getTxnIds();
-    String fullTableName = TxnUtils.getFullTableName(rqst.getDbName(), rqst.getTableName());
+    String dbName = rqst.getDbName().toLowerCase();
+    String tblName = rqst.getTableName().toLowerCase();
     try {
       Connection dbConn = null;
       Statement stmt = null;
@@ -1051,7 +1007,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           // If table write ID is already allocated for the current transaction, then just return it
           // else allocate it
           s = "select t2w_writeid from TXN_TO_WRITE_ID where t2w_txnid = " + txnId
-                  + " and t2w_table = " + quoteString(fullTableName);
+                  + " and t2w_database = " + quoteString(dbName)
+                  + " and t2w_table = " + quoteString(tblName);
           LOG.debug("Going to execute query <" + s + ">");
           rs = stmt.executeQuery(s);
           if (rs.next()) {
@@ -1070,27 +1027,29 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         // Get the next write ID for the given table and increment it
         s = sqlGenerator.addForUpdateClause(
-                "select nwi_next from NEXT_WRITE_ID where nwi_table = " + quoteString(fullTableName));
+                "select nwi_next from NEXT_WRITE_ID where nwi_database = " + quoteString(dbName)
+                        + " and nwi_table = " + quoteString(tblName));
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         if (!rs.next()) {
           // First allocation of write id should add the table to the next_write_id meta table
-          s = "insert into NEXT_WRITE_ID (nwi_table, nwi_next) values ("
-                  + quoteString(fullTableName) + "," + String.valueOf(numOfWriteIds + 1) + ")";
+          s = "insert into NEXT_WRITE_ID (nwi_database, nwi_table, nwi_next) values ("
+                  + quoteString(dbName) + "," + quoteString(tblName) + "," + String.valueOf(numOfWriteIds + 1) + ")";
           LOG.debug("Going to execute insert <" + s + ">");
           stmt.execute(s);
           writeId = 1;
         } else {
           writeId = rs.getLong(1);
           s = "update NEXT_WRITE_ID set nwi_next = " + (writeId + numOfWriteIds)
-                  + " where nwi_table = " + quoteString(fullTableName);
+                  + " where nwi_database = " + quoteString(dbName)
+                  + " and nwi_table = " + quoteString(tblName);
           LOG.debug("Going to execute update <" + s + ">");
           stmt.executeUpdate(s);
         }
 
         for (long txnId : newAllocTxns) {
-          s = "insert into TXN_TO_WRITE_ID (t2w_txnid, t2w_table, t2w_writeid) values ("
-                  + txnId + ", " + quoteString(fullTableName) + ", " + writeId + ")";
+          s = "insert into TXN_TO_WRITE_ID (t2w_txnid, t2w_database, t2w_table, t2w_writeid) values ("
+                  + txnId + ", " + quoteString(dbName) + ", " + quoteString(tblName) + ", " + writeId + ")";
           LOG.debug("Going to execute insert <" + s + ">");
           stmt.execute(s);
           txnToWriteIds.add(new TxnToWriteId(txnId, writeId++));
@@ -2152,6 +2111,18 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             buff.append("'");
             queries.add(buff.toString());
 
+            buff.setLength(0);
+            buff.append("delete from TXN_TO_WRITE_ID where t2w_database='");
+            buff.append(dbName.toLowerCase());
+            buff.append("'");
+            queries.add(buff.toString());
+
+            buff.setLength(0);
+            buff.append("delete from NEXT_WRITE_ID where nwi_database='");
+            buff.append(dbName.toLowerCase());
+            buff.append("'");
+            queries.add(buff.toString());
+
             break;
           case TABLE:
             dbName = table.getDbName();
@@ -2185,6 +2156,22 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             buff.append(dbName);
             buff.append("' and cc_table='");
             buff.append(tblName);
+            buff.append("'");
+            queries.add(buff.toString());
+
+            buff.setLength(0);
+            buff.append("delete from TXN_TO_WRITE_ID where t2w_database='");
+            buff.append(dbName.toLowerCase());
+            buff.append("' and t2w_table='");
+            buff.append(tblName.toLowerCase());
+            buff.append("'");
+            queries.add(buff.toString());
+
+            buff.setLength(0);
+            buff.append("delete from NEXT_WRITE_ID where nwi_database='");
+            buff.append(dbName.toLowerCase());
+            buff.append("' and nwi_table='");
+            buff.append(tblName.toLowerCase());
             buff.append("'");
             queries.add(buff.toString());
 

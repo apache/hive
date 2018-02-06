@@ -370,8 +370,6 @@ class OpenWriteIds;
 
 class GetOpenWriteIdsResponse;
 
-class AddTransactionalTableRequest;
-
 class AllocateTableWriteIdRequest;
 
 class TxnToWriteId;
@@ -6116,51 +6114,6 @@ class GetOpenWriteIdsResponse {
 void swap(GetOpenWriteIdsResponse &a, GetOpenWriteIdsResponse &b);
 
 inline std::ostream& operator<<(std::ostream& out, const GetOpenWriteIdsResponse& obj)
-{
-  obj.printTo(out);
-  return out;
-}
-
-
-class AddTransactionalTableRequest {
- public:
-
-  AddTransactionalTableRequest(const AddTransactionalTableRequest&);
-  AddTransactionalTableRequest& operator=(const AddTransactionalTableRequest&);
-  AddTransactionalTableRequest() : dbName(), tableName() {
-  }
-
-  virtual ~AddTransactionalTableRequest() throw();
-  std::string dbName;
-  std::string tableName;
-
-  void __set_dbName(const std::string& val);
-
-  void __set_tableName(const std::string& val);
-
-  bool operator == (const AddTransactionalTableRequest & rhs) const
-  {
-    if (!(dbName == rhs.dbName))
-      return false;
-    if (!(tableName == rhs.tableName))
-      return false;
-    return true;
-  }
-  bool operator != (const AddTransactionalTableRequest &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const AddTransactionalTableRequest & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(AddTransactionalTableRequest &a, AddTransactionalTableRequest &b);
-
-inline std::ostream& operator<<(std::ostream& out, const AddTransactionalTableRequest& obj)
 {
   obj.printTo(out);
   return out;

@@ -133,12 +133,6 @@ public interface TxnStore extends Configurable {
   @RetrySemantics.ReadOnly
   GetOpenWriteIdsResponse getOpenWriteIds(GetOpenWriteIdsRequest rqst)
           throws NoSuchTxnException,  MetaException;
-  /**
-   * Create metadata for transactional table which is newly added
-   * @param rqst info on transactional table for which need to add metadata
-   * @throws MetaException
-   */
-  void addTransactionalTable(AddTransactionalTableRequest rqst) throws MetaException;
 
   /**
    * Allocate a write ID for the given table and associate it with a transaction

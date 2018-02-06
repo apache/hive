@@ -2422,21 +2422,6 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_open_write_ids failed: unknown result')
     end
 
-    def add_transactional_table(rqst)
-      send_add_transactional_table(rqst)
-      recv_add_transactional_table()
-    end
-
-    def send_add_transactional_table(rqst)
-      send_message('add_transactional_table', Add_transactional_table_args, :rqst => rqst)
-    end
-
-    def recv_add_transactional_table()
-      result = receive_message(Add_transactional_table_result)
-      raise result.o1 unless result.o1.nil?
-      return
-    end
-
     def allocate_table_write_id(rqst)
       send_allocate_table_write_id(rqst)
       return recv_allocate_table_write_id()
@@ -4945,17 +4930,6 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_open_write_ids', seqid)
-    end
-
-    def process_add_transactional_table(seqid, iprot, oprot)
-      args = read_args(iprot, Add_transactional_table_args)
-      result = Add_transactional_table_result.new()
-      begin
-        @handler.add_transactional_table(args.rqst)
-      rescue ::MetaException => o1
-        result.o1 = o1
-      end
-      write_result(result, oprot, 'add_transactional_table', seqid)
     end
 
     def process_allocate_table_write_id(seqid, iprot, oprot)
@@ -10894,38 +10868,6 @@ module ThriftHiveMetastore
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetOpenWriteIdsResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Add_transactional_table_args
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    RQST = 1
-
-    FIELDS = {
-      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::AddTransactionalTableRequest}
-    }
-
-    def struct_fields; FIELDS; end
-
-    def validate
-    end
-
-    ::Thrift::Struct.generate_accessors self
-  end
-
-  class Add_transactional_table_result
-    include ::Thrift::Struct, ::Thrift::Struct_Union
-    O1 = 1
-
-    FIELDS = {
-      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

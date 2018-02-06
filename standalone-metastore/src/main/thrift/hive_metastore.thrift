@@ -748,11 +748,6 @@ struct GetOpenWriteIdsResponse {
     1: required list<OpenWriteIds> openWriteIds,
 }
 
-struct AddTransactionalTableRequest {
-    1: required string dbName,
-    2: required string tableName,
-}
-
 struct AllocateTableWriteIdRequest {
     1: required list<i64> txnIds,
     2: required string dbName,
@@ -1846,7 +1841,6 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void commit_txn(1:CommitTxnRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
   GetOpenWriteIdsResponse get_open_write_ids(1:GetOpenWriteIdsRequest rqst)
       throws (1:NoSuchTxnException o1, 2:MetaException o2)
-  void add_transactional_table(1:AddTransactionalTableRequest rqst) throws (1:MetaException o1)
   AllocateTableWriteIdResponse allocate_table_write_id(1:AllocateTableWriteIdRequest rqst)
     throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2, 3:MetaException o3)
   LockResponse lock(1:LockRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)

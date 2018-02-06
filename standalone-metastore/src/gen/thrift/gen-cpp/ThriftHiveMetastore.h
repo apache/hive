@@ -166,7 +166,6 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void abort_txns(const AbortTxnsRequest& rqst) = 0;
   virtual void commit_txn(const CommitTxnRequest& rqst) = 0;
   virtual void get_open_write_ids(GetOpenWriteIdsResponse& _return, const GetOpenWriteIdsRequest& rqst) = 0;
-  virtual void add_transactional_table(const AddTransactionalTableRequest& rqst) = 0;
   virtual void allocate_table_write_id(AllocateTableWriteIdResponse& _return, const AllocateTableWriteIdRequest& rqst) = 0;
   virtual void lock(LockResponse& _return, const LockRequest& rqst) = 0;
   virtual void check_lock(LockResponse& _return, const CheckLockRequest& rqst) = 0;
@@ -694,9 +693,6 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void get_open_write_ids(GetOpenWriteIdsResponse& /* _return */, const GetOpenWriteIdsRequest& /* rqst */) {
-    return;
-  }
-  void add_transactional_table(const AddTransactionalTableRequest& /* rqst */) {
     return;
   }
   void allocate_table_write_id(AllocateTableWriteIdResponse& /* _return */, const AllocateTableWriteIdRequest& /* rqst */) {
@@ -18966,110 +18962,6 @@ class ThriftHiveMetastore_get_open_write_ids_presult {
 
 };
 
-typedef struct _ThriftHiveMetastore_add_transactional_table_args__isset {
-  _ThriftHiveMetastore_add_transactional_table_args__isset() : rqst(false) {}
-  bool rqst :1;
-} _ThriftHiveMetastore_add_transactional_table_args__isset;
-
-class ThriftHiveMetastore_add_transactional_table_args {
- public:
-
-  ThriftHiveMetastore_add_transactional_table_args(const ThriftHiveMetastore_add_transactional_table_args&);
-  ThriftHiveMetastore_add_transactional_table_args& operator=(const ThriftHiveMetastore_add_transactional_table_args&);
-  ThriftHiveMetastore_add_transactional_table_args() {
-  }
-
-  virtual ~ThriftHiveMetastore_add_transactional_table_args() throw();
-  AddTransactionalTableRequest rqst;
-
-  _ThriftHiveMetastore_add_transactional_table_args__isset __isset;
-
-  void __set_rqst(const AddTransactionalTableRequest& val);
-
-  bool operator == (const ThriftHiveMetastore_add_transactional_table_args & rhs) const
-  {
-    if (!(rqst == rhs.rqst))
-      return false;
-    return true;
-  }
-  bool operator != (const ThriftHiveMetastore_add_transactional_table_args &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const ThriftHiveMetastore_add_transactional_table_args & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-
-class ThriftHiveMetastore_add_transactional_table_pargs {
- public:
-
-
-  virtual ~ThriftHiveMetastore_add_transactional_table_pargs() throw();
-  const AddTransactionalTableRequest* rqst;
-
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _ThriftHiveMetastore_add_transactional_table_result__isset {
-  _ThriftHiveMetastore_add_transactional_table_result__isset() : o1(false) {}
-  bool o1 :1;
-} _ThriftHiveMetastore_add_transactional_table_result__isset;
-
-class ThriftHiveMetastore_add_transactional_table_result {
- public:
-
-  ThriftHiveMetastore_add_transactional_table_result(const ThriftHiveMetastore_add_transactional_table_result&);
-  ThriftHiveMetastore_add_transactional_table_result& operator=(const ThriftHiveMetastore_add_transactional_table_result&);
-  ThriftHiveMetastore_add_transactional_table_result() {
-  }
-
-  virtual ~ThriftHiveMetastore_add_transactional_table_result() throw();
-  MetaException o1;
-
-  _ThriftHiveMetastore_add_transactional_table_result__isset __isset;
-
-  void __set_o1(const MetaException& val);
-
-  bool operator == (const ThriftHiveMetastore_add_transactional_table_result & rhs) const
-  {
-    if (!(o1 == rhs.o1))
-      return false;
-    return true;
-  }
-  bool operator != (const ThriftHiveMetastore_add_transactional_table_result &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const ThriftHiveMetastore_add_transactional_table_result & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-typedef struct _ThriftHiveMetastore_add_transactional_table_presult__isset {
-  _ThriftHiveMetastore_add_transactional_table_presult__isset() : o1(false) {}
-  bool o1 :1;
-} _ThriftHiveMetastore_add_transactional_table_presult__isset;
-
-class ThriftHiveMetastore_add_transactional_table_presult {
- public:
-
-
-  virtual ~ThriftHiveMetastore_add_transactional_table_presult() throw();
-  MetaException o1;
-
-  _ThriftHiveMetastore_add_transactional_table_presult__isset __isset;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-
-};
-
 typedef struct _ThriftHiveMetastore_allocate_table_write_id_args__isset {
   _ThriftHiveMetastore_allocate_table_write_id_args__isset() : rqst(false) {}
   bool rqst :1;
@@ -24105,9 +23997,6 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_open_write_ids(GetOpenWriteIdsResponse& _return, const GetOpenWriteIdsRequest& rqst);
   void send_get_open_write_ids(const GetOpenWriteIdsRequest& rqst);
   void recv_get_open_write_ids(GetOpenWriteIdsResponse& _return);
-  void add_transactional_table(const AddTransactionalTableRequest& rqst);
-  void send_add_transactional_table(const AddTransactionalTableRequest& rqst);
-  void recv_add_transactional_table();
   void allocate_table_write_id(AllocateTableWriteIdResponse& _return, const AllocateTableWriteIdRequest& rqst);
   void send_allocate_table_write_id(const AllocateTableWriteIdRequest& rqst);
   void recv_allocate_table_write_id(AllocateTableWriteIdResponse& _return);
@@ -24382,7 +24271,6 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_abort_txns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_commit_txn(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_open_write_ids(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
-  void process_add_transactional_table(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_allocate_table_write_id(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_lock(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_check_lock(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -24571,7 +24459,6 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["abort_txns"] = &ThriftHiveMetastoreProcessor::process_abort_txns;
     processMap_["commit_txn"] = &ThriftHiveMetastoreProcessor::process_commit_txn;
     processMap_["get_open_write_ids"] = &ThriftHiveMetastoreProcessor::process_get_open_write_ids;
-    processMap_["add_transactional_table"] = &ThriftHiveMetastoreProcessor::process_add_transactional_table;
     processMap_["allocate_table_write_id"] = &ThriftHiveMetastoreProcessor::process_allocate_table_write_id;
     processMap_["lock"] = &ThriftHiveMetastoreProcessor::process_lock;
     processMap_["check_lock"] = &ThriftHiveMetastoreProcessor::process_check_lock;
@@ -26023,15 +25910,6 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
-  void add_transactional_table(const AddTransactionalTableRequest& rqst) {
-    size_t sz = ifaces_.size();
-    size_t i = 0;
-    for (; i < (sz - 1); ++i) {
-      ifaces_[i]->add_transactional_table(rqst);
-    }
-    ifaces_[i]->add_transactional_table(rqst);
-  }
-
   void allocate_table_write_id(AllocateTableWriteIdResponse& _return, const AllocateTableWriteIdRequest& rqst) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -26875,9 +26753,6 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_open_write_ids(GetOpenWriteIdsResponse& _return, const GetOpenWriteIdsRequest& rqst);
   int32_t send_get_open_write_ids(const GetOpenWriteIdsRequest& rqst);
   void recv_get_open_write_ids(GetOpenWriteIdsResponse& _return, const int32_t seqid);
-  void add_transactional_table(const AddTransactionalTableRequest& rqst);
-  int32_t send_add_transactional_table(const AddTransactionalTableRequest& rqst);
-  void recv_add_transactional_table(const int32_t seqid);
   void allocate_table_write_id(AllocateTableWriteIdResponse& _return, const AllocateTableWriteIdRequest& rqst);
   int32_t send_allocate_table_write_id(const AllocateTableWriteIdRequest& rqst);
   void recv_allocate_table_write_id(AllocateTableWriteIdResponse& _return, const int32_t seqid);

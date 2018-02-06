@@ -1544,11 +1544,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
         }
 
-        if (TxnUtils.isTransactionalTable(tbl)) {
-          // Need to update the table write ID sequence generation table
-          getTxnHandler().addTransactionalTable(new AddTransactionalTableRequest(tbl.getDbName(), tbl.getTableName()));
-        }
-
         if (!transactionalListeners.isEmpty()) {
           transactionalListenerResponses = MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
               EventType.CREATE_TABLE, new CreateTableEvent(tbl, true, this), envContext);
@@ -6698,11 +6693,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public GetOpenWriteIdsResponse get_open_write_ids(GetOpenWriteIdsRequest rqst) throws TException {
       return getTxnHandler().getOpenWriteIds(rqst);
-    }
-
-    @Override
-    public void add_transactional_table(AddTransactionalTableRequest rqst) throws TException {
-      getTxnHandler().addTransactionalTable(rqst);
     }
 
     @Override

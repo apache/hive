@@ -99,9 +99,11 @@ public final class TxnDbUtil {
 
       stmt.execute("CREATE TABLE TXN_TO_WRITE_ID (" +
           " T2W_TXNID bigint," +
+          " T2W_DATABASE varchar(128) NOT NULL," +
           " T2W_TABLE varchar(256) NOT NULL," +
           " T2W_WRITEID bigint NOT NULL)");
       stmt.execute("CREATE TABLE NEXT_WRITE_ID (" +
+          " NWI_DATABASE varchar(128) NOT NULL," +
           " NWI_TABLE varchar(256) NOT NULL," +
           " NWI_NEXT bigint NOT NULL)");
 

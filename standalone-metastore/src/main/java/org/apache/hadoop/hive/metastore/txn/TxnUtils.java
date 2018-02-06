@@ -193,6 +193,12 @@ public class TxnUtils {
     return dbName.toLowerCase() + "." + tableName.toLowerCase();
   }
 
+  public static String[] getDbTableName(String fullTableName) {
+    return fullTableName.split("\\.");
+  }
+
+
+
   /**
    * Build a query (or queries if one query is too big but only for the case of 'IN' 
    * composite clause. For the case of 'NOT IN' clauses, multiple queries change

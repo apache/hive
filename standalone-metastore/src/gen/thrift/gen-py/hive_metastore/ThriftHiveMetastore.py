@@ -1182,13 +1182,6 @@ class Iface(fb303.FacebookService.Iface):
     """
     pass
 
-  def add_transactional_table(self, rqst):
-    """
-    Parameters:
-     - rqst
-    """
-    pass
-
   def allocate_table_write_id(self, rqst):
     """
     Parameters:
@@ -6752,37 +6745,6 @@ class Client(fb303.FacebookService.Client, Iface):
       raise result.o2
     raise TApplicationException(TApplicationException.MISSING_RESULT, "get_open_write_ids failed: unknown result")
 
-  def add_transactional_table(self, rqst):
-    """
-    Parameters:
-     - rqst
-    """
-    self.send_add_transactional_table(rqst)
-    self.recv_add_transactional_table()
-
-  def send_add_transactional_table(self, rqst):
-    self._oprot.writeMessageBegin('add_transactional_table', TMessageType.CALL, self._seqid)
-    args = add_transactional_table_args()
-    args.rqst = rqst
-    args.write(self._oprot)
-    self._oprot.writeMessageEnd()
-    self._oprot.trans.flush()
-
-  def recv_add_transactional_table(self):
-    iprot = self._iprot
-    (fname, mtype, rseqid) = iprot.readMessageBegin()
-    if mtype == TMessageType.EXCEPTION:
-      x = TApplicationException()
-      x.read(iprot)
-      iprot.readMessageEnd()
-      raise x
-    result = add_transactional_table_result()
-    result.read(iprot)
-    iprot.readMessageEnd()
-    if result.o1 is not None:
-      raise result.o1
-    return
-
   def allocate_table_write_id(self, rqst):
     """
     Parameters:
@@ -8278,7 +8240,6 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     self._processMap["abort_txns"] = Processor.process_abort_txns
     self._processMap["commit_txn"] = Processor.process_commit_txn
     self._processMap["get_open_write_ids"] = Processor.process_get_open_write_ids
-    self._processMap["add_transactional_table"] = Processor.process_add_transactional_table
     self._processMap["allocate_table_write_id"] = Processor.process_allocate_table_write_id
     self._processMap["lock"] = Processor.process_lock
     self._processMap["check_lock"] = Processor.process_check_lock
@@ -11919,28 +11880,6 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
       logging.exception(ex)
       result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
     oprot.writeMessageBegin("get_open_write_ids", msg_type, seqid)
-    result.write(oprot)
-    oprot.writeMessageEnd()
-    oprot.trans.flush()
-
-  def process_add_transactional_table(self, seqid, iprot, oprot):
-    args = add_transactional_table_args()
-    args.read(iprot)
-    iprot.readMessageEnd()
-    result = add_transactional_table_result()
-    try:
-      self._handler.add_transactional_table(args.rqst)
-      msg_type = TMessageType.REPLY
-    except (TTransport.TTransportException, KeyboardInterrupt, SystemExit):
-      raise
-    except MetaException as o1:
-      msg_type = TMessageType.REPLY
-      result.o1 = o1
-    except Exception as ex:
-      msg_type = TMessageType.EXCEPTION
-      logging.exception(ex)
-      result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-    oprot.writeMessageBegin("add_transactional_table", msg_type, seqid)
     result.write(oprot)
     oprot.writeMessageEnd()
     oprot.trans.flush()
@@ -37941,138 +37880,6 @@ class get_open_write_ids_result:
     value = (value * 31) ^ hash(self.success)
     value = (value * 31) ^ hash(self.o1)
     value = (value * 31) ^ hash(self.o2)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class add_transactional_table_args:
-  """
-  Attributes:
-   - rqst
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'rqst', (AddTransactionalTableRequest, AddTransactionalTableRequest.thrift_spec), None, ), # 1
-  )
-
-  def __init__(self, rqst=None,):
-    self.rqst = rqst
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.rqst = AddTransactionalTableRequest()
-          self.rqst.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('add_transactional_table_args')
-    if self.rqst is not None:
-      oprot.writeFieldBegin('rqst', TType.STRUCT, 1)
-      self.rqst.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.rqst)
-    return value
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
-class add_transactional_table_result:
-  """
-  Attributes:
-   - o1
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.STRUCT, 'o1', (MetaException, MetaException.thrift_spec), None, ), # 1
-  )
-
-  def __init__(self, o1=None,):
-    self.o1 = o1
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.STRUCT:
-          self.o1 = MetaException()
-          self.o1.read(iprot)
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('add_transactional_table_result')
-    if self.o1 is not None:
-      oprot.writeFieldBegin('o1', TType.STRUCT, 1)
-      self.o1.write(oprot)
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __hash__(self):
-    value = 17
-    value = (value * 31) ^ hash(self.o1)
     return value
 
   def __repr__(self):
