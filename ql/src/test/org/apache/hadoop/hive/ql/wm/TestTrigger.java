@@ -307,6 +307,8 @@ public class TestTrigger {
   public void testActionFromMetastoreStr() {
     assertEquals(Action.Type.KILL_QUERY, Action.fromMetastoreExpression("KILL").getType());
     assertEquals(Action.Type.MOVE_TO_POOL, Action.fromMetastoreExpression("MOVE TO bi").getType());
+    assertEquals("bi", Action.fromMetastoreExpression("MOVE TO bi").getPoolName());
+    assertEquals("bi.c1.c2", Action.fromMetastoreExpression("MOVE TO bi.c1.c2").getPoolName());
     assertEquals("MOVE TO etl", Action.fromMetastoreExpression("MOVE TO etl").toString());
 
     thrown.expect(IllegalArgumentException.class);
