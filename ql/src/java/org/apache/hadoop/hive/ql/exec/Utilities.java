@@ -4071,18 +4071,20 @@ public final class Utilities {
   }
 
   public static Path[] getMmDirectoryCandidates(FileSystem fs, Path path, int dpLevels,
-      int lbLevels, PathFilter filter, long txnId, int stmtId, Configuration conf, boolean isBaseDir)
-          throws IOException {
+      int lbLevels, PathFilter filter, long txnId, int stmtId, Configuration conf,
+      Boolean isBaseDir) throws IOException {
     int skipLevels = dpLevels + lbLevels;
     if (filter == null) {
-      filter = new JavaUtils.IdPathFilter(txnId, stmtId, true, false, isBaseDir);
+      filter = new JavaUtils.IdPathFilter(txnId, stmtId, true, false);
     }
     if (skipLevels == 0) {
       return statusToPath(fs.listStatus(path, filter));
     }
     // TODO: for some reason, globStatus doesn't work for masks like "...blah/*/delta_0000007_0000007*"
     //       the last star throws it off. So, for now, if stmtId is missing use recursion.
-    if (stmtId < 0
+    //       For the same reason, we cannot use it if we don't know isBaseDir. Currently, we don't
+    //       /want/ to know isBaseDir because that is error prone; so, it ends up never being used. 
+    if (stmtId < 0 || isBaseDir == null
         || (HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_AVOID_GLOBSTATUS_ON_S3) && isS3(fs))) {
       return getMmDirectoryCandidatesRecursive(fs, path, skipLevels, filter);
     }
@@ -4162,8 +4164,8 @@ public final class Utilities {
     return results.toArray(new Path[results.size()]);
   }
 
-  private static Path[] getMmDirectoryCandidatesGlobStatus(FileSystem fs,
-      Path path, int skipLevels, PathFilter filter, long txnId, int stmtId, boolean isBaseDir) throws IOException {
+  private static Path[] getMmDirectoryCandidatesGlobStatus(FileSystem fs, Path path, int skipLevels,
+      PathFilter filter, long txnId, int stmtId, boolean isBaseDir) throws IOException {
     StringBuilder sb = new StringBuilder(path.toUri().getPath());
     for (int i = 0; i < skipLevels; i++) {
       sb.append(Path.SEPARATOR).append('*');
@@ -4180,10 +4182,10 @@ public final class Utilities {
   }
 
   private static void tryDeleteAllMmFiles(FileSystem fs, Path specPath, Path manifestDir,
-                                          int dpLevels, int lbLevels, JavaUtils.IdPathFilter filter,
-                                          long txnId, int stmtId, Configuration conf, boolean isBaseDir) throws IOException {
+      int dpLevels, int lbLevels, JavaUtils.IdPathFilter filter, long txnId, int stmtId,
+      Configuration conf) throws IOException {
     Path[] files = getMmDirectoryCandidates(
-        fs, specPath, dpLevels, lbLevels, filter, txnId, stmtId, conf, isBaseDir);
+        fs, specPath, dpLevels, lbLevels, filter, txnId, stmtId, conf, null);
     if (files != null) {
       for (Path path : files) {
         Utilities.FILE_OP_LOGGER.info("Deleting {} on failure", path);
@@ -4220,8 +4222,10 @@ public final class Utilities {
     }
   }
 
-  private static Path getManifestDir(Path specPath, long txnId, int stmtId, String unionSuffix, boolean isInsertOverwrite) {
-    Path manifestPath = new Path(specPath, "_tmp." + 
+  // TODO: we should get rid of isInsertOverwrite here too.
+  private static Path getManifestDir(
+      Path specPath, long txnId, int stmtId, String unionSuffix, boolean isInsertOverwrite) {
+    Path manifestPath = new Path(specPath, "_tmp." +
       AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, txnId, txnId, stmtId));
 
     return (unionSuffix == null) ? manifestPath : new Path(manifestPath, unionSuffix);
@@ -4240,13 +4244,14 @@ public final class Utilities {
 
   public static void handleMmTableFinalPath(Path specPath, String unionSuffix, Configuration hconf,
       boolean success, int dpLevels, int lbLevels, MissingBucketsContext mbc, long txnId, int stmtId,
-      Reporter reporter, boolean isMmTable, boolean isMmCtas, boolean isInsertOverwrite) throws IOException, HiveException {
+      Reporter reporter, boolean isMmTable, boolean isMmCtas, boolean isInsertOverwrite)
+          throws IOException, HiveException {
     FileSystem fs = specPath.getFileSystem(hconf);
     Path manifestDir = getManifestDir(specPath, txnId, stmtId, unionSuffix, isInsertOverwrite);
     if (!success) {
       JavaUtils.IdPathFilter filter = new JavaUtils.IdPathFilter(txnId, stmtId, true);
       tryDeleteAllMmFiles(fs, specPath, manifestDir, dpLevels, lbLevels,
-          filter, txnId, stmtId, hconf, isInsertOverwrite);
+          filter, txnId, stmtId, hconf);
       return;
     }
 
@@ -4269,7 +4274,7 @@ public final class Utilities {
     }
 
     Utilities.FILE_OP_LOGGER.debug("Looking for files in: {}", specPath);
-    JavaUtils.IdPathFilter filter = new JavaUtils.IdPathFilter(txnId, stmtId, true, false, isInsertOverwrite);
+    JavaUtils.IdPathFilter filter = new JavaUtils.IdPathFilter(txnId, stmtId, true, false);
     if (isMmCtas && !fs.exists(specPath)) {
       Utilities.FILE_OP_LOGGER.info("Creating table directory for CTAS with no output at {}", specPath);
       FileUtils.mkdir(fs, specPath, hconf);
