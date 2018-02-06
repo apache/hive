@@ -18,6 +18,7 @@
  */
 package org.apache.hive.hcatalog.data;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -46,7 +47,7 @@ public class TestJsonSerDe extends TestCase {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestJsonSerDe.class);
 
-  public List<Pair<Properties, HCatRecord>> getData() {
+  public List<Pair<Properties, HCatRecord>> getData() throws UnsupportedEncodingException {
     List<Pair<Properties, HCatRecord>> data = new ArrayList<Pair<Properties, HCatRecord>>();
 
     List<Object> rlist = new ArrayList<Object>(13);
@@ -98,6 +99,7 @@ public class TestJsonSerDe extends TestCase {
     rlist.add(new HiveVarchar("hive\nvarchar", 20));
     rlist.add(Date.valueOf("2014-01-07"));
     rlist.add(new Timestamp(System.currentTimeMillis()));
+    rlist.add("hive\nbinary".getBytes("UTF-8"));
 
     List<Object> nlist = new ArrayList<Object>(13);
     nlist.add(null); // tinyint
@@ -118,15 +120,16 @@ public class TestJsonSerDe extends TestCase {
     nlist.add(null); //varchar(20)
     nlist.add(null); //date
     nlist.add(null); //timestamp
+    nlist.add(null); //binary
 
     String typeString =
         "tinyint,smallint,int,bigint,double,float,string,string,"
             + "struct<a:string,b:string>,array<int>,map<smallint,string>,boolean,"
             + "array<struct<i1:int,i2:struct<ii1:array<int>,ii2:map<string,struct<iii1:int>>>>>," +
-                "decimal(5,2),char(10),varchar(20),date,timestamp";
+                "decimal(5,2),char(10),varchar(20),date,timestamp,binary";
     Properties props = new Properties();
 
-    props.put(serdeConstants.LIST_COLUMNS, "ti,si,i,bi,d,f,s,n,r,l,m,b,c1,bd,hc,hvc,dt,ts");
+    props.put(serdeConstants.LIST_COLUMNS, "ti,si,i,bi,d,f,s,n,r,l,m,b,c1,bd,hc,hvc,dt,ts,bin");
     props.put(serdeConstants.LIST_COLUMN_TYPES, typeString);
 //    props.put(Constants.SERIALIZATION_NULL_FORMAT, "\\N");
 //    props.put(Constants.SERIALIZATION_FORMAT, "1");
