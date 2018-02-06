@@ -2234,15 +2234,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public ValidWriteIdList getValidWriteIds(String tableName) throws TException {
-    GetOpenWriteIdsRequest rqst = new GetOpenWriteIdsRequest(0, Collections.singletonList(tableName));
+    GetOpenWriteIdsRequest rqst = new GetOpenWriteIdsRequest(Collections.singletonList(tableName), null);
     GetOpenWriteIdsResponse openWriteIds = client.get_open_write_ids(rqst);
     return TxnUtils.createValidReaderWriteIdList(openWriteIds.getOpenWriteIds().get(0));
   }
 
-  // TODO (Sankar): Need to modify the API definition to take ValidTxnList as input.
   @Override
-  public ValidTxnWriteIdList getValidWriteIds(long currentTxn, List<String> tablesList) throws TException {
-    GetOpenWriteIdsRequest rqst = new GetOpenWriteIdsRequest(currentTxn, tablesList);
+  public ValidTxnWriteIdList getValidWriteIds(List<String> tablesList, String validTxnStr) throws TException {
+    GetOpenWriteIdsRequest rqst = new GetOpenWriteIdsRequest(tablesList, validTxnStr);
     return TxnUtils.createValidTxnWriteIdList(client.get_open_write_ids(rqst));
   }
 

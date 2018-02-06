@@ -38,8 +38,8 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class GetOpenWriteIdsRequest implements org.apache.thrift.TBase<GetOpenWriteIdsRequest, GetOpenWriteIdsRequest._Fields>, java.io.Serializable, Cloneable, Comparable<GetOpenWriteIdsRequest> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("GetOpenWriteIdsRequest");
 
-  private static final org.apache.thrift.protocol.TField CURRENT_TXN_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("currentTxnId", org.apache.thrift.protocol.TType.I64, (short)1);
-  private static final org.apache.thrift.protocol.TField TABLE_NAMES_FIELD_DESC = new org.apache.thrift.protocol.TField("tableNames", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField TABLE_NAMES_FIELD_DESC = new org.apache.thrift.protocol.TField("tableNames", org.apache.thrift.protocol.TType.LIST, (short)1);
+  private static final org.apache.thrift.protocol.TField VALID_TXN_STR_FIELD_DESC = new org.apache.thrift.protocol.TField("validTxnStr", org.apache.thrift.protocol.TType.STRING, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -47,13 +47,13 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new GetOpenWriteIdsRequestTupleSchemeFactory());
   }
 
-  private long currentTxnId; // required
   private List<String> tableNames; // required
+  private String validTxnStr; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    CURRENT_TXN_ID((short)1, "currentTxnId"),
-    TABLE_NAMES((short)2, "tableNames");
+    TABLE_NAMES((short)1, "tableNames"),
+    VALID_TXN_STR((short)2, "validTxnStr");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -68,10 +68,10 @@ import org.slf4j.LoggerFactory;
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // CURRENT_TXN_ID
-          return CURRENT_TXN_ID;
-        case 2: // TABLE_NAMES
+        case 1: // TABLE_NAMES
           return TABLE_NAMES;
+        case 2: // VALID_TXN_STR
+          return VALID_TXN_STR;
         default:
           return null;
       }
@@ -112,16 +112,14 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final int __CURRENTTXNID_ISSET_ID = 0;
-  private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.CURRENT_TXN_ID, new org.apache.thrift.meta_data.FieldMetaData("currentTxnId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.TABLE_NAMES, new org.apache.thrift.meta_data.FieldMetaData("tableNames", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.VALID_TXN_STR, new org.apache.thrift.meta_data.FieldMetaData("validTxnStr", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetOpenWriteIdsRequest.class, metaDataMap);
   }
@@ -130,24 +128,24 @@ import org.slf4j.LoggerFactory;
   }
 
   public GetOpenWriteIdsRequest(
-    long currentTxnId,
-    List<String> tableNames)
+    List<String> tableNames,
+    String validTxnStr)
   {
     this();
-    this.currentTxnId = currentTxnId;
-    setCurrentTxnIdIsSet(true);
     this.tableNames = tableNames;
+    this.validTxnStr = validTxnStr;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public GetOpenWriteIdsRequest(GetOpenWriteIdsRequest other) {
-    __isset_bitfield = other.__isset_bitfield;
-    this.currentTxnId = other.currentTxnId;
     if (other.isSetTableNames()) {
       List<String> __this__tableNames = new ArrayList<String>(other.tableNames);
       this.tableNames = __this__tableNames;
+    }
+    if (other.isSetValidTxnStr()) {
+      this.validTxnStr = other.validTxnStr;
     }
   }
 
@@ -157,31 +155,8 @@ import org.slf4j.LoggerFactory;
 
   @Override
   public void clear() {
-    setCurrentTxnIdIsSet(false);
-    this.currentTxnId = 0;
     this.tableNames = null;
-  }
-
-  public long getCurrentTxnId() {
-    return this.currentTxnId;
-  }
-
-  public void setCurrentTxnId(long currentTxnId) {
-    this.currentTxnId = currentTxnId;
-    setCurrentTxnIdIsSet(true);
-  }
-
-  public void unsetCurrentTxnId() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __CURRENTTXNID_ISSET_ID);
-  }
-
-  /** Returns true if field currentTxnId is set (has been assigned a value) and false otherwise */
-  public boolean isSetCurrentTxnId() {
-    return EncodingUtils.testBit(__isset_bitfield, __CURRENTTXNID_ISSET_ID);
-  }
-
-  public void setCurrentTxnIdIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __CURRENTTXNID_ISSET_ID, value);
+    this.validTxnStr = null;
   }
 
   public int getTableNamesSize() {
@@ -222,16 +197,31 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getValidTxnStr() {
+    return this.validTxnStr;
+  }
+
+  public void setValidTxnStr(String validTxnStr) {
+    this.validTxnStr = validTxnStr;
+  }
+
+  public void unsetValidTxnStr() {
+    this.validTxnStr = null;
+  }
+
+  /** Returns true if field validTxnStr is set (has been assigned a value) and false otherwise */
+  public boolean isSetValidTxnStr() {
+    return this.validTxnStr != null;
+  }
+
+  public void setValidTxnStrIsSet(boolean value) {
+    if (!value) {
+      this.validTxnStr = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case CURRENT_TXN_ID:
-      if (value == null) {
-        unsetCurrentTxnId();
-      } else {
-        setCurrentTxnId((Long)value);
-      }
-      break;
-
     case TABLE_NAMES:
       if (value == null) {
         unsetTableNames();
@@ -240,16 +230,24 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case VALID_TXN_STR:
+      if (value == null) {
+        unsetValidTxnStr();
+      } else {
+        setValidTxnStr((String)value);
+      }
+      break;
+
     }
   }
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case CURRENT_TXN_ID:
-      return getCurrentTxnId();
-
     case TABLE_NAMES:
       return getTableNames();
+
+    case VALID_TXN_STR:
+      return getValidTxnStr();
 
     }
     throw new IllegalStateException();
@@ -262,10 +260,10 @@ import org.slf4j.LoggerFactory;
     }
 
     switch (field) {
-    case CURRENT_TXN_ID:
-      return isSetCurrentTxnId();
     case TABLE_NAMES:
       return isSetTableNames();
+    case VALID_TXN_STR:
+      return isSetValidTxnStr();
     }
     throw new IllegalStateException();
   }
@@ -283,21 +281,21 @@ import org.slf4j.LoggerFactory;
     if (that == null)
       return false;
 
-    boolean this_present_currentTxnId = true;
-    boolean that_present_currentTxnId = true;
-    if (this_present_currentTxnId || that_present_currentTxnId) {
-      if (!(this_present_currentTxnId && that_present_currentTxnId))
-        return false;
-      if (this.currentTxnId != that.currentTxnId)
-        return false;
-    }
-
     boolean this_present_tableNames = true && this.isSetTableNames();
     boolean that_present_tableNames = true && that.isSetTableNames();
     if (this_present_tableNames || that_present_tableNames) {
       if (!(this_present_tableNames && that_present_tableNames))
         return false;
       if (!this.tableNames.equals(that.tableNames))
+        return false;
+    }
+
+    boolean this_present_validTxnStr = true && this.isSetValidTxnStr();
+    boolean that_present_validTxnStr = true && that.isSetValidTxnStr();
+    if (this_present_validTxnStr || that_present_validTxnStr) {
+      if (!(this_present_validTxnStr && that_present_validTxnStr))
+        return false;
+      if (!this.validTxnStr.equals(that.validTxnStr))
         return false;
     }
 
@@ -308,15 +306,15 @@ import org.slf4j.LoggerFactory;
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
 
-    boolean present_currentTxnId = true;
-    list.add(present_currentTxnId);
-    if (present_currentTxnId)
-      list.add(currentTxnId);
-
     boolean present_tableNames = true && (isSetTableNames());
     list.add(present_tableNames);
     if (present_tableNames)
       list.add(tableNames);
+
+    boolean present_validTxnStr = true && (isSetValidTxnStr());
+    list.add(present_validTxnStr);
+    if (present_validTxnStr)
+      list.add(validTxnStr);
 
     return list.hashCode();
   }
@@ -329,22 +327,22 @@ import org.slf4j.LoggerFactory;
 
     int lastComparison = 0;
 
-    lastComparison = Boolean.valueOf(isSetCurrentTxnId()).compareTo(other.isSetCurrentTxnId());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetCurrentTxnId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.currentTxnId, other.currentTxnId);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = Boolean.valueOf(isSetTableNames()).compareTo(other.isSetTableNames());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetTableNames()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tableNames, other.tableNames);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetValidTxnStr()).compareTo(other.isSetValidTxnStr());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetValidTxnStr()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.validTxnStr, other.validTxnStr);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -369,15 +367,19 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("GetOpenWriteIdsRequest(");
     boolean first = true;
 
-    sb.append("currentTxnId:");
-    sb.append(this.currentTxnId);
-    first = false;
-    if (!first) sb.append(", ");
     sb.append("tableNames:");
     if (this.tableNames == null) {
       sb.append("null");
     } else {
       sb.append(this.tableNames);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("validTxnStr:");
+    if (this.validTxnStr == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.validTxnStr);
     }
     first = false;
     sb.append(")");
@@ -386,12 +388,12 @@ import org.slf4j.LoggerFactory;
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetCurrentTxnId()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'currentTxnId' is unset! Struct:" + toString());
-    }
-
     if (!isSetTableNames()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'tableNames' is unset! Struct:" + toString());
+    }
+
+    if (!isSetValidTxnStr()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'validTxnStr' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -407,8 +409,6 @@ import org.slf4j.LoggerFactory;
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
-      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -433,15 +433,7 @@ import org.slf4j.LoggerFactory;
           break;
         }
         switch (schemeField.id) {
-          case 1: // CURRENT_TXN_ID
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.currentTxnId = iprot.readI64();
-              struct.setCurrentTxnIdIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 2: // TABLE_NAMES
+          case 1: // TABLE_NAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list556 = iprot.readListBegin();
@@ -459,6 +451,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 2: // VALID_TXN_STR
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.validTxnStr = iprot.readString();
+              struct.setValidTxnStrIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -472,9 +472,6 @@ import org.slf4j.LoggerFactory;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      oprot.writeFieldBegin(CURRENT_TXN_ID_FIELD_DESC);
-      oprot.writeI64(struct.currentTxnId);
-      oprot.writeFieldEnd();
       if (struct.tableNames != null) {
         oprot.writeFieldBegin(TABLE_NAMES_FIELD_DESC);
         {
@@ -485,6 +482,11 @@ import org.slf4j.LoggerFactory;
           }
           oprot.writeListEnd();
         }
+        oprot.writeFieldEnd();
+      }
+      if (struct.validTxnStr != null) {
+        oprot.writeFieldBegin(VALID_TXN_STR_FIELD_DESC);
+        oprot.writeString(struct.validTxnStr);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -504,7 +506,6 @@ import org.slf4j.LoggerFactory;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, GetOpenWriteIdsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
-      oprot.writeI64(struct.currentTxnId);
       {
         oprot.writeI32(struct.tableNames.size());
         for (String _iter560 : struct.tableNames)
@@ -512,13 +513,12 @@ import org.slf4j.LoggerFactory;
           oprot.writeString(_iter560);
         }
       }
+      oprot.writeString(struct.validTxnStr);
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, GetOpenWriteIdsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      struct.currentTxnId = iprot.readI64();
-      struct.setCurrentTxnIdIsSet(true);
       {
         org.apache.thrift.protocol.TList _list561 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
         struct.tableNames = new ArrayList<String>(_list561.size);
@@ -530,6 +530,8 @@ import org.slf4j.LoggerFactory;
         }
       }
       struct.setTableNamesIsSet(true);
+      struct.validTxnStr = iprot.readString();
+      struct.setValidTxnStrIsSet(true);
     }
   }
 

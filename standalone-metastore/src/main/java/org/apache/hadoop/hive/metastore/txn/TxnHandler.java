@@ -61,6 +61,7 @@ import org.apache.commons.pool.impl.GenericObjectPool;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
@@ -887,45 +888,22 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       Connection dbConn = null;
       Statement stmt = null;
       ResultSet rs = null;
+      ValidTxnList validTxnList;
+      if (rqst.isSetValidTxnStr()) {
+        validTxnList = new ValidReadTxnList(rqst.getValidTxnStr());
+      } else {
+        validTxnList = TxnUtils.createValidReadTxnList(getOpenTxns(), 0);
+      }
       try {
         /**
          * This runs at READ_COMMITTED for exactly the same reason as {@link #getOpenTxnsInfo()}
          */
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        String s = "select ntxn_next - 1 from NEXT_TXN_ID";
-        LOG.debug("Going to execute query <" + s + ">");
-        rs = stmt.executeQuery(s);
-        if (!rs.next()) {
-          throw new MetaException("Transaction tables not properly " +
-                  "initialized, no record found in next_txn_id");
-        }
-        long txnHwm = rs.getLong(1);
-        if (rs.wasNull()) {
-          throw new MetaException("Transaction tables not properly " +
-                  "initialized, null record found in next_txn_id");
-        }
-        close(rs);
-        List<Long> openList = new ArrayList<>();
-        List<Long> abortedList = new ArrayList<>();
-        //need the WHERE clause below to ensure consistent results with READ_COMMITTED
-        s = "select txn_id, txn_state from TXNS where txn_id <= " + txnHwm + " order by txn_id";
-        LOG.debug("Going to execute query<" + s + ">");
-        rs = stmt.executeQuery(s);
-        while (rs.next()) {
-          long txnId = rs.getLong(1);
-          char c = rs.getString(2).charAt(0);
-          if (c == TXN_OPEN) {
-            openList.add(txnId);
-          } else if (c == TXN_ABORTED) {
-            abortedList.add(txnId);
-          }
-        }
-        long currentTxn = rqst.getCurrentTxnId();
+
         List<OpenWriteIds> openWriteIdsList = new ArrayList<>();
         for (String table : rqst.getTableNames()) {
-          OpenWriteIds writeIds = getOpenWriteIdsForTable(stmt, table, currentTxn,
-                                                          txnHwm, openList, abortedList);
+          OpenWriteIds writeIds = getOpenWriteIdsForTable(stmt, table, validTxnList);
           openWriteIdsList.add(writeIds);
         }
 
@@ -940,21 +918,22 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         throw new MetaException("Unable to select from transaction database, "
                 + StringUtils.stringifyException(e));
       } finally {
-        close(rs, stmt, dbConn);
+        close(null, stmt, dbConn);
       }
     } catch (RetryException e) {
       return getOpenWriteIds(rqst);
     }
   }
 
-  private OpenWriteIds getOpenWriteIdsForTable(Statement stmt, String tableName, long currentTxn,
-       long txnHwm, List<Long>openList, List<Long>abortedList) throws SQLException {
+  private OpenWriteIds getOpenWriteIdsForTable(Statement stmt, String tableName,
+                                               ValidTxnList validTxnList) throws SQLException {
     ResultSet rs = null;
     try {
       // Need to initialize to 0 to make sure if nobody modified this table, then current txn
       // shouldn't read any data
       long writeIdHwm = 0;
       List<Long> openWriteIdList = new ArrayList<>();
+      long txnHwm = validTxnList.getHighWatermark();
 
       // The output includes all the txns which are under the high water mark. It includes
       // the committed transactions as well.
@@ -968,21 +947,20 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         long txnId = rs.getLong(1);
         long writeId = rs.getLong(2);
         writeIdHwm = Math.max(writeIdHwm, writeId);
-
-        // Skip the current transaction from the open list as the write ID corresponding to this
-        // should be valid within current transaction
-        if (txnId == currentTxn) {
+        if (validTxnList.isTxnValid(txnId)) {
+          // Skip of the transaction under evaluation is already committed.
           continue;
         }
-        if (openList.contains(txnId)) {
-          openWriteIdList.add(writeId);
-          minOpenWriteId = Math.min(minOpenWriteId, writeId);
-        } else if (abortedList.contains(txnId)) {
+
+        // The current txn is either in open or aborted state.
+        // Mark the write ids state as per the txn state.
+        if (validTxnList.isTxnAborted(txnId)) {
           openWriteIdList.add(writeId);
           abortedBits.set(openWriteIdList.size() - 1);
+        } else {
+          openWriteIdList.add(writeId);
+          minOpenWriteId = Math.min(minOpenWriteId, writeId);
         }
-
-        // Skip of the transaction under evaluation is already committed.
       }
 
       ByteBuffer byteBuffer = ByteBuffer.wrap(abortedBits.toByteArray());

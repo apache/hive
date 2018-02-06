@@ -1373,14 +1373,13 @@ public interface IMetaStoreClient {
 
   /**
    * Get a structure that details valid transactions.
-   * @param currentTxn The current transaction of the caller. Corresponding write id will be removed
-   *                   from the exceptions list so that the caller sees records from his own transaction.
    * @param tablesList list of tables read from the current transaction for which needs to populate
    *                   the valid write ids
+   * @param validTxnStr snapshot of valid txns for the current txn
    * @return list of valid write ids for the given list of tables.
    * @throws TException
    */
-  ValidTxnWriteIdList getValidWriteIds(long currentTxn, List<String> tablesList) throws TException;
+  ValidTxnWriteIdList getValidWriteIds(List<String> tablesList, String validTxnStr) throws TException;
 
   /**
    * Initiate a transaction.

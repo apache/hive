@@ -14340,22 +14340,18 @@ class GetOpenWriteIdsRequest {
   static $_TSPEC;
 
   /**
-   * @var int
-   */
-  public $currentTxnId = null;
-  /**
    * @var string[]
    */
   public $tableNames = null;
+  /**
+   * @var string
+   */
+  public $validTxnStr = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         1 => array(
-          'var' => 'currentTxnId',
-          'type' => TType::I64,
-          ),
-        2 => array(
           'var' => 'tableNames',
           'type' => TType::LST,
           'etype' => TType::STRING,
@@ -14363,14 +14359,18 @@ class GetOpenWriteIdsRequest {
             'type' => TType::STRING,
             ),
           ),
+        2 => array(
+          'var' => 'validTxnStr',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
-      if (isset($vals['currentTxnId'])) {
-        $this->currentTxnId = $vals['currentTxnId'];
-      }
       if (isset($vals['tableNames'])) {
         $this->tableNames = $vals['tableNames'];
+      }
+      if (isset($vals['validTxnStr'])) {
+        $this->validTxnStr = $vals['validTxnStr'];
       }
     }
   }
@@ -14395,13 +14395,6 @@ class GetOpenWriteIdsRequest {
       switch ($fid)
       {
         case 1:
-          if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->currentTxnId);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 2:
           if ($ftype == TType::LST) {
             $this->tableNames = array();
             $_size490 = 0;
@@ -14414,6 +14407,13 @@ class GetOpenWriteIdsRequest {
               $this->tableNames []= $elem495;
             }
             $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->validTxnStr);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -14431,16 +14431,11 @@ class GetOpenWriteIdsRequest {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('GetOpenWriteIdsRequest');
-    if ($this->currentTxnId !== null) {
-      $xfer += $output->writeFieldBegin('currentTxnId', TType::I64, 1);
-      $xfer += $output->writeI64($this->currentTxnId);
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->tableNames !== null) {
       if (!is_array($this->tableNames)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('tableNames', TType::LST, 2);
+      $xfer += $output->writeFieldBegin('tableNames', TType::LST, 1);
       {
         $output->writeListBegin(TType::STRING, count($this->tableNames));
         {
@@ -14451,6 +14446,11 @@ class GetOpenWriteIdsRequest {
         }
         $output->writeListEnd();
       }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->validTxnStr !== null) {
+      $xfer += $output->writeFieldBegin('validTxnStr', TType::STRING, 2);
+      $xfer += $output->writeString($this->validTxnStr);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

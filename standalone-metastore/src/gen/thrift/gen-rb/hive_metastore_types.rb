@@ -2222,19 +2222,19 @@ end
 
 class GetOpenWriteIdsRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  CURRENTTXNID = 1
-  TABLENAMES = 2
+  TABLENAMES = 1
+  VALIDTXNSTR = 2
 
   FIELDS = {
-    CURRENTTXNID => {:type => ::Thrift::Types::I64, :name => 'currentTxnId'},
-    TABLENAMES => {:type => ::Thrift::Types::LIST, :name => 'tableNames', :element => {:type => ::Thrift::Types::STRING}}
+    TABLENAMES => {:type => ::Thrift::Types::LIST, :name => 'tableNames', :element => {:type => ::Thrift::Types::STRING}},
+    VALIDTXNSTR => {:type => ::Thrift::Types::STRING, :name => 'validTxnStr'}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field currentTxnId is unset!') unless @currentTxnId
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableNames is unset!') unless @tableNames
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field validTxnStr is unset!') unless @validTxnStr
   end
 
   ::Thrift::Struct.generate_accessors self

@@ -5974,22 +5974,22 @@ class GetOpenWriteIdsRequest {
 
   GetOpenWriteIdsRequest(const GetOpenWriteIdsRequest&);
   GetOpenWriteIdsRequest& operator=(const GetOpenWriteIdsRequest&);
-  GetOpenWriteIdsRequest() : currentTxnId(0) {
+  GetOpenWriteIdsRequest() : validTxnStr() {
   }
 
   virtual ~GetOpenWriteIdsRequest() throw();
-  int64_t currentTxnId;
   std::vector<std::string>  tableNames;
-
-  void __set_currentTxnId(const int64_t val);
+  std::string validTxnStr;
 
   void __set_tableNames(const std::vector<std::string> & val);
 
+  void __set_validTxnStr(const std::string& val);
+
   bool operator == (const GetOpenWriteIdsRequest & rhs) const
   {
-    if (!(currentTxnId == rhs.currentTxnId))
-      return false;
     if (!(tableNames == rhs.tableNames))
+      return false;
+    if (!(validTxnStr == rhs.validTxnStr))
       return false;
     return true;
   }

@@ -31,6 +31,7 @@ import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
@@ -753,15 +754,25 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public ValidTxnWriteIdList getValidWriteIds(List<String> tableList) throws LockException {
+  public ValidTxnList getValidTxns() throws LockException {
+    assert isTxnOpen();
     init();
     try {
-      // TODO (Sankar): Need to get ValidTxnList first and store it in DbTxnManager. It is needed for
-      // multi-statement txns. Also, need to pass ValidTxnList to get getValidWriteIds.
-      return getMS().getValidWriteIds(txnId, tableList);
+      return getMS().getValidTxns(txnId);
     } catch (TException e) {
-      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(),
-          e);
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+    }
+  }
+
+  @Override
+  public ValidTxnWriteIdList getValidWriteIds(List<String> tableList,
+                                              String validTxnString) throws LockException {
+    assert isTxnOpen();
+    assert validTxnString != null && !validTxnString.isEmpty();
+    try {
+      return getMS().getValidWriteIds(tableList, validTxnString);
+    } catch (TException e) {
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }
   }
 

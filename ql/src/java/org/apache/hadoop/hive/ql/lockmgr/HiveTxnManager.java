@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
@@ -121,6 +122,18 @@ public interface HiveTxnManager {
   void heartbeat() throws LockException;
 
   /**
+   * Get the transactions that are currently valid.  The resulting
+   * {@link ValidTxnList} object is a thrift object and can
+   * be  passed to  the processing
+   * tasks for use in the reading the data.  This call should be made once up
+   * front by the planner and should never be called on the backend,
+   * as this will violate the isolation level semantics.
+   * @return list of valid transactions.
+   * @throws LockException
+   */
+  ValidTxnList getValidTxns() throws LockException;
+
+  /**
    * Get the table write Ids that are valid for the current transaction.  The resulting
    * {@link ValidTxnWriteIdList} object is a thrift object and can
    * be  passed to  the processing
@@ -128,10 +141,11 @@ public interface HiveTxnManager {
    * front by the planner per table and should never be called on the backend,
    * as this will violate the isolation level semantics.
    * @param tableList list of tables (<db_name>.<table_name>) read/written by current transaction.
+   * @param validTxnString snapshot of valid txns for the current txn
    * @return list of valid table write Ids.
    * @throws LockException
    */
-  ValidTxnWriteIdList getValidWriteIds(List<String> tableList) throws LockException;
+  ValidTxnWriteIdList getValidWriteIds(List<String> tableList, String validTxnString) throws LockException;
 
   /**
    * Get the name for currently installed transaction manager.

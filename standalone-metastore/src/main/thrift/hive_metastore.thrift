@@ -732,8 +732,8 @@ struct CommitTxnRequest {
 }
 
 struct GetOpenWriteIdsRequest {
-    1: required i64 currentTxnId,
-    2: required list<string> tableNames,
+    1: required list<string> tableNames,
+    2: required string validTxnStr,
 }
 
 struct OpenWriteIds {
