@@ -115,14 +115,14 @@ PREHOOK: query: select *
   limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypes_parquet
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select *
   from alltypes_parquet
   where cint = 528534767
   limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypes_parquet
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 528534767	-11	-15431	-11.0	-15431.0	cvLH6Eat2yFsyy7p
 528534767	-28	-15813	-28.0	-15813.0	cvLH6Eat2yFsyy7p
 528534767	-34	15007	-34.0	15007.0	cvLH6Eat2yFsyy7p
@@ -238,7 +238,7 @@ PREHOOK: query: select ctinyint,
   group by ctinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypes_parquet
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select ctinyint,
   max(cint),
   min(csmallint),
@@ -249,7 +249,7 @@ POSTHOOK: query: select ctinyint,
   group by ctinyint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypes_parquet
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 -1	626923679	-15441	36	-1.0486250072717667	8786.246963933321
 -10	626923679	-15384	28	-10.0	8850.451610567823
 -11	626923679	-15659	32	-11.0	10453.738567408038
@@ -427,7 +427,7 @@ STAGE PLANS:
             LLAP IO: all inputs (cache only)
             Map Vectorization:
                 enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.row.serde.deserialize IS true AND hive.vectorized.row.serde.inputformat.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false, hive.vectorized.use.vectorized.input.format IS true AND hive.vectorized.input.format.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false
+                enabledConditionsNotMet: Row deserialization of vectorized input format not supported IS false, hive.vectorized.use.vectorized.input.format IS true AND hive.vectorized.input.format.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false
                 inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
 
   Stage: Stage-0
@@ -442,14 +442,14 @@ PREHOOK: query: select *
   limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypes_parquet
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select *
   from alltypes_parquet
   where cint = 528534767
   limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypes_parquet
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 528534767	-11	-15431	-11.0	-15431.0	cvLH6Eat2yFsyy7p
 528534767	-28	-15813	-28.0	-15813.0	cvLH6Eat2yFsyy7p
 528534767	-34	15007	-34.0	15007.0	cvLH6Eat2yFsyy7p
@@ -519,7 +519,7 @@ STAGE PLANS:
             LLAP IO: all inputs (cache only)
             Map Vectorization:
                 enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.row.serde.deserialize IS true AND hive.vectorized.row.serde.inputformat.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false, hive.vectorized.use.vectorized.input.format IS true AND hive.vectorized.input.format.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false
+                enabledConditionsNotMet: Row deserialization of vectorized input format not supported IS false, hive.vectorized.use.vectorized.input.format IS true AND hive.vectorized.input.format.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false
                 inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
         Reducer 2 
             Execution mode: vectorized, llap
@@ -560,7 +560,7 @@ PREHOOK: query: select ctinyint,
   group by ctinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypes_parquet
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select ctinyint,
   max(cint),
   min(csmallint),
@@ -571,7 +571,7 @@ POSTHOOK: query: select ctinyint,
   group by ctinyint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypes_parquet
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 -1	626923679	-15441	36	-1.0486250072717667	8786.246963933321
 -10	626923679	-15384	28	-10.0	8850.451610567823
 -11	626923679	-15659	32	-11.0	10453.738567408038
@@ -769,14 +769,14 @@ PREHOOK: query: select *
   limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypes_parquet
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select *
   from alltypes_parquet
   where cint = 528534767
   limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypes_parquet
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 528534767	-11	-15431	-11.0	-15431.0	cvLH6Eat2yFsyy7p
 528534767	-28	-15813	-28.0	-15813.0	cvLH6Eat2yFsyy7p
 528534767	-34	15007	-34.0	15007.0	cvLH6Eat2yFsyy7p
@@ -892,7 +892,7 @@ PREHOOK: query: select ctinyint,
   group by ctinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypes_parquet
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select ctinyint,
   max(cint),
   min(csmallint),
@@ -903,7 +903,7 @@ POSTHOOK: query: select ctinyint,
   group by ctinyint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypes_parquet
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 -1	626923679	-15441	36	-1.0486250072717667	8786.246963933321
 -10	626923679	-15384	28	-10.0	8850.451610567823
 -11	626923679	-15659	32	-11.0	10453.738567408038
@@ -1144,14 +1144,14 @@ PREHOOK: query: select *
   limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypes_orc
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select *
   from alltypes_orc
   where cint = 528534767
   limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypes_orc
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 528534767	-11	-15431	-11.0	-15431.0	cvLH6Eat2yFsyy7p
 528534767	-28	-15813	-28.0	-15813.0	cvLH6Eat2yFsyy7p
 528534767	-34	15007	-34.0	15007.0	cvLH6Eat2yFsyy7p
@@ -1262,7 +1262,7 @@ PREHOOK: query: select ctinyint,
   group by ctinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypes_orc
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select ctinyint,
   max(cint),
   min(csmallint),
@@ -1273,7 +1273,7 @@ POSTHOOK: query: select ctinyint,
   group by ctinyint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypes_orc
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 -1	626923679	-15441	36	-1.0486250072717667	8786.246963933321
 -10	626923679	-15384	28	-10.0	8850.451610567823
 -11	626923679	-15659	32	-11.0	10453.738567408038
@@ -1458,17 +1458,12 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized, llap
+            Execution mode: llap
             LLAP IO: all inputs
             Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                enabled: false
+                enabledConditionsNotMet: Row deserialization of vectorized input format not supported IS false, hive.vectorized.use.vectorized.input.format IS true AND hive.vectorized.input.format.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.orc.OrcInputFormat IS false
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
 
   Stage: Stage-0
     Fetch Operator
@@ -1479,11 +1474,11 @@ STAGE PLANS:
 PREHOOK: query: select t1, t2, (t1+t2) from orcTbl where (t1+t2) > 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orctbl
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select t1, t2, (t1+t2) from orcTbl where (t1+t2) > 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orctbl
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 54	9	63
 PREHOOK: query: create table parquetTbl (t1 tinyint, t2 tinyint)
 stored as parquet
@@ -1541,17 +1536,12 @@ STAGE PLANS:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized, llap
+            Execution mode: llap
             LLAP IO: all inputs (cache only)
             Map Vectorization:
-                enabled: true
-                enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
-                inputFormatFeatureSupport: []
-                featureSupportInUse: []
+                enabled: false
+                enabledConditionsNotMet: Row deserialization of vectorized input format not supported IS false, hive.vectorized.use.vectorized.input.format IS true AND hive.vectorized.input.format.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false
                 inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
 
   Stage: Stage-0
     Fetch Operator
@@ -1562,9 +1552,9 @@ STAGE PLANS:
 PREHOOK: query: SELECT t1, t2, (t1 + t2) FROM parquetTbl WHERE (t1 + t2) > 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@parquettbl
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT t1, t2, (t1 + t2) FROM parquetTbl WHERE (t1 + t2) > 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@parquettbl
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 54	9	63
