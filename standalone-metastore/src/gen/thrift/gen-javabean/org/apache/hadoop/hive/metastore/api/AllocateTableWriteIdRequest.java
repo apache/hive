@@ -521,13 +521,13 @@ import org.slf4j.LoggerFactory;
           case 1: // TXN_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list590 = iprot.readListBegin();
-                struct.txnIds = new ArrayList<Long>(_list590.size);
-                long _elem591;
-                for (int _i592 = 0; _i592 < _list590.size; ++_i592)
+                org.apache.thrift.protocol.TList _list580 = iprot.readListBegin();
+                struct.txnIds = new ArrayList<Long>(_list580.size);
+                long _elem581;
+                for (int _i582 = 0; _i582 < _list580.size; ++_i582)
                 {
-                  _elem591 = iprot.readI64();
-                  struct.txnIds.add(_elem591);
+                  _elem581 = iprot.readI64();
+                  struct.txnIds.add(_elem581);
                 }
                 iprot.readListEnd();
               }
@@ -569,9 +569,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(TXN_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.txnIds.size()));
-          for (long _iter593 : struct.txnIds)
+          for (long _iter583 : struct.txnIds)
           {
-            oprot.writeI64(_iter593);
+            oprot.writeI64(_iter583);
           }
           oprot.writeListEnd();
         }
@@ -606,9 +606,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.txnIds.size());
-        for (long _iter594 : struct.txnIds)
+        for (long _iter584 : struct.txnIds)
         {
-          oprot.writeI64(_iter594);
+          oprot.writeI64(_iter584);
         }
       }
       oprot.writeString(struct.dbName);
@@ -619,13 +619,13 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, AllocateTableWriteIdRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list595 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.txnIds = new ArrayList<Long>(_list595.size);
-        long _elem596;
-        for (int _i597 = 0; _i597 < _list595.size; ++_i597)
+        org.apache.thrift.protocol.TList _list585 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.txnIds = new ArrayList<Long>(_list585.size);
+        long _elem586;
+        for (int _i587 = 0; _i587 < _list585.size; ++_i587)
         {
-          _elem596 = iprot.readI64();
-          struct.txnIds.add(_elem596);
+          _elem586 = iprot.readI64();
+          struct.txnIds.add(_elem586);
         }
       }
       struct.setTxnIdsIsSet(true);
