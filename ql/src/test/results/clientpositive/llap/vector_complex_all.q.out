@@ -584,25 +584,45 @@ STAGE PLANS:
                   alias: orc_create_complex
                   Pruned Column Paths: strct.b
                   Statistics: Num rows: 3 Data size: 1800 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:str:string, 1:mp:map<string,string>, 2:lst:array<string>, 3:strct:struct<a:string,b:string>, 4:val:string, 5:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: strct.b (type: string), str (type: string)
                     outputColumnNames: _col0, _col1
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [6, 0]
+                        selectExpressions: VectorUDFStructField(col 3:struct<a:string,b:string>, col 1:int) -> 6:string
                     Statistics: Num rows: 3 Data size: 1800 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 3 Data size: 1800 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: SELECT operator: Could not vectorize expression (mode = PROJECTION): Column[strct].b
-                vectorized: false
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 5
+                    includeColumns: [0, 3]
+                    dataColumns: str:string, mp:map<string,string>, lst:array<string>, strct:struct<a:string,b:string>, val:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [string]
 
   Stage: Stage-0
     Fetch Operator
@@ -1265,12 +1285,28 @@ STAGE PLANS:
                   alias: orc_create_complex
                   Pruned Column Paths: strct.b
                   Statistics: Num rows: 13503 Data size: 7697400 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:str:string, 1:mp:map<string,string>, 2:lst:array<string>, 3:strct:struct<a:string,b:string>, 4:val:string, 5:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: strct.b (type: string), val (type: string)
                     outputColumnNames: _col0, _col1
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [6, 4]
+                        selectExpressions: VectorUDFStructField(col 3:struct<a:string,b:string>, col 1:int) -> 6:string
                     Statistics: Num rows: 13503 Data size: 7697400 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(_col1)
+                      Group By Vectorization:
+                          aggregators: VectorUDAFCount(col 4:string) -> bigint
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 6:string
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
                       keys: _col0 (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1
@@ -1279,16 +1315,31 @@ STAGE PLANS:
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkStringOperator
+                            keyColumnNums: [0]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: [1]
                         Statistics: Num rows: 13503 Data size: 7697400 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: bigint)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: SELECT operator: Could not vectorize expression (mode = PROJECTION): Column[strct].b
-                vectorized: false
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 5
+                    includeColumns: [3, 4]
+                    dataColumns: str:string, mp:map<string,string>, lst:array<string>, strct:struct<a:string,b:string>, val:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [string]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
