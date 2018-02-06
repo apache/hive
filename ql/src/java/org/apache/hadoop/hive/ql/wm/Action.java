@@ -79,7 +79,7 @@ public class Action {
       Tree poolNode = node.getChild(0);
       StringBuilder poolPath = new StringBuilder(poolNode.getText());
       for (int i = 0; i < poolNode.getChildCount(); ++i) {
-        poolPath.append(poolNode.getChild(0).getText());
+        poolPath.append(poolNode.getChild(i).getText());
       }
       return new Action(Type.MOVE_TO_POOL, poolPath.toString());
     }
