@@ -186,32 +186,24 @@ public final class JavaUtils {
   }
 
   public static class IdPathFilter implements PathFilter {
-    private String mmDirName;
-    private final boolean isMatch, isIgnoreTemp, isPrefix;
+    private String baseDirName, deltaDirName;
+    private final boolean isMatch, isIgnoreTemp, isDeltaPrefix;
 
     public IdPathFilter(long writeId, int stmtId, boolean isMatch) {
-      this(writeId, stmtId, isMatch, false, false);
+      this(writeId, stmtId, isMatch, false);
     }
+
     public IdPathFilter(long writeId, int stmtId, boolean isMatch, boolean isIgnoreTemp) {
-      this(writeId, stmtId, isMatch, isIgnoreTemp, false);
-    }
-    public IdPathFilter(long writeId, int stmtId, boolean isMatch, boolean isIgnoreTemp, boolean isBaseDir) {
-      String mmDirName = null;
-      if (!isBaseDir) {
-        mmDirName = DELTA_PREFIX + "_" + String.format(DELTA_DIGITS, writeId) + "_" +
-                String.format(DELTA_DIGITS, writeId) + "_";
-        if (stmtId >= 0) {
-          mmDirName += String.format(STATEMENT_DIGITS, stmtId);
-          isPrefix = false;
-        } else {
-          isPrefix = true;
-        }
-      } else {
-        mmDirName = BASE_PREFIX + "_" + String.format(DELTA_DIGITS, writeId);
-        isPrefix = false;
+      String deltaDirName = null;
+      deltaDirName = DELTA_PREFIX + "_" + String.format(DELTA_DIGITS, writeId) + "_" +
+              String.format(DELTA_DIGITS, writeId) + "_";
+      isDeltaPrefix = (stmtId < 0);
+      if (!isDeltaPrefix) {
+        deltaDirName += String.format(STATEMENT_DIGITS, stmtId);
       }
 
-      this.mmDirName = mmDirName;
+      this.baseDirName = BASE_PREFIX + "_" + String.format(DELTA_DIGITS, writeId);
+      this.deltaDirName = deltaDirName;
       this.isMatch = isMatch;
       this.isIgnoreTemp = isIgnoreTemp;
     }
@@ -219,7 +211,8 @@ public final class JavaUtils {
     @Override
     public boolean accept(Path path) {
       String name = path.getName();
-      if ((isPrefix && name.startsWith(mmDirName)) || (!isPrefix && name.equals(mmDirName))) {
+      if (name.equals(baseDirName) || (isDeltaPrefix && name.startsWith(deltaDirName))
+          || (!isDeltaPrefix && name.equals(deltaDirName))) {
         return isMatch;
       }
       if (isIgnoreTemp && name.length() > 0) {

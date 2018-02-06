@@ -2190,6 +2190,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
         // Note: we ignore the statement ID here, because it's currently irrelevant for MoveTask
         //       where this is used; we always want to load everything; also the only case where
         //       we have multiple statements anyway is union.
+        Utilities.FILE_OP_LOGGER.trace(
+            "Looking for dynamic partitions in {} ({} levels)", loadPath, numDP);
         Path[] leafStatus = Utilities.getMmDirectoryCandidates(
             fs, loadPath, numDP, numLB, null, txnId, -1, conf, isInsertOverwrite);
         for (Path p : leafStatus) {
