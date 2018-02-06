@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.udf.*;
 import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
@@ -812,6 +813,10 @@ public class VectorizationContext {
           mode);
     } else if (exprDesc instanceof ExprNodeDynamicValueDesc) {
       ve = getDynamicValueVectorExpression((ExprNodeDynamicValueDesc) exprDesc, mode);
+    } else if (exprDesc instanceof ExprNodeFieldDesc) {
+      // Get the GenericUDFStructField to process the field of Struct type
+      ve = getGenericUDFStructField((ExprNodeFieldDesc)exprDesc,
+          mode, exprDesc.getTypeInfo());
     }
     if (ve == null) {
       throw new HiveException(
@@ -822,6 +827,41 @@ public class VectorizationContext {
           + ", Vectorized Expression = " + ve.toString());
     }
     return ve;
+  }
+
+  private VectorExpression getGenericUDFStructField(ExprNodeFieldDesc exprNodeFieldDesc,
+      VectorExpressionDescriptor.Mode mode, TypeInfo returnType) throws HiveException {
+    // set the arguments for GenericUDFStructField
+    List<ExprNodeDesc> children = new ArrayList<>(2);
+    children.add(exprNodeFieldDesc.getDesc());
+    children.add(new ExprNodeConstantDesc(getStructFieldIndex(exprNodeFieldDesc)));
+
+    return getVectorExpressionForUdf(null, GenericUDFStructField.class, children, mode, returnType);
+  }
+
+  /**
+   * The field of Struct is stored in StructColumnVector.fields[index].
+   * Check the StructTypeInfo.getAllStructFieldNames() and compare to the field name, get the index.
+   */
+  private int getStructFieldIndex(ExprNodeFieldDesc exprNodeFieldDesc) throws HiveException {
+    ExprNodeDesc structNodeDesc = exprNodeFieldDesc.getDesc();
+    String fieldName = exprNodeFieldDesc.getFieldName();
+    StructTypeInfo structTypeInfo = (StructTypeInfo) structNodeDesc.getTypeInfo();
+    int index = 0;
+    boolean isFieldExist = false;
+    for (String fn : structTypeInfo.getAllStructFieldNames()) {
+      if (fieldName.equals(fn)) {
+        isFieldExist = true;
+        break;
+      }
+      index++;
+    }
+    if (isFieldExist) {
+      return index;
+    } else {
+      throw new HiveException("Could not vectorize expression:" + exprNodeFieldDesc.toString()
+          + ", the field " + fieldName + " doesn't exist.");
+    }
   }
 
   /**
@@ -1654,7 +1694,8 @@ public class VectorizationContext {
         throw new HiveException("No match for type string " + childTypeString + " from undecorated type name method");
       }
       builder.setArgumentType(i, undecoratedTypeName);
-      if ((child instanceof ExprNodeGenericFuncDesc) || (child instanceof ExprNodeColumnDesc)) {
+      if ((child instanceof ExprNodeGenericFuncDesc) || (child instanceof ExprNodeColumnDesc)
+          || (child instanceof ExprNodeFieldDesc)) {
         builder.setInputExpressionType(i, InputExpressionType.COLUMN);
       } else if (child instanceof ExprNodeConstantDesc) {
         builder.setInputExpressionType(i, InputExpressionType.SCALAR);
@@ -1732,7 +1773,7 @@ public class VectorizationContext {
       inputTypeInfos[i] = childTypeInfo;
       inputDataTypePhysicalVariations[i] = DataTypePhysicalVariation.NONE;   // Assume.
 
-      if (child instanceof ExprNodeGenericFuncDesc) {
+      if ((child instanceof ExprNodeGenericFuncDesc) || (child instanceof ExprNodeFieldDesc)) {
         VectorExpression vChild = getVectorExpression(child, childrenMode);
           children.add(vChild);
           arguments[i] = vChild.getOutputColumnNum();
