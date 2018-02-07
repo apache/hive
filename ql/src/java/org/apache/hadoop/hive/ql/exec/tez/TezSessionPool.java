@@ -104,10 +104,12 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
       amRegistry.populateCache(true);
     }
 
+    this.parentSessionState = SessionState.get();
+    if (initialSize == 0) return; // May be resized later.
+
     int threadCount = Math.min(initialSize,
         HiveConf.getIntVar(initConf, ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS));
     Preconditions.checkArgument(threadCount > 0);
-    this.parentSessionState = SessionState.get();
     if (threadCount == 1) {
       for (int i = 0; i < initialSize; ++i) {
         SessionType session = sessionObjFactory.create(null);
