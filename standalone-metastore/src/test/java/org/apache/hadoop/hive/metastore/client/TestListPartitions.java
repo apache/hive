@@ -1040,14 +1040,10 @@ public class TestListPartitions {
     assertCorrectPartitionNames(partitionNames, testValues.subList(0, 2),
             Lists.newArrayList("yyyy", "mm", "dd"));
 
-
-    //TODO: surprisingly listPartitionNames returns everything when 0 parts are requested
     partitionNames = client.listPartitionNames(DB_NAME, TABLE_NAME, (short)0);
-    assertFalse(partitionNames.isEmpty());
-    assertCorrectPartitionNames(partitionNames, testValues, Lists.newArrayList("yyyy", "mm",
-            "dd"));
+    assertTrue(partitionNames.isEmpty());
 
-    //TODO: surprisingly listPartitionNames doesn't fail when >100 parts are requested
+    //This method does not depend on MetastoreConf.LIMIT_PARTITION_REQUEST setting:
     partitionNames = client.listPartitionNames(DB_NAME, TABLE_NAME, (short)101);
     assertCorrectPartitionNames(partitionNames, testValues, Lists.newArrayList("yyyy", "mm",
             "dd"));

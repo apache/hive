@@ -528,7 +528,12 @@ public class MetastoreConf {
             "The special string _HOST will be replaced automatically with the correct host name."),
     LIMIT_PARTITION_REQUEST("metastore.limit.partition.request",
         "hive.metastore.limit.partition.request", -1,
-        "This limits the number of partitions that can be requested from the metastore for a given table.\n" +
+        "This limits the number of partitions (whole partition objects) that can be requested " +
+        "from the metastore for a give table. MetaStore API methods using this are: \n" +
+                "get_partitions, \n" +
+                "get_partitions_with_auth, \n" +
+                "get_partitions_by_filter, \n" +
+                "get_partitions_by_expr.\n" +
             "The default value \"-1\" means no limit."),
     LOG4J_FILE("metastore.log4j.file", "hive.log4j.file", "",
         "Hive log4j configuration file.\n" +

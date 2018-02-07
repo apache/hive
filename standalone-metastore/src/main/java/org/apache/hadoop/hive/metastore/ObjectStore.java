@@ -2741,6 +2741,9 @@ public class ObjectStore implements RawStore, Configurable {
 
   private List<String> getPartitionNamesNoTxn(String dbName, String tableName, short max) {
     List<String> pns = new ArrayList<>();
+    if (max == 0) {
+      return pns;
+    }
     dbName = normalizeIdentifier(dbName);
     tableName = normalizeIdentifier(tableName);
     Query query =
@@ -2749,6 +2752,7 @@ public class ObjectStore implements RawStore, Configurable {
             + "order by partitionName asc");
     query.declareParameters("java.lang.String t1, java.lang.String t2");
     query.setResult("partitionName");
+
     if (max > 0) {
       query.setRange(0, max);
     }
