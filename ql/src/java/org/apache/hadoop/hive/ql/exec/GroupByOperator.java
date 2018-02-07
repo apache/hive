@@ -36,13 +36,13 @@ import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.exec.tez.TezContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc.Mode;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
@@ -67,13 +67,14 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobConf;
 
 import javolution.util.FastBitSet;
 
 /**
  * GroupBy operator implementation.
  */
-public class GroupByOperator extends Operator<GroupByDesc> {
+public class GroupByOperator extends Operator<GroupByDesc> implements IConfigureJobConf {
 
   private static final long serialVersionUID = 1L;
   private static final int NUMROWSESTIMATESIZE = 1000;
@@ -1164,14 +1165,15 @@ public class GroupByOperator extends Operator<GroupByDesc> {
   }
 
   public static boolean shouldEmitSummaryRow(GroupByDesc desc) {
-    // exactly one reducer should emit the summary row
-    if (!firstReducer()) {
-      return false;
-    }
     // empty keyset is basically ()
     if (desc.getKeys().size() == 0) {
       return true;
     }
+
+    if (desc.getMode() != Mode.HASH && desc.getMode() != Mode.COMPLETE && desc.getMode() != Mode.PARTIAL1) {
+      return false;
+    }
+
     int groupingSetPosition = desc.getGroupingSetPosition();
     List<Integer> listGroupingSets = desc.getListGroupingSets();
     // groupingSets are known at map/reducer side; but have to do real processing
@@ -1185,13 +1187,12 @@ public class GroupByOperator extends Operator<GroupByDesc> {
     return false;
   }
 
-  public static boolean firstReducer() {
-    MapredContext ctx = TezContext.get();
-    if (ctx != null && ctx instanceof TezContext) {
-      TezContext tezContext = (TezContext) ctx;
-      return tezContext.getTezProcessorContext().getTaskIndex() == 0;
+  @Override
+  public void configureJobConf(JobConf job) {
+    // only needed when grouping sets are present
+    if (conf.getGroupingSetPosition() > 0 && shouldEmitSummaryRow(conf)) {
+      job.setBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, true);
     }
-    return true;
   }
 
 }

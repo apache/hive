@@ -63,6 +63,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tx1
 #### A masked pattern was here ####
 NULL	1	NULL,1
+PREHOOK: query: select '2 rows expected',sum(c) from tx1 group by rollup (a)
+union all
+select '2 rows expected',sum(c) from tx1 group by rollup (a)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tx1
+#### A masked pattern was here ####
+POSTHOOK: query: select '2 rows expected',sum(c) from tx1 group by rollup (a)
+union all
+select '2 rows expected',sum(c) from tx1 group by rollup (a)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx1
+#### A masked pattern was here ####
+2 rows expected	NULL
+2 rows expected	NULL
 PREHOOK: query: insert into tx1 values (1,1,1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -225,6 +239,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tx2
 #### A masked pattern was here ####
 NULL	NULL	asd	1	NULL,1
+PREHOOK: query: select '2 rows expected',sum(c) from tx2 group by rollup (a)
+union all
+select '2 rows expected',sum(c) from tx2 group by rollup (a)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tx2
+#### A masked pattern was here ####
+POSTHOOK: query: select '2 rows expected',sum(c) from tx2 group by rollup (a)
+union all
+select '2 rows expected',sum(c) from tx2 group by rollup (a)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tx2
+#### A masked pattern was here ####
+2 rows expected	NULL
+2 rows expected	NULL
 PREHOOK: query: insert into tx2 values
 (1,2,3,1.1,'x','b'),
 (3,2,3,1.1,'y','b')

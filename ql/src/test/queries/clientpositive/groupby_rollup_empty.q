@@ -22,6 +22,10 @@ from    tx1
 where	a<0
 group by rollup (b);
 
+select '2 rows expected',sum(c) from tx1 group by rollup (a)
+union all
+select '2 rows expected',sum(c) from tx1 group by rollup (a);
+
 -- non-empty table
 
 insert into tx1 values (1,1,1);
@@ -64,6 +68,9 @@ from    tx2
 where	a<0
 group by a,b,d grouping sets ((), b, a, d);
 
+select '2 rows expected',sum(c) from tx2 group by rollup (a)
+union all
+select '2 rows expected',sum(c) from tx2 group by rollup (a);
 
 insert into tx2 values
 (1,2,3,1.1,'x','b'),

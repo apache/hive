@@ -29,7 +29,6 @@ import java.util.Set;
 
 import com.google.common.base.Preconditions;
 
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.tez.common.counters.TezCounters;

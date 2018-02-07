@@ -209,6 +209,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
   }
 
+  @Override
   public void configure(JobConf job) {
     this.job = job;
   }
@@ -367,6 +368,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return instance;
   }
 
+  @Override
   public RecordReader getRecordReader(InputSplit split, JobConf job,
       Reporter reporter) throws IOException {
     HiveInputSplit hsplit = (HiveInputSplit) split;
@@ -500,6 +502,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     for (InputSplit is : iss) {
       result.add(new HiveInputSplit(is, inputFormatClass.getName()));
     }
+    if (iss.length == 0 && finalDirs.length > 0 && conf.getBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, false)) {
+      // If there are no inputs; the Execution engine skips the operator tree.
+      // To prevent it from happening; an opaque  ZeroRows input is added here - when needed.
+      result.add(new HiveInputSplit(new NullRowsInputFormat.DummyInputSplit(finalDirs[0].toString()),
+          ZeroRowsInputFormat.class.getName()));
+    }
   }
 
   public static Path[] processPathsForMmRead(List<Path> dirs, JobConf conf,
@@ -592,6 +600,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return dirs;
   }
 
+  @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);

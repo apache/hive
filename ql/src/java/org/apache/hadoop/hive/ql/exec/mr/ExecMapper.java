@@ -141,13 +141,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
   @Override
   public void map(Object key, Object value, OutputCollector output,
       Reporter reporter) throws IOException {
-    if (oc == null) {
-      oc = output;
-      rp = reporter;
-      OperatorUtils.setChildrenCollector(mo.getChildOperators(), output);
-      mo.setReporter(rp);
-      MapredContext.get().setReporter(reporter);
-    }
+    ensureOutputInitialize(output, reporter);
     // reset the execContext for each new row
     execContext.resetRow();
 
@@ -168,6 +162,16 @@ public class ExecMapper extends MapReduceBase implements Mapper {
         l4j.error(StringUtils.stringifyException(e));
         throw new RuntimeException(e);
       }
+    }
+  }
+
+  public void ensureOutputInitialize(OutputCollector output, Reporter reporter) {
+    if (oc == null) {
+      oc = output;
+      rp = reporter;
+      OperatorUtils.setChildrenCollector(mo.getChildOperators(), output);
+      mo.setReporter(rp);
+      MapredContext.get().setReporter(reporter);
     }
   }
 
