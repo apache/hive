@@ -75,6 +75,11 @@ public class FetchWork implements Serializable {
    */
   private boolean isUsingThriftJDBCBinarySerDe = false;
 
+  /**
+   * Whether this FetchWork is returning a cached query result
+   */
+  private boolean isCachedResult = false;
+
   public boolean isHiveServerQuery() {
 	return isHiveServerQuery;
   }
@@ -363,5 +368,13 @@ public class FetchWork implements Serializable {
       return null;
     }
     return new FetchExplainVectorization(this);
+  }
+  @Explain(displayName = "Cached Query Result", displayOnlyOnTrue = true, explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  public boolean isCachedResult() {
+    return isCachedResult;
+  }
+
+  public void setCachedResult(boolean isCachedResult) {
+    this.isCachedResult = isCachedResult;
   }
 }

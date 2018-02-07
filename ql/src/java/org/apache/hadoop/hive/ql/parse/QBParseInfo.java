@@ -675,6 +675,9 @@ public class QBParseInfo {
     return insertOverwriteTables;
   }
 
+  public boolean hasInsertTables() {
+    return this.insertIntoTables.size() > 0 || this.insertOverwriteTables.size() > 0;
+  }
 }
 
 
