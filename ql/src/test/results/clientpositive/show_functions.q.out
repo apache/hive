@@ -81,6 +81,7 @@ div
 e
 elt
 encode
+enforce_constraint
 ewah_bitmap
 ewah_bitmap_and
 ewah_bitmap_empty

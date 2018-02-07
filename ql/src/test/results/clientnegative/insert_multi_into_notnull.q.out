@@ -1,0 +1,17 @@
+PREHOOK: query: create table src_multi1 (a STRING NOT NULL ENFORCED, b STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_multi1
+POSTHOOK: query: create table src_multi1 (a STRING NOT NULL ENFORCED, b STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_multi1
+PREHOOK: query: create table src_multi2 (i STRING, j STRING NOT NULL ENFORCED)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@src_multi2
+POSTHOOK: query: create table src_multi2 (i STRING, j STRING NOT NULL ENFORCED)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@src_multi2
+FAILED: UDFArgumentException org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException: NOT NULL constraint violated!

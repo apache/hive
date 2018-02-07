@@ -214,6 +214,7 @@ public final class FunctionRegistry {
     system.registerUDF("rand", UDFRand.class, false);
     system.registerGenericUDF("abs", GenericUDFAbs.class);
     system.registerGenericUDF("sq_count_check", GenericUDFSQCountCheck.class);
+    system.registerGenericUDF("enforce_constraint", GenericUDFEnforceNotNullConstraint.class);
     system.registerGenericUDF("pmod", GenericUDFPosMod.class);
 
     system.registerUDF("ln", UDFLn.class, false);

@@ -701,7 +701,7 @@ public class TypeCheckProcFactory {
 
   }
 
-  private static ExprNodeDesc toExprNodeDesc(ColumnInfo colInfo) {
+  static ExprNodeDesc toExprNodeDesc(ColumnInfo colInfo) {
     ObjectInspector inspector = colInfo.getObjectInspector();
     if (inspector instanceof ConstantObjectInspector &&
         inspector instanceof PrimitiveObjectInspector) {

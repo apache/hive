@@ -1,0 +1,24 @@
+PREHOOK: query: create table acid_uami(i int,
+                 de decimal(5,2) constraint nn1 not null enforced,
+                 vc varchar(128) constraint nn2 not null enforced) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@acid_uami
+POSTHOOK: query: create table acid_uami(i int,
+                 de decimal(5,2) constraint nn1 not null enforced,
+                 vc varchar(128) constraint nn2 not null enforced) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@acid_uami
+PREHOOK: query: insert into acid_uami values(1, 1.4, 'first')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@acid_uami
+POSTHOOK: query: insert into acid_uami values(1, 1.4, 'first')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@acid_uami
+POSTHOOK: Lineage: acid_uami.de SCRIPT []
+POSTHOOK: Lineage: acid_uami.i SCRIPT []
+POSTHOOK: Lineage: acid_uami.vc SCRIPT []
+FAILED: UDFArgumentException org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException: NOT NULL constraint violated!

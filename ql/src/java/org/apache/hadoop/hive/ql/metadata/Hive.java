@@ -31,7 +31,17 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,6 +50,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.jdo.JDODataStoreException;
@@ -4808,6 +4819,30 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   public NotNullConstraint getReliableNotNullConstraints(String dbName, String tblName) throws HiveException {
     return getNotNullConstraints(dbName, tblName, true);
+  }
+
+  /**
+   * Get not null constraints associated with the table that are enabled/enforced.
+   *
+   * @param dbName Database Name
+   * @param tblName Table Name
+   * @return Not null constraints associated with the table.
+   * @throws HiveException
+   */
+  public NotNullConstraint getEnabledNotNullConstraints(String dbName, String tblName)
+      throws HiveException {
+    try {
+      List<SQLNotNullConstraint> notNullConstraints = getMSC().getNotNullConstraints(
+              new NotNullConstraintsRequest(dbName, tblName));
+      if (notNullConstraints != null && !notNullConstraints.isEmpty()) {
+        notNullConstraints = notNullConstraints.stream()
+          .filter(nnc -> nnc.isEnable_cstr())
+          .collect(Collectors.toList());
+      }
+      return new NotNullConstraint(notNullConstraints, tblName, dbName);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
   }
 
   private NotNullConstraint getNotNullConstraints(String dbName, String tblName, boolean onlyReliable)
