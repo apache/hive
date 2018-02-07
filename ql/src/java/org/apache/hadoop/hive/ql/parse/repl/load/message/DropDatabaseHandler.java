@@ -17,31 +17,33 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
-import org.apache.hadoop.hive.metastore.messaging.DropConstraintMessage;
+import org.apache.hadoop.hive.metastore.messaging.DropDatabaseMessage;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
+import org.apache.hadoop.hive.ql.plan.DropDatabaseDesc;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
-public class DropConstraintHandler extends AbstractMessageHandler {
+public class DropDatabaseHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context context)
       throws SemanticException {
-    DropConstraintMessage msg = deserializer.getDropConstraintMessage(context.dmd.getPayload());
+    DropDatabaseMessage msg =
+        deserializer.getDropDatabaseMessage(context.dmd.getPayload());
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
-    String actualTblName = context.isTableNameEmpty() ? msg.getTable() : context.tableName;
-    String constraintName = msg.getConstraint();
-
-    AlterTableDesc dropConstraintsDesc = new AlterTableDesc(actualDbName + "." + actualTblName, constraintName,
-        context.eventOnlyReplicationSpec());
-    Task<DDLWork> dropConstraintsTask = TaskFactory.get(new DDLWork(readEntitySet, writeEntitySet, dropConstraintsDesc), context.hiveConf);
-    context.log.debug("Added drop constrain task : {}:{}", dropConstraintsTask.getId(), actualTblName);
-    updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);
-    return Collections.singletonList(dropConstraintsTask);    
+    DropDatabaseDesc desc =
+        new DropDatabaseDesc(actualDbName, true, context.eventOnlyReplicationSpec());
+    Task<? extends Serializable> dropDBTask =
+        TaskFactory
+            .get(new DDLWork(new HashSet<>(), new HashSet<>(), desc), context.hiveConf);
+    context.log.info(
+        "Added drop database task : {}:{}", dropDBTask.getId(), desc.getDatabaseName());
+    updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, null, null);
+    return Collections.singletonList(dropDBTask);
   }
 }

@@ -29,12 +29,6 @@ import java.util.List;
 public class TableHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context context) throws SemanticException {
-    // Path being passed to us is a table dump location. We go ahead and load it in as needed.
-    // If tblName is null, then we default to the table name specified in _metadata, which is good.
-    // or are both specified, in which case, that's what we are intended to create the new table as.
-    if (context.isDbNameEmpty()) {
-      throw new SemanticException("Database name cannot be null for a table load");
-    }
     try {
       List<Task<? extends Serializable>> importTasks = new ArrayList<>();
 

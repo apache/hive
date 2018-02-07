@@ -91,6 +91,16 @@ public class TestReplicationSemanticAnalyzer {
   public static class ReplDump {
 
     @Test
+    public void parseDbPattern() throws ParseException {
+      ASTNode root = parse("repl dump `*`");
+      assertEquals("TOK_REPL_DUMP", root.getText());
+      assertEquals(1, root.getChildCount());
+      ASTNode child = (ASTNode) root.getChild(0);
+      assertEquals("`*`", child.getText());
+      assertEquals(0, child.getChildCount());
+    }
+
+    @Test
     public void parseDb() throws ParseException {
       ASTNode root = parse("repl dump testDb");
       assertDatabase(1, root);

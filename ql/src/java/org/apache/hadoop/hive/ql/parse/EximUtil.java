@@ -247,9 +247,8 @@ public class EximUtil {
 
     // Remove all the entries from the parameters which are added for bootstrap dump progress
     Map<String, String> parameters = dbObj.getParameters();
-    Map<String, String> tmpParameters = new HashMap<>();
     if (parameters != null) {
-      tmpParameters.putAll(parameters);
+      Map<String, String> tmpParameters = new HashMap<>(parameters);
       tmpParameters.entrySet()
                 .removeIf(e -> e.getKey().startsWith(Utils.BOOTSTRAP_DUMP_STATE_KEY_PREFIX));
       dbObj.setParameters(tmpParameters);
