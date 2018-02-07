@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.mapred.OutputFormat;
+import org.datanucleus.util.StringUtils;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -143,6 +144,9 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
 
+      if (StringUtils.isEmpty(parsedDbName)) {
+        parsedDbName = SessionState.get().getCurrentDatabase();
+      }
       // parsing statement is now done, on to logic.
       tableExists = prepareImport(true,
           isLocationSet, isExternalSet, isPartSpecSet, waitOnPrecursor,
@@ -180,9 +184,18 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  /**
+   * The same code is used from both the "repl load" as well as "import".
+   * Given that "repl load" now supports two modes "repl load dbName [location]" and
+   * "repl load [location]" in which case the database name has to be taken from the table metadata
+   * by default and then over-ridden if something specified on the command line.
+   *
+   * hence for import to work correctly we have to pass in the sessionState default Db via the
+   * parsedDbName parameter
+   */
   public static boolean prepareImport(boolean isImportCmd,
       boolean isLocationSet, boolean isExternalSet, boolean isPartSpecSet, boolean waitOnPrecursor,
-      String parsedLocation, String parsedTableName, String parsedDbName,
+      String parsedLocation, String parsedTableName, String overrideDBName,
       LinkedHashMap<String, String> parsedPartSpec,
       String fromLocn, EximUtil.SemanticAnalyzerWrapperContext x,
       UpdatedMetaDataTracker updatedMetadata
@@ -195,7 +208,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     FileSystem fs = FileSystem.get(fromURI, x.getConf());
     x.getInputs().add(toReadEntity(fromPath, x.getConf()));
 
-    MetaData rv = new MetaData();
+    MetaData rv;
     try {
       rv =  EximUtil.readMetaData(fs, new Path(fromPath, EximUtil.METADATA_NAME));
     } catch (IOException e) {
@@ -219,10 +232,10 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       replicationSpec.setReplSpecType(ReplicationSpec.Type.IMPORT);
     }
 
-    String dbname = SessionState.get().getCurrentDatabase();
-    if ((parsedDbName !=null) && (!parsedDbName.isEmpty())){
+    String dbname = rv.getTable().getDbName();
+    if ((overrideDBName !=null) && (!overrideDBName.isEmpty())){
       // If the parsed statement contained a db.tablename specification, prefer that.
-      dbname = parsedDbName;
+      dbname = overrideDBName;
     }
 
     // Create table associated with the import

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.events.filesystem;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -65,7 +66,8 @@ public class FSTableEvent implements TableEvent {
   public ImportTableDesc tableDesc(String dbName) throws SemanticException {
     try {
       Table table = new Table(metadata.getTable());
-      ImportTableDesc tableDesc = new ImportTableDesc(dbName, table);
+      ImportTableDesc tableDesc =
+          new ImportTableDesc(StringUtils.isBlank(dbName) ? table.getDbName() : dbName, table);
       tableDesc.setReplicationSpec(metadata.getReplicationSpec());
       return tableDesc;
     } catch (Exception e) {
