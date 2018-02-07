@@ -20,14 +20,12 @@ package org.apache.hive.hcatalog.pig;
 
 import static org.junit.Assume.assumeTrue;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.StorageFormats;
 import org.junit.Test;
@@ -190,7 +188,7 @@ public class TestHCatStorer extends AbstractHCatStorerTest {
 
   @Test
   @Override
-  public void testPartColsInData() throws IOException, CommandNeedRetryException {
+  public void testPartColsInData() throws Exception {
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     super.testPartColsInData();
   }
@@ -211,87 +209,84 @@ public class TestHCatStorer extends AbstractHCatStorerTest {
 
   @Test
   @Override
-  public void testNoAlias() throws IOException, CommandNeedRetryException {
+  public void testNoAlias() throws Exception {
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     super.testNoAlias();
   }
 
   @Test
   @Override
-  public void testStoreMultiTables() throws IOException, CommandNeedRetryException {
+  public void testStoreMultiTables() throws Exception {
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     super.testStoreMultiTables();
   }
 
   @Test
   @Override
-  public void testStoreWithNoSchema() throws IOException, CommandNeedRetryException {
+  public void testStoreWithNoSchema() throws Exception {
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     super.testStoreWithNoSchema();
   }
 
   @Test
   @Override
-  public void testStoreWithNoCtorArgs() throws IOException, CommandNeedRetryException {
+  public void testStoreWithNoCtorArgs() throws Exception {
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     super.testStoreWithNoCtorArgs();
   }
 
   @Test
   @Override
-  public void testEmptyStore() throws IOException, CommandNeedRetryException {
+  public void testEmptyStore() throws Exception {
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     super.testEmptyStore();
   }
 
   @Test
   @Override
-  public void testBagNStruct() throws IOException, CommandNeedRetryException {
+  public void testBagNStruct() throws Exception {
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     super.testBagNStruct();
   }
 
   @Test
   @Override
-  public void testStoreFuncAllSimpleTypes() throws IOException, CommandNeedRetryException {
+  public void testStoreFuncAllSimpleTypes() throws Exception {
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     super.testStoreFuncAllSimpleTypes();
   }
 
   @Test
   @Override
-  public void testStoreFuncSimple() throws IOException, CommandNeedRetryException {
+  public void testStoreFuncSimple() throws Exception {
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     super.testStoreFuncSimple();
   }
 
   @Test
   @Override
-  public void testDynamicPartitioningMultiPartColsInDataPartialSpec() throws IOException,
-      CommandNeedRetryException {
+  public void testDynamicPartitioningMultiPartColsInDataPartialSpec() throws Exception {
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     super.testDynamicPartitioningMultiPartColsInDataPartialSpec();
   }
 
   @Test
   @Override
-  public void testDynamicPartitioningMultiPartColsInDataNoSpec() throws IOException,
-      CommandNeedRetryException {
+  public void testDynamicPartitioningMultiPartColsInDataNoSpec() throws Exception {
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     super.testDynamicPartitioningMultiPartColsInDataNoSpec();
   }
 
   @Test
   @Override
-  public void testDynamicPartitioningMultiPartColsNoDataInDataNoSpec() throws IOException,
-      CommandNeedRetryException {
+  public void testDynamicPartitioningMultiPartColsNoDataInDataNoSpec() throws Exception {
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     super.testDynamicPartitioningMultiPartColsNoDataInDataNoSpec();
   }
 
   @Test
   @Override
-  public void testPartitionPublish() throws IOException, CommandNeedRetryException {
+  public void testPartitionPublish() throws Exception {
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     super.testPartitionPublish();
   }

@@ -79,7 +79,6 @@ public class QueryDisplay {
     private StageType taskType;
     private String name;
     private boolean requireLock;
-    private boolean retryIfFail;
     private String statusMessage;
 
     // required for jackson
@@ -92,7 +91,6 @@ public class QueryDisplay {
       taskType = task.getType();
       name = task.getName();
       requireLock = task.requireLock();
-      retryIfFail = task.ifRetryCmdWhenFail();
     }
     @JsonIgnore
     public synchronized String getStatus() {
@@ -146,10 +144,6 @@ public class QueryDisplay {
     @JsonIgnore
     public synchronized boolean isRequireLock() {
       return requireLock;
-    }
-    @JsonIgnore
-    public synchronized boolean isRetryIfFail() {
-      return retryIfFail;
     }
 
     public synchronized String getExternalHandle() {

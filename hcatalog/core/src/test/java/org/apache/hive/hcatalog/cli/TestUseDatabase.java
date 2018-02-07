@@ -26,7 +26,6 @@ import junit.framework.TestCase;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -55,7 +54,7 @@ public class TestUseDatabase extends TestCase {
   private final String dbName = "testUseDatabase_db";
   private final String tblName = "testUseDatabase_tbl";
 
-  public void testAlterTablePass() throws IOException, CommandNeedRetryException {
+  public void testAlterTablePass() throws Exception {
 
     hcatDriver.run("create database " + dbName);
     hcatDriver.run("use " + dbName);

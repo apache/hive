@@ -18,6 +18,24 @@
  */
 package org.apache.hive.hcatalog.pig;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
+
+import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -27,7 +45,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.StorageFormats;
@@ -59,24 +76,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
 
 @RunWith(Parameterized.class)
 public class TestHCatLoaderEncryption {
@@ -112,20 +111,20 @@ public class TestHCatLoaderEncryption {
     this.storageFormat = storageFormat;
   }
 
-  private void dropTable(String tablename) throws IOException, CommandNeedRetryException {
+  private void dropTable(String tablename) throws Exception {
     dropTable(tablename, driver);
   }
 
-  static void dropTable(String tablename, IDriver driver) throws IOException, CommandNeedRetryException {
+  static void dropTable(String tablename, IDriver driver) throws Exception {
     driver.run("drop table if exists " + tablename);
   }
 
-  private void createTable(String tablename, String schema, String partitionedBy) throws IOException, CommandNeedRetryException {
+  private void createTable(String tablename, String schema, String partitionedBy) throws Exception {
     createTable(tablename, schema, partitionedBy, driver, storageFormat);
   }
 
   static void createTable(String tablename, String schema, String partitionedBy, IDriver driver, String storageFormat)
-      throws IOException, CommandNeedRetryException {
+      throws Exception {
     String createTable;
     createTable = "create table " + tablename + "(" + schema + ") ";
     if ((partitionedBy != null) && (!partitionedBy.trim().isEmpty())) {
@@ -135,7 +134,7 @@ public class TestHCatLoaderEncryption {
     executeStatementOnDriver(createTable, driver);
   }
 
-  private void createTable(String tablename, String schema) throws IOException, CommandNeedRetryException {
+  private void createTable(String tablename, String schema) throws Exception {
     createTable(tablename, schema, null);
   }
 
@@ -143,7 +142,7 @@ public class TestHCatLoaderEncryption {
    * Execute Hive CLI statement
    * @param cmd arbitrary statement to execute
    */
-  static void executeStatementOnDriver(String cmd, IDriver driver) throws IOException, CommandNeedRetryException {
+  static void executeStatementOnDriver(String cmd, IDriver driver) throws Exception {
     LOG.debug("Executing: " + cmd);
     CommandProcessorResponse cpr = driver.run(cmd);
     if(cpr.getResponseCode() != 0) {
@@ -173,7 +172,7 @@ public class TestHCatLoaderEncryption {
     String s = hiveConf.get("hdfs.minidfs.basedir");
     if(s == null || s.length() <= 0) {
       //return System.getProperty("test.build.data", "build/test/data") + "/dfs/";
-      hiveConf.set("hdfs.minidfs.basedir", 
+      hiveConf.set("hdfs.minidfs.basedir",
         System.getProperty("test.build.data", "build/test/data") + "_" + System.currentTimeMillis() +
           "_" + salt.getAndIncrement() + "/dfs/");
     }
@@ -237,12 +236,14 @@ public class TestHCatLoaderEncryption {
     }
   }
 
-  private void associateEncryptionZoneWithPath(String path) throws SQLException, CommandNeedRetryException {
+  private void associateEncryptionZoneWithPath(String path) throws Exception {
     LOG.info(this.storageFormat + ": associateEncryptionZoneWithPath");
     assumeTrue(!TestUtil.shouldSkip(storageFormat, DISABLED_STORAGE_FORMATS));
     enableTestOnlyCmd(SessionState.get().getConf());
     CommandProcessor crypto = getTestCommand("crypto");
-    if (crypto == null) return;
+    if (crypto == null) {
+      return;
+    }
     checkExecutionResponse(crypto.run("CREATE_KEY --keyName key_128 --bitLength 128"));
     checkExecutionResponse(crypto.run("CREATE_ZONE --keyName key_128 --path " + path));
   }
@@ -255,7 +256,7 @@ public class TestHCatLoaderEncryption {
     assertEquals("Crypto command failed with the exit code" + rc, 0, rc);
   }
 
-  private void removeEncryptionZone() throws SQLException, CommandNeedRetryException {
+  private void removeEncryptionZone() throws Exception {
     LOG.info(this.storageFormat + ": removeEncryptionZone");
     enableTestOnlyCmd(SessionState.get().getConf());
     CommandProcessor crypto = getTestCommand("crypto");
@@ -394,7 +395,8 @@ public class TestHCatLoaderEncryption {
     }
   }
 
-  static void createTableInSpecifiedPath(String tableName, String schema, String path, IDriver driver) throws IOException, CommandNeedRetryException {
+  static void createTableInSpecifiedPath(String tableName, String schema, String path, IDriver driver)
+      throws Exception {
     String createTableStr;
     createTableStr = "create table " + tableName + "(" + schema + ") location \'" + path + "\'";
     executeStatementOnDriver(createTableStr, driver);

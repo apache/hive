@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -130,7 +129,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
     this.maxRows = maxRows;
   }
 
-  public boolean fetch(List res) throws IOException, CommandNeedRetryException {
+  public boolean fetch(List res) throws IOException {
     sink.reset(res);
     int rowsRet = work.getLeastNumRows();
     if (rowsRet <= 0) {
@@ -145,7 +144,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
       while (sink.getNumRows() < rowsRet) {
         if (!fetch.pushRow()) {
           if (work.getLeastNumRows() > 0) {
-            throw new CommandNeedRetryException();
+            throw new HiveException("leastNumRows check failed");
           }
 
           // Closing the operator can sometimes yield more rows (HIVE-11892)
@@ -156,8 +155,6 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
         fetched = true;
       }
       return true;
-    } catch (CommandNeedRetryException e) {
-      throw e;
     } catch (IOException e) {
       throw e;
     } catch (Exception e) {

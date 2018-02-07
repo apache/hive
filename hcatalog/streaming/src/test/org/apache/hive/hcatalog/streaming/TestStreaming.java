@@ -66,7 +66,6 @@ import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -538,6 +537,7 @@ public class TestStreaming {
    * @deprecated use {@link #checkDataWritten2(Path, long, long, int, String, boolean, String...)} -
    * there is little value in using InputFormat directly
    */
+  @Deprecated
   private void checkDataWritten(Path partitionPath, long minTxn, long maxTxn, int buckets, int numExpectedFiles,
                                 String... records) throws Exception {
     ValidTxnList txns = msClient.getValidTxns();
@@ -546,15 +546,21 @@ public class TestStreaming {
     Assert.assertEquals(0, dir.getOriginalFiles().size());
     List<AcidUtils.ParsedDelta> current = dir.getCurrentDirectories();
     System.out.println("Files found: ");
-    for (AcidUtils.ParsedDelta pd : current) System.out.println(pd.getPath().toString());
+    for (AcidUtils.ParsedDelta pd : current) {
+      System.out.println(pd.getPath().toString());
+    }
     Assert.assertEquals(numExpectedFiles, current.size());
 
     // find the absolute minimum transaction
     long min = Long.MAX_VALUE;
     long max = Long.MIN_VALUE;
     for (AcidUtils.ParsedDelta pd : current) {
-      if (pd.getMaxTransaction() > max) max = pd.getMaxTransaction();
-      if (pd.getMinTransaction() < min) min = pd.getMinTransaction();
+      if (pd.getMaxTransaction() > max) {
+        max = pd.getMaxTransaction();
+      }
+      if (pd.getMinTransaction() < min) {
+        min = pd.getMinTransaction();
+      }
     }
     Assert.assertEquals(minTxn, min);
     Assert.assertEquals(maxTxn, max);
@@ -593,15 +599,21 @@ public class TestStreaming {
     Assert.assertEquals(0, dir.getOriginalFiles().size());
     List<AcidUtils.ParsedDelta> current = dir.getCurrentDirectories();
     System.out.println("Files found: ");
-    for (AcidUtils.ParsedDelta pd : current) System.out.println(pd.getPath().toString());
+    for (AcidUtils.ParsedDelta pd : current) {
+      System.out.println(pd.getPath().toString());
+    }
     Assert.assertEquals(numExpectedFiles, current.size());
 
     // find the absolute minimum transaction
     long min = Long.MAX_VALUE;
     long max = Long.MIN_VALUE;
     for (AcidUtils.ParsedDelta pd : current) {
-      if (pd.getMaxTransaction() > max) max = pd.getMaxTransaction();
-      if (pd.getMinTransaction() < min) min = pd.getMinTransaction();
+      if (pd.getMaxTransaction() > max) {
+        max = pd.getMaxTransaction();
+      }
+      if (pd.getMinTransaction() < min) {
+        min = pd.getMinTransaction();
+      }
     }
     Assert.assertEquals(minTxn, min);
     Assert.assertEquals(maxTxn, max);
@@ -811,7 +823,7 @@ public class TestStreaming {
         txnBatch.heartbeat();
       }
     }
-    
+
   }
   @Test
   public void testTransactionBatchEmptyAbort() throws Exception {
@@ -978,7 +990,7 @@ public class TestStreaming {
       , txnBatch.getCurrentTransactionState());
     connection.close();
   }
-  
+
   @Test
   public void testTransactionBatchCommit_Json() throws Exception {
     HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName, tblName,
@@ -2024,7 +2036,7 @@ public class TestStreaming {
     }
     Assert.assertTrue("Wrong exception: " + (expectedEx != null ? expectedEx.getMessage() : "?"),
       expectedEx != null && expectedEx.getMessage().contains("Simulated fault occurred"));
-    
+
     r = msClient.showTxns();
     Assert.assertEquals("HWM didn't match", 21, r.getTxn_high_water_mark());
     ti = r.getOpen_txns();
@@ -2041,12 +2053,14 @@ public class TestStreaming {
     HashMap<Integer, ArrayList<SampleRec>> result = new HashMap<Integer, ArrayList<SampleRec>>();
 
     for (File deltaDir : new File(dbLocation + "/" + tableName).listFiles()) {
-      if(!deltaDir.getName().startsWith("delta"))
+      if(!deltaDir.getName().startsWith("delta")) {
         continue;
+      }
       File[] bucketFiles = deltaDir.listFiles();
       for (File bucketFile : bucketFiles) {
-        if(bucketFile.toString().endsWith("length"))
+        if(bucketFile.toString().endsWith("length")) {
           continue;
+        }
         Integer bucketNum = getBucketNumber(bucketFile);
         ArrayList<SampleRec>  recs = dumpBucket(new Path(bucketFile.toString()));
         result.put(bucketNum, recs);
@@ -2106,14 +2120,15 @@ public class TestStreaming {
     return new Path(tableLoc);
   }
 
-  private static Path addPartition(IDriver driver, String tableName, List<String> partVals, String[] partNames) throws QueryFailedException, CommandNeedRetryException, IOException {
+  private static Path addPartition(IDriver driver, String tableName, List<String> partVals, String[] partNames)
+      throws Exception {
     String partSpec = getPartsSpec(partNames, partVals);
     String addPart = "alter table " + tableName + " add partition ( " + partSpec  + " )";
     runDDL(driver, addPart);
     return getPartitionPath(driver, tableName, partSpec);
   }
 
-  private static Path getPartitionPath(IDriver driver, String tableName, String partSpec) throws CommandNeedRetryException, IOException {
+  private static Path getPartitionPath(IDriver driver, String tableName, String partSpec) throws Exception {
     ArrayList<String> res = queryTable(driver, "describe extended " + tableName + " PARTITION (" + partSpec + ")");
     String partInfo = res.get(res.size() - 1);
     int start = partInfo.indexOf("location:") + "location:".length();
@@ -2160,8 +2175,9 @@ public class TestStreaming {
   }
 
   private static String join(String[] values, String delimiter) {
-    if(values==null)
+    if(values==null) {
       return null;
+    }
     StringBuilder strbuf = new StringBuilder();
 
     boolean first = true;
@@ -2183,28 +2199,17 @@ public class TestStreaming {
   private static boolean runDDL(IDriver driver, String sql) throws QueryFailedException {
     LOG.debug(sql);
     System.out.println(sql);
-    int retryCount = 1; // # of times to retry if first attempt fails
-    for (int attempt=0; attempt <= retryCount; ++attempt) {
-      try {
-        //LOG.debug("Running Hive Query: "+ sql);
-        CommandProcessorResponse cpr = driver.run(sql);
-        if(cpr.getResponseCode() == 0) {
-          return true;
-        }
-        LOG.error("Statement: " + sql + " failed: " + cpr);
-      } catch (CommandNeedRetryException e) {
-        if (attempt == retryCount) {
-          throw new QueryFailedException(sql, e);
-        }
-        continue;
-      }
-    } // for
+    //LOG.debug("Running Hive Query: "+ sql);
+    CommandProcessorResponse cpr = driver.run(sql);
+    if (cpr.getResponseCode() == 0) {
+      return true;
+    }
+    LOG.error("Statement: " + sql + " failed: " + cpr);
     return false;
   }
 
 
-  public static ArrayList<String> queryTable(IDriver driver, String query)
-          throws CommandNeedRetryException, IOException {
+  public static ArrayList<String> queryTable(IDriver driver, String query) throws IOException {
     CommandProcessorResponse cpr = driver.run(query);
     if(cpr.getResponseCode() != 0) {
       throw new RuntimeException(query + " failed: " + cpr);
@@ -2227,13 +2232,21 @@ public class TestStreaming {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
 
       SampleRec that = (SampleRec) o;
 
-      if (field2 != that.field2) return false;
-      if (field1 != null ? !field1.equals(that.field1) : that.field1 != null) return false;
+      if (field2 != that.field2) {
+        return false;
+      }
+      if (field1 != null ? !field1.equals(that.field1) : that.field1 != null) {
+        return false;
+      }
       return !(field3 != null ? !field3.equals(that.field3) : that.field3 != null);
 
     }

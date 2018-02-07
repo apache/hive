@@ -37,7 +37,6 @@ import org.apache.activemq.broker.BrokerService;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -114,7 +113,7 @@ public class TestMsgBusConnection {
     assertEquals("testconndb", messageObject.getDB());
   }
 
-  private void runQuery(String query) throws CommandNeedRetryException {
+  private void runQuery(String query) throws Exception {
     CommandProcessorResponse cpr = driver.run(query);
     assertFalse(cpr.getMessage(), cpr.failed());
   }

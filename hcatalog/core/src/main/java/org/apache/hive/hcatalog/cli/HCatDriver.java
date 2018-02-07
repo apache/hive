@@ -26,7 +26,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -47,11 +46,7 @@ public class HCatDriver {
   public CommandProcessorResponse run(String command) {
 
     CommandProcessorResponse cpr = null;
-    try {
-      cpr = driver.run(command);
-    } catch (CommandNeedRetryException e) {
-      return new CommandProcessorResponse(-1, e.toString(), "");
-    }
+    cpr = driver.run(command);
 
     SessionState ss = SessionState.get();
 
@@ -153,7 +148,7 @@ public class HCatDriver {
     return driver.close();
   }
 
-  public boolean getResults(ArrayList<String> res) throws IOException, CommandNeedRetryException {
+  public boolean getResults(ArrayList<String> res) throws IOException {
     return driver.getResults(res);
   }
 

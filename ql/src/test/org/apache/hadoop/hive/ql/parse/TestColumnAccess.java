@@ -23,10 +23,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -38,7 +37,7 @@ import org.junit.Test;
 public class TestColumnAccess {
 
   @BeforeClass
-  public static void Setup() throws CommandNeedRetryException {
+  public static void Setup() throws Exception {
     Driver driver = createDriver();
     int ret = driver.run("create table t1(id1 int, name1 string)").getResponseCode();
     Assert.assertEquals("Checking command success", 0, ret);

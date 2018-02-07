@@ -179,7 +179,6 @@ org.apache.hadoop.hive.conf.HiveConf;
            <th>End Time</th>
            <th>Elapsed Time (s)</th>
            <th>Requires Lock</th>
-           <th>Retry If Fail</th>
         </tr>
 
        <%if queryInfo.getQueryDisplay() != null && queryInfo.getQueryDisplay().getTaskDisplays() != null %>
@@ -191,7 +190,6 @@ org.apache.hadoop.hive.conf.HiveConf;
                    <td><% taskDisplay.getEndTime() == null ? "" : new Date(taskDisplay.getEndTime()) %></td>
                    <td><% taskDisplay.getElapsedTime() == null ? "" : taskDisplay.getElapsedTime()/1000 %> (s) </td>
                    <td><% taskDisplay.isRequireLock() %></td>
-                   <td><% taskDisplay.isRetryIfFail() %></td>
                </tr>
            </%for>
        </%if>

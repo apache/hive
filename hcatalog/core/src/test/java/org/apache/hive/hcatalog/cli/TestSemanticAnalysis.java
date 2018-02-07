@@ -22,11 +22,8 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -38,7 +35,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
-import org.apache.thrift.TException;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -79,7 +75,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testDescDB() throws CommandNeedRetryException, IOException {
+  public void testDescDB() throws Exception {
     hcatDriver.run("drop database mydb cascade");
     assertEquals(0, hcatDriver.run("create database mydb").getResponseCode());
     CommandProcessorResponse resp = hcatDriver.run("describe database mydb");
@@ -91,7 +87,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testCreateTblWithLowerCasePartNames() throws CommandNeedRetryException, MetaException, TException, NoSuchObjectException {
+  public void testCreateTblWithLowerCasePartNames() throws Exception {
     driver.run("drop table junit_sem_analysis");
     CommandProcessorResponse resp = driver.run("create table junit_sem_analysis (a int) partitioned by (B string) stored as TEXTFILE");
     assertEquals(resp.getResponseCode(), 0);
@@ -102,7 +98,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testAlterTblFFpart() throws MetaException, TException, NoSuchObjectException, CommandNeedRetryException {
+  public void testAlterTblFFpart() throws Exception {
 
     driver.run("drop table junit_sem_analysis");
     driver.run("create table junit_sem_analysis (a int) partitioned by (b string) stored as TEXTFILE");
@@ -124,13 +120,13 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testUsNonExistentDB() throws CommandNeedRetryException {
+  public void testUsNonExistentDB() throws Exception {
     CommandProcessorResponse resp = hcatDriver.run("use no_such_db");
     assertEquals(ErrorMsg.DATABASE_NOT_EXISTS.getErrorCode(), resp.getResponseCode());
   }
 
   @Test
-  public void testDatabaseOperations() throws MetaException, CommandNeedRetryException {
+  public void testDatabaseOperations() throws Exception {
 
     List<String> dbs = client.getAllDatabases();
     String testDb1 = "testdatabaseoperatons1";
@@ -158,7 +154,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testCreateTableIfNotExists() throws MetaException, TException, NoSuchObjectException, CommandNeedRetryException {
+  public void testCreateTableIfNotExists() throws Exception {
 
     hcatDriver.run("drop table " + TBL_NAME);
     hcatDriver.run("create table " + TBL_NAME + " (a int) stored as RCFILE");
@@ -183,7 +179,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testAlterTblTouch() throws CommandNeedRetryException {
+  public void testAlterTblTouch() throws Exception {
 
     hcatDriver.run("drop table junit_sem_analysis");
     hcatDriver.run("create table junit_sem_analysis (a int) partitioned by (b string) stored as RCFILE");
@@ -197,7 +193,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testChangeColumns() throws CommandNeedRetryException {
+  public void testChangeColumns() throws Exception {
     hcatDriver.run("drop table junit_sem_analysis");
     hcatDriver.run("create table junit_sem_analysis (a int, c string) partitioned by (b string) stored as RCFILE");
     CommandProcessorResponse response = hcatDriver.run("alter table junit_sem_analysis change a a1 int");
@@ -212,7 +208,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testAddReplaceCols() throws IOException, MetaException, TException, NoSuchObjectException, CommandNeedRetryException {
+  public void testAddReplaceCols() throws Exception {
 
     hcatDriver.run("drop table junit_sem_analysis");
     hcatDriver.run("create table junit_sem_analysis (a int, c string) partitioned by (b string) stored as RCFILE");
@@ -234,7 +230,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testAlterTblClusteredBy() throws CommandNeedRetryException {
+  public void testAlterTblClusteredBy() throws Exception {
 
     hcatDriver.run("drop table junit_sem_analysis");
     hcatDriver.run("create table junit_sem_analysis (a int) partitioned by (b string) stored as RCFILE");
@@ -244,7 +240,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testAlterTableRename() throws CommandNeedRetryException, TException {
+  public void testAlterTableRename() throws Exception {
     hcatDriver.run("drop table oldname");
     hcatDriver.run("drop table newname");
     hcatDriver.run("create table oldname (a int)");
@@ -264,7 +260,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testAlterTableSetFF() throws IOException, MetaException, TException, NoSuchObjectException, CommandNeedRetryException {
+  public void testAlterTableSetFF() throws Exception {
 
     hcatDriver.run("drop table junit_sem_analysis");
     hcatDriver.run("create table junit_sem_analysis (a int) partitioned by (b string) stored as RCFILE");
@@ -285,7 +281,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testAddPartFail() throws CommandNeedRetryException {
+  public void testAddPartFail() throws Exception {
 
     driver.run("drop table junit_sem_analysis");
     driver.run("create table junit_sem_analysis (a int) partitioned by (b string) stored as RCFILE");
@@ -295,7 +291,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testAddPartPass() throws IOException, CommandNeedRetryException {
+  public void testAddPartPass() throws Exception {
 
     hcatDriver.run("drop table junit_sem_analysis");
     hcatDriver.run("create table junit_sem_analysis (a int) partitioned by (b string) stored as RCFILE");
@@ -306,7 +302,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testCTAS() throws CommandNeedRetryException {
+  public void testCTAS() throws Exception {
     hcatDriver.run("drop table junit_sem_analysis");
     query = "create table junit_sem_analysis (a int) as select * from tbl2";
     CommandProcessorResponse response = hcatDriver.run(query);
@@ -316,7 +312,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testStoredAs() throws CommandNeedRetryException {
+  public void testStoredAs() throws Exception {
     hcatDriver.run("drop table junit_sem_analysis");
     query = "create table junit_sem_analysis (a int)";
     CommandProcessorResponse response = hcatDriver.run(query);
@@ -325,7 +321,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testAddDriverInfo() throws IOException, MetaException, TException, NoSuchObjectException, CommandNeedRetryException {
+  public void testAddDriverInfo() throws Exception {
 
     hcatDriver.run("drop table junit_sem_analysis");
     query = "create table junit_sem_analysis (a int) partitioned by (b string)  stored as " +
@@ -341,7 +337,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testInvalidateNonStringPartition() throws IOException, CommandNeedRetryException {
+  public void testInvalidateNonStringPartition() throws Exception {
 
     hcatDriver.run("drop table junit_sem_analysis");
     query = "create table junit_sem_analysis (a int) partitioned by (b int)  stored as RCFILE";
@@ -354,7 +350,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testInvalidateSeqFileStoredAs() throws IOException, CommandNeedRetryException {
+  public void testInvalidateSeqFileStoredAs() throws Exception {
 
     hcatDriver.run("drop table junit_sem_analysis");
     query = "create table junit_sem_analysis (a int) partitioned by (b string)  stored as SEQUENCEFILE";
@@ -365,7 +361,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testInvalidateTextFileStoredAs() throws IOException, CommandNeedRetryException {
+  public void testInvalidateTextFileStoredAs() throws Exception {
 
     hcatDriver.run("drop table junit_sem_analysis");
     query = "create table junit_sem_analysis (a int) partitioned by (b string)  stored as TEXTFILE";
@@ -376,7 +372,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testInvalidateClusteredBy() throws IOException, CommandNeedRetryException {
+  public void testInvalidateClusteredBy() throws Exception {
 
     hcatDriver.run("drop table junit_sem_analysis");
     query = "create table junit_sem_analysis (a int) partitioned by (b string) clustered by (a) into 10 buckets stored as TEXTFILE";
@@ -386,7 +382,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testCTLFail() throws IOException, CommandNeedRetryException {
+  public void testCTLFail() throws Exception {
 
     driver.run("drop table junit_sem_analysis");
     driver.run("drop table like_table");
@@ -399,7 +395,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
   }
 
   @Test
-  public void testCTLPass() throws IOException, MetaException, TException, NoSuchObjectException, CommandNeedRetryException {
+  public void testCTLPass() throws Exception {
 
     try {
       hcatDriver.run("drop table junit_sem_analysis");

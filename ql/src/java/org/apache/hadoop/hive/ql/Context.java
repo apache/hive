@@ -100,8 +100,6 @@ public class Context {
   protected String cboInfo;
   protected boolean cboSucceeded;
   protected String cmd = "";
-  // number of previous attempts
-  protected int tryCount = 0;
   private TokenRewriteStream tokenRewriteStream;
   // Holds the qualified name to tokenRewriteStream for the views
   // referenced by the query. This is used to rewrite the view AST
@@ -178,6 +176,7 @@ public class Context {
     DestClausePrefix(String prefix) {
       this.prefix = prefix;
     }
+    @Override
     public String toString() {
       return prefix;
     }
@@ -939,14 +938,6 @@ public class Context {
 
   public void setNeedLockMgr(boolean needLockMgr) {
     this.needLockMgr = needLockMgr;
-  }
-
-  public int getTryCount() {
-    return tryCount;
-  }
-
-  public void setTryCount(int tryCount) {
-    this.tryCount = tryCount;
   }
 
   public String getCboInfo() {

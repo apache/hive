@@ -18,7 +18,10 @@
  */
 package org.apache.hive.hcatalog.pig;
 
-import java.io.IOException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assume.assumeTrue;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,15 +34,11 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.StorageFormats;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
-
-import org.apache.hadoop.util.Shell;
 import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.backend.executionengine.ExecException;
@@ -51,18 +50,12 @@ import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assume.assumeTrue;
 
 @RunWith(Parameterized.class)
 public class TestHCatLoaderComplexSchema {
@@ -93,15 +86,15 @@ public class TestHCatLoaderComplexSchema {
     this.storageFormat = storageFormat;
   }
 
-  private void dropTable(String tablename) throws IOException, CommandNeedRetryException {
+  private void dropTable(String tablename) throws Exception {
     driver.run("drop table " + tablename);
   }
 
-  private void createTable(String tablename, String schema, String partitionedBy) throws IOException, CommandNeedRetryException {
+  private void createTable(String tablename, String schema, String partitionedBy) throws Exception {
     AbstractHCatLoaderTest.createTable(tablename, schema, partitionedBy, driver, storageFormat);
   }
 
-  private void createTable(String tablename, String schema) throws IOException, CommandNeedRetryException {
+  private void createTable(String tablename, String schema) throws Exception {
     createTable(tablename, schema, null);
   }
 
@@ -209,12 +202,13 @@ public class TestHCatLoaderComplexSchema {
     verifyWriteRead("testSyntheticComplexSchema2", pigSchema, tableSchema2, data, false);
   }
 
-  private void verifyWriteRead(String tablename, String pigSchema, String tableSchema, List<Tuple> data, boolean provideSchemaToStorer)
-    throws IOException, CommandNeedRetryException, ExecException, FrontendException {
+  private void verifyWriteRead(String tablename, String pigSchema, String tableSchema, List<Tuple> data,
+      boolean provideSchemaToStorer) throws Exception {
     verifyWriteRead(tablename, pigSchema, tableSchema, data, data, provideSchemaToStorer);
   }
-  private void verifyWriteRead(String tablename, String pigSchema, String tableSchema, List<Tuple> data, List<Tuple> result, boolean provideSchemaToStorer)
-    throws IOException, CommandNeedRetryException, ExecException, FrontendException {
+
+  private void verifyWriteRead(String tablename, String pigSchema, String tableSchema, List<Tuple> data,
+      List<Tuple> result, boolean provideSchemaToStorer) throws Exception {
     MockLoader.setData(tablename + "Input", data);
     try {
       createTable(tablename, tableSchema);

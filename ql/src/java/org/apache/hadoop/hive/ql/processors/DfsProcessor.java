@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -102,7 +102,7 @@ public class DfsProcessor implements CommandProcessor {
     }
   }
 
-  private String[] splitCmd(String command) throws CommandNeedRetryException {
+  private String[] splitCmd(String command) throws HiveException {
 
     ArrayList<String> paras = new ArrayList<String>();
     int cmdLng = command.length();
@@ -151,8 +151,9 @@ public class DfsProcessor implements CommandProcessor {
     }
 
     if ((int) y != 0) {
-      console.printError("Syntax error on hadoop options: dfs " + command);
-      throw new CommandNeedRetryException();
+      String message = "Syntax error on hadoop options: dfs " + command;
+      console.printError(message);
+      throw new HiveException(message);
     }
 
     return paras.toArray(new String[paras.size()]);

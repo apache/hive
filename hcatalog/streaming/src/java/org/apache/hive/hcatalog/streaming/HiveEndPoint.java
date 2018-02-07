@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -55,7 +54,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Information about the hive end point (i.e. table or partition) to write to.
@@ -102,6 +100,7 @@ public class HiveEndPoint {
   /**
    * @deprecated As of release 1.3/2.1.  Replaced by {@link #newConnection(boolean, String)}
    */
+  @Deprecated
   public StreamingConnection newConnection(final boolean createPartIfNotExists)
     throws ConnectionError, InvalidPartition, InvalidTable, PartitionCreationFailed
     , ImpersonationFailed , InterruptedException {
@@ -110,6 +109,7 @@ public class HiveEndPoint {
   /**
    * @deprecated As of release 1.3/2.1.  Replaced by {@link #newConnection(boolean, HiveConf, String)}
    */
+  @Deprecated
   public StreamingConnection newConnection(final boolean createPartIfNotExists, HiveConf conf)
     throws ConnectionError, InvalidPartition, InvalidTable, PartitionCreationFailed
     , ImpersonationFailed , InterruptedException {
@@ -118,6 +118,7 @@ public class HiveEndPoint {
   /**
    * @deprecated As of release 1.3/2.1.  Replaced by {@link #newConnection(boolean, HiveConf, UserGroupInformation, String)}
    */
+  @Deprecated
   public StreamingConnection newConnection(final boolean createPartIfNotExists, final HiveConf conf,
                                            final UserGroupInformation authenticatedUser)
     throws ConnectionError, InvalidPartition,
@@ -232,7 +233,9 @@ public class HiveEndPoint {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
+    if (this == o) {
+      return true;
+    }
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
@@ -412,6 +415,7 @@ public class HiveEndPoint {
      * @throws ImpersonationFailed failed to run command as proxyUser
      * @throws InterruptedException
      */
+    @Override
     public TransactionBatch fetchTransactionBatch(final int numTransactions,
                                                       final RecordWriter recordWriter)
             throws StreamingException, TransactionBatchUnAvailable, ImpersonationFailed
@@ -490,22 +494,11 @@ public class HiveEndPoint {
     }
 
     private static boolean runDDL(IDriver driver, String sql) throws QueryFailedException {
-      int retryCount = 1; // # of times to retry if first attempt fails
-      for (int attempt=0; attempt<=retryCount; ++attempt) {
-        try {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Running Hive Query: "+ sql);
-          }
-          driver.run(sql);
-          return true;
-        } catch (CommandNeedRetryException e) {
-          if (attempt==retryCount) {
-            throw new QueryFailedException(sql, e);
-          }
-          continue;
-        }
-      } // for
-      return false;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Running Hive Query: " + sql);
+      }
+      driver.run(sql);
+      return true;
     }
 
     private static String partSpecStr(List<FieldSchema> partKeys, ArrayList<String> partVals) {
@@ -687,9 +680,10 @@ public class HiveEndPoint {
 
     private void beginNextTransactionImpl() throws TransactionError {
       state = TxnState.INACTIVE;//clear state from previous txn
-      if ( currentTxnIndex + 1 >= txnIds.size() )
+      if ( currentTxnIndex + 1 >= txnIds.size() ) {
         throw new InvalidTrasactionState("No more transactions available in" +
                 " current batch for end point : " + endPt);
+      }
       ++currentTxnIndex;
       state = TxnState.OPEN;
       lastTxnUsed = getCurrentTxnId();

@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
@@ -160,12 +159,7 @@ class WarehouseInstance implements Closeable {
   private String row0Result(int colNum, boolean reuse) throws IOException {
     if (!reuse) {
       lastResults = new ArrayList<>();
-      try {
-        driver.getResults(lastResults);
-      } catch (CommandNeedRetryException e) {
-        e.printStackTrace();
-        throw new RuntimeException(e);
-      }
+      driver.getResults(lastResults);
     }
     // Split around the 'tab' character
     return (lastResults.get(0).split("\\t"))[colNum];
@@ -265,12 +259,7 @@ class WarehouseInstance implements Closeable {
 
   List<String> getOutput() throws IOException {
     List<String> results = new ArrayList<>();
-    try {
-      driver.getResults(results);
-    } catch (CommandNeedRetryException e) {
-      logger.warn(e.getMessage(), e);
-      throw new RuntimeException(e);
-    }
+    driver.getResults(results);
     return results;
   }
 

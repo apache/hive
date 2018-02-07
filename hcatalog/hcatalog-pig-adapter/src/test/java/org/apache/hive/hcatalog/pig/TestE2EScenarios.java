@@ -29,7 +29,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -108,15 +107,16 @@ public class TestE2EScenarios {
     }
   }
 
-  private void dropTable(String tablename) throws IOException, CommandNeedRetryException {
+  private void dropTable(String tablename) throws Exception {
     driver.run("drop table " + tablename);
   }
 
-  private void createTable(String tablename, String schema, String partitionedBy, String storageFormat) throws IOException, CommandNeedRetryException {
+  private void createTable(String tablename, String schema, String partitionedBy, String storageFormat)
+      throws Exception {
    AbstractHCatLoaderTest.createTable(tablename, schema, partitionedBy, driver, storageFormat);
   }
 
-  private void driverRun(String cmd) throws IOException, CommandNeedRetryException {
+  private void driverRun(String cmd) throws Exception {
     int retCode = driver.run(cmd).getResponseCode();
     if (retCode != 0) {
       throw new IOException("Failed to run ["

@@ -18,12 +18,7 @@
  */
 package org.apache.hive.hcatalog.pig;
 
-import java.io.IOException;
-
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.io.IOConstants;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
