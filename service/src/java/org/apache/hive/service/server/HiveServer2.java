@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.cache.CachedStore;
+import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
@@ -190,6 +191,15 @@ public class HiveServer2 extends CompositeService {
 
     // Create views registry
     HiveMaterializedViewsRegistry.get().init();
+
+    // Setup cache if enabled.
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED)) {
+      try {
+        QueryResultsCache.initialize(hiveConf);
+      } catch (Exception err) {
+        throw new RuntimeException("Error initializing the query results cache", err);
+      }
+    }
 
     // Setup web UI
     try {

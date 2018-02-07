@@ -55,6 +55,9 @@ import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
+import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
+import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache.CacheEntry;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DagUtils;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
@@ -187,6 +190,9 @@ public class Driver implements IDriver {
   // Transaction manager used for the query. This will be set at compile time based on
   // either initTxnMgr or from the SessionState, in that order.
   private HiveTxnManager queryTxnMgr;
+
+  private CacheUsage cacheUsage;
+  private CacheEntry usedCacheEntry;
 
   private enum DriverState {
     INITIALIZED,
@@ -637,6 +643,11 @@ public class Driver implements IDriver {
         sem.analyze(tree, ctx);
       }
       LOG.info("Semantic Analysis Completed");
+
+      // Retrieve information about cache usage for the query.
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED)) {
+        cacheUsage = sem.getCacheUsage();
+      }
 
       // validate the plan
       sem.validate();
@@ -1788,6 +1799,45 @@ public class Driver implements IDriver {
     return new CommandProcessorResponse(ret, errorMessage, SQLState, downstreamError);
   }
 
+  private void useFetchFromCache(CacheEntry cacheEntry) {
+    // Change query FetchTask to use new location specified in results cache.
+    FetchTask fetchTaskFromCache = (FetchTask) TaskFactory.get(cacheEntry.getFetchWork(), conf);
+    fetchTaskFromCache.initialize(queryState, plan, null, ctx.getOpContext());
+    plan.setFetchTask(fetchTaskFromCache);
+    cacheUsage = new CacheUsage(CacheUsage.CacheStatus.QUERY_USING_CACHE, cacheEntry);
+  }
+
+  private void checkCacheUsage() throws Exception {
+    if (cacheUsage != null) {
+      if (cacheUsage.getStatus() == CacheUsage.CacheStatus.QUERY_USING_CACHE) {
+        // Using a previously cached result.
+        CacheEntry cacheEntry = cacheUsage.getCacheEntry();
+
+        // Reader count already incremented during cache lookup.
+        // Save to usedCacheEntry to ensure reader is released after query.
+        usedCacheEntry = cacheEntry;
+      } else if (cacheUsage.getStatus() == CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS &&
+          plan.getFetchTask() != null) {
+        // The query could not be resolved using the cache, but the query results
+        // can be added to the cache for future queries to use.
+        PerfLogger perfLogger = SessionState.getPerfLogger();
+        perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SAVE_TO_RESULTS_CACHE);
+
+        CacheEntry savedCacheEntry =
+            QueryResultsCache.getInstance().addToCache(
+                cacheUsage.getQueryInfo(),
+                plan.getFetchTask().getWork());
+        if (savedCacheEntry != null) {
+          useFetchFromCache(savedCacheEntry);
+          // addToCache() already increments the reader count. Set usedCacheEntry so it gets released.
+          usedCacheEntry = savedCacheEntry;
+        }
+
+        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SAVE_TO_RESULTS_CACHE);
+      }
+    }
+  }
+
   private void execute() throws CommandProcessorResponse {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
@@ -2001,6 +2051,8 @@ public class Driver implements IDriver {
         }
       }
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.RUN_TASKS);
+
+      checkCacheUsage();
 
       // in case we decided to run everything in local mode, restore the
       // the jobtracker setting to its initial value
@@ -2410,12 +2462,23 @@ public class Driver implements IDriver {
       LOG.debug(" Exception while clearing the FetchTask ", e);
     }
   }
+
+  private void releaseCachedResult() {
+    // Assumes the reader count has been incremented automatically by the results cache by either
+    // lookup or creating the cache entry.
+    if (usedCacheEntry != null) {
+      usedCacheEntry.releaseReader();
+      usedCacheEntry = null;
+    }
+  }
+
   // Close and release resources within a running query process. Since it runs under
   // driver state COMPILING, EXECUTING or INTERRUPT, it would not have race condition
   // with the releases probably running in the other closing thread.
   private int closeInProcess(boolean destroyed) {
     releaseDriverContext();
     releasePlan();
+    releaseCachedResult();
     releaseFetchTask();
     releaseResStream();
     releaseContext();
@@ -2445,6 +2508,7 @@ public class Driver implements IDriver {
         return 0;
       }
       releasePlan();
+      releaseCachedResult();
       releaseFetchTask();
       releaseResStream();
       releaseContext();

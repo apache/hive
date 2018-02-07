@@ -3707,6 +3707,27 @@ public class HiveConf extends Configuration {
     HIVE_EXEC_INPUT_LISTING_MAX_THREADS("hive.exec.input.listing.max.threads", 0, new  SizeValidator(0L, true, 1024L, true),
         "Maximum number of threads that Hive uses to list file information from file systems (recommended > 1 for blobstore)."),
 
+    HIVE_QUERY_RESULTS_CACHE_ENABLED("hive.query.results.cache.enabled", true,
+        "If the query results cache is enabled. This will keep results of previously executed queries " +
+        "to be reused if the same query is executed again."),
+
+    HIVE_QUERY_RESULTS_CACHE_DIRECTORY("hive.query.results.cache.directory",
+        "/tmp/hive/_resultscache_",
+        "Location of the query results cache directory. Temporary results from queries " +
+        "will be moved to this location."),
+
+    HIVE_QUERY_RESULTS_CACHE_MAX_ENTRY_LIFETIME("hive.query.results.cache.max.entry.lifetime", "3600s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "Maximum lifetime in seconds for an entry in the query results cache. A nonpositive value means infinite."),
+
+    HIVE_QUERY_RESULTS_CACHE_MAX_SIZE("hive.query.results.cache.max.size",
+        (long) 2 * 1024 * 1024 * 1024,
+        "Maximum total size in bytes that the query results cache directory is allowed to use on the filesystem."),
+
+    HIVE_QUERY_RESULTS_CACHE_MAX_ENTRY_SIZE("hive.query.results.cache.max.entry.size",
+        (long) 10 * 1024 * 1024,
+        "Maximum size in bytes that a single query result is allowed to use in the results cache directory"),
+
     /* BLOBSTORE section */
 
     HIVE_BLOBSTORE_SUPPORTED_SCHEMES("hive.blobstore.supported.schemes", "s3,s3a,s3n",

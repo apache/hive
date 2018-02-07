@@ -154,6 +154,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveDefaultRelMetadataProvider;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HivePlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOpMaterializationValidator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -1441,6 +1442,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
         throw new RuntimeException(e);
       }
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Plan generation");
+
+      // Validate query materialization (materialized views, query results caching.
+      // This check needs to occur before constant folding, which may remove some
+      // function calls from the query plan.
+      HiveRelOpMaterializationValidator matValidator = new HiveRelOpMaterializationValidator();
+      matValidator.validateQueryMaterialization(calciteGenPlan);
+      if (!matValidator.isValidMaterialization()) {
+        String reason = matValidator.getInvalidMaterializationReason();
+        setInvalidQueryMaterializationReason(reason);
+      }
 
       // Create executor
       RexExecutor executorProvider = new HiveRexExecutorImpl(optCluster);

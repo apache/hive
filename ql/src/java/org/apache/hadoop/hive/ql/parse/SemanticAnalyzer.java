@@ -84,10 +84,13 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
+import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
+import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
@@ -360,6 +363,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private final Set<Integer> ignoredTokens = Sets.newHashSet(HiveParser.TOK_GROUPBY,
       HiveParser.TOK_ORDERBY, HiveParser.TOK_WINDOWSPEC, HiveParser.TOK_CLUSTERBY,
       HiveParser.TOK_DISTRIBUTEBY, HiveParser.TOK_SORTBY);
+
+  private String invalidQueryMaterializationReason;
 
   static class Phase1Ctx {
     String dest;
@@ -11211,6 +11216,76 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return getTableObjectByName(tableName, true);
   }
 
+  private static void walkASTAndQualifyNames(ASTNode ast,
+      Set<String> cteAlias, Context ctx, Hive db, Set<Integer> ignoredTokens, UnparseTranslator unparseTranslator) {
+    Queue<Node> queue = new LinkedList<>();
+    queue.add(ast);
+    while (!queue.isEmpty()) {
+      ASTNode astNode = (ASTNode) queue.poll();
+      if (astNode.getToken().getType() == HiveParser.TOK_TABNAME) {
+        // Check if this is table name is qualified or not
+        String tabIdName = getUnescapedName(astNode).toLowerCase();
+        // if alias to CTE contains the table name, we do not do the translation because
+        // cte is actually a subquery.
+        if (!cteAlias.contains(tabIdName)) {
+          unparseTranslator.addTableNameTranslation(astNode, SessionState.get().getCurrentDatabase());
+        }
+      }
+
+      if (astNode.getChildCount() > 0 && !ignoredTokens.contains(astNode.getToken().getType())) {
+        for (Node child : astNode.getChildren()) {
+          queue.offer(child);
+        }
+      }
+    }
+  }
+
+  // Walk through the AST.
+  // Replace all TOK_TABREF with fully qualified table name, if it is not already fully qualified.
+  protected String rewriteQueryWithQualifiedNames(ASTNode ast, TokenRewriteStream tokenRewriteStream)
+      throws SemanticException {
+    UnparseTranslator unparseTranslator = new UnparseTranslator(conf);
+    unparseTranslator.enable();
+
+    // 1. collect information about CTE if there is any.
+    // The base table of CTE should be masked.
+    // The CTE itself should not be masked in the references in the following main query.
+    Set<String> cteAlias = new HashSet<>();
+    if (ast.getChildCount() > 0
+        && HiveParser.TOK_CTE == ((ASTNode) ast.getChild(0)).getToken().getType()) {
+      // the structure inside CTE is like this
+      // TOK_CTE
+      // TOK_SUBQUERY
+      // sq1 (may refer to sq2)
+      // ...
+      // TOK_SUBQUERY
+      // sq2
+      ASTNode cte = (ASTNode) ast.getChild(0);
+      // we start from sq2, end up with sq1.
+      for (int index = cte.getChildCount() - 1; index >= 0; index--) {
+        ASTNode subq = (ASTNode) cte.getChild(index);
+        String alias = unescapeIdentifier(subq.getChild(1).getText());
+        if (cteAlias.contains(alias)) {
+          throw new SemanticException("Duplicate definition of " + alias);
+        } else {
+          cteAlias.add(alias);
+          walkASTAndQualifyNames(ast, cteAlias, ctx, db, ignoredTokens, unparseTranslator);
+        }
+      }
+      // walk the other part of ast
+      for (int index = 1; index < ast.getChildCount(); index++) {
+        walkASTAndQualifyNames(ast, cteAlias, ctx, db, ignoredTokens, unparseTranslator);
+      }
+    } else { // there is no CTE, walk the whole AST
+      walkASTAndQualifyNames(ast, cteAlias, ctx, db, ignoredTokens, unparseTranslator);
+    }
+
+    unparseTranslator.applyTranslations(tokenRewriteStream);
+    String rewrittenQuery = tokenRewriteStream.toString(
+        ast.getTokenStartIndex(), ast.getTokenStopIndex());
+    return rewrittenQuery;
+  }
+
   private static void walkASTMarkTABREF(TableMask tableMask, ASTNode ast, Set<String> cteAlias,
                                         Context ctx, Hive db, Map<String, Table> tabNameToTabObject, Set<Integer> ignoredTokens)
       throws SemanticException {
@@ -11549,6 +11624,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
+    // Check query results cache.
+    // If no masking/filtering required, then we can check the cache now, before
+    // generating the operator tree and going through CBO.
+    // Otherwise we have to wait until after the masking/filtering step.
+    boolean isCacheEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED);
+    QueryResultsCache.LookupInfo lookupInfo = null;
+    boolean needsTransform = needsTransform();
+    if (isCacheEnabled && !needsTransform && queryTypeCanUseCache()) {
+      lookupInfo = createLookupInfoForQuery(ast);
+      if (checkResultsCache(lookupInfo)) {
+        return;
+      }
+    }
+
     // 2. Gen OP Tree from resolved Parse Tree
     Operator sinkOp = genOPTree(ast, plannerCtx);
 
@@ -11568,6 +11657,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           ((CalcitePlanner) this).resetCalciteConfiguration();
         }
         sinkOp = genOPTree(tree, plannerCtx);
+      }
+    }
+
+    // Check query results cache
+    // In the case that row or column masking/filtering was required, the cache must be checked
+    // here, after applying the masking/filtering rewrite rules to the AST.
+    if (isCacheEnabled && needsTransform && queryTypeCanUseCache()) {
+      lookupInfo = createLookupInfoForQuery(ast);
+      if (checkResultsCache(lookupInfo)) {
+        return;
       }
     }
 
@@ -11705,6 +11804,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       putAccessedColumnsToReadEntity(inputs, columnAccessInfo);
     }
 
+    if (isCacheEnabled && lookupInfo != null) {
+      if (queryCanBeCached()) {
+        QueryResultsCache.QueryInfo queryInfo = createCacheQueryInfoForQuery(lookupInfo);
+
+        // Specify that the results of this query can be cached.
+        setCacheUsage(new CacheUsage(
+            CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS, queryInfo));
+      }
+    }
   }
 
   private void putAccessedColumnsToReadEntity(HashSet<ReadEntity> inputs, ColumnAccessInfo columnAccessInfo) {
@@ -13913,6 +14021,158 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     this.loadFileWork = loadFileWork;
   }
 
+  /**
+   * Generate the query string for this query (with fully resolved table references).
+   * @return The query string with resolved references. NULL if an error occurred.
+   */
+  private String getQueryStringForCache(ASTNode ast) {
+    // Use the UnparseTranslator to resolve unqualified table names.
+    String queryString = ctx.getTokenRewriteStream().toString(ast.getTokenStartIndex(), ast.getTokenStopIndex());
+
+    // Re-using the TokenRewriteStream map for views so we do not overwrite the current TokenRewriteStream
+    String rewriteStreamName = "__qualified_query_string__";
+    ASTNode astNode;
+    try {
+      astNode = ParseUtils.parse(queryString, ctx, rewriteStreamName);
+      TokenRewriteStream tokenRewriteStream = ctx.getViewTokenRewriteStream(rewriteStreamName);
+      String fullyQualifiedQuery = rewriteQueryWithQualifiedNames(astNode, tokenRewriteStream);
+      return fullyQualifiedQuery;
+    } catch (Exception err) {
+      LOG.error("Unexpected error while reparsing the query string [" + queryString + "]", err);
+      // Don't fail the query - just return null (caller should skip cache lookup).
+      return null;
+    }
+  }
+
+  private QueryResultsCache.LookupInfo createLookupInfoForQuery(ASTNode astNode) {
+    QueryResultsCache.LookupInfo lookupInfo = null;
+    String queryString = getQueryStringForCache(astNode);
+    if (queryString != null) {
+      lookupInfo = new QueryResultsCache.LookupInfo(queryString);
+    }
+    return lookupInfo;
+  }
+
+  /**
+   * Set the query plan to use cache entry passed in to return the query results.
+   * @param cacheEntry The results cache entry that will be used to resolve the query.
+   */
+  private void useCachedResult(QueryResultsCache.CacheEntry cacheEntry) {
+    // Change query FetchTask to use new location specified in results cache.
+    FetchTask fetchTask = (FetchTask) TaskFactory.get(cacheEntry.getFetchWork(), conf);
+    setFetchTask(fetchTask);
+
+    queryState.setCommandType(cacheEntry.getQueryInfo().getHiveOperation());
+    resultSchema = cacheEntry.getQueryInfo().getResultSchema();
+    setTableAccessInfo(cacheEntry.getQueryInfo().getTableAccessInfo());
+    setColumnAccessInfo(cacheEntry.getQueryInfo().getColumnAccessInfo());
+    inputs.addAll(cacheEntry.getQueryInfo().getInputs());
+
+    // Indicate that the query will use a cached result.
+    setCacheUsage(new CacheUsage(
+        CacheUsage.CacheStatus.QUERY_USING_CACHE, cacheEntry));
+  }
+
+  private QueryResultsCache.QueryInfo createCacheQueryInfoForQuery(QueryResultsCache.LookupInfo lookupInfo) {
+    return new QueryResultsCache.QueryInfo(lookupInfo, queryState.getHiveOperation(),
+        resultSchema, getTableAccessInfo(), getColumnAccessInfo(), inputs);
+  }
+
+  /**
+   * Some initial checks for a query to see if we can look this query up in the results cache.
+   */
+  private boolean queryTypeCanUseCache() {
+    if (this instanceof ColumnStatsSemanticAnalyzer) {
+      // Column stats generates "select compute_stats() .." queries.
+      // Disable caching for these.
+      return false;
+    }
+
+    if (queryState.getHiveOperation() != HiveOperation.QUERY) {
+      return false;
+    }
+
+    if (qb.getParseInfo().isAnalyzeCommand()) {
+      return false;
+    }
+
+    if (qb.getParseInfo().hasInsertTables()) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private boolean needsTransform() {
+    return SessionState.get().getAuthorizerV2() != null &&
+        SessionState.get().getAuthorizerV2().needTransform();
+  }
+
+  /**
+   * Called after a query plan has been generated, to determine if the results of this query
+   * can be added to the results cache.
+   */
+  private boolean queryCanBeCached() {
+    if (!queryTypeCanUseCache()) {
+      LOG.info("Not eligible for results caching - wrong query type");
+      return false;
+    }
+
+    // Query should have a fetch task.
+    if (getFetchTask() == null) {
+      LOG.info("Not eligible for results caching - no fetch task");
+      return false;
+    }
+
+    // At least one mr/tez/spark job
+    if (Utilities.getNumClusterJobs(getRootTasks()) == 0) {
+      LOG.info("Not eligible for results caching - no mr/tez/spark jobs");
+      return false;
+    }
+
+    // The query materialization validation check only occurs in CBO. Thus only cache results if CBO was used.
+    if (!ctx.isCboSucceeded()) {
+      LOG.info("Caching of query results is disabled if CBO was not run.");
+      return false;
+    }
+
+    if (!isValidQueryMaterialization()) {
+      LOG.info("Not eligible for results caching - {}", getInvalidQueryMaterializationReason());
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Check the query results cache to see if the query represented by the lookupInfo can be
+   * answered using the results cache. If the cache contains a suitable entry, the semantic analyzer
+   * will be configured to use the found cache entry to anwer the query.
+   */
+  private boolean checkResultsCache(QueryResultsCache.LookupInfo lookupInfo) {
+    if (lookupInfo == null) {
+      return false;
+    }
+    try {
+      // In case this has not been initialized elsewhere.
+      QueryResultsCache.initialize(conf);
+    } catch (Exception err) {
+      throw new IllegalStateException(err);
+    }
+    // Don't increment the reader count for explain queries.
+    boolean isExplainQuery = (ctx.getExplainConfig() != null);
+    QueryResultsCache.CacheEntry cacheEntry =
+        QueryResultsCache.getInstance().lookup(lookupInfo, !isExplainQuery);
+    if (cacheEntry != null) {
+      // Use the cache rather than full query execution.
+      useCachedResult(cacheEntry);
+
+      // At this point the caller should return from semantic analysis.
+      return true;
+    }
+    return false;
+  }
+
   private static final class ColsAndTypes {
     public ColsAndTypes(String cols, String colTypes) {
       this.cols = cols;
@@ -13920,5 +14180,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     public String cols;
     public String colTypes;
+  }
+
+  public String getInvalidQueryMaterializationReason() {
+    return invalidQueryMaterializationReason;
+  }
+
+  public void setInvalidQueryMaterializationReason(
+      String invalidQueryMaterializationReason) {
+    this.invalidQueryMaterializationReason = invalidQueryMaterializationReason;
+  }
+
+  public boolean isValidQueryMaterialization() {
+    return (invalidQueryMaterializationReason == null);
   }
 }

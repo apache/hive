@@ -55,6 +55,8 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
+import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -148,6 +150,9 @@ public abstract class BaseSemanticAnalyzer {
   protected LineageInfo linfo;
   protected TableAccessInfo tableAccessInfo;
   protected ColumnAccessInfo columnAccessInfo;
+
+  protected CacheUsage cacheUsage;
+
   /**
    * Columns accessed by updates
    */
@@ -1944,5 +1949,13 @@ public abstract class BaseSemanticAnalyzer {
       return txnManager;
     }
     return SessionState.get().getTxnMgr();
+  }
+
+  public CacheUsage getCacheUsage() {
+    return cacheUsage;
+  }
+
+  public void setCacheUsage(CacheUsage cacheUsage) {
+    this.cacheUsage = cacheUsage;
   }
 }

@@ -725,27 +725,7 @@ public class SessionState {
    */
   private Path createRootHDFSDir(HiveConf conf) throws IOException {
     Path rootHDFSDirPath = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR));
-    FsPermission writableHDFSDirPermission = new FsPermission((short)00733);
-    FileSystem fs = rootHDFSDirPath.getFileSystem(conf);
-    if (!fs.exists(rootHDFSDirPath)) {
-      Utilities.createDirsWithPermission(conf, rootHDFSDirPath, writableHDFSDirPermission, true);
-    }
-    FsPermission currentHDFSDirPermission = fs.getFileStatus(rootHDFSDirPath).getPermission();
-    if (rootHDFSDirPath != null && rootHDFSDirPath.toUri() != null) {
-      String schema = rootHDFSDirPath.toUri().getScheme();
-      LOG.debug(
-        "HDFS root scratch dir: " + rootHDFSDirPath + " with schema " + schema + ", permission: " +
-          currentHDFSDirPermission);
-    } else {
-      LOG.debug(
-        "HDFS root scratch dir: " + rootHDFSDirPath + ", permission: " + currentHDFSDirPermission);
-    }
-    // If the root HDFS scratch dir already exists, make sure it is writeable.
-    if (!((currentHDFSDirPermission.toShort() & writableHDFSDirPermission
-        .toShort()) == writableHDFSDirPermission.toShort())) {
-      throw new RuntimeException("The root scratch dir: " + rootHDFSDirPath
-          + " on HDFS should be writable. Current permissions are: " + currentHDFSDirPermission);
-    }
+    Utilities.ensurePathIsWritable(rootHDFSDirPath, conf);
     return rootHDFSDirPath;
   }
 
