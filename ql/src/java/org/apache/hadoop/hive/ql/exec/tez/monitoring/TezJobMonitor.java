@@ -69,10 +69,9 @@ import com.google.common.base.Preconditions;
  * completion.
  */
 public class TezJobMonitor {
+  private static final Logger LOG = LoggerFactory.getLogger(TezJobMonitor.class);
 
   static final String CLASS_NAME = TezJobMonitor.class.getName();
-  private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
-  private static final int MIN_CHECK_INTERVAL = 200;
   private static final int MAX_CHECK_INTERVAL = 1000;
   private static final int MAX_RETRY_INTERVAL = 2500;
   private static final int MAX_RETRY_FAILURES = (MAX_RETRY_INTERVAL / MAX_CHECK_INTERVAL) + 1;
@@ -157,7 +156,8 @@ public class TezJobMonitor {
     DAGStatus.State lastState = null;
     boolean running = false;
 
-    long checkInterval = MIN_CHECK_INTERVAL;
+    long checkInterval = HiveConf.getTimeVar(hiveConf, HiveConf.ConfVars.TEZ_DAG_STATUS_CHECK_INTERVAL,
+      TimeUnit.MILLISECONDS);
     WmContext wmContext = null;
     while (true) {
 
@@ -179,6 +179,9 @@ public class TezJobMonitor {
           if (desiredCounters != null && !desiredCounters.isEmpty()) {
             Map<String, Long> currentCounters = getCounterValues(dagCounters, vertexNames, vertexProgressMap,
               desiredCounters, done);
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Requested DAG status. checkInterval: {}. currentCounters: {}", checkInterval, currentCounters);
+            }
             wmContext.setCurrentCounters(currentCounters);
           }
         }
@@ -204,8 +207,6 @@ public class TezJobMonitor {
                 console.printInfo("Status: Running (" + dagClient.getExecutionContext() + ")\n");
                 this.executionStartTime = System.currentTimeMillis();
                 running = true;
-                // from running -> failed/succeeded, the AM breaks out of timeouts
-                checkInterval = MAX_CHECK_INTERVAL;
               }
               updateFunction.update(status, vertexProgressMap);
               break;
