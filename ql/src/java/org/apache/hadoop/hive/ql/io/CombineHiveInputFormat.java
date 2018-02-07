@@ -464,9 +464,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       CombineHiveInputSplit csplit = new CombineHiveInputSplit(job, is, pathToPartitionInfo);
       result.add(csplit);
     }
-
     LOG.info("number of splits " + result.size());
-    return result.toArray(new CombineHiveInputSplit[result.size()]);
+    return result.toArray(new InputSplit[result.size()]);
   }
 
   /**
@@ -577,6 +576,13 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
     // clear work from ThreadLocal after splits generated in case of thread is reused in pool.
     Utilities.clearWorkMapForConf(job);
+
+    if (result.isEmpty() && paths.length > 0 && job.getBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, false)) {
+      // If there are no inputs; the Execution engine skips the operator tree.
+      // To prevent it from happening; an opaque  ZeroRows input is added here - when needed.
+      result.add(
+          new HiveInputSplit(new NullRowsInputFormat.DummyInputSplit(paths[0]), ZeroRowsInputFormat.class.getName()));
+    }
 
     LOG.info("Number of all splits " + result.size());
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);

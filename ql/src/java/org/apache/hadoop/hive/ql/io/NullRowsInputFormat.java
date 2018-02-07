@@ -57,7 +57,11 @@ public class NullRowsInputFormat implements InputFormat<NullWritable, NullWritab
     }
 
     public DummyInputSplit(String path) {
-      super(new Path(path, "null"), 0, 1, (String[])null);
+      this(new Path(path, "null"));
+    }
+
+    public DummyInputSplit(Path path) {
+      super(path, 0, 1, (String[]) null);
     }
   }
 
@@ -119,7 +123,9 @@ public class NullRowsInputFormat implements InputFormat<NullWritable, NullWritab
     @Override
     public boolean next(Object arg0, Object value) throws IOException {
       if (rbCtx != null) {
-        if (counter >= MAX_ROW) return false;
+        if (counter >= MAX_ROW) {
+          return false;
+        }
         makeNullVrb(value, MAX_ROW);
         counter = MAX_ROW;
         return true;
@@ -163,7 +169,9 @@ public class NullRowsInputFormat implements InputFormat<NullWritable, NullWritab
   public InputSplit[] getSplits(JobConf conf, int arg1) throws IOException {
     // It's important to read the correct nulls! (in truth, the path is needed for SplitGrouper).
     String[] paths = conf.getTrimmedStrings(FileInputFormat.INPUT_DIR, (String[])null);
-    if (paths == null) throw new IOException("Cannot find path in conf");
+    if (paths == null) {
+      throw new IOException("Cannot find path in conf");
+    }
     InputSplit[] result = new InputSplit[paths.length];
     for (int i = 0; i < paths.length; ++i) {
       result[i] = new DummyInputSplit(paths[i]);
