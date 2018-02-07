@@ -778,8 +778,10 @@ public abstract class BaseSemanticAnalyzer {
         constraintName = unescapeIdentifier(grandChild.getChild(0).getText().toLowerCase());
       } else if (type == HiveParser.TOK_ENABLE) {
         enable = true;
-        // validate is true by default if we enable the constraint
-        validate = true;
+        // validate is false by default if we enable the constraint
+        // TODO: A constraint like NOT NULL could be enabled using ALTER but VALIDATE remains
+        //  false in such cases. Ideally VALIDATE should be set to true to validate existing data
+        validate = false;
       } else if (type == HiveParser.TOK_DISABLE) {
         enable = false;
         // validate is false by default if we disable the constraint
@@ -792,7 +794,10 @@ public abstract class BaseSemanticAnalyzer {
         rely = true;
       }
     }
-    if (enable) {
+
+    // NOT NULL constraint could be enforced/enabled
+    if (child.getToken().getType() != HiveParser.TOK_NOT_NULL
+        && enable) {
       throw new SemanticException(
           ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("ENABLE/ENFORCED feature not supported yet. "
               + "Please use DISABLE/NOT ENFORCED instead."));

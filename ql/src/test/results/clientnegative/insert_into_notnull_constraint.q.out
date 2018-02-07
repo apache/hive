@@ -1,0 +1,9 @@
+PREHOOK: query: create table nullConstraintCheck(i int NOT NULL enforced, j int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@nullConstraintCheck
+POSTHOOK: query: create table nullConstraintCheck(i int NOT NULL enforced, j int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@nullConstraintCheck
+FAILED: UDFArgumentException org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException: NOT NULL constraint violated!
