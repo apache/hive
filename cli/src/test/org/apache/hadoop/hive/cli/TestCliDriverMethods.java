@@ -19,10 +19,8 @@ package org.apache.hadoop.hive.cli;
 
 
 import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -53,10 +51,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
-import org.apache.hadoop.util.Shell;
 
 
 // Cannot call class TestCliDriver since that's the name of the generated
@@ -80,7 +76,7 @@ public class TestCliDriverMethods extends TestCase {
   }
 
   // If the command has an associated schema, make sure it gets printed to use
-  public void testThatCliDriverPrintsHeaderForCommandsWithSchema() throws CommandNeedRetryException {
+  public void testThatCliDriverPrintsHeaderForCommandsWithSchema() {
     Schema mockSchema = mock(Schema.class);
     List<FieldSchema> fieldSchemas = new ArrayList<FieldSchema>();
     String fieldName = "FlightOfTheConchords";
@@ -94,8 +90,7 @@ public class TestCliDriverMethods extends TestCase {
   }
 
   // If the command has no schema, make sure nothing is printed
-  public void testThatCliDriverPrintsNoHeaderForCommandsWithNoSchema()
-      throws CommandNeedRetryException {
+  public void testThatCliDriverPrintsNoHeaderForCommandsWithNoSchema() {
     Schema mockSchema = mock(Schema.class);
     when(mockSchema.getFieldSchemas()).thenReturn(null);
 
@@ -156,7 +151,7 @@ public class TestCliDriverMethods extends TestCase {
    * @throws CommandNeedRetryException
    *           won't actually be thrown
    */
-  private PrintStream headerPrintingTestDriver(Schema mockSchema) throws CommandNeedRetryException {
+  private PrintStream headerPrintingTestDriver(Schema mockSchema) {
     CliDriver cliDriver = new CliDriver();
 
     // We want the driver to try to print the header...

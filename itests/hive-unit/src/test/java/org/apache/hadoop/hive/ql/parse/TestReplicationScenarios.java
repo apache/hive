@@ -50,8 +50,6 @@ import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.MessageFormatFilter;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
@@ -80,10 +78,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -587,22 +583,19 @@ public class TestReplicationScenarios {
           // getTable is invoked after fetching the table names
           injectionPathCalled = true;
           Thread t = new Thread(new Runnable() {
+            @Override
             public void run() {
-              try {
-                LOG.info("Entered new thread");
-                IDriver driver2 = DriverFactory.newDriver(hconf);
-                SessionState.start(new CliSessionState(hconf));
-                CommandProcessorResponse ret = driver2.run("ALTER TABLE " + dbName + ".ptned PARTITION (b=1) RENAME TO PARTITION (b=10)");
-                success = (ret.getException() == null);
-                assertFalse(success);
-                ret = driver2.run("ALTER TABLE " + dbName + ".ptned RENAME TO " + dbName + ".ptned_renamed");
-                success = (ret.getException() == null);
-                assertFalse(success);
-                LOG.info("Exit new thread success - {}", success);
-              } catch (CommandNeedRetryException e) {
-                LOG.info("Hit Exception {} from new thread", e.getMessage());
-                throw new RuntimeException(e);
-              }
+              LOG.info("Entered new thread");
+              IDriver driver2 = DriverFactory.newDriver(hconf);
+              SessionState.start(new CliSessionState(hconf));
+              CommandProcessorResponse ret =
+                  driver2.run("ALTER TABLE " + dbName + ".ptned PARTITION (b=1) RENAME TO PARTITION (b=10)");
+              success = (ret.getException() == null);
+              assertFalse(success);
+              ret = driver2.run("ALTER TABLE " + dbName + ".ptned RENAME TO " + dbName + ".ptned_renamed");
+              success = (ret.getException() == null);
+              assertFalse(success);
+              LOG.info("Exit new thread success - {}", success);
             }
           });
           t.start();
@@ -662,19 +655,15 @@ public class TestReplicationScenarios {
           // getTable is invoked after fetching the table names
           injectionPathCalled = true;
           Thread t = new Thread(new Runnable() {
+            @Override
             public void run() {
-              try {
-                LOG.info("Entered new thread");
-                IDriver driver2 = DriverFactory.newDriver(hconf);
-                SessionState.start(new CliSessionState(hconf));
-                CommandProcessorResponse ret = driver2.run("DROP TABLE " + dbName + ".ptned");
-                success = (ret.getException() == null);
-                assertTrue(success);
-                LOG.info("Exit new thread success - {}", success);
-              } catch (CommandNeedRetryException e) {
-                LOG.info("Hit Exception {} from new thread", e.getMessage());
-                throw new RuntimeException(e);
-              }
+              LOG.info("Entered new thread");
+              IDriver driver2 = DriverFactory.newDriver(hconf);
+              SessionState.start(new CliSessionState(hconf));
+              CommandProcessorResponse ret = driver2.run("DROP TABLE " + dbName + ".ptned");
+              success = (ret.getException() == null);
+              assertTrue(success);
+              LOG.info("Exit new thread success - {}", success);
             }
           });
           t.start();
@@ -3124,7 +3113,7 @@ public class TestReplicationScenarios {
       List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(dbName+ "_dupe" , "tbl6"));
       assertEquals(nns.size(), 1);
       nnName = nns.get(0).getNn_name();
-      
+
     } catch (TException te) {
       assertNull(te);
     }
@@ -3616,12 +3605,7 @@ public class TestReplicationScenarios {
   private String getResult(int rowNum, int colNum, boolean reuse, IDriver myDriver) throws IOException {
     if (!reuse) {
       lastResults = new ArrayList<String>();
-      try {
-        myDriver.getResults(lastResults);
-      } catch (CommandNeedRetryException e) {
-        e.printStackTrace();
-        throw new RuntimeException(e);
-      }
+      myDriver.getResults(lastResults);
     }
     // Split around the 'tab' character
     return (lastResults.get(rowNum).split("\\t"))[colNum];
@@ -3646,12 +3630,7 @@ public class TestReplicationScenarios {
 
   private List<String> getOutput(IDriver myDriver) throws IOException {
     List<String> results = new ArrayList<>();
-    try {
-      myDriver.getResults(results);
-    } catch (CommandNeedRetryException e) {
-      LOG.warn(e.getMessage(),e);
-      throw new RuntimeException(e);
-    }
+    myDriver.getResults(results);
     return results;
   }
 
@@ -3772,19 +3751,10 @@ public class TestReplicationScenarios {
 
   private static boolean run(String cmd, boolean errorOnFail, IDriver myDriver) throws RuntimeException {
     boolean success = false;
-    try {
-      CommandProcessorResponse ret = myDriver.run(cmd);
-      success = ((ret.getException() == null) && (ret.getErrorMessage() == null));
-      if (!success){
-        LOG.warn("Error {} : {} running [{}].", ret.getErrorCode(), ret.getErrorMessage(), cmd);
-      }
-    } catch (CommandNeedRetryException e) {
-      if (errorOnFail){
-        throw new RuntimeException(e);
-      } else {
-        LOG.warn(e.getMessage(),e);
-        // do nothing else
-      }
+    CommandProcessorResponse ret = myDriver.run(cmd);
+    success = ((ret.getException() == null) && (ret.getErrorMessage() == null));
+    if (!success) {
+      LOG.warn("Error {} : {} running [{}].", ret.getErrorCode(), ret.getErrorMessage(), cmd);
     }
     return success;
   }

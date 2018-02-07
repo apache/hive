@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
@@ -1425,7 +1424,7 @@ public class TestCompactor {
    * Execute Hive CLI statement
    * @param cmd arbitrary statement to execute
    */
-  static void executeStatementOnDriver(String cmd, IDriver driver) throws IOException, CommandNeedRetryException {
+  static void executeStatementOnDriver(String cmd, IDriver driver) throws Exception {
     LOG.debug("Executing: " + cmd);
     CommandProcessorResponse cpr = driver.run(cmd);
     if(cpr.getResponseCode() != 0) {

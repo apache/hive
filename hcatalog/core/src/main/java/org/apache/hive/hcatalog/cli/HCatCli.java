@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.processors.DfsProcessor;
 import org.apache.hadoop.hive.ql.processors.SetProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -222,8 +221,9 @@ public class HCatCli {
   }
 
   private static void setConfProperties(HiveConf conf, Properties props) {
-    for (java.util.Map.Entry<Object, Object> e : props.entrySet())
+    for (java.util.Map.Entry<Object, Object> e : props.entrySet()) {
       conf.set((String) e.getKey(), (String) e.getValue());
+    }
   }
 
   private static int processLine(String line) {
@@ -304,10 +304,6 @@ public class HCatCli {
         res.clear();
       }
     } catch (IOException e) {
-      ss.err.println("Failed with exception " + e.getClass().getName() + ":"
-        + e.getMessage() + "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
-      ret = 1;
-    } catch (CommandNeedRetryException e) {
       ss.err.println("Failed with exception " + e.getClass().getName() + ":"
         + e.getMessage() + "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
       ret = 1;

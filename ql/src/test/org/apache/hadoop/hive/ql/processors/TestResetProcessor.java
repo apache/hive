@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 import org.junit.Test;
@@ -35,14 +34,14 @@ import static org.mockito.Mockito.when;
 public class TestResetProcessor {
 
   @Test
-  public void testResetClosesSparkSession() throws CommandNeedRetryException {
+  public void testResetClosesSparkSession() throws Exception {
     SessionState mockSessionState = createMockSparkSessionState();
     new ResetProcessor().run(mockSessionState, "");
     verify(mockSessionState).closeSparkSession();
   }
 
   @Test
-  public void testResetExecutionEngineClosesSparkSession() throws CommandNeedRetryException {
+  public void testResetExecutionEngineClosesSparkSession() throws Exception {
     SessionState mockSessionState = createMockSparkSessionState();
     new ResetProcessor().run(mockSessionState, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.varname);
     verify(mockSessionState).closeSparkSession();

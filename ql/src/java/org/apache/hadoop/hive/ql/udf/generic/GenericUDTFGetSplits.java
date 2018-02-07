@@ -58,7 +58,6 @@ import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.security.LlapTokenLocalClient;
 import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -269,13 +268,9 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         String ctas = "create temporary table " + tableName + " as " + query;
         LOG.info("Materializing the query for LLAPIF; CTAS: " + ctas);
 
-        try {
-          driver.resetQueryState();
-          HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, originalMode);
-          cpr = driver.run(ctas, false);
-        } catch (CommandNeedRetryException e) {
-          throw new HiveException(e);
-        }
+        driver.resetQueryState();
+        HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, originalMode);
+        cpr = driver.run(ctas, false);
 
         if(cpr.getResponseCode() != 0) {
           throw new HiveException("Failed to create temp table: " + cpr.getException());

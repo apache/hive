@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.hooks;
 import com.google.common.collect.Lists;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -55,7 +54,7 @@ public class TestQueryHooks {
   }
 
   @Test
-  public void testAllQueryLifeTimeWithParseHooks() throws IllegalAccessException, ClassNotFoundException, InstantiationException, CommandNeedRetryException {
+  public void testAllQueryLifeTimeWithParseHooks() throws Exception {
     String query = "select 1";
     ArgumentMatcher<QueryLifeTimeHookContext> argMatcher = new QueryLifeTimeHookContextMatcher(query);
     QueryLifeTimeHookWithParseHooks mockHook = mock(QueryLifeTimeHookWithParseHooks.class);
@@ -71,7 +70,7 @@ public class TestQueryHooks {
   }
 
   @Test
-  public void testQueryLifeTimeWithParseHooksWithParseError() throws IllegalAccessException, ClassNotFoundException, InstantiationException, CommandNeedRetryException {
+  public void testQueryLifeTimeWithParseHooksWithParseError() throws Exception {
     String query = "invalidquery";
     ArgumentMatcher<QueryLifeTimeHookContext> argMatcher = new QueryLifeTimeHookContextMatcher(query);
     QueryLifeTimeHookWithParseHooks mockHook = mock(QueryLifeTimeHookWithParseHooks.class);
@@ -87,7 +86,7 @@ public class TestQueryHooks {
   }
 
   @Test
-  public void testQueryLifeTimeWithParseHooksWithCompileError() throws IllegalAccessException, ClassNotFoundException, InstantiationException, CommandNeedRetryException {
+  public void testQueryLifeTimeWithParseHooksWithCompileError() throws Exception {
     String query = "select * from foo";
     ArgumentMatcher<QueryLifeTimeHookContext> argMatcher = new QueryLifeTimeHookContextMatcher(query);
     QueryLifeTimeHookWithParseHooks mockHook = mock(QueryLifeTimeHookWithParseHooks.class);
@@ -103,7 +102,7 @@ public class TestQueryHooks {
   }
 
   @Test
-  public void testAllQueryLifeTimeHooks() throws IllegalAccessException, ClassNotFoundException, InstantiationException, CommandNeedRetryException {
+  public void testAllQueryLifeTimeHooks() throws Exception {
     String query = "select 1";
     ArgumentMatcher<QueryLifeTimeHookContext> argMatcher = new QueryLifeTimeHookContextMatcher(query);
     QueryLifeTimeHook mockHook = mock(QueryLifeTimeHook.class);
@@ -117,7 +116,7 @@ public class TestQueryHooks {
   }
 
   @Test
-  public void testQueryLifeTimeWithCompileError() throws IllegalAccessException, ClassNotFoundException, InstantiationException, CommandNeedRetryException {
+  public void testQueryLifeTimeWithCompileError() throws Exception {
     String query = "select * from foo";
     ArgumentMatcher<QueryLifeTimeHookContext> argMatcher = new QueryLifeTimeHookContextMatcher(query);
     QueryLifeTimeHook mockHook = mock(QueryLifeTimeHook.class);

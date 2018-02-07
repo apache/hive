@@ -35,7 +35,6 @@ import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hive.hcatalog.HcatTestUtils;
 import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
@@ -416,7 +415,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   }
 
   @Test
-  public void testPartColsInData() throws IOException, CommandNeedRetryException {
+  public void testPartColsInData() throws Exception {
     AbstractHCatLoaderTest.dropTable("junit_unparted", driver);
     AbstractHCatLoaderTest.createTable("junit_unparted","a int", "b string", driver, storageFormat);
 
@@ -539,7 +538,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   }
 
   @Test
-  public void testNoAlias() throws IOException, CommandNeedRetryException {
+  public void testNoAlias() throws Exception {
     AbstractHCatLoaderTest.dropTable("junit_parted", driver);
     AbstractHCatLoaderTest.createTable("junit_parted","a int, b string", "ds string", driver, storageFormat);
     PigServer server = new PigServer(ExecType.LOCAL);
@@ -583,7 +582,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   }
 
   @Test
-  public void testStoreMultiTables() throws IOException, CommandNeedRetryException {
+  public void testStoreMultiTables() throws Exception {
     AbstractHCatLoaderTest.dropTable("junit_unparted", driver);
     AbstractHCatLoaderTest.createTable("junit_unparted","a int, b string", null,
         driver, storageFormat);
@@ -634,7 +633,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   }
 
   @Test
-  public void testStoreWithNoSchema() throws IOException, CommandNeedRetryException {
+  public void testStoreWithNoSchema() throws Exception {
     AbstractHCatLoaderTest.dropTable("junit_unparted", driver);
     AbstractHCatLoaderTest.createTable("junit_unparted","a int, b string", null,
         driver, storageFormat);
@@ -670,7 +669,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   }
 
   @Test
-  public void testStoreWithNoCtorArgs() throws IOException, CommandNeedRetryException {
+  public void testStoreWithNoCtorArgs() throws Exception {
     AbstractHCatLoaderTest.dropTable("junit_unparted", driver);
     AbstractHCatLoaderTest.createTable("junit_unparted","a int, b string", null,
         driver, storageFormat);
@@ -706,7 +705,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   }
 
   @Test
-  public void testEmptyStore() throws IOException, CommandNeedRetryException {
+  public void testEmptyStore() throws Exception {
 
     AbstractHCatLoaderTest.dropTable("junit_unparted", driver);
     AbstractHCatLoaderTest.createTable("junit_unparted","a int, b string", null, driver, storageFormat);
@@ -739,7 +738,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   }
 
   @Test
-  public void testBagNStruct() throws IOException, CommandNeedRetryException {
+  public void testBagNStruct() throws Exception {
     AbstractHCatLoaderTest.dropTable("junit_unparted", driver);
     AbstractHCatLoaderTest.createTable("junit_unparted",
         "b string,a struct<a1:int>,  arr_of_struct array<string>, " +
@@ -781,7 +780,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   }
 
   @Test
-  public void testStoreFuncAllSimpleTypes() throws IOException, CommandNeedRetryException {
+  public void testStoreFuncAllSimpleTypes() throws Exception {
     AbstractHCatLoaderTest.dropTable("junit_unparted", driver);
     AbstractHCatLoaderTest.createTable("junit_unparted",
         "a int, b float, c double, d bigint, e string, h boolean, f binary, g binary", null,
@@ -840,7 +839,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   }
 
   @Test
-  public void testStoreFuncSimple() throws IOException, CommandNeedRetryException {
+  public void testStoreFuncSimple() throws Exception {
     AbstractHCatLoaderTest.dropTable("junit_unparted", driver);
     AbstractHCatLoaderTest.createTable("junit_unparted","a int, b string", null,
         driver, storageFormat);
@@ -878,8 +877,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   }
 
   @Test
-  public void testDynamicPartitioningMultiPartColsInDataPartialSpec() throws IOException,
-      CommandNeedRetryException {
+  public void testDynamicPartitioningMultiPartColsInDataPartialSpec() throws Exception {
     AbstractHCatLoaderTest.dropTable("employee", driver);
     AbstractHCatLoaderTest.createTable("employee",
         "emp_id INT, emp_name STRING, emp_start_date STRING , emp_gender STRING",
@@ -912,8 +910,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   }
 
   @Test
-  public void testDynamicPartitioningMultiPartColsInDataNoSpec() throws IOException,
-      CommandNeedRetryException {
+  public void testDynamicPartitioningMultiPartColsInDataNoSpec() throws Exception {
     AbstractHCatLoaderTest.dropTable("employee", driver);
     AbstractHCatLoaderTest.createTable("employee",
         "emp_id INT, emp_name STRING, emp_start_date STRING , emp_gender STRING",
@@ -945,8 +942,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   }
 
   @Test
-  public void testDynamicPartitioningMultiPartColsNoDataInDataNoSpec() throws IOException,
-      CommandNeedRetryException {
+  public void testDynamicPartitioningMultiPartColsNoDataInDataNoSpec() throws Exception {
     AbstractHCatLoaderTest.dropTable("employee", driver);
     AbstractHCatLoaderTest.createTable("employee",
         "emp_id INT, emp_name STRING, emp_start_date STRING , emp_gender STRING",
@@ -972,7 +968,7 @@ public abstract class AbstractHCatStorerTest extends HCatBaseTest {
   }
 
   @Test
-  public void testPartitionPublish() throws IOException, CommandNeedRetryException {
+  public void testPartitionPublish() throws Exception {
     AbstractHCatLoaderTest.dropTable("ptn_fail", driver);
     AbstractHCatLoaderTest.createTable("ptn_fail","a int, c string", "b string",
         driver, storageFormat);

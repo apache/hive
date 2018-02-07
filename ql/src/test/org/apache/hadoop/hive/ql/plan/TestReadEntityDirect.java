@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -49,7 +48,7 @@ import org.junit.Test;
 public class TestReadEntityDirect {
 
   @BeforeClass
-  public static void onetimeSetup() throws CommandNeedRetryException {
+  public static void onetimeSetup() throws Exception {
     Driver driver = createDriver();
     int ret = driver.run("create table t1(i int)").getResponseCode();
     assertEquals("Checking command success", 0, ret);

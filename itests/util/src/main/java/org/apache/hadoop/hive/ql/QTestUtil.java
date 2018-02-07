@@ -1313,13 +1313,7 @@ public class QTestUtil {
   }
 
   public int execute(String tname) {
-    try {
-      return drv.run(qMap.get(tname)).getResponseCode();
-    } catch (CommandNeedRetryException e) {
-      LOG.error("driver failed to run the command: " + tname + " due to the exception: ", e);
-      e.printStackTrace();
-      return -1;
-    }
+    return drv.run(qMap.get(tname)).getResponseCode();
   }
 
   public int executeClient(String tname1, String tname2) {

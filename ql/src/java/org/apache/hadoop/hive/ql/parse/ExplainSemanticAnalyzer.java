@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -147,8 +146,6 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         config.setOpIdToRuntimeNumRows(aggregateStats(config.getExplainRootPath()));
       } catch (IOException e1) {
         throw new SemanticException(e1);
-      } catch (CommandNeedRetryException e) {
-        throw new SemanticException(e);
       }
       ctx.resetOpContext();
       ctx.resetStream();

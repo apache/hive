@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -299,10 +298,6 @@ public class Worker extends CompactorThread {
           throw new IOException("Could not update stats for table " + ci.getFullTableName() +
             (ci.partName == null ? "" : "/" + ci.partName) + " due to: " + cpr);
         }
-      }
-      catch(CommandNeedRetryException cnre) {
-        throw new IOException("Could not update stats for table " + ci.getFullTableName() +
-          (ci.partName == null ? "" : "/" + ci.partName) + " due to: " + cnre.getMessage());
       }
       finally {
         if(localSession != null) {

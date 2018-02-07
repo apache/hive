@@ -579,14 +579,6 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     return false;
   }
 
-  public boolean ifRetryCmdWhenFail() {
-    return retryCmdWhenFail;
-  }
-
-  public void setRetryCmdWhenFail(boolean retryCmdWhenFail) {
-    this.retryCmdWhenFail = retryCmdWhenFail;
-  }
-
   public QueryPlan getQueryPlan() {
     return queryPlan;
   }
