@@ -1217,7 +1217,6 @@ public class Driver implements IDriver {
     ValidTxnWriteIdList txnWriteIds = txnMgr.getValidWriteIds(getTransactionalTableList(plan), txnString);
     String writeIdStr = txnWriteIds.toString();
     conf.set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, writeIdStr);
-    conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY, writeIdStr);
     if (plan.getFetchTask() != null) {
       /**
        * This is needed for {@link HiveConf.ConfVars.HIVEFETCHTASKCONVERSION} optimization which

@@ -211,6 +211,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
 
       AcidUtils.setAcidOperationalProperties(jobClone, ts.getConf().isTranscationalTable(),
           ts.getConf().getAcidOperationalProperties());
+      AcidUtils.setValidWriteIdList(jobClone, ts.getConf());
 
       ts.passExecContext(getExecContext());
 

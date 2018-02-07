@@ -1498,6 +1498,8 @@ public class AcidUtils {
   public static ValidWriteIdList getTableValidWriteIdList(Configuration conf, String fullTableName) {
     String txnString = conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
     ValidTxnWriteIdList validTxnList = new ValidTxnWriteIdList(txnString);
+    LOG.debug("getTableValidWriteIdList trying to get ValidWriteIdList for table: "
+            + fullTableName + " from ValidTxnWriteIdList: " + txnString);
     return validTxnList.getTableWriteIdList(fullTableName);
   }
 
@@ -1506,6 +1508,9 @@ public class AcidUtils {
    */
   public static void setValidWriteIdList(Configuration conf, ValidWriteIdList validWriteIds) {
     conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY, validWriteIds.toString());
+    LOG.debug("setValidWriteIdList ValidWriteIdList: " + validWriteIds.toString()
+            + " isAcidTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, false)
+            + " acidProperty: " + getAcidOperationalProperties(conf));
   }
 
   /**
@@ -1517,7 +1522,17 @@ public class AcidUtils {
     if ((dbName != null) && (tableName != null)) {
       ValidWriteIdList validWriteIdList = AcidUtils.getTableValidWriteIdList(conf,
                                                     AcidUtils.getFullTableName(dbName, tableName));
-      setValidWriteIdList(conf, validWriteIdList);
+      if (validWriteIdList.getTableName() != null) {
+        setValidWriteIdList(conf, validWriteIdList);
+      } else {
+        LOG.debug("setValidWriteIdList on table: " + AcidUtils.getFullTableName(dbName, tableName)
+                + " isAcidTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, false)
+                + " acidProperty: " + getAcidOperationalProperties(conf)
+                + " doesn't find the ValidWriteId list from ValidTxnWriteIdList: "
+                + ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
+      }
+
+
     }
   }
 

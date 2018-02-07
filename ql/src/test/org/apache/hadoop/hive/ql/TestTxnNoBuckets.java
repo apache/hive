@@ -306,9 +306,9 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     String expected[][] = {
       {"1\t2",  "warehouse/t/000002_0"},
       {"2\t4",  "warehouse/t/000002_0"},
-      {"5\t6",  "warehouse/t/000001_0"},
-      {"6\t8",  "warehouse/t/000000_0"},
-      {"9\t10", "warehouse/t/000001_0"},
+      {"5\t6",  "warehouse/t/000000_0"},
+      {"6\t8",  "warehouse/t/000001_0"},
+      {"9\t10", "warehouse/t/000000_0"},
       {"12\t12", "warehouse/t/000000_0_copy_1"}
     };
     checkExpected(rs, expected,"before converting to acid");
@@ -325,9 +325,9 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     String expected1[][] = {
       {"1\t2",  "warehouse/t/000002_0"},
       {"2\t4",  "warehouse/t/000002_0"},
-      {"5\t6",  "warehouse/t/000001_0"},
-      {"6\t8",  "warehouse/t/000000_0"},
-      {"9\t10", "warehouse/t/000001_0"},
+      {"5\t6",  "warehouse/t/000000_0"},
+      {"6\t8",  "warehouse/t/000001_0"},
+      {"9\t10", "warehouse/t/000000_0"},
       {"10\t20", "warehouse/t/HIVE_UNION_SUBDIR_15/000000_0"},
       {"12\t12", "warehouse/t/000000_0_copy_1"},
       {"20\t40", "warehouse/t/HIVE_UNION_SUBDIR_15/000000_0"},
@@ -349,14 +349,14 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     String expected2[][] = {
       {"{\"transactionid\":0,\"bucketid\":537001984,\"rowid\":0}\t1\t2",  "warehouse/t/000002_0"},
       {"{\"transactionid\":0,\"bucketid\":537001984,\"rowid\":1}\t2\t4",  "warehouse/t/000002_0"},
-      {"{\"transactionid\":0,\"bucketid\":536936448,\"rowid\":1}\t5\t6",  "warehouse/t/000001_0"},
-      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":0}\t6\t8",  "warehouse/t/000000_0"},
-      {"{\"transactionid\":0,\"bucketid\":536936448,\"rowid\":0}\t9\t10", "warehouse/t/000001_0"},
-      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":2}\t10\t20", "warehouse/t/HIVE_UNION_SUBDIR_15/000000_0"},
-      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":1}\t12\t12", "warehouse/t/000000_0_copy_1"},
-      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":3}\t20\t40", "warehouse/t/HIVE_UNION_SUBDIR_15/000000_0"},
-      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}\t50\t60", "warehouse/t/HIVE_UNION_SUBDIR_16/000000_0"},
-      {"{\"transactionid\":0,\"bucketid\":536936448,\"rowid\":2}\t60\t80", "warehouse/t/HIVE_UNION_SUBDIR_16/000001_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":1}\t5\t6",  "warehouse/t/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536936448,\"rowid\":0}\t6\t8",  "warehouse/t/000001_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":0}\t9\t10", "warehouse/t/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":3}\t10\t20", "warehouse/t/HIVE_UNION_SUBDIR_15/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":2}\t12\t12", "warehouse/t/000000_0_copy_1"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}\t20\t40", "warehouse/t/HIVE_UNION_SUBDIR_15/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":5}\t50\t60", "warehouse/t/HIVE_UNION_SUBDIR_16/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536936448,\"rowid\":1}\t60\t80", "warehouse/t/HIVE_UNION_SUBDIR_16/000001_0"},
     };
     checkExpected(rs, expected2,"after converting to acid (no compaction)");
     Assert.assertEquals(0, BucketCodec.determineVersion(536870912).decodeWriterId(536870912));
@@ -370,12 +370,12 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     String expected3[][] = {
       {"{\"transactionid\":0,\"bucketid\":537001984,\"rowid\":0}\t1\t2",  "warehouse/t/000002_0"},
       {"{\"transactionid\":0,\"bucketid\":537001984,\"rowid\":1}\t2\t4",  "warehouse/t/000002_0"},
-      {"{\"transactionid\":0,\"bucketid\":536936448,\"rowid\":1}\t5\t6",  "warehouse/t/000001_0"},
-      {"{\"transactionid\":0,\"bucketid\":536936448,\"rowid\":0}\t9\t10", "warehouse/t/000001_0"},
-      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":2}\t10\t20", "warehouse/t/HIVE_UNION_SUBDIR_15/000000_0"},
-      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":1}\t12\t12", "warehouse/t/000000_0_copy_1"},
-      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":3}\t20\t40", "warehouse/t/HIVE_UNION_SUBDIR_15/000000_0"},
-      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}\t50\t60", "warehouse/t/HIVE_UNION_SUBDIR_16/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":1}\t5\t6",  "warehouse/t/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":0}\t9\t10", "warehouse/t/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":3}\t10\t20", "warehouse/t/HIVE_UNION_SUBDIR_15/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":2}\t12\t12", "warehouse/t/000000_0_copy_1"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}\t20\t40", "warehouse/t/HIVE_UNION_SUBDIR_15/000000_0"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":5}\t50\t60", "warehouse/t/HIVE_UNION_SUBDIR_16/000000_0"},
       {"{\"transactionid\":1,\"bucketid\":536870912,\"rowid\":0}\t60\t88", "warehouse/t/delta_0000001_0000001_0000/bucket_00000"},
     };
     rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from T order by a, b, INPUT__FILE__NAME");
@@ -390,12 +390,12 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     String expected4[][] = {
       {"{\"transactionid\":0,\"bucketid\":537001984,\"rowid\":0}\t1\t2", "warehouse/t/base_0000002/bucket_00002"},
       {"{\"transactionid\":0,\"bucketid\":537001984,\"rowid\":1}\t2\t4", "warehouse/t/base_0000002/bucket_00002"},
-      {"{\"transactionid\":0,\"bucketid\":536936448,\"rowid\":1}\t5\t6", "warehouse/t/base_0000002/bucket_00001"},
-      {"{\"transactionid\":0,\"bucketid\":536936448,\"rowid\":0}\t9\t10", "warehouse/t/base_0000002/bucket_00001"},
-      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":2}\t10\t20", "warehouse/t/base_0000002/bucket_00000"},
-      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":1}\t12\t12", "warehouse/t/base_0000002/bucket_00000"},
-      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":3}\t20\t40", "warehouse/t/base_0000002/bucket_00000"},
-      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}\t50\t60", "warehouse/t/base_0000002/bucket_00000"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":1}\t5\t6", "warehouse/t/base_0000002/bucket_00000"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":0}\t9\t10", "warehouse/t/base_0000002/bucket_00000"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":3}\t10\t20", "warehouse/t/base_0000002/bucket_00000"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":2}\t12\t12", "warehouse/t/base_0000002/bucket_00000"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}\t20\t40", "warehouse/t/base_0000002/bucket_00000"},
+      {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":5}\t50\t60", "warehouse/t/base_0000002/bucket_00000"},
       {"{\"transactionid\":1,\"bucketid\":536870912,\"rowid\":0}\t60\t88", "warehouse/t/base_0000002/bucket_00000"},
     };
     checkExpected(rs, expected4,"after major compact");

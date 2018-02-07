@@ -153,6 +153,7 @@ public class FetchOperator implements Serializable {
 
   public void setValidWriteIdList(String writeIdStr) {
     job.set(ValidWriteIdList.VALID_WRITEIDS_KEY, writeIdStr);
+    LOG.debug("FetchOperator set writeIdStr: " + writeIdStr);
   }
   private void initialize() throws HiveException {
     if (isStatReader) {
@@ -431,6 +432,7 @@ public class FetchOperator implements Serializable {
   private ValidWriteIdList extractValidTxnList() {
     if (currDesc.getTableName() == null || !org.apache.commons.lang.StringUtils.isBlank(currDesc.getTableName())) {
       String txnString = job.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
+      LOG.debug("FetchOperator get writeIdStr: " + txnString);
       return txnString == null ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
     }
     return null;  // not fetching from a table directly but from a temp location

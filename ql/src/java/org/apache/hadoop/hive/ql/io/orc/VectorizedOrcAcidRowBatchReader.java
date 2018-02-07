@@ -185,6 +185,9 @@ public class VectorizedOrcAcidRowBatchReader
 
     String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
     this.validWriteIdList = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
+    LOG.debug("VectorizedOrcAcidRowBatchReader:: Read ValidWriteIdList: " + this.validWriteIdList.toString()
+            + " isAcidTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, false)
+            + " acidProperty: " + AcidUtils.getAcidOperationalProperties(conf));
 
     // Clone readerOptions for deleteEvents.
     Reader.Options deleteEventReaderOptions = readerOptions.clone();
@@ -639,6 +642,9 @@ public class VectorizedOrcAcidRowBatchReader
           int bucket = AcidUtils.parseBaseOrDeltaBucketFilename(orcSplit.getPath(), conf).getBucketId();
           String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
           this.validWriteIdList = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
+          LOG.debug("SortMergedDeleteEventRegistry:: Read ValidWriteIdList: " + this.validWriteIdList.toString()
+                  + " isAcidTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, false)
+                  + " acidProperty: " + AcidUtils.getAcidOperationalProperties(conf));
           OrcRawRecordMerger.Options mergerOptions = new OrcRawRecordMerger.Options().isDeleteReader(true);
           assert !orcSplit.isOriginal() : "If this now supports Original splits, set up mergeOptions properly";
           this.deleteRecords = new OrcRawRecordMerger(conf, true, null, false, bucket,
@@ -984,6 +990,9 @@ public class VectorizedOrcAcidRowBatchReader
       int bucket = AcidUtils.parseBaseOrDeltaBucketFilename(orcSplit.getPath(), conf).getBucketId();
       String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
       this.validWriteIdList = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
+      LOG.debug("ColumnizedDeleteEventRegistry:: Read ValidWriteIdList: " + this.validWriteIdList.toString()
+              + " isAcidTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, false)
+              + " acidProperty: " + AcidUtils.getAcidOperationalProperties(conf));
       this.sortMerger = new TreeMap<DeleteRecordKey, DeleteReaderValue>();
       this.rowIds = null;
       this.compressedOtids = null;
