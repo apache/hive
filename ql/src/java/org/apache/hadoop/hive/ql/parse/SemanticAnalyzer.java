@@ -110,6 +110,7 @@ import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity.WriteType;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -12120,7 +12121,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
 
       if (type == WriteEntity.Type.PARTITION || type == WriteEntity.Type.DUMMYPARTITION) {
-        String conflictingArchive;
+        String conflictingArchive = null;
         try {
           Partition usedp = writeEntity.getPartition();
           Table tbl = usedp.getTable();
@@ -12134,8 +12135,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
           LOG.debug("validated " + usedp.getName());
           LOG.debug(usedp.getTable().getTableName());
-          conflictingArchive = ArchiveUtils
-              .conflictingArchiveNameOrNull(db, tbl, usedp.getSpec());
+          WriteEntity.WriteType writeType = writeEntity.getWriteType();
+          if (writeType != WriteType.UPDATE && writeType != WriteType.DELETE) {
+            // Do not check for ACID; it does not create new parts and this is expensive as hell.
+            // TODO: add an API to get table name list for archived parts with a single call;
+            //       nobody uses this so we could skip the whole thing.
+            conflictingArchive = ArchiveUtils
+                .conflictingArchiveNameOrNull(db, tbl, usedp.getSpec());
+          }
         } catch (HiveException e) {
           throw new SemanticException(e);
         }
