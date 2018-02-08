@@ -142,17 +142,6 @@ final class EventRequestType {
   );
 }
 
-final class BucketingVersion {
-  const INVALID_BUCKETING = 0;
-  const JAVA_BUCKETING = 1;
-  const MURMUR_BUCKETING = 2;
-  static public $__names = array(
-    0 => 'INVALID_BUCKETING',
-    1 => 'JAVA_BUCKETING',
-    2 => 'MURMUR_BUCKETING',
-  );
-}
-
 final class FunctionType {
   const JAVA = 1;
   static public $__names = array(
@@ -5053,14 +5042,6 @@ class Table {
    * @var \metastore\CreationMetadata
    */
   public $creationMetadata = null;
-  /**
-   * @var int
-   */
-  public $bucketingVersion =   1;
-  /**
-   * @var bool
-   */
-  public $loadInBucketedTable = false;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -5145,14 +5126,6 @@ class Table {
           'type' => TType::STRUCT,
           'class' => '\metastore\CreationMetadata',
           ),
-        17 => array(
-          'var' => 'bucketingVersion',
-          'type' => TType::I32,
-          ),
-        18 => array(
-          'var' => 'loadInBucketedTable',
-          'type' => TType::BOOL,
-          ),
         );
     }
     if (is_array($vals)) {
@@ -5203,12 +5176,6 @@ class Table {
       }
       if (isset($vals['creationMetadata'])) {
         $this->creationMetadata = $vals['creationMetadata'];
-      }
-      if (isset($vals['bucketingVersion'])) {
-        $this->bucketingVersion = $vals['bucketingVersion'];
-      }
-      if (isset($vals['loadInBucketedTable'])) {
-        $this->loadInBucketedTable = $vals['loadInBucketedTable'];
       }
     }
   }
@@ -5371,20 +5338,6 @@ class Table {
             $xfer += $input->skip($ftype);
           }
           break;
-        case 17:
-          if ($ftype == TType::I32) {
-            $xfer += $input->readI32($this->bucketingVersion);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 18:
-          if ($ftype == TType::BOOL) {
-            $xfer += $input->readBool($this->loadInBucketedTable);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -5510,16 +5463,6 @@ class Table {
       }
       $xfer += $output->writeFieldBegin('creationMetadata', TType::STRUCT, 16);
       $xfer += $this->creationMetadata->write($output);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->bucketingVersion !== null) {
-      $xfer += $output->writeFieldBegin('bucketingVersion', TType::I32, 17);
-      $xfer += $output->writeI32($this->bucketingVersion);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->loadInBucketedTable !== null) {
-      $xfer += $output->writeFieldBegin('loadInBucketedTable', TType::BOOL, 18);
-      $xfer += $output->writeBool($this->loadInBucketedTable);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

@@ -18,26 +18,21 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import org.apache.hadoop.hive.metastore.api.BucketingVersion;
-
 import java.util.List;
 
 public class OpTraits {
 
-  private List<List<String>> bucketColNames;
-  private List<List<String>> sortColNames;
-  private int numBuckets;
-  private int numReduceSinks;
-  private BucketingVersion bucketingVersion;
+  List<List<String>> bucketColNames;
+  List<List<String>> sortColNames;
+  int numBuckets;
+  int numReduceSinks;
 
   public OpTraits(List<List<String>> bucketColNames, int numBuckets,
-      List<List<String>> sortColNames, int numReduceSinks,
-      BucketingVersion bucketingVersion) {
+      List<List<String>> sortColNames, int numReduceSinks) {
     this.bucketColNames = bucketColNames;
     this.numBuckets = numBuckets;
     this.sortColNames = sortColNames;
     this.numReduceSinks = numReduceSinks;
-    this.bucketingVersion = bucketingVersion;
   }
 
   public List<List<String>> getBucketColNames() {
@@ -73,13 +68,6 @@ public class OpTraits {
     return this.numReduceSinks;
   }
 
-  public void setBucketingVersion(BucketingVersion bucketingVersion) {
-    this.bucketingVersion = bucketingVersion;
-  }
-
-  public BucketingVersion getBucketingVersion() {
-    return bucketingVersion;
-  }
   
   @Override
   public String toString() {

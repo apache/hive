@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.metastore.model;
 
-import org.apache.hadoop.hive.metastore.api.BucketingVersion;
-
 import java.util.List;
 import java.util.Map;
 
@@ -38,8 +36,6 @@ public class MTable {
   private String viewExpandedText;
   private boolean rewriteEnabled;
   private String tableType;
-  private BucketingVersion bucketingVersion;
-  private boolean loadInBucketedTable;
 
   public MTable() {}
 
@@ -60,8 +56,7 @@ public class MTable {
   public MTable(String tableName, MDatabase database, MStorageDescriptor sd, String owner,
       int createTime, int lastAccessTime, int retention, List<MFieldSchema> partitionKeys,
       Map<String, String> parameters, String viewOriginalText, String viewExpandedText,
-      boolean rewriteEnabled,
-      String tableType, BucketingVersion bucketingVersion, boolean loadInBucketedTable) {
+      boolean rewriteEnabled, String tableType) {
     this.tableName = tableName;
     this.database = database;
     this.sd = sd;
@@ -75,8 +70,6 @@ public class MTable {
     this.viewExpandedText = viewExpandedText;
     this.rewriteEnabled = rewriteEnabled;
     this.tableType = tableType;
-    this.bucketingVersion = bucketingVersion;
-    this.loadInBucketedTable = loadInBucketedTable;
   }
 
   /**
@@ -260,32 +253,4 @@ public class MTable {
   public String getTableType() {
     return tableType;
   }
-
-  /**
-   * @param bucketingVersion used in bucketed table
-   */
-  public void setBucketingVersion(BucketingVersion bucketingVersion) {
-    this.bucketingVersion = bucketingVersion;
-  }
-
-  /**
-   * @return the bucketingVersion
-   */
-  public BucketingVersion getBucketingVersion() {
-    return bucketingVersion;
-  }
-  /**
-   * @param loadInBucketedTable
-   */
-  public void setLoadInBucketedTable(boolean loadInBucketedTable) {
-    this.loadInBucketedTable = loadInBucketedTable;
-  }
-
-  /**
-   * @return the expertMode
-   */
-  public boolean isLoadInBucketedTable() {
-    return loadInBucketedTable;
-  }
-
 }

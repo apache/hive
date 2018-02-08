@@ -21,7 +21,6 @@ import java.util.Collection;
 
 import java.util.concurrent.ConcurrentHashMap;
 import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import javax.security.auth.login.LoginException;
@@ -569,26 +568,13 @@ public class DagUtils {
             MultiMRInput.createConfigBuilder(conf, HiveInputFormat.class).build());
       }
 
-      // To be populated for SMB joins only for all the small tables
-      Map<String, Integer> inputToBucketMap = new HashMap<>();
-      if (mergeJoinWork.getMergeJoinOperator().getParentOperators().size() == 1
-              && mergeJoinWork.getMergeJoinOperator().getOpTraits() != null) {
-        // This is an SMB join.
-        for (BaseWork work : mapWorkList) {
-          MapWork mw = (MapWork) work;
-          Map<String, Operator<?>> aliasToWork = mw.getAliasToWork();
-          Preconditions.checkState(aliasToWork.size() == 1,
-                  "More than 1 alias in SMB mapwork");
-          inputToBucketMap.put(mw.getName(), mw.getWorks().get(0).getOpTraits().getNumBuckets());
-        }
-      }
       VertexManagerPluginDescriptor desc =
         VertexManagerPluginDescriptor.create(CustomPartitionVertex.class.getName());
       // the +1 to the size is because of the main work.
       CustomVertexConfiguration vertexConf =
           new CustomVertexConfiguration(mergeJoinWork.getMergeJoinOperator().getConf()
               .getNumBuckets(), vertexType, mergeJoinWork.getBigTableAlias(),
-              mapWorkList.size() + 1, inputToBucketMap);
+              mapWorkList.size() + 1);
       DataOutputBuffer dob = new DataOutputBuffer();
       vertexConf.write(dob);
       byte[] userPayload = dob.getData();
