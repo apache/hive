@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.Writer;
 import java.net.URI;
@@ -88,13 +89,15 @@ class SparkClientImpl implements SparkClient {
   private final Map<String, JobHandleImpl<?>> jobs;
   private final Rpc driverRpc;
   private final ClientProtocol protocol;
+  private final PrintStream consoleStream;
   private volatile boolean isAlive;
 
   SparkClientImpl(RpcServer rpcServer, Map<String, String> conf, HiveConf hiveConf,
-                  String sessionid) throws IOException, SparkException {
+                  String sessionid, PrintStream consoleStream) throws IOException {
     this.conf = conf;
     this.hiveConf = hiveConf;
     this.jobs = Maps.newConcurrentMap();
+    this.consoleStream = consoleStream;
 
     String secret = rpcServer.createSecret();
     this.driverThread = startDriver(rpcServer, sessionid, secret);
@@ -621,6 +624,11 @@ class SparkClientImpl implements SparkClient {
       }
     }
 
+    private void handle(ChannelHandlerContext ctx, SparkUIWebURL msg) {
+      String printMsg = "Hive on Spark Session Web UI URL: " + msg.UIWebURL;
+      consoleStream.println(printMsg);
+      LOG.info(printMsg);
+    }
   }
 
   private static class AddJarJob implements Job<Serializable> {
