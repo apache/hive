@@ -317,10 +317,10 @@ public class ImportTableDesc {
   public Task<? extends Serializable> getCreateTableTask(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       HiveConf conf) {
     switch (getDescType()) {
-      case TABLE:
-        return TaskFactory.get(new DDLWork(inputs, outputs, createTblDesc), conf);
-      case VIEW:
-        return TaskFactory.get(new DDLWork(inputs, outputs, createViewDesc), conf);
+    case TABLE:
+      return TaskFactory.get(new DDLWork(inputs, outputs, createTblDesc), conf, true);
+    case VIEW:
+      return TaskFactory.get(new DDLWork(inputs, outputs, createViewDesc), conf, true);
     }
     return null;
   }
