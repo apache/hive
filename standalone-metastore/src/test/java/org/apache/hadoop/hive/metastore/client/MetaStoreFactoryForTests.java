@@ -34,8 +34,10 @@ import java.util.List;
  * {@link org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService} implementations for
  * tests.
  */
-public class MetaStoreFactoryForTests {
+public final class MetaStoreFactoryForTests {
   private static final int DEFAULT_LIMIT_PARTITION_REQUEST = 100;
+
+  private MetaStoreFactoryForTests() {}
 
   /**
    * We would like to run the tests with 2 MetaStore configurations
@@ -94,7 +96,7 @@ public class MetaStoreFactoryForTests {
             .setConf(conf)
             .setType(MiniHMS.MiniHMSType.EMBEDDED)
             .build();
-    metaStores.add(new Object[] { "Embedded", embedded});
+    metaStores.add(new Object[] {"Embedded", embedded});
 
     // Create Remote MetaStore
     conf.set("javax.jdo.option.ConnectionURL",
@@ -104,7 +106,7 @@ public class MetaStoreFactoryForTests {
             .setConf(conf)
             .setType(MiniHMS.MiniHMSType.REMOTE)
             .build();
-    metaStores.add(new Object[] { "Remote", remote});
+    metaStores.add(new Object[] {"Remote", remote});
 
     return metaStores;
   }

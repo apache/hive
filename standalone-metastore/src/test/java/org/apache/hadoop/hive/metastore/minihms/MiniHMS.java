@@ -31,12 +31,18 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
  *  so the same tests could be run against a real cluster
  */
 public class MiniHMS {
+  /**
+   * The possible MetaStore types.
+   */
   public enum MiniHMSType {
     EMBEDDED,
     REMOTE,
     CLUSTER
   }
 
+  /**
+   * Builder for creating a Mini MetaStore object.
+   */
   public static class Builder {
     private Configuration metaStoreConf = MetastoreConf.newMetastoreConf();
     private MiniHMSType miniHMSType = MiniHMSType.EMBEDDED;
@@ -56,14 +62,14 @@ public class MiniHMS {
 
     public AbstractMetaStoreService build() throws Exception {
       switch (miniHMSType) {
-        case REMOTE:
-          return new RemoteMetaStoreForTests(metaStoreConf);
-        case EMBEDDED:
-          return new EmbeddedMetaStoreForTests(metaStoreConf);
-        case CLUSTER:
-          return new ClusterMetaStoreForTests(metaStoreConf);
-        default:
-          throw new IllegalArgumentException("Unexpected miniHMSType: " + miniHMSType);
+      case REMOTE:
+        return new RemoteMetaStoreForTests(metaStoreConf);
+      case EMBEDDED:
+        return new EmbeddedMetaStoreForTests(metaStoreConf);
+      case CLUSTER:
+        return new ClusterMetaStoreForTests(metaStoreConf);
+      default:
+        throw new IllegalArgumentException("Unexpected miniHMSType: " + miniHMSType);
       }
     }
   }

@@ -52,6 +52,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Test class for IMetaStoreClient API. Testing the Database related functions.
+ */
 @RunWith(Parameterized.class)
 public class TestDatabases {
   private static final Logger LOG = LoggerFactory.getLogger(TestDatabases.class);
@@ -408,7 +411,7 @@ public class TestDatabases {
   }
 
   /**
-   * Creates an index in the given database for testing purposes
+   * Creates an index in the given database for testing purposes.
    * @param databaseName The database name in which the index should be creatd
    * @throws TException If there is an error during the index creation
    */

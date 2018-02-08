@@ -16,18 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.metastore.minihms;
-
-
-import org.apache.hadoop.conf.Configuration;
-
 /**
- * The AbstractMetaStore implementation which is used when the tests are running against an embedded
- * MetaStore in the same thread as the client without Thrift communication (See the
- * {@link org.apache.hadoop.hive.metastore.client.MetaStoreFactoryForTests} class).
+ * This package contains test and utility classes for IMetaStoreClient API tests.
  */
-public class EmbeddedMetaStoreForTests extends AbstractMetaStoreService {
-  public EmbeddedMetaStoreForTests(Configuration configuration) {
-    super(configuration);
-  }
-}
+package org.apache.hadoop.hive.metastore.client;
