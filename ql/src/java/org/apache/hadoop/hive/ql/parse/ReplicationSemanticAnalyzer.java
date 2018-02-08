@@ -469,7 +469,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     alterTblDesc.setPartSpec((HashMap<String, String>)partSpec);
 
     Task<? extends Serializable> updateReplIdTask = TaskFactory.get(
-                      new DDLWork(inputs, outputs, alterTblDesc), conf);
+                      new DDLWork(inputs, outputs, alterTblDesc), conf, true);
 
     // Link the update repl state task with dependency collection task
     if (preCursor != null) {
@@ -491,7 +491,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     AlterDatabaseDesc alterDbDesc = new AlterDatabaseDesc(
                             dbName, mapProp, new ReplicationSpec(replState, replState));
     Task<? extends Serializable> updateReplIdTask = TaskFactory.get(
-                            new DDLWork(inputs, outputs, alterDbDesc), conf);
+                            new DDLWork(inputs, outputs, alterDbDesc), conf, true);
 
     // Link the update repl state task with dependency collection task
     if (preCursor != null) {

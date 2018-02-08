@@ -234,7 +234,7 @@ public class LoadTable {
     );
     MoveWork moveWork =
         new MoveWork(new HashSet<>(), new HashSet<>(), loadTableWork, null, false);
-    Task<?> loadTableTask = TaskFactory.get(moveWork, context.hiveConf);
+    Task<?> loadTableTask = TaskFactory.get(moveWork, context.hiveConf, true);
     copyTask.addDependentTask(loadTableTask);
     return copyTask;
   }
