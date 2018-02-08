@@ -415,7 +415,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
           combine.createPool(job, f);
           poolMap.put(combinePathInputFormat, f);
         } else {
-          LOG.info("CombineHiveInputSplit: pool is already created for " + path +
+          LOG.debug("CombineHiveInputSplit: pool is already created for " + path +
                    "; using filter path " + filterPath);
           f.addPath(filterPath);
         }

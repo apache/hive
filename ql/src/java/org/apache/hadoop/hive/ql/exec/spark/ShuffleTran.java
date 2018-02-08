@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import org.apache.hadoop.hive.ql.io.HiveKey;
+import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.storage.StorageLevel;
@@ -28,17 +29,21 @@ public class ShuffleTran implements SparkTran<HiveKey, BytesWritable, HiveKey, B
   private final int numOfPartitions;
   private final boolean toCache;
   private final SparkPlan sparkPlan;
-  private String name = "Shuffle";
+  private final String name;
+  private final SparkEdgeProperty edge;
 
   public ShuffleTran(SparkPlan sparkPlan, SparkShuffler sf, int n) {
-    this(sparkPlan, sf, n, false);
+    this(sparkPlan, sf, n, false, "Shuffle", null);
   }
 
-  public ShuffleTran(SparkPlan sparkPlan, SparkShuffler sf, int n, boolean toCache) {
+  public ShuffleTran(SparkPlan sparkPlan, SparkShuffler sf, int n, boolean toCache, String name,
+                     SparkEdgeProperty edge) {
     shuffler = sf;
     numOfPartitions = n;
     this.toCache = toCache;
     this.sparkPlan = sparkPlan;
+    this.name = name;
+    this.edge = edge;
   }
 
   @Override
@@ -48,7 +53,8 @@ public class ShuffleTran implements SparkTran<HiveKey, BytesWritable, HiveKey, B
       sparkPlan.addCachedRDDId(result.id());
       result = result.persist(StorageLevel.MEMORY_AND_DISK());
     }
-    return result;
+    return result.setName(this.name + " (" + edge.getShuffleType() + ", " + numOfPartitions +
+            (toCache ? ", cached)" : ")"));
   }
 
   public int getNoOfPartitions() {
@@ -63,11 +69,6 @@ public class ShuffleTran implements SparkTran<HiveKey, BytesWritable, HiveKey, B
   @Override
   public Boolean isCacheEnable() {
     return new Boolean(toCache);
-  }
-
-  @Override
-  public void setName(String name) {
-    this.name = name;
   }
 
   public SparkShuffler getShuffler() {

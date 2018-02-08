@@ -50,12 +50,8 @@ import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hive.spark.client.SparkClientUtilities;
-import org.apache.spark.Dependency;
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.rdd.RDD;
-import org.apache.spark.rdd.UnionRDD;
-import scala.collection.JavaConversions;
+
 
 /**
  * Contains utilities methods used as part of Spark tasks.
@@ -136,36 +132,6 @@ public class SparkUtilities {
     sparkSession = sparkSessionManager.getSession(sparkSession, conf, true);
     SessionState.get().setSparkSession(sparkSession);
     return sparkSession;
-  }
-
-
-  public static String rddGraphToString(JavaPairRDD rdd) {
-    StringBuilder sb = new StringBuilder();
-    rddToString(rdd.rdd(), sb, "");
-    return sb.toString();
-  }
-
-  private static void rddToString(RDD rdd, StringBuilder sb, String offset) {
-    sb.append(offset).append(rdd.getClass().getCanonicalName()).append("[").append(rdd.hashCode()).append("]");
-    if (rdd.getStorageLevel().useMemory()) {
-      sb.append("(cached)");
-    }
-    sb.append("\n");
-    Collection<Dependency> dependencies = JavaConversions.asJavaCollection(rdd.dependencies());
-    if (dependencies != null) {
-      offset += "\t";
-      for (Dependency dependency : dependencies) {
-        RDD parentRdd = dependency.rdd();
-        rddToString(parentRdd, sb, offset);
-      }
-    } else if (rdd instanceof UnionRDD) {
-      UnionRDD unionRDD = (UnionRDD) rdd;
-      offset += "\t";
-      Collection<RDD> parentRdds = JavaConversions.asJavaCollection(unionRDD.rdds());
-      for (RDD parentRdd : parentRdds) {
-        rddToString(parentRdd, sb, offset);
-      }
-    }
   }
 
   /**

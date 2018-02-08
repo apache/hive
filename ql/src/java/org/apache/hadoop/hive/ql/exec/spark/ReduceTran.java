@@ -24,14 +24,13 @@ import org.apache.spark.api.java.JavaPairRDD;
 
 public class ReduceTran<V> extends CacheTran<HiveKey, V, HiveKey, BytesWritable> {
   private HiveReduceFunction<V> reduceFunc;
-  private String name = "Reduce";
 
   public ReduceTran() {
-    this(false);
+    this(false, "Reduce");
   }
 
-  public ReduceTran(boolean caching) {
-    super(caching);
+  public ReduceTran(boolean caching, String name) {
+    super(caching, name);
   }
 
   @Override
@@ -42,15 +41,5 @@ public class ReduceTran<V> extends CacheTran<HiveKey, V, HiveKey, BytesWritable>
 
   public void setReduceFunction(HiveReduceFunction<V> redFunc) {
     this.reduceFunc = redFunc;
-  }
-
-  @Override
-  public String getName() {
-    return name;
-  }
-
-  @Override
-  public void setName(String name) {
-    this.name = name;
   }
 }
