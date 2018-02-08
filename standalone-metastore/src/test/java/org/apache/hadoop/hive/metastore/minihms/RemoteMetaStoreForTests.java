@@ -35,9 +35,11 @@ public class RemoteMetaStoreForTests extends AbstractMetaStoreService {
   }
 
   public void start() throws Exception {
-    MetastoreConf.setBoolVar(configuration, MetastoreConf.ConfVars.EXECUTE_SET_UGI, false);
-    int port = MetaStoreTestUtils.startMetaStore(HadoopThriftAuthBridge.getBridge(), configuration);
-    MetastoreConf.setVar(configuration, MetastoreConf.ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
+    MetastoreConf.setBoolVar(getConfiguration(), MetastoreConf.ConfVars.EXECUTE_SET_UGI, false);
+    int port = MetaStoreTestUtils.startMetaStore(HadoopThriftAuthBridge.getBridge(),
+        getConfiguration());
+    MetastoreConf.setVar(getConfiguration(), MetastoreConf.ConfVars.THRIFT_URIS,
+        "thrift://localhost:" + port);
     super.start();
   }
 }
