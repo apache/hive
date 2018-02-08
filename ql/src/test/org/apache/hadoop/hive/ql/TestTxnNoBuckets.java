@@ -185,8 +185,8 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
       "'='true', 'transactional_properties'='default') as select a, b from " + Table.NONACIDORCTBL);
     List<String> rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from myctas order by ROW__ID");
     String expected[][] = {
-      {"{\"transactionid\":14,\"bucketid\":536870912,\"rowid\":0}\t3\t4", "warehouse/myctas/delta_0000014_0000014_0000/bucket_00000"},
-      {"{\"transactionid\":14,\"bucketid\":536870912,\"rowid\":1}\t1\t2", "warehouse/myctas/delta_0000014_0000014_0000/bucket_00000"},
+        {"{\"transactionid\":15,\"bucketid\":536870912,\"rowid\":0}\t3\t4", "warehouse/myctas/delta_0000015_0000015_0000/bucket_00000"},
+        {"{\"transactionid\":15,\"bucketid\":536870912,\"rowid\":1}\t1\t2", "warehouse/myctas/delta_0000015_0000015_0000/bucket_00000"},
     };
     checkExpected(rs, expected, "Unexpected row count after ctas from non acid table");
 
@@ -195,8 +195,8 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
       "'='true', 'transactional_properties'='default') as select a, b from " + Table.ACIDTBL);//todo: try this with acid default - it seem makeing table acid in listener is too late
     rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from myctas2 order by ROW__ID");
     String expected2[][] = {
-      {"{\"transactionid\":17,\"bucketid\":536870912,\"rowid\":0}\t3\t4", "warehouse/myctas2/delta_0000017_0000017_0000/bucket_00000"},
-      {"{\"transactionid\":17,\"bucketid\":536870912,\"rowid\":1}\t1\t2", "warehouse/myctas2/delta_0000017_0000017_0000/bucket_00000"},
+        {"{\"transactionid\":18,\"bucketid\":536870912,\"rowid\":0}\t3\t4", "warehouse/myctas2/delta_0000018_0000018_0000/bucket_00000"},
+        {"{\"transactionid\":18,\"bucketid\":536870912,\"rowid\":1}\t1\t2", "warehouse/myctas2/delta_0000018_0000018_0000/bucket_00000"},
     };
     checkExpected(rs, expected2, "Unexpected row count after ctas from acid table");
 
@@ -205,10 +205,10 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
       " union all select a, b from " + Table.ACIDTBL);
     rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from myctas3 order by ROW__ID");
     String expected3[][] = {
-      {"{\"transactionid\":19,\"bucketid\":536870912,\"rowid\":0}\t3\t4", "warehouse/myctas3/delta_0000019_0000019_0000/bucket_00000"},
-      {"{\"transactionid\":19,\"bucketid\":536870912,\"rowid\":1}\t1\t2", "warehouse/myctas3/delta_0000019_0000019_0000/bucket_00000"},
-      {"{\"transactionid\":19,\"bucketid\":536936448,\"rowid\":0}\t3\t4", "warehouse/myctas3/delta_0000019_0000019_0000/bucket_00001"},
-      {"{\"transactionid\":19,\"bucketid\":536936448,\"rowid\":1}\t1\t2", "warehouse/myctas3/delta_0000019_0000019_0000/bucket_00001"},
+        {"{\"transactionid\":20,\"bucketid\":536870912,\"rowid\":0}\t3\t4", "warehouse/myctas3/delta_0000020_0000020_0000/bucket_00000"},
+        {"{\"transactionid\":20,\"bucketid\":536870912,\"rowid\":1}\t1\t2", "warehouse/myctas3/delta_0000020_0000020_0000/bucket_00000"},
+        {"{\"transactionid\":20,\"bucketid\":536936448,\"rowid\":0}\t3\t4", "warehouse/myctas3/delta_0000020_0000020_0000/bucket_00001"},
+        {"{\"transactionid\":20,\"bucketid\":536936448,\"rowid\":1}\t1\t2", "warehouse/myctas3/delta_0000020_0000020_0000/bucket_00001"},
     };
     checkExpected(rs, expected3, "Unexpected row count after ctas from union all query");
 
@@ -217,8 +217,8 @@ public class TestTxnNoBuckets extends TxnCommandsBaseForTests {
       " union distinct select a, b from " + Table.ACIDTBL);
     rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from myctas4 order by ROW__ID");
     String expected4[][] = {
-      {"{\"transactionid\":21,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "/delta_0000021_0000021_0000/bucket_00000"},
-      {"{\"transactionid\":21,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "/delta_0000021_0000021_0000/bucket_00000"},
+        {"{\"transactionid\":22,\"bucketid\":536870912,\"rowid\":0}\t1\t2", "/delta_0000022_0000022_0000/bucket_00000"},
+        {"{\"transactionid\":22,\"bucketid\":536870912,\"rowid\":1}\t3\t4", "/delta_0000022_0000022_0000/bucket_00000"},
     };
     checkExpected(rs, expected4, "Unexpected row count after ctas from union distinct query");
   }
