@@ -26,11 +26,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.api.BucketingVersion;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
@@ -182,8 +180,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     MapJoinOperator mapJoinOp = convertJoinMapJoin(joinOp, context, mapJoinConversionPos, true);
     // map join operator by default has no bucket cols and num of reduce sinks
     // reduced by 1
-    mapJoinOp.setOpTraits(new OpTraits(null, -1, null,
-            joinOp.getOpTraits().getNumReduceSinks(), joinOp.getOpTraits().getBucketingVersion()));
+    mapJoinOp.setOpTraits(new OpTraits(null, -1, null, joinOp.getOpTraits().getNumReduceSinks()));
     mapJoinOp.setStatistics(joinOp.getStatistics());
     // propagate this change till the next RS
     for (Operator<? extends OperatorDesc> childOp : mapJoinOp.getChildOperators()) {
@@ -381,7 +378,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
             joinOp.getSchema());
     int numReduceSinks = joinOp.getOpTraits().getNumReduceSinks();
     OpTraits opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(), numBuckets,
-      joinOp.getOpTraits().getSortCols(), numReduceSinks, joinOp.getOpTraits().getBucketingVersion());
+      joinOp.getOpTraits().getSortCols(), numReduceSinks);
     mergeJoinOp.setOpTraits(opTraits);
     mergeJoinOp.setStatistics(joinOp.getStatistics());
 
@@ -448,8 +445,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       return;
     }
     currentOp.setOpTraits(new OpTraits(opTraits.getBucketColNames(),
-      opTraits.getNumBuckets(), opTraits.getSortCols(), opTraits.getNumReduceSinks(),
-                    opTraits.getBucketingVersion()));
+      opTraits.getNumBuckets(), opTraits.getSortCols(), opTraits.getNumReduceSinks()));
     for (Operator<? extends OperatorDesc> childOp : currentOp.getChildOperators()) {
       if ((childOp instanceof ReduceSinkOperator) || (childOp instanceof GroupByOperator)) {
         break;
@@ -502,8 +498,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
     // we can set the traits for this join operator
     opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(),
-        tezBucketJoinProcCtx.getNumBuckets(), null,
-            joinOp.getOpTraits().getNumReduceSinks(), joinOp.getOpTraits().getBucketingVersion());
+        tezBucketJoinProcCtx.getNumBuckets(), null, joinOp.getOpTraits().getNumReduceSinks());
     mapJoinOp.setOpTraits(opTraits);
     mapJoinOp.setStatistics(joinOp.getStatistics());
     setNumberOfBucketsOnChildren(mapJoinOp);
@@ -581,13 +576,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         return false;
       }
       ReduceSinkOperator rsOp = (ReduceSinkOperator) parentOp;
-      // If the chosen big table has less number of buckets than any of the
-      // small tables, then those buckets will have no mapping to any of the
-      // big table buckets resulting in wrong results.
-      if (numBuckets > 0 && numBuckets < rsOp.getOpTraits().getNumBuckets()) {
-        LOG.info("Small table has more buckets than big table.");
-        return false;
-      }
       if (!checkColEquality(rsOp.getParentOperators().get(0).getOpTraits().getSortCols(), rsOp
           .getOpTraits().getSortCols(), rsOp.getColumnExprMap(), false)) {
         LOG.info("We cannot convert to SMB because the sort column names do not match.");
@@ -605,37 +593,6 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       numBuckets = bigTableRS.getConf().getNumReducers();
     }
     tezBucketJoinProcCtx.setNumBuckets(numBuckets);
-
-    // With bucketing using two different versions. Version 1 for exiting
-    // tables and version 2 for new tables. All the inputs to the SMB must be
-    // from same version. This only applies to tables read directly and not
-    // intermediate outputs of joins/groupbys
-    BucketingVersion version = BucketingVersion.INVALID_BUCKETING;
-    for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
-      // Check if the parent is coming from a table scan, if so, what is the version of it.
-      assert parentOp.getParentOperators() != null && parentOp.getParentOperators().size() == 1;
-      Operator<?> op = parentOp.getParentOperators().get(0);
-      while(op != null && !(op instanceof TableScanOperator
-              || op instanceof ReduceSinkOperator
-              || op instanceof CommonJoinOperator)) {
-        // If op has parents it is guaranteed to be 1.
-        List<Operator<?>> parents = op.getParentOperators();
-        Preconditions.checkState(parents.size() == 0 || parents.size() == 1);
-        op = parents.size() == 1 ? parents.get(0) : null;
-      }
-
-      if (op instanceof TableScanOperator) {
-        BucketingVersion localVersion = ((TableScanOperator)op).getConf().
-                getTableMetadata().getBucketingVersion();
-        if (version == BucketingVersion.INVALID_BUCKETING) {
-          version = localVersion;
-        } else if (version != localVersion) {
-          // versions dont match, return false.
-          LOG.debug("SMB Join can't be performed due to bucketing version mismatch");
-          return false;
-        }
-      }
-    }
     LOG.info("We can convert the join to an SMB join.");
     return true;
   }
@@ -1211,8 +1168,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
             joinOp.getOpTraits().getBucketColNames(),
             numReducers,
             null,
-            joinOp.getOpTraits().getNumReduceSinks(),
-            joinOp.getOpTraits().getBucketingVersion());
+            joinOp.getOpTraits().getNumReduceSinks());
         mapJoinOp.setOpTraits(opTraits);
         mapJoinOp.setStatistics(joinOp.getStatistics());
         // propagate this change till the next RS

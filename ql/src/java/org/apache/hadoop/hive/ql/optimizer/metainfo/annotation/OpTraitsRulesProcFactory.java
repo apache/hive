@@ -22,7 +22,6 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.BucketingVersion;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -93,12 +92,10 @@ public class OpTraitsRulesProcFactory {
       List<List<String>> listBucketCols = new ArrayList<List<String>>();
       int numBuckets = -1;
       int numReduceSinks = 1;
-      BucketingVersion bucketingVersion = BucketingVersion.INVALID_BUCKETING;
       OpTraits parentOpTraits = rs.getParentOperators().get(0).getOpTraits();
       if (parentOpTraits != null) {
         numBuckets = parentOpTraits.getNumBuckets();
         numReduceSinks += parentOpTraits.getNumReduceSinks();
-        bucketingVersion = parentOpTraits.getBucketingVersion();
       }
 
       List<String> bucketCols = new ArrayList<>();
@@ -137,8 +134,7 @@ public class OpTraitsRulesProcFactory {
       }
 
       listBucketCols.add(bucketCols);
-      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets,
-              listBucketCols, numReduceSinks, bucketingVersion);
+      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listBucketCols, numReduceSinks);
       rs.setOpTraits(opTraits);
       return null;
     }
@@ -217,8 +213,7 @@ public class OpTraitsRulesProcFactory {
         sortedColsList.add(sortCols);
       }
       // num reduce sinks hardcoded to 0 because TS has no parents
-      OpTraits opTraits = new OpTraits(bucketColsList, numBuckets,
-              sortedColsList, 0, table.getBucketingVersion());
+      OpTraits opTraits = new OpTraits(bucketColsList, numBuckets, sortedColsList, 0);
       ts.setOpTraits(opTraits);
       return null;
     }
@@ -244,15 +239,12 @@ public class OpTraitsRulesProcFactory {
 
       List<List<String>> listBucketCols = new ArrayList<List<String>>();
       int numReduceSinks = 0;
-      BucketingVersion bucketingVersion = BucketingVersion.INVALID_BUCKETING;
       OpTraits parentOpTraits = gbyOp.getParentOperators().get(0).getOpTraits();
       if (parentOpTraits != null) {
         numReduceSinks = parentOpTraits.getNumReduceSinks();
-        bucketingVersion = parentOpTraits.getBucketingVersion();
       }
       listBucketCols.add(gbyKeys);
-      OpTraits opTraits = new OpTraits(listBucketCols, -1, listBucketCols,
-              numReduceSinks, bucketingVersion);
+      OpTraits opTraits = new OpTraits(listBucketCols, -1, listBucketCols, numReduceSinks);
       gbyOp.setOpTraits(opTraits);
       return null;
     }
@@ -306,15 +298,12 @@ public class OpTraitsRulesProcFactory {
 
       int numBuckets = -1;
       int numReduceSinks = 0;
-      BucketingVersion bucketingVersion = BucketingVersion.INVALID_BUCKETING;
       OpTraits parentOpTraits = selOp.getParentOperators().get(0).getOpTraits();
       if (parentOpTraits != null) {
         numBuckets = parentOpTraits.getNumBuckets();
         numReduceSinks = parentOpTraits.getNumReduceSinks();
-        bucketingVersion = parentOpTraits.getBucketingVersion();
       }
-      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listSortCols,
-              numReduceSinks, bucketingVersion);
+      OpTraits opTraits = new OpTraits(listBucketCols, numBuckets, listSortCols, numReduceSinks);
       selOp.setOpTraits(opTraits);
       return null;
     }
@@ -330,7 +319,6 @@ public class OpTraitsRulesProcFactory {
       List<List<String>> sortColsList = new ArrayList<List<String>>();
       byte pos = 0;
       int numReduceSinks = 0; // will be set to the larger of the parents
-      boolean bucketingVersionSeen = false;
       for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
         if (!(parentOp instanceof ReduceSinkOperator)) {
           // can be mux operator
@@ -350,7 +338,7 @@ public class OpTraitsRulesProcFactory {
         pos++;
       }
 
-      joinOp.setOpTraits(new OpTraits(bucketColsList, -1, bucketColsList, numReduceSinks, BucketingVersion.INVALID_BUCKETING));
+      joinOp.setOpTraits(new OpTraits(bucketColsList, -1, bucketColsList, numReduceSinks));
       return null;
     }
 
@@ -404,8 +392,6 @@ public class OpTraitsRulesProcFactory {
       Operator<? extends OperatorDesc> operator = (Operator<? extends OperatorDesc>) nd;
 
       int numReduceSinks = 0;
-      BucketingVersion bucketingVersion = BucketingVersion.INVALID_BUCKETING;
-      boolean bucketingVersionSeen = false;
       for (Operator<?> parentOp : operator.getParentOperators()) {
         if (parentOp.getOpTraits() == null) {
           continue;
@@ -413,17 +399,8 @@ public class OpTraitsRulesProcFactory {
         if (parentOp.getOpTraits().getNumReduceSinks() > numReduceSinks) {
           numReduceSinks = parentOp.getOpTraits().getNumReduceSinks();
         }
-        // If there is mismatch in bucketingVersion, then it should be set to
-        // -1, that way SMB will be disabled.
-        if (bucketingVersion == BucketingVersion.INVALID_BUCKETING && !bucketingVersionSeen) {
-          bucketingVersion = parentOp.getOpTraits().getBucketingVersion();
-          bucketingVersionSeen = true;
-        } else if (bucketingVersion != parentOp.getOpTraits().getBucketingVersion()) {
-          bucketingVersion = BucketingVersion.INVALID_BUCKETING;
-        }
       }
-      OpTraits opTraits = new OpTraits(null, -1,
-              null, numReduceSinks, bucketingVersion);
+      OpTraits opTraits = new OpTraits(null, -1, null, numReduceSinks);
       operator.setOpTraits(opTraits);
       return null;
     }

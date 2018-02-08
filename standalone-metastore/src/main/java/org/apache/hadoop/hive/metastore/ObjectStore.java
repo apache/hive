@@ -1688,8 +1688,6 @@ public class ObjectStore implements RawStore, Configurable {
         convertToFieldSchemas(mtbl.getPartitionKeys()), convertMap(mtbl.getParameters()),
         mtbl.getViewOriginalText(), mtbl.getViewExpandedText(), tableType);
     t.setRewriteEnabled(mtbl.isRewriteEnabled());
-    t.setBucketingVersion(mtbl.getBucketingVersion());
-    t.setLoadInBucketedTable(mtbl.isLoadInBucketedTable());
     return t;
   }
 
@@ -1728,8 +1726,7 @@ public class ObjectStore implements RawStore, Configurable {
         .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
         tbl.getViewOriginalText(), tbl.getViewExpandedText(), tbl.isRewriteEnabled(),
-        tableType,
-            tbl.getBucketingVersion(), tbl.isLoadInBucketedTable());
+        tableType);
   }
 
   private List<MFieldSchema> convertToMFieldSchemas(List<FieldSchema> keys) {

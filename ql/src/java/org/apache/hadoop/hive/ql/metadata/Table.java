@@ -42,7 +42,15 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -180,8 +188,6 @@ public class Table implements Serializable {
       t.setOwner(SessionState.getUserFromAuthenticator());
       // set create time
       t.setCreateTime((int) (System.currentTimeMillis() / 1000));
-      t.setBucketingVersion(BucketingVersion.MURMUR_BUCKETING);
-      t.setLoadInBucketedTable(false);
     }
     return t;
   }
@@ -668,10 +674,6 @@ public class Table implements Serializable {
 
   public int getNumBuckets() {
     return tTable.getSd().getNumBuckets();
-  }
-
-  public BucketingVersion getBucketingVersion() {
-    return tTable.getBucketingVersion();
   }
 
   public void setInputFormatClass(String name) throws HiveException {

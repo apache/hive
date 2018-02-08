@@ -211,23 +211,6 @@ class EventRequestType:
     "DELETE": 3,
   }
 
-class BucketingVersion:
-  INVALID_BUCKETING = 0
-  JAVA_BUCKETING = 1
-  MURMUR_BUCKETING = 2
-
-  _VALUES_TO_NAMES = {
-    0: "INVALID_BUCKETING",
-    1: "JAVA_BUCKETING",
-    2: "MURMUR_BUCKETING",
-  }
-
-  _NAMES_TO_VALUES = {
-    "INVALID_BUCKETING": 0,
-    "JAVA_BUCKETING": 1,
-    "MURMUR_BUCKETING": 2,
-  }
-
 class FunctionType:
   JAVA = 1
 
@@ -3485,8 +3468,6 @@ class Table:
    - temporary
    - rewriteEnabled
    - creationMetadata
-   - bucketingVersion
-   - loadInBucketedTable
   """
 
   thrift_spec = (
@@ -3507,11 +3488,9 @@ class Table:
     (14, TType.BOOL, 'temporary', None, False, ), # 14
     (15, TType.BOOL, 'rewriteEnabled', None, None, ), # 15
     (16, TType.STRUCT, 'creationMetadata', (CreationMetadata, CreationMetadata.thrift_spec), None, ), # 16
-    (17, TType.I32, 'bucketingVersion', None,     1, ), # 17
-    (18, TType.BOOL, 'loadInBucketedTable', None, False, ), # 18
   )
 
-  def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=thrift_spec[14][4], rewriteEnabled=None, creationMetadata=None, bucketingVersion=thrift_spec[17][4], loadInBucketedTable=thrift_spec[18][4],):
+  def __init__(self, tableName=None, dbName=None, owner=None, createTime=None, lastAccessTime=None, retention=None, sd=None, partitionKeys=None, parameters=None, viewOriginalText=None, viewExpandedText=None, tableType=None, privileges=None, temporary=thrift_spec[14][4], rewriteEnabled=None, creationMetadata=None,):
     self.tableName = tableName
     self.dbName = dbName
     self.owner = owner
@@ -3528,8 +3507,6 @@ class Table:
     self.temporary = temporary
     self.rewriteEnabled = rewriteEnabled
     self.creationMetadata = creationMetadata
-    self.bucketingVersion = bucketingVersion
-    self.loadInBucketedTable = loadInBucketedTable
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -3635,16 +3612,6 @@ class Table:
           self.creationMetadata.read(iprot)
         else:
           iprot.skip(ftype)
-      elif fid == 17:
-        if ftype == TType.I32:
-          self.bucketingVersion = iprot.readI32()
-        else:
-          iprot.skip(ftype)
-      elif fid == 18:
-        if ftype == TType.BOOL:
-          self.loadInBucketedTable = iprot.readBool()
-        else:
-          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -3726,14 +3693,6 @@ class Table:
       oprot.writeFieldBegin('creationMetadata', TType.STRUCT, 16)
       self.creationMetadata.write(oprot)
       oprot.writeFieldEnd()
-    if self.bucketingVersion is not None:
-      oprot.writeFieldBegin('bucketingVersion', TType.I32, 17)
-      oprot.writeI32(self.bucketingVersion)
-      oprot.writeFieldEnd()
-    if self.loadInBucketedTable is not None:
-      oprot.writeFieldBegin('loadInBucketedTable', TType.BOOL, 18)
-      oprot.writeBool(self.loadInBucketedTable)
-      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -3759,8 +3718,6 @@ class Table:
     value = (value * 31) ^ hash(self.temporary)
     value = (value * 31) ^ hash(self.rewriteEnabled)
     value = (value * 31) ^ hash(self.creationMetadata)
-    value = (value * 31) ^ hash(self.bucketingVersion)
-    value = (value * 31) ^ hash(self.loadInBucketedTable)
     return value
 
   def __repr__(self):
