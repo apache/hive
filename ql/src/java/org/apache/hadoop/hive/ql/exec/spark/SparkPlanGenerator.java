@@ -23,7 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.apache.spark.util.CallSite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +42,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
@@ -51,6 +54,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
@@ -98,7 +102,7 @@ public class SparkPlanGenerator {
 
   public SparkPlan generate(SparkWork sparkWork) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_BUILD_PLAN);
-    SparkPlan sparkPlan = new SparkPlan();
+    SparkPlan sparkPlan = new SparkPlan(this.sc.sc());
     cloneToWork = sparkWork.getCloneToWork();
     workToTranMap.clear();
     workToParentWorkTranMap.clear();
@@ -138,9 +142,10 @@ public class SparkPlanGenerator {
       result = generateMapInput(sparkPlan, (MapWork)work);
       sparkPlan.addTran(result);
     } else if (work instanceof ReduceWork) {
+      boolean toCache = cloneToWork.containsKey(work);
       List<BaseWork> parentWorks = sparkWork.getParents(work);
-      result = generate(sparkPlan,
-        sparkWork.getEdgeProperty(parentWorks.get(0), work), cloneToWork.containsKey(work));
+      SparkEdgeProperty sparkEdgeProperty = sparkWork.getEdgeProperty(parentWorks.get(0), work);
+      result = generate(sparkPlan, sparkEdgeProperty, toCache, work.getName());
       sparkPlan.addTran(result);
       for (BaseWork parentWork : parentWorks) {
         sparkPlan.connect(workToTranMap.get(parentWork), result);
@@ -189,6 +194,8 @@ public class SparkPlanGenerator {
     JobConf jobConf = cloneJobConf(mapWork);
     Class ifClass = getInputFormat(jobConf, mapWork);
 
+    sc.sc().setCallSite(CallSite.apply(mapWork.getName(), ""));
+
     JavaPairRDD<WritableComparable, Writable> hadoopRDD;
     if (mapWork.getNumMapTasks() != null) {
       jobConf.setNumMapTasks(mapWork.getNumMapTasks());
@@ -198,12 +205,24 @@ public class SparkPlanGenerator {
       hadoopRDD = sc.hadoopRDD(jobConf, ifClass, WritableComparable.class, Writable.class);
     }
 
+    boolean toCache = false/*cloneToWork.containsKey(mapWork)*/;
+
+    String tables = mapWork.getAllRootOperators().stream()
+            .filter(op -> op instanceof TableScanOperator)
+            .map(ts -> ((TableScanDesc) ts.getConf()).getAlias())
+            .collect(Collectors.joining(", "));
+
+    String rddName = mapWork.getName() + " (" + tables + ", " + hadoopRDD.getNumPartitions() +
+            (toCache ? ", cached)" : ")");
+
     // Caching is disabled for MapInput due to HIVE-8920
-    MapInput result = new MapInput(sparkPlan, hadoopRDD, false/*cloneToWork.containsKey(mapWork)*/);
+    MapInput result = new MapInput(sparkPlan, hadoopRDD, toCache, rddName);
     return result;
   }
 
-  private ShuffleTran generate(SparkPlan sparkPlan, SparkEdgeProperty edge, boolean toCache) {
+  private ShuffleTran generate(SparkPlan sparkPlan, SparkEdgeProperty edge, boolean toCache,
+                               String name) {
+
     Preconditions.checkArgument(!edge.isShuffleNone(),
         "AssertionError: SHUFFLE_NONE should only be used for UnionWork.");
     SparkShuffler shuffler;
@@ -214,7 +233,7 @@ public class SparkPlanGenerator {
     } else {
       shuffler = new GroupByShuffler();
     }
-    return new ShuffleTran(sparkPlan, shuffler, edge.getNumPartitions(), toCache);
+    return new ShuffleTran(sparkPlan, shuffler, edge.getNumPartitions(), toCache, name, edge);
   }
 
   private SparkTran generate(BaseWork work, SparkWork sparkWork) throws Exception {
@@ -238,12 +257,12 @@ public class SparkPlanGenerator {
               "Can't make path " + outputPath + " : " + e.getMessage());
         }
       }
-      MapTran mapTran = new MapTran(caching);
+      MapTran mapTran = new MapTran(caching, work.getName());
       HiveMapFunction mapFunc = new HiveMapFunction(confBytes, sparkReporter);
       mapTran.setMapFunction(mapFunc);
       return mapTran;
     } else if (work instanceof ReduceWork) {
-      ReduceTran reduceTran = new ReduceTran(caching);
+      ReduceTran reduceTran = new ReduceTran(caching, work.getName());
       HiveReduceFunction reduceFunc = new HiveReduceFunction(confBytes, sparkReporter);
       reduceTran.setReduceFunction(reduceFunc);
       return reduceTran;
