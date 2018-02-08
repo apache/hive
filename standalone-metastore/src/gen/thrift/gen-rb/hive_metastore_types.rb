@@ -98,6 +98,14 @@ module EventRequestType
   VALID_VALUES = Set.new([INSERT, UPDATE, DELETE]).freeze
 end
 
+module BucketingVersion
+  INVALID_BUCKETING = 0
+  JAVA_BUCKETING = 1
+  MURMUR_BUCKETING = 2
+  VALUE_MAP = {0 => "INVALID_BUCKETING", 1 => "JAVA_BUCKETING", 2 => "MURMUR_BUCKETING"}
+  VALID_VALUES = Set.new([INVALID_BUCKETING, JAVA_BUCKETING, MURMUR_BUCKETING]).freeze
+end
+
 module FunctionType
   JAVA = 1
   VALUE_MAP = {1 => "JAVA"}
@@ -810,6 +818,8 @@ class Table
   TEMPORARY = 14
   REWRITEENABLED = 15
   CREATIONMETADATA = 16
+  BUCKETINGVERSION = 17
+  LOADINBUCKETEDTABLE = 18
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -827,12 +837,17 @@ class Table
     PRIVILEGES => {:type => ::Thrift::Types::STRUCT, :name => 'privileges', :class => ::PrincipalPrivilegeSet, :optional => true},
     TEMPORARY => {:type => ::Thrift::Types::BOOL, :name => 'temporary', :default => false, :optional => true},
     REWRITEENABLED => {:type => ::Thrift::Types::BOOL, :name => 'rewriteEnabled', :optional => true},
-    CREATIONMETADATA => {:type => ::Thrift::Types::STRUCT, :name => 'creationMetadata', :class => ::CreationMetadata, :optional => true}
+    CREATIONMETADATA => {:type => ::Thrift::Types::STRUCT, :name => 'creationMetadata', :class => ::CreationMetadata, :optional => true},
+    BUCKETINGVERSION => {:type => ::Thrift::Types::I32, :name => 'bucketingVersion', :default =>     1, :optional => true, :enum_class => ::BucketingVersion},
+    LOADINBUCKETEDTABLE => {:type => ::Thrift::Types::BOOL, :name => 'loadInBucketedTable', :default => false, :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
+    unless @bucketingVersion.nil? || ::BucketingVersion::VALID_VALUES.include?(@bucketingVersion)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field bucketingVersion!')
+    end
   end
 
   ::Thrift::Struct.generate_accessors self

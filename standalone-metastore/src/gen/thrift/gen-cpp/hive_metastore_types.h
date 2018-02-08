@@ -132,6 +132,16 @@ struct EventRequestType {
 
 extern const std::map<int, const char*> _EventRequestType_VALUES_TO_NAMES;
 
+struct BucketingVersion {
+  enum type {
+    INVALID_BUCKETING = 0,
+    JAVA_BUCKETING = 1,
+    MURMUR_BUCKETING = 2
+  };
+};
+
+extern const std::map<int, const char*> _BucketingVersion_VALUES_TO_NAMES;
+
 struct FunctionType {
   enum type {
     JAVA = 1
@@ -2372,7 +2382,7 @@ inline std::ostream& operator<<(std::ostream& out, const StorageDescriptor& obj)
 }
 
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), bucketingVersion(true), loadInBucketedTable(true) {}
   bool tableName :1;
   bool dbName :1;
   bool owner :1;
@@ -2389,6 +2399,8 @@ typedef struct _Table__isset {
   bool temporary :1;
   bool rewriteEnabled :1;
   bool creationMetadata :1;
+  bool bucketingVersion :1;
+  bool loadInBucketedTable :1;
 } _Table__isset;
 
 class Table {
@@ -2396,7 +2408,9 @@ class Table {
 
   Table(const Table&);
   Table& operator=(const Table&);
-  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0) {
+  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0), bucketingVersion((BucketingVersion::type)1), loadInBucketedTable(false) {
+    bucketingVersion = (BucketingVersion::type)1;
+
   }
 
   virtual ~Table() throw();
@@ -2416,6 +2430,8 @@ class Table {
   bool temporary;
   bool rewriteEnabled;
   CreationMetadata creationMetadata;
+  BucketingVersion::type bucketingVersion;
+  bool loadInBucketedTable;
 
   _Table__isset __isset;
 
@@ -2450,6 +2466,10 @@ class Table {
   void __set_rewriteEnabled(const bool val);
 
   void __set_creationMetadata(const CreationMetadata& val);
+
+  void __set_bucketingVersion(const BucketingVersion::type val);
+
+  void __set_loadInBucketedTable(const bool val);
 
   bool operator == (const Table & rhs) const
   {
@@ -2492,6 +2512,14 @@ class Table {
     if (__isset.creationMetadata != rhs.__isset.creationMetadata)
       return false;
     else if (__isset.creationMetadata && !(creationMetadata == rhs.creationMetadata))
+      return false;
+    if (__isset.bucketingVersion != rhs.__isset.bucketingVersion)
+      return false;
+    else if (__isset.bucketingVersion && !(bucketingVersion == rhs.bucketingVersion))
+      return false;
+    if (__isset.loadInBucketedTable != rhs.__isset.loadInBucketedTable)
+      return false;
+    else if (__isset.loadInBucketedTable && !(loadInBucketedTable == rhs.loadInBucketedTable))
       return false;
     return true;
   }

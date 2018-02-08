@@ -54,6 +54,8 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField TEMPORARY_FIELD_DESC = new org.apache.thrift.protocol.TField("temporary", org.apache.thrift.protocol.TType.BOOL, (short)14);
   private static final org.apache.thrift.protocol.TField REWRITE_ENABLED_FIELD_DESC = new org.apache.thrift.protocol.TField("rewriteEnabled", org.apache.thrift.protocol.TType.BOOL, (short)15);
   private static final org.apache.thrift.protocol.TField CREATION_METADATA_FIELD_DESC = new org.apache.thrift.protocol.TField("creationMetadata", org.apache.thrift.protocol.TType.STRUCT, (short)16);
+  private static final org.apache.thrift.protocol.TField BUCKETING_VERSION_FIELD_DESC = new org.apache.thrift.protocol.TField("bucketingVersion", org.apache.thrift.protocol.TType.I32, (short)17);
+  private static final org.apache.thrift.protocol.TField LOAD_IN_BUCKETED_TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("loadInBucketedTable", org.apache.thrift.protocol.TType.BOOL, (short)18);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -77,6 +79,8 @@ import org.slf4j.LoggerFactory;
   private boolean temporary; // optional
   private boolean rewriteEnabled; // optional
   private CreationMetadata creationMetadata; // optional
+  private BucketingVersion bucketingVersion; // optional
+  private boolean loadInBucketedTable; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -95,7 +99,13 @@ import org.slf4j.LoggerFactory;
     PRIVILEGES((short)13, "privileges"),
     TEMPORARY((short)14, "temporary"),
     REWRITE_ENABLED((short)15, "rewriteEnabled"),
-    CREATION_METADATA((short)16, "creationMetadata");
+    CREATION_METADATA((short)16, "creationMetadata"),
+    /**
+     * 
+     * @see BucketingVersion
+     */
+    BUCKETING_VERSION((short)17, "bucketingVersion"),
+    LOAD_IN_BUCKETED_TABLE((short)18, "loadInBucketedTable");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -142,6 +152,10 @@ import org.slf4j.LoggerFactory;
           return REWRITE_ENABLED;
         case 16: // CREATION_METADATA
           return CREATION_METADATA;
+        case 17: // BUCKETING_VERSION
+          return BUCKETING_VERSION;
+        case 18: // LOAD_IN_BUCKETED_TABLE
+          return LOAD_IN_BUCKETED_TABLE;
         default:
           return null;
       }
@@ -187,8 +201,9 @@ import org.slf4j.LoggerFactory;
   private static final int __RETENTION_ISSET_ID = 2;
   private static final int __TEMPORARY_ISSET_ID = 3;
   private static final int __REWRITEENABLED_ISSET_ID = 4;
+  private static final int __LOADINBUCKETEDTABLE_ISSET_ID = 5;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.TEMPORARY,_Fields.REWRITE_ENABLED,_Fields.CREATION_METADATA};
+  private static final _Fields optionals[] = {_Fields.PRIVILEGES,_Fields.TEMPORARY,_Fields.REWRITE_ENABLED,_Fields.CREATION_METADATA,_Fields.BUCKETING_VERSION,_Fields.LOAD_IN_BUCKETED_TABLE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -227,12 +242,20 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.CREATION_METADATA, new org.apache.thrift.meta_data.FieldMetaData("creationMetadata", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT        , "CreationMetadata")));
+    tmpMap.put(_Fields.BUCKETING_VERSION, new org.apache.thrift.meta_data.FieldMetaData("bucketingVersion", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, BucketingVersion.class)));
+    tmpMap.put(_Fields.LOAD_IN_BUCKETED_TABLE, new org.apache.thrift.meta_data.FieldMetaData("loadInBucketedTable", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Table.class, metaDataMap);
   }
 
   public Table() {
     this.temporary = false;
+
+    this.bucketingVersion = org.apache.hadoop.hive.metastore.api.BucketingVersion.JAVA_BUCKETING;
+
+    this.loadInBucketedTable = false;
 
   }
 
@@ -316,6 +339,10 @@ import org.slf4j.LoggerFactory;
     if (other.isSetCreationMetadata()) {
       this.creationMetadata = other.creationMetadata;
     }
+    if (other.isSetBucketingVersion()) {
+      this.bucketingVersion = other.bucketingVersion;
+    }
+    this.loadInBucketedTable = other.loadInBucketedTable;
   }
 
   public Table deepCopy() {
@@ -345,6 +372,10 @@ import org.slf4j.LoggerFactory;
     setRewriteEnabledIsSet(false);
     this.rewriteEnabled = false;
     this.creationMetadata = null;
+    this.bucketingVersion = org.apache.hadoop.hive.metastore.api.BucketingVersion.JAVA_BUCKETING;
+
+    this.loadInBucketedTable = false;
+
   }
 
   public String getTableName() {
@@ -736,6 +767,59 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  /**
+   * 
+   * @see BucketingVersion
+   */
+  public BucketingVersion getBucketingVersion() {
+    return this.bucketingVersion;
+  }
+
+  /**
+   * 
+   * @see BucketingVersion
+   */
+  public void setBucketingVersion(BucketingVersion bucketingVersion) {
+    this.bucketingVersion = bucketingVersion;
+  }
+
+  public void unsetBucketingVersion() {
+    this.bucketingVersion = null;
+  }
+
+  /** Returns true if field bucketingVersion is set (has been assigned a value) and false otherwise */
+  public boolean isSetBucketingVersion() {
+    return this.bucketingVersion != null;
+  }
+
+  public void setBucketingVersionIsSet(boolean value) {
+    if (!value) {
+      this.bucketingVersion = null;
+    }
+  }
+
+  public boolean isLoadInBucketedTable() {
+    return this.loadInBucketedTable;
+  }
+
+  public void setLoadInBucketedTable(boolean loadInBucketedTable) {
+    this.loadInBucketedTable = loadInBucketedTable;
+    setLoadInBucketedTableIsSet(true);
+  }
+
+  public void unsetLoadInBucketedTable() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __LOADINBUCKETEDTABLE_ISSET_ID);
+  }
+
+  /** Returns true if field loadInBucketedTable is set (has been assigned a value) and false otherwise */
+  public boolean isSetLoadInBucketedTable() {
+    return EncodingUtils.testBit(__isset_bitfield, __LOADINBUCKETEDTABLE_ISSET_ID);
+  }
+
+  public void setLoadInBucketedTableIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __LOADINBUCKETEDTABLE_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TABLE_NAME:
@@ -866,6 +950,22 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case BUCKETING_VERSION:
+      if (value == null) {
+        unsetBucketingVersion();
+      } else {
+        setBucketingVersion((BucketingVersion)value);
+      }
+      break;
+
+    case LOAD_IN_BUCKETED_TABLE:
+      if (value == null) {
+        unsetLoadInBucketedTable();
+      } else {
+        setLoadInBucketedTable((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -919,6 +1019,12 @@ import org.slf4j.LoggerFactory;
     case CREATION_METADATA:
       return getCreationMetadata();
 
+    case BUCKETING_VERSION:
+      return getBucketingVersion();
+
+    case LOAD_IN_BUCKETED_TABLE:
+      return isLoadInBucketedTable();
+
     }
     throw new IllegalStateException();
   }
@@ -962,6 +1068,10 @@ import org.slf4j.LoggerFactory;
       return isSetRewriteEnabled();
     case CREATION_METADATA:
       return isSetCreationMetadata();
+    case BUCKETING_VERSION:
+      return isSetBucketingVersion();
+    case LOAD_IN_BUCKETED_TABLE:
+      return isSetLoadInBucketedTable();
     }
     throw new IllegalStateException();
   }
@@ -1123,6 +1233,24 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_bucketingVersion = true && this.isSetBucketingVersion();
+    boolean that_present_bucketingVersion = true && that.isSetBucketingVersion();
+    if (this_present_bucketingVersion || that_present_bucketingVersion) {
+      if (!(this_present_bucketingVersion && that_present_bucketingVersion))
+        return false;
+      if (!this.bucketingVersion.equals(that.bucketingVersion))
+        return false;
+    }
+
+    boolean this_present_loadInBucketedTable = true && this.isSetLoadInBucketedTable();
+    boolean that_present_loadInBucketedTable = true && that.isSetLoadInBucketedTable();
+    if (this_present_loadInBucketedTable || that_present_loadInBucketedTable) {
+      if (!(this_present_loadInBucketedTable && that_present_loadInBucketedTable))
+        return false;
+      if (this.loadInBucketedTable != that.loadInBucketedTable)
+        return false;
+    }
+
     return true;
   }
 
@@ -1209,6 +1337,16 @@ import org.slf4j.LoggerFactory;
     list.add(present_creationMetadata);
     if (present_creationMetadata)
       list.add(creationMetadata);
+
+    boolean present_bucketingVersion = true && (isSetBucketingVersion());
+    list.add(present_bucketingVersion);
+    if (present_bucketingVersion)
+      list.add(bucketingVersion.getValue());
+
+    boolean present_loadInBucketedTable = true && (isSetLoadInBucketedTable());
+    list.add(present_loadInBucketedTable);
+    if (present_loadInBucketedTable)
+      list.add(loadInBucketedTable);
 
     return list.hashCode();
   }
@@ -1381,6 +1519,26 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetBucketingVersion()).compareTo(other.isSetBucketingVersion());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetBucketingVersion()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.bucketingVersion, other.bucketingVersion);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetLoadInBucketedTable()).compareTo(other.isSetLoadInBucketedTable());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetLoadInBucketedTable()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.loadInBucketedTable, other.loadInBucketedTable);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1514,6 +1672,22 @@ import org.slf4j.LoggerFactory;
       } else {
         sb.append(this.creationMetadata);
       }
+      first = false;
+    }
+    if (isSetBucketingVersion()) {
+      if (!first) sb.append(", ");
+      sb.append("bucketingVersion:");
+      if (this.bucketingVersion == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.bucketingVersion);
+      }
+      first = false;
+    }
+    if (isSetLoadInBucketedTable()) {
+      if (!first) sb.append(", ");
+      sb.append("loadInBucketedTable:");
+      sb.append(this.loadInBucketedTable);
       first = false;
     }
     sb.append(")");
@@ -1721,6 +1895,22 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 17: // BUCKETING_VERSION
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.bucketingVersion = org.apache.hadoop.hive.metastore.api.BucketingVersion.findByValue(iprot.readI32());
+              struct.setBucketingVersionIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 18: // LOAD_IN_BUCKETED_TABLE
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.loadInBucketedTable = iprot.readBool();
+              struct.setLoadInBucketedTableIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1827,6 +2017,18 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.bucketingVersion != null) {
+        if (struct.isSetBucketingVersion()) {
+          oprot.writeFieldBegin(BUCKETING_VERSION_FIELD_DESC);
+          oprot.writeI32(struct.bucketingVersion.getValue());
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.isSetLoadInBucketedTable()) {
+        oprot.writeFieldBegin(LOAD_IN_BUCKETED_TABLE_FIELD_DESC);
+        oprot.writeBool(struct.loadInBucketedTable);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1893,7 +2095,13 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetCreationMetadata()) {
         optionals.set(15);
       }
-      oprot.writeBitSet(optionals, 16);
+      if (struct.isSetBucketingVersion()) {
+        optionals.set(16);
+      }
+      if (struct.isSetLoadInBucketedTable()) {
+        optionals.set(17);
+      }
+      oprot.writeBitSet(optionals, 18);
       if (struct.isSetTableName()) {
         oprot.writeString(struct.tableName);
       }
@@ -1955,12 +2163,18 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetCreationMetadata()) {
         struct.creationMetadata.write(oprot);
       }
+      if (struct.isSetBucketingVersion()) {
+        oprot.writeI32(struct.bucketingVersion.getValue());
+      }
+      if (struct.isSetLoadInBucketedTable()) {
+        oprot.writeBool(struct.loadInBucketedTable);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Table struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(16);
+      BitSet incoming = iprot.readBitSet(18);
       if (incoming.get(0)) {
         struct.tableName = iprot.readString();
         struct.setTableNameIsSet(true);
@@ -2048,6 +2262,14 @@ import org.slf4j.LoggerFactory;
         struct.creationMetadata = new CreationMetadata();
         struct.creationMetadata.read(iprot);
         struct.setCreationMetadataIsSet(true);
+      }
+      if (incoming.get(16)) {
+        struct.bucketingVersion = org.apache.hadoop.hive.metastore.api.BucketingVersion.findByValue(iprot.readI32());
+        struct.setBucketingVersionIsSet(true);
+      }
+      if (incoming.get(17)) {
+        struct.loadInBucketedTable = iprot.readBool();
+        struct.setLoadInBucketedTableIsSet(true);
       }
     }
   }

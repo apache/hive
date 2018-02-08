@@ -21,18 +21,7 @@ package org.apache.hadoop.hive.metastore.client;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.SerDeInfo;
-import org.apache.hadoop.hive.metastore.api.SkewedInfo;
-import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
-import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
@@ -224,6 +213,9 @@ public class TestTablesCreateDropAlterTruncate {
   public void testCreateGetDeleteTable() throws Exception {
     // Try to create a table with all of the parameters set
     Table table = getTableWithAllParametersSet();
+    // Set parameters set outside
+    table.setBucketingVersion(BucketingVersion.MURMUR_BUCKETING);
+    table.setLoadInBucketedTable(false);
     client.createTable(table);
     Table createdTable = client.getTable(table.getDbName(), table.getTableName());
     // The createTime will be set on the server side, so the comparison should skip it
@@ -684,6 +676,9 @@ public class TestTablesCreateDropAlterTruncate {
     // Partition keys can not be set, but getTableWithAllParametersSet is added one, so remove for
     // this test
     newTable.setPartitionKeys(originalTable.getPartitionKeys());
+    // Set the optional bucketingVersion and expertMode with default values
+    newTable.setBucketingVersion(BucketingVersion.JAVA_BUCKETING);
+    newTable.setLoadInBucketedTable(false);
     client.alter_table(originalDatabase, originalTableName, newTable);
     Table alteredTable = client.getTable(originalDatabase, originalTableName);
 
