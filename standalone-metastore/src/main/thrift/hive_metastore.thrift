@@ -310,6 +310,13 @@ struct StorageDescriptor {
   12: optional bool   storedAsSubDirectories       // stored as subdirectories or not
 }
 
+// Hash version for bucketing table
+enum BucketingVersion {
+    INVALID_BUCKETING = 0,
+    JAVA_BUCKETING = 1,
+    MURMUR_BUCKETING = 2,
+}
+
 // table information
 struct Table {
   1: string tableName,                // name of the table
@@ -327,7 +334,9 @@ struct Table {
   13: optional PrincipalPrivilegeSet privileges,
   14: optional bool temporary=false,
   15: optional bool rewriteEnabled,     // rewrite enabled or not
-  16: optional CreationMetadata creationMetadata   // only for MVs, it stores table names used and txn list at MV creation
+  16: optional CreationMetadata creationMetadata,   // only for MVs, it stores table names used and txn list at MV creation
+  17: optional BucketingVersion bucketingVersion = BucketingVersion.JAVA_BUCKETING, // For bucketed table only. Default : 2, for existing tables, 1, for new tables 2.
+  18: optional bool loadInBucketedTable = false         // For bucketed table only. Default : false. true if user loads data using “load data” command.
 }
 
 struct Partition {
