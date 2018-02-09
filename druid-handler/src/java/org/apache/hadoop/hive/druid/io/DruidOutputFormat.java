@@ -92,6 +92,10 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
             tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY) != null ?
                     tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY) :
                     HiveConf.getVar(jc, HiveConf.ConfVars.HIVE_DRUID_INDEXING_GRANULARITY);
+    final int targetNumShardsPerGranularity = Integer.parseUnsignedInt(
+        tableProperties.getProperty(Constants.DRUID_TARGET_SHARDS_PER_GRANULARITY, "0"));
+    final int maxPartitionSize = targetNumShardsPerGranularity > 0 ? -1 : HiveConf
+        .getIntVar(jc, HiveConf.ConfVars.HIVE_DRUID_MAX_PARTITION_SIZE);
     // If datasource is in the table properties, it is an INSERT/INSERT OVERWRITE as the datasource
     // name was already persisted. Otherwise, it is a CT/CTAS and we need to get the name from the
     // job properties that are set by configureOutputJobProperties in the DruidStorageHandler
@@ -191,8 +195,10 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
     List<AggregatorFactory> aggregatorFactories = aggregatorFactoryBuilder.build();
     final InputRowParser inputRowParser = new MapInputRowParser(new TimeAndDimsParseSpec(
             new TimestampSpec(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, "auto", null),
-            new DimensionsSpec(dimensions,
-                    Lists.newArrayList(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME), null
+            new DimensionsSpec(dimensions, Lists
+                .newArrayList(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME,
+                    Constants.DRUID_SHARD_KEY_COL_NAME
+                ), null
             )
     ));
 
@@ -209,8 +215,6 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
 
     final String workingPath = jc.get(Constants.DRUID_JOB_WORKING_DIRECTORY);
     final String version = jc.get(Constants.DRUID_SEGMENT_VERSION);
-    Integer maxPartitionSize = HiveConf
-            .getIntVar(jc, HiveConf.ConfVars.HIVE_DRUID_MAX_PARTITION_SIZE);
     String basePersistDirectory = HiveConf
             .getVar(jc, HiveConf.ConfVars.HIVE_DRUID_BASE_PERSIST_DIRECTORY);
     if (Strings.isNullOrEmpty(basePersistDirectory)) {
