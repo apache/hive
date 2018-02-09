@@ -82,8 +82,8 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
 
   @Test(timeout = 60000)
   public void testTriggerMoveAndKill() throws Exception {
-    Expression moveExpression = ExpressionFactory.fromString("EXECUTION_TIME > 1000");
-    Expression killExpression = ExpressionFactory.fromString("EXECUTION_TIME > 5000");
+    Expression moveExpression = ExpressionFactory.fromString("EXECUTION_TIME > 1sec");
+    Expression killExpression = ExpressionFactory.fromString("EXECUTION_TIME > 5000ms");
     Trigger moveTrigger = new ExecutionTrigger("slow_query_move", moveExpression,
       new Action(Action.Type.MOVE_TO_POOL, "ETL"));
     Trigger killTrigger = new ExecutionTrigger("slow_query_kill", killExpression,
@@ -111,6 +111,7 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     errCaptureExpect.add("\"violationMsg\" : \"Trigger " + moveTrigger + " violated");
     // violation in ETL queue
     errCaptureExpect.add("\"violationMsg\" : \"Trigger " + killTrigger + " violated");
+    errCaptureExpect.add("\"subscribedCounters\" : [ \"EXECUTION_TIME\" ]");
     runQueryWithTrigger(query, setCmds, killTrigger + " violated", errCaptureExpect);
   }
 
@@ -141,6 +142,7 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     errCaptureExpect.add("\"name\" : \"slow_query_kill\"");
     // violation in BI queue
     errCaptureExpect.add("\"violationMsg\" : \"Trigger " + moveTrigger + " violated");
+    errCaptureExpect.add("\"subscribedCounters\" : [ \"HDFS_BYTES_READ\", \"EXECUTION_TIME\" ]");
     runQueryWithTrigger(query, setCmds, null, errCaptureExpect);
   }
 
@@ -183,6 +185,7 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     errCaptureExpect.add("\"violationMsg\" : \"Trigger " + moveTrigger2 + " violated");
     // violation in BI queue
     errCaptureExpect.add("\"violationMsg\" : \"Trigger " + killTrigger + " violated");
+    errCaptureExpect.add("\"subscribedCounters\" : [ \"HDFS_BYTES_READ\", \"EXECUTION_TIME\", \"SHUFFLE_BYTES\" ]");
     runQueryWithTrigger(query, setCmds, killTrigger + " violated", errCaptureExpect);
   }
 
@@ -219,6 +222,7 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
 //    errCaptureExpect.add("\"violationMsg\" : \"Trigger " + moveTrigger1 + " violated");
 //    // violation in ETL queue
 //    errCaptureExpect.add("\"violationMsg\" : \"Trigger " + killTrigger + " violated");
+//    errCaptureExpect.add("\"subscribedCounters\" : [ \"HDFS_BYTES_READ\", \"HDFS_BYTES_WRITTEN\" ]");
 //    runQueryWithTrigger(query, setCmds, killTrigger + " violated", errCaptureExpect);
 //  }
 
@@ -249,6 +253,7 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     errCaptureExpect.add("\"name\" : \"kill_big_read\"");
     // violation in BI queue
     errCaptureExpect.add("\"violationMsg\" : \"Trigger " + killTrigger + " violated");
+    errCaptureExpect.add("\"subscribedCounters\" : [ \"HDFS_BYTES_READ\" ]");
     runQueryWithTrigger(query, setCmds, killTrigger + " violated", errCaptureExpect);
   }
 
