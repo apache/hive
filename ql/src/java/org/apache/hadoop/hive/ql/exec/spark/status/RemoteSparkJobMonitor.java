@@ -66,6 +66,7 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
     while (true) {
       try {
         JobHandle.State state = sparkJobStatus.getRemoteJobState();
+        Preconditions.checkState(sparkJobStatus.isRemoteActive(), "Connection to remote Spark driver was lost");
 
         switch (state) {
         case SENT:
@@ -133,10 +134,6 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
 
             printStatus(progressMap, lastProgressMap);
             lastProgressMap = progressMap;
-          } else if (sparkJobState == null) {
-            // in case the remote context crashes between JobStarted and JobSubmitted
-            Preconditions.checkState(sparkJobStatus.isRemoteActive(),
-                "Remote context becomes inactive.");
           }
           break;
         case SUCCEEDED:
