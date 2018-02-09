@@ -276,6 +276,13 @@ public class TestTrigger {
     assertEquals(expected, expression);
     assertEquals(expected.hashCode(), expression.hashCode());
 
+    expression = ExpressionFactory.fromString(" elapsed_TIME > 300000ms");
+    expected = ExpressionFactory.createExpression(new TimeCounterLimit(TimeCounterLimit.TimeCounter
+      .ELAPSED_TIME, 300000));
+    assertEquals(expected, expression);
+    assertEquals(expected.hashCode(), expression.hashCode());
+
+
     expression = ExpressionFactory.fromString(" elapsed_TIME > 300000000microseconds");
     expected = ExpressionFactory.createExpression(new TimeCounterLimit(TimeCounterLimit.TimeCounter
       .ELAPSED_TIME, 300000));
