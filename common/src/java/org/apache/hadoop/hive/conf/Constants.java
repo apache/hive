@@ -33,7 +33,10 @@ public class Constants {
   public static final String DRUID_DATA_SOURCE = "druid.datasource";
   public static final String DRUID_SEGMENT_GRANULARITY = "druid.segment.granularity";
   public static final String DRUID_QUERY_GRANULARITY = "druid.query.granularity";
+  public static final String DRUID_TARGET_SHARDS_PER_GRANULARITY =
+      "druid.segment.targetShardsPerGranularity";
   public static final String DRUID_TIMESTAMP_GRANULARITY_COL_NAME = "__time_granularity";
+  public static final String DRUID_SHARD_KEY_COL_NAME = "__druid_extra_partition_key";
   public static final String DRUID_QUERY_JSON = "druid.query.json";
   public static final String DRUID_QUERY_TYPE = "druid.query.type";
   public static final String DRUID_QUERY_FETCH = "druid.query.fetch";

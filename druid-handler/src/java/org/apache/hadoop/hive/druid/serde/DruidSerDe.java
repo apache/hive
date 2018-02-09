@@ -85,6 +85,7 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
@@ -561,10 +562,31 @@ public class DruidSerDe extends AbstractSerDe {
       }
       value.put(columns[i], res);
     }
+    //Extract the partitions keys segments granularity and partition key if any
+    // First Segment Granularity has to be here.
+    final int granularityFieldIndex = columns.length;
+    assert values.size() > granularityFieldIndex;
+    Preconditions.checkArgument(fields.get(granularityFieldIndex).getFieldName()
+        .equals(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME));
     value.put(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME,
-            ((TimestampObjectInspector) fields.get(columns.length).getFieldObjectInspector())
-                    .getPrimitiveJavaObject(values.get(columns.length)).getTime()
+            ((TimestampObjectInspector) fields.get(granularityFieldIndex).getFieldObjectInspector())
+                    .getPrimitiveJavaObject(values.get(granularityFieldIndex)).getTime()
     );
+    if (values.size() == columns.length + 2) {
+      // Then partition number if any.
+      final int partitionNumPos = granularityFieldIndex + 1;
+      Preconditions.checkArgument(
+          fields.get(partitionNumPos).getFieldName().equals(Constants.DRUID_SHARD_KEY_COL_NAME),
+          String.format("expecting to encounter %s but was %s", Constants.DRUID_SHARD_KEY_COL_NAME,
+              fields.get(partitionNumPos).getFieldName()
+          )
+      );
+      value.put(Constants.DRUID_SHARD_KEY_COL_NAME,
+          ((LongObjectInspector) fields.get(partitionNumPos).getFieldObjectInspector())
+              .get(values.get(partitionNumPos))
+      );
+    }
+
     return new DruidWritable(value);
   }
 
