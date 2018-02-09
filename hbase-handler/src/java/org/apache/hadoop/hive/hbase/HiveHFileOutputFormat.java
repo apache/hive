@@ -176,10 +176,6 @@ public class HiveHFileOutputFormat extends
                 columnFamilyPath,
                 regionFile.getPath().getName()));
           }
-          // Hive actually wants a file as task output (not a directory), so
-          // replace the empty directory with an empty file to keep it happy.
-          fs.delete(taskAttemptOutputdir, true);
-          fs.createNewFile(taskAttemptOutputdir);
         } catch (InterruptedException ex) {
           throw new IOException(ex);
         }
