@@ -233,14 +233,14 @@ public class TestSchemaTool extends TestCase {
   */
  public void testValidateSchemaVersions() throws Exception {
    schemaTool.doInit();
-   boolean isValid = schemaTool.validateSchemaVersions(conn);
+   boolean isValid = schemaTool.validateSchemaVersions();
    // Test an invalid case with multiple versions
    String[] scripts = new String[] {
        "insert into VERSION values(100, '2.2.0', 'Hive release version 2.2.0')"
    };
    File scriptFile = generateTestScript(scripts);
    schemaTool.runBeeLine(scriptFile.getPath());
-   isValid = schemaTool.validateSchemaVersions(conn);
+   isValid = schemaTool.validateSchemaVersions();
    assertFalse(isValid);
 
    scripts = new String[] {
@@ -248,7 +248,7 @@ public class TestSchemaTool extends TestCase {
    };
    scriptFile = generateTestScript(scripts);
    schemaTool.runBeeLine(scriptFile.getPath());
-   isValid = schemaTool.validateSchemaVersions(conn);
+   isValid = schemaTool.validateSchemaVersions();
    assertTrue(isValid);
 
    // Test an invalid case without version
@@ -257,7 +257,7 @@ public class TestSchemaTool extends TestCase {
    };
    scriptFile = generateTestScript(scripts);
    schemaTool.runBeeLine(scriptFile.getPath());
-   isValid = schemaTool.validateSchemaVersions(conn);
+   isValid = schemaTool.validateSchemaVersions();
    assertFalse(isValid);
  }
 

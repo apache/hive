@@ -205,19 +205,18 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
   }
 
   @Override
-  public String getMetaStoreSchemaVersion(MetaStoreConnectionInfo connectionInfo)
-      throws HiveMetaException {
+  public String getMetaStoreSchemaVersion(MetaStoreConnectionInfo connectionInfo) throws HiveMetaException {
     String versionQuery;
     boolean needsQuotedIdentifier =
-        HiveSchemaHelper.getDbCommandParser(connectionInfo.getDbType()).needsQuotedIdentifier();
+        HiveSchemaHelper.getDbCommandParser(connectionInfo.getDbType(), connectionInfo.getMetaDbType()).needsQuotedIdentifier();
     if (needsQuotedIdentifier) {
       versionQuery = "select t.\"SCHEMA_VERSION\" from \"VERSION\" t";
     } else {
       versionQuery = "select t.SCHEMA_VERSION from VERSION t";
     }
-    try (Connection metastoreDbConnection =
-        HiveSchemaHelper.getConnectionToMetastore(connectionInfo); Statement stmt =
-        metastoreDbConnection.createStatement()) {
+    String schema = ( HiveSchemaHelper.DB_HIVE.equals(connectionInfo.getDbType()) ? "SYS" : null );
+    try (Connection metastoreDbConnection = HiveSchemaHelper.getConnectionToMetastore(connectionInfo, schema);
+        Statement stmt = metastoreDbConnection.createStatement()) {
       ResultSet res = stmt.executeQuery(versionQuery);
       if (!res.next()) {
         throw new HiveMetaException("Could not find version info in metastore VERSION table.");
