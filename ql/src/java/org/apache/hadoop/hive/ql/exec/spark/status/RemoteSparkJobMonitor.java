@@ -184,16 +184,19 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
         }
       } catch (Exception e) {
         Exception finalException = e;
-        if (e instanceof InterruptedException) {
+        if (e instanceof InterruptedException ||
+                (e instanceof HiveException && e.getCause() instanceof InterruptedException)) {
           finalException = new HiveException(e, ErrorMsg.SPARK_JOB_INTERRUPTED);
-        }
-        String msg = " with exception '" + Utilities.getNameMessage(e) + "'";
-        msg = "Failed to monitor Job[" + sparkJobStatus.getJobId() + "]" + msg;
+          LOG.warn("Interrupted while monitoring the Hive on Spark application, exiting");
+        } else {
+          String msg = " with exception '" + Utilities.getNameMessage(e) + "'";
+          msg = "Failed to monitor Job[" + sparkJobStatus.getJobId() + "]" + msg;
 
-        // Has to use full name to make sure it does not conflict with
-        // org.apache.commons.lang.StringUtils
-        LOG.error(msg, e);
-        console.printError(msg, "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+          // Has to use full name to make sure it does not conflict with
+          // org.apache.commons.lang.StringUtils
+          LOG.error(msg, e);
+          console.printError(msg, "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+        }
         rc = 1;
         done = true;
         sparkJobStatus.setError(finalException);
