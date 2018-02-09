@@ -99,7 +99,7 @@ public class HiveSchemaTool {
     this.hiveConf = hiveConf;
     this.dbType = dbType;
     this.metaDbType = metaDbType;
-    this.needsQuotedIdentifier = getDbCommandParser(dbType).needsQuotedIdentifier();
+    this.needsQuotedIdentifier = getDbCommandParser(dbType, metaDbType).needsQuotedIdentifier();
     this.metaStoreSchemaInfo = MetaStoreSchemaInfoFactory.get(hiveConf, hiveHome, dbType);
   }
 
@@ -151,20 +151,13 @@ public class HiveSchemaTool {
     System.exit(1);
   }
 
-  Connection getConnectionToMetastore(boolean printInfo)
-      throws HiveMetaException {
-    return HiveSchemaHelper.getConnectionToMetastore(userName,
-        passWord, url, driver, printInfo, hiveConf);
+  Connection getConnectionToMetastore(boolean printInfo) throws HiveMetaException {
+    return HiveSchemaHelper.getConnectionToMetastore(userName, passWord, url, driver, printInfo, hiveConf,
+        null);
   }
 
   private NestedScriptParser getDbCommandParser(String dbType, String metaDbType) {
-    return HiveSchemaHelper.getDbCommandParser(dbType, dbOpts, userName,
-	passWord, hiveConf, metaDbType);
-  }
-
-  private NestedScriptParser getDbCommandParser(String dbType) {
-    return HiveSchemaHelper.getDbCommandParser(dbType, dbOpts, userName,
-	passWord, hiveConf, null);
+    return HiveSchemaHelper.getDbCommandParser(dbType, dbOpts, userName, passWord, hiveConf, metaDbType);
   }
 
   /***
@@ -511,7 +504,7 @@ public class HiveSchemaTool {
 
   private MetaStoreConnectionInfo getConnectionInfo(boolean printInfo) {
     return new MetaStoreConnectionInfo(userName, passWord, url, driver, printInfo, hiveConf,
-        dbType);
+        dbType, metaDbType);
   }
   /**
    * Perform metastore schema upgrade
@@ -593,7 +586,7 @@ public class HiveSchemaTool {
     Connection conn = getConnectionToMetastore(false);
     boolean success = true;
     try {
-      if (validateSchemaVersions(conn)) {
+      if (validateSchemaVersions()) {
         System.out.println("[SUCCESS]\n");
       } else {
         success = false;
@@ -701,7 +694,7 @@ public class HiveSchemaTool {
     }
   }
 
-  boolean validateSchemaVersions(Connection conn) throws HiveMetaException {
+  boolean validateSchemaVersions() throws HiveMetaException {
     System.out.println("Validating schema version");
     try {
       String newSchemaVersion = metaStoreSchemaInfo.getMetaStoreSchemaVersion(getConnectionInfo(false));

@@ -44,22 +44,20 @@ public class HiveSchemaHelper {
   /***
    * Get JDBC connection to metastore db
    *
+   * @param dbType the type of the meteastore database
    * @param userName metastore connection username
    * @param password metastore connection password
    * @param printInfo print connection parameters
    * @param conf hive config object
+   * @param schema the schema to create the connection for
    * @return metastore connection object
    * @throws org.apache.hadoop.hive.metastore.HiveMetaException
    */
-  public static Connection getConnectionToMetastore(String userName,
-      String password, String url, String driver, boolean printInfo,
-      Configuration conf)
-      throws HiveMetaException {
+  public static Connection getConnectionToMetastore(String userName, String password, String url,
+      String driver, boolean printInfo, Configuration conf, String schema) throws HiveMetaException {
     try {
-      url = url == null ? getValidConfVar(
-        MetastoreConf.ConfVars.CONNECTURLKEY, conf) : url;
-      driver = driver == null ? getValidConfVar(
-        MetastoreConf.ConfVars.CONNECTION_DRIVER, conf) : driver;
+      url = url == null ? getValidConfVar(MetastoreConf.ConfVars.CONNECTURLKEY, conf) : url;
+      driver = driver == null ? getValidConfVar(MetastoreConf.ConfVars.CONNECTION_DRIVER, conf) : driver;
       if (printInfo) {
         System.out.println("Metastore connection URL:\t " + url);
         System.out.println("Metastore Connection Driver :\t " + driver);
@@ -73,19 +71,22 @@ public class HiveSchemaHelper {
       Class.forName(driver);
 
       // Connect using the JDBC URL and user/pass from conf
-      return DriverManager.getConnection(url, userName, password);
-    } catch (IOException e) {
-      throw new HiveMetaException("Failed to get schema version.", e);
-    } catch (SQLException e) {
+      Connection conn = DriverManager.getConnection(url, userName, password);
+      if (schema != null) {
+        conn.setSchema(schema);
+      }
+      return conn;
+    } catch (IOException | SQLException e) {
       throw new HiveMetaException("Failed to get schema version.", e);
     } catch (ClassNotFoundException e) {
       throw new HiveMetaException("Failed to load driver", e);
     }
   }
 
-  public static Connection getConnectionToMetastore(MetaStoreConnectionInfo info) throws HiveMetaException {
-    return getConnectionToMetastore(info.getUsername(), info.getPassword(), info.getUrl(),
-        info.getDriver(), info.getPrintInfo(), info.getConf());
+  public static Connection getConnectionToMetastore(MetaStoreConnectionInfo info, String schema)
+      throws HiveMetaException {
+    return getConnectionToMetastore(info.getUsername(), info.getPassword(), info.getUrl(), info.getDriver(),
+        info.getPrintInfo(), info.getConf(), schema);
   }
 
   public static String getValidConfVar(MetastoreConf.ConfVars confVar, Configuration conf)
@@ -593,9 +594,10 @@ public class HiveSchemaHelper {
     private final boolean printInfo;
     private final Configuration conf;
     private final String dbType;
+    private final String metaDbType;
 
     public MetaStoreConnectionInfo(String userName, String password, String url, String driver,
-                                   boolean printInfo, Configuration conf, String dbType) {
+                                   boolean printInfo, Configuration conf, String dbType, String metaDbType) {
       super();
       this.userName = userName;
       this.password = password;
@@ -604,6 +606,7 @@ public class HiveSchemaHelper {
       this.printInfo = printInfo;
       this.conf = conf;
       this.dbType = dbType;
+      this.metaDbType = metaDbType;
     }
 
     public String getPassword() {
@@ -636,6 +639,10 @@ public class HiveSchemaHelper {
 
     public String getDbType() {
       return dbType;
+    }
+
+    public String getMetaDbType() {
+      return metaDbType;
     }
   }
 }
