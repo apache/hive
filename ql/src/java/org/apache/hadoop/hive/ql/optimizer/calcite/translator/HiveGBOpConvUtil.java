@@ -101,7 +101,7 @@ public class HiveGBOpConvUtil {
     private final List<TypeInfo>      gbKeyTypes           = new ArrayList<TypeInfo>();
     private final List<ExprNodeDesc>  gbKeys               = new ArrayList<ExprNodeDesc>();
 
-    private final List<Integer>       grpSets              = new ArrayList<Integer>();
+    private final List<Long>       grpSets              = new ArrayList<Long>();
     private boolean                   grpSetRqrAdditionalMRJob;
     private boolean                   grpIdFunctionNeeded;
 
@@ -177,7 +177,7 @@ public class HiveGBOpConvUtil {
     if (aggRel.getGroupType() != Group.SIMPLE) {
       // 2.1 Translate Grouping set col bitset
       ImmutableList<ImmutableBitSet> lstGrpSet = aggRel.getGroupSets();
-      int bitmap = 0;
+      long bitmap = 0;
       for (ImmutableBitSet grpSet : lstGrpSet) {
         bitmap = 0;
         for (Integer bitIdx : grpSet.asList()) {
@@ -863,7 +863,7 @@ public class HiveGBOpConvUtil {
       groupingSetsColPosition = gbInfo.gbKeys.size();
       if (computeGrpSet) {
         // GrpSet Col needs to be constructed
-        gbKeys.add(new ExprNodeConstantDesc("0"));
+        gbKeys.add(new ExprNodeConstantDesc("0L"));
       } else {
         // GrpSet Col already part of input RS
         // TODO: Can't we just copy the ExprNodeDEsc from input (Do we need to
@@ -1185,7 +1185,7 @@ public class HiveGBOpConvUtil {
     ExprNodeDesc grpSetColExpr = null;
 
     if (createConstantExpr) {
-      grpSetColExpr = new ExprNodeConstantDesc("0");
+      grpSetColExpr = new ExprNodeConstantDesc("0L");
     } else {
       grpSetColExpr = new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, grpSetIDExprName,
           null, false);

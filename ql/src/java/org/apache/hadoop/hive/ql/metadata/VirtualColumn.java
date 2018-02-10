@@ -61,7 +61,7 @@ public enum VirtualColumn {
    * set if that column has been aggregated in that row. Otherwise the
    * value is "0".  Returns the decimal representation of the bit vector.
    */
-  GROUPINGID("GROUPING__ID", TypeInfoFactory.intTypeInfo);
+  GROUPINGID("GROUPING__ID", TypeInfoFactory.longTypeInfo);
 
   public static final ImmutableSet<String> VIRTUAL_COLUMN_NAMES =
       ImmutableSet.of(FILENAME.getName(), BLOCKOFFSET.getName(), ROWOFFSET.getName(),

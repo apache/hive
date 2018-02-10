@@ -456,6 +456,8 @@ public enum ErrorMsg {
   HIVE_GROUPING_FUNCTION_EXPR_NOT_IN_GROUPBY(10409, "Expression in GROUPING function not present in GROUP BY"),
   ALTER_TABLE_NON_PARTITIONED_TABLE_CASCADE_NOT_SUPPORTED(10410,
       "Alter table with non-partitioned table does not support cascade"),
+  HIVE_GROUPING_SETS_SIZE_LIMIT(10411,
+    "Grouping sets size cannot be greater than 64"),
 
   //========================== 20000 range starts here ========================//
 

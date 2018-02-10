@@ -3028,7 +3028,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private RelNode genGBRelNode(List<ExprNodeDesc> gbExprs, List<AggInfo> aggInfoLst,
-        List<Integer> groupSets, RelNode srcRel) throws SemanticException {
+        List<Long> groupSets, RelNode srcRel) throws SemanticException {
       ImmutableMap<String, Integer> posMap = this.relToHiveColNameCalcitePosMap.get(srcRel);
       RexNodeConverter converter = new RexNodeConverter(this.cluster, srcRel.getRowType(), posMap,
           0, false);
@@ -3054,7 +3054,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if(hasGroupSets) {
         Set<ImmutableBitSet> setTransformedGroupSets =
                 new HashSet<ImmutableBitSet>(groupSets.size());
-        for(int val: groupSets) {
+        for(long val: groupSets) {
           setTransformedGroupSets.add(convert(val, groupSet.cardinality()));
         }
         // Calcite expects the grouping sets sorted and without duplicates
@@ -3071,7 +3071,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // Create GroupingID column
         AggregateCall aggCall = AggregateCall.create(HiveGroupingID.INSTANCE,
                 false, new ImmutableList.Builder<Integer>().build(), -1,
-                this.cluster.getTypeFactory().createSqlType(SqlTypeName.INTEGER),
+                this.cluster.getTypeFactory().createSqlType(SqlTypeName.BIGINT),
                 HiveGroupingID.INSTANCE.getName());
         aggregateCalls.add(aggCall);
       }
@@ -3090,7 +3090,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     /* This method returns the flip big-endian representation of value */
-    private ImmutableBitSet convert(int value, int length) {
+    private ImmutableBitSet convert(long value, int length) {
       BitSet bits = new BitSet();
       for (int index = length - 1; index >= 0; index--) {
         if (value % 2 != 0) {
@@ -3333,15 +3333,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         // 5. GroupingSets, Cube, Rollup
         int groupingColsSize = gbExprNDescLst.size();
-        List<Integer> groupingSets = null;
+        List<Long> groupingSets = null;
         if (cubeRollupGrpSetPresent) {
-          if (qbp.getDestRollups().contains(detsClauseName)) {
-            groupingSets = getGroupingSetsForRollup(grpByAstExprs.size());
-          } else if (qbp.getDestCubes().contains(detsClauseName)) {
-            groupingSets = getGroupingSetsForCube(grpByAstExprs.size());
-          } else if (qbp.getDestGroupingSets().contains(detsClauseName)) {
-            groupingSets = getGroupingSets(grpByAstExprs, qbp, detsClauseName);
-          }
+          groupingSets = getGroupByGroupingSetsForClause(qbp, detsClauseName).getSecond();
         }
 
         // 6. Construct aggregation function Info
@@ -3386,7 +3380,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           groupByOutputRowResolver.put(null, VirtualColumn.GROUPINGID.getName(),
                   new ColumnInfo(
                           field,
-                          TypeInfoFactory.intTypeInfo,
+                          VirtualColumn.GROUPINGID.getTypeInfo(),
                           null,
                           true));
         }

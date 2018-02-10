@@ -126,7 +126,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   private transient boolean groupingSetsPresent;
 
   // The field bits (i.e. which fields to include) or "id" for each grouping set.
-  private transient int[] groupingSets;
+  private transient long[] groupingSets;
 
   // The position in the column keys of the dummy grouping set id column.
   private transient int groupingSetsPosition;
@@ -457,7 +457,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
         kw.setNull();
         int pos = conf.getGroupingSetPosition();
         if (pos >= 0) {
-          long val = (1 << pos) - 1;
+          long val = (1L << pos) - 1;
           keyWrappersBatch.setLongValue(kw, pos, val);
         }
         VectorAggregationBufferRow groupAggregators = allocateAggregationBuffer();
@@ -938,13 +938,13 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       return;
     }
 
-    groupingSets = ArrayUtils.toPrimitive(conf.getListGroupingSets().toArray(new Integer[0]));
+    groupingSets = ArrayUtils.toPrimitive(conf.getListGroupingSets().toArray(new Long[0]));
     groupingSetsPosition = conf.getGroupingSetPosition();
 
     allGroupingSetsOverrideIsNulls = new boolean[groupingSets.length][];
 
     int pos = 0;
-    for (int groupingSet: groupingSets) {
+    for (long groupingSet: groupingSets) {
 
       // Create the mapping corresponding to the grouping set
 

@@ -33,7 +33,7 @@ public class HiveGroupingID extends SqlAbstractGroupFunction {
   private HiveGroupingID() {
     super(VirtualColumn.GROUPINGID.getName(),
             SqlKind.OTHER,
-            ReturnTypes.INTEGER,
+            ReturnTypes.BIGINT,
             InferTypes.BOOLEAN,
             OperandTypes.NILADIC,
             SqlFunctionCategory.SYSTEM);

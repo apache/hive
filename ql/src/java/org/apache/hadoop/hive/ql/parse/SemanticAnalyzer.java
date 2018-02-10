@@ -255,6 +255,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.math.IntMath;
+import com.google.common.math.LongMath;
 
 /**
  * Implementation of the semantic analyzer. It generates the query plan.
@@ -2972,7 +2973,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               // Query does not contain CUBE, ROLLUP, or GROUPING SETS, and thus,
               // grouping should return 0
               childGroupingID = (ASTNode) ParseDriver.adaptor.create(HiveParser.IntegralLiteral,
-                  String.valueOf(0));
+                "0L");
             } else {
               // We refer to grouping_id column
               childGroupingID = (ASTNode) ParseDriver.adaptor.create(
@@ -2990,7 +2991,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                   // Create and add AST node with position of grouping function input
                   // in group by clause
                   ASTNode childN = (ASTNode) ParseDriver.adaptor.create(HiveParser.IntegralLiteral,
-                      String.valueOf(IntMath.mod(-j-1, grpByAstExprs.size())));
+                    String.valueOf(IntMath.mod(-j-1, grpByAstExprs.size())) + "L");
                   newRoot.addChild(childN);
                   break;
                 }
@@ -3830,18 +3831,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  protected List<Integer> getGroupingSetsForRollup(int size) {
-    List<Integer> groupingSetKeys = new ArrayList<Integer>();
+  protected List<Long> getGroupingSetsForRollup(int size) {
+    List<Long> groupingSetKeys = new ArrayList<Long>();
     for (int i = 0; i <= size; i++) {
-      groupingSetKeys.add((1 << i) - 1);
+      groupingSetKeys.add((1L << i) - 1);
     }
     return groupingSetKeys;
   }
 
-  protected List<Integer> getGroupingSetsForCube(int size) {
-    int count = 1 << size;
-    List<Integer> results = new ArrayList<Integer>(count);
-    for (int i = 0; i < count; ++i) {
+  protected List<Long> getGroupingSetsForCube(int size) {
+    long count = 1L << size;
+    List<Long> results = new ArrayList<Long>();
+    for (long i = 0; i < count; ++i) {
       results.add(i);
     }
     return results;
@@ -3850,10 +3851,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // This function returns the grouping sets along with the grouping expressions
   // Even if rollups and cubes are present in the query, they are converted to
   // grouping sets at this point
-  private ObjectPair<List<ASTNode>, List<Integer>> getGroupByGroupingSetsForClause(
-      QBParseInfo parseInfo, String dest) throws SemanticException {
-    List<Integer> groupingSets = new ArrayList<Integer>();
+  ObjectPair<List<ASTNode>, List<Long>> getGroupByGroupingSetsForClause(
+    QBParseInfo parseInfo, String dest) throws SemanticException {
+    List<Long> groupingSets = new ArrayList<Long>();
     List<ASTNode> groupByExprs = getGroupByForClause(parseInfo, dest);
+    if (groupByExprs.size() > Long.SIZE) {
+      throw new SemanticException(ErrorMsg.HIVE_GROUPING_SETS_SIZE_LIMIT.getMsg());
+    }
+
     if (parseInfo.getDestRollups().contains(dest)) {
       groupingSets = getGroupingSetsForRollup(groupByExprs.size());
     } else if (parseInfo.getDestCubes().contains(dest)) {
@@ -3862,11 +3867,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       groupingSets = getGroupingSets(groupByExprs, parseInfo, dest);
     }
 
-    return new ObjectPair<List<ASTNode>, List<Integer>>(groupByExprs, groupingSets);
+    return new ObjectPair<List<ASTNode>, List<Long>>(groupByExprs, groupingSets);
   }
 
-  protected List<Integer> getGroupingSets(List<ASTNode> groupByExpr, QBParseInfo parseInfo,
-                                          String dest) throws SemanticException {
+  protected List<Long> getGroupingSets(List<ASTNode> groupByExpr, QBParseInfo parseInfo,
+      String dest) throws SemanticException {
     Map<String, Integer> exprPos = new HashMap<String, Integer>();
     for (int i = 0; i < groupByExpr.size(); ++i) {
       ASTNode node = groupByExpr.get(i);
@@ -3874,14 +3879,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     ASTNode root = parseInfo.getGroupByForClause(dest);
-    List<Integer> result = new ArrayList<Integer>(root == null ? 0 : root.getChildCount());
+    List<Long> result = new ArrayList<Long>(root == null ? 0 : root.getChildCount());
     if (root != null) {
       for (int i = 0; i < root.getChildCount(); ++i) {
         ASTNode child = (ASTNode) root.getChild(i);
         if (child.getType() != HiveParser.TOK_GROUPING_SETS_EXPRESSION) {
           continue;
         }
-        int bitmap = IntMath.pow(2, groupByExpr.size()) - 1;
+        long bitmap = LongMath.pow(2, groupByExpr.size()) - 1;
         for (int j = 0; j < child.getChildCount(); ++j) {
           String treeAsString = child.getChild(j).toStringTree();
           Integer pos = exprPos.get(treeAsString);
@@ -3895,27 +3900,28 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         result.add(bitmap);
       }
     }
-    if (checkForEmptyGroupingSets(result, IntMath.pow(2, groupByExpr.size()) - 1)) {
+
+    if (checkForEmptyGroupingSets(result, LongMath.pow(2, groupByExpr.size()) - 1)) {
       throw new SemanticException(
-          ErrorMsg.HIVE_GROUPING_SETS_EMPTY.getMsg());
+        ErrorMsg.HIVE_GROUPING_SETS_EMPTY.getMsg());
     }
     return result;
   }
 
-  private boolean checkForEmptyGroupingSets(List<Integer> bitmaps, int groupingIdAllSet) {
+  private boolean checkForEmptyGroupingSets(List<Long> bitmaps, long groupingIdAllSet) {
     boolean ret = true;
-    for (int mask : bitmaps) {
+    for (long mask : bitmaps) {
       ret &= mask == groupingIdAllSet;
     }
     return ret;
   }
 
-  public static int setBit(int bitmap, int bitIdx) {
-    return bitmap | (1 << bitIdx);
+  public static long setBit(long bitmap, int bitIdx) {
+    return bitmap | (1L << bitIdx);
   }
 
-  public static int unsetBit(int bitmap, int bitIdx) {
-    return bitmap & ~(1 << bitIdx);
+  public static long unsetBit(long bitmap, int bitIdx) {
+    return bitmap & ~(1L << bitIdx);
   }
 
   /**
@@ -4774,7 +4780,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // For grouping sets, add a dummy grouping key
     String groupingSetColumnName =
         groupByInputRowResolver.get(null, VirtualColumn.GROUPINGID.getName()).getInternalName();
-    ExprNodeDesc inputExpr = new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo,
+    ExprNodeDesc inputExpr = new ExprNodeColumnDesc(VirtualColumn.GROUPINGID.getTypeInfo(),
         groupingSetColumnName, null, false);
     groupByKeys.add(inputExpr);
 
@@ -4783,7 +4789,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     groupByOutputRowResolver.put(null, VirtualColumn.GROUPINGID.getName(),
         new ColumnInfo(
             field,
-            TypeInfoFactory.intTypeInfo,
+            VirtualColumn.GROUPINGID.getTypeInfo(),
             null,
             true));
     colExprMap.put(field, groupByKeys.get(groupByKeys.size() - 1));
@@ -4805,7 +4811,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // add a key for reduce sink
     String groupingSetColumnName =
         reduceSinkInputRowResolver.get(null, VirtualColumn.GROUPINGID.getName()).getInternalName();
-    ExprNodeDesc inputExpr = new ExprNodeColumnDesc(TypeInfoFactory.intTypeInfo,
+    ExprNodeDesc inputExpr = new ExprNodeColumnDesc(VirtualColumn.GROUPINGID.getTypeInfo(),
         groupingSetColumnName, null, false);
     reduceKeys.add(inputExpr);
 
@@ -4841,11 +4847,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   @SuppressWarnings("nls")
   private Operator genGroupByPlanGroupByOperator1(QBParseInfo parseInfo,
-                                                  String dest, Operator reduceSinkOperatorInfo, GroupByDesc.Mode mode,
-                                                  Map<String, GenericUDAFEvaluator> genericUDAFEvaluators,
-                                                  List<Integer> groupingSets,
-                                                  boolean groupingSetsPresent,
-                                                  boolean groupingSetsNeedAdditionalMRJob) throws SemanticException {
+      String dest, Operator reduceSinkOperatorInfo, GroupByDesc.Mode mode,
+      Map<String, GenericUDAFEvaluator> genericUDAFEvaluators,
+      List<Long> groupingSets,
+      boolean groupingSetsPresent,
+      boolean groupingSetsNeedAdditionalMRJob) throws SemanticException {
     ArrayList<String> outputColumnNames = new ArrayList<String>();
     RowResolver groupByInputRowResolver = opParseCtx
         .get(reduceSinkOperatorInfo).getRowResolver();
@@ -5037,14 +5043,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                     Map<String, ExprNodeDesc> colExprMap) {
     // The value for the constant does not matter. It is replaced by the grouping set
     // value for the actual implementation
-    ExprNodeConstantDesc constant = new ExprNodeConstantDesc(0);
+    ExprNodeConstantDesc constant = new ExprNodeConstantDesc(VirtualColumn.GROUPINGID.getTypeInfo(), 0L);
     groupByKeys.add(constant);
     String field = getColumnInternalName(groupByKeys.size() - 1);
     outputColumnNames.add(field);
     groupByOutputRowResolver.put(null, VirtualColumn.GROUPINGID.getName(),
         new ColumnInfo(
             field,
-            TypeInfoFactory.intTypeInfo,
+            VirtualColumn.GROUPINGID.getTypeInfo(),
             null,
             true));
     colExprMap.put(field, constant);
@@ -5065,13 +5071,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   @SuppressWarnings("nls")
   private Operator genGroupByPlanMapGroupByOperator(QB qb,
-                                                    String dest,
-                                                    List<ASTNode> grpByExprs,
-                                                    Operator inputOperatorInfo,
-                                                    GroupByDesc.Mode mode,
-                                                    Map<String, GenericUDAFEvaluator> genericUDAFEvaluators,
-                                                    List<Integer> groupingSetKeys,
-                                                    boolean groupingSetsPresent) throws SemanticException {
+      String dest,
+      List<ASTNode> grpByExprs,
+      Operator inputOperatorInfo,
+      GroupByDesc.Mode mode,
+      Map<String, GenericUDAFEvaluator> genericUDAFEvaluators,
+      List<Long> groupingSetKeys,
+      boolean groupingSetsPresent) throws SemanticException {
 
     RowResolver groupByInputRowResolver = opParseCtx.get(inputOperatorInfo)
         .getRowResolver();
@@ -5770,11 +5776,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     QBParseInfo parseInfo = qb.getParseInfo();
 
     int numReducers = -1;
-    ObjectPair<List<ASTNode>, List<Integer>> grpByExprsGroupingSets =
+    ObjectPair<List<ASTNode>, List<Long>> grpByExprsGroupingSets =
         getGroupByGroupingSetsForClause(parseInfo, dest);
 
     List<ASTNode> grpByExprs = grpByExprsGroupingSets.getFirst();
-    List<Integer> groupingSets = grpByExprsGroupingSets.getSecond();
+    List<Long> groupingSets = grpByExprsGroupingSets.getSecond();
 
     if (grpByExprs.isEmpty()) {
       numReducers = 1;
@@ -5819,10 +5825,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<ExprNodeDesc.ExprNodeDescEqualityWrapper> whereExpressions =
         new ArrayList<ExprNodeDesc.ExprNodeDescEqualityWrapper>();
     for (String dest : dests) {
-      ObjectPair<List<ASTNode>, List<Integer>> grpByExprsGroupingSets =
+      ObjectPair<List<ASTNode>, List<Long>> grpByExprsGroupingSets =
           getGroupByGroupingSetsForClause(parseInfo, dest);
 
-      List<Integer> groupingSets = grpByExprsGroupingSets.getSecond();
+      List<Long> groupingSets = grpByExprsGroupingSets.getSecond();
       if (!groupingSets.isEmpty()) {
         throw new SemanticException(ErrorMsg.HIVE_GROUPING_SETS_AGGR_NOMAPAGGR_MULTIGBY.getMsg());
       }
@@ -5965,11 +5971,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     QBParseInfo parseInfo = qb.getParseInfo();
 
-    ObjectPair<List<ASTNode>, List<Integer>> grpByExprsGroupingSets =
+    ObjectPair<List<ASTNode>, List<Long>> grpByExprsGroupingSets =
         getGroupByGroupingSetsForClause(parseInfo, dest);
 
     List<ASTNode> grpByExprs = grpByExprsGroupingSets.getFirst();
-    List<Integer> groupingSets = grpByExprsGroupingSets.getSecond();
+    List<Long> groupingSets = grpByExprsGroupingSets.getSecond();
 
     // Grouping sets are not allowed
     // This restriction can be lifted in future.
@@ -6161,11 +6167,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                                Operator inputOperatorInfo) throws SemanticException {
 
     QBParseInfo parseInfo = qb.getParseInfo();
-    ObjectPair<List<ASTNode>, List<Integer>> grpByExprsGroupingSets =
+    ObjectPair<List<ASTNode>, List<Long>> grpByExprsGroupingSets =
         getGroupByGroupingSetsForClause(parseInfo, dest);
 
     List<ASTNode> grpByExprs = grpByExprsGroupingSets.getFirst();
-    List<Integer> groupingSets = grpByExprsGroupingSets.getSecond();
+    List<Long> groupingSets = grpByExprsGroupingSets.getSecond();
     boolean groupingSetsPresent = !groupingSets.isEmpty();
 
     int newMRJobGroupingSetsThreshold =
@@ -6330,11 +6336,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     QBParseInfo parseInfo = qb.getParseInfo();
 
-    ObjectPair<List<ASTNode>, List<Integer>> grpByExprsGroupingSets =
+    ObjectPair<List<ASTNode>, List<Long>> grpByExprsGroupingSets =
         getGroupByGroupingSetsForClause(parseInfo, dest);
 
     List<ASTNode> grpByExprs = grpByExprsGroupingSets.getFirst();
-    List<Integer> groupingSets = grpByExprsGroupingSets.getSecond();
+    List<Long> groupingSets = grpByExprsGroupingSets.getSecond();
     boolean groupingSetsPresent = !groupingSets.isEmpty();
 
     if (groupingSetsPresent) {
