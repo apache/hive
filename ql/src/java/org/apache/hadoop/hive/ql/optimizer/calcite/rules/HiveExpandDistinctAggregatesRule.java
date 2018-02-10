@@ -327,7 +327,7 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
     // Create GroupingID column
     AggregateCall aggCall = AggregateCall.create(HiveGroupingID.INSTANCE, false,
         new ImmutableList.Builder<Integer>().build(), -1, this.cluster.getTypeFactory()
-            .createSqlType(SqlTypeName.INTEGER), HiveGroupingID.INSTANCE.getName());
+            .createSqlType(SqlTypeName.BIGINT), HiveGroupingID.INSTANCE.getName());
     aggregateCalls.add(aggCall);
     return new HiveAggregate(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
         aggregate.getInput(), groupSet, origGroupSets, aggregateCalls);

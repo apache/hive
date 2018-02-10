@@ -1,0 +1,18 @@
+PREHOOK: query: create table facts (val string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@facts
+POSTHOOK: query: create table facts (val string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@facts
+PREHOOK: query: insert into facts values ('abcdefghijklmnopqrstuvwxyz0123456789')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@facts
+POSTHOOK: query: insert into facts values ('abcdefghijklmnopqrstuvwxyz0123456789')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@facts
+POSTHOOK: Lineage: facts.val SCRIPT []
+FAILED: SemanticException [Error 10411]: Grouping sets size cannot be greater than 64
