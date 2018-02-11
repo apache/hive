@@ -73,55 +73,65 @@ public class TxnUtils {
   }
 
   /**
-   * Transform a {@link org.apache.hadoop.hive.metastore.api.GetOpenWriteIdsResponse} to a
+   * Transform a {@link org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse} to a
    * {@link org.apache.hadoop.hive.common.ValidTxnWriteIdList}.  This assumes that the caller intends to
    * read the files, and thus treats both open and aborted transactions as invalid.
-   * @param writeIds write ids list from the metastore
+   * @param currentTxnId current txn ID for which we get the valid write ids list
+   * @param validWriteIds valid write ids list from the metastore
    * @return a valid write IDs list for the whole transaction.
    */
-  public static ValidTxnWriteIdList createValidTxnWriteIdList(GetOpenWriteIdsResponse writeIds) {
-    ValidTxnWriteIdList validTxnWriteIdList = new ValidTxnWriteIdList();
-    for (OpenWriteIds tableWriteIds : writeIds.getOpenWriteIds()) {
-      validTxnWriteIdList.addTableWriteId(createValidReaderWriteIdList(tableWriteIds));
+  public static ValidTxnWriteIdList createValidTxnWriteIdList(Long currentTxnId,
+                                                              GetValidWriteIdsResponse validWriteIds) {
+    ValidTxnWriteIdList validTxnWriteIdList = new ValidTxnWriteIdList(currentTxnId);
+    for (TableValidWriteIds tableWriteIds : validWriteIds.getTblValidWriteIds()) {
+      validTxnWriteIdList.addTableValidWriteIdList(createValidReaderWriteIdList(tableWriteIds));
     }
     return validTxnWriteIdList;
   }
 
-  public static ValidReaderWriteIdList createValidReaderWriteIdList(OpenWriteIds tableWriteIds) {
-    String tableName = tableWriteIds.getTableName();
+  /**
+   * Transform a {@link org.apache.hadoop.hive.metastore.api.TableValidWriteIds} to a
+   * {@link org.apache.hadoop.hive.common.ValidReaderWriteIdList}.  This assumes that the caller intends to
+   * read the files, and thus treats both open and aborted write ids as invalid.
+   * @param tableWriteIds valid write ids for the given table from the metastore
+   * @return a valid write IDs list for the input table
+   */
+  public static ValidReaderWriteIdList createValidReaderWriteIdList(TableValidWriteIds tableWriteIds) {
+    String fullTableName = tableWriteIds.getFullTableName();
     long highWater = tableWriteIds.getWriteIdHighWaterMark();
-    List<Long> open = tableWriteIds.getOpenWriteIds();
+    List<Long> invalids = tableWriteIds.getInvalidWriteIds();
     BitSet abortedBits = BitSet.valueOf(tableWriteIds.getAbortedBits());
-    long[] exceptions = new long[open.size()];
+    long[] exceptions = new long[invalids.size()];
     int i = 0;
-    for (long writeId : open) {
+    for (long writeId : invalids) {
       exceptions[i++] = writeId;
     }
-    if (tableWriteIds.isSetMinWriteId()) {
-      return new ValidReaderWriteIdList(tableName, exceptions, abortedBits, highWater, tableWriteIds.getMinWriteId());
+    if (tableWriteIds.isSetMinOpenWriteId()) {
+      return new ValidReaderWriteIdList(fullTableName, exceptions, abortedBits, highWater,
+                                        tableWriteIds.getMinOpenWriteId());
     } else {
-      return new ValidReaderWriteIdList(tableName, exceptions, abortedBits, highWater);
+      return new ValidReaderWriteIdList(fullTableName, exceptions, abortedBits, highWater);
     }
   }
 
   /**
-   * Transform a {@link org.apache.hadoop.hive.metastore.api.OpenWriteIds} to a
-   * {@link org.apache.hadoop.hive.common.ValidWriteIdList}.  This assumes that the caller intends to
-   * compact the files, and thus treats only open transactions as invalid.  Additionally any
+   * Transform a {@link org.apache.hadoop.hive.metastore.api.TableValidWriteIds} to a
+   * {@link org.apache.hadoop.hive.common.ValidCompactorWriteIdList}.  This assumes that the caller intends to
+   * compact the files, and thus treats only open transactions/write ids as invalid.  Additionally any
    * writeId &gt; highestOpenWriteId is also invalid.  This is to avoid creating something like
    * delta_17_120 where writeId 80, for example, is still open.
-   * @param tableWriteIds table write id list from the metastore
+   * @param tableValidWriteIds table write id list from the metastore
    * @return a valid write id list.
    */
-  public static ValidWriteIdList createValidCompactWriteIdList(OpenWriteIds tableWriteIds) {
-    String tableName = tableWriteIds.getTableName();
-    long highWater = tableWriteIds.getWriteIdHighWaterMark();
+  public static ValidCompactorWriteIdList createValidCompactWriteIdList(TableValidWriteIds tableValidWriteIds) {
+    String fullTableName = tableValidWriteIds.getFullTableName();
+    long highWater = tableValidWriteIds.getWriteIdHighWaterMark();
     long minOpenWriteId = Long.MAX_VALUE;
-    List<Long> open = tableWriteIds.getOpenWriteIds();
-    BitSet abortedBits = BitSet.valueOf(tableWriteIds.getAbortedBits());
-    long[] exceptions = new long[open.size()];
+    List<Long> invalids = tableValidWriteIds.getInvalidWriteIds();
+    BitSet abortedBits = BitSet.valueOf(tableValidWriteIds.getAbortedBits());
+    long[] exceptions = new long[invalids.size()];
     int i = 0;
-    for (long writeId : open) {
+    for (long writeId : invalids) {
       if (abortedBits.get(i)) {
         // Only need aborted since we don't consider anything above minOpenWriteId
         exceptions[i++] = writeId;
@@ -136,9 +146,9 @@ public class TxnUtils {
     BitSet bitSet = new BitSet(exceptions.length);
     bitSet.set(0, exceptions.length); // for ValidCompactorWriteIdList, everything in exceptions are aborted
     if (minOpenWriteId == Long.MAX_VALUE) {
-      return new ValidCompactorWriteIdList(tableName, exceptions, bitSet, highWater);
+      return new ValidCompactorWriteIdList(fullTableName, exceptions, bitSet, highWater);
     } else {
-      return new ValidCompactorWriteIdList(tableName, exceptions, bitSet, highWater, minOpenWriteId);
+      return new ValidCompactorWriteIdList(fullTableName, exceptions, bitSet, highWater, minOpenWriteId);
     }
   }
 

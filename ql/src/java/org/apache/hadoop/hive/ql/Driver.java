@@ -1227,12 +1227,12 @@ public class Driver implements IDriver {
       Operator<?> source = plan.getFetchTask().getWork().getSource();
       if (source instanceof TableScanOperator) {
         TableScanOperator tsOp = (TableScanOperator)source;
-        ValidWriteIdList writeIdList = txnWriteIds.getTableWriteIdList(
+        ValidWriteIdList writeIdList = txnWriteIds.getTableValidWriteIdList(
                 AcidUtils.getFullTableName(tsOp.getConf().getDatabaseName(), tsOp.getConf().getTableName()));
         plan.getFetchTask().setValidWriteIdList(writeIdList.toString());
       }
     }
-    LOG.debug("Encoding valid write ids info " + writeIdStr + " txnid:" + txnMgr.getCurrentTxnId());
+    LOG.debug("Encoding valid txn write ids info " + writeIdStr + " txnid:" + txnMgr.getCurrentTxnId());
   }
 
   // Make the list of transactional tables list which are getting read or written by current txn

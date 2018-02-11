@@ -36590,11 +36590,11 @@ uint32_t ThriftHiveMetastore_commit_txn_presult::read(::apache::thrift::protocol
 }
 
 
-ThriftHiveMetastore_get_open_write_ids_args::~ThriftHiveMetastore_get_open_write_ids_args() throw() {
+ThriftHiveMetastore_get_valid_write_ids_args::~ThriftHiveMetastore_get_valid_write_ids_args() throw() {
 }
 
 
-uint32_t ThriftHiveMetastore_get_open_write_ids_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_get_valid_write_ids_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -36635,10 +36635,10 @@ uint32_t ThriftHiveMetastore_get_open_write_ids_args::read(::apache::thrift::pro
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_get_open_write_ids_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_get_valid_write_ids_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_open_write_ids_args");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_valid_write_ids_args");
 
   xfer += oprot->writeFieldBegin("rqst", ::apache::thrift::protocol::T_STRUCT, 1);
   xfer += this->rqst.write(oprot);
@@ -36650,14 +36650,14 @@ uint32_t ThriftHiveMetastore_get_open_write_ids_args::write(::apache::thrift::pr
 }
 
 
-ThriftHiveMetastore_get_open_write_ids_pargs::~ThriftHiveMetastore_get_open_write_ids_pargs() throw() {
+ThriftHiveMetastore_get_valid_write_ids_pargs::~ThriftHiveMetastore_get_valid_write_ids_pargs() throw() {
 }
 
 
-uint32_t ThriftHiveMetastore_get_open_write_ids_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_get_valid_write_ids_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_open_write_ids_pargs");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_valid_write_ids_pargs");
 
   xfer += oprot->writeFieldBegin("rqst", ::apache::thrift::protocol::T_STRUCT, 1);
   xfer += (*(this->rqst)).write(oprot);
@@ -36669,11 +36669,11 @@ uint32_t ThriftHiveMetastore_get_open_write_ids_pargs::write(::apache::thrift::p
 }
 
 
-ThriftHiveMetastore_get_open_write_ids_result::~ThriftHiveMetastore_get_open_write_ids_result() throw() {
+ThriftHiveMetastore_get_valid_write_ids_result::~ThriftHiveMetastore_get_valid_write_ids_result() throw() {
 }
 
 
-uint32_t ThriftHiveMetastore_get_open_write_ids_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_get_valid_write_ids_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -36730,11 +36730,11 @@ uint32_t ThriftHiveMetastore_get_open_write_ids_result::read(::apache::thrift::p
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_get_open_write_ids_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_get_valid_write_ids_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   uint32_t xfer = 0;
 
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_open_write_ids_result");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_valid_write_ids_result");
 
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
@@ -36755,11 +36755,11 @@ uint32_t ThriftHiveMetastore_get_open_write_ids_result::write(::apache::thrift::
 }
 
 
-ThriftHiveMetastore_get_open_write_ids_presult::~ThriftHiveMetastore_get_open_write_ids_presult() throw() {
+ThriftHiveMetastore_get_valid_write_ids_presult::~ThriftHiveMetastore_get_valid_write_ids_presult() throw() {
 }
 
 
-uint32_t ThriftHiveMetastore_get_open_write_ids_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_get_valid_write_ids_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -36817,11 +36817,11 @@ uint32_t ThriftHiveMetastore_get_open_write_ids_presult::read(::apache::thrift::
 }
 
 
-ThriftHiveMetastore_allocate_table_write_id_args::~ThriftHiveMetastore_allocate_table_write_id_args() throw() {
+ThriftHiveMetastore_allocate_table_write_ids_args::~ThriftHiveMetastore_allocate_table_write_ids_args() throw() {
 }
 
 
-uint32_t ThriftHiveMetastore_allocate_table_write_id_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_allocate_table_write_ids_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -36862,10 +36862,10 @@ uint32_t ThriftHiveMetastore_allocate_table_write_id_args::read(::apache::thrift
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_allocate_table_write_id_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_allocate_table_write_ids_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_allocate_table_write_id_args");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_allocate_table_write_ids_args");
 
   xfer += oprot->writeFieldBegin("rqst", ::apache::thrift::protocol::T_STRUCT, 1);
   xfer += this->rqst.write(oprot);
@@ -36877,14 +36877,14 @@ uint32_t ThriftHiveMetastore_allocate_table_write_id_args::write(::apache::thrif
 }
 
 
-ThriftHiveMetastore_allocate_table_write_id_pargs::~ThriftHiveMetastore_allocate_table_write_id_pargs() throw() {
+ThriftHiveMetastore_allocate_table_write_ids_pargs::~ThriftHiveMetastore_allocate_table_write_ids_pargs() throw() {
 }
 
 
-uint32_t ThriftHiveMetastore_allocate_table_write_id_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_allocate_table_write_ids_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_allocate_table_write_id_pargs");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_allocate_table_write_ids_pargs");
 
   xfer += oprot->writeFieldBegin("rqst", ::apache::thrift::protocol::T_STRUCT, 1);
   xfer += (*(this->rqst)).write(oprot);
@@ -36896,11 +36896,11 @@ uint32_t ThriftHiveMetastore_allocate_table_write_id_pargs::write(::apache::thri
 }
 
 
-ThriftHiveMetastore_allocate_table_write_id_result::~ThriftHiveMetastore_allocate_table_write_id_result() throw() {
+ThriftHiveMetastore_allocate_table_write_ids_result::~ThriftHiveMetastore_allocate_table_write_ids_result() throw() {
 }
 
 
-uint32_t ThriftHiveMetastore_allocate_table_write_id_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_allocate_table_write_ids_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -36965,11 +36965,11 @@ uint32_t ThriftHiveMetastore_allocate_table_write_id_result::read(::apache::thri
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_allocate_table_write_id_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_allocate_table_write_ids_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   uint32_t xfer = 0;
 
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_allocate_table_write_id_result");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_allocate_table_write_ids_result");
 
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
@@ -36994,11 +36994,11 @@ uint32_t ThriftHiveMetastore_allocate_table_write_id_result::write(::apache::thr
 }
 
 
-ThriftHiveMetastore_allocate_table_write_id_presult::~ThriftHiveMetastore_allocate_table_write_id_presult() throw() {
+ThriftHiveMetastore_allocate_table_write_ids_presult::~ThriftHiveMetastore_allocate_table_write_ids_presult() throw() {
 }
 
 
-uint32_t ThriftHiveMetastore_allocate_table_write_id_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_allocate_table_write_ids_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -54573,18 +54573,18 @@ void ThriftHiveMetastoreClient::recv_commit_txn()
   return;
 }
 
-void ThriftHiveMetastoreClient::get_open_write_ids(GetOpenWriteIdsResponse& _return, const GetOpenWriteIdsRequest& rqst)
+void ThriftHiveMetastoreClient::get_valid_write_ids(GetValidWriteIdsResponse& _return, const GetValidWriteIdsRequest& rqst)
 {
-  send_get_open_write_ids(rqst);
-  recv_get_open_write_ids(_return);
+  send_get_valid_write_ids(rqst);
+  recv_get_valid_write_ids(_return);
 }
 
-void ThriftHiveMetastoreClient::send_get_open_write_ids(const GetOpenWriteIdsRequest& rqst)
+void ThriftHiveMetastoreClient::send_get_valid_write_ids(const GetValidWriteIdsRequest& rqst)
 {
   int32_t cseqid = 0;
-  oprot_->writeMessageBegin("get_open_write_ids", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("get_valid_write_ids", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  ThriftHiveMetastore_get_open_write_ids_pargs args;
+  ThriftHiveMetastore_get_valid_write_ids_pargs args;
   args.rqst = &rqst;
   args.write(oprot_);
 
@@ -54593,7 +54593,7 @@ void ThriftHiveMetastoreClient::send_get_open_write_ids(const GetOpenWriteIdsReq
   oprot_->getTransport()->flush();
 }
 
-void ThriftHiveMetastoreClient::recv_get_open_write_ids(GetOpenWriteIdsResponse& _return)
+void ThriftHiveMetastoreClient::recv_get_valid_write_ids(GetValidWriteIdsResponse& _return)
 {
 
   int32_t rseqid = 0;
@@ -54613,12 +54613,12 @@ void ThriftHiveMetastoreClient::recv_get_open_write_ids(GetOpenWriteIdsResponse&
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  if (fname.compare("get_open_write_ids") != 0) {
+  if (fname.compare("get_valid_write_ids") != 0) {
     iprot_->skip(::apache::thrift::protocol::T_STRUCT);
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  ThriftHiveMetastore_get_open_write_ids_presult result;
+  ThriftHiveMetastore_get_valid_write_ids_presult result;
   result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
@@ -54634,21 +54634,21 @@ void ThriftHiveMetastoreClient::recv_get_open_write_ids(GetOpenWriteIdsResponse&
   if (result.__isset.o2) {
     throw result.o2;
   }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_open_write_ids failed: unknown result");
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_valid_write_ids failed: unknown result");
 }
 
-void ThriftHiveMetastoreClient::allocate_table_write_id(AllocateTableWriteIdResponse& _return, const AllocateTableWriteIdRequest& rqst)
+void ThriftHiveMetastoreClient::allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const AllocateTableWriteIdsRequest& rqst)
 {
-  send_allocate_table_write_id(rqst);
-  recv_allocate_table_write_id(_return);
+  send_allocate_table_write_ids(rqst);
+  recv_allocate_table_write_ids(_return);
 }
 
-void ThriftHiveMetastoreClient::send_allocate_table_write_id(const AllocateTableWriteIdRequest& rqst)
+void ThriftHiveMetastoreClient::send_allocate_table_write_ids(const AllocateTableWriteIdsRequest& rqst)
 {
   int32_t cseqid = 0;
-  oprot_->writeMessageBegin("allocate_table_write_id", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("allocate_table_write_ids", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  ThriftHiveMetastore_allocate_table_write_id_pargs args;
+  ThriftHiveMetastore_allocate_table_write_ids_pargs args;
   args.rqst = &rqst;
   args.write(oprot_);
 
@@ -54657,7 +54657,7 @@ void ThriftHiveMetastoreClient::send_allocate_table_write_id(const AllocateTable
   oprot_->getTransport()->flush();
 }
 
-void ThriftHiveMetastoreClient::recv_allocate_table_write_id(AllocateTableWriteIdResponse& _return)
+void ThriftHiveMetastoreClient::recv_allocate_table_write_ids(AllocateTableWriteIdsResponse& _return)
 {
 
   int32_t rseqid = 0;
@@ -54677,12 +54677,12 @@ void ThriftHiveMetastoreClient::recv_allocate_table_write_id(AllocateTableWriteI
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  if (fname.compare("allocate_table_write_id") != 0) {
+  if (fname.compare("allocate_table_write_ids") != 0) {
     iprot_->skip(::apache::thrift::protocol::T_STRUCT);
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  ThriftHiveMetastore_allocate_table_write_id_presult result;
+  ThriftHiveMetastore_allocate_table_write_ids_presult result;
   result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
@@ -54701,7 +54701,7 @@ void ThriftHiveMetastoreClient::recv_allocate_table_write_id(AllocateTableWriteI
   if (result.__isset.o3) {
     throw result.o3;
   }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "allocate_table_write_id failed: unknown result");
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "allocate_table_write_ids failed: unknown result");
 }
 
 void ThriftHiveMetastoreClient::lock(LockResponse& _return, const LockRequest& rqst)
@@ -65671,30 +65671,30 @@ void ThriftHiveMetastoreProcessor::process_commit_txn(int32_t seqid, ::apache::t
   }
 }
 
-void ThriftHiveMetastoreProcessor::process_get_open_write_ids(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+void ThriftHiveMetastoreProcessor::process_get_valid_write_ids(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
-    ctx = this->eventHandler_->getContext("ThriftHiveMetastore.get_open_write_ids", callContext);
+    ctx = this->eventHandler_->getContext("ThriftHiveMetastore.get_valid_write_ids", callContext);
   }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.get_open_write_ids");
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.get_valid_write_ids");
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.get_open_write_ids");
+    this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.get_valid_write_ids");
   }
 
-  ThriftHiveMetastore_get_open_write_ids_args args;
+  ThriftHiveMetastore_get_valid_write_ids_args args;
   args.read(iprot);
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.get_open_write_ids", bytes);
+    this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.get_valid_write_ids", bytes);
   }
 
-  ThriftHiveMetastore_get_open_write_ids_result result;
+  ThriftHiveMetastore_get_valid_write_ids_result result;
   try {
-    iface_->get_open_write_ids(result.success, args.rqst);
+    iface_->get_valid_write_ids(result.success, args.rqst);
     result.__isset.success = true;
   } catch (NoSuchTxnException &o1) {
     result.o1 = o1;
@@ -65704,11 +65704,11 @@ void ThriftHiveMetastoreProcessor::process_get_open_write_ids(int32_t seqid, ::a
     result.__isset.o2 = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
-      this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.get_open_write_ids");
+      this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.get_valid_write_ids");
     }
 
     ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("get_open_write_ids", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    oprot->writeMessageBegin("get_valid_write_ids", ::apache::thrift::protocol::T_EXCEPTION, seqid);
     x.write(oprot);
     oprot->writeMessageEnd();
     oprot->getTransport()->writeEnd();
@@ -65717,44 +65717,44 @@ void ThriftHiveMetastoreProcessor::process_get_open_write_ids(int32_t seqid, ::a
   }
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.get_open_write_ids");
+    this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.get_valid_write_ids");
   }
 
-  oprot->writeMessageBegin("get_open_write_ids", ::apache::thrift::protocol::T_REPLY, seqid);
+  oprot->writeMessageBegin("get_valid_write_ids", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.get_open_write_ids", bytes);
+    this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.get_valid_write_ids", bytes);
   }
 }
 
-void ThriftHiveMetastoreProcessor::process_allocate_table_write_id(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+void ThriftHiveMetastoreProcessor::process_allocate_table_write_ids(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
-    ctx = this->eventHandler_->getContext("ThriftHiveMetastore.allocate_table_write_id", callContext);
+    ctx = this->eventHandler_->getContext("ThriftHiveMetastore.allocate_table_write_ids", callContext);
   }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.allocate_table_write_id");
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.allocate_table_write_ids");
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.allocate_table_write_id");
+    this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.allocate_table_write_ids");
   }
 
-  ThriftHiveMetastore_allocate_table_write_id_args args;
+  ThriftHiveMetastore_allocate_table_write_ids_args args;
   args.read(iprot);
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.allocate_table_write_id", bytes);
+    this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.allocate_table_write_ids", bytes);
   }
 
-  ThriftHiveMetastore_allocate_table_write_id_result result;
+  ThriftHiveMetastore_allocate_table_write_ids_result result;
   try {
-    iface_->allocate_table_write_id(result.success, args.rqst);
+    iface_->allocate_table_write_ids(result.success, args.rqst);
     result.__isset.success = true;
   } catch (NoSuchTxnException &o1) {
     result.o1 = o1;
@@ -65767,11 +65767,11 @@ void ThriftHiveMetastoreProcessor::process_allocate_table_write_id(int32_t seqid
     result.__isset.o3 = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
-      this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.allocate_table_write_id");
+      this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.allocate_table_write_ids");
     }
 
     ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("allocate_table_write_id", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    oprot->writeMessageBegin("allocate_table_write_ids", ::apache::thrift::protocol::T_EXCEPTION, seqid);
     x.write(oprot);
     oprot->writeMessageEnd();
     oprot->getTransport()->writeEnd();
@@ -65780,17 +65780,17 @@ void ThriftHiveMetastoreProcessor::process_allocate_table_write_id(int32_t seqid
   }
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.allocate_table_write_id");
+    this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.allocate_table_write_ids");
   }
 
-  oprot->writeMessageBegin("allocate_table_write_id", ::apache::thrift::protocol::T_REPLY, seqid);
+  oprot->writeMessageBegin("allocate_table_write_ids", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.allocate_table_write_id", bytes);
+    this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.allocate_table_write_ids", bytes);
   }
 }
 
@@ -81199,19 +81199,19 @@ void ThriftHiveMetastoreConcurrentClient::recv_commit_txn(const int32_t seqid)
   } // end while(true)
 }
 
-void ThriftHiveMetastoreConcurrentClient::get_open_write_ids(GetOpenWriteIdsResponse& _return, const GetOpenWriteIdsRequest& rqst)
+void ThriftHiveMetastoreConcurrentClient::get_valid_write_ids(GetValidWriteIdsResponse& _return, const GetValidWriteIdsRequest& rqst)
 {
-  int32_t seqid = send_get_open_write_ids(rqst);
-  recv_get_open_write_ids(_return, seqid);
+  int32_t seqid = send_get_valid_write_ids(rqst);
+  recv_get_valid_write_ids(_return, seqid);
 }
 
-int32_t ThriftHiveMetastoreConcurrentClient::send_get_open_write_ids(const GetOpenWriteIdsRequest& rqst)
+int32_t ThriftHiveMetastoreConcurrentClient::send_get_valid_write_ids(const GetValidWriteIdsRequest& rqst)
 {
   int32_t cseqid = this->sync_.generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
-  oprot_->writeMessageBegin("get_open_write_ids", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("get_valid_write_ids", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  ThriftHiveMetastore_get_open_write_ids_pargs args;
+  ThriftHiveMetastore_get_valid_write_ids_pargs args;
   args.rqst = &rqst;
   args.write(oprot_);
 
@@ -81223,7 +81223,7 @@ int32_t ThriftHiveMetastoreConcurrentClient::send_get_open_write_ids(const GetOp
   return cseqid;
 }
 
-void ThriftHiveMetastoreConcurrentClient::recv_get_open_write_ids(GetOpenWriteIdsResponse& _return, const int32_t seqid)
+void ThriftHiveMetastoreConcurrentClient::recv_get_valid_write_ids(GetValidWriteIdsResponse& _return, const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -81252,7 +81252,7 @@ void ThriftHiveMetastoreConcurrentClient::recv_get_open_write_ids(GetOpenWriteId
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
       }
-      if (fname.compare("get_open_write_ids") != 0) {
+      if (fname.compare("get_valid_write_ids") != 0) {
         iprot_->skip(::apache::thrift::protocol::T_STRUCT);
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
@@ -81261,7 +81261,7 @@ void ThriftHiveMetastoreConcurrentClient::recv_get_open_write_ids(GetOpenWriteId
         using ::apache::thrift::protocol::TProtocolException;
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
-      ThriftHiveMetastore_get_open_write_ids_presult result;
+      ThriftHiveMetastore_get_valid_write_ids_presult result;
       result.success = &_return;
       result.read(iprot_);
       iprot_->readMessageEnd();
@@ -81281,7 +81281,7 @@ void ThriftHiveMetastoreConcurrentClient::recv_get_open_write_ids(GetOpenWriteId
         throw result.o2;
       }
       // in a bad state, don't commit
-      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_open_write_ids failed: unknown result");
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_valid_write_ids failed: unknown result");
     }
     // seqid != rseqid
     this->sync_.updatePending(fname, mtype, rseqid);
@@ -81291,19 +81291,19 @@ void ThriftHiveMetastoreConcurrentClient::recv_get_open_write_ids(GetOpenWriteId
   } // end while(true)
 }
 
-void ThriftHiveMetastoreConcurrentClient::allocate_table_write_id(AllocateTableWriteIdResponse& _return, const AllocateTableWriteIdRequest& rqst)
+void ThriftHiveMetastoreConcurrentClient::allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const AllocateTableWriteIdsRequest& rqst)
 {
-  int32_t seqid = send_allocate_table_write_id(rqst);
-  recv_allocate_table_write_id(_return, seqid);
+  int32_t seqid = send_allocate_table_write_ids(rqst);
+  recv_allocate_table_write_ids(_return, seqid);
 }
 
-int32_t ThriftHiveMetastoreConcurrentClient::send_allocate_table_write_id(const AllocateTableWriteIdRequest& rqst)
+int32_t ThriftHiveMetastoreConcurrentClient::send_allocate_table_write_ids(const AllocateTableWriteIdsRequest& rqst)
 {
   int32_t cseqid = this->sync_.generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
-  oprot_->writeMessageBegin("allocate_table_write_id", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("allocate_table_write_ids", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  ThriftHiveMetastore_allocate_table_write_id_pargs args;
+  ThriftHiveMetastore_allocate_table_write_ids_pargs args;
   args.rqst = &rqst;
   args.write(oprot_);
 
@@ -81315,7 +81315,7 @@ int32_t ThriftHiveMetastoreConcurrentClient::send_allocate_table_write_id(const 
   return cseqid;
 }
 
-void ThriftHiveMetastoreConcurrentClient::recv_allocate_table_write_id(AllocateTableWriteIdResponse& _return, const int32_t seqid)
+void ThriftHiveMetastoreConcurrentClient::recv_allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -81344,7 +81344,7 @@ void ThriftHiveMetastoreConcurrentClient::recv_allocate_table_write_id(AllocateT
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
       }
-      if (fname.compare("allocate_table_write_id") != 0) {
+      if (fname.compare("allocate_table_write_ids") != 0) {
         iprot_->skip(::apache::thrift::protocol::T_STRUCT);
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
@@ -81353,7 +81353,7 @@ void ThriftHiveMetastoreConcurrentClient::recv_allocate_table_write_id(AllocateT
         using ::apache::thrift::protocol::TProtocolException;
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
-      ThriftHiveMetastore_allocate_table_write_id_presult result;
+      ThriftHiveMetastore_allocate_table_write_ids_presult result;
       result.success = &_return;
       result.read(iprot_);
       iprot_->readMessageEnd();
@@ -81377,7 +81377,7 @@ void ThriftHiveMetastoreConcurrentClient::recv_allocate_table_write_id(AllocateT
         throw result.o3;
       }
       // in a bad state, don't commit
-      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "allocate_table_write_id failed: unknown result");
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "allocate_table_write_ids failed: unknown result");
     }
     // seqid != rseqid
     this->sync_.updatePending(fname, mtype, rseqid);

@@ -14336,23 +14336,23 @@ class CommitTxnRequest {
 
 }
 
-class GetOpenWriteIdsRequest {
+class GetValidWriteIdsRequest {
   static $_TSPEC;
 
   /**
    * @var string[]
    */
-  public $tableNames = null;
+  public $fullTableNames = null;
   /**
    * @var string
    */
-  public $validTxnStr = null;
+  public $validTxnList = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         1 => array(
-          'var' => 'tableNames',
+          'var' => 'fullTableNames',
           'type' => TType::LST,
           'etype' => TType::STRING,
           'elem' => array(
@@ -14360,23 +14360,23 @@ class GetOpenWriteIdsRequest {
             ),
           ),
         2 => array(
-          'var' => 'validTxnStr',
+          'var' => 'validTxnList',
           'type' => TType::STRING,
           ),
         );
     }
     if (is_array($vals)) {
-      if (isset($vals['tableNames'])) {
-        $this->tableNames = $vals['tableNames'];
+      if (isset($vals['fullTableNames'])) {
+        $this->fullTableNames = $vals['fullTableNames'];
       }
-      if (isset($vals['validTxnStr'])) {
-        $this->validTxnStr = $vals['validTxnStr'];
+      if (isset($vals['validTxnList'])) {
+        $this->validTxnList = $vals['validTxnList'];
       }
     }
   }
 
   public function getName() {
-    return 'GetOpenWriteIdsRequest';
+    return 'GetValidWriteIdsRequest';
   }
 
   public function read($input)
@@ -14396,7 +14396,7 @@ class GetOpenWriteIdsRequest {
       {
         case 1:
           if ($ftype == TType::LST) {
-            $this->tableNames = array();
+            $this->fullTableNames = array();
             $_size490 = 0;
             $_etype493 = 0;
             $xfer += $input->readListBegin($_etype493, $_size490);
@@ -14404,7 +14404,7 @@ class GetOpenWriteIdsRequest {
             {
               $elem495 = null;
               $xfer += $input->readString($elem495);
-              $this->tableNames []= $elem495;
+              $this->fullTableNames []= $elem495;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -14413,7 +14413,7 @@ class GetOpenWriteIdsRequest {
           break;
         case 2:
           if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->validTxnStr);
+            $xfer += $input->readString($this->validTxnList);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -14430,16 +14430,16 @@ class GetOpenWriteIdsRequest {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('GetOpenWriteIdsRequest');
-    if ($this->tableNames !== null) {
-      if (!is_array($this->tableNames)) {
+    $xfer += $output->writeStructBegin('GetValidWriteIdsRequest');
+    if ($this->fullTableNames !== null) {
+      if (!is_array($this->fullTableNames)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('tableNames', TType::LST, 1);
+      $xfer += $output->writeFieldBegin('fullTableNames', TType::LST, 1);
       {
-        $output->writeListBegin(TType::STRING, count($this->tableNames));
+        $output->writeListBegin(TType::STRING, count($this->fullTableNames));
         {
-          foreach ($this->tableNames as $iter496)
+          foreach ($this->fullTableNames as $iter496)
           {
             $xfer += $output->writeString($iter496);
           }
@@ -14448,9 +14448,9 @@ class GetOpenWriteIdsRequest {
       }
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->validTxnStr !== null) {
-      $xfer += $output->writeFieldBegin('validTxnStr', TType::STRING, 2);
-      $xfer += $output->writeString($this->validTxnStr);
+    if ($this->validTxnList !== null) {
+      $xfer += $output->writeFieldBegin('validTxnList', TType::STRING, 2);
+      $xfer += $output->writeString($this->validTxnList);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -14460,13 +14460,13 @@ class GetOpenWriteIdsRequest {
 
 }
 
-class OpenWriteIds {
+class TableValidWriteIds {
   static $_TSPEC;
 
   /**
    * @var string
    */
-  public $tableName = null;
+  public $fullTableName = null;
   /**
    * @var int
    */
@@ -14474,11 +14474,11 @@ class OpenWriteIds {
   /**
    * @var int[]
    */
-  public $openWriteIds = null;
+  public $invalidWriteIds = null;
   /**
    * @var int
    */
-  public $minWriteId = null;
+  public $minOpenWriteId = null;
   /**
    * @var string
    */
@@ -14488,7 +14488,7 @@ class OpenWriteIds {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         1 => array(
-          'var' => 'tableName',
+          'var' => 'fullTableName',
           'type' => TType::STRING,
           ),
         2 => array(
@@ -14496,7 +14496,7 @@ class OpenWriteIds {
           'type' => TType::I64,
           ),
         3 => array(
-          'var' => 'openWriteIds',
+          'var' => 'invalidWriteIds',
           'type' => TType::LST,
           'etype' => TType::I64,
           'elem' => array(
@@ -14504,7 +14504,7 @@ class OpenWriteIds {
             ),
           ),
         4 => array(
-          'var' => 'minWriteId',
+          'var' => 'minOpenWriteId',
           'type' => TType::I64,
           ),
         5 => array(
@@ -14514,17 +14514,17 @@ class OpenWriteIds {
         );
     }
     if (is_array($vals)) {
-      if (isset($vals['tableName'])) {
-        $this->tableName = $vals['tableName'];
+      if (isset($vals['fullTableName'])) {
+        $this->fullTableName = $vals['fullTableName'];
       }
       if (isset($vals['writeIdHighWaterMark'])) {
         $this->writeIdHighWaterMark = $vals['writeIdHighWaterMark'];
       }
-      if (isset($vals['openWriteIds'])) {
-        $this->openWriteIds = $vals['openWriteIds'];
+      if (isset($vals['invalidWriteIds'])) {
+        $this->invalidWriteIds = $vals['invalidWriteIds'];
       }
-      if (isset($vals['minWriteId'])) {
-        $this->minWriteId = $vals['minWriteId'];
+      if (isset($vals['minOpenWriteId'])) {
+        $this->minOpenWriteId = $vals['minOpenWriteId'];
       }
       if (isset($vals['abortedBits'])) {
         $this->abortedBits = $vals['abortedBits'];
@@ -14533,7 +14533,7 @@ class OpenWriteIds {
   }
 
   public function getName() {
-    return 'OpenWriteIds';
+    return 'TableValidWriteIds';
   }
 
   public function read($input)
@@ -14553,7 +14553,7 @@ class OpenWriteIds {
       {
         case 1:
           if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->tableName);
+            $xfer += $input->readString($this->fullTableName);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -14567,7 +14567,7 @@ class OpenWriteIds {
           break;
         case 3:
           if ($ftype == TType::LST) {
-            $this->openWriteIds = array();
+            $this->invalidWriteIds = array();
             $_size497 = 0;
             $_etype500 = 0;
             $xfer += $input->readListBegin($_etype500, $_size497);
@@ -14575,7 +14575,7 @@ class OpenWriteIds {
             {
               $elem502 = null;
               $xfer += $input->readI64($elem502);
-              $this->openWriteIds []= $elem502;
+              $this->invalidWriteIds []= $elem502;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -14584,7 +14584,7 @@ class OpenWriteIds {
           break;
         case 4:
           if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->minWriteId);
+            $xfer += $input->readI64($this->minOpenWriteId);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -14608,10 +14608,10 @@ class OpenWriteIds {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('OpenWriteIds');
-    if ($this->tableName !== null) {
-      $xfer += $output->writeFieldBegin('tableName', TType::STRING, 1);
-      $xfer += $output->writeString($this->tableName);
+    $xfer += $output->writeStructBegin('TableValidWriteIds');
+    if ($this->fullTableName !== null) {
+      $xfer += $output->writeFieldBegin('fullTableName', TType::STRING, 1);
+      $xfer += $output->writeString($this->fullTableName);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->writeIdHighWaterMark !== null) {
@@ -14619,15 +14619,15 @@ class OpenWriteIds {
       $xfer += $output->writeI64($this->writeIdHighWaterMark);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->openWriteIds !== null) {
-      if (!is_array($this->openWriteIds)) {
+    if ($this->invalidWriteIds !== null) {
+      if (!is_array($this->invalidWriteIds)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('openWriteIds', TType::LST, 3);
+      $xfer += $output->writeFieldBegin('invalidWriteIds', TType::LST, 3);
       {
-        $output->writeListBegin(TType::I64, count($this->openWriteIds));
+        $output->writeListBegin(TType::I64, count($this->invalidWriteIds));
         {
-          foreach ($this->openWriteIds as $iter503)
+          foreach ($this->invalidWriteIds as $iter503)
           {
             $xfer += $output->writeI64($iter503);
           }
@@ -14636,9 +14636,9 @@ class OpenWriteIds {
       }
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->minWriteId !== null) {
-      $xfer += $output->writeFieldBegin('minWriteId', TType::I64, 4);
-      $xfer += $output->writeI64($this->minWriteId);
+    if ($this->minOpenWriteId !== null) {
+      $xfer += $output->writeFieldBegin('minOpenWriteId', TType::I64, 4);
+      $xfer += $output->writeI64($this->minOpenWriteId);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->abortedBits !== null) {
@@ -14653,37 +14653,37 @@ class OpenWriteIds {
 
 }
 
-class GetOpenWriteIdsResponse {
+class GetValidWriteIdsResponse {
   static $_TSPEC;
 
   /**
-   * @var \metastore\OpenWriteIds[]
+   * @var \metastore\TableValidWriteIds[]
    */
-  public $openWriteIds = null;
+  public $tblValidWriteIds = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         1 => array(
-          'var' => 'openWriteIds',
+          'var' => 'tblValidWriteIds',
           'type' => TType::LST,
           'etype' => TType::STRUCT,
           'elem' => array(
             'type' => TType::STRUCT,
-            'class' => '\metastore\OpenWriteIds',
+            'class' => '\metastore\TableValidWriteIds',
             ),
           ),
         );
     }
     if (is_array($vals)) {
-      if (isset($vals['openWriteIds'])) {
-        $this->openWriteIds = $vals['openWriteIds'];
+      if (isset($vals['tblValidWriteIds'])) {
+        $this->tblValidWriteIds = $vals['tblValidWriteIds'];
       }
     }
   }
 
   public function getName() {
-    return 'GetOpenWriteIdsResponse';
+    return 'GetValidWriteIdsResponse';
   }
 
   public function read($input)
@@ -14703,16 +14703,16 @@ class GetOpenWriteIdsResponse {
       {
         case 1:
           if ($ftype == TType::LST) {
-            $this->openWriteIds = array();
+            $this->tblValidWriteIds = array();
             $_size504 = 0;
             $_etype507 = 0;
             $xfer += $input->readListBegin($_etype507, $_size504);
             for ($_i508 = 0; $_i508 < $_size504; ++$_i508)
             {
               $elem509 = null;
-              $elem509 = new \metastore\OpenWriteIds();
+              $elem509 = new \metastore\TableValidWriteIds();
               $xfer += $elem509->read($input);
-              $this->openWriteIds []= $elem509;
+              $this->tblValidWriteIds []= $elem509;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -14731,16 +14731,16 @@ class GetOpenWriteIdsResponse {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('GetOpenWriteIdsResponse');
-    if ($this->openWriteIds !== null) {
-      if (!is_array($this->openWriteIds)) {
+    $xfer += $output->writeStructBegin('GetValidWriteIdsResponse');
+    if ($this->tblValidWriteIds !== null) {
+      if (!is_array($this->tblValidWriteIds)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('openWriteIds', TType::LST, 1);
+      $xfer += $output->writeFieldBegin('tblValidWriteIds', TType::LST, 1);
       {
-        $output->writeListBegin(TType::STRUCT, count($this->openWriteIds));
+        $output->writeListBegin(TType::STRUCT, count($this->tblValidWriteIds));
         {
-          foreach ($this->openWriteIds as $iter510)
+          foreach ($this->tblValidWriteIds as $iter510)
           {
             $xfer += $iter510->write($output);
           }
@@ -14756,7 +14756,7 @@ class GetOpenWriteIdsResponse {
 
 }
 
-class AllocateTableWriteIdRequest {
+class AllocateTableWriteIdsRequest {
   static $_TSPEC;
 
   /**
@@ -14807,7 +14807,7 @@ class AllocateTableWriteIdRequest {
   }
 
   public function getName() {
-    return 'AllocateTableWriteIdRequest';
+    return 'AllocateTableWriteIdsRequest';
   }
 
   public function read($input)
@@ -14868,7 +14868,7 @@ class AllocateTableWriteIdRequest {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('AllocateTableWriteIdRequest');
+    $xfer += $output->writeStructBegin('AllocateTableWriteIdsRequest');
     if ($this->txnIds !== null) {
       if (!is_array($this->txnIds)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
@@ -15001,7 +15001,7 @@ class TxnToWriteId {
 
 }
 
-class AllocateTableWriteIdResponse {
+class AllocateTableWriteIdsResponse {
   static $_TSPEC;
 
   /**
@@ -15031,7 +15031,7 @@ class AllocateTableWriteIdResponse {
   }
 
   public function getName() {
-    return 'AllocateTableWriteIdResponse';
+    return 'AllocateTableWriteIdsResponse';
   }
 
   public function read($input)
@@ -15079,7 +15079,7 @@ class AllocateTableWriteIdResponse {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('AllocateTableWriteIdResponse');
+    $xfer += $output->writeStructBegin('AllocateTableWriteIdsResponse');
     if ($this->txnToWriteIds !== null) {
       if (!is_array($this->txnToWriteIds)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);

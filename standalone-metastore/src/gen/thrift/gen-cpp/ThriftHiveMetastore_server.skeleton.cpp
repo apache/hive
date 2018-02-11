@@ -737,14 +737,14 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("commit_txn\n");
   }
 
-  void get_open_write_ids(GetOpenWriteIdsResponse& _return, const GetOpenWriteIdsRequest& rqst) {
+  void get_valid_write_ids(GetValidWriteIdsResponse& _return, const GetValidWriteIdsRequest& rqst) {
     // Your implementation goes here
-    printf("get_open_write_ids\n");
+    printf("get_valid_write_ids\n");
   }
 
-  void allocate_table_write_id(AllocateTableWriteIdResponse& _return, const AllocateTableWriteIdRequest& rqst) {
+  void allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const AllocateTableWriteIdsRequest& rqst) {
     // Your implementation goes here
-    printf("allocate_table_write_id\n");
+    printf("allocate_table_write_ids\n");
   }
 
   void lock(LockResponse& _return, const LockRequest& rqst) {

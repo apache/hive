@@ -1156,20 +1156,20 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
    */
   public function commit_txn(\metastore\CommitTxnRequest $rqst);
   /**
-   * @param \metastore\GetOpenWriteIdsRequest $rqst
-   * @return \metastore\GetOpenWriteIdsResponse
+   * @param \metastore\GetValidWriteIdsRequest $rqst
+   * @return \metastore\GetValidWriteIdsResponse
    * @throws \metastore\NoSuchTxnException
    * @throws \metastore\MetaException
    */
-  public function get_open_write_ids(\metastore\GetOpenWriteIdsRequest $rqst);
+  public function get_valid_write_ids(\metastore\GetValidWriteIdsRequest $rqst);
   /**
-   * @param \metastore\AllocateTableWriteIdRequest $rqst
-   * @return \metastore\AllocateTableWriteIdResponse
+   * @param \metastore\AllocateTableWriteIdsRequest $rqst
+   * @return \metastore\AllocateTableWriteIdsResponse
    * @throws \metastore\NoSuchTxnException
    * @throws \metastore\TxnAbortedException
    * @throws \metastore\MetaException
    */
-  public function allocate_table_write_id(\metastore\AllocateTableWriteIdRequest $rqst);
+  public function allocate_table_write_ids(\metastore\AllocateTableWriteIdsRequest $rqst);
   /**
    * @param \metastore\LockRequest $rqst
    * @return \metastore\LockResponse
@@ -9636,34 +9636,34 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     return;
   }
 
-  public function get_open_write_ids(\metastore\GetOpenWriteIdsRequest $rqst)
+  public function get_valid_write_ids(\metastore\GetValidWriteIdsRequest $rqst)
   {
-    $this->send_get_open_write_ids($rqst);
-    return $this->recv_get_open_write_ids();
+    $this->send_get_valid_write_ids($rqst);
+    return $this->recv_get_valid_write_ids();
   }
 
-  public function send_get_open_write_ids(\metastore\GetOpenWriteIdsRequest $rqst)
+  public function send_get_valid_write_ids(\metastore\GetValidWriteIdsRequest $rqst)
   {
-    $args = new \metastore\ThriftHiveMetastore_get_open_write_ids_args();
+    $args = new \metastore\ThriftHiveMetastore_get_valid_write_ids_args();
     $args->rqst = $rqst;
     $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
-      thrift_protocol_write_binary($this->output_, 'get_open_write_ids', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+      thrift_protocol_write_binary($this->output_, 'get_valid_write_ids', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
     }
     else
     {
-      $this->output_->writeMessageBegin('get_open_write_ids', TMessageType::CALL, $this->seqid_);
+      $this->output_->writeMessageBegin('get_valid_write_ids', TMessageType::CALL, $this->seqid_);
       $args->write($this->output_);
       $this->output_->writeMessageEnd();
       $this->output_->getTransport()->flush();
     }
   }
 
-  public function recv_get_open_write_ids()
+  public function recv_get_valid_write_ids()
   {
     $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
-    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, '\metastore\ThriftHiveMetastore_get_open_write_ids_result', $this->input_->isStrictRead());
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, '\metastore\ThriftHiveMetastore_get_valid_write_ids_result', $this->input_->isStrictRead());
     else
     {
       $rseqid = 0;
@@ -9677,7 +9677,7 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         $this->input_->readMessageEnd();
         throw $x;
       }
-      $result = new \metastore\ThriftHiveMetastore_get_open_write_ids_result();
+      $result = new \metastore\ThriftHiveMetastore_get_valid_write_ids_result();
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
@@ -9690,37 +9690,37 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     if ($result->o2 !== null) {
       throw $result->o2;
     }
-    throw new \Exception("get_open_write_ids failed: unknown result");
+    throw new \Exception("get_valid_write_ids failed: unknown result");
   }
 
-  public function allocate_table_write_id(\metastore\AllocateTableWriteIdRequest $rqst)
+  public function allocate_table_write_ids(\metastore\AllocateTableWriteIdsRequest $rqst)
   {
-    $this->send_allocate_table_write_id($rqst);
-    return $this->recv_allocate_table_write_id();
+    $this->send_allocate_table_write_ids($rqst);
+    return $this->recv_allocate_table_write_ids();
   }
 
-  public function send_allocate_table_write_id(\metastore\AllocateTableWriteIdRequest $rqst)
+  public function send_allocate_table_write_ids(\metastore\AllocateTableWriteIdsRequest $rqst)
   {
-    $args = new \metastore\ThriftHiveMetastore_allocate_table_write_id_args();
+    $args = new \metastore\ThriftHiveMetastore_allocate_table_write_ids_args();
     $args->rqst = $rqst;
     $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
-      thrift_protocol_write_binary($this->output_, 'allocate_table_write_id', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+      thrift_protocol_write_binary($this->output_, 'allocate_table_write_ids', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
     }
     else
     {
-      $this->output_->writeMessageBegin('allocate_table_write_id', TMessageType::CALL, $this->seqid_);
+      $this->output_->writeMessageBegin('allocate_table_write_ids', TMessageType::CALL, $this->seqid_);
       $args->write($this->output_);
       $this->output_->writeMessageEnd();
       $this->output_->getTransport()->flush();
     }
   }
 
-  public function recv_allocate_table_write_id()
+  public function recv_allocate_table_write_ids()
   {
     $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
-    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, '\metastore\ThriftHiveMetastore_allocate_table_write_id_result', $this->input_->isStrictRead());
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, '\metastore\ThriftHiveMetastore_allocate_table_write_ids_result', $this->input_->isStrictRead());
     else
     {
       $rseqid = 0;
@@ -9734,7 +9734,7 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         $this->input_->readMessageEnd();
         throw $x;
       }
-      $result = new \metastore\ThriftHiveMetastore_allocate_table_write_id_result();
+      $result = new \metastore\ThriftHiveMetastore_allocate_table_write_ids_result();
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
@@ -9750,7 +9750,7 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     if ($result->o3 !== null) {
       throw $result->o3;
     }
-    throw new \Exception("allocate_table_write_id failed: unknown result");
+    throw new \Exception("allocate_table_write_ids failed: unknown result");
   }
 
   public function lock(\metastore\LockRequest $rqst)
@@ -46039,11 +46039,11 @@ class ThriftHiveMetastore_commit_txn_result {
 
 }
 
-class ThriftHiveMetastore_get_open_write_ids_args {
+class ThriftHiveMetastore_get_valid_write_ids_args {
   static $_TSPEC;
 
   /**
-   * @var \metastore\GetOpenWriteIdsRequest
+   * @var \metastore\GetValidWriteIdsRequest
    */
   public $rqst = null;
 
@@ -46053,7 +46053,7 @@ class ThriftHiveMetastore_get_open_write_ids_args {
         1 => array(
           'var' => 'rqst',
           'type' => TType::STRUCT,
-          'class' => '\metastore\GetOpenWriteIdsRequest',
+          'class' => '\metastore\GetValidWriteIdsRequest',
           ),
         );
     }
@@ -46065,7 +46065,7 @@ class ThriftHiveMetastore_get_open_write_ids_args {
   }
 
   public function getName() {
-    return 'ThriftHiveMetastore_get_open_write_ids_args';
+    return 'ThriftHiveMetastore_get_valid_write_ids_args';
   }
 
   public function read($input)
@@ -46085,7 +46085,7 @@ class ThriftHiveMetastore_get_open_write_ids_args {
       {
         case 1:
           if ($ftype == TType::STRUCT) {
-            $this->rqst = new \metastore\GetOpenWriteIdsRequest();
+            $this->rqst = new \metastore\GetValidWriteIdsRequest();
             $xfer += $this->rqst->read($input);
           } else {
             $xfer += $input->skip($ftype);
@@ -46103,7 +46103,7 @@ class ThriftHiveMetastore_get_open_write_ids_args {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_open_write_ids_args');
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_valid_write_ids_args');
     if ($this->rqst !== null) {
       if (!is_object($this->rqst)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
@@ -46119,11 +46119,11 @@ class ThriftHiveMetastore_get_open_write_ids_args {
 
 }
 
-class ThriftHiveMetastore_get_open_write_ids_result {
+class ThriftHiveMetastore_get_valid_write_ids_result {
   static $_TSPEC;
 
   /**
-   * @var \metastore\GetOpenWriteIdsResponse
+   * @var \metastore\GetValidWriteIdsResponse
    */
   public $success = null;
   /**
@@ -46141,7 +46141,7 @@ class ThriftHiveMetastore_get_open_write_ids_result {
         0 => array(
           'var' => 'success',
           'type' => TType::STRUCT,
-          'class' => '\metastore\GetOpenWriteIdsResponse',
+          'class' => '\metastore\GetValidWriteIdsResponse',
           ),
         1 => array(
           'var' => 'o1',
@@ -46169,7 +46169,7 @@ class ThriftHiveMetastore_get_open_write_ids_result {
   }
 
   public function getName() {
-    return 'ThriftHiveMetastore_get_open_write_ids_result';
+    return 'ThriftHiveMetastore_get_valid_write_ids_result';
   }
 
   public function read($input)
@@ -46189,7 +46189,7 @@ class ThriftHiveMetastore_get_open_write_ids_result {
       {
         case 0:
           if ($ftype == TType::STRUCT) {
-            $this->success = new \metastore\GetOpenWriteIdsResponse();
+            $this->success = new \metastore\GetValidWriteIdsResponse();
             $xfer += $this->success->read($input);
           } else {
             $xfer += $input->skip($ftype);
@@ -46223,7 +46223,7 @@ class ThriftHiveMetastore_get_open_write_ids_result {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_open_write_ids_result');
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_valid_write_ids_result');
     if ($this->success !== null) {
       if (!is_object($this->success)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
@@ -46249,11 +46249,11 @@ class ThriftHiveMetastore_get_open_write_ids_result {
 
 }
 
-class ThriftHiveMetastore_allocate_table_write_id_args {
+class ThriftHiveMetastore_allocate_table_write_ids_args {
   static $_TSPEC;
 
   /**
-   * @var \metastore\AllocateTableWriteIdRequest
+   * @var \metastore\AllocateTableWriteIdsRequest
    */
   public $rqst = null;
 
@@ -46263,7 +46263,7 @@ class ThriftHiveMetastore_allocate_table_write_id_args {
         1 => array(
           'var' => 'rqst',
           'type' => TType::STRUCT,
-          'class' => '\metastore\AllocateTableWriteIdRequest',
+          'class' => '\metastore\AllocateTableWriteIdsRequest',
           ),
         );
     }
@@ -46275,7 +46275,7 @@ class ThriftHiveMetastore_allocate_table_write_id_args {
   }
 
   public function getName() {
-    return 'ThriftHiveMetastore_allocate_table_write_id_args';
+    return 'ThriftHiveMetastore_allocate_table_write_ids_args';
   }
 
   public function read($input)
@@ -46295,7 +46295,7 @@ class ThriftHiveMetastore_allocate_table_write_id_args {
       {
         case 1:
           if ($ftype == TType::STRUCT) {
-            $this->rqst = new \metastore\AllocateTableWriteIdRequest();
+            $this->rqst = new \metastore\AllocateTableWriteIdsRequest();
             $xfer += $this->rqst->read($input);
           } else {
             $xfer += $input->skip($ftype);
@@ -46313,7 +46313,7 @@ class ThriftHiveMetastore_allocate_table_write_id_args {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('ThriftHiveMetastore_allocate_table_write_id_args');
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_allocate_table_write_ids_args');
     if ($this->rqst !== null) {
       if (!is_object($this->rqst)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
@@ -46329,11 +46329,11 @@ class ThriftHiveMetastore_allocate_table_write_id_args {
 
 }
 
-class ThriftHiveMetastore_allocate_table_write_id_result {
+class ThriftHiveMetastore_allocate_table_write_ids_result {
   static $_TSPEC;
 
   /**
-   * @var \metastore\AllocateTableWriteIdResponse
+   * @var \metastore\AllocateTableWriteIdsResponse
    */
   public $success = null;
   /**
@@ -46355,7 +46355,7 @@ class ThriftHiveMetastore_allocate_table_write_id_result {
         0 => array(
           'var' => 'success',
           'type' => TType::STRUCT,
-          'class' => '\metastore\AllocateTableWriteIdResponse',
+          'class' => '\metastore\AllocateTableWriteIdsResponse',
           ),
         1 => array(
           'var' => 'o1',
@@ -46391,7 +46391,7 @@ class ThriftHiveMetastore_allocate_table_write_id_result {
   }
 
   public function getName() {
-    return 'ThriftHiveMetastore_allocate_table_write_id_result';
+    return 'ThriftHiveMetastore_allocate_table_write_ids_result';
   }
 
   public function read($input)
@@ -46411,7 +46411,7 @@ class ThriftHiveMetastore_allocate_table_write_id_result {
       {
         case 0:
           if ($ftype == TType::STRUCT) {
-            $this->success = new \metastore\AllocateTableWriteIdResponse();
+            $this->success = new \metastore\AllocateTableWriteIdsResponse();
             $xfer += $this->success->read($input);
           } else {
             $xfer += $input->skip($ftype);
@@ -46453,7 +46453,7 @@ class ThriftHiveMetastore_allocate_table_write_id_result {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('ThriftHiveMetastore_allocate_table_write_id_result');
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_allocate_table_write_ids_result');
     if ($this->success !== null) {
       if (!is_object($this->success)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);

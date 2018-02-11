@@ -2405,39 +2405,39 @@ module ThriftHiveMetastore
       return
     end
 
-    def get_open_write_ids(rqst)
-      send_get_open_write_ids(rqst)
-      return recv_get_open_write_ids()
+    def get_valid_write_ids(rqst)
+      send_get_valid_write_ids(rqst)
+      return recv_get_valid_write_ids()
     end
 
-    def send_get_open_write_ids(rqst)
-      send_message('get_open_write_ids', Get_open_write_ids_args, :rqst => rqst)
+    def send_get_valid_write_ids(rqst)
+      send_message('get_valid_write_ids', Get_valid_write_ids_args, :rqst => rqst)
     end
 
-    def recv_get_open_write_ids()
-      result = receive_message(Get_open_write_ids_result)
+    def recv_get_valid_write_ids()
+      result = receive_message(Get_valid_write_ids_result)
       return result.success unless result.success.nil?
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_open_write_ids failed: unknown result')
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_valid_write_ids failed: unknown result')
     end
 
-    def allocate_table_write_id(rqst)
-      send_allocate_table_write_id(rqst)
-      return recv_allocate_table_write_id()
+    def allocate_table_write_ids(rqst)
+      send_allocate_table_write_ids(rqst)
+      return recv_allocate_table_write_ids()
     end
 
-    def send_allocate_table_write_id(rqst)
-      send_message('allocate_table_write_id', Allocate_table_write_id_args, :rqst => rqst)
+    def send_allocate_table_write_ids(rqst)
+      send_message('allocate_table_write_ids', Allocate_table_write_ids_args, :rqst => rqst)
     end
 
-    def recv_allocate_table_write_id()
-      result = receive_message(Allocate_table_write_id_result)
+    def recv_allocate_table_write_ids()
+      result = receive_message(Allocate_table_write_ids_result)
       return result.success unless result.success.nil?
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
       raise result.o3 unless result.o3.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'allocate_table_write_id failed: unknown result')
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'allocate_table_write_ids failed: unknown result')
     end
 
     def lock(rqst)
@@ -4919,24 +4919,24 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'commit_txn', seqid)
     end
 
-    def process_get_open_write_ids(seqid, iprot, oprot)
-      args = read_args(iprot, Get_open_write_ids_args)
-      result = Get_open_write_ids_result.new()
+    def process_get_valid_write_ids(seqid, iprot, oprot)
+      args = read_args(iprot, Get_valid_write_ids_args)
+      result = Get_valid_write_ids_result.new()
       begin
-        result.success = @handler.get_open_write_ids(args.rqst)
+        result.success = @handler.get_valid_write_ids(args.rqst)
       rescue ::NoSuchTxnException => o1
         result.o1 = o1
       rescue ::MetaException => o2
         result.o2 = o2
       end
-      write_result(result, oprot, 'get_open_write_ids', seqid)
+      write_result(result, oprot, 'get_valid_write_ids', seqid)
     end
 
-    def process_allocate_table_write_id(seqid, iprot, oprot)
-      args = read_args(iprot, Allocate_table_write_id_args)
-      result = Allocate_table_write_id_result.new()
+    def process_allocate_table_write_ids(seqid, iprot, oprot)
+      args = read_args(iprot, Allocate_table_write_ids_args)
+      result = Allocate_table_write_ids_result.new()
       begin
-        result.success = @handler.allocate_table_write_id(args.rqst)
+        result.success = @handler.allocate_table_write_ids(args.rqst)
       rescue ::NoSuchTxnException => o1
         result.o1 = o1
       rescue ::TxnAbortedException => o2
@@ -4944,7 +4944,7 @@ module ThriftHiveMetastore
       rescue ::MetaException => o3
         result.o3 = o3
       end
-      write_result(result, oprot, 'allocate_table_write_id', seqid)
+      write_result(result, oprot, 'allocate_table_write_ids', seqid)
     end
 
     def process_lock(seqid, iprot, oprot)
@@ -10842,12 +10842,12 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Get_open_write_ids_args
+  class Get_valid_write_ids_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     RQST = 1
 
     FIELDS = {
-      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::GetOpenWriteIdsRequest}
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::GetValidWriteIdsRequest}
     }
 
     def struct_fields; FIELDS; end
@@ -10858,14 +10858,14 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Get_open_write_ids_result
+  class Get_valid_write_ids_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
     O1 = 1
     O2 = 2
 
     FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetOpenWriteIdsResponse},
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetValidWriteIdsResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }
@@ -10878,12 +10878,12 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Allocate_table_write_id_args
+  class Allocate_table_write_ids_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     RQST = 1
 
     FIELDS = {
-      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::AllocateTableWriteIdRequest}
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::AllocateTableWriteIdsRequest}
     }
 
     def struct_fields; FIELDS; end
@@ -10894,7 +10894,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Allocate_table_write_id_result
+  class Allocate_table_write_ids_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
     O1 = 1
@@ -10902,7 +10902,7 @@ module ThriftHiveMetastore
     O3 = 3
 
     FIELDS = {
-      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::AllocateTableWriteIdResponse},
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::AllocateTableWriteIdsResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::TxnAbortedException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}

@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.hive.metastore.api.GetOpenWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -143,11 +143,11 @@ public class Worker extends CompactorThread {
         // Compaction doesn't work under a transaction and hence pass 0 for current txn Id
         // The response will have one entry per table and hence we get only one OpenWriteIds
         String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
-        GetOpenWriteIdsRequest rqst = new GetOpenWriteIdsRequest(Collections.singletonList(fullTableName), null);
-        final ValidWriteIdList writeIds =
-                TxnUtils.createValidCompactWriteIdList(txnHandler.getOpenWriteIds(rqst).getOpenWriteIds().get(0));
-        LOG.debug("ValidCompactWriteIdList: " + writeIds.writeToString());
-        txnHandler.setCompactionHighestWriteId(ci, writeIds.getHighWatermark());
+        GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName), null);
+        final ValidWriteIdList tblValidWriteIds =
+                TxnUtils.createValidCompactWriteIdList(txnHandler.getValidWriteIds(rqst).getTblValidWriteIds().get(0));
+        LOG.debug("ValidCompactWriteIdList: " + tblValidWriteIds.writeToString());
+        txnHandler.setCompactionHighestWriteId(ci, tblValidWriteIds.getHighWatermark());
         final StringBuilder jobName = new StringBuilder(name);
         jobName.append("-compactor-");
         jobName.append(ci.getFullPartitionName());
@@ -170,14 +170,14 @@ public class Worker extends CompactorThread {
         launchedJob = true;
         try {
           if (runJobAsSelf(runAs)) {
-            mr.run(conf, jobName.toString(), t, sd, writeIds, ci, su, txnHandler);
+            mr.run(conf, jobName.toString(), t, sd, tblValidWriteIds, ci, su, txnHandler);
           } else {
             UserGroupInformation ugi = UserGroupInformation.createProxyUser(t.getOwner(),
               UserGroupInformation.getLoginUser());
             ugi.doAs(new PrivilegedExceptionAction<Object>() {
               @Override
               public Object run() throws Exception {
-                mr.run(conf, jobName.toString(), t, sd, writeIds, ci, su, txnHandler);
+                mr.run(conf, jobName.toString(), t, sd, tblValidWriteIds, ci, su, txnHandler);
                 return null;
               }
             });

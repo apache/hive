@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.api.*;
 
 import java.sql.SQLException;
-import java.util.IllegalFormatCodePointException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -40,7 +39,7 @@ import java.util.Set;
 public interface TxnStore extends Configurable {
 
   enum MUTEX_KEY {Initiator, Cleaner, HouseKeeper, CompactionHistory, CheckLock,
-    WriteSetCleaner, CompactionScheduler}
+    WriteSetCleaner, CompactionScheduler, WriteIdAllocator}
   // Compactor states (Should really be enum)
   String INITIATED_RESPONSE = "initiated";
   String WORKING_RESPONSE = "working";
@@ -125,13 +124,13 @@ public interface TxnStore extends Configurable {
       String inputDbName, String inputTableName, ValidTxnList txnList)
           throws MetaException;
   /**
-   * Gets the list of write ids which are open/aborted
+   * Gets the list of valid write ids for the given table wrt to current txn
    * @param rqst info on transaction and list of table names associated with given transaction
    * @throws NoSuchTxnException
    * @throws MetaException
    */
   @RetrySemantics.ReadOnly
-  GetOpenWriteIdsResponse getOpenWriteIds(GetOpenWriteIdsRequest rqst)
+  GetValidWriteIdsResponse getValidWriteIds(GetValidWriteIdsRequest rqst)
           throws NoSuchTxnException,  MetaException;
 
   /**
@@ -141,7 +140,7 @@ public interface TxnStore extends Configurable {
    * @throws TxnAbortedException
    * @throws MetaException
    */
-  AllocateTableWriteIdResponse allocateTableWriteId(AllocateTableWriteIdRequest rqst)
+  AllocateTableWriteIdsResponse allocateTableWriteIds(AllocateTableWriteIdsRequest rqst)
     throws NoSuchTxnException, TxnAbortedException, MetaException;
 
   /**

@@ -2220,72 +2220,72 @@ class CommitTxnRequest
   ::Thrift::Struct.generate_accessors self
 end
 
-class GetOpenWriteIdsRequest
+class GetValidWriteIdsRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  TABLENAMES = 1
-  VALIDTXNSTR = 2
+  FULLTABLENAMES = 1
+  VALIDTXNLIST = 2
 
   FIELDS = {
-    TABLENAMES => {:type => ::Thrift::Types::LIST, :name => 'tableNames', :element => {:type => ::Thrift::Types::STRING}},
-    VALIDTXNSTR => {:type => ::Thrift::Types::STRING, :name => 'validTxnStr'}
+    FULLTABLENAMES => {:type => ::Thrift::Types::LIST, :name => 'fullTableNames', :element => {:type => ::Thrift::Types::STRING}},
+    VALIDTXNLIST => {:type => ::Thrift::Types::STRING, :name => 'validTxnList'}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableNames is unset!') unless @tableNames
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field validTxnStr is unset!') unless @validTxnStr
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field fullTableNames is unset!') unless @fullTableNames
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field validTxnList is unset!') unless @validTxnList
   end
 
   ::Thrift::Struct.generate_accessors self
 end
 
-class OpenWriteIds
+class TableValidWriteIds
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  TABLENAME = 1
+  FULLTABLENAME = 1
   WRITEIDHIGHWATERMARK = 2
-  OPENWRITEIDS = 3
-  MINWRITEID = 4
+  INVALIDWRITEIDS = 3
+  MINOPENWRITEID = 4
   ABORTEDBITS = 5
 
   FIELDS = {
-    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
+    FULLTABLENAME => {:type => ::Thrift::Types::STRING, :name => 'fullTableName'},
     WRITEIDHIGHWATERMARK => {:type => ::Thrift::Types::I64, :name => 'writeIdHighWaterMark'},
-    OPENWRITEIDS => {:type => ::Thrift::Types::LIST, :name => 'openWriteIds', :element => {:type => ::Thrift::Types::I64}},
-    MINWRITEID => {:type => ::Thrift::Types::I64, :name => 'minWriteId', :optional => true},
+    INVALIDWRITEIDS => {:type => ::Thrift::Types::LIST, :name => 'invalidWriteIds', :element => {:type => ::Thrift::Types::I64}},
+    MINOPENWRITEID => {:type => ::Thrift::Types::I64, :name => 'minOpenWriteId', :optional => true},
     ABORTEDBITS => {:type => ::Thrift::Types::STRING, :name => 'abortedBits', :binary => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field fullTableName is unset!') unless @fullTableName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field writeIdHighWaterMark is unset!') unless @writeIdHighWaterMark
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field openWriteIds is unset!') unless @openWriteIds
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field invalidWriteIds is unset!') unless @invalidWriteIds
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field abortedBits is unset!') unless @abortedBits
   end
 
   ::Thrift::Struct.generate_accessors self
 end
 
-class GetOpenWriteIdsResponse
+class GetValidWriteIdsResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  OPENWRITEIDS = 1
+  TBLVALIDWRITEIDS = 1
 
   FIELDS = {
-    OPENWRITEIDS => {:type => ::Thrift::Types::LIST, :name => 'openWriteIds', :element => {:type => ::Thrift::Types::STRUCT, :class => ::OpenWriteIds}}
+    TBLVALIDWRITEIDS => {:type => ::Thrift::Types::LIST, :name => 'tblValidWriteIds', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TableValidWriteIds}}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field openWriteIds is unset!') unless @openWriteIds
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblValidWriteIds is unset!') unless @tblValidWriteIds
   end
 
   ::Thrift::Struct.generate_accessors self
 end
 
-class AllocateTableWriteIdRequest
+class AllocateTableWriteIdsRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TXNIDS = 1
   DBNAME = 2
@@ -2328,7 +2328,7 @@ class TxnToWriteId
   ::Thrift::Struct.generate_accessors self
 end
 
-class AllocateTableWriteIdResponse
+class AllocateTableWriteIdsResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TXNTOWRITEIDS = 1
 

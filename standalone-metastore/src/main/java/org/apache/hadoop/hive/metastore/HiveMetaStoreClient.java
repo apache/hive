@@ -48,7 +48,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.security.auth.login.LoginException;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
@@ -2233,16 +2232,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public ValidWriteIdList getValidWriteIds(String tableName) throws TException {
-    GetOpenWriteIdsRequest rqst = new GetOpenWriteIdsRequest(Collections.singletonList(tableName), null);
-    GetOpenWriteIdsResponse openWriteIds = client.get_open_write_ids(rqst);
-    return TxnUtils.createValidReaderWriteIdList(openWriteIds.getOpenWriteIds().get(0));
+  public ValidWriteIdList getValidWriteIds(String fullTableName) throws TException {
+    GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName), null);
+    GetValidWriteIdsResponse validWriteIds = client.get_valid_write_ids(rqst);
+    return TxnUtils.createValidReaderWriteIdList(validWriteIds.getTblValidWriteIds().get(0));
   }
 
   @Override
-  public ValidTxnWriteIdList getValidWriteIds(List<String> tablesList, String validTxnStr) throws TException {
-    GetOpenWriteIdsRequest rqst = new GetOpenWriteIdsRequest(tablesList, validTxnStr);
-    return TxnUtils.createValidTxnWriteIdList(client.get_open_write_ids(rqst));
+  public ValidTxnWriteIdList getValidWriteIds(Long currentTxnId, List<String> tablesList, String validTxnList) throws TException {
+    GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(tablesList, validTxnList);
+    return TxnUtils.createValidTxnWriteIdList(currentTxnId, client.get_valid_write_ids(rqst));
   }
 
   @Override
@@ -2292,10 +2291,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName)
           throws TException {
-    AllocateTableWriteIdRequest rqst
-            = new AllocateTableWriteIdRequest(txnIds, dbName, tableName);
-    AllocateTableWriteIdResponse writeId = client.allocate_table_write_id(rqst);
-    return writeId.getTxnToWriteIds();
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(txnIds, dbName, tableName);
+    AllocateTableWriteIdsResponse writeIds = client.allocate_table_write_ids(rqst);
+    return writeIds.getTxnToWriteIds();
   }
 
   @Override

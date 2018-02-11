@@ -31,8 +31,8 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
-import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdRequest;
-import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdResponse;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -199,8 +199,8 @@ public abstract class CompactorTest {
   }
 
   protected long allocateWriteId(String dbName, String tblName, long txnid) throws MetaException, TxnAbortedException, NoSuchTxnException {
-    AllocateTableWriteIdRequest awiRqst = new AllocateTableWriteIdRequest(Collections.singletonList(txnid), dbName, tblName);
-    AllocateTableWriteIdResponse awiResp = txnHandler.allocateTableWriteId(awiRqst);
+    AllocateTableWriteIdsRequest awiRqst = new AllocateTableWriteIdsRequest(Collections.singletonList(txnid), dbName, tblName);
+    AllocateTableWriteIdsResponse awiResp = txnHandler.allocateTableWriteIds(awiRqst);
     return awiResp.getTxnToWriteIds().get(0).getWriteId();
   }
 
@@ -251,8 +251,8 @@ public abstract class CompactorTest {
   protected void burnThroughTransactions(String dbName, String tblName, int num, Set<Long> open, Set<Long> aborted)
       throws MetaException, NoSuchTxnException, TxnAbortedException {
     OpenTxnsResponse rsp = txnHandler.openTxns(new OpenTxnRequest(num, "me", "localhost"));
-    AllocateTableWriteIdRequest awiRqst = new AllocateTableWriteIdRequest(rsp.getTxn_ids(), dbName, tblName);
-    AllocateTableWriteIdResponse awiResp = txnHandler.allocateTableWriteId(awiRqst);
+    AllocateTableWriteIdsRequest awiRqst = new AllocateTableWriteIdsRequest(rsp.getTxn_ids(), dbName, tblName);
+    AllocateTableWriteIdsResponse awiResp = txnHandler.allocateTableWriteIds(awiRqst);
     int i = 0;
     for (long tid : rsp.getTxn_ids()) {
       assert(awiResp.getTxnToWriteIds().get(i++).getTxnId() == tid);

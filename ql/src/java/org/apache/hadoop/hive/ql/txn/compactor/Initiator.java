@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.GetOpenWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
@@ -147,16 +147,16 @@ public class Initiator extends CompactorThread {
               // Compaction doesn't work under a transaction and hence pass 0 for current txn Id
               // The response will have one entry per table and hence we get only one OpenWriteIds
               String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
-              GetOpenWriteIdsRequest rqst = new GetOpenWriteIdsRequest(Collections.singletonList(fullTableName), null);
-              ValidWriteIdList writeIds =
-                      TxnUtils.createValidCompactWriteIdList(txnHandler.getOpenWriteIds(rqst).getOpenWriteIds().get(0));
+              GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName), null);
+              ValidWriteIdList tblValidWriteIds =
+                      TxnUtils.createValidCompactWriteIdList(txnHandler.getValidWriteIds(rqst).getTblValidWriteIds().get(0));
 
               StorageDescriptor sd = resolveStorageDescriptor(t, p);
               String runAs = findUserToRunAs(sd.getLocation(), t);
               /*Future thought: checkForCompaction will check a lot of file metadata and may be expensive.
               * Long term we should consider having a thread pool here and running checkForCompactionS
               * in parallel*/
-              CompactionType compactionNeeded = checkForCompaction(ci, writeIds, sd, t.getParameters(), runAs);
+              CompactionType compactionNeeded = checkForCompaction(ci, tblValidWriteIds, sd, t.getParameters(), runAs);
               if (compactionNeeded != null) requestCompaction(ci, runAs, compactionNeeded);
             } catch (Throwable t) {
               LOG.error("Caught exception while trying to determine if we should compact " +

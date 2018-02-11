@@ -275,7 +275,7 @@ public class FetchOperator implements Serializable {
       }
       FileSystem fs = currPath.getFileSystem(job);
       if (fs.exists(currPath)) {
-        if (extractValidTxnList() != null &&
+        if (extractValidWriteIdList() != null &&
             AcidUtils.isInsertOnlyTable(currDesc.getTableDesc().getProperties())) {
           return true;
         }
@@ -410,7 +410,7 @@ public class FetchOperator implements Serializable {
     }
     ValidWriteIdList validWriteIdList;
     if (AcidUtils.isInsertOnlyTable(currDesc.getTableDesc().getProperties())) {
-      validWriteIdList = extractValidTxnList();
+      validWriteIdList = extractValidWriteIdList();
     } else {
       validWriteIdList = null;  // non-MM case
     }
@@ -429,7 +429,7 @@ public class FetchOperator implements Serializable {
     return str.toString();
   }
 
-  private ValidWriteIdList extractValidTxnList() {
+  private ValidWriteIdList extractValidWriteIdList() {
     if (currDesc.getTableName() == null || !org.apache.commons.lang.StringUtils.isBlank(currDesc.getTableName())) {
       String txnString = job.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
       LOG.debug("FetchOperator get writeIdStr: " + txnString);

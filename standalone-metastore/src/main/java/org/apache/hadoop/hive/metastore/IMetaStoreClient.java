@@ -1365,21 +1365,22 @@ public interface IMetaStoreClient {
 
   /**
    * Get a structure that details valid transactions.
-   * @param tableName full table name of format <db_name>.<table_name>
+   * @param fullTableName full table name of format <db_name>.<table_name>
    * @return list of valid write ids for the given table
    * @throws TException
    */
-  ValidWriteIdList getValidWriteIds(String tableName) throws TException;
+  ValidWriteIdList getValidWriteIds(String fullTableName) throws TException;
 
   /**
-   * Get a structure that details valid transactions.
-   * @param tablesList list of tables read from the current transaction for which needs to populate
-   *                   the valid write ids
-   * @param validTxnStr snapshot of valid txns for the current txn
+   * Get a structure that details valid write ids list for all tables read by current txn.
+   * @param currentTxnId current txn ID for which we try to get valid write ids list
+   * @param tablesList list of tables (format: <db_name>.<table_name>) read from the current transaction
+   *                   for which needs to populate the valid write ids
+   * @param validTxnList snapshot of valid txns for the current txn
    * @return list of valid write ids for the given list of tables.
    * @throws TException
    */
-  ValidTxnWriteIdList getValidWriteIds(List<String> tablesList, String validTxnStr) throws TException;
+  ValidTxnWriteIdList getValidWriteIds(Long currentTxnId, List<String> tablesList, String validTxnList) throws TException;
 
   /**
    * Initiate a transaction.

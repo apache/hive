@@ -123,8 +123,7 @@ public interface HiveTxnManager {
 
   /**
    * Get the transactions that are currently valid.  The resulting
-   * {@link ValidTxnList} object is a thrift object and can
-   * be  passed to  the processing
+   * {@link ValidTxnList} object can be passed as string to the processing
    * tasks for use in the reading the data.  This call should be made once up
    * front by the planner and should never be called on the backend,
    * as this will violate the isolation level semantics.
@@ -135,17 +134,15 @@ public interface HiveTxnManager {
 
   /**
    * Get the table write Ids that are valid for the current transaction.  The resulting
-   * {@link ValidTxnWriteIdList} object is a thrift object and can
-   * be  passed to  the processing
-   * tasks for use in the reading the data.  This call should be made once up
-   * front by the planner per table and should never be called on the backend,
-   * as this will violate the isolation level semantics.
+   * {@link ValidTxnWriteIdList} object can be passed as string to the processing
+   * tasks for use in the reading the data.  This call will return same results as long as validTxnString
+   * passed is same.
    * @param tableList list of tables (<db_name>.<table_name>) read/written by current transaction.
-   * @param validTxnString snapshot of valid txns for the current txn
+   * @param validTxnList snapshot of valid txns for the current txn
    * @return list of valid table write Ids.
    * @throws LockException
    */
-  ValidTxnWriteIdList getValidWriteIds(List<String> tableList, String validTxnString) throws LockException;
+  ValidTxnWriteIdList getValidWriteIds(List<String> tableList, String validTxnList) throws LockException;
 
   /**
    * Get the name for currently installed transaction manager.

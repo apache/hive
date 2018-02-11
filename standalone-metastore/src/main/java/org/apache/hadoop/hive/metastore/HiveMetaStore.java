@@ -6691,14 +6691,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public GetOpenWriteIdsResponse get_open_write_ids(GetOpenWriteIdsRequest rqst) throws TException {
-      return getTxnHandler().getOpenWriteIds(rqst);
+    public GetValidWriteIdsResponse get_valid_write_ids(GetValidWriteIdsRequest rqst) throws TException {
+      return getTxnHandler().getValidWriteIds(rqst);
     }
 
     @Override
-    public AllocateTableWriteIdResponse allocate_table_write_id(
-            AllocateTableWriteIdRequest rqst) throws TException {
-      return getTxnHandler().allocateTableWriteId(rqst);
+    public AllocateTableWriteIdsResponse allocate_table_write_ids(
+            AllocateTableWriteIdsRequest rqst) throws TException {
+      return getTxnHandler().allocateTableWriteIds(rqst);
     }
 
     @Override

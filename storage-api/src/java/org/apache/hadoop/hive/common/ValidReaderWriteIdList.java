@@ -108,7 +108,7 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
     return writeToString();
   }
 
-  // Format is <table_name>:<hwm>:<minOpenWriteId>:<open_txns>:<abort_txns>
+  // Format is <table_name>:<hwm>:<minOpenWriteId>:<open_writeids>:<abort_writeids>
   @Override
   public String writeToString() {
     StringBuilder buf = new StringBuilder();

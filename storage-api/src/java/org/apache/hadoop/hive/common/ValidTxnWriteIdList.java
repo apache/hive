@@ -31,8 +31,14 @@ public class ValidTxnWriteIdList {
    */
   public static final String VALID_TABLES_WRITEIDS_KEY = "hive.txn.tables.valid.writeids";
 
-  private HashMap<String, ValidWriteIdList> validTablesWriteIdList = new HashMap<>();
-  public ValidTxnWriteIdList() {
+  // Transaction for which the list of tables valid write Ids are populated
+  Long txnId;
+
+  // Map of valid write ids list for all the tables read by the current txn
+  // Key is full table name string of format <db_name>.<table_name>
+  private HashMap<String, ValidWriteIdList> tablesValidWriteIdList = new HashMap<>();
+  public ValidTxnWriteIdList(Long txnId) {
+    this.txnId = txnId;
   }
 
   public ValidTxnWriteIdList(String value) {
@@ -44,44 +50,51 @@ public class ValidTxnWriteIdList {
     return writeToString();
   }
 
-  public void addTableWriteId(ValidWriteIdList validWriteIds) {
-    validTablesWriteIdList.put(validWriteIds.getTableName(), validWriteIds);
+  public void addTableValidWriteIdList(ValidWriteIdList validWriteIds) {
+    tablesValidWriteIdList.put(validWriteIds.getTableName(), validWriteIds);
   }
 
-  public ValidWriteIdList getTableWriteIdList(String tableName) {
-    if (validTablesWriteIdList.containsKey(tableName)) {
-      return validTablesWriteIdList.get(tableName);
+  // Input fullTableName is of format <db_name>.<table_name>
+  public ValidWriteIdList getTableValidWriteIdList(String fullTableName) {
+    if (tablesValidWriteIdList.containsKey(fullTableName)) {
+      return tablesValidWriteIdList.get(fullTableName);
     } else {
       return new ValidReaderWriteIdList();
     }
   }
 
-  public int getNumOfTables() {
-    return validTablesWriteIdList.size();
-  }
-
+  // Each ValidWriteIdList is separated with "$" and each one maps to one table
+  // Format <txnId>$<table_name>:<hwm>:<minOpenWriteId>:<open_writeids>:<abort_writeids>$<table_name>...
   private void readFromString(String src) {
     if ((src == null) || (src.length() == 0)) {
       return;
     }
     String[] tblWriteIdStrList = src.split("\\$");
-    for (String tableStr : tblWriteIdStrList) {
+    assert(tblWriteIdStrList.length >= 1);
+
+    // First $ separated substring would be txnId and the rest are ValidReaderWriteIdList
+    this.txnId = Long.parseLong(tblWriteIdStrList[0]);
+    for (int index = 1; index < tblWriteIdStrList.length; index++) {
+      String tableStr = tblWriteIdStrList[index];
       ValidWriteIdList validWriteIdList = new ValidReaderWriteIdList(tableStr);
-      addTableWriteId(validWriteIdList);
+      addTableValidWriteIdList(validWriteIdList);
     }
   }
 
+  // Each ValidWriteIdList is separated with "$" and each one maps to one table
+  // Format <txnId>$<table_name>:<hwm>:<minOpenWriteId>:<open_writeids>:<abort_writeids>$<table_name>...
   private String writeToString() {
-    StringBuilder buf = new StringBuilder();
+    // First $ separated substring will be txnId and the rest are ValidReaderWriteIdList
+    StringBuilder buf = new StringBuilder(txnId.toString());
     int index = 0;
-    for (HashMap.Entry<String, ValidWriteIdList> entry : validTablesWriteIdList.entrySet()) {
+    for (HashMap.Entry<String, ValidWriteIdList> entry : tablesValidWriteIdList.entrySet()) {
+      if (index < tablesValidWriteIdList.size()) {
+        buf.append('$');
+      }
       buf.append(entry.getValue().writeToString());
 
       // Separator for multiple tables' ValidWriteIdList. Also, skip it for last entry.
       index++;
-      if (index < validTablesWriteIdList.size()) {
-        buf.append('$');
-      }
     }
     return buf.toString();
   }

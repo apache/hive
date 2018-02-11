@@ -37,7 +37,7 @@ class SequenceValidator {
 
   boolean isInSequence(RecordIdentifier recordIdentifier) {
     if (lastWriteId != null && recordIdentifier.getWriteId() < lastWriteId) {
-      LOG.debug("Non-sequential transaction ID. Expected >{}, recordIdentifier={}", lastWriteId, recordIdentifier);
+      LOG.debug("Non-sequential write ID. Expected >{}, recordIdentifier={}", lastWriteId, recordIdentifier);
       return false;
     } else if (lastWriteId != null && recordIdentifier.getWriteId() == lastWriteId && lastRowId != null
         && recordIdentifier.getRowId() <= lastRowId) {

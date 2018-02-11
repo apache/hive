@@ -88,7 +88,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   private volatile long txnId = 0;
 
   /**
-   * The local cache of table write IDs associated with current transaction
+   * The local cache of table write IDs allocated/created by the current transaction
    */
   private HashMap<String, Long> tableWriteIds = new HashMap<>();
 
@@ -766,11 +766,11 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
 
   @Override
   public ValidTxnWriteIdList getValidWriteIds(List<String> tableList,
-                                              String validTxnString) throws LockException {
+                                              String validTxnList) throws LockException {
     assert isTxnOpen();
-    assert validTxnString != null && !validTxnString.isEmpty();
+    assert validTxnList != null && !validTxnList.isEmpty();
     try {
-      return getMS().getValidWriteIds(tableList, validTxnString);
+      return getMS().getValidWriteIds(txnId, tableList, validTxnList);
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }

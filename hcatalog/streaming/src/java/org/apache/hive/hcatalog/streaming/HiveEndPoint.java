@@ -665,8 +665,11 @@ public class HiveEndPoint {
         sb.append(state == null ? "N" : state);
       }
       sb.append("] LastUsed ").append(JavaUtils.txnIdToString(lastTxnUsed));
-      return "TxnIds=[" + txnToWriteIds.get(0).getTxnId() + "..."
+      return "TxnId/WriteIds=[" + txnToWriteIds.get(0).getTxnId()
+              + "/" + txnToWriteIds.get(0).getWriteId()
+              + "..."
               + txnToWriteIds.get(txnToWriteIds.size()-1).getTxnId()
+              + "/" + txnToWriteIds.get(txnToWriteIds.size()-1).getWriteId()
               + "] on endPoint = " + endPt + "; " + sb;
     }
 

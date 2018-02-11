@@ -91,12 +91,12 @@ public class AcidTableSerializer {
       String databaseName = in.readUTF();
       String tableName = in.readUTF();
       boolean createPartitions = in.readBoolean();
-      long transactionId = in.readLong();
+      long writeId = in.readLong();
       TableType tableType = TableType.valueOf(in.readByte());
       int thriftLength = in.readInt();
 
       table = new AcidTable(databaseName, tableName, createPartitions, tableType);
-      table.setWriteId(transactionId);
+      table.setWriteId(writeId);
 
       Table metaTable = null;
       if (thriftLength > 0) {

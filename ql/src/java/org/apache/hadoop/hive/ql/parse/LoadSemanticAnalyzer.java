@@ -317,11 +317,11 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    Long txnId = null;
+    Long writeId = null;
     int stmtId = -1;
     if (AcidUtils.isTransactionalTable(ts.tableHandle)) {
       try {
-        txnId = SessionState.get().getTxnMgr().getTableWriteId(ts.tableHandle.getDbName(),
+        writeId = SessionState.get().getTxnMgr().getTableWriteId(ts.tableHandle.getDbName(),
                 ts.tableHandle.getTableName());
       } catch (LockException ex) {
         throw new SemanticException("Failed to allocate the write id", ex);
@@ -332,7 +332,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     LoadTableDesc loadTableWork;
     loadTableWork = new LoadTableDesc(new Path(fromURI),
       Utilities.getTableDesc(ts.tableHandle), partSpec,
-      isOverWrite ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING, txnId);
+      isOverWrite ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING, writeId);
     loadTableWork.setStmtId(stmtId);
     if (preservePartitionSpecs){
       // Note : preservePartitionSpecs=true implies inheritTableSpecs=false but

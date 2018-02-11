@@ -9967,22 +9967,22 @@ class CommitTxnRequest:
   def __ne__(self, other):
     return not (self == other)
 
-class GetOpenWriteIdsRequest:
+class GetValidWriteIdsRequest:
   """
   Attributes:
-   - tableNames
-   - validTxnStr
+   - fullTableNames
+   - validTxnList
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.LIST, 'tableNames', (TType.STRING,None), None, ), # 1
-    (2, TType.STRING, 'validTxnStr', None, None, ), # 2
+    (1, TType.LIST, 'fullTableNames', (TType.STRING,None), None, ), # 1
+    (2, TType.STRING, 'validTxnList', None, None, ), # 2
   )
 
-  def __init__(self, tableNames=None, validTxnStr=None,):
-    self.tableNames = tableNames
-    self.validTxnStr = validTxnStr
+  def __init__(self, fullTableNames=None, validTxnList=None,):
+    self.fullTableNames = fullTableNames
+    self.validTxnList = validTxnList
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -9995,17 +9995,17 @@ class GetOpenWriteIdsRequest:
         break
       if fid == 1:
         if ftype == TType.LIST:
-          self.tableNames = []
+          self.fullTableNames = []
           (_etype493, _size490) = iprot.readListBegin()
           for _i494 in xrange(_size490):
             _elem495 = iprot.readString()
-            self.tableNames.append(_elem495)
+            self.fullTableNames.append(_elem495)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.STRING:
-          self.validTxnStr = iprot.readString()
+          self.validTxnList = iprot.readString()
         else:
           iprot.skip(ftype)
       else:
@@ -10017,33 +10017,33 @@ class GetOpenWriteIdsRequest:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('GetOpenWriteIdsRequest')
-    if self.tableNames is not None:
-      oprot.writeFieldBegin('tableNames', TType.LIST, 1)
-      oprot.writeListBegin(TType.STRING, len(self.tableNames))
-      for iter496 in self.tableNames:
+    oprot.writeStructBegin('GetValidWriteIdsRequest')
+    if self.fullTableNames is not None:
+      oprot.writeFieldBegin('fullTableNames', TType.LIST, 1)
+      oprot.writeListBegin(TType.STRING, len(self.fullTableNames))
+      for iter496 in self.fullTableNames:
         oprot.writeString(iter496)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
-    if self.validTxnStr is not None:
-      oprot.writeFieldBegin('validTxnStr', TType.STRING, 2)
-      oprot.writeString(self.validTxnStr)
+    if self.validTxnList is not None:
+      oprot.writeFieldBegin('validTxnList', TType.STRING, 2)
+      oprot.writeString(self.validTxnList)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
   def validate(self):
-    if self.tableNames is None:
-      raise TProtocol.TProtocolException(message='Required field tableNames is unset!')
-    if self.validTxnStr is None:
-      raise TProtocol.TProtocolException(message='Required field validTxnStr is unset!')
+    if self.fullTableNames is None:
+      raise TProtocol.TProtocolException(message='Required field fullTableNames is unset!')
+    if self.validTxnList is None:
+      raise TProtocol.TProtocolException(message='Required field validTxnList is unset!')
     return
 
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.tableNames)
-    value = (value * 31) ^ hash(self.validTxnStr)
+    value = (value * 31) ^ hash(self.fullTableNames)
+    value = (value * 31) ^ hash(self.validTxnList)
     return value
 
   def __repr__(self):
@@ -10057,30 +10057,30 @@ class GetOpenWriteIdsRequest:
   def __ne__(self, other):
     return not (self == other)
 
-class OpenWriteIds:
+class TableValidWriteIds:
   """
   Attributes:
-   - tableName
+   - fullTableName
    - writeIdHighWaterMark
-   - openWriteIds
-   - minWriteId
+   - invalidWriteIds
+   - minOpenWriteId
    - abortedBits
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRING, 'tableName', None, None, ), # 1
+    (1, TType.STRING, 'fullTableName', None, None, ), # 1
     (2, TType.I64, 'writeIdHighWaterMark', None, None, ), # 2
-    (3, TType.LIST, 'openWriteIds', (TType.I64,None), None, ), # 3
-    (4, TType.I64, 'minWriteId', None, None, ), # 4
+    (3, TType.LIST, 'invalidWriteIds', (TType.I64,None), None, ), # 3
+    (4, TType.I64, 'minOpenWriteId', None, None, ), # 4
     (5, TType.STRING, 'abortedBits', None, None, ), # 5
   )
 
-  def __init__(self, tableName=None, writeIdHighWaterMark=None, openWriteIds=None, minWriteId=None, abortedBits=None,):
-    self.tableName = tableName
+  def __init__(self, fullTableName=None, writeIdHighWaterMark=None, invalidWriteIds=None, minOpenWriteId=None, abortedBits=None,):
+    self.fullTableName = fullTableName
     self.writeIdHighWaterMark = writeIdHighWaterMark
-    self.openWriteIds = openWriteIds
-    self.minWriteId = minWriteId
+    self.invalidWriteIds = invalidWriteIds
+    self.minOpenWriteId = minOpenWriteId
     self.abortedBits = abortedBits
 
   def read(self, iprot):
@@ -10094,7 +10094,7 @@ class OpenWriteIds:
         break
       if fid == 1:
         if ftype == TType.STRING:
-          self.tableName = iprot.readString()
+          self.fullTableName = iprot.readString()
         else:
           iprot.skip(ftype)
       elif fid == 2:
@@ -10104,17 +10104,17 @@ class OpenWriteIds:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.LIST:
-          self.openWriteIds = []
+          self.invalidWriteIds = []
           (_etype500, _size497) = iprot.readListBegin()
           for _i501 in xrange(_size497):
             _elem502 = iprot.readI64()
-            self.openWriteIds.append(_elem502)
+            self.invalidWriteIds.append(_elem502)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 4:
         if ftype == TType.I64:
-          self.minWriteId = iprot.readI64()
+          self.minOpenWriteId = iprot.readI64()
         else:
           iprot.skip(ftype)
       elif fid == 5:
@@ -10131,25 +10131,25 @@ class OpenWriteIds:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('OpenWriteIds')
-    if self.tableName is not None:
-      oprot.writeFieldBegin('tableName', TType.STRING, 1)
-      oprot.writeString(self.tableName)
+    oprot.writeStructBegin('TableValidWriteIds')
+    if self.fullTableName is not None:
+      oprot.writeFieldBegin('fullTableName', TType.STRING, 1)
+      oprot.writeString(self.fullTableName)
       oprot.writeFieldEnd()
     if self.writeIdHighWaterMark is not None:
       oprot.writeFieldBegin('writeIdHighWaterMark', TType.I64, 2)
       oprot.writeI64(self.writeIdHighWaterMark)
       oprot.writeFieldEnd()
-    if self.openWriteIds is not None:
-      oprot.writeFieldBegin('openWriteIds', TType.LIST, 3)
-      oprot.writeListBegin(TType.I64, len(self.openWriteIds))
-      for iter503 in self.openWriteIds:
+    if self.invalidWriteIds is not None:
+      oprot.writeFieldBegin('invalidWriteIds', TType.LIST, 3)
+      oprot.writeListBegin(TType.I64, len(self.invalidWriteIds))
+      for iter503 in self.invalidWriteIds:
         oprot.writeI64(iter503)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
-    if self.minWriteId is not None:
-      oprot.writeFieldBegin('minWriteId', TType.I64, 4)
-      oprot.writeI64(self.minWriteId)
+    if self.minOpenWriteId is not None:
+      oprot.writeFieldBegin('minOpenWriteId', TType.I64, 4)
+      oprot.writeI64(self.minOpenWriteId)
       oprot.writeFieldEnd()
     if self.abortedBits is not None:
       oprot.writeFieldBegin('abortedBits', TType.STRING, 5)
@@ -10159,12 +10159,12 @@ class OpenWriteIds:
     oprot.writeStructEnd()
 
   def validate(self):
-    if self.tableName is None:
-      raise TProtocol.TProtocolException(message='Required field tableName is unset!')
+    if self.fullTableName is None:
+      raise TProtocol.TProtocolException(message='Required field fullTableName is unset!')
     if self.writeIdHighWaterMark is None:
       raise TProtocol.TProtocolException(message='Required field writeIdHighWaterMark is unset!')
-    if self.openWriteIds is None:
-      raise TProtocol.TProtocolException(message='Required field openWriteIds is unset!')
+    if self.invalidWriteIds is None:
+      raise TProtocol.TProtocolException(message='Required field invalidWriteIds is unset!')
     if self.abortedBits is None:
       raise TProtocol.TProtocolException(message='Required field abortedBits is unset!')
     return
@@ -10172,10 +10172,10 @@ class OpenWriteIds:
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.tableName)
+    value = (value * 31) ^ hash(self.fullTableName)
     value = (value * 31) ^ hash(self.writeIdHighWaterMark)
-    value = (value * 31) ^ hash(self.openWriteIds)
-    value = (value * 31) ^ hash(self.minWriteId)
+    value = (value * 31) ^ hash(self.invalidWriteIds)
+    value = (value * 31) ^ hash(self.minOpenWriteId)
     value = (value * 31) ^ hash(self.abortedBits)
     return value
 
@@ -10190,19 +10190,19 @@ class OpenWriteIds:
   def __ne__(self, other):
     return not (self == other)
 
-class GetOpenWriteIdsResponse:
+class GetValidWriteIdsResponse:
   """
   Attributes:
-   - openWriteIds
+   - tblValidWriteIds
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.LIST, 'openWriteIds', (TType.STRUCT,(OpenWriteIds, OpenWriteIds.thrift_spec)), None, ), # 1
+    (1, TType.LIST, 'tblValidWriteIds', (TType.STRUCT,(TableValidWriteIds, TableValidWriteIds.thrift_spec)), None, ), # 1
   )
 
-  def __init__(self, openWriteIds=None,):
-    self.openWriteIds = openWriteIds
+  def __init__(self, tblValidWriteIds=None,):
+    self.tblValidWriteIds = tblValidWriteIds
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -10215,12 +10215,12 @@ class GetOpenWriteIdsResponse:
         break
       if fid == 1:
         if ftype == TType.LIST:
-          self.openWriteIds = []
+          self.tblValidWriteIds = []
           (_etype507, _size504) = iprot.readListBegin()
           for _i508 in xrange(_size504):
-            _elem509 = OpenWriteIds()
+            _elem509 = TableValidWriteIds()
             _elem509.read(iprot)
-            self.openWriteIds.append(_elem509)
+            self.tblValidWriteIds.append(_elem509)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -10233,11 +10233,11 @@ class GetOpenWriteIdsResponse:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('GetOpenWriteIdsResponse')
-    if self.openWriteIds is not None:
-      oprot.writeFieldBegin('openWriteIds', TType.LIST, 1)
-      oprot.writeListBegin(TType.STRUCT, len(self.openWriteIds))
-      for iter510 in self.openWriteIds:
+    oprot.writeStructBegin('GetValidWriteIdsResponse')
+    if self.tblValidWriteIds is not None:
+      oprot.writeFieldBegin('tblValidWriteIds', TType.LIST, 1)
+      oprot.writeListBegin(TType.STRUCT, len(self.tblValidWriteIds))
+      for iter510 in self.tblValidWriteIds:
         iter510.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
@@ -10245,14 +10245,14 @@ class GetOpenWriteIdsResponse:
     oprot.writeStructEnd()
 
   def validate(self):
-    if self.openWriteIds is None:
-      raise TProtocol.TProtocolException(message='Required field openWriteIds is unset!')
+    if self.tblValidWriteIds is None:
+      raise TProtocol.TProtocolException(message='Required field tblValidWriteIds is unset!')
     return
 
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.openWriteIds)
+    value = (value * 31) ^ hash(self.tblValidWriteIds)
     return value
 
   def __repr__(self):
@@ -10266,7 +10266,7 @@ class GetOpenWriteIdsResponse:
   def __ne__(self, other):
     return not (self == other)
 
-class AllocateTableWriteIdRequest:
+class AllocateTableWriteIdsRequest:
   """
   Attributes:
    - txnIds
@@ -10324,7 +10324,7 @@ class AllocateTableWriteIdRequest:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('AllocateTableWriteIdRequest')
+    oprot.writeStructBegin('AllocateTableWriteIdsRequest')
     if self.txnIds is not None:
       oprot.writeFieldBegin('txnIds', TType.LIST, 1)
       oprot.writeListBegin(TType.I64, len(self.txnIds))
@@ -10453,7 +10453,7 @@ class TxnToWriteId:
   def __ne__(self, other):
     return not (self == other)
 
-class AllocateTableWriteIdResponse:
+class AllocateTableWriteIdsResponse:
   """
   Attributes:
    - txnToWriteIds
@@ -10496,7 +10496,7 @@ class AllocateTableWriteIdResponse:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('AllocateTableWriteIdResponse')
+    oprot.writeStructBegin('AllocateTableWriteIdsResponse')
     if self.txnToWriteIds is not None:
       oprot.writeFieldBegin('txnToWriteIds', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.txnToWriteIds))

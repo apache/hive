@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.OpenWriteIds;
+import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -43,7 +43,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   /**
    * {@code 0} means it wasn't set (e.g. in case of upgrades, since ResultSet.getLong() will return 0 if field is NULL) 
    * See {@link TxnStore#setCompactionHighestWriteId(CompactionInfo, long)} for precise definition.
-   * See also {@link TxnUtils#createValidCompactWriteIdList(OpenWriteIds)} and
+   * See also {@link TxnUtils#createValidCompactWriteIdList(TableValidWriteIds)} and
    * {@link ValidCompactorWriteIdList#highWatermark}
    */
   public long highestWriteId;

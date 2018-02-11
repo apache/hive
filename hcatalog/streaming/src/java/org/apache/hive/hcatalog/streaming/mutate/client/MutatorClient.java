@@ -104,9 +104,12 @@ public class MutatorClient implements Closeable {
         try {
           metaStoreClient.rollbackTxn(txnId);
         } catch (TException e) {
-          LOG.warn("Operation failed and rollback transaction {} failed due to {}", txnId, e.getMessage());
+          LOG.warn("Allocation of write id failed for table {} and rollback transaction {} failed due to {}",
+                  AcidUtils.getFullTableName(table.getDatabaseName(), table.getTableName()), txnId, e.getMessage());
         }
-        throw new TransactionException("Unable to allocate table write ID", ex);
+        throw new TransactionException("Unable to allocate table write ID for table "
+                + AcidUtils.getFullTableName(table.getDatabaseName(), table.getTableName())
+                + " under txn " + txnId, ex);
       }
     }
     LOG.debug("Created transaction {}", transaction);
