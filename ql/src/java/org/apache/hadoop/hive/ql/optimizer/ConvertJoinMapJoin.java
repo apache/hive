@@ -576,6 +576,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         return false;
       }
       ReduceSinkOperator rsOp = (ReduceSinkOperator) parentOp;
+
       if (!checkColEquality(rsOp.getParentOperators().get(0).getOpTraits().getSortCols(), rsOp
           .getOpTraits().getSortCols(), rsOp.getColumnExprMap(), false)) {
         LOG.info("We cannot convert to SMB because the sort column names do not match.");
