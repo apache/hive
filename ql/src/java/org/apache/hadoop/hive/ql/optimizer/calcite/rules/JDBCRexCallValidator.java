@@ -1,9 +1,15 @@
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexOver;
 import org.apache.calcite.rex.RexVisitorImpl;
 import org.apache.calcite.sql.SqlDialect;
+import org.apache.calcite.sql.SqlOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +32,18 @@ class JDBCRexCallValidator {
     boolean res = true;
 
     private boolean validRexCall (RexCall call) {
-      return dialect.supportsFunction(call);
+      if (call instanceof RexOver) {
+        LOG.debug("RexOver operator push down is not supported for now with the following operator:" + call);
+        return false;
+      }
+      final SqlOperator operator = call.getOperator();
+      List <RexNode> operands = call.getOperands();
+      RelDataType resType = call.getType();
+      ArrayList<RelDataType> paramsListType = new ArrayList<RelDataType>();
+      for (RexNode currNode : operands) {
+        paramsListType.add(currNode.getType());
+      }
+      return dialect.supportsFunction(operator, resType, paramsListType);
     }
 
     @Override
