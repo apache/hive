@@ -55,6 +55,13 @@ public interface IMetaStoreSchemaInfo {
   String generateInitFileName(String toVersion) throws HiveMetaException;
 
   /**
+   * Get SQL script that will create the user and database for Metastore to use.
+   * @return filename
+   * @throws HiveMetaException if something goes wrong.
+   */
+  String getCreateUserScript() throws HiveMetaException;
+
+  /**
    * Find the directory of metastore scripts
    *
    * @return the path of directory where the sql scripts are
