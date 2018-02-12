@@ -112,6 +112,7 @@ import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.metastore.events.PreLoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.PreReadDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreReadTableEvent;
+import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.JvmPauseMonitor;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -6662,7 +6663,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     @Override
     public OpenTxnsResponse open_txns(OpenTxnRequest rqst) throws TException {
-      return getTxnHandler().openTxns(rqst);
+      OpenTxnsResponse response = getTxnHandler().openTxns(rqst);
+      if (!listeners.isEmpty()) {
+        List<Long> txnIds = response.getTxn_ids();
+        // TODO: can it be done in a batch ?
+        for (Long id : txnIds) {
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventType.OPEN_TXN,
+                  new OpenTxnEvent(id, true, this));
+        }
+      }
+      return response;
     }
 
     @Override

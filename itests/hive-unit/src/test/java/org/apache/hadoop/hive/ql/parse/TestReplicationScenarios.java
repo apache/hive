@@ -3551,6 +3551,44 @@ public class TestReplicationScenarios {
     assertTrue(fileCount == fileCountAfter);
   }
 
+  @Test
+  public void testOpenTxnRelication() throws IOException {
+    String name = testName.getMethodName();
+    String dbName = createDB(name, driver);
+
+    run("CREATE TABLE " + dbName + ".unptned(a int) PARTITIONED BY (load_date date) CLUSTERED BY(a) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".unptned_empty(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName, driver);
+    String replDumpLocn = getResult(0,0,driver);
+    String replDumpId = getResult(0,1,true,driver);
+    LOG.info("Dumped to {} with id {}",replDumpLocn,replDumpId);
+    run("REPL LOAD " + dbName + "_dupe FROM '" + replDumpLocn + "'", driverMirror);
+
+    run("INSERT INTO " + dbName + ".unptned values (1)", driver);
+
+    // Perform REPL-DUMP/LOAD
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + " FROM " + replDumpId, driver);
+    String incrementalDumpLocn = getResult(0,0,driver);
+    String incrementalDumpId = getResult(0,1,true,driver);
+    LOG.info("Dumped to {} with id {}", incrementalDumpLocn, incrementalDumpId);
+    run("REPL LOAD " + dbName + "_dupe FROM '"+incrementalDumpLocn+"'", driverMirror);
+
+    run("REPL STATUS " + dbName + "_dupe", driverMirror);
+    verifyResults(new String[] {incrementalDumpId}, driverMirror);
+
+    // VERIFY tables and partitions on destination for equivalence.
+    String[] unptn_data = new String[]{ "1" };
+    String[] empty = new String[]{};
+
+    //verifyRun("SELECT * from " + dbName + "_dupe.unptned", unptn_data, driverMirror);
+    //verifyRun("SELECT a from " + dbName + "_dupe.ptned_empty", empty, driverMirror);
+  }
+
   private NotificationEvent createDummyEvent(String dbname, String tblname, long evid) {
     MessageFactory msgFactory = MessageFactory.getInstance();
     Table t = new Table();

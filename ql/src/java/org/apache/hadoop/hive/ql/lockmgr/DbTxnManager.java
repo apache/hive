@@ -190,6 +190,15 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
+  public long replOpenTxn(String replPolicy, long srcTxnId) throws LockException {
+    try {
+      return getMS().replOpenTxn(replPolicy, srcTxnId);
+    } catch (TException e) {
+      throw new LockException(e, ErrorMsg.METASTORE_COMMUNICATION_FAILED);
+    }
+  }
+
+  @Override
   public long openTxn(Context ctx, String user) throws LockException {
     return openTxn(ctx, user, 0);
   }

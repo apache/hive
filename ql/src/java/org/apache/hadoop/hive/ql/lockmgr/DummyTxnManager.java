@@ -53,6 +53,11 @@ class DummyTxnManager extends HiveTxnManagerImpl {
     return 0L;
   }
   @Override
+  public long replOpenTxn(String replPolicy, long srcTxnId)  throws LockException {
+    return 0L;
+  }
+
+  @Override
   public boolean isTxnOpen() {
     return false;
   }

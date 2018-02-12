@@ -577,6 +577,25 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           LOG.debug("Going to execute update <" + q + ">");
           stmt.execute(q);
         }
+
+        if (rqst.isSetReplPolicy()) {
+          List<String> rowsRepl = new ArrayList<>();
+          String selectRepl = "select target_txn_id from TXN_MAP where repl_policy = " + quoteString(rqst.getReplPolicy()) + "and src_txn_id = " + rqst.getReplSrcTxnId();
+          for (long i = first; i < first + numTxns; i++) {
+            rowsRepl.add(quoteString(rqst.getReplPolicy()) + "," + rqst.getReplSrcTxnId() + "," + i);
+          }
+          List<String> queriesRepl = sqlGenerator.createInsertValuesStmt(
+                  "TXN_MAP (repl_policy, src_txn_id, target_txn_id)", rowsRepl);
+          for (String q : queriesRepl) {
+            rs = stmt.executeQuery(selectRepl);
+            //no rows in the result set
+            if (rs.first() == false) {
+              LOG.debug("Going to execute insert <" + q + ">");
+              stmt.execute(q);
+            }
+          }
+        }
+
         LOG.debug("Going to commit");
         dbConn.commit();
         return new OpenTxnsResponse(txnIds);
