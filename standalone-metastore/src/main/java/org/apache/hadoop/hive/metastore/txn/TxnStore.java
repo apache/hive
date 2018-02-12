@@ -38,8 +38,10 @@ import java.util.Set;
 @InterfaceStability.Evolving
 public interface TxnStore extends Configurable {
 
-  enum MUTEX_KEY {Initiator, Cleaner, HouseKeeper, CompactionHistory, CheckLock,
-    WriteSetCleaner, CompactionScheduler, WriteIdAllocator}
+  enum MUTEX_KEY {
+    Initiator, Cleaner, HouseKeeper, CompactionHistory, CheckLock,
+    WriteSetCleaner, CompactionScheduler, WriteIdAllocator
+  }
   // Compactor states (Should really be enum)
   String INITIATED_RESPONSE = "initiated";
   String WORKING_RESPONSE = "working";
@@ -225,7 +227,7 @@ public interface TxnStore extends Configurable {
   CompactionResponse compact(CompactionRequest rqst) throws MetaException;
 
   /**
-   * Show list of current compactions
+   * Show list of current compactions.
    * @param rqst info on which compactions to show
    * @return compaction information
    * @throws MetaException
@@ -245,7 +247,7 @@ public interface TxnStore extends Configurable {
       throws NoSuchTxnException,  TxnAbortedException, MetaException;
 
   /**
-   * Clean up corresponding records in metastore tables
+   * Clean up corresponding records in metastore tables.
    * @param type Hive object type
    * @param db database object
    * @param table table object

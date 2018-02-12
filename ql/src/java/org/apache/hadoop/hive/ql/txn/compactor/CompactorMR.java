@@ -201,8 +201,8 @@ public class CompactorMR {
    * @param ci CompactionInfo
    * @throws java.io.IOException if the job fails
    */
-  void run(HiveConf conf, String jobName, Table t, StorageDescriptor sd,
-           ValidWriteIdList writeIds, CompactionInfo ci, Worker.StatsUpdater su, TxnStore txnHandler) throws IOException {
+  void run(HiveConf conf, String jobName, Table t, StorageDescriptor sd, ValidWriteIdList writeIds,
+           CompactionInfo ci, Worker.StatsUpdater su, TxnStore txnHandler) throws IOException {
 
     if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION)) {
       throw new RuntimeException(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION.name() + "=true");

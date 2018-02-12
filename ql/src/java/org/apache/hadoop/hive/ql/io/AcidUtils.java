@@ -755,14 +755,17 @@ public class AcidUtils {
   public static List<AcidInputFormat.DeltaMetaData> serializeDeltas(List<ParsedDelta> deltas) {
     List<AcidInputFormat.DeltaMetaData> result = new ArrayList<>(deltas.size());
     AcidInputFormat.DeltaMetaData last = null;
-    for(ParsedDelta parsedDelta : deltas) {
-      if(last != null && last.getMinWriteId() == parsedDelta.getMinWriteId() && last.getMaxWriteId() == parsedDelta.getMaxWriteId()) {
+    for (ParsedDelta parsedDelta : deltas) {
+      if ((last != null)
+              && (last.getMinWriteId() == parsedDelta.getMinWriteId())
+              && (last.getMaxWriteId() == parsedDelta.getMaxWriteId())) {
         last.getStmtIds().add(parsedDelta.getStatementId());
         continue;
       }
-      last = new AcidInputFormat.DeltaMetaData(parsedDelta.getMinWriteId(), parsedDelta.getMaxWriteId(), new ArrayList<Integer>());
+      last = new AcidInputFormat.DeltaMetaData(parsedDelta.getMinWriteId(),
+              parsedDelta.getMaxWriteId(), new ArrayList<Integer>());
       result.add(last);
-      if(parsedDelta.statementId >= 0) {
+      if (parsedDelta.statementId >= 0) {
         last.getStmtIds().add(parsedDelta.getStatementId());
       }
     }
@@ -1088,7 +1091,7 @@ public class AcidUtils {
   }
 
   private static void getChildState(FileStatus child, HdfsFileStatusWithId childWithId,
-                                    ValidWriteIdList writeIdList, List<ParsedDelta> working, List<FileStatus> originalDirectories,
+      ValidWriteIdList writeIdList, List<ParsedDelta> working, List<FileStatus> originalDirectories,
       List<HdfsFileStatusWithId> original, List<FileStatus> obsolete, TxnBase bestBase,
       boolean ignoreEmptyFiles, List<FileStatus> aborted, Map<String, String> tblproperties,
       FileSystem fs) throws IOException {
@@ -1121,7 +1124,7 @@ public class AcidUtils {
               (fn.startsWith(DELTA_PREFIX)) ? DELTA_PREFIX : DELETE_DELTA_PREFIX;
       ParsedDelta delta = parseDelta(child, deltaPrefix, fs);
       if (tblproperties != null && AcidUtils.isInsertOnlyTable(tblproperties) &&
-              ValidWriteIdList.RangeResponse.ALL == writeIdList.isWriteIdRangeAborted(delta.minWriteId, delta.maxWriteId)) {
+        ValidWriteIdList.RangeResponse.ALL == writeIdList.isWriteIdRangeAborted(delta.minWriteId, delta.maxWriteId)) {
         aborted.add(child);
       }
       if (writeIdList.isWriteIdRangeValid(delta.minWriteId,
@@ -1493,28 +1496,26 @@ public class AcidUtils {
   }
 
   /**
-   * Extract the ValidWriteIdList for the given table from the list of tables' ValidWriteIdList
+   * Extract the ValidWriteIdList for the given table from the list of tables' ValidWriteIdList.
    */
   public static ValidWriteIdList getTableValidWriteIdList(Configuration conf, String fullTableName) {
     String txnString = conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
     ValidTxnWriteIdList validTxnList = new ValidTxnWriteIdList(txnString);
-    LOG.debug("getTableValidWriteIdList trying to get ValidWriteIdList for table: "
-            + fullTableName + " from ValidTxnWriteIdList: " + txnString);
     return validTxnList.getTableValidWriteIdList(fullTableName);
   }
 
   /**
-   * Set the valid write id list for the current table scan
+   * Set the valid write id list for the current table scan.
    */
   public static void setValidWriteIdList(Configuration conf, ValidWriteIdList validWriteIds) {
     conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY, validWriteIds.toString());
-    LOG.debug("setValidWriteIdList ValidWriteIdList: " + validWriteIds.toString()
+    LOG.debug("Setting ValidWriteIdList: " + validWriteIds.toString()
             + " isAcidTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, false)
             + " acidProperty: " + getAcidOperationalProperties(conf));
   }
 
   /**
-   * Set the valid write id list for the current table scan
+   * Set the valid write id list for the current table scan.
    */
   public static void setValidWriteIdList(Configuration conf, TableScanDesc tsDesc) {
     String dbName = tsDesc.getDatabaseName();
@@ -1522,10 +1523,11 @@ public class AcidUtils {
     if ((dbName != null) && (tableName != null)) {
       ValidWriteIdList validWriteIdList = getTableValidWriteIdList(conf,
                                                     AcidUtils.getFullTableName(dbName, tableName));
-      if (validWriteIdList.getTableName() != null) {
+      if (validWriteIdList != null) {
         setValidWriteIdList(conf, validWriteIdList);
-      } else {
-        LOG.debug("setValidWriteIdList on table: " + AcidUtils.getFullTableName(dbName, tableName)
+      } else if (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, false)) {
+        // Log error if the acid table is missing from the ValidWriteIdList conf
+        LOG.error("setValidWriteIdList on table: " + AcidUtils.getFullTableName(dbName, tableName)
                 + " isAcidTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, false)
                 + " acidProperty: " + getAcidOperationalProperties(conf)
                 + " couldn't find the ValidWriteId list from ValidTxnWriteIdList: "

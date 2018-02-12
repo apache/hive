@@ -303,7 +303,8 @@ public class TestOrcRawRecordMerger {
     fs.makeQualified(root);
     fs.create(root);
     ReaderPair pair = new OrcRawRecordMerger.OriginalReaderPairToRead(key, reader, BUCKET, minKey, maxKey,
-        new Reader.Options().include(includes), new OrcRawRecordMerger.Options().rootPath(root), conf, new ValidReaderWriteIdList(), 0);
+        new Reader.Options().include(includes), new OrcRawRecordMerger.Options().rootPath(root),
+            conf, new ValidReaderWriteIdList(), 0);
     RecordReader recordReader = pair.getRecordReader();
     assertEquals(0, key.getWriteId());
     assertEquals(bucketProperty, key.getBucketProperty());
@@ -538,10 +539,10 @@ public class TestOrcRawRecordMerger {
     }
     /*create delta_1_1_0/bucket0 with 1 row and close the file*/
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
-      .inspector(inspector).bucket(BUCKET).writingBase(false).minimumWriteId(1)
-      .maximumWriteId(1).finalDestination(root);
+        .inspector(inspector).bucket(BUCKET).writingBase(false).minimumWriteId(1)
+        .maximumWriteId(1).finalDestination(root);
     Path delta1_1_0 = new Path(root, AcidUtils.deltaSubdir(
-      options.getMinimumWriteId(), options.getMaximumWriteId(), options.getStatementId()));
+        options.getMinimumWriteId(), options.getMaximumWriteId(), options.getStatementId()));
     Path bucket0 = AcidUtils.createBucketFile(delta1_1_0, BUCKET);
     Path bucket0SideFile = OrcAcidUtils.getSideFile(bucket0);
 

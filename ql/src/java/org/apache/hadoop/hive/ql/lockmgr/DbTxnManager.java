@@ -53,6 +53,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -90,20 +91,22 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   /**
    * The local cache of table write IDs allocated/created by the current transaction
    */
-  private HashMap<String, Long> tableWriteIds = new HashMap<>();
+  private Map<String, Long> tableWriteIds = new HashMap<>();
 
   /**
    * assigns a unique monotonically increasing ID to each statement
    * which is part of an open transaction.  This is used by storage
    * layer (see {@link org.apache.hadoop.hive.ql.io.AcidUtils#deltaSubdir(long, long, int)})
    * to keep apart multiple writes of the same data within the same transaction
-   * Also see {@link org.apache.hadoop.hive.ql.io.AcidOutputFormat.Options}
+   * Also see {@link org.apache.hadoop.hive.ql.io.AcidOutputFormat.Options}.
    */
   private int stmtId = -1;
+
   /**
-   * counts number of statements in the current transaction
+   * counts number of statements in the current transaction.
    */
   private int numStatements = 0;
+
   /**
    * if {@code true} it means current transaction is started via START TRANSACTION which means it cannot
    * include any Operations which cannot be rolled back (drop partition; write to  non-acid table).
@@ -133,9 +136,10 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
    *
    * As a side note: what should the lock manager do with locks for non-transactional resources?
    * Should it it release them at the end of the stmt or txn?
-   * Some interesting thoughts: http://mysqlmusings.blogspot.com/2009/02/mixing-engines-in-transactions.html
+   * Some interesting thoughts: http://mysqlmusings.blogspot.com/2009/02/mixing-engines-in-transactions.html.
    */
   private boolean isExplicitTransaction = false;
+
   /**
    * To ensure transactions don't nest.
    */
@@ -149,6 +153,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   private ScheduledFuture<?> heartbeatTask = null;
   private Runnable shutdownRunner = null;
   private static final int SHUTDOWN_HOOK_PRIORITY = 0;
+
   /**
    * We do this on every call to make sure TM uses same MS connection as is used by the caller (Driver,
    * SemanticAnalyzer, etc).  {@code Hive} instances are cached using ThreadLocal and

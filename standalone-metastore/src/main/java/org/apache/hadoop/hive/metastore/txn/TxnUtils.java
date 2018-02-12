@@ -23,9 +23,12 @@ import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
-import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -173,7 +176,7 @@ public class TxnUtils {
    * Note, users are responsible for using the correct TxnManager. We do not look at
    * SessionState.get().getTxnMgr().supportsAcid() here
    * Should produce the same result as
-   * {@link org.apache.hadoop.hive.ql.io.AcidUtils#isTransactionalTable(org.apache.hadoop.hive.ql.metadata.Table)}
+   * {@link org.apache.hadoop.hive.ql.io.AcidUtils#isTransactionalTable(org.apache.hadoop.hive.ql.metadata.Table)}.
    * @return true if table is a transactional table, false otherwise
    */
   public static boolean isTransactionalTable(Table table) {
@@ -187,7 +190,7 @@ public class TxnUtils {
 
   /**
    * Should produce the same result as
-   * {@link org.apache.hadoop.hive.ql.io.AcidUtils#isAcidTable(org.apache.hadoop.hive.ql.metadata.Table)}
+   * {@link org.apache.hadoop.hive.ql.io.AcidUtils#isAcidTable(org.apache.hadoop.hive.ql.metadata.Table)}.
    */
   public static boolean isAcidTable(Table table) {
     return TxnUtils.isTransactionalTable(table) &&
@@ -196,8 +199,7 @@ public class TxnUtils {
   }
 
   /**
-   * Should produce the same result as
-   * {@link org.apache.hadoop.hive.ql.io.AcidUtils#getFullTableName(String, String)}
+   * Should produce the result as <dbName>.<tableName>.
    */
   public static String getFullTableName(String dbName, String tableName) {
     return dbName.toLowerCase() + "." + tableName.toLowerCase();
@@ -410,7 +412,7 @@ public class TxnUtils {
     return ret;
   }
 
-  /*
+  /**
    * Compute and return the size of a query statement with the given parameters as input variables.
    *
    * @param sizeSoFar     size of the current contents of the buf

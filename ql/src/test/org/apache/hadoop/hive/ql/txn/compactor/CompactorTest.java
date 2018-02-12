@@ -198,8 +198,10 @@ public abstract class CompactorTest {
     return txns.get(0);
   }
 
-  protected long allocateWriteId(String dbName, String tblName, long txnid) throws MetaException, TxnAbortedException, NoSuchTxnException {
-    AllocateTableWriteIdsRequest awiRqst = new AllocateTableWriteIdsRequest(Collections.singletonList(txnid), dbName, tblName);
+  protected long allocateWriteId(String dbName, String tblName, long txnid)
+          throws MetaException, TxnAbortedException, NoSuchTxnException {
+    AllocateTableWriteIdsRequest awiRqst
+            = new AllocateTableWriteIdsRequest(Collections.singletonList(txnid), dbName, tblName);
     AllocateTableWriteIdsResponse awiResp = txnHandler.allocateTableWriteIds(awiRqst);
     return awiResp.getTxnToWriteIds().get(0).getWriteId();
   }

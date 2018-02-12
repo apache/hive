@@ -638,10 +638,11 @@ public class HiveEndPoint {
         public Object run() throws Exception {
           return msClient.openTxns(user, numTxns).getTxn_ids();
         }
-      }) ;
+      });
     }
 
-    private List<TxnToWriteId> allocateWriteIdsImpl(final IMetaStoreClient msClient, final List<Long> txnIds, UserGroupInformation ugi)
+    private List<TxnToWriteId> allocateWriteIdsImpl(final IMetaStoreClient msClient,
+                                                    final List<Long> txnIds, UserGroupInformation ugi)
             throws IOException, TException,  InterruptedException {
       if(ugi==null) {
         return  msClient.allocateTableWriteIdsBatch(txnIds, endPt.database, endPt.table);
@@ -651,7 +652,7 @@ public class HiveEndPoint {
         public Object run() throws Exception {
           return msClient.allocateTableWriteIdsBatch(txnIds, endPt.database, endPt.table);
         }
-      }) ;
+      });
     }
 
     @Override
@@ -704,7 +705,7 @@ public class HiveEndPoint {
     private void beginNextTransactionImpl() throws TransactionError {
       state = TxnState.INACTIVE;//clear state from previous txn
 
-      if ( currentTxnIndex + 1 >= txnToWriteIds.size() ) {
+      if ((currentTxnIndex + 1) >= txnToWriteIds.size()) {
         throw new InvalidTrasactionState("No more transactions available in" +
                 " current batch for end point : " + endPt);
       }
@@ -723,24 +724,24 @@ public class HiveEndPoint {
     }
 
     /**
-     * Get Id of currently open transaction
+     * Get Id of currently open transaction.
      * @return -1 if there is no open TX
      */
     @Override
     public Long getCurrentTxnId() {
-      if(currentTxnIndex >= 0) {
+      if (currentTxnIndex >= 0) {
         return txnToWriteIds.get(currentTxnIndex).getTxnId();
       }
       return -1L;
     }
 
     /**
-     * Get Id of currently open transaction
+     * Get Id of currently open transaction.
      * @return -1 if there is no open TX
      */
     @Override
     public Long getCurrentWriteId() {
-      if(currentTxnIndex >= 0) {
+      if (currentTxnIndex >= 0) {
         return txnToWriteIds.get(currentTxnIndex).getWriteId();
       }
       return -1L;

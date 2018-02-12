@@ -3559,7 +3559,7 @@ public class TestInputOutputFormat {
     writer.close();
 
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf).bucket(1).minimumWriteId(1)
-      .maximumWriteId(1).inspector(inspector).finalDestination(mockPath);
+        .maximumWriteId(1).inspector(inspector).finalDestination(mockPath);
     OrcOutputFormat of = new OrcOutputFormat();
     RecordUpdater ru = of.getRecordUpdater(mockPath, options);
     for (int i = 0; i < 10; ++i) {
@@ -3639,7 +3639,7 @@ public class TestInputOutputFormat {
     writer.close();
 
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf).bucket(1).minimumWriteId(1)
-      .maximumWriteId(1).inspector(inspector).finalDestination(mockPath);
+        .maximumWriteId(1).inspector(inspector).finalDestination(mockPath);
     OrcOutputFormat of = new OrcOutputFormat();
     RecordUpdater ru = of.getRecordUpdater(mockPath, options);
     for (int i = 0; i < 10; ++i) {

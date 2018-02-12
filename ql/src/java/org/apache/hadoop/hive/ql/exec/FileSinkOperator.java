@@ -1018,9 +1018,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           }
         }
         if (conf.getWriteType() == AcidUtils.Operation.UPDATE) {
-            fpaths.updaters[writerOffset].update(conf.getTableWriteId(), row);
+          fpaths.updaters[writerOffset].update(conf.getTableWriteId(), row);
         } else if (conf.getWriteType() == AcidUtils.Operation.DELETE) {
-            fpaths.updaters[writerOffset].delete(conf.getTableWriteId(), row);
+          fpaths.updaters[writerOffset].delete(conf.getTableWriteId(), row);
         } else {
           throw new HiveException("Unknown write type " + conf.getWriteType().toString());
         }
@@ -1321,8 +1321,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       }
       if (conf.isMmTable()) {
-        Utilities.writeMmCommitManifest(
-            commitPaths, specPath, fs, taskId, conf.getTableWriteId(), conf.getStatementId(), unionPath, conf.getInsertOverwrite());
+        Utilities.writeMmCommitManifest(commitPaths, specPath, fs, taskId,
+                conf.getTableWriteId(), conf.getStatementId(), unionPath, conf.getInsertOverwrite());
       }
       // Only publish stats if this operator's flag was set to gather stats
       if (conf.isGatherStats()) {

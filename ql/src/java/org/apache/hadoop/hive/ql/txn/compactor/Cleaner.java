@@ -257,8 +257,9 @@ public class Cleaner extends CompactorThread {
        * Now removeFiles() (more specifically AcidUtils.getAcidState()) will declare D3 to be obsolete
        * unless ValidTxnList is "capped" at highestWriteId.
        */
-      final ValidWriteIdList txnList = ci.highestWriteId > 0 ?
-        new ValidReaderWriteIdList(ci.getFullTableName(), new long[0], new BitSet(), ci.highestWriteId) : new ValidReaderWriteIdList();
+      final ValidWriteIdList txnList = (ci.highestWriteId > 0)
+              ? new ValidReaderWriteIdList(ci.getFullTableName(), new long[0], new BitSet(), ci.highestWriteId)
+              : new ValidReaderWriteIdList();
 
       if (runJobAsSelf(ci.runAs)) {
         removeFiles(location, txnList);

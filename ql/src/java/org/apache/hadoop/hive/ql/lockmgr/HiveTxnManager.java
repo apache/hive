@@ -214,7 +214,7 @@ public interface HiveTxnManager {
   boolean useNewShowLocksFormat();
 
   /**
-   * Indicate whether this transaction manager supports ACID operations
+   * Indicate whether this transaction manager supports ACID operations.
    * @return true if this transaction manager does ACID
    */
   boolean supportsAcid();
@@ -229,12 +229,12 @@ public interface HiveTxnManager {
   
   boolean isTxnOpen();
   /**
-   * if {@code isTxnOpen()}, returns the currently active transaction ID
+   * if {@code isTxnOpen()}, returns the currently active transaction ID.
    */
   long getCurrentTxnId();
 
   /**
-   * if {@code isTxnOpen()}, returns the table write ID associated with current active transaction
+   * if {@code isTxnOpen()}, returns the table write ID associated with current active transaction.
    */
   long getTableWriteId(String dbName, String tableName) throws LockException;
 

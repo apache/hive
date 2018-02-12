@@ -28,7 +28,7 @@ import java.util.BitSet;
  */
 public class ValidReaderWriteIdList implements ValidWriteIdList {
 
-  protected String tableName; // Full table name of format <db_name>.<table_name>
+  private String tableName; // Full table name of format <db_name>.<table_name>
   protected long[] exceptions;
   protected BitSet abortedBits; // BitSet for flagging aborted write ids. Bit is true if aborted, false if open
   //default value means there are no open write ids in the snapshot
@@ -40,7 +40,7 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
   }
 
   /**
-   * Used if there are no open write ids in the snapshot
+   * Used if there are no open write ids in the snapshot.
    */
   public ValidReaderWriteIdList(String tableName, long[] exceptions, BitSet abortedBits, long highWatermark) {
     this(tableName, exceptions, abortedBits, highWatermark, Long.MAX_VALUE);
@@ -62,7 +62,7 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
 
   @Override
   public boolean isWriteIdValid(long writeId) {
-    if (highWatermark < writeId) {
+    if (writeId > highWatermark) {
       return false;
     }
     return Arrays.binarySearch(exceptions, writeId) < 0;
@@ -74,12 +74,12 @@ public class ValidReaderWriteIdList implements ValidWriteIdList {
    */
   @Override
   public boolean isValidBase(long writeId) {
-    return minOpenWriteId > writeId && writeId <= highWatermark;
+    return (writeId < minOpenWriteId) && (writeId <= highWatermark);
   }
   @Override
   public RangeResponse isWriteIdRangeValid(long minWriteId, long maxWriteId) {
     // check the easy cases first
-    if (highWatermark < minWriteId) {
+    if (minWriteId > highWatermark) {
       return RangeResponse.NONE;
     } else if (exceptions.length > 0 && exceptions[0] > maxWriteId) {
       return RangeResponse.ALL;

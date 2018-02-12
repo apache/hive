@@ -292,8 +292,12 @@ public class TestFileSinkOperator {
     }
     desc.setWriteType(writeType);
     desc.setGatherStats(true);
-    if (txnId > 0) desc.setTableWriteId(txnId);
-    if (writeType != AcidUtils.Operation.NOT_ACID) desc.setTableWriteId(1L);
+    if (txnId > 0) {
+      desc.setTableWriteId(txnId);
+    }
+    if (writeType != AcidUtils.Operation.NOT_ACID) {
+      desc.setTableWriteId(1L);
+    }
 
     FileSinkOperator op = (FileSinkOperator)OperatorFactory.get(
         new CompilationOpContext(), FileSinkDesc.class);

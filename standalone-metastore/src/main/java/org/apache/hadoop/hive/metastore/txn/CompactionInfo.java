@@ -44,7 +44,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
    * {@code 0} means it wasn't set (e.g. in case of upgrades, since ResultSet.getLong() will return 0 if field is NULL) 
    * See {@link TxnStore#setCompactionHighestWriteId(CompactionInfo, long)} for precise definition.
    * See also {@link TxnUtils#createValidCompactWriteIdList(TableValidWriteIds)} and
-   * {@link ValidCompactorWriteIdList#highWatermark}
+   * {@link ValidCompactorWriteIdList#highWatermark}.
    */
   public long highestWriteId;
   byte[] metaInfo;

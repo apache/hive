@@ -1380,7 +1380,8 @@ public interface IMetaStoreClient {
    * @return list of valid write ids for the given list of tables.
    * @throws TException
    */
-  ValidTxnWriteIdList getValidWriteIds(Long currentTxnId, List<String> tablesList, String validTxnList) throws TException;
+  ValidTxnWriteIdList getValidWriteIds(Long currentTxnId, List<String> tablesList, String validTxnList)
+          throws TException;
 
   /**
    * Initiate a transaction.
@@ -1451,7 +1452,7 @@ public interface IMetaStoreClient {
   void abortTxns(List<Long> txnids) throws TException;
 
   /**
-   * Allocate a per table write ID and associate it with the given transaction
+   * Allocate a per table write ID and associate it with the given transaction.
    * @param txnId id of transaction to which the allocated write ID to be associated.
    * @param dbName name of DB in which the table belongs.
    * @param tableName table to which the write ID to be allocated
@@ -1460,7 +1461,7 @@ public interface IMetaStoreClient {
   long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException;
 
   /**
-   * Allocate a per table write ID and associate it with the given transaction
+   * Allocate a per table write ID and associate it with the given transaction.
    * @param txnIds ids of transaction batchto which the allocated write ID to be associated.
    * @param dbName name of DB in which the table belongs.
    * @param tableName table to which the write ID to be allocated

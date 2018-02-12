@@ -86,7 +86,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
      * or delete event.  For Acid 2.0 + multi-stmt txn, it must be a delete event.
      * No 2 Insert events from can ever agree on {@link RecordIdentifier}
      */
-    private int statementId;//sort on this descending, like currentWriteId
+    private int statementId; //sort on this descending, like currentWriteId
 
     ReaderKey() {
       this(-1, -1, -1, -1, 0);
@@ -472,8 +472,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
          * contents to be in {@link org.apache.hadoop.hive.ql.io.AcidUtils.Directory#getOriginalFiles()}
          */
         //the split is from something other than the 1st file of the logical bucket - compute offset
-        AcidUtils.Directory directoryState = AcidUtils.getAcidState(mergerOptions.getRootPath(),
-          conf, validWriteIdList, false, true);
+        AcidUtils.Directory directoryState
+                = AcidUtils.getAcidState(mergerOptions.getRootPath(), conf, validWriteIdList, false, true);
         for (HadoopShims.HdfsFileStatusWithId f : directoryState.getOriginalFiles()) {
           AcidOutputFormat.Options bucketOptions =
             AcidUtils.parseBaseOrDeltaBucketFilename(f.getFileStatus().getPath(), conf);
@@ -587,8 +587,8 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       //when compacting each split needs to process the whole logical bucket
       assert options.getOffset() == 0;
       assert options.getMaxOffset() == Long.MAX_VALUE;
-      AcidUtils.Directory directoryState = AcidUtils.getAcidState(
-        mergerOptions.getRootPath(), conf, validWriteIdList, false, true);
+      AcidUtils.Directory directoryState
+              = AcidUtils.getAcidState(mergerOptions.getRootPath(), conf, validWriteIdList, false, true);
       /**
        * Note that for reading base_x/ or delta_x_x/ with non-acid schema,
        * {@link Options#getRootPath()} is set to base_x/ or delta_x_x/ which causes all it's
@@ -1100,11 +1100,11 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           assert !deltaDir.isDeleteDelta() : delta.toString();
           assert mergerOptions.isCompacting() : "during regular read anything which is not a" +
             " delete_delta is treated like base: " + delta;
-          Options rawCompactOptions = modifyForNonAcidSchemaRead(mergerOptions,
-            deltaDir.getMinWriteId(), delta);
+          Options rawCompactOptions = modifyForNonAcidSchemaRead(mergerOptions, deltaDir.getMinWriteId(), delta);
+
           //this will also handle copy_N files if any
           ReaderPair deltaPair =  new OriginalReaderPairToCompact(key, bucket, options,
-            rawCompactOptions, conf, validWriteIdList, deltaDir.getStatementId());
+              rawCompactOptions, conf, validWriteIdList, deltaDir.getStatementId());
           if (deltaPair.nextRecord() != null) {
             readers.put(key, deltaPair);
           }

@@ -26,18 +26,18 @@ public interface RecordWriter {
    * @param writeId the write ID of the table mapping to Txn in which the write occurs
    * @param record the record to be written
    */
-  public void write(long writeId, byte[] record) throws StreamingException;
+  void write(long writeId, byte[] record) throws StreamingException;
 
   /** Flush records from buffer. Invoked by TransactionBatch.commit() */
-  public void flush() throws StreamingException;
+  void flush() throws StreamingException;
 
   /** Clear bufferred writes. Invoked by TransactionBatch.abort() */
-  public void clear() throws StreamingException;
+  void clear() throws StreamingException;
 
   /** Acquire a new RecordUpdater. Invoked when
    * StreamingConnection.fetchTransactionBatch() is called */
-  public void newBatch(Long minWriteId, Long maxWriteID) throws StreamingException;
+  void newBatch(Long minWriteId, Long maxWriteID) throws StreamingException;
 
   /** Close the RecordUpdater. Invoked by TransactionBatch.close() */
-  public void closeBatch() throws StreamingException;
+  void closeBatch() throws StreamingException;
 }

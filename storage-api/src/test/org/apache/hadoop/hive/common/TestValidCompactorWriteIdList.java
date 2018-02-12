@@ -22,6 +22,9 @@ import org.junit.Test;
 
 import java.util.BitSet;
 
+/**
+ * Tests for {@link ValidCompactorWriteIdList}.
+ */
 public class TestValidCompactorWriteIdList {
   private final String tableName = "t1";
 
@@ -90,17 +93,20 @@ public class TestValidCompactorWriteIdList {
   public void writeToString() {
     BitSet bitSet = new BitSet(4);
     bitSet.set(0, 4);
-    ValidWriteIdList writeIds = new ValidCompactorWriteIdList(tableName, new long[]{7, 9, 10, Long.MAX_VALUE}, bitSet, 8);
+    ValidWriteIdList writeIds
+            = new ValidCompactorWriteIdList(tableName, new long[]{7, 9, 10, Long.MAX_VALUE}, bitSet, 8);
     Assert.assertEquals(tableName + ":8:" + Long.MAX_VALUE + "::7", writeIds.writeToString());
     writeIds = new ValidCompactorWriteIdList();
-    Assert.assertEquals("null:" + Long.toString(Long.MAX_VALUE) + ":" + Long.MAX_VALUE + "::", writeIds.writeToString());
+    Assert.assertEquals("null:" + Long.toString(Long.MAX_VALUE) + ":" + Long.MAX_VALUE + "::",
+            writeIds.writeToString());
     writeIds = new ValidCompactorWriteIdList(tableName, new long[0], new BitSet(), 23);
     Assert.assertEquals(tableName + ":23:" + Long.MAX_VALUE + "::", writeIds.writeToString());
   }
 
   @Test
   public void readFromString() {
-    ValidCompactorWriteIdList writeIds = new ValidCompactorWriteIdList(tableName + ":37:" + Long.MAX_VALUE + "::7,9,10");
+    ValidCompactorWriteIdList writeIds
+            = new ValidCompactorWriteIdList(tableName + ":37:" + Long.MAX_VALUE + "::7,9,10");
     Assert.assertEquals(tableName, writeIds.getTableName());
     Assert.assertEquals(37L, writeIds.getHighWatermark());
     Assert.assertNull(writeIds.getMinOpenWriteId());

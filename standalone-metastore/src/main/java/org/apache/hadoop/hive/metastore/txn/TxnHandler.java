@@ -2120,7 +2120,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         StringBuilder buff = new StringBuilder();
 
         switch (type) {
-          case DATABASE:
+          case DATABASE: {
             dbName = db.getName();
 
             buff.append("delete from TXN_COMPONENTS where tc_database='");
@@ -2159,7 +2159,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             queries.add(buff.toString());
 
             break;
-          case TABLE:
+          }
+          case TABLE: {
             dbName = table.getDbName();
             tblName = table.getTableName();
 
@@ -2211,7 +2212,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             queries.add(buff.toString());
 
             break;
-          case PARTITION:
+          }
+          case PARTITION: {
             dbName = table.getDbName();
             tblName = table.getTableName();
             List<FieldSchema> partCols = table.getPartitionKeys();  // partition columns
@@ -2264,8 +2266,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             }
 
             break;
-          default:
+          }
+          default: {
             throw new MetaException("Invalid object type for cleanup: " + type);
+          }
         }
 
         for (String query : queries) {

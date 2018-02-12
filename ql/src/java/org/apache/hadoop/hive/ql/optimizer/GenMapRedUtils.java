@@ -1270,8 +1270,8 @@ public final class GenMapRedUtils {
     FileSinkDesc fsInputDesc = fsInput.getConf();
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       Utilities.FILE_OP_LOGGER.trace("Creating merge work from " + System.identityHashCode(fsInput)
-        + " with write ID " + (fsInputDesc.isMmTable() ? fsInputDesc.getTableWriteId() : null)
-        + " into " + finalName);
+          + " with write ID " + (fsInputDesc.isMmTable() ? fsInputDesc.getTableWriteId() : null)
+          + " into " + finalName);
     }
 
     boolean isBlockMerge = (conf.getBoolVar(ConfVars.HIVEMERGERCFILEBLOCKLEVEL) &&

@@ -653,8 +653,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       String value = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
       writeIdList = value == null ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(value);
       LOG.debug("Context:: Read ValidWriteIdList: " + writeIdList.toString()
-              + " isAcidTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, false)
-              + " acidProperty: " + AcidUtils.getAcidOperationalProperties(conf));
+              + " isAcidTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, false));
 
       // Determine the transactional_properties of the table from the job conf stored in context.
       // The table properties are copied to job conf at HiveInputFormat::addSplitsForGroup(),
@@ -1172,8 +1171,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
               AcidUtils.AcidBaseFileType.ORIGINAL_BASE : AcidUtils.AcidBaseFileType.ACID_SCHEMA;
             PathFilter bucketFilter = parsedDelta.isRawFormat() ?
               AcidUtils.originalBucketFilter : AcidUtils.bucketFileFilter;
-            if(parsedDelta.isRawFormat() && parsedDelta.getMinWriteId() !=
-              parsedDelta.getMaxWriteId()) {
+            if (parsedDelta.isRawFormat() && parsedDelta.getMinWriteId() != parsedDelta.getMaxWriteId()) {
               //delta/ with files in raw format are a result of Load Data (as opposed to compaction
               //or streaming ingest so must have interval length == 1.
               throw new IllegalStateException("Delta in " + AcidUtils.AcidBaseFileType.ORIGINAL_BASE
@@ -2009,11 +2007,10 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     readOptions.range(split.getStart(), split.getLength());
 
     String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
-    ValidWriteIdList validWriteIdList = txnString == null ? new ValidReaderWriteIdList() :
-      new ValidReaderWriteIdList(txnString);
+    ValidWriteIdList validWriteIdList
+            = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
     LOG.debug("getReader:: Read ValidWriteIdList: " + validWriteIdList.toString()
-            + " isAcidTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, false)
-            + " acidProperty: " + AcidUtils.getAcidOperationalProperties(conf));
+            + " isAcidTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, false));
 
     final OrcRawRecordMerger records =
         new OrcRawRecordMerger(conf, true, reader, split.isOriginal(), bucket,

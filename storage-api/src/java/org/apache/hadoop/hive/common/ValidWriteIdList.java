@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,13 +29,13 @@ public interface ValidWriteIdList {
    * Key used to store valid write id list in a
    * {@link org.apache.hadoop.conf.Configuration} object.
    */
-  public static final String VALID_WRITEIDS_KEY = "hive.txn.valid.writeids";
+  String VALID_WRITEIDS_KEY = "hive.txn.valid.writeids";
 
   /**
    * The response to a range query.  NONE means no values in this range match,
    * SOME mean that some do, and ALL means that every value does.
    */
-  public enum RangeResponse {NONE, SOME, ALL};
+  enum RangeResponse {NONE, SOME, ALL};
 
   /**
    * Indicates whether a given write ID is valid. Note that valid may have different meanings
@@ -44,14 +44,14 @@ public interface ValidWriteIdList {
    * @param writeId write ID of the table
    * @return true if valid, false otherwise
    */
-  public boolean isWriteIdValid(long writeId);
+  boolean isWriteIdValid(long writeId);
 
   /**
    * Returns {@code true} if such base file can be used to materialize the snapshot represented by
    * this {@code ValidWriteIdList}.
    * @param writeId highest write ID in a given base_xxxx file
    */
-  public boolean isValidBase(long writeId);
+  boolean isValidBase(long writeId);
 
   /**
    * Find out if a range of write ids are valid.  Note that valid may have different meanings
@@ -61,32 +61,32 @@ public interface ValidWriteIdList {
    * @param maxWriteId maximum write ID to look for, inclusive
    * @return Indicate whether none, some, or all of these transactions are valid.
    */
-  public RangeResponse isWriteIdRangeValid(long minWriteId, long maxWriteId);
+  RangeResponse isWriteIdRangeValid(long minWriteId, long maxWriteId);
 
   /**
    * Write this ValidWriteIdList into a string. This should produce a string that
    * can be used by {@link #readFromString(String)} to populate a ValidWriteIdList.
    */
-  public String writeToString();
+  String writeToString();
 
   /**
    * Populate this ValidWriteIdList from the string.  It is assumed that the string
    * was created via {@link #writeToString()} and the exceptions list is sorted.
    * @param src source string.
    */
-  public void readFromString(String src);
+  void readFromString(String src);
 
   /**
    * Get the table for which the ValidWriteIdList is formed
    * @return table name (<db_name>.<table_name>) associated with ValidWriteIdList.
    */
-  public String getTableName();
+  String getTableName();
 
   /**
    * Get the largest write id used.
    * @return largest write id used
    */
-  public long getHighWatermark();
+  long getHighWatermark();
 
   /**
    * Get the list of write ids under the high water mark that are not valid.  Note that invalid
@@ -94,14 +94,14 @@ public interface ValidWriteIdList {
    * transactions and some both open and aborted.
    * @return a list of invalid write ids
    */
-  public long[] getInvalidWriteIds();
+  long[] getInvalidWriteIds();
 
   /**
    * Indicates whether a given write maps to aborted transaction.
    * @param writeId write id to be validated
    * @return true if aborted, false otherwise
    */
-  public boolean isWriteIdAborted(long writeId);
+  boolean isWriteIdAborted(long writeId);
 
   /**
    * Find out if a range of write ids are aborted.
@@ -109,7 +109,7 @@ public interface ValidWriteIdList {
    * @param maxWriteId maximum write Id  to look for, inclusive
    * @return Indicate whether none, some, or all of these write ids are aborted.
    */
-  public RangeResponse isWriteIdRangeAborted(long minWriteId, long maxWriteId);
+  RangeResponse isWriteIdRangeAborted(long minWriteId, long maxWriteId);
 
   /**
    * Returns smallest Open write Id in this set, {@code null} if there is none.

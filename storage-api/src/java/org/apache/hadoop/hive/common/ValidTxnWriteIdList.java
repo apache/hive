@@ -19,10 +19,11 @@
 package org.apache.hadoop.hive.common;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * An implementation to store and manage list of ValidWriteIds for each tables read by current
- * transaction
+ * transaction.
  */
 public class ValidTxnWriteIdList {
   /**
@@ -32,11 +33,11 @@ public class ValidTxnWriteIdList {
   public static final String VALID_TABLES_WRITEIDS_KEY = "hive.txn.tables.valid.writeids";
 
   // Transaction for which the list of tables valid write Ids are populated
-  Long txnId;
+  private Long txnId;
 
   // Map of valid write ids list for all the tables read by the current txn
   // Key is full table name string of format <db_name>.<table_name>
-  private HashMap<String, ValidWriteIdList> tablesValidWriteIdList = new HashMap<>();
+  private Map<String, ValidWriteIdList> tablesValidWriteIdList = new HashMap<>();
   public ValidTxnWriteIdList(Long txnId) {
     this.txnId = txnId;
   }
@@ -58,9 +59,8 @@ public class ValidTxnWriteIdList {
   public ValidWriteIdList getTableValidWriteIdList(String fullTableName) {
     if (tablesValidWriteIdList.containsKey(fullTableName)) {
       return tablesValidWriteIdList.get(fullTableName);
-    } else {
-      return new ValidReaderWriteIdList();
     }
+    return null;
   }
 
   // Each ValidWriteIdList is separated with "$" and each one maps to one table
