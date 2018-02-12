@@ -42,6 +42,7 @@ guava
 guice*
 hbase*
 hibernate-validator
+Hikaricp
 htrace-core
 http-client
 httpclient
