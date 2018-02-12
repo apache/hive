@@ -2237,6 +2237,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public GetTargetTxnIdsResponse replGetTargetTxnIds(String replPolicy, List<Long> srcTxnIds) throws TException {
+    return client.repl_get_target_txn_ids(new GetTargetTxnIdsRequest(srcTxnIds, replPolicy));
+  }
+
+  @Override
   public LockResponse lock(LockRequest request)
       throws NoSuchTxnException, TxnAbortedException, TException {
     return client.lock(request);

@@ -88,6 +88,7 @@ import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
+import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
@@ -7106,7 +7107,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public AllocateTableWriteIdsResponse allocate_table_write_ids(
             AllocateTableWriteIdsRequest rqst) throws TException {
-      return getTxnHandler().allocateTableWriteIds(rqst);
+      AllocateTableWriteIdsResponse response = getTxnHandler().allocateTableWriteIds(rqst);
+      if (listeners != null && !listeners.isEmpty()) {
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ALLOC_WRITE_ID,
+                new AllocWriteIdEvent(rqst.getTxnIds(), rqst.getTableName(), this));
+      }
+      return response;
+    }
+
+    @Override
+    public GetTargetTxnIdsResponse repl_get_target_txn_ids(GetTargetTxnIdsRequest rqst) throws TException {
+      return getTxnHandler().replGetTargetTxnIds(rqst);
     }
 
     @Override

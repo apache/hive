@@ -77,6 +77,10 @@ class DummyTxnManager extends HiveTxnManagerImpl {
     return 0L;
   }
   @Override
+  public void allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName)  throws LockException {
+    return;
+  }
+  @Override
   public HiveLockManager getLockManager() throws LockException {
     if (lockMgr == null) {
       boolean supportConcurrency =
@@ -226,6 +230,11 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   @Override
   public void replRollbackTxn(String replPolicy, long srcTxnId) throws LockException {
     // No-op
+  }
+
+  @Override
+  public List<Long> replGetTargetTxnIds(String replPolicy, List<Long> srcTxnIds) throws LockException {
+    return null;
   }
 
   @Override

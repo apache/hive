@@ -118,12 +118,15 @@ import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
+import org.apache.hadoop.hive.metastore.api.GetTargetTxnIdsRequest;
+import org.apache.hadoop.hive.metastore.api.GetTargetTxnIdsResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.BoneCPDataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.HikariCPDataSourceProvider;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
+import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
@@ -1336,6 +1339,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           stmt.execute(insert);
         }
 
+        //TODO : change it to notify with sql generator and conn
+        if (transactionalListeners != null) {
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventMessage.EventType.ALLOC_WRITE_ID, new AllocWriteIdEvent(txnIds, rqst.getTableName(), null));
+        }
+
         LOG.debug("Going to commit");
         dbConn.commit();
         return new AllocateTableWriteIdsResponse(txnToWriteIds);
@@ -1354,6 +1363,54 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
     } catch (RetryException e) {
       return allocateTableWriteIds(rqst);
+    }
+  }
+
+  @Override
+  public GetTargetTxnIdsResponse replGetTargetTxnIds(GetTargetTxnIdsRequest rqst) throws MetaException {
+    List<Long> targteTxnIds = new ArrayList<>();
+    ResultSet rs = null;
+    Connection dbConn = null;
+    Statement stmt = null;
+    try {
+      try {
+        lockInternal();
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+
+        List<String> inQueries = new ArrayList<>();
+        StringBuilder prefix = new StringBuilder();
+        StringBuilder suffix = new StringBuilder();
+
+        prefix.append("select RTM_TARGET_TXN_ID from REPL_TXN_MAP where ");
+        suffix.append(" and RTM_REPL_POLICY = " + quoteString(rqst.getReplPolicy()));
+
+        TxnUtils.buildQueryWithINClause(conf, inQueries, prefix, suffix, rqst.getSrcTxnIds(),
+                "RTM_SRC_TXN_ID", false, false);
+
+        for (String query : inQueries) {
+          LOG.debug("Going to execute select <" + query + ">");
+          rs = stmt.executeQuery(query);
+          while (rs.next()) {
+            targteTxnIds.add(rs.getLong(1));
+          }
+        }
+
+        LOG.debug("Going to commit");
+        dbConn.commit();
+        return new GetTargetTxnIdsResponse(targteTxnIds);
+      } catch (SQLException e) {
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "replGetTargetTxnIds(" + rqst + ")");
+        throw new MetaException("Unable to get target transaction ids "
+                + StringUtils.stringifyException(e));
+      } finally{
+        close(rs, stmt, dbConn);
+        unlockInternal();
+      }
+    } catch (RetryException e) {
+      return replGetTargetTxnIds(rqst);
     }
   }
 

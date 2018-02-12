@@ -169,6 +169,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void commit_txn(const CommitTxnRequest& rqst) = 0;
   virtual void get_valid_write_ids(GetValidWriteIdsResponse& _return, const GetValidWriteIdsRequest& rqst) = 0;
   virtual void allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const AllocateTableWriteIdsRequest& rqst) = 0;
+  virtual void repl_get_target_txn_ids(GetTargetTxnIdsResponse& _return, const GetTargetTxnIdsRequest& rqst) = 0;
   virtual void lock(LockResponse& _return, const LockRequest& rqst) = 0;
   virtual void check_lock(LockResponse& _return, const CheckLockRequest& rqst) = 0;
   virtual void unlock(const UnlockRequest& rqst) = 0;
@@ -719,6 +720,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void allocate_table_write_ids(AllocateTableWriteIdsResponse& /* _return */, const AllocateTableWriteIdsRequest& /* rqst */) {
+    return;
+  }
+  void repl_get_target_txn_ids(GetTargetTxnIdsResponse& /* _return */, const GetTargetTxnIdsRequest& /* rqst */) {
     return;
   }
   void lock(LockResponse& /* _return */, const LockRequest& /* rqst */) {
@@ -19304,6 +19308,126 @@ class ThriftHiveMetastore_allocate_table_write_ids_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_repl_get_target_txn_ids_args__isset {
+  _ThriftHiveMetastore_repl_get_target_txn_ids_args__isset() : rqst(false) {}
+  bool rqst :1;
+} _ThriftHiveMetastore_repl_get_target_txn_ids_args__isset;
+
+class ThriftHiveMetastore_repl_get_target_txn_ids_args {
+ public:
+
+  ThriftHiveMetastore_repl_get_target_txn_ids_args(const ThriftHiveMetastore_repl_get_target_txn_ids_args&);
+  ThriftHiveMetastore_repl_get_target_txn_ids_args& operator=(const ThriftHiveMetastore_repl_get_target_txn_ids_args&);
+  ThriftHiveMetastore_repl_get_target_txn_ids_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_repl_get_target_txn_ids_args() throw();
+  GetTargetTxnIdsRequest rqst;
+
+  _ThriftHiveMetastore_repl_get_target_txn_ids_args__isset __isset;
+
+  void __set_rqst(const GetTargetTxnIdsRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_repl_get_target_txn_ids_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_repl_get_target_txn_ids_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_repl_get_target_txn_ids_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_repl_get_target_txn_ids_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_repl_get_target_txn_ids_pargs() throw();
+  const GetTargetTxnIdsRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_repl_get_target_txn_ids_result__isset {
+  _ThriftHiveMetastore_repl_get_target_txn_ids_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_repl_get_target_txn_ids_result__isset;
+
+class ThriftHiveMetastore_repl_get_target_txn_ids_result {
+ public:
+
+  ThriftHiveMetastore_repl_get_target_txn_ids_result(const ThriftHiveMetastore_repl_get_target_txn_ids_result&);
+  ThriftHiveMetastore_repl_get_target_txn_ids_result& operator=(const ThriftHiveMetastore_repl_get_target_txn_ids_result&);
+  ThriftHiveMetastore_repl_get_target_txn_ids_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_repl_get_target_txn_ids_result() throw();
+  GetTargetTxnIdsResponse success;
+  NoSuchTxnException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_repl_get_target_txn_ids_result__isset __isset;
+
+  void __set_success(const GetTargetTxnIdsResponse& val);
+
+  void __set_o1(const NoSuchTxnException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_repl_get_target_txn_ids_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_repl_get_target_txn_ids_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_repl_get_target_txn_ids_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_repl_get_target_txn_ids_presult__isset {
+  _ThriftHiveMetastore_repl_get_target_txn_ids_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_repl_get_target_txn_ids_presult__isset;
+
+class ThriftHiveMetastore_repl_get_target_txn_ids_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_repl_get_target_txn_ids_presult() throw();
+  GetTargetTxnIdsResponse* success;
+  NoSuchTxnException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_repl_get_target_txn_ids_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_lock_args__isset {
   _ThriftHiveMetastore_lock_args__isset() : rqst(false) {}
   bool rqst :1;
@@ -26096,6 +26220,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const AllocateTableWriteIdsRequest& rqst);
   void send_allocate_table_write_ids(const AllocateTableWriteIdsRequest& rqst);
   void recv_allocate_table_write_ids(AllocateTableWriteIdsResponse& _return);
+  void repl_get_target_txn_ids(GetTargetTxnIdsResponse& _return, const GetTargetTxnIdsRequest& rqst);
+  void send_repl_get_target_txn_ids(const GetTargetTxnIdsRequest& rqst);
+  void recv_repl_get_target_txn_ids(GetTargetTxnIdsResponse& _return);
   void lock(LockResponse& _return, const LockRequest& rqst);
   void send_lock(const LockRequest& rqst);
   void recv_lock(LockResponse& _return);
@@ -26418,6 +26545,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_commit_txn(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_valid_write_ids(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_allocate_table_write_ids(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_repl_get_target_txn_ids(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_lock(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_check_lock(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_unlock(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -26624,6 +26752,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["commit_txn"] = &ThriftHiveMetastoreProcessor::process_commit_txn;
     processMap_["get_valid_write_ids"] = &ThriftHiveMetastoreProcessor::process_get_valid_write_ids;
     processMap_["allocate_table_write_ids"] = &ThriftHiveMetastoreProcessor::process_allocate_table_write_ids;
+    processMap_["repl_get_target_txn_ids"] = &ThriftHiveMetastoreProcessor::process_repl_get_target_txn_ids;
     processMap_["lock"] = &ThriftHiveMetastoreProcessor::process_lock;
     processMap_["check_lock"] = &ThriftHiveMetastoreProcessor::process_check_lock;
     processMap_["unlock"] = &ThriftHiveMetastoreProcessor::process_unlock;
@@ -28118,6 +28247,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
+  void repl_get_target_txn_ids(GetTargetTxnIdsResponse& _return, const GetTargetTxnIdsRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->repl_get_target_txn_ids(_return, rqst);
+    }
+    ifaces_[i]->repl_get_target_txn_ids(_return, rqst);
+    return;
+  }
+
   void lock(LockResponse& _return, const LockRequest& rqst) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -29111,6 +29250,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const AllocateTableWriteIdsRequest& rqst);
   int32_t send_allocate_table_write_ids(const AllocateTableWriteIdsRequest& rqst);
   void recv_allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const int32_t seqid);
+  void repl_get_target_txn_ids(GetTargetTxnIdsResponse& _return, const GetTargetTxnIdsRequest& rqst);
+  int32_t send_repl_get_target_txn_ids(const GetTargetTxnIdsRequest& rqst);
+  void recv_repl_get_target_txn_ids(GetTargetTxnIdsResponse& _return, const int32_t seqid);
   void lock(LockResponse& _return, const LockRequest& rqst);
   int32_t send_lock(const LockRequest& rqst);
   void recv_lock(LockResponse& _return, const int32_t seqid);

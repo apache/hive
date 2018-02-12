@@ -2393,6 +2393,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public GetTargetTxnIdsResponse replGetTargetTxnIds(String replPolicy, List<Long> srcTxnIds)
+          throws NoSuchTxnException, TException {
+    return client.repl_get_target_txn_ids(new GetTargetTxnIdsRequest(srcTxnIds, replPolicy));
+  }
+
+
+  @Override
   public void rollbackTxn(long txnid) throws NoSuchTxnException, TException {
     client.abort_txn(new AbortTxnRequest(txnid));
   }

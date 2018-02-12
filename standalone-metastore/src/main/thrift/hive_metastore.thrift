@@ -862,6 +862,15 @@ struct CommitTxnRequest {
     2: optional string replPolicy,
 }
 
+struct GetTargetTxnIdsRequest {
+    1: required list<i64> srcTxnIds,
+    2: required string replPolicy;
+}
+
+struct GetTargetTxnIdsResponse {
+    1: required list<i64> targetTxnIds,
+}
+
 // Request msg to get the valid write ids list for the given list of tables wrt to input validTxnList
 struct GetValidWriteIdsRequest {
     1: required list<string> fullTableNames, // Full table names of format <db_name>.<table_name>
@@ -2050,6 +2059,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
       throws (1:NoSuchTxnException o1, 2:MetaException o2)
   AllocateTableWriteIdsResponse allocate_table_write_ids(1:AllocateTableWriteIdsRequest rqst)
     throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2, 3:MetaException o3)
+  GetTargetTxnIdsResponse repl_get_target_txn_ids(1:GetTargetTxnIdsRequest rqst)
+   throws (1:NoSuchTxnException o1, 2:MetaException o2)
   LockResponse lock(1:LockRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
   LockResponse check_lock(1:CheckLockRequest rqst)
     throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2, 3:NoSuchLockException o3)

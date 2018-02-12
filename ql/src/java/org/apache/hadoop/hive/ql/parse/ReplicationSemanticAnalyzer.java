@@ -250,7 +250,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     // repl id stored in the database/table is valid.
     if ((dumpType != DumpType.EVENT_ABORT_TXN) &&
             (dumpType != DumpType.EVENT_OPEN_TXN) &&
-            (dumpType != DumpType.EVENT_COMMIT_TXN)) {
+            (dumpType != DumpType.EVENT_COMMIT_TXN) &&
+            (dumpType != DumpType.EVENT_ALLOC_WRITE_ID)) {
       return true;
     }
 

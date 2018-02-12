@@ -443,6 +443,10 @@ class AbortTxnsRequest;
 
 class CommitTxnRequest;
 
+class GetTargetTxnIdsRequest;
+
+class GetTargetTxnIdsResponse;
+
 class GetValidWriteIdsRequest;
 
 class TableValidWriteIds;
@@ -6956,6 +6960,91 @@ class CommitTxnRequest {
 void swap(CommitTxnRequest &a, CommitTxnRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const CommitTxnRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class GetTargetTxnIdsRequest {
+ public:
+
+  GetTargetTxnIdsRequest(const GetTargetTxnIdsRequest&);
+  GetTargetTxnIdsRequest& operator=(const GetTargetTxnIdsRequest&);
+  GetTargetTxnIdsRequest() : replPolicy() {
+  }
+
+  virtual ~GetTargetTxnIdsRequest() throw();
+  std::vector<int64_t>  srcTxnIds;
+  std::string replPolicy;
+
+  void __set_srcTxnIds(const std::vector<int64_t> & val);
+
+  void __set_replPolicy(const std::string& val);
+
+  bool operator == (const GetTargetTxnIdsRequest & rhs) const
+  {
+    if (!(srcTxnIds == rhs.srcTxnIds))
+      return false;
+    if (!(replPolicy == rhs.replPolicy))
+      return false;
+    return true;
+  }
+  bool operator != (const GetTargetTxnIdsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetTargetTxnIdsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetTargetTxnIdsRequest &a, GetTargetTxnIdsRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetTargetTxnIdsRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class GetTargetTxnIdsResponse {
+ public:
+
+  GetTargetTxnIdsResponse(const GetTargetTxnIdsResponse&);
+  GetTargetTxnIdsResponse& operator=(const GetTargetTxnIdsResponse&);
+  GetTargetTxnIdsResponse() {
+  }
+
+  virtual ~GetTargetTxnIdsResponse() throw();
+  std::vector<int64_t>  targetTxnIds;
+
+  void __set_targetTxnIds(const std::vector<int64_t> & val);
+
+  bool operator == (const GetTargetTxnIdsResponse & rhs) const
+  {
+    if (!(targetTxnIds == rhs.targetTxnIds))
+      return false;
+    return true;
+  }
+  bool operator != (const GetTargetTxnIdsResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetTargetTxnIdsResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetTargetTxnIdsResponse &a, GetTargetTxnIdsResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetTargetTxnIdsResponse& obj)
 {
   obj.printTo(out);
   return out;

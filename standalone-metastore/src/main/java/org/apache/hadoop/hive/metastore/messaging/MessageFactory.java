@@ -71,6 +71,7 @@ public abstract class MessageFactory {
   public static final String OPEN_TXN_EVENT = "OPEN_TXN";
   public static final String COMMIT_TXN_EVENT = "COMMIT_TXN";
   public static final String ABORT_TXN_EVENT = "ABORT_TXN";
+  public static final String ALLOC_WRITE_ID_EVENT = "ALLOC_WRITE_ID_EVENT";
 
   private static MessageFactory instance = null;
 
@@ -264,6 +265,15 @@ public abstract class MessageFactory {
    * @return instance of AbortTxnMessage
    */
   public abstract AbortTxnMessage buildAbortTxnMessage(Long txnId);
+
+  /**
+   * Factory method for building alloc write id message
+   *
+   * @param txnIds List of Ids of the transaction to allocate the write id
+   * @param tableName table for which write ids to be allocated
+   * @return instance of AllocWriteIdMessage
+   */
+  public abstract AllocWriteIdMessage buildAllocWriteIdMessage(List<Long> txnIds, String tableName);
 
   /***
    * Factory method for building add primary key message

@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
+import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 
 /**
  * This abstract class needs to be extended to  provide implementation of actions that needs
@@ -254,6 +255,14 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @throws MetaException
    */
   public void onAbortTxn(AbortTxnEvent abortTxnEvent) throws MetaException {
+  }
+
+  /**
+   * This will be called to alloc a new write id.
+   * @param allocWriteIdEvent
+   * @throws MetaException
+   */
+  public void onAllocWriteId(AllocWriteIdEvent allocWriteIdEvent) throws MetaException {
   }
 
   @Override

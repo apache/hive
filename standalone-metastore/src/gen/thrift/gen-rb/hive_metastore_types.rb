@@ -2572,6 +2572,43 @@ class CommitTxnRequest
   ::Thrift::Struct.generate_accessors self
 end
 
+class GetTargetTxnIdsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SRCTXNIDS = 1
+  REPLPOLICY = 2
+
+  FIELDS = {
+    SRCTXNIDS => {:type => ::Thrift::Types::LIST, :name => 'srcTxnIds', :element => {:type => ::Thrift::Types::I64}},
+    REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field srcTxnIds is unset!') unless @srcTxnIds
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field replPolicy is unset!') unless @replPolicy
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetTargetTxnIdsResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TARGETTXNIDS = 1
+
+  FIELDS = {
+    TARGETTXNIDS => {:type => ::Thrift::Types::LIST, :name => 'targetTxnIds', :element => {:type => ::Thrift::Types::I64}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field targetTxnIds is unset!') unless @targetTxnIds
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class GetValidWriteIdsRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   FULLTABLENAMES = 1

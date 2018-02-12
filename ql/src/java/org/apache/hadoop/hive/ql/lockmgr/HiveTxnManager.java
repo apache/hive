@@ -74,6 +74,15 @@ public interface HiveTxnManager {
   void replRollbackTxn(String replPolicy, long srcTxnId)  throws LockException;
 
   /**
+  * Get the list of mapping target txn ids.
+  * @param replPolicy Replication policy to uniquely identify the source cluster.
+  * @param srcTxnIds The ids of the transaction at the source cluster
+  * @return The list of mapping target txn ids.
+  * @throws LockException in case of failure to get the target txn ids
+  */
+  List<Long> replGetTargetTxnIds(String replPolicy, List<Long> srcTxnIds) throws LockException;
+
+  /**
    * Get the lock manager.  This must be used rather than instantiating an
    * instance of the lock manager directly as the transaction manager will
    * choose which lock manager to instantiate.
@@ -263,6 +272,15 @@ public interface HiveTxnManager {
    * if {@code isTxnOpen()}, returns the table write ID associated with current active transaction.
    */
   long getTableWriteId(String dbName, String tableName) throws LockException;
+
+  /**
+   * Allocates write id for each transaction in the list.
+   * @param txnIds  List of transactions for which write ids to be allocted
+   * @param dbName database name
+   * @param tableName the name of the table to allocate the write id
+   * @throws LockException
+   */
+  void allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName) throws LockException;
 
   /**
    * Should be though of more as a unique write operation ID in a given txn (at QueryPlan level).

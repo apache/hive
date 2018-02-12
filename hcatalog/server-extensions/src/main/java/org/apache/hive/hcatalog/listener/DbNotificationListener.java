@@ -72,6 +72,7 @@ import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
+import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
@@ -589,6 +590,24 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     event.setDbName(dbName);
     event.setTableName(tableName);
     process(event, dropConstraintEvent);
+  }
+
+  /***
+   * @param allocWriteIdEvent Alloc write id event
+   * @throws MetaException
+   */
+  @Override
+  public void onAllocWriteId(AllocWriteIdEvent allocWriteIdEvent) throws MetaException {
+    String tableName = allocWriteIdEvent.getTableName();
+    NotificationEvent event =
+            new NotificationEvent(0, now(), EventType.ALLOC_WRITE_ID.toString(), msgFactory
+                    .buildAllocWriteIdMessage(allocWriteIdEvent.getTxnIds(), tableName).toString());
+    event.setTableName(tableName);
+    try {
+      addNotificationLog(event, allocWriteIdEvent);
+    } catch (SQLException e) {
+      throw new MetaException("Unable to execute direct SQL " + StringUtils.stringifyException(e));
+    }
   }
 
   private int now() {

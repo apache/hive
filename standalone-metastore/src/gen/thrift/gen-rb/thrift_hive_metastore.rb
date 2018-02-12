@@ -2472,6 +2472,23 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'allocate_table_write_ids failed: unknown result')
     end
 
+    def repl_get_target_txn_ids(rqst)
+      send_repl_get_target_txn_ids(rqst)
+      return recv_repl_get_target_txn_ids()
+    end
+
+    def send_repl_get_target_txn_ids(rqst)
+      send_message('repl_get_target_txn_ids', Repl_get_target_txn_ids_args, :rqst => rqst)
+    end
+
+    def recv_repl_get_target_txn_ids()
+      result = receive_message(Repl_get_target_txn_ids_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'repl_get_target_txn_ids failed: unknown result')
+    end
+
     def lock(rqst)
       send_lock(rqst)
       return recv_lock()
@@ -5268,6 +5285,19 @@ module ThriftHiveMetastore
         result.o3 = o3
       end
       write_result(result, oprot, 'allocate_table_write_ids', seqid)
+    end
+
+    def process_repl_get_target_txn_ids(seqid, iprot, oprot)
+      args = read_args(iprot, Repl_get_target_txn_ids_args)
+      result = Repl_get_target_txn_ids_result.new()
+      begin
+        result.success = @handler.repl_get_target_txn_ids(args.rqst)
+      rescue ::NoSuchTxnException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'repl_get_target_txn_ids', seqid)
     end
 
     def process_lock(seqid, iprot, oprot)
@@ -11478,6 +11508,42 @@ module ThriftHiveMetastore
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::TxnAbortedException},
       O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Repl_get_target_txn_ids_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::GetTargetTxnIdsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Repl_get_target_txn_ids_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetTargetTxnIdsResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end
