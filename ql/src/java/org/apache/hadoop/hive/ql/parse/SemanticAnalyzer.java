@@ -12554,6 +12554,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Unrecognized command.");
     }
 
+    if(isExt && hasEnabledOrValidatedConstraints(notNullConstraints)){
+      throw new SemanticException(
+          ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Constraints are disallowed with External tables. "
+              + "Only RELY is allowed."));
+    }
+
+
     storageFormat.fillDefaultStorageFormat(isExt, false);
 
     // check for existence of table

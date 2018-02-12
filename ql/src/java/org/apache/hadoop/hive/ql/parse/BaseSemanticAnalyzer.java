@@ -906,6 +906,17 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
+  protected boolean hasEnabledOrValidatedConstraints(List<SQLNotNullConstraint> notNullConstraints){
+    if(notNullConstraints != null) {
+      for (SQLNotNullConstraint nnC : notNullConstraints) {
+        if (nnC.isEnable_cstr() || nnC.isValidate_cstr()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   private static void checkColumnName(String columnName) throws SemanticException {
     if (VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(columnName.toUpperCase())) {
       throw new SemanticException(ErrorMsg.INVALID_COLUMN_NAME.getMsg(columnName));
