@@ -379,8 +379,20 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       ReplicationSpec replicationSpec, EximUtil.SemanticAnalyzerWrapperContext x,
       Long txnId, int stmtId, boolean isSourceMm) {
     Path dataPath = new Path(fromURI.toString(), EximUtil.DATA_PATH_NAME);
-    Path destPath = !AcidUtils.isInsertOnlyTable(table.getParameters()) ? x.getCtx().getExternalTmpPath(tgtPath)
-        : new Path(tgtPath, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
+    Path destPath = null, loadPath = null;
+    LoadFileType lft;
+    if (AcidUtils.isInsertOnlyTable(table)) {
+      String mmSubdir = replace ? AcidUtils.baseDir(txnId)
+          : AcidUtils.deltaSubdir(txnId, txnId, stmtId);
+      destPath = new Path(tgtPath, mmSubdir);
+      loadPath = tgtPath;
+      lft = LoadFileType.KEEP_EXISTING;
+    } else {
+      destPath = loadPath = x.getCtx().getExternalTmpPath(tgtPath);
+      lft = replace ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING;
+    }
+
+
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       Utilities.FILE_OP_LOGGER.trace("adding import work for table with source location: " +
         dataPath + "; table: " + tgtPath + "; copy destination " + destPath + "; mm " + txnId +
@@ -400,12 +412,10 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       copyTask = TaskFactory.get(cw, x.getConf());
     }
 
-    LoadTableDesc loadTableWork = new LoadTableDesc(destPath,
-        Utilities.getTableDesc(table), new TreeMap<>(),
-        replace ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING, txnId);
+    LoadTableDesc loadTableWork = new LoadTableDesc(
+        loadPath, Utilities.getTableDesc(table), new TreeMap<>(), lft, txnId);
     loadTableWork.setStmtId(stmtId);
-    MoveWork mv = new MoveWork(x.getInputs(), x.getOutputs(), loadTableWork,
-        null, false);
+    MoveWork mv = new MoveWork(x.getInputs(), x.getOutputs(), loadTableWork, null, false);
     Task<?> loadTableTask = TaskFactory.get(mv, x.getConf());
     copyTask.addDependentTask(loadTableTask);
     x.getTasks().add(copyTask);
@@ -884,6 +894,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private static Task<?> createImportCommitTask(
       String dbName, String tblName, Long txnId, int stmtId, HiveConf conf, boolean isMmTable) {
+    // TODO: noop, remove?
     @SuppressWarnings("unchecked")
     Task<ImportCommitWork> ict = (!isMmTable) ? null : TaskFactory.get(
         new ImportCommitWork(dbName, tblName, txnId, stmtId), conf);

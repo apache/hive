@@ -9,7 +9,7 @@ set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
 
 drop table intermediate;
-create table intermediate(key int) partitioned by (p int) stored as orc;
+create table intermediate(key int) partitioned by (p int) stored as orc tblproperties("transactional"="false");
 insert into table intermediate partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2;
 insert into table intermediate partition(p='456') select distinct key from src where key is not null order by key asc limit 2;
 insert into table intermediate partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2;
@@ -17,7 +17,7 @@ insert into table intermediate partition(p='457') select distinct key from src w
 drop table intermediate_nonpart;
 drop table intermmediate_part;
 drop table intermmediate_nonpart;
-create table intermediate_nonpart(key int, p int);
+create table intermediate_nonpart(key int, p int) tblproperties("transactional"="false");
 insert into intermediate_nonpart select * from intermediate;
 create table intermmediate_nonpart(key int, p int) tblproperties("transactional"="true", "transactional_properties"="insert_only");
 insert into intermmediate_nonpart select * from intermediate;
@@ -84,13 +84,13 @@ drop table import5_mm;
 -- MM export into existing non-MM table, non-part and part
 
 drop table import6_mm;
-create table import6_mm(key int, p int);
+create table import6_mm(key int, p int) tblproperties("transactional"="false");
 import table import6_mm from 'ql/test/data/exports/intermmediate_nonpart';
 select * from import6_mm order by key, p;
 drop table import6_mm;
 
 drop table import7_mm;
-create table import7_mm(key int) partitioned by (p int);
+create table import7_mm(key int) partitioned by (p int) tblproperties("transactional"="false");
 import table import7_mm from 'ql/test/data/exports/intermmediate_part';
 select * from import7_mm order by key, p;
 drop table import7_mm;
