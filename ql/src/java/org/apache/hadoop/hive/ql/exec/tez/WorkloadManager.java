@@ -2127,7 +2127,13 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       PoolState poolState = pools.get(poolName);
       if (poolState != null) {
         poolState.getSessions().remove(toKill);
-        poolState.getInitializingSessions().remove(toKill);
+        Iterator<SessionInitContext> iter = poolState.getInitializingSessions().iterator();
+        while (iter.hasNext()) {
+          if (iter.next().session == toKill) {
+            iter.remove();
+            break;
+          }
+        }
       }
     }
 
