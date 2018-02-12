@@ -384,7 +384,7 @@ public class TestOrcRawRecordMerger {
     Configuration conf = new Configuration();
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, "col1");
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, "string");
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_TABLE_SCAN, true);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
     Reader reader = Mockito.mock(Reader.class, settings);
     RecordReader recordReader = Mockito.mock(RecordReader.class, settings);
 
@@ -602,7 +602,7 @@ public class TestOrcRawRecordMerger {
         OrcFile.readerOptions(conf));
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, MyRow.getColumnNamesProperty());
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, MyRow.getColumnTypesProperty());
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_TABLE_SCAN, true);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
     OrcRawRecordMerger merger =
         new OrcRawRecordMerger(conf, true, baseReader, false, BUCKET,
             createMaximalTxnList(), new Reader.Options(),
@@ -681,7 +681,7 @@ public class TestOrcRawRecordMerger {
 
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, MyRow.getColumnNamesProperty());
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, MyRow.getColumnTypesProperty());
-    AcidUtils.setAcidTableScan(conf,true);
+    AcidUtils.setAcidOperationalProperties(conf, true, null);
     conf.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
 
     //the first "split" is for base/
@@ -1149,7 +1149,8 @@ public class TestOrcRawRecordMerger {
     JobConf job = new JobConf();
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, BigRow.getColumnNamesProperty());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, BigRow.getColumnTypesProperty());
-    AcidUtils.setAcidTableScan(job,true);
+    AcidUtils.setAcidOperationalProperties(job, true, null);
+
     job.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     job.set("mapred.min.split.size", "1");
     job.set("mapred.max.split.size", "2");
@@ -1284,7 +1285,8 @@ public class TestOrcRawRecordMerger {
     job.set("mapred.input.dir", root.toString());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, BigRow.getColumnNamesProperty());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, BigRow.getColumnTypesProperty());
-    AcidUtils.setAcidTableScan(job,true);
+    AcidUtils.setAcidOperationalProperties(job, true, null);
+
     job.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     InputSplit[] splits = inf.getSplits(job, 5);
     //base has 10 rows, so 5 splits, 1 delta has 2 rows so 1 split, and 1 delta has 3 so 2 splits
@@ -1381,7 +1383,8 @@ public class TestOrcRawRecordMerger {
     job.set("bucket_count", "1");
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, MyRow.getColumnNamesProperty());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, MyRow.getColumnTypesProperty());
-    AcidUtils.setAcidTableScan(job,true);
+    AcidUtils.setAcidOperationalProperties(job, true, null);
+
     job.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
     InputSplit[] splits = inf.getSplits(job, 5);
     assertEquals(2, splits.length);
@@ -1455,7 +1458,8 @@ public class TestOrcRawRecordMerger {
     job.set("bucket_count", "2");
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, MyRow.getColumnNamesProperty());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, MyRow.getColumnTypesProperty());
-    AcidUtils.setAcidTableScan(job,true);
+    AcidUtils.setAcidOperationalProperties(job, true, null);
+
     job.setBoolean(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, true);
 
     // read the keys before the delta is flushed

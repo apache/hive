@@ -1385,7 +1385,7 @@ public class TestCompactor {
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, columnNamesProperty);
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, columnTypesProperty);
     conf.set(hive_metastoreConstants.BUCKET_COUNT, Integer.toString(numBuckets));
-    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_ACID_TABLE_SCAN, true);
+    HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
     AcidInputFormat.RawReader<OrcStruct> reader =
         aif.getRawReader(conf, true, bucket, txnList, base, deltas);
     RecordIdentifier identifier = reader.createKey();

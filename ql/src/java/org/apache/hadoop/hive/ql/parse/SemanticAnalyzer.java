@@ -2003,7 +2003,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             "Inconsistent data structure detected: we are writing to " + ts.tableHandle  + " in " +
                 name + " but it's not in isInsertIntoTable() or getInsertOverwriteTables()";
         // Disallow update and delete on non-acid tables
-        boolean isAcid = AcidUtils.isAcidTable(ts.tableHandle);
+        boolean isAcid = AcidUtils.isFullAcidTable(ts.tableHandle);
         if ((updating(name) || deleting(name)) && !isAcid) {
           // Whether we are using an acid compliant transaction manager has already been caught in
           // UpdateDeleteSemanticAnalyzer, so if we are updating or deleting and getting nonAcid
@@ -6586,7 +6586,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         nullOrder.append(sortOrder == BaseSemanticAnalyzer.HIVE_COLUMN_ORDER_ASC ? 'a' : 'z');
       }
       input = genReduceSinkPlan(input, partnCols, sortCols, order.toString(), nullOrder.toString(),
-          maxReducers, (AcidUtils.isAcidTable(dest_tab) ?
+          maxReducers, (AcidUtils.isFullAcidTable(dest_tab) ?
               getAcidType(table_desc.getOutputFileFormatClass(), dest) : AcidUtils.Operation.NOT_ACID));
       reduceSinkOperatorsAddedByEnforceBucketingSorting.add((ReduceSinkOperator)input.getParentOperators().get(0));
       ctx.setMultiFileSpray(multiFileSpray);
@@ -6796,7 +6796,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       dest_tab = qbm.getDestTableForAlias(dest);
       destTableIsTransactional = AcidUtils.isTransactionalTable(dest_tab);
-      destTableIsFullAcid = AcidUtils.isAcidTable(dest_tab);
+      destTableIsFullAcid = AcidUtils.isFullAcidTable(dest_tab);
       destTableIsTemporary = dest_tab.isTemporary();
 
       // Is the user trying to insert into a external tables
@@ -6909,7 +6909,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       dest_part = qbm.getDestPartitionForAlias(dest);
       dest_tab = dest_part.getTable();
       destTableIsTransactional = AcidUtils.isTransactionalTable(dest_tab);
-      destTableIsFullAcid = AcidUtils.isAcidTable(dest_tab);
+      destTableIsFullAcid = AcidUtils.isFullAcidTable(dest_tab);
 
       checkExternalTable(dest_tab);
 
@@ -7034,7 +7034,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       destTableIsTransactional = tblDesc != null && AcidUtils.isTransactionalTable(tblDesc);
-      destTableIsFullAcid = tblDesc != null && AcidUtils.isAcidTable(tblDesc);
+      destTableIsFullAcid = tblDesc != null && AcidUtils.isFullAcidTable(tblDesc);
 
       boolean isDestTempFile = true;
       if (!ctx.isMRTmpFileURI(dest_path.toUri().toString())) {
@@ -12896,7 +12896,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             throw new SemanticException("View definition references materialized view " + alias);
           }
           if (createVwDesc.isMaterialized() && createVwDesc.isRewriteEnabled() &&
-              !AcidUtils.isAcidTable(table)) {
+              !AcidUtils.isTransactionalTable(table)) {
             throw new SemanticException("Automatic rewriting for materialized view cannot "
                 + "be enabled if the materialized view uses non-transactional tables");
           }

@@ -1232,19 +1232,8 @@ public class AcidUtils {
     }
     return resultStr != null && resultStr.equalsIgnoreCase("true");
   }
-  /**
-   * Means it's a full acid table
-   */
-  public static void setAcidTableScan(Map<String, String> parameters, boolean isAcidTable) {
-    parameters.put(ConfVars.HIVE_ACID_TABLE_SCAN.varname, Boolean.toString(isAcidTable));
-  }
 
-  /**
-   * Means it's a full acid table
-   */
-  public static void setAcidTableScan(Configuration conf, boolean isFullAcidTable) {
-    HiveConf.setBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, isFullAcidTable);
-  }
+
   /**
    * @param p - not null
    */
@@ -1252,21 +1241,6 @@ public class AcidUtils {
     return p.getName().startsWith(DELETE_DELTA_PREFIX);
   }
 
-  /**
-   * Should produce the same result as
-   * {@link org.apache.hadoop.hive.metastore.txn.TxnUtils#isTransactionalTable(org.apache.hadoop.hive.metastore.api.Table)}
-   */
-  public static boolean isTransactionalTable(Table table) {
-    if (table == null) {
-      return false;
-    }
-    String tableIsTransactional = table.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
-    if (tableIsTransactional == null) {
-      tableIsTransactional = table.getProperty(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL.toUpperCase());
-    }
-
-    return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true");
-  }
   public static boolean isTransactionalTable(CreateTableDesc table) {
     if (table == null || table.getTblProps() == null) {
       return false;
@@ -1282,20 +1256,29 @@ public class AcidUtils {
    * Should produce the same result as
    * {@link org.apache.hadoop.hive.metastore.txn.TxnUtils#isAcidTable(org.apache.hadoop.hive.metastore.api.Table)}
    */
-  public static boolean isAcidTable(Table table) {
-    return isAcidTable(table == null ? null : table.getTTable());
+  public static boolean isFullAcidTable(Table table) {
+    return isFullAcidTable(table == null ? null : table.getTTable());
   }
+
+  public static boolean isTransactionalTable(Table table) {
+    return isTransactionalTable(table == null ? null : table.getTTable());
+  }
+
   /**
    * Should produce the same result as
    * {@link org.apache.hadoop.hive.metastore.txn.TxnUtils#isAcidTable(org.apache.hadoop.hive.metastore.api.Table)}
    */
-  public static boolean isAcidTable(org.apache.hadoop.hive.metastore.api.Table table) {
-    return table != null && table.getParameters() != null &&
-        isTablePropertyTransactional(table.getParameters()) &&
+  public static boolean isFullAcidTable(org.apache.hadoop.hive.metastore.api.Table table) {
+    return isTransactionalTable(table) &&
         !isInsertOnlyTable(table.getParameters());
   }
 
-  public static boolean isAcidTable(CreateTableDesc td) {
+  public static boolean isTransactionalTable(org.apache.hadoop.hive.metastore.api.Table table) {
+    return table != null && table.getParameters() != null &&
+        isTablePropertyTransactional(table.getParameters());
+  }
+
+  public static boolean isFullAcidTable(CreateTableDesc td) {
     if (td == null || td.getTblProps() == null) {
       return false;
     }
@@ -1306,17 +1289,31 @@ public class AcidUtils {
     return tableIsTransactional != null && tableIsTransactional.equalsIgnoreCase("true") &&
       !AcidUtils.isInsertOnlyTable(td.getTblProps());
   }
-  
+
+  public static boolean isFullAcidScan(Configuration conf) {
+    if (!HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN)) return false;
+    int propInt = conf.getInt(ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname, -1);
+    if (propInt == -1) return true;
+    AcidOperationalProperties props = AcidOperationalProperties.parseInt(propInt);
+    return !props.isInsertOnly();
+  }
 
   /**
    * Sets the acidOperationalProperties in the configuration object argument.
    * @param conf Mutable configuration object
-   * @param properties An acidOperationalProperties object to initialize from.
+   * @param properties An acidOperationalProperties object to initialize from. If this is null,
+   *                   we assume this is a full transactional table.
    */
-  public static void setAcidOperationalProperties(Configuration conf,
-          AcidOperationalProperties properties) {
-    if (properties != null) {
-      HiveConf.setIntVar(conf, ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES, properties.toInt());
+  public static void setAcidOperationalProperties(
+      Configuration conf, boolean isTxnTable, AcidOperationalProperties properties) {
+    if (isTxnTable) {
+      HiveConf.setBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, isTxnTable);
+      if (properties != null) {
+        HiveConf.setIntVar(conf, ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES, properties.toInt());
+      }
+    } else {
+      conf.unset(ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN.varname);
+      conf.unset(ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname);
     }
   }
 
@@ -1325,8 +1322,9 @@ public class AcidUtils {
    * @param parameters Mutable map object
    * @param properties An acidOperationalProperties object to initialize from.
    */
-  public static void setAcidOperationalProperties(
-          Map<String, String> parameters, AcidOperationalProperties properties) {
+  public static void setAcidOperationalProperties(Map<String, String> parameters,
+      boolean isTxnTable, AcidOperationalProperties properties) {
+    parameters.put(ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN.varname, Boolean.toString(isTxnTable));
     if (properties != null) {
       parameters.put(ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname, properties.toString());
     }

@@ -199,7 +199,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
    * @param inputSplit
    * @return
    */
-  public boolean isAcidRead(Configuration conf, InputSplit inputSplit) {
+  public boolean isFullAcidRead(Configuration conf, InputSplit inputSplit) {
     if (!(inputSplit instanceof OrcSplit)) {
       return false;
     }
@@ -214,7 +214,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     /*
      * Fallback for the case when OrcSplit flags do not contain hasBase and deltas
      */
-    return HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN);
+    return AcidUtils.isFullAcidScan(conf);
   }
 
   private static class OrcRecordReader
@@ -308,9 +308,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
                                                   Configuration conf,
                                                   long offset, long length
                                                   ) throws IOException {
-
-    boolean isTransactionalTableScan = HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN);
-    if (isTransactionalTableScan) {
+    if (AcidUtils.isFullAcidScan(conf)) {
       raiseAcidTablesMustBeReadWithAcidReaderException(conf);
     }
 
@@ -1691,11 +1689,10 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       pathFutures.add(ecs.submit(fileGenerator));
     }
 
-    boolean isTransactionalTableScan =
-        HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN);
+    boolean isAcidTableScan = AcidUtils.isFullAcidScan(conf);
     boolean isSchemaEvolution = HiveConf.getBoolVar(conf, ConfVars.HIVE_SCHEMA_EVOLUTION);
     TypeDescription readerSchema =
-        OrcInputFormat.getDesiredRowTypeDescr(conf, isTransactionalTableScan, Integer.MAX_VALUE);
+        OrcInputFormat.getDesiredRowTypeDescr(conf, isAcidTableScan, Integer.MAX_VALUE);
     List<OrcProto.Type> readerTypes = null;
     if (readerSchema != null) {
       readerTypes = OrcUtils.getOrcTypes(readerSchema);
@@ -1703,7 +1700,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     if (LOG.isDebugEnabled()) {
       LOG.debug("Generate splits schema evolution property " + isSchemaEvolution +
         " reader schema " + (readerSchema == null ? "NULL" : readerSchema.toString()) +
-        " transactional scan property " + isTransactionalTableScan);
+        " ACID scan property " + isAcidTableScan);
     }
 
     // complete path futures and schedule split generation
@@ -1891,7 +1888,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
                   Reporter reporter) throws IOException {
     //CombineHiveInputFormat may produce FileSplit that is not OrcSplit
     boolean vectorMode = Utilities.getIsVectorized(conf);
-    boolean isAcidRead = isAcidRead(conf, inputSplit);
+    boolean isAcidRead = isFullAcidRead(conf, inputSplit);
     if (!isAcidRead) {
       if (vectorMode) {
         return createVectorizedReader(inputSplit, conf, reporter);

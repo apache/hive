@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils.AcidOperationalProperties;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
@@ -146,7 +147,7 @@ public class CompactorMR {
     job.setBoolean("mapreduce.map.speculative", false);
 
     // Set appropriate Acid readers/writers based on the table properties.
-    AcidUtils.setAcidOperationalProperties(job,
+    AcidUtils.setAcidOperationalProperties(job, true,
             AcidUtils.getAcidOperationalProperties(t.getParameters()));
 
     return job;
@@ -356,6 +357,7 @@ public class CompactorMR {
    * to use.
    * @param job the job to update
    * @param cols the columns of the table
+   * @param map 
    */
   private void setColumnTypes(JobConf job, List<FieldSchema> cols) {
     StringBuilder colNames = new StringBuilder();
@@ -373,7 +375,6 @@ public class CompactorMR {
     }
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, colNames.toString());
     job.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, colTypes.toString());
-    HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_ACID_TABLE_SCAN, true);
     HiveConf.setVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
   }
 

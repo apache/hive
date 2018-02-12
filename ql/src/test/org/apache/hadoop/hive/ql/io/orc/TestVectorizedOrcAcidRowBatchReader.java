@@ -92,7 +92,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     conf = new JobConf();
     conf.set("bucket_count", "1");
     conf.set(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "true");
-    conf.setBoolean(HiveConf.ConfVars.HIVE_ACID_TABLE_SCAN.varname, true);
+    conf.setBoolean(HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN.varname, true);
     conf.set(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES, "default");
     conf.setInt(HiveConf.ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname,
         AcidUtils.AcidOperationalProperties.getDefault().toInt());

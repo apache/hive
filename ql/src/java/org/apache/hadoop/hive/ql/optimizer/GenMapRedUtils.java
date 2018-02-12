@@ -492,7 +492,7 @@ public final class GenMapRedUtils {
       HiveConf conf, boolean local) throws SemanticException {
     ArrayList<Path> partDir = new ArrayList<Path>();
     ArrayList<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
-    boolean isAcidTable = false;
+    boolean isFullAcidTable = false;
 
     Path tblDir = null;
     plan.setNameToSplitSample(parseCtx.getNameToSplitSample());
@@ -504,7 +504,7 @@ public final class GenMapRedUtils {
     if (partsList == null) {
       try {
         partsList = PartitionPruner.prune(tsOp, parseCtx, alias_id);
-        isAcidTable = tsOp.getConf().isAcidTable();
+        isFullAcidTable = tsOp.getConf().isFullAcidTable();
       } catch (SemanticException e) {
         throw e;
       }
@@ -541,8 +541,8 @@ public final class GenMapRedUtils {
     long sizeNeeded = Integer.MAX_VALUE;
     int fileLimit = -1;
     if (parseCtx.getGlobalLimitCtx().isEnable()) {
-      if (isAcidTable) {
-        LOG.info("Skip Global Limit optimization for ACID table");
+      if (isFullAcidTable) {
+        LOG.info("Skipping Global Limit optimization for an ACID table");
         parseCtx.getGlobalLimitCtx().disableOpt();
       } else {
         long sizePerRow = HiveConf.getLongVar(parseCtx.getConf(),

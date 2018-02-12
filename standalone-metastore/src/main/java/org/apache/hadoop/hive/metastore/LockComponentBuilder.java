@@ -77,7 +77,7 @@ public class LockComponentBuilder {
     return this;
   }
 
-  public LockComponentBuilder setIsAcid(boolean t) {
+  public LockComponentBuilder setIsFullAcid(boolean t) {
     component.setIsAcid(t);
     return this;
   }

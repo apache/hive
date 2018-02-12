@@ -2189,7 +2189,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private int compact(Hive db, AlterTableSimpleDesc desc) throws HiveException {
 
     Table tbl = db.getTable(desc.getTableName());
-    if (!AcidUtils.isAcidTable(tbl) && !AcidUtils.isInsertOnlyTable(tbl.getParameters())) {
+    if (!AcidUtils.isTransactionalTable(tbl)) {
       throw new HiveException(ErrorMsg.NONACID_COMPACTION_NOT_SUPPORTED, tbl.getDbName(),
           tbl.getTableName());
     }
