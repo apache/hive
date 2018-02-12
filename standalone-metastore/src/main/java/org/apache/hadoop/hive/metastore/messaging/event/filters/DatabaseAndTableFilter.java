@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.metastore.messaging.event.filters;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 
 import java.util.regex.Pattern;
 
@@ -41,8 +43,8 @@ public class DatabaseAndTableFilter extends BasicFilter {
 
   @Override
   boolean shouldAccept(final NotificationEvent event) {
-    if (dbPattern == null) {
-      return true; // if our dbName is null, we're interested in all wh events
+    if ((dbPattern == null) || (event.getEventType().equals(MessageFactory.OPEN_TXN_EVENT))) {
+      return true; // if our dbName is null or its of open txn type, we're interested in all wh events
     }
     if (dbPattern.matcher(event.getDbName()).matches()) {
       if ((tableName == null)

@@ -1394,6 +1394,15 @@ public interface IMetaStoreClient {
   long openTxn(String user) throws TException;
 
   /**
+   * Initiate a transaction at the target cluster.
+   * @param replPolicy The replication policy to uniquely identify the source cluster.
+   * @param srcTxnId The transaction id at the source cluster
+   * @return transaction identifier
+   * @throws TException
+   */
+  long replOpenTxn(String replPolicy, long srcTxnId) throws TException;
+
+  /**
    * Initiate a batch of transactions.  It is not guaranteed that the
    * requested number of transactions will be instantiated.  The system has a
    * maximum number instantiated per request, controlled by hive.txn.max

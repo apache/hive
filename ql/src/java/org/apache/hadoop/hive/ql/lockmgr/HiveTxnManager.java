@@ -48,6 +48,15 @@ public interface HiveTxnManager {
   long openTxn(Context ctx, String user) throws LockException;
 
   /**
+   * Open a new transaction in target cluster.
+   * @param replPolicy Replication policy to uniquely identify the source cluster.
+   * @param srcTxnId The id of the transaction at the source cluster
+   * @return The new transaction id.
+   * @throws LockException in case of failure to start the trasnaction.
+   */
+  long replOpenTxn(String replPolicy, long srcTxnId)  throws LockException ;
+
+  /**
    * Get the lock manager.  This must be used rather than instantiating an
    * instance of the lock manager directly as the transaction manager will
    * choose which lock manager to instantiate.

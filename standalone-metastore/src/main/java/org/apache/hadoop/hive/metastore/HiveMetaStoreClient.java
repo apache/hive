@@ -2247,12 +2247,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public long openTxn(String user) throws TException {
-    OpenTxnsResponse txns = openTxns(user, 1);
+    OpenTxnsResponse txns = openTxnsIntr(user, null, -1, 1);
+    return txns.getTxn_ids().get(0);
+  }
+
+  @Override
+  public long replOpenTxn(String replPolicy, long srcTxnid) throws TException {
+    OpenTxnsResponse txns = openTxnsIntr(null, replPolicy, srcTxnid, 1);
     return txns.getTxn_ids().get(0);
   }
 
   @Override
   public OpenTxnsResponse openTxns(String user, int numTxns) throws TException {
+    return openTxnsIntr(user, null, -1, numTxns);
+  }
+
+  private OpenTxnsResponse openTxnsIntr(String user, String replPolicy, long srcTxnid, int numTxns) throws TException {
     String hostname = null;
     try {
       hostname = InetAddress.getLocalHost().getHostName();
@@ -2260,7 +2270,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       LOG.error("Unable to resolve my host name " + e.getMessage());
       throw new RuntimeException(e);
     }
-    return client.open_txns(new OpenTxnRequest(numTxns, user, hostname));
+    return client.open_txns(new OpenTxnRequest(numTxns, user, hostname, replPolicy, srcTxnid));
   }
 
   @Override
