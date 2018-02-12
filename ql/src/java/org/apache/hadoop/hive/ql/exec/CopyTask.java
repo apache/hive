@@ -32,6 +32,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.parse.repl.dump.io.FileOperations;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
@@ -61,6 +62,7 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
   protected int copyOnePath(Path fromPath, Path toPath) {
     FileSystem dstFs = null;
     try {
+      Utilities.FILE_OP_LOGGER./**/debug("Copying data from {} to {} " + fromPath);
       console.printInfo("Copying data from " + fromPath.toString(), " to "
           + toPath.toString());
 
@@ -85,7 +87,7 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
       for (FileStatus oneSrc : srcs) {
         String oneSrcPathStr = oneSrc.getPath().toString();
         console.printInfo("Copying file: " + oneSrcPathStr);
-        LOG.debug("Copying file: {}", oneSrcPathStr);
+        Utilities.FILE_OP_LOGGER.debug("Copying file {} to {}", oneSrcPathStr, toPath);
         if (!FileUtils.copy(srcFs, oneSrc.getPath(), dstFs, toPath,
             false, // delete source
             true, // overwrite destination
