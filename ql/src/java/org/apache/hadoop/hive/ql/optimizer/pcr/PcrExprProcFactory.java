@@ -214,7 +214,8 @@ public final class PcrExprProcFactory {
       ExprNodeColumnDesc cd = (ExprNodeColumnDesc) nd;
       PcrExprProcCtx epc = (PcrExprProcCtx) procCtx;
       if (cd.getTabAlias().equalsIgnoreCase(epc.getTabAlias())
-          && cd.getIsPartitionColOrVirtualCol()) {
+          && cd.getIsPartitionColOrVirtualCol()
+          && !VirtualColumn.VIRTUAL_COLUMN_NAMES.contains(cd.getColumn().toUpperCase())) {
         return new NodeInfoWrapper(WalkState.PART_COL, null, cd);
       } else {
         return new NodeInfoWrapper(WalkState.UNKNOWN, null, cd);

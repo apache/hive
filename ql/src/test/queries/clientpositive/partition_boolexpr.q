@@ -11,3 +11,4 @@ explain select count(1) from srcpart where true and hr='11';
 explain select count(1) from srcpart where true or hr='11';
 explain select count(1) from srcpart where false or hr='11';
 explain select count(1) from srcpart where false and hr='11';
+explain select count(1) from srcpart where INPUT__FILE__NAME is not null;
