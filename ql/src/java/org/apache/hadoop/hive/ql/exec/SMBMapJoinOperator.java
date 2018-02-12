@@ -209,8 +209,8 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       // push down filters
       HiveInputFormat.pushFilters(jobClone, ts, null);
 
-      AcidUtils.setAcidTableScan(jobClone, ts.getConf().isAcidTable());
-      AcidUtils.setAcidOperationalProperties(jobClone, ts.getConf().getAcidOperationalProperties());
+      AcidUtils.setAcidOperationalProperties(jobClone, ts.getConf().isTranscationalTable(),
+          ts.getConf().getAcidOperationalProperties());
 
       ts.passExecContext(getExecContext());
 

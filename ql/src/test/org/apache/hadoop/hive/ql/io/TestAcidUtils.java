@@ -597,14 +597,14 @@ public class TestAcidUtils {
     AcidUtils.AcidOperationalProperties oprProps = AcidUtils.AcidOperationalProperties.getDefault();
     Configuration testConf = new Configuration();
     // Test setter for configuration object.
-    AcidUtils.setAcidOperationalProperties(testConf, oprProps);
+    AcidUtils.setAcidOperationalProperties(testConf, true, oprProps);
     assertEquals(1, testConf.getInt(HiveConf.ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname, -1));
     // Test getter for configuration object.
     assertEquals(oprProps.toString(), AcidUtils.getAcidOperationalProperties(testConf).toString());
 
     Map<String, String> parameters = new HashMap<String, String>();
     // Test setter for map object.
-    AcidUtils.setAcidOperationalProperties(parameters, oprProps);
+    AcidUtils.setAcidOperationalProperties(parameters, true, oprProps);
     assertEquals(oprProps.toString(),
         parameters.get(HiveConf.ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname));
     // Test getter for map object.

@@ -182,9 +182,9 @@ public class Lock {
       //todo: DataOperationType is set conservatively here, we'd really want to distinguish update/delete
       //and insert/select and if resource (that is written to) is ACID or not
       if (sinks.contains(table)) {
-        componentBuilder.setSemiShared().setOperationType(DataOperationType.UPDATE).setIsAcid(true);
+        componentBuilder.setSemiShared().setOperationType(DataOperationType.UPDATE).setIsFullAcid(true);
       } else {
-        componentBuilder.setShared().setOperationType(DataOperationType.INSERT).setIsAcid(true);
+        componentBuilder.setShared().setOperationType(DataOperationType.INSERT).setIsFullAcid(true);
       }
       LockComponent component = componentBuilder.build();
       requestBuilder.addLockComponent(component);

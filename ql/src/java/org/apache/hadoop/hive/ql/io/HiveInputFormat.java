@@ -469,8 +469,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
     try {
       Utilities.copyTablePropertiesToConf(table, conf);
-      if(tableScan != null) {
-        AcidUtils.setAcidTableScan(conf, tableScan.getConf().isAcidTable());
+      if (tableScan != null) {
+        AcidUtils.setAcidOperationalProperties(conf, tableScan.getConf().isTranscationalTable(),
+            tableScan.getConf().getAcidOperationalProperties());
       }
     } catch (HiveException e) {
       throw new IOException(e);
@@ -868,8 +869,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         // push down filters
         pushFilters(jobConf, ts, this.mrwork);
 
-        AcidUtils.setAcidTableScan(job, ts.getConf().isAcidTable());
-        AcidUtils.setAcidOperationalProperties(job, ts.getConf().getAcidOperationalProperties());
+        AcidUtils.setAcidOperationalProperties(job, ts.getConf().isTranscationalTable(),
+            ts.getConf().getAcidOperationalProperties());
       }
     }
   }

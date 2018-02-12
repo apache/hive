@@ -341,7 +341,7 @@ public class HiveEndPoint {
         throw new InvalidTable(endPoint.database, endPoint.table, e);
       }
       // 1 - check that the table is Acid
-      if (!AcidUtils.isAcidTable(t)) {
+      if (!AcidUtils.isFullAcidTable(t)) {
         LOG.error("HiveEndPoint " + endPoint + " must use an acid table");
         throw new InvalidTable(endPoint.database, endPoint.table, "is not an Acid table");
       }
