@@ -96,6 +96,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
+import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.authorization.AuthorizationParseUtils;
@@ -1895,6 +1896,26 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  private boolean hasConstraintsEnabled(final String tblName) throws SemanticException{
+
+    NotNullConstraint nnc = null;
+    try {
+      // retrieve enabled NOT NULL constraint from metastore
+      nnc = Hive.get().getEnabledNotNullConstraints(
+          db.getDatabaseCurrent().getName(), tblName);
+    } catch (Exception e) {
+      if (e instanceof SemanticException) {
+        throw (SemanticException) e;
+      } else {
+        throw (new RuntimeException(e));
+      }
+    }
+    if(nnc != null  && !nnc.getNotNullConstraints().isEmpty()) {
+      return true;
+    }
+    return false;
+  }
+
   private void analyzeAlterTableProps(String[] qualified, HashMap<String, String> partSpec,
       ASTNode ast, boolean expectView, boolean isUnset) throws SemanticException {
 
@@ -1919,7 +1940,17 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException("AlterTable " + entry.getKey() + " failed with value "
               + entry.getValue());
         }
-      } else {
+      }
+      // if table is being modified to be external we need to make sure existing table
+      // doesn't have enabled constraint since constraints are disallowed with such tables
+      else if(entry.getKey().equals("external") && entry.getValue().equals("true")){
+        if(hasConstraintsEnabled(qualified[1])){
+          throw new SemanticException(
+              ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Table: " + tableName + " has constraints enabled."
+                  + "Please remove those constraints to change this property."));
+        }
+      }
+      else {
         if (queryState.getCommandType()
             .equals(HiveOperation.ALTERTABLE_UPDATETABLESTATS.getOperationName())
             || queryState.getCommandType()
@@ -3353,6 +3384,13 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     /* Validate the operation of renaming a column name. */
     Table tab = getTable(qualified);
+
+    if(tab.getTableType() == TableType.EXTERNAL_TABLE
+        && hasEnabledOrValidatedConstraints(notNullConstraints)){
+      throw new SemanticException(
+          ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Constraints are disallowed with External tables. "
+              + "Only RELY is allowed."));
+    }
 
     SkewedInfo skewInfo = tab.getTTable().getSd().getSkewedInfo();
     if ((null != skewInfo)
