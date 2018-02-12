@@ -22,6 +22,8 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,6 +36,8 @@ import java.util.IllegalFormatException;
 import java.util.List;
 
 public class HiveSchemaHelper {
+  private static final Logger LOG = LoggerFactory.getLogger(HiveSchemaHelper.class);
+
   public static final String DB_DERBY = "derby";
   public static final String DB_HIVE = "hive";
   public static final String DB_MSSQL = "mssql";
@@ -43,10 +47,10 @@ public class HiveSchemaHelper {
 
   /***
    * Get JDBC connection to metastore db
-   *
-   * @param dbType the type of the meteastore database
    * @param userName metastore connection username
    * @param password metastore connection password
+   * @param url Metastore URL.  If null will be read from config file.
+   * @param driver Driver class.  If null will be read from config file.
    * @param printInfo print connection parameters
    * @param conf hive config object
    * @param schema the schema to create the connection for
@@ -59,9 +63,12 @@ public class HiveSchemaHelper {
       url = url == null ? getValidConfVar(MetastoreConf.ConfVars.CONNECTURLKEY, conf) : url;
       driver = driver == null ? getValidConfVar(MetastoreConf.ConfVars.CONNECTION_DRIVER, conf) : driver;
       if (printInfo) {
-        System.out.println("Metastore connection URL:\t " + url);
-        System.out.println("Metastore Connection Driver :\t " + driver);
-        System.out.println("Metastore connection User:\t " + userName);
+        logAndPrintToStdout("Metastore connection URL:\t " + url);
+        logAndPrintToStdout("Metastore Connection Driver :\t " + driver);
+        logAndPrintToStdout("Metastore connection User:\t " + userName);
+        if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST)) {
+          logAndPrintToStdout("Metastore connection Password:\t " + password);
+        }
       }
       if ((userName == null) || userName.isEmpty()) {
         throw new HiveMetaException("UserName empty ");
@@ -79,6 +86,7 @@ public class HiveSchemaHelper {
     } catch (IOException | SQLException e) {
       throw new HiveMetaException("Failed to get schema version.", e);
     } catch (ClassNotFoundException e) {
+      LOG.error("Unable to find driver class", e);
       throw new HiveMetaException("Failed to load driver", e);
     }
   }
@@ -96,6 +104,11 @@ public class HiveSchemaHelper {
       throw new IOException("Empty " + confVar.getVarname());
     }
     return confVarStr.trim();
+  }
+
+  private static void logAndPrintToStdout(String msg) {
+    LOG.info(msg);
+    System.out.println(msg);
   }
 
   public interface NestedScriptParser {
@@ -202,13 +215,17 @@ public class HiveSchemaHelper {
     private String msUsername;
     private String msPassword;
     private Configuration conf;
+    // Depending on whether we are using beeline or sqlline the line endings have to be handled
+    // differently.
+    private final boolean usingSqlLine;
 
     public AbstractCommandParser(String dbOpts, String msUsername, String msPassword,
-        Configuration conf) {
+        Configuration conf, boolean usingSqlLine) {
       setDbOpts(dbOpts);
       this.msUsername = msUsername;
       this.msPassword = msPassword;
       this.conf = conf;
+      this.usingSqlLine = usingSqlLine;
     }
 
     @Override
@@ -301,6 +318,7 @@ public class HiveSchemaHelper {
             // Now we have a complete statement, process it
             // write the line to buffer
             sb.append(currentCommand);
+            if (usingSqlLine) sb.append(";");
             sb.append(System.getProperty("line.separator"));
           }
         }
@@ -340,8 +358,8 @@ public class HiveSchemaHelper {
     private static final String DERBY_NESTING_TOKEN = "RUN";
 
     public DerbyCommandParser(String dbOpts, String msUsername, String msPassword,
-        Configuration conf) {
-      super(dbOpts, msUsername, msPassword, conf);
+        Configuration conf, boolean usingSqlLine) {
+      super(dbOpts, msUsername, msPassword, conf, usingSqlLine);
     }
 
     @Override
@@ -370,9 +388,9 @@ public class HiveSchemaHelper {
     private final NestedScriptParser nestedDbCommandParser;
 
     public HiveCommandParser(String dbOpts, String msUsername, String msPassword,
-        Configuration conf, String metaDbType) {
-      super(dbOpts, msUsername, msPassword, conf);
-      nestedDbCommandParser = getDbCommandParser(metaDbType);
+        Configuration conf, String metaDbType, boolean usingSqlLine) {
+      super(dbOpts, msUsername, msPassword, conf, usingSqlLine);
+      nestedDbCommandParser = getDbCommandParser(metaDbType, usingSqlLine);
     }
 
     @Override
@@ -406,8 +424,8 @@ public class HiveSchemaHelper {
     private String delimiter = DEFAULT_DELIMITER;
 
     public MySqlCommandParser(String dbOpts, String msUsername, String msPassword,
-        Configuration conf) {
-      super(dbOpts, msUsername, msPassword, conf);
+        Configuration conf, boolean usingSqlLine) {
+      super(dbOpts, msUsername, msPassword, conf, usingSqlLine);
     }
 
     @Override
@@ -472,8 +490,8 @@ public class HiveSchemaHelper {
     public static final String POSTGRES_SKIP_STANDARD_STRINGS_DBOPT = "postgres.filter.81";
 
     public PostgresCommandParser(String dbOpts, String msUsername, String msPassword,
-        Configuration conf) {
-      super(dbOpts, msUsername, msPassword, conf);
+        Configuration conf, boolean usingSqlLine) {
+      super(dbOpts, msUsername, msPassword, conf, usingSqlLine);
     }
 
     @Override
@@ -515,8 +533,8 @@ public class HiveSchemaHelper {
     private static final String ORACLE_NESTING_TOKEN = "@";
 
     public OracleCommandParser(String dbOpts, String msUsername, String msPassword,
-        Configuration conf) {
-      super(dbOpts, msUsername, msPassword, conf);
+        Configuration conf, boolean usingSqlLine) {
+      super(dbOpts, msUsername, msPassword, conf, usingSqlLine);
     }
 
     @Override
@@ -539,8 +557,8 @@ public class HiveSchemaHelper {
     private static final String MSSQL_NESTING_TOKEN = ":r";
 
     public MSSQLCommandParser(String dbOpts, String msUsername, String msPassword,
-        Configuration conf) {
-      super(dbOpts, msUsername, msPassword, conf);
+        Configuration conf, boolean usingSqlLine) {
+      super(dbOpts, msUsername, msPassword, conf, usingSqlLine);
     }
 
     @Override
@@ -558,29 +576,29 @@ public class HiveSchemaHelper {
     }
   }
 
-  public static NestedScriptParser getDbCommandParser(String dbName) {
-    return getDbCommandParser(dbName, null);
+  public static NestedScriptParser getDbCommandParser(String dbName, boolean usingSqlLine) {
+    return getDbCommandParser(dbName, null, usingSqlLine);
   }
 
-  public static NestedScriptParser getDbCommandParser(String dbName, String metaDbName) {
-    return getDbCommandParser(dbName, null, null, null, null, metaDbName);
+  public static NestedScriptParser getDbCommandParser(String dbName, String metaDbName, boolean usingSqlLine) {
+    return getDbCommandParser(dbName, null, null, null, null, metaDbName, usingSqlLine);
   }
 
   public static NestedScriptParser getDbCommandParser(String dbName,
       String dbOpts, String msUsername, String msPassword,
-      Configuration conf, String metaDbType) {
+      Configuration conf, String metaDbType, boolean usingSqlLine) {
     if (dbName.equalsIgnoreCase(DB_DERBY)) {
-      return new DerbyCommandParser(dbOpts, msUsername, msPassword, conf);
+      return new DerbyCommandParser(dbOpts, msUsername, msPassword, conf, usingSqlLine);
     } else if (dbName.equalsIgnoreCase(DB_HIVE)) {
-      return new HiveCommandParser(dbOpts, msUsername, msPassword, conf, metaDbType);
+      return new HiveCommandParser(dbOpts, msUsername, msPassword, conf, metaDbType, usingSqlLine);
     } else if (dbName.equalsIgnoreCase(DB_MSSQL)) {
-      return new MSSQLCommandParser(dbOpts, msUsername, msPassword, conf);
+      return new MSSQLCommandParser(dbOpts, msUsername, msPassword, conf, usingSqlLine);
     } else if (dbName.equalsIgnoreCase(DB_MYSQL)) {
-      return new MySqlCommandParser(dbOpts, msUsername, msPassword, conf);
+      return new MySqlCommandParser(dbOpts, msUsername, msPassword, conf, usingSqlLine);
     } else if (dbName.equalsIgnoreCase(DB_POSTGRACE)) {
-      return new PostgresCommandParser(dbOpts, msUsername, msPassword, conf);
+      return new PostgresCommandParser(dbOpts, msUsername, msPassword, conf, usingSqlLine);
     } else if (dbName.equalsIgnoreCase(DB_ORACLE)) {
-      return new OracleCommandParser(dbOpts, msUsername, msPassword, conf);
+      return new OracleCommandParser(dbOpts, msUsername, msPassword, conf, usingSqlLine);
     } else {
       throw new IllegalArgumentException("Unknown dbType " + dbName);
     }

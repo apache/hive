@@ -218,6 +218,14 @@
     </fileSet>
 
     <fileSet>
+      <directory>${project.parent.basedir}/standalone-metastore/src/main/sql</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>scripts/metastore/upgrade</outputDirectory>
+    </fileSet>
+
+    <fileSet>
       <directory>${project.parent.basedir}/conf</directory>
       <includes>
         <include>*.template</include>

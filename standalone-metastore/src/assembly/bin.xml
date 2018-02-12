@@ -1,0 +1,136 @@
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+-->
+
+<assembly
+  xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+
+  <id>bin</id>
+
+  <formats>
+    <format>dir</format>
+    <format>tar.gz</format>
+  </formats>
+
+  <baseDirectory>apache-hive-metastore-${project.version}-bin</baseDirectory>
+
+  <dependencySets>
+    <dependencySet>
+      <outputDirectory>lib</outputDirectory>
+      <unpack>false</unpack>
+      <useProjectArtifact>true</useProjectArtifact>
+      <useStrictFiltering>true</useStrictFiltering>
+      <useTransitiveFiltering>true</useTransitiveFiltering>
+      <excludes>
+        <exclude>org.apache.hadoop:*</exclude>
+        <exclude>org.slf4j:*</exclude>
+        <exclude>log4j:*</exclude>
+      </excludes>
+    </dependencySet>
+  </dependencySets>
+
+  <fileSets>
+    <fileSet>
+      <directory>${project.basedir}</directory>
+      <excludes>
+        <exclude>target/**</exclude>
+        <exclude>.classpath</exclude>
+        <exclude>.project</exclude>
+        <exclude>.settings/**</exclude>
+        <exclude>lib/**</exclude>
+      </excludes>
+
+      <includes>
+        <include>README.txt</include>
+        <include>LICENSE</include>
+        <include>NOTICE</include>
+      </includes>
+      <outputDirectory>/</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.basedir}/binary-package-licenses</directory>
+      <includes>
+        <include>/*</include>
+      </includes>
+      <excludes>
+        <exclude>/README</exclude>
+      </excludes>
+      <outputDirectory>binary-package-licenses</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <fileMode>755</fileMode>
+      <directory>${project.basedir}/src/main/scripts</directory>
+      <includes>
+        <include>base</include>
+        <include>schematool</include>
+        <include>start-metastore</include>
+        <include>metastore-config.sh</include>
+        <include>ext/**/*</include>
+      </includes>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.basedir}/src/main/sql</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>scripts/metastore/upgrade</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.basedir}/src/gen/thrift/gen-php</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/php/packages/hive_metastore</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.basedir}/src/gen/thrift/gen-py/hive_metastore</directory>
+      <fileMode>755</fileMode>
+       <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/py/hive_metastore</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.basedir}/src/main/resources/</directory>
+      <fileMode>644</fileMode>
+      <includes>
+        <include>metastore-site.xml</include>
+        <include>metastore-log4j2.properties</include>
+      </includes>
+      <outputDirectory>conf</outputDirectory>
+    </fileSet>
+  </fileSets>
+
+  <files>
+    <file>
+      <source>${project.build.directory}/generated-sources/conf/metastore-site.xml.template</source>
+      <outputDirectory>conf</outputDirectory>
+    </file>
+  </files>
+
+</assembly>
+
