@@ -11085,6 +11085,8 @@ class OpenTxnRequest:
    - user
    - hostname
    - agentInfo
+   - replPolicy
+   - replSrcTxnId
   """
 
   thrift_spec = (
@@ -11093,13 +11095,17 @@ class OpenTxnRequest:
     (2, TType.STRING, 'user', None, None, ), # 2
     (3, TType.STRING, 'hostname', None, None, ), # 3
     (4, TType.STRING, 'agentInfo', None, "Unknown", ), # 4
+    (5, TType.STRING, 'replPolicy', None, None, ), # 5
+    (6, TType.LIST, 'replSrcTxnId', (TType.I64,None), None, ), # 6
   )
 
-  def __init__(self, num_txns=None, user=None, hostname=None, agentInfo=thrift_spec[4][4],):
+  def __init__(self, num_txns=None, user=None, hostname=None, agentInfo=thrift_spec[4][4], replPolicy=None, replSrcTxnId=None,):
     self.num_txns = num_txns
     self.user = user
     self.hostname = hostname
     self.agentInfo = agentInfo
+    self.replPolicy = replPolicy
+    self.replSrcTxnId = replSrcTxnId
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -11130,6 +11136,21 @@ class OpenTxnRequest:
           self.agentInfo = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.replPolicy = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.LIST:
+          self.replSrcTxnId = []
+          (_etype493, _size490) = iprot.readListBegin()
+          for _i494 in xrange(_size490):
+            _elem495 = iprot.readI64()
+            self.replSrcTxnId.append(_elem495)
+          iprot.readListEnd()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -11156,6 +11177,17 @@ class OpenTxnRequest:
       oprot.writeFieldBegin('agentInfo', TType.STRING, 4)
       oprot.writeString(self.agentInfo)
       oprot.writeFieldEnd()
+    if self.replPolicy is not None:
+      oprot.writeFieldBegin('replPolicy', TType.STRING, 5)
+      oprot.writeString(self.replPolicy)
+      oprot.writeFieldEnd()
+    if self.replSrcTxnId is not None:
+      oprot.writeFieldBegin('replSrcTxnId', TType.LIST, 6)
+      oprot.writeListBegin(TType.I64, len(self.replSrcTxnId))
+      for iter496 in self.replSrcTxnId:
+        oprot.writeI64(iter496)
+      oprot.writeListEnd()
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -11175,6 +11207,8 @@ class OpenTxnRequest:
     value = (value * 31) ^ hash(self.user)
     value = (value * 31) ^ hash(self.hostname)
     value = (value * 31) ^ hash(self.agentInfo)
+    value = (value * 31) ^ hash(self.replPolicy)
+    value = (value * 31) ^ hash(self.replSrcTxnId)
     return value
 
   def __repr__(self):
@@ -11214,10 +11248,31 @@ class OpenTxnsResponse:
       if fid == 1:
         if ftype == TType.LIST:
           self.txn_ids = []
+<<<<<<< HEAD
           (_etype505, _size502) = iprot.readListBegin()
           for _i506 in xrange(_size502):
             _elem507 = iprot.readI64()
             self.txn_ids.append(_elem507)
+=======
+<<<<<<< HEAD
+          (_etype498, _size495) = iprot.readListBegin()
+          for _i499 in xrange(_size495):
+            _elem500 = iprot.readI64()
+            self.txn_ids.append(_elem500)
+=======
+<<<<<<< HEAD
+          (_etype484, _size481) = iprot.readListBegin()
+          for _i485 in xrange(_size481):
+            _elem486 = iprot.readI64()
+            self.txn_ids.append(_elem486)
+=======
+          (_etype500, _size497) = iprot.readListBegin()
+          for _i501 in xrange(_size497):
+            _elem502 = iprot.readI64()
+            self.txn_ids.append(_elem502)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -11234,8 +11289,23 @@ class OpenTxnsResponse:
     if self.txn_ids is not None:
       oprot.writeFieldBegin('txn_ids', TType.LIST, 1)
       oprot.writeListBegin(TType.I64, len(self.txn_ids))
+<<<<<<< HEAD
       for iter508 in self.txn_ids:
         oprot.writeI64(iter508)
+=======
+<<<<<<< HEAD
+      for iter501 in self.txn_ids:
+        oprot.writeI64(iter501)
+=======
+<<<<<<< HEAD
+      for iter487 in self.txn_ids:
+        oprot.writeI64(iter487)
+=======
+      for iter503 in self.txn_ids:
+        oprot.writeI64(iter503)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -11267,15 +11337,18 @@ class AbortTxnRequest:
   """
   Attributes:
    - txnid
+   - replPolicy
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.I64, 'txnid', None, None, ), # 1
+    (2, TType.STRING, 'replPolicy', None, None, ), # 2
   )
 
-  def __init__(self, txnid=None,):
+  def __init__(self, txnid=None, replPolicy=None,):
     self.txnid = txnid
+    self.replPolicy = replPolicy
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -11289,6 +11362,11 @@ class AbortTxnRequest:
       if fid == 1:
         if ftype == TType.I64:
           self.txnid = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.replPolicy = iprot.readString()
         else:
           iprot.skip(ftype)
       else:
@@ -11305,6 +11383,10 @@ class AbortTxnRequest:
       oprot.writeFieldBegin('txnid', TType.I64, 1)
       oprot.writeI64(self.txnid)
       oprot.writeFieldEnd()
+    if self.replPolicy is not None:
+      oprot.writeFieldBegin('replPolicy', TType.STRING, 2)
+      oprot.writeString(self.replPolicy)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -11317,6 +11399,7 @@ class AbortTxnRequest:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.txnid)
+    value = (value * 31) ^ hash(self.replPolicy)
     return value
 
   def __repr__(self):
@@ -11356,10 +11439,31 @@ class AbortTxnsRequest:
       if fid == 1:
         if ftype == TType.LIST:
           self.txn_ids = []
+<<<<<<< HEAD
           (_etype512, _size509) = iprot.readListBegin()
           for _i513 in xrange(_size509):
             _elem514 = iprot.readI64()
             self.txn_ids.append(_elem514)
+=======
+<<<<<<< HEAD
+          (_etype505, _size502) = iprot.readListBegin()
+          for _i506 in xrange(_size502):
+            _elem507 = iprot.readI64()
+            self.txn_ids.append(_elem507)
+=======
+<<<<<<< HEAD
+          (_etype491, _size488) = iprot.readListBegin()
+          for _i492 in xrange(_size488):
+            _elem493 = iprot.readI64()
+            self.txn_ids.append(_elem493)
+=======
+          (_etype507, _size504) = iprot.readListBegin()
+          for _i508 in xrange(_size504):
+            _elem509 = iprot.readI64()
+            self.txn_ids.append(_elem509)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -11376,8 +11480,23 @@ class AbortTxnsRequest:
     if self.txn_ids is not None:
       oprot.writeFieldBegin('txn_ids', TType.LIST, 1)
       oprot.writeListBegin(TType.I64, len(self.txn_ids))
+<<<<<<< HEAD
       for iter515 in self.txn_ids:
         oprot.writeI64(iter515)
+=======
+<<<<<<< HEAD
+      for iter508 in self.txn_ids:
+        oprot.writeI64(iter508)
+=======
+<<<<<<< HEAD
+      for iter494 in self.txn_ids:
+        oprot.writeI64(iter494)
+=======
+      for iter510 in self.txn_ids:
+        oprot.writeI64(iter510)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -11406,6 +11525,86 @@ class AbortTxnsRequest:
     return not (self == other)
 
 class CommitTxnRequest:
+  """
+  Attributes:
+   - txnid
+   - replPolicy
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'txnid', None, None, ), # 1
+    (2, TType.STRING, 'replPolicy', None, None, ), # 2
+  )
+
+  def __init__(self, txnid=None, replPolicy=None,):
+    self.txnid = txnid
+    self.replPolicy = replPolicy
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.txnid = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.replPolicy = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('CommitTxnRequest')
+    if self.txnid is not None:
+      oprot.writeFieldBegin('txnid', TType.I64, 1)
+      oprot.writeI64(self.txnid)
+      oprot.writeFieldEnd()
+    if self.replPolicy is not None:
+      oprot.writeFieldBegin('replPolicy', TType.STRING, 2)
+      oprot.writeString(self.replPolicy)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.txnid is None:
+      raise TProtocol.TProtocolException(message='Required field txnid is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.txnid)
+    value = (value * 31) ^ hash(self.replPolicy)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class GetTargetTxnIdRequest:
   """
   Attributes:
    - txnid
@@ -11442,7 +11641,74 @@ class CommitTxnRequest:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-    oprot.writeStructBegin('CommitTxnRequest')
+    oprot.writeStructBegin('GetTargetTxnIdRequest')
+    if self.txnid is not None:
+      oprot.writeFieldBegin('txnid', TType.I64, 1)
+      oprot.writeI64(self.txnid)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.txnid is None:
+      raise TProtocol.TProtocolException(message='Required field txnid is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.txnid)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class GetTargetTxnIdResponse:
+  """
+  Attributes:
+   - txnid
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'txnid', None, None, ), # 1
+  )
+
+  def __init__(self, txnid=None,):
+    self.txnid = txnid
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.txnid = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('GetTargetTxnIdResponse')
     if self.txnid is not None:
       oprot.writeFieldBegin('txnid', TType.I64, 1)
       oprot.writeI64(self.txnid)
@@ -11501,10 +11767,31 @@ class GetValidWriteIdsRequest:
       if fid == 1:
         if ftype == TType.LIST:
           self.fullTableNames = []
+<<<<<<< HEAD
           (_etype519, _size516) = iprot.readListBegin()
           for _i520 in xrange(_size516):
             _elem521 = iprot.readString()
             self.fullTableNames.append(_elem521)
+=======
+<<<<<<< HEAD
+          (_etype512, _size509) = iprot.readListBegin()
+          for _i513 in xrange(_size509):
+            _elem514 = iprot.readString()
+            self.fullTableNames.append(_elem514)
+=======
+<<<<<<< HEAD
+          (_etype498, _size495) = iprot.readListBegin()
+          for _i499 in xrange(_size495):
+            _elem500 = iprot.readString()
+            self.fullTableNames.append(_elem500)
+=======
+          (_etype514, _size511) = iprot.readListBegin()
+          for _i515 in xrange(_size511):
+            _elem516 = iprot.readString()
+            self.fullTableNames.append(_elem516)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -11526,8 +11813,23 @@ class GetValidWriteIdsRequest:
     if self.fullTableNames is not None:
       oprot.writeFieldBegin('fullTableNames', TType.LIST, 1)
       oprot.writeListBegin(TType.STRING, len(self.fullTableNames))
+<<<<<<< HEAD
       for iter522 in self.fullTableNames:
         oprot.writeString(iter522)
+=======
+<<<<<<< HEAD
+      for iter515 in self.fullTableNames:
+        oprot.writeString(iter515)
+=======
+<<<<<<< HEAD
+      for iter501 in self.fullTableNames:
+        oprot.writeString(iter501)
+=======
+      for iter517 in self.fullTableNames:
+        oprot.writeString(iter517)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.validTxnList is not None:
@@ -11610,10 +11912,31 @@ class TableValidWriteIds:
       elif fid == 3:
         if ftype == TType.LIST:
           self.invalidWriteIds = []
+<<<<<<< HEAD
           (_etype526, _size523) = iprot.readListBegin()
           for _i527 in xrange(_size523):
             _elem528 = iprot.readI64()
             self.invalidWriteIds.append(_elem528)
+=======
+<<<<<<< HEAD
+          (_etype519, _size516) = iprot.readListBegin()
+          for _i520 in xrange(_size516):
+            _elem521 = iprot.readI64()
+            self.invalidWriteIds.append(_elem521)
+=======
+<<<<<<< HEAD
+          (_etype505, _size502) = iprot.readListBegin()
+          for _i506 in xrange(_size502):
+            _elem507 = iprot.readI64()
+            self.invalidWriteIds.append(_elem507)
+=======
+          (_etype521, _size518) = iprot.readListBegin()
+          for _i522 in xrange(_size518):
+            _elem523 = iprot.readI64()
+            self.invalidWriteIds.append(_elem523)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -11648,8 +11971,23 @@ class TableValidWriteIds:
     if self.invalidWriteIds is not None:
       oprot.writeFieldBegin('invalidWriteIds', TType.LIST, 3)
       oprot.writeListBegin(TType.I64, len(self.invalidWriteIds))
+<<<<<<< HEAD
       for iter529 in self.invalidWriteIds:
         oprot.writeI64(iter529)
+=======
+<<<<<<< HEAD
+      for iter522 in self.invalidWriteIds:
+        oprot.writeI64(iter522)
+=======
+<<<<<<< HEAD
+      for iter508 in self.invalidWriteIds:
+        oprot.writeI64(iter508)
+=======
+      for iter524 in self.invalidWriteIds:
+        oprot.writeI64(iter524)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.minOpenWriteId is not None:
@@ -11721,11 +12059,35 @@ class GetValidWriteIdsResponse:
       if fid == 1:
         if ftype == TType.LIST:
           self.tblValidWriteIds = []
+<<<<<<< HEAD
           (_etype533, _size530) = iprot.readListBegin()
           for _i534 in xrange(_size530):
             _elem535 = TableValidWriteIds()
             _elem535.read(iprot)
             self.tblValidWriteIds.append(_elem535)
+=======
+<<<<<<< HEAD
+          (_etype526, _size523) = iprot.readListBegin()
+          for _i527 in xrange(_size523):
+            _elem528 = TableValidWriteIds()
+            _elem528.read(iprot)
+            self.tblValidWriteIds.append(_elem528)
+=======
+<<<<<<< HEAD
+          (_etype512, _size509) = iprot.readListBegin()
+          for _i513 in xrange(_size509):
+            _elem514 = TableValidWriteIds()
+            _elem514.read(iprot)
+            self.tblValidWriteIds.append(_elem514)
+=======
+          (_etype528, _size525) = iprot.readListBegin()
+          for _i529 in xrange(_size525):
+            _elem530 = TableValidWriteIds()
+            _elem530.read(iprot)
+            self.tblValidWriteIds.append(_elem530)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -11742,8 +12104,23 @@ class GetValidWriteIdsResponse:
     if self.tblValidWriteIds is not None:
       oprot.writeFieldBegin('tblValidWriteIds', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.tblValidWriteIds))
+<<<<<<< HEAD
       for iter536 in self.tblValidWriteIds:
         iter536.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter529 in self.tblValidWriteIds:
+        iter529.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter515 in self.tblValidWriteIds:
+        iter515.write(oprot)
+=======
+      for iter531 in self.tblValidWriteIds:
+        iter531.write(oprot)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -11803,10 +12180,31 @@ class AllocateTableWriteIdsRequest:
       if fid == 1:
         if ftype == TType.LIST:
           self.txnIds = []
+<<<<<<< HEAD
           (_etype540, _size537) = iprot.readListBegin()
           for _i541 in xrange(_size537):
             _elem542 = iprot.readI64()
             self.txnIds.append(_elem542)
+=======
+<<<<<<< HEAD
+          (_etype533, _size530) = iprot.readListBegin()
+          for _i534 in xrange(_size530):
+            _elem535 = iprot.readI64()
+            self.txnIds.append(_elem535)
+=======
+<<<<<<< HEAD
+          (_etype519, _size516) = iprot.readListBegin()
+          for _i520 in xrange(_size516):
+            _elem521 = iprot.readI64()
+            self.txnIds.append(_elem521)
+=======
+          (_etype535, _size532) = iprot.readListBegin()
+          for _i536 in xrange(_size532):
+            _elem537 = iprot.readI64()
+            self.txnIds.append(_elem537)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -11833,8 +12231,23 @@ class AllocateTableWriteIdsRequest:
     if self.txnIds is not None:
       oprot.writeFieldBegin('txnIds', TType.LIST, 1)
       oprot.writeListBegin(TType.I64, len(self.txnIds))
+<<<<<<< HEAD
       for iter543 in self.txnIds:
         oprot.writeI64(iter543)
+=======
+<<<<<<< HEAD
+      for iter536 in self.txnIds:
+        oprot.writeI64(iter536)
+=======
+<<<<<<< HEAD
+      for iter522 in self.txnIds:
+        oprot.writeI64(iter522)
+=======
+      for iter538 in self.txnIds:
+        oprot.writeI64(iter538)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.dbName is not None:
@@ -11984,11 +12397,35 @@ class AllocateTableWriteIdsResponse:
       if fid == 1:
         if ftype == TType.LIST:
           self.txnToWriteIds = []
+<<<<<<< HEAD
           (_etype547, _size544) = iprot.readListBegin()
           for _i548 in xrange(_size544):
             _elem549 = TxnToWriteId()
             _elem549.read(iprot)
             self.txnToWriteIds.append(_elem549)
+=======
+<<<<<<< HEAD
+          (_etype540, _size537) = iprot.readListBegin()
+          for _i541 in xrange(_size537):
+            _elem542 = TxnToWriteId()
+            _elem542.read(iprot)
+            self.txnToWriteIds.append(_elem542)
+=======
+<<<<<<< HEAD
+          (_etype526, _size523) = iprot.readListBegin()
+          for _i527 in xrange(_size523):
+            _elem528 = TxnToWriteId()
+            _elem528.read(iprot)
+            self.txnToWriteIds.append(_elem528)
+=======
+          (_etype542, _size539) = iprot.readListBegin()
+          for _i543 in xrange(_size539):
+            _elem544 = TxnToWriteId()
+            _elem544.read(iprot)
+            self.txnToWriteIds.append(_elem544)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -12005,8 +12442,23 @@ class AllocateTableWriteIdsResponse:
     if self.txnToWriteIds is not None:
       oprot.writeFieldBegin('txnToWriteIds', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.txnToWriteIds))
+<<<<<<< HEAD
       for iter550 in self.txnToWriteIds:
         iter550.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter543 in self.txnToWriteIds:
+        iter543.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter529 in self.txnToWriteIds:
+        iter529.write(oprot)
+=======
+      for iter545 in self.txnToWriteIds:
+        iter545.write(oprot)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -12234,11 +12686,35 @@ class LockRequest:
       if fid == 1:
         if ftype == TType.LIST:
           self.component = []
+<<<<<<< HEAD
           (_etype554, _size551) = iprot.readListBegin()
           for _i555 in xrange(_size551):
             _elem556 = LockComponent()
             _elem556.read(iprot)
             self.component.append(_elem556)
+=======
+<<<<<<< HEAD
+          (_etype547, _size544) = iprot.readListBegin()
+          for _i548 in xrange(_size544):
+            _elem549 = LockComponent()
+            _elem549.read(iprot)
+            self.component.append(_elem549)
+=======
+<<<<<<< HEAD
+          (_etype533, _size530) = iprot.readListBegin()
+          for _i534 in xrange(_size530):
+            _elem535 = LockComponent()
+            _elem535.read(iprot)
+            self.component.append(_elem535)
+=======
+          (_etype549, _size546) = iprot.readListBegin()
+          for _i550 in xrange(_size546):
+            _elem551 = LockComponent()
+            _elem551.read(iprot)
+            self.component.append(_elem551)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -12275,8 +12751,23 @@ class LockRequest:
     if self.component is not None:
       oprot.writeFieldBegin('component', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.component))
+<<<<<<< HEAD
       for iter557 in self.component:
         iter557.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter550 in self.component:
+        iter550.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter536 in self.component:
+        iter536.write(oprot)
+=======
+      for iter552 in self.component:
+        iter552.write(oprot)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.txnid is not None:
@@ -12974,11 +13465,35 @@ class ShowLocksResponse:
       if fid == 1:
         if ftype == TType.LIST:
           self.locks = []
+<<<<<<< HEAD
           (_etype561, _size558) = iprot.readListBegin()
           for _i562 in xrange(_size558):
             _elem563 = ShowLocksResponseElement()
             _elem563.read(iprot)
             self.locks.append(_elem563)
+=======
+<<<<<<< HEAD
+          (_etype554, _size551) = iprot.readListBegin()
+          for _i555 in xrange(_size551):
+            _elem556 = ShowLocksResponseElement()
+            _elem556.read(iprot)
+            self.locks.append(_elem556)
+=======
+<<<<<<< HEAD
+          (_etype540, _size537) = iprot.readListBegin()
+          for _i541 in xrange(_size537):
+            _elem542 = ShowLocksResponseElement()
+            _elem542.read(iprot)
+            self.locks.append(_elem542)
+=======
+          (_etype556, _size553) = iprot.readListBegin()
+          for _i557 in xrange(_size553):
+            _elem558 = ShowLocksResponseElement()
+            _elem558.read(iprot)
+            self.locks.append(_elem558)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -12995,8 +13510,23 @@ class ShowLocksResponse:
     if self.locks is not None:
       oprot.writeFieldBegin('locks', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.locks))
+<<<<<<< HEAD
       for iter564 in self.locks:
         iter564.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter557 in self.locks:
+        iter557.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter543 in self.locks:
+        iter543.write(oprot)
+=======
+      for iter559 in self.locks:
+        iter559.write(oprot)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -13211,20 +13741,62 @@ class HeartbeatTxnRangeResponse:
       if fid == 1:
         if ftype == TType.SET:
           self.aborted = set()
+<<<<<<< HEAD
           (_etype568, _size565) = iprot.readSetBegin()
           for _i569 in xrange(_size565):
             _elem570 = iprot.readI64()
             self.aborted.add(_elem570)
+=======
+<<<<<<< HEAD
+          (_etype561, _size558) = iprot.readSetBegin()
+          for _i562 in xrange(_size558):
+            _elem563 = iprot.readI64()
+            self.aborted.add(_elem563)
+=======
+<<<<<<< HEAD
+          (_etype547, _size544) = iprot.readSetBegin()
+          for _i548 in xrange(_size544):
+            _elem549 = iprot.readI64()
+            self.aborted.add(_elem549)
+=======
+          (_etype563, _size560) = iprot.readSetBegin()
+          for _i564 in xrange(_size560):
+            _elem565 = iprot.readI64()
+            self.aborted.add(_elem565)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.SET:
           self.nosuch = set()
+<<<<<<< HEAD
           (_etype574, _size571) = iprot.readSetBegin()
           for _i575 in xrange(_size571):
             _elem576 = iprot.readI64()
             self.nosuch.add(_elem576)
+=======
+<<<<<<< HEAD
+          (_etype567, _size564) = iprot.readSetBegin()
+          for _i568 in xrange(_size564):
+            _elem569 = iprot.readI64()
+            self.nosuch.add(_elem569)
+=======
+<<<<<<< HEAD
+          (_etype553, _size550) = iprot.readSetBegin()
+          for _i554 in xrange(_size550):
+            _elem555 = iprot.readI64()
+            self.nosuch.add(_elem555)
+=======
+          (_etype569, _size566) = iprot.readSetBegin()
+          for _i570 in xrange(_size566):
+            _elem571 = iprot.readI64()
+            self.nosuch.add(_elem571)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
@@ -13241,15 +13813,45 @@ class HeartbeatTxnRangeResponse:
     if self.aborted is not None:
       oprot.writeFieldBegin('aborted', TType.SET, 1)
       oprot.writeSetBegin(TType.I64, len(self.aborted))
+<<<<<<< HEAD
       for iter577 in self.aborted:
         oprot.writeI64(iter577)
+=======
+<<<<<<< HEAD
+      for iter570 in self.aborted:
+        oprot.writeI64(iter570)
+=======
+<<<<<<< HEAD
+      for iter556 in self.aborted:
+        oprot.writeI64(iter556)
+=======
+      for iter572 in self.aborted:
+        oprot.writeI64(iter572)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     if self.nosuch is not None:
       oprot.writeFieldBegin('nosuch', TType.SET, 2)
       oprot.writeSetBegin(TType.I64, len(self.nosuch))
+<<<<<<< HEAD
       for iter578 in self.nosuch:
         oprot.writeI64(iter578)
+=======
+<<<<<<< HEAD
+      for iter571 in self.nosuch:
+        oprot.writeI64(iter571)
+=======
+<<<<<<< HEAD
+      for iter557 in self.nosuch:
+        oprot.writeI64(iter557)
+=======
+      for iter573 in self.nosuch:
+        oprot.writeI64(iter573)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -13346,11 +13948,35 @@ class CompactionRequest:
       elif fid == 6:
         if ftype == TType.MAP:
           self.properties = {}
+<<<<<<< HEAD
           (_ktype580, _vtype581, _size579 ) = iprot.readMapBegin()
           for _i583 in xrange(_size579):
             _key584 = iprot.readString()
             _val585 = iprot.readString()
             self.properties[_key584] = _val585
+=======
+<<<<<<< HEAD
+          (_ktype573, _vtype574, _size572 ) = iprot.readMapBegin()
+          for _i576 in xrange(_size572):
+            _key577 = iprot.readString()
+            _val578 = iprot.readString()
+            self.properties[_key577] = _val578
+=======
+<<<<<<< HEAD
+          (_ktype559, _vtype560, _size558 ) = iprot.readMapBegin()
+          for _i562 in xrange(_size558):
+            _key563 = iprot.readString()
+            _val564 = iprot.readString()
+            self.properties[_key563] = _val564
+=======
+          (_ktype575, _vtype576, _size574 ) = iprot.readMapBegin()
+          for _i578 in xrange(_size574):
+            _key579 = iprot.readString()
+            _val580 = iprot.readString()
+            self.properties[_key579] = _val580
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -13387,9 +14013,27 @@ class CompactionRequest:
     if self.properties is not None:
       oprot.writeFieldBegin('properties', TType.MAP, 6)
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.properties))
+<<<<<<< HEAD
       for kiter586,viter587 in self.properties.items():
         oprot.writeString(kiter586)
         oprot.writeString(viter587)
+=======
+<<<<<<< HEAD
+      for kiter579,viter580 in self.properties.items():
+        oprot.writeString(kiter579)
+        oprot.writeString(viter580)
+=======
+<<<<<<< HEAD
+      for kiter565,viter566 in self.properties.items():
+        oprot.writeString(kiter565)
+        oprot.writeString(viter566)
+=======
+      for kiter581,viter582 in self.properties.items():
+        oprot.writeString(kiter581)
+        oprot.writeString(viter582)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -13824,11 +14468,35 @@ class ShowCompactResponse:
       if fid == 1:
         if ftype == TType.LIST:
           self.compacts = []
+<<<<<<< HEAD
           (_etype591, _size588) = iprot.readListBegin()
           for _i592 in xrange(_size588):
             _elem593 = ShowCompactResponseElement()
             _elem593.read(iprot)
             self.compacts.append(_elem593)
+=======
+<<<<<<< HEAD
+          (_etype584, _size581) = iprot.readListBegin()
+          for _i585 in xrange(_size581):
+            _elem586 = ShowCompactResponseElement()
+            _elem586.read(iprot)
+            self.compacts.append(_elem586)
+=======
+<<<<<<< HEAD
+          (_etype570, _size567) = iprot.readListBegin()
+          for _i571 in xrange(_size567):
+            _elem572 = ShowCompactResponseElement()
+            _elem572.read(iprot)
+            self.compacts.append(_elem572)
+=======
+          (_etype586, _size583) = iprot.readListBegin()
+          for _i587 in xrange(_size583):
+            _elem588 = ShowCompactResponseElement()
+            _elem588.read(iprot)
+            self.compacts.append(_elem588)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -13845,8 +14513,23 @@ class ShowCompactResponse:
     if self.compacts is not None:
       oprot.writeFieldBegin('compacts', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.compacts))
+<<<<<<< HEAD
       for iter594 in self.compacts:
         iter594.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter587 in self.compacts:
+        iter587.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter573 in self.compacts:
+        iter573.write(oprot)
+=======
+      for iter589 in self.compacts:
+        iter589.write(oprot)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -13935,10 +14618,31 @@ class AddDynamicPartitions:
       elif fid == 5:
         if ftype == TType.LIST:
           self.partitionnames = []
+<<<<<<< HEAD
           (_etype598, _size595) = iprot.readListBegin()
           for _i599 in xrange(_size595):
             _elem600 = iprot.readString()
             self.partitionnames.append(_elem600)
+=======
+<<<<<<< HEAD
+          (_etype591, _size588) = iprot.readListBegin()
+          for _i592 in xrange(_size588):
+            _elem593 = iprot.readString()
+            self.partitionnames.append(_elem593)
+=======
+<<<<<<< HEAD
+          (_etype577, _size574) = iprot.readListBegin()
+          for _i578 in xrange(_size574):
+            _elem579 = iprot.readString()
+            self.partitionnames.append(_elem579)
+=======
+          (_etype593, _size590) = iprot.readListBegin()
+          for _i594 in xrange(_size590):
+            _elem595 = iprot.readString()
+            self.partitionnames.append(_elem595)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -13976,8 +14680,23 @@ class AddDynamicPartitions:
     if self.partitionnames is not None:
       oprot.writeFieldBegin('partitionnames', TType.LIST, 5)
       oprot.writeListBegin(TType.STRING, len(self.partitionnames))
+<<<<<<< HEAD
       for iter601 in self.partitionnames:
         oprot.writeString(iter601)
+=======
+<<<<<<< HEAD
+      for iter594 in self.partitionnames:
+        oprot.writeString(iter594)
+=======
+<<<<<<< HEAD
+      for iter580 in self.partitionnames:
+        oprot.writeString(iter580)
+=======
+      for iter596 in self.partitionnames:
+        oprot.writeString(iter596)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.operationType is not None:
@@ -14207,10 +14926,31 @@ class CreationMetadata:
       elif fid == 4:
         if ftype == TType.SET:
           self.tablesUsed = set()
+<<<<<<< HEAD
           (_etype605, _size602) = iprot.readSetBegin()
           for _i606 in xrange(_size602):
             _elem607 = iprot.readString()
             self.tablesUsed.add(_elem607)
+=======
+<<<<<<< HEAD
+          (_etype598, _size595) = iprot.readSetBegin()
+          for _i599 in xrange(_size595):
+            _elem600 = iprot.readString()
+            self.tablesUsed.add(_elem600)
+=======
+<<<<<<< HEAD
+          (_etype584, _size581) = iprot.readSetBegin()
+          for _i585 in xrange(_size581):
+            _elem586 = iprot.readString()
+            self.tablesUsed.add(_elem586)
+=======
+          (_etype600, _size597) = iprot.readSetBegin()
+          for _i601 in xrange(_size597):
+            _elem602 = iprot.readString()
+            self.tablesUsed.add(_elem602)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
@@ -14244,8 +14984,23 @@ class CreationMetadata:
     if self.tablesUsed is not None:
       oprot.writeFieldBegin('tablesUsed', TType.SET, 4)
       oprot.writeSetBegin(TType.STRING, len(self.tablesUsed))
+<<<<<<< HEAD
       for iter608 in self.tablesUsed:
         oprot.writeString(iter608)
+=======
+<<<<<<< HEAD
+      for iter601 in self.tablesUsed:
+        oprot.writeString(iter601)
+=======
+<<<<<<< HEAD
+      for iter587 in self.tablesUsed:
+        oprot.writeString(iter587)
+=======
+      for iter603 in self.tablesUsed:
+        oprot.writeString(iter603)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     if self.validTxnList is not None:
@@ -14557,11 +15312,35 @@ class NotificationEventResponse:
       if fid == 1:
         if ftype == TType.LIST:
           self.events = []
+<<<<<<< HEAD
           (_etype612, _size609) = iprot.readListBegin()
           for _i613 in xrange(_size609):
             _elem614 = NotificationEvent()
             _elem614.read(iprot)
             self.events.append(_elem614)
+=======
+<<<<<<< HEAD
+          (_etype605, _size602) = iprot.readListBegin()
+          for _i606 in xrange(_size602):
+            _elem607 = NotificationEvent()
+            _elem607.read(iprot)
+            self.events.append(_elem607)
+=======
+<<<<<<< HEAD
+          (_etype591, _size588) = iprot.readListBegin()
+          for _i592 in xrange(_size588):
+            _elem593 = NotificationEvent()
+            _elem593.read(iprot)
+            self.events.append(_elem593)
+=======
+          (_etype607, _size604) = iprot.readListBegin()
+          for _i608 in xrange(_size604):
+            _elem609 = NotificationEvent()
+            _elem609.read(iprot)
+            self.events.append(_elem609)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -14578,8 +15357,23 @@ class NotificationEventResponse:
     if self.events is not None:
       oprot.writeFieldBegin('events', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.events))
+<<<<<<< HEAD
       for iter615 in self.events:
         iter615.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter608 in self.events:
+        iter608.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter594 in self.events:
+        iter594.write(oprot)
+=======
+      for iter610 in self.events:
+        iter610.write(oprot)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -14873,20 +15667,62 @@ class InsertEventRequestData:
       elif fid == 2:
         if ftype == TType.LIST:
           self.filesAdded = []
+<<<<<<< HEAD
           (_etype619, _size616) = iprot.readListBegin()
           for _i620 in xrange(_size616):
             _elem621 = iprot.readString()
             self.filesAdded.append(_elem621)
+=======
+<<<<<<< HEAD
+          (_etype612, _size609) = iprot.readListBegin()
+          for _i613 in xrange(_size609):
+            _elem614 = iprot.readString()
+            self.filesAdded.append(_elem614)
+=======
+<<<<<<< HEAD
+          (_etype598, _size595) = iprot.readListBegin()
+          for _i599 in xrange(_size595):
+            _elem600 = iprot.readString()
+            self.filesAdded.append(_elem600)
+=======
+          (_etype614, _size611) = iprot.readListBegin()
+          for _i615 in xrange(_size611):
+            _elem616 = iprot.readString()
+            self.filesAdded.append(_elem616)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.LIST:
           self.filesAddedChecksum = []
+<<<<<<< HEAD
           (_etype625, _size622) = iprot.readListBegin()
           for _i626 in xrange(_size622):
             _elem627 = iprot.readString()
             self.filesAddedChecksum.append(_elem627)
+=======
+<<<<<<< HEAD
+          (_etype618, _size615) = iprot.readListBegin()
+          for _i619 in xrange(_size615):
+            _elem620 = iprot.readString()
+            self.filesAddedChecksum.append(_elem620)
+=======
+<<<<<<< HEAD
+          (_etype604, _size601) = iprot.readListBegin()
+          for _i605 in xrange(_size601):
+            _elem606 = iprot.readString()
+            self.filesAddedChecksum.append(_elem606)
+=======
+          (_etype620, _size617) = iprot.readListBegin()
+          for _i621 in xrange(_size617):
+            _elem622 = iprot.readString()
+            self.filesAddedChecksum.append(_elem622)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -14907,15 +15743,45 @@ class InsertEventRequestData:
     if self.filesAdded is not None:
       oprot.writeFieldBegin('filesAdded', TType.LIST, 2)
       oprot.writeListBegin(TType.STRING, len(self.filesAdded))
+<<<<<<< HEAD
       for iter628 in self.filesAdded:
         oprot.writeString(iter628)
+=======
+<<<<<<< HEAD
+      for iter621 in self.filesAdded:
+        oprot.writeString(iter621)
+=======
+<<<<<<< HEAD
+      for iter607 in self.filesAdded:
+        oprot.writeString(iter607)
+=======
+      for iter623 in self.filesAdded:
+        oprot.writeString(iter623)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.filesAddedChecksum is not None:
       oprot.writeFieldBegin('filesAddedChecksum', TType.LIST, 3)
       oprot.writeListBegin(TType.STRING, len(self.filesAddedChecksum))
+<<<<<<< HEAD
       for iter629 in self.filesAddedChecksum:
         oprot.writeString(iter629)
+=======
+<<<<<<< HEAD
+      for iter622 in self.filesAddedChecksum:
+        oprot.writeString(iter622)
+=======
+<<<<<<< HEAD
+      for iter608 in self.filesAddedChecksum:
+        oprot.writeString(iter608)
+=======
+      for iter624 in self.filesAddedChecksum:
+        oprot.writeString(iter624)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -15073,10 +15939,31 @@ class FireEventRequest:
       elif fid == 5:
         if ftype == TType.LIST:
           self.partitionVals = []
+<<<<<<< HEAD
           (_etype633, _size630) = iprot.readListBegin()
           for _i634 in xrange(_size630):
             _elem635 = iprot.readString()
             self.partitionVals.append(_elem635)
+=======
+<<<<<<< HEAD
+          (_etype626, _size623) = iprot.readListBegin()
+          for _i627 in xrange(_size623):
+            _elem628 = iprot.readString()
+            self.partitionVals.append(_elem628)
+=======
+<<<<<<< HEAD
+          (_etype612, _size609) = iprot.readListBegin()
+          for _i613 in xrange(_size609):
+            _elem614 = iprot.readString()
+            self.partitionVals.append(_elem614)
+=======
+          (_etype628, _size625) = iprot.readListBegin()
+          for _i629 in xrange(_size625):
+            _elem630 = iprot.readString()
+            self.partitionVals.append(_elem630)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -15114,8 +16001,23 @@ class FireEventRequest:
     if self.partitionVals is not None:
       oprot.writeFieldBegin('partitionVals', TType.LIST, 5)
       oprot.writeListBegin(TType.STRING, len(self.partitionVals))
+<<<<<<< HEAD
       for iter636 in self.partitionVals:
         oprot.writeString(iter636)
+=======
+<<<<<<< HEAD
+      for iter629 in self.partitionVals:
+        oprot.writeString(iter629)
+=======
+<<<<<<< HEAD
+      for iter615 in self.partitionVals:
+        oprot.writeString(iter615)
+=======
+      for iter631 in self.partitionVals:
+        oprot.writeString(iter631)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.catName is not None:
@@ -15307,12 +16209,39 @@ class GetFileMetadataByExprResult:
       if fid == 1:
         if ftype == TType.MAP:
           self.metadata = {}
+<<<<<<< HEAD
           (_ktype638, _vtype639, _size637 ) = iprot.readMapBegin()
           for _i641 in xrange(_size637):
             _key642 = iprot.readI64()
             _val643 = MetadataPpdResult()
             _val643.read(iprot)
             self.metadata[_key642] = _val643
+=======
+<<<<<<< HEAD
+          (_ktype631, _vtype632, _size630 ) = iprot.readMapBegin()
+          for _i634 in xrange(_size630):
+            _key635 = iprot.readI64()
+            _val636 = MetadataPpdResult()
+            _val636.read(iprot)
+            self.metadata[_key635] = _val636
+=======
+<<<<<<< HEAD
+          (_ktype617, _vtype618, _size616 ) = iprot.readMapBegin()
+          for _i620 in xrange(_size616):
+            _key621 = iprot.readI64()
+            _val622 = MetadataPpdResult()
+            _val622.read(iprot)
+            self.metadata[_key621] = _val622
+=======
+          (_ktype633, _vtype634, _size632 ) = iprot.readMapBegin()
+          for _i636 in xrange(_size632):
+            _key637 = iprot.readI64()
+            _val638 = MetadataPpdResult()
+            _val638.read(iprot)
+            self.metadata[_key637] = _val638
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -15334,9 +16263,27 @@ class GetFileMetadataByExprResult:
     if self.metadata is not None:
       oprot.writeFieldBegin('metadata', TType.MAP, 1)
       oprot.writeMapBegin(TType.I64, TType.STRUCT, len(self.metadata))
+<<<<<<< HEAD
       for kiter644,viter645 in self.metadata.items():
         oprot.writeI64(kiter644)
         viter645.write(oprot)
+=======
+<<<<<<< HEAD
+      for kiter637,viter638 in self.metadata.items():
+        oprot.writeI64(kiter637)
+        viter638.write(oprot)
+=======
+<<<<<<< HEAD
+      for kiter623,viter624 in self.metadata.items():
+        oprot.writeI64(kiter623)
+        viter624.write(oprot)
+=======
+      for kiter639,viter640 in self.metadata.items():
+        oprot.writeI64(kiter639)
+        viter640.write(oprot)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.isSupported is not None:
@@ -15406,10 +16353,31 @@ class GetFileMetadataByExprRequest:
       if fid == 1:
         if ftype == TType.LIST:
           self.fileIds = []
+<<<<<<< HEAD
           (_etype649, _size646) = iprot.readListBegin()
           for _i650 in xrange(_size646):
             _elem651 = iprot.readI64()
             self.fileIds.append(_elem651)
+=======
+<<<<<<< HEAD
+          (_etype642, _size639) = iprot.readListBegin()
+          for _i643 in xrange(_size639):
+            _elem644 = iprot.readI64()
+            self.fileIds.append(_elem644)
+=======
+<<<<<<< HEAD
+          (_etype628, _size625) = iprot.readListBegin()
+          for _i629 in xrange(_size625):
+            _elem630 = iprot.readI64()
+            self.fileIds.append(_elem630)
+=======
+          (_etype644, _size641) = iprot.readListBegin()
+          for _i645 in xrange(_size641):
+            _elem646 = iprot.readI64()
+            self.fileIds.append(_elem646)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -15441,8 +16409,23 @@ class GetFileMetadataByExprRequest:
     if self.fileIds is not None:
       oprot.writeFieldBegin('fileIds', TType.LIST, 1)
       oprot.writeListBegin(TType.I64, len(self.fileIds))
+<<<<<<< HEAD
       for iter652 in self.fileIds:
         oprot.writeI64(iter652)
+=======
+<<<<<<< HEAD
+      for iter645 in self.fileIds:
+        oprot.writeI64(iter645)
+=======
+<<<<<<< HEAD
+      for iter631 in self.fileIds:
+        oprot.writeI64(iter631)
+=======
+      for iter647 in self.fileIds:
+        oprot.writeI64(iter647)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.expr is not None:
@@ -15516,11 +16499,35 @@ class GetFileMetadataResult:
       if fid == 1:
         if ftype == TType.MAP:
           self.metadata = {}
+<<<<<<< HEAD
           (_ktype654, _vtype655, _size653 ) = iprot.readMapBegin()
           for _i657 in xrange(_size653):
             _key658 = iprot.readI64()
             _val659 = iprot.readString()
             self.metadata[_key658] = _val659
+=======
+<<<<<<< HEAD
+          (_ktype647, _vtype648, _size646 ) = iprot.readMapBegin()
+          for _i650 in xrange(_size646):
+            _key651 = iprot.readI64()
+            _val652 = iprot.readString()
+            self.metadata[_key651] = _val652
+=======
+<<<<<<< HEAD
+          (_ktype633, _vtype634, _size632 ) = iprot.readMapBegin()
+          for _i636 in xrange(_size632):
+            _key637 = iprot.readI64()
+            _val638 = iprot.readString()
+            self.metadata[_key637] = _val638
+=======
+          (_ktype649, _vtype650, _size648 ) = iprot.readMapBegin()
+          for _i652 in xrange(_size648):
+            _key653 = iprot.readI64()
+            _val654 = iprot.readString()
+            self.metadata[_key653] = _val654
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -15542,9 +16549,27 @@ class GetFileMetadataResult:
     if self.metadata is not None:
       oprot.writeFieldBegin('metadata', TType.MAP, 1)
       oprot.writeMapBegin(TType.I64, TType.STRING, len(self.metadata))
+<<<<<<< HEAD
       for kiter660,viter661 in self.metadata.items():
         oprot.writeI64(kiter660)
         oprot.writeString(viter661)
+=======
+<<<<<<< HEAD
+      for kiter653,viter654 in self.metadata.items():
+        oprot.writeI64(kiter653)
+        oprot.writeString(viter654)
+=======
+<<<<<<< HEAD
+      for kiter639,viter640 in self.metadata.items():
+        oprot.writeI64(kiter639)
+        oprot.writeString(viter640)
+=======
+      for kiter655,viter656 in self.metadata.items():
+        oprot.writeI64(kiter655)
+        oprot.writeString(viter656)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.isSupported is not None:
@@ -15605,10 +16630,31 @@ class GetFileMetadataRequest:
       if fid == 1:
         if ftype == TType.LIST:
           self.fileIds = []
+<<<<<<< HEAD
           (_etype665, _size662) = iprot.readListBegin()
           for _i666 in xrange(_size662):
             _elem667 = iprot.readI64()
             self.fileIds.append(_elem667)
+=======
+<<<<<<< HEAD
+          (_etype658, _size655) = iprot.readListBegin()
+          for _i659 in xrange(_size655):
+            _elem660 = iprot.readI64()
+            self.fileIds.append(_elem660)
+=======
+<<<<<<< HEAD
+          (_etype644, _size641) = iprot.readListBegin()
+          for _i645 in xrange(_size641):
+            _elem646 = iprot.readI64()
+            self.fileIds.append(_elem646)
+=======
+          (_etype660, _size657) = iprot.readListBegin()
+          for _i661 in xrange(_size657):
+            _elem662 = iprot.readI64()
+            self.fileIds.append(_elem662)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -15625,8 +16671,23 @@ class GetFileMetadataRequest:
     if self.fileIds is not None:
       oprot.writeFieldBegin('fileIds', TType.LIST, 1)
       oprot.writeListBegin(TType.I64, len(self.fileIds))
+<<<<<<< HEAD
       for iter668 in self.fileIds:
         oprot.writeI64(iter668)
+=======
+<<<<<<< HEAD
+      for iter661 in self.fileIds:
+        oprot.writeI64(iter661)
+=======
+<<<<<<< HEAD
+      for iter647 in self.fileIds:
+        oprot.writeI64(iter647)
+=======
+      for iter663 in self.fileIds:
+        oprot.writeI64(iter663)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -15732,20 +16793,62 @@ class PutFileMetadataRequest:
       if fid == 1:
         if ftype == TType.LIST:
           self.fileIds = []
+<<<<<<< HEAD
           (_etype672, _size669) = iprot.readListBegin()
           for _i673 in xrange(_size669):
             _elem674 = iprot.readI64()
             self.fileIds.append(_elem674)
+=======
+<<<<<<< HEAD
+          (_etype665, _size662) = iprot.readListBegin()
+          for _i666 in xrange(_size662):
+            _elem667 = iprot.readI64()
+            self.fileIds.append(_elem667)
+=======
+<<<<<<< HEAD
+          (_etype651, _size648) = iprot.readListBegin()
+          for _i652 in xrange(_size648):
+            _elem653 = iprot.readI64()
+            self.fileIds.append(_elem653)
+=======
+          (_etype667, _size664) = iprot.readListBegin()
+          for _i668 in xrange(_size664):
+            _elem669 = iprot.readI64()
+            self.fileIds.append(_elem669)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.LIST:
           self.metadata = []
+<<<<<<< HEAD
           (_etype678, _size675) = iprot.readListBegin()
           for _i679 in xrange(_size675):
             _elem680 = iprot.readString()
             self.metadata.append(_elem680)
+=======
+<<<<<<< HEAD
+          (_etype671, _size668) = iprot.readListBegin()
+          for _i672 in xrange(_size668):
+            _elem673 = iprot.readString()
+            self.metadata.append(_elem673)
+=======
+<<<<<<< HEAD
+          (_etype657, _size654) = iprot.readListBegin()
+          for _i658 in xrange(_size654):
+            _elem659 = iprot.readString()
+            self.metadata.append(_elem659)
+=======
+          (_etype673, _size670) = iprot.readListBegin()
+          for _i674 in xrange(_size670):
+            _elem675 = iprot.readString()
+            self.metadata.append(_elem675)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -15767,15 +16870,45 @@ class PutFileMetadataRequest:
     if self.fileIds is not None:
       oprot.writeFieldBegin('fileIds', TType.LIST, 1)
       oprot.writeListBegin(TType.I64, len(self.fileIds))
+<<<<<<< HEAD
       for iter681 in self.fileIds:
         oprot.writeI64(iter681)
+=======
+<<<<<<< HEAD
+      for iter674 in self.fileIds:
+        oprot.writeI64(iter674)
+=======
+<<<<<<< HEAD
+      for iter660 in self.fileIds:
+        oprot.writeI64(iter660)
+=======
+      for iter676 in self.fileIds:
+        oprot.writeI64(iter676)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.metadata is not None:
       oprot.writeFieldBegin('metadata', TType.LIST, 2)
       oprot.writeListBegin(TType.STRING, len(self.metadata))
+<<<<<<< HEAD
       for iter682 in self.metadata:
         oprot.writeString(iter682)
+=======
+<<<<<<< HEAD
+      for iter675 in self.metadata:
+        oprot.writeString(iter675)
+=======
+<<<<<<< HEAD
+      for iter661 in self.metadata:
+        oprot.writeString(iter661)
+=======
+      for iter677 in self.metadata:
+        oprot.writeString(iter677)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.type is not None:
@@ -15883,10 +17016,31 @@ class ClearFileMetadataRequest:
       if fid == 1:
         if ftype == TType.LIST:
           self.fileIds = []
+<<<<<<< HEAD
           (_etype686, _size683) = iprot.readListBegin()
           for _i687 in xrange(_size683):
             _elem688 = iprot.readI64()
             self.fileIds.append(_elem688)
+=======
+<<<<<<< HEAD
+          (_etype679, _size676) = iprot.readListBegin()
+          for _i680 in xrange(_size676):
+            _elem681 = iprot.readI64()
+            self.fileIds.append(_elem681)
+=======
+<<<<<<< HEAD
+          (_etype665, _size662) = iprot.readListBegin()
+          for _i666 in xrange(_size662):
+            _elem667 = iprot.readI64()
+            self.fileIds.append(_elem667)
+=======
+          (_etype681, _size678) = iprot.readListBegin()
+          for _i682 in xrange(_size678):
+            _elem683 = iprot.readI64()
+            self.fileIds.append(_elem683)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -15903,8 +17057,23 @@ class ClearFileMetadataRequest:
     if self.fileIds is not None:
       oprot.writeFieldBegin('fileIds', TType.LIST, 1)
       oprot.writeListBegin(TType.I64, len(self.fileIds))
+<<<<<<< HEAD
       for iter689 in self.fileIds:
         oprot.writeI64(iter689)
+=======
+<<<<<<< HEAD
+      for iter682 in self.fileIds:
+        oprot.writeI64(iter682)
+=======
+<<<<<<< HEAD
+      for iter668 in self.fileIds:
+        oprot.writeI64(iter668)
+=======
+      for iter684 in self.fileIds:
+        oprot.writeI64(iter684)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -16133,11 +17302,35 @@ class GetAllFunctionsResponse:
       if fid == 1:
         if ftype == TType.LIST:
           self.functions = []
+<<<<<<< HEAD
           (_etype693, _size690) = iprot.readListBegin()
           for _i694 in xrange(_size690):
             _elem695 = Function()
             _elem695.read(iprot)
             self.functions.append(_elem695)
+=======
+<<<<<<< HEAD
+          (_etype686, _size683) = iprot.readListBegin()
+          for _i687 in xrange(_size683):
+            _elem688 = Function()
+            _elem688.read(iprot)
+            self.functions.append(_elem688)
+=======
+<<<<<<< HEAD
+          (_etype672, _size669) = iprot.readListBegin()
+          for _i673 in xrange(_size669):
+            _elem674 = Function()
+            _elem674.read(iprot)
+            self.functions.append(_elem674)
+=======
+          (_etype688, _size685) = iprot.readListBegin()
+          for _i689 in xrange(_size685):
+            _elem690 = Function()
+            _elem690.read(iprot)
+            self.functions.append(_elem690)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -16154,8 +17347,23 @@ class GetAllFunctionsResponse:
     if self.functions is not None:
       oprot.writeFieldBegin('functions', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.functions))
+<<<<<<< HEAD
       for iter696 in self.functions:
         iter696.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter689 in self.functions:
+        iter689.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter675 in self.functions:
+        iter675.write(oprot)
+=======
+      for iter691 in self.functions:
+        iter691.write(oprot)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -16207,10 +17415,31 @@ class ClientCapabilities:
       if fid == 1:
         if ftype == TType.LIST:
           self.values = []
+<<<<<<< HEAD
           (_etype700, _size697) = iprot.readListBegin()
           for _i701 in xrange(_size697):
             _elem702 = iprot.readI32()
             self.values.append(_elem702)
+=======
+<<<<<<< HEAD
+          (_etype693, _size690) = iprot.readListBegin()
+          for _i694 in xrange(_size690):
+            _elem695 = iprot.readI32()
+            self.values.append(_elem695)
+=======
+<<<<<<< HEAD
+          (_etype679, _size676) = iprot.readListBegin()
+          for _i680 in xrange(_size676):
+            _elem681 = iprot.readI32()
+            self.values.append(_elem681)
+=======
+          (_etype695, _size692) = iprot.readListBegin()
+          for _i696 in xrange(_size692):
+            _elem697 = iprot.readI32()
+            self.values.append(_elem697)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -16227,8 +17456,23 @@ class ClientCapabilities:
     if self.values is not None:
       oprot.writeFieldBegin('values', TType.LIST, 1)
       oprot.writeListBegin(TType.I32, len(self.values))
+<<<<<<< HEAD
       for iter703 in self.values:
         oprot.writeI32(iter703)
+=======
+<<<<<<< HEAD
+      for iter696 in self.values:
+        oprot.writeI32(iter696)
+=======
+<<<<<<< HEAD
+      for iter682 in self.values:
+        oprot.writeI32(iter682)
+=======
+      for iter698 in self.values:
+        oprot.writeI32(iter698)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -16473,10 +17717,31 @@ class GetTablesRequest:
       elif fid == 2:
         if ftype == TType.LIST:
           self.tblNames = []
+<<<<<<< HEAD
           (_etype707, _size704) = iprot.readListBegin()
           for _i708 in xrange(_size704):
             _elem709 = iprot.readString()
             self.tblNames.append(_elem709)
+=======
+<<<<<<< HEAD
+          (_etype700, _size697) = iprot.readListBegin()
+          for _i701 in xrange(_size697):
+            _elem702 = iprot.readString()
+            self.tblNames.append(_elem702)
+=======
+<<<<<<< HEAD
+          (_etype686, _size683) = iprot.readListBegin()
+          for _i687 in xrange(_size683):
+            _elem688 = iprot.readString()
+            self.tblNames.append(_elem688)
+=======
+          (_etype702, _size699) = iprot.readListBegin()
+          for _i703 in xrange(_size699):
+            _elem704 = iprot.readString()
+            self.tblNames.append(_elem704)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -16508,8 +17773,23 @@ class GetTablesRequest:
     if self.tblNames is not None:
       oprot.writeFieldBegin('tblNames', TType.LIST, 2)
       oprot.writeListBegin(TType.STRING, len(self.tblNames))
+<<<<<<< HEAD
       for iter710 in self.tblNames:
         oprot.writeString(iter710)
+=======
+<<<<<<< HEAD
+      for iter703 in self.tblNames:
+        oprot.writeString(iter703)
+=======
+<<<<<<< HEAD
+      for iter689 in self.tblNames:
+        oprot.writeString(iter689)
+=======
+      for iter705 in self.tblNames:
+        oprot.writeString(iter705)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.capabilities is not None:
@@ -16574,11 +17854,35 @@ class GetTablesResult:
       if fid == 1:
         if ftype == TType.LIST:
           self.tables = []
+<<<<<<< HEAD
           (_etype714, _size711) = iprot.readListBegin()
           for _i715 in xrange(_size711):
             _elem716 = Table()
             _elem716.read(iprot)
             self.tables.append(_elem716)
+=======
+<<<<<<< HEAD
+          (_etype707, _size704) = iprot.readListBegin()
+          for _i708 in xrange(_size704):
+            _elem709 = Table()
+            _elem709.read(iprot)
+            self.tables.append(_elem709)
+=======
+<<<<<<< HEAD
+          (_etype693, _size690) = iprot.readListBegin()
+          for _i694 in xrange(_size690):
+            _elem695 = Table()
+            _elem695.read(iprot)
+            self.tables.append(_elem695)
+=======
+          (_etype709, _size706) = iprot.readListBegin()
+          for _i710 in xrange(_size706):
+            _elem711 = Table()
+            _elem711.read(iprot)
+            self.tables.append(_elem711)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -16595,8 +17899,23 @@ class GetTablesResult:
     if self.tables is not None:
       oprot.writeFieldBegin('tables', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.tables))
+<<<<<<< HEAD
       for iter717 in self.tables:
         iter717.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter710 in self.tables:
+        iter710.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter696 in self.tables:
+        iter696.write(oprot)
+=======
+      for iter712 in self.tables:
+        iter712.write(oprot)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -16907,10 +18226,31 @@ class Materialization:
       if fid == 1:
         if ftype == TType.SET:
           self.tablesUsed = set()
+<<<<<<< HEAD
           (_etype721, _size718) = iprot.readSetBegin()
           for _i722 in xrange(_size718):
             _elem723 = iprot.readString()
             self.tablesUsed.add(_elem723)
+=======
+<<<<<<< HEAD
+          (_etype714, _size711) = iprot.readSetBegin()
+          for _i715 in xrange(_size711):
+            _elem716 = iprot.readString()
+            self.tablesUsed.add(_elem716)
+=======
+<<<<<<< HEAD
+          (_etype700, _size697) = iprot.readSetBegin()
+          for _i701 in xrange(_size697):
+            _elem702 = iprot.readString()
+            self.tablesUsed.add(_elem702)
+=======
+          (_etype716, _size713) = iprot.readSetBegin()
+          for _i717 in xrange(_size713):
+            _elem718 = iprot.readString()
+            self.tablesUsed.add(_elem718)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
@@ -16937,8 +18277,23 @@ class Materialization:
     if self.tablesUsed is not None:
       oprot.writeFieldBegin('tablesUsed', TType.SET, 1)
       oprot.writeSetBegin(TType.STRING, len(self.tablesUsed))
+<<<<<<< HEAD
       for iter724 in self.tablesUsed:
         oprot.writeString(iter724)
+=======
+<<<<<<< HEAD
+      for iter717 in self.tablesUsed:
+        oprot.writeString(iter717)
+=======
+<<<<<<< HEAD
+      for iter703 in self.tablesUsed:
+        oprot.writeString(iter703)
+=======
+      for iter719 in self.tablesUsed:
+        oprot.writeString(iter719)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     if self.validTxnList is not None:
@@ -17840,44 +19195,140 @@ class WMFullResourcePlan:
       elif fid == 2:
         if ftype == TType.LIST:
           self.pools = []
+<<<<<<< HEAD
           (_etype728, _size725) = iprot.readListBegin()
           for _i729 in xrange(_size725):
             _elem730 = WMPool()
             _elem730.read(iprot)
             self.pools.append(_elem730)
+=======
+<<<<<<< HEAD
+          (_etype721, _size718) = iprot.readListBegin()
+          for _i722 in xrange(_size718):
+            _elem723 = WMPool()
+            _elem723.read(iprot)
+            self.pools.append(_elem723)
+=======
+<<<<<<< HEAD
+          (_etype707, _size704) = iprot.readListBegin()
+          for _i708 in xrange(_size704):
+            _elem709 = WMPool()
+            _elem709.read(iprot)
+            self.pools.append(_elem709)
+=======
+          (_etype723, _size720) = iprot.readListBegin()
+          for _i724 in xrange(_size720):
+            _elem725 = WMPool()
+            _elem725.read(iprot)
+            self.pools.append(_elem725)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.LIST:
           self.mappings = []
+<<<<<<< HEAD
           (_etype734, _size731) = iprot.readListBegin()
           for _i735 in xrange(_size731):
             _elem736 = WMMapping()
             _elem736.read(iprot)
             self.mappings.append(_elem736)
+=======
+<<<<<<< HEAD
+          (_etype727, _size724) = iprot.readListBegin()
+          for _i728 in xrange(_size724):
+            _elem729 = WMMapping()
+            _elem729.read(iprot)
+            self.mappings.append(_elem729)
+=======
+<<<<<<< HEAD
+          (_etype713, _size710) = iprot.readListBegin()
+          for _i714 in xrange(_size710):
+            _elem715 = WMMapping()
+            _elem715.read(iprot)
+            self.mappings.append(_elem715)
+=======
+          (_etype729, _size726) = iprot.readListBegin()
+          for _i730 in xrange(_size726):
+            _elem731 = WMMapping()
+            _elem731.read(iprot)
+            self.mappings.append(_elem731)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 4:
         if ftype == TType.LIST:
           self.triggers = []
+<<<<<<< HEAD
           (_etype740, _size737) = iprot.readListBegin()
           for _i741 in xrange(_size737):
             _elem742 = WMTrigger()
             _elem742.read(iprot)
             self.triggers.append(_elem742)
+=======
+<<<<<<< HEAD
+          (_etype733, _size730) = iprot.readListBegin()
+          for _i734 in xrange(_size730):
+            _elem735 = WMTrigger()
+            _elem735.read(iprot)
+            self.triggers.append(_elem735)
+=======
+<<<<<<< HEAD
+          (_etype719, _size716) = iprot.readListBegin()
+          for _i720 in xrange(_size716):
+            _elem721 = WMTrigger()
+            _elem721.read(iprot)
+            self.triggers.append(_elem721)
+=======
+          (_etype735, _size732) = iprot.readListBegin()
+          for _i736 in xrange(_size732):
+            _elem737 = WMTrigger()
+            _elem737.read(iprot)
+            self.triggers.append(_elem737)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 5:
         if ftype == TType.LIST:
           self.poolTriggers = []
+<<<<<<< HEAD
           (_etype746, _size743) = iprot.readListBegin()
           for _i747 in xrange(_size743):
             _elem748 = WMPoolTrigger()
             _elem748.read(iprot)
             self.poolTriggers.append(_elem748)
+=======
+<<<<<<< HEAD
+          (_etype739, _size736) = iprot.readListBegin()
+          for _i740 in xrange(_size736):
+            _elem741 = WMPoolTrigger()
+            _elem741.read(iprot)
+            self.poolTriggers.append(_elem741)
+=======
+<<<<<<< HEAD
+          (_etype725, _size722) = iprot.readListBegin()
+          for _i726 in xrange(_size722):
+            _elem727 = WMPoolTrigger()
+            _elem727.read(iprot)
+            self.poolTriggers.append(_elem727)
+=======
+          (_etype741, _size738) = iprot.readListBegin()
+          for _i742 in xrange(_size738):
+            _elem743 = WMPoolTrigger()
+            _elem743.read(iprot)
+            self.poolTriggers.append(_elem743)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -17898,29 +19349,89 @@ class WMFullResourcePlan:
     if self.pools is not None:
       oprot.writeFieldBegin('pools', TType.LIST, 2)
       oprot.writeListBegin(TType.STRUCT, len(self.pools))
+<<<<<<< HEAD
       for iter749 in self.pools:
         iter749.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter742 in self.pools:
+        iter742.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter728 in self.pools:
+        iter728.write(oprot)
+=======
+      for iter744 in self.pools:
+        iter744.write(oprot)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.mappings is not None:
       oprot.writeFieldBegin('mappings', TType.LIST, 3)
       oprot.writeListBegin(TType.STRUCT, len(self.mappings))
+<<<<<<< HEAD
       for iter750 in self.mappings:
         iter750.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter743 in self.mappings:
+        iter743.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter729 in self.mappings:
+        iter729.write(oprot)
+=======
+      for iter745 in self.mappings:
+        iter745.write(oprot)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.triggers is not None:
       oprot.writeFieldBegin('triggers', TType.LIST, 4)
       oprot.writeListBegin(TType.STRUCT, len(self.triggers))
+<<<<<<< HEAD
       for iter751 in self.triggers:
         iter751.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter744 in self.triggers:
+        iter744.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter730 in self.triggers:
+        iter730.write(oprot)
+=======
+      for iter746 in self.triggers:
+        iter746.write(oprot)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.poolTriggers is not None:
       oprot.writeFieldBegin('poolTriggers', TType.LIST, 5)
       oprot.writeListBegin(TType.STRUCT, len(self.poolTriggers))
+<<<<<<< HEAD
       for iter752 in self.poolTriggers:
         iter752.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter745 in self.poolTriggers:
+        iter745.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter731 in self.poolTriggers:
+        iter731.write(oprot)
+=======
+      for iter747 in self.poolTriggers:
+        iter747.write(oprot)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -18394,11 +19905,35 @@ class WMGetAllResourcePlanResponse:
       if fid == 1:
         if ftype == TType.LIST:
           self.resourcePlans = []
+<<<<<<< HEAD
           (_etype756, _size753) = iprot.readListBegin()
           for _i757 in xrange(_size753):
             _elem758 = WMResourcePlan()
             _elem758.read(iprot)
             self.resourcePlans.append(_elem758)
+=======
+<<<<<<< HEAD
+          (_etype749, _size746) = iprot.readListBegin()
+          for _i750 in xrange(_size746):
+            _elem751 = WMResourcePlan()
+            _elem751.read(iprot)
+            self.resourcePlans.append(_elem751)
+=======
+<<<<<<< HEAD
+          (_etype735, _size732) = iprot.readListBegin()
+          for _i736 in xrange(_size732):
+            _elem737 = WMResourcePlan()
+            _elem737.read(iprot)
+            self.resourcePlans.append(_elem737)
+=======
+          (_etype751, _size748) = iprot.readListBegin()
+          for _i752 in xrange(_size748):
+            _elem753 = WMResourcePlan()
+            _elem753.read(iprot)
+            self.resourcePlans.append(_elem753)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -18415,8 +19950,23 @@ class WMGetAllResourcePlanResponse:
     if self.resourcePlans is not None:
       oprot.writeFieldBegin('resourcePlans', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.resourcePlans))
+<<<<<<< HEAD
       for iter759 in self.resourcePlans:
         iter759.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter752 in self.resourcePlans:
+        iter752.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter738 in self.resourcePlans:
+        iter738.write(oprot)
+=======
+      for iter754 in self.resourcePlans:
+        iter754.write(oprot)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -18720,20 +20270,62 @@ class WMValidateResourcePlanResponse:
       if fid == 1:
         if ftype == TType.LIST:
           self.errors = []
+<<<<<<< HEAD
           (_etype763, _size760) = iprot.readListBegin()
           for _i764 in xrange(_size760):
             _elem765 = iprot.readString()
             self.errors.append(_elem765)
+=======
+<<<<<<< HEAD
+          (_etype756, _size753) = iprot.readListBegin()
+          for _i757 in xrange(_size753):
+            _elem758 = iprot.readString()
+            self.errors.append(_elem758)
+=======
+<<<<<<< HEAD
+          (_etype742, _size739) = iprot.readListBegin()
+          for _i743 in xrange(_size739):
+            _elem744 = iprot.readString()
+            self.errors.append(_elem744)
+=======
+          (_etype758, _size755) = iprot.readListBegin()
+          for _i759 in xrange(_size755):
+            _elem760 = iprot.readString()
+            self.errors.append(_elem760)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.LIST:
           self.warnings = []
+<<<<<<< HEAD
           (_etype769, _size766) = iprot.readListBegin()
           for _i770 in xrange(_size766):
             _elem771 = iprot.readString()
             self.warnings.append(_elem771)
+=======
+<<<<<<< HEAD
+          (_etype762, _size759) = iprot.readListBegin()
+          for _i763 in xrange(_size759):
+            _elem764 = iprot.readString()
+            self.warnings.append(_elem764)
+=======
+<<<<<<< HEAD
+          (_etype748, _size745) = iprot.readListBegin()
+          for _i749 in xrange(_size745):
+            _elem750 = iprot.readString()
+            self.warnings.append(_elem750)
+=======
+          (_etype764, _size761) = iprot.readListBegin()
+          for _i765 in xrange(_size761):
+            _elem766 = iprot.readString()
+            self.warnings.append(_elem766)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -18750,15 +20342,45 @@ class WMValidateResourcePlanResponse:
     if self.errors is not None:
       oprot.writeFieldBegin('errors', TType.LIST, 1)
       oprot.writeListBegin(TType.STRING, len(self.errors))
+<<<<<<< HEAD
       for iter772 in self.errors:
         oprot.writeString(iter772)
+=======
+<<<<<<< HEAD
+      for iter765 in self.errors:
+        oprot.writeString(iter765)
+=======
+<<<<<<< HEAD
+      for iter751 in self.errors:
+        oprot.writeString(iter751)
+=======
+      for iter767 in self.errors:
+        oprot.writeString(iter767)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.warnings is not None:
       oprot.writeFieldBegin('warnings', TType.LIST, 2)
       oprot.writeListBegin(TType.STRING, len(self.warnings))
+<<<<<<< HEAD
       for iter773 in self.warnings:
         oprot.writeString(iter773)
+=======
+<<<<<<< HEAD
+      for iter766 in self.warnings:
+        oprot.writeString(iter766)
+=======
+<<<<<<< HEAD
+      for iter752 in self.warnings:
+        oprot.writeString(iter752)
+=======
+      for iter768 in self.warnings:
+        oprot.writeString(iter768)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -19335,11 +20957,35 @@ class WMGetTriggersForResourePlanResponse:
       if fid == 1:
         if ftype == TType.LIST:
           self.triggers = []
+<<<<<<< HEAD
           (_etype777, _size774) = iprot.readListBegin()
           for _i778 in xrange(_size774):
             _elem779 = WMTrigger()
             _elem779.read(iprot)
             self.triggers.append(_elem779)
+=======
+<<<<<<< HEAD
+          (_etype770, _size767) = iprot.readListBegin()
+          for _i771 in xrange(_size767):
+            _elem772 = WMTrigger()
+            _elem772.read(iprot)
+            self.triggers.append(_elem772)
+=======
+<<<<<<< HEAD
+          (_etype756, _size753) = iprot.readListBegin()
+          for _i757 in xrange(_size753):
+            _elem758 = WMTrigger()
+            _elem758.read(iprot)
+            self.triggers.append(_elem758)
+=======
+          (_etype772, _size769) = iprot.readListBegin()
+          for _i773 in xrange(_size769):
+            _elem774 = WMTrigger()
+            _elem774.read(iprot)
+            self.triggers.append(_elem774)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -19356,8 +21002,23 @@ class WMGetTriggersForResourePlanResponse:
     if self.triggers is not None:
       oprot.writeFieldBegin('triggers', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.triggers))
+<<<<<<< HEAD
       for iter780 in self.triggers:
         iter780.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter773 in self.triggers:
+        iter773.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter759 in self.triggers:
+        iter759.write(oprot)
+=======
+      for iter775 in self.triggers:
+        iter775.write(oprot)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()

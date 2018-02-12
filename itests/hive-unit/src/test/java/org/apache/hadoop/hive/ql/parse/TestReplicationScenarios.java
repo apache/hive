@@ -3555,6 +3555,20 @@ public class TestReplicationScenarios {
     assertTrue(fileCount == fileCountAfter);
   }
 
+  @Test
+  public void testOpenTxnRelication() throws IOException {
+    String name = testName.getMethodName();
+    String dbName = createDB(name, driver);
+    advanceDumpDir();
+    Tuple bootstrap = bootstrapLoadAndVerify(dbName, "default1");
+    
+    run("CREATE TABLE " + dbName + ".acid(a int) PARTITIONED BY (load_date date) CLUSTERED BY(a) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
+
+    bootstrap = incrementalLoadAndVerify(dbName,bootstrap.lastReplId,"default1");
+    run("REPL STATUS " + dbName + "_dupe", driverMirror);
+    verifyResults(new String[] {bootstrap.lastReplId}, driverMirror);
+  }
+
   private NotificationEvent createDummyEvent(String dbname, String tblname, long evid) {
     MessageFactory msgFactory = MessageFactory.getInstance();
     Table t = new Table();

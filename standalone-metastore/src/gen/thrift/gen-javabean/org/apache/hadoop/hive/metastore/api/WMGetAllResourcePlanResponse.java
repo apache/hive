@@ -346,6 +346,7 @@ import org.slf4j.LoggerFactory;
           case 1: // RESOURCE_PLANS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list856 = iprot.readListBegin();
                 struct.resourcePlans = new ArrayList<WMResourcePlan>(_list856.size);
                 WMResourcePlan _elem857;
@@ -354,6 +355,38 @@ import org.slf4j.LoggerFactory;
                   _elem857 = new WMResourcePlan();
                   _elem857.read(iprot);
                   struct.resourcePlans.add(_elem857);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list848 = iprot.readListBegin();
+                struct.resourcePlans = new ArrayList<WMResourcePlan>(_list848.size);
+                WMResourcePlan _elem849;
+                for (int _i850 = 0; _i850 < _list848.size; ++_i850)
+                {
+                  _elem849 = new WMResourcePlan();
+                  _elem849.read(iprot);
+                  struct.resourcePlans.add(_elem849);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list832 = iprot.readListBegin();
+                struct.resourcePlans = new ArrayList<WMResourcePlan>(_list832.size);
+                WMResourcePlan _elem833;
+                for (int _i834 = 0; _i834 < _list832.size; ++_i834)
+                {
+                  _elem833 = new WMResourcePlan();
+                  _elem833.read(iprot);
+                  struct.resourcePlans.add(_elem833);
+=======
+                org.apache.thrift.protocol.TList _list850 = iprot.readListBegin();
+                struct.resourcePlans = new ArrayList<WMResourcePlan>(_list850.size);
+                WMResourcePlan _elem851;
+                for (int _i852 = 0; _i852 < _list850.size; ++_i852)
+                {
+                  _elem851 = new WMResourcePlan();
+                  _elem851.read(iprot);
+                  struct.resourcePlans.add(_elem851);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
                 }
                 iprot.readListEnd();
               }
@@ -380,9 +413,27 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(RESOURCE_PLANS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.resourcePlans.size()));
+<<<<<<< HEAD
             for (WMResourcePlan _iter859 : struct.resourcePlans)
             {
               _iter859.write(oprot);
+=======
+<<<<<<< HEAD
+            for (WMResourcePlan _iter851 : struct.resourcePlans)
+            {
+              _iter851.write(oprot);
+=======
+<<<<<<< HEAD
+            for (WMResourcePlan _iter835 : struct.resourcePlans)
+            {
+              _iter835.write(oprot);
+=======
+            for (WMResourcePlan _iter853 : struct.resourcePlans)
+            {
+              _iter853.write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             oprot.writeListEnd();
           }
@@ -414,9 +465,27 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetResourcePlans()) {
         {
           oprot.writeI32(struct.resourcePlans.size());
+<<<<<<< HEAD
           for (WMResourcePlan _iter860 : struct.resourcePlans)
           {
             _iter860.write(oprot);
+=======
+<<<<<<< HEAD
+          for (WMResourcePlan _iter852 : struct.resourcePlans)
+          {
+            _iter852.write(oprot);
+=======
+<<<<<<< HEAD
+          for (WMResourcePlan _iter836 : struct.resourcePlans)
+          {
+            _iter836.write(oprot);
+=======
+          for (WMResourcePlan _iter854 : struct.resourcePlans)
+          {
+            _iter854.write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
       }
@@ -428,6 +497,7 @@ import org.slf4j.LoggerFactory;
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
+<<<<<<< HEAD
           org.apache.thrift.protocol.TList _list861 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
           struct.resourcePlans = new ArrayList<WMResourcePlan>(_list861.size);
           WMResourcePlan _elem862;
@@ -436,6 +506,38 @@ import org.slf4j.LoggerFactory;
             _elem862 = new WMResourcePlan();
             _elem862.read(iprot);
             struct.resourcePlans.add(_elem862);
+=======
+<<<<<<< HEAD
+          org.apache.thrift.protocol.TList _list853 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.resourcePlans = new ArrayList<WMResourcePlan>(_list853.size);
+          WMResourcePlan _elem854;
+          for (int _i855 = 0; _i855 < _list853.size; ++_i855)
+          {
+            _elem854 = new WMResourcePlan();
+            _elem854.read(iprot);
+            struct.resourcePlans.add(_elem854);
+=======
+<<<<<<< HEAD
+          org.apache.thrift.protocol.TList _list837 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.resourcePlans = new ArrayList<WMResourcePlan>(_list837.size);
+          WMResourcePlan _elem838;
+          for (int _i839 = 0; _i839 < _list837.size; ++_i839)
+          {
+            _elem838 = new WMResourcePlan();
+            _elem838.read(iprot);
+            struct.resourcePlans.add(_elem838);
+=======
+          org.apache.thrift.protocol.TList _list855 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.resourcePlans = new ArrayList<WMResourcePlan>(_list855.size);
+          WMResourcePlan _elem856;
+          for (int _i857 = 0; _i857 < _list855.size; ++_i857)
+          {
+            _elem856 = new WMResourcePlan();
+            _elem856.read(iprot);
+            struct.resourcePlans.add(_elem856);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         struct.setResourcePlansIsSet(true);

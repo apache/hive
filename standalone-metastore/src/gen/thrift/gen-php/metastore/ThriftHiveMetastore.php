@@ -17177,6 +17177,7 @@ class ThriftHiveMetastore_get_schema_with_environment_context_result {
         case 0:
           if ($ftype == TType::LST) {
             $this->success = array();
+<<<<<<< HEAD
             $_size843 = 0;
             $_etype846 = 0;
             $xfer += $input->readListBegin($_etype846, $_size843);
@@ -17186,6 +17187,40 @@ class ThriftHiveMetastore_get_schema_with_environment_context_result {
               $elem848 = new \metastore\FieldSchema();
               $xfer += $elem848->read($input);
               $this->success []= $elem848;
+=======
+<<<<<<< HEAD
+            $_size836 = 0;
+            $_etype839 = 0;
+            $xfer += $input->readListBegin($_etype839, $_size836);
+            for ($_i840 = 0; $_i840 < $_size836; ++$_i840)
+            {
+              $elem841 = null;
+              $elem841 = new \metastore\FieldSchema();
+              $xfer += $elem841->read($input);
+              $this->success []= $elem841;
+=======
+<<<<<<< HEAD
+            $_size822 = 0;
+            $_etype825 = 0;
+            $xfer += $input->readListBegin($_etype825, $_size822);
+            for ($_i826 = 0; $_i826 < $_size822; ++$_i826)
+            {
+              $elem827 = null;
+              $elem827 = new \metastore\FieldSchema();
+              $xfer += $elem827->read($input);
+              $this->success []= $elem827;
+=======
+            $_size780 = 0;
+            $_etype783 = 0;
+            $xfer += $input->readListBegin($_etype783, $_size780);
+            for ($_i784 = 0; $_i784 < $_size780; ++$_i784)
+            {
+              $elem785 = null;
+              $xfer += $input->readString($elem785);
+              $this->success []= $elem785;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -17237,9 +17272,27 @@ class ThriftHiveMetastore_get_schema_with_environment_context_result {
       {
         $output->writeListBegin(TType::STRUCT, count($this->success));
         {
+<<<<<<< HEAD
           foreach ($this->success as $iter849)
           {
             $xfer += $iter849->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->success as $iter842)
+          {
+            $xfer += $iter842->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->success as $iter828)
+          {
+            $xfer += $iter828->write($output);
+=======
+          foreach ($this->success as $iter786)
+          {
+            $xfer += $output->writeString($iter786);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -17428,10 +17481,26 @@ class ThriftHiveMetastore_create_table_result {
       }
       switch ($fid)
       {
+<<<<<<< HEAD
         case 1:
           if ($ftype == TType::STRUCT) {
             $this->o1 = new \metastore\AlreadyExistsException();
             $xfer += $this->o1->read($input);
+=======
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size787 = 0;
+            $_etype790 = 0;
+            $xfer += $input->readListBegin($_etype790, $_size787);
+            for ($_i791 = 0; $_i791 < $_size787; ++$_i791)
+            {
+              $elem792 = null;
+              $xfer += $input->readString($elem792);
+              $this->success []= $elem792;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -17472,7 +17541,28 @@ class ThriftHiveMetastore_create_table_result {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_create_table_result');
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_all_databases_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRING, count($this->success));
+        {
+          foreach ($this->success as $iter793)
+          {
+            $xfer += $output->writeString($iter793);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
@@ -18798,10 +18888,30 @@ class ThriftHiveMetastore_add_foreign_key_result {
       }
       switch ($fid)
       {
+<<<<<<< HEAD
         case 1:
           if ($ftype == TType::STRUCT) {
             $this->o1 = new \metastore\NoSuchObjectException();
             $xfer += $this->o1->read($input);
+=======
+        case 0:
+          if ($ftype == TType::MAP) {
+            $this->success = array();
+            $_size794 = 0;
+            $_ktype795 = 0;
+            $_vtype796 = 0;
+            $xfer += $input->readMapBegin($_ktype795, $_vtype796, $_size794);
+            for ($_i798 = 0; $_i798 < $_size794; ++$_i798)
+            {
+              $key799 = '';
+              $val800 = new \metastore\Type();
+              $xfer += $input->readString($key799);
+              $val800 = new \metastore\Type();
+              $xfer += $val800->read($input);
+              $this->success[$key799] = $val800;
+            }
+            $xfer += $input->readMapEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -18826,10 +18936,30 @@ class ThriftHiveMetastore_add_foreign_key_result {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_add_foreign_key_result');
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_type_all_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::MAP, 0);
+      {
+        $output->writeMapBegin(TType::STRING, TType::STRUCT, count($this->success));
+        {
+          foreach ($this->success as $kiter801 => $viter802)
+          {
+            $xfer += $output->writeString($kiter801);
+            $xfer += $viter802->write($output);
+          }
+        }
+        $output->writeMapEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     if ($this->o2 !== null) {
@@ -18980,6 +19110,27 @@ class ThriftHiveMetastore_add_unique_constraint_result {
       }
       switch ($fid)
       {
+<<<<<<< HEAD
+=======
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size803 = 0;
+            $_etype806 = 0;
+            $xfer += $input->readListBegin($_etype806, $_size803);
+            for ($_i807 = 0; $_i807 < $_size803; ++$_i807)
+            {
+              $elem808 = null;
+              $elem808 = new \metastore\FieldSchema();
+              $xfer += $elem808->read($input);
+              $this->success []= $elem808;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         case 1:
           if ($ftype == TType::STRUCT) {
             $this->o1 = new \metastore\NoSuchObjectException();
@@ -19008,7 +19159,28 @@ class ThriftHiveMetastore_add_unique_constraint_result {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_add_unique_constraint_result');
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_fields_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->success));
+        {
+          foreach ($this->success as $iter809)
+          {
+            $xfer += $iter809->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
@@ -19162,6 +19334,27 @@ class ThriftHiveMetastore_add_not_null_constraint_result {
       }
       switch ($fid)
       {
+<<<<<<< HEAD
+=======
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size810 = 0;
+            $_etype813 = 0;
+            $xfer += $input->readListBegin($_etype813, $_size810);
+            for ($_i814 = 0; $_i814 < $_size810; ++$_i814)
+            {
+              $elem815 = null;
+              $elem815 = new \metastore\FieldSchema();
+              $xfer += $elem815->read($input);
+              $this->success []= $elem815;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         case 1:
           if ($ftype == TType::STRUCT) {
             $this->o1 = new \metastore\NoSuchObjectException();
@@ -19190,7 +19383,28 @@ class ThriftHiveMetastore_add_not_null_constraint_result {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_add_not_null_constraint_result');
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_fields_with_environment_context_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->success));
+        {
+          foreach ($this->success as $iter816)
+          {
+            $xfer += $iter816->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
@@ -19344,6 +19558,27 @@ class ThriftHiveMetastore_add_default_constraint_result {
       }
       switch ($fid)
       {
+<<<<<<< HEAD
+=======
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size817 = 0;
+            $_etype820 = 0;
+            $xfer += $input->readListBegin($_etype820, $_size817);
+            for ($_i821 = 0; $_i821 < $_size817; ++$_i821)
+            {
+              $elem822 = null;
+              $elem822 = new \metastore\FieldSchema();
+              $xfer += $elem822->read($input);
+              $this->success []= $elem822;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         case 1:
           if ($ftype == TType::STRUCT) {
             $this->o1 = new \metastore\NoSuchObjectException();
@@ -19372,7 +19607,28 @@ class ThriftHiveMetastore_add_default_constraint_result {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_add_default_constraint_result');
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_schema_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->success));
+        {
+          foreach ($this->success as $iter823)
+          {
+            $xfer += $iter823->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
@@ -19749,6 +20005,27 @@ class ThriftHiveMetastore_drop_table_result {
       }
       switch ($fid)
       {
+<<<<<<< HEAD
+=======
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size824 = 0;
+            $_etype827 = 0;
+            $xfer += $input->readListBegin($_etype827, $_size824);
+            for ($_i828 = 0; $_i828 < $_size824; ++$_i828)
+            {
+              $elem829 = null;
+              $elem829 = new \metastore\FieldSchema();
+              $xfer += $elem829->read($input);
+              $this->success []= $elem829;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         case 1:
           if ($ftype == TType::STRUCT) {
             $this->o1 = new \metastore\NoSuchObjectException();
@@ -19777,7 +20054,28 @@ class ThriftHiveMetastore_drop_table_result {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_drop_table_result');
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_schema_with_environment_context_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->success));
+        {
+          foreach ($this->success as $iter830)
+          {
+            $xfer += $iter830->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
@@ -20332,8 +20630,96 @@ class ThriftHiveMetastore_get_tables_args {
           }
           break;
         case 2:
+<<<<<<< HEAD
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->pattern);
+=======
+          if ($ftype == TType::LST) {
+            $this->primaryKeys = array();
+            $_size831 = 0;
+            $_etype834 = 0;
+            $xfer += $input->readListBegin($_etype834, $_size831);
+            for ($_i835 = 0; $_i835 < $_size831; ++$_i835)
+            {
+              $elem836 = null;
+              $elem836 = new \metastore\SQLPrimaryKey();
+              $xfer += $elem836->read($input);
+              $this->primaryKeys []= $elem836;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::LST) {
+            $this->foreignKeys = array();
+            $_size837 = 0;
+            $_etype840 = 0;
+            $xfer += $input->readListBegin($_etype840, $_size837);
+            for ($_i841 = 0; $_i841 < $_size837; ++$_i841)
+            {
+              $elem842 = null;
+              $elem842 = new \metastore\SQLForeignKey();
+              $xfer += $elem842->read($input);
+              $this->foreignKeys []= $elem842;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::LST) {
+            $this->uniqueConstraints = array();
+            $_size843 = 0;
+            $_etype846 = 0;
+            $xfer += $input->readListBegin($_etype846, $_size843);
+            for ($_i847 = 0; $_i847 < $_size843; ++$_i847)
+            {
+              $elem848 = null;
+              $elem848 = new \metastore\SQLUniqueConstraint();
+              $xfer += $elem848->read($input);
+              $this->uniqueConstraints []= $elem848;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::LST) {
+            $this->notNullConstraints = array();
+            $_size849 = 0;
+            $_etype852 = 0;
+            $xfer += $input->readListBegin($_etype852, $_size849);
+            for ($_i853 = 0; $_i853 < $_size849; ++$_i853)
+            {
+              $elem854 = null;
+              $elem854 = new \metastore\SQLNotNullConstraint();
+              $xfer += $elem854->read($input);
+              $this->notNullConstraints []= $elem854;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
+          if ($ftype == TType::LST) {
+            $this->defaultConstraints = array();
+            $_size855 = 0;
+            $_etype858 = 0;
+            $xfer += $input->readListBegin($_etype858, $_size855);
+            for ($_i859 = 0; $_i859 < $_size855; ++$_i859)
+            {
+              $elem860 = null;
+              $elem860 = new \metastore\SQLDefaultConstraint();
+              $xfer += $elem860->read($input);
+              $this->defaultConstraints []= $elem860;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -20350,6 +20736,7 @@ class ThriftHiveMetastore_get_tables_args {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_tables_args');
     if ($this->db_name !== null) {
       $xfer += $output->writeFieldBegin('db_name', TType::STRING, 1);
@@ -20359,6 +20746,100 @@ class ThriftHiveMetastore_get_tables_args {
     if ($this->pattern !== null) {
       $xfer += $output->writeFieldBegin('pattern', TType::STRING, 2);
       $xfer += $output->writeString($this->pattern);
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_create_table_with_constraints_args');
+    if ($this->tbl !== null) {
+      if (!is_object($this->tbl)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('tbl', TType::STRUCT, 1);
+      $xfer += $this->tbl->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->primaryKeys !== null) {
+      if (!is_array($this->primaryKeys)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('primaryKeys', TType::LST, 2);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->primaryKeys));
+        {
+          foreach ($this->primaryKeys as $iter861)
+          {
+            $xfer += $iter861->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->foreignKeys !== null) {
+      if (!is_array($this->foreignKeys)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('foreignKeys', TType::LST, 3);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->foreignKeys));
+        {
+          foreach ($this->foreignKeys as $iter862)
+          {
+            $xfer += $iter862->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->uniqueConstraints !== null) {
+      if (!is_array($this->uniqueConstraints)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('uniqueConstraints', TType::LST, 4);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->uniqueConstraints));
+        {
+          foreach ($this->uniqueConstraints as $iter863)
+          {
+            $xfer += $iter863->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->notNullConstraints !== null) {
+      if (!is_array($this->notNullConstraints)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('notNullConstraints', TType::LST, 5);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->notNullConstraints));
+        {
+          foreach ($this->notNullConstraints as $iter864)
+          {
+            $xfer += $iter864->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->defaultConstraints !== null) {
+      if (!is_array($this->defaultConstraints)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('defaultConstraints', TType::LST, 6);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->defaultConstraints));
+        {
+          foreach ($this->defaultConstraints as $iter865)
+          {
+            $xfer += $iter865->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -22385,15 +22866,39 @@ class ThriftHiveMetastore_get_materialization_invalidation_info_args {
           break;
         case 2:
           if ($ftype == TType::LST) {
+<<<<<<< HEAD
             $this->tbl_names = array();
             $_size955 = 0;
             $_etype958 = 0;
             $xfer += $input->readListBegin($_etype958, $_size955);
             for ($_i959 = 0; $_i959 < $_size955; ++$_i959)
             {
+<<<<<<< HEAD
               $elem960 = null;
               $xfer += $input->readString($elem960);
               $this->tbl_names []= $elem960;
+=======
+<<<<<<< HEAD
+              $elem953 = null;
+              $xfer += $input->readString($elem953);
+              $this->tbl_names []= $elem953;
+=======
+              $elem932 = null;
+              $xfer += $input->readString($elem932);
+              $this->tbl_names []= $elem932;
+=======
+            $this->partNames = array();
+            $_size866 = 0;
+            $_etype869 = 0;
+            $xfer += $input->readListBegin($_etype869, $_size866);
+            for ($_i870 = 0; $_i870 < $_size866; ++$_i870)
+            {
+              $elem871 = null;
+              $xfer += $input->readString($elem871);
+              $this->partNames []= $elem871;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -22426,9 +22931,27 @@ class ThriftHiveMetastore_get_materialization_invalidation_info_args {
       {
         $output->writeListBegin(TType::STRING, count($this->tbl_names));
         {
+<<<<<<< HEAD
           foreach ($this->tbl_names as $iter961)
           {
             $xfer += $output->writeString($iter961);
+=======
+<<<<<<< HEAD
+          foreach ($this->tbl_names as $iter954)
+          {
+            $xfer += $output->writeString($iter954);
+=======
+<<<<<<< HEAD
+          foreach ($this->tbl_names as $iter933)
+          {
+            $xfer += $output->writeString($iter933);
+=======
+          foreach ($this->partNames as $iter872)
+          {
+            $xfer += $output->writeString($iter872);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -22845,10 +23368,26 @@ class ThriftHiveMetastore_update_creation_metadata_result {
       }
       switch ($fid)
       {
+<<<<<<< HEAD
         case 1:
           if ($ftype == TType::STRUCT) {
             $this->o1 = new \metastore\MetaException();
             $xfer += $this->o1->read($input);
+=======
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size873 = 0;
+            $_etype876 = 0;
+            $xfer += $input->readListBegin($_etype876, $_size873);
+            for ($_i877 = 0; $_i877 < $_size873; ++$_i877)
+            {
+              $elem878 = null;
+              $xfer += $input->readString($elem878);
+              $this->success []= $elem878;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -22881,7 +23420,28 @@ class ThriftHiveMetastore_update_creation_metadata_result {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_update_creation_metadata_result');
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_tables_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRING, count($this->success));
+        {
+          foreach ($this->success as $iter879)
+          {
+            $xfer += $output->writeString($iter879);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
@@ -23111,6 +23671,7 @@ class ThriftHiveMetastore_get_table_names_by_filter_result {
         case 0:
           if ($ftype == TType::LST) {
             $this->success = array();
+<<<<<<< HEAD
             $_size971 = 0;
             $_etype974 = 0;
             $xfer += $input->readListBegin($_etype974, $_size971);
@@ -23119,6 +23680,38 @@ class ThriftHiveMetastore_get_table_names_by_filter_result {
               $elem976 = null;
               $xfer += $input->readString($elem976);
               $this->success []= $elem976;
+=======
+<<<<<<< HEAD
+            $_size964 = 0;
+            $_etype967 = 0;
+            $xfer += $input->readListBegin($_etype967, $_size964);
+            for ($_i968 = 0; $_i968 < $_size964; ++$_i968)
+            {
+              $elem969 = null;
+              $xfer += $input->readString($elem969);
+              $this->success []= $elem969;
+=======
+<<<<<<< HEAD
+            $_size943 = 0;
+            $_etype946 = 0;
+            $xfer += $input->readListBegin($_etype946, $_size943);
+            for ($_i947 = 0; $_i947 < $_size943; ++$_i947)
+            {
+              $elem948 = null;
+              $xfer += $input->readString($elem948);
+              $this->success []= $elem948;
+=======
+            $_size880 = 0;
+            $_etype883 = 0;
+            $xfer += $input->readListBegin($_etype883, $_size880);
+            for ($_i884 = 0; $_i884 < $_size880; ++$_i884)
+            {
+              $elem885 = null;
+              $xfer += $input->readString($elem885);
+              $this->success []= $elem885;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -23170,9 +23763,27 @@ class ThriftHiveMetastore_get_table_names_by_filter_result {
       {
         $output->writeListBegin(TType::STRING, count($this->success));
         {
+<<<<<<< HEAD
           foreach ($this->success as $iter977)
           {
             $xfer += $output->writeString($iter977);
+=======
+<<<<<<< HEAD
+          foreach ($this->success as $iter970)
+          {
+            $xfer += $output->writeString($iter970);
+=======
+<<<<<<< HEAD
+          foreach ($this->success as $iter949)
+          {
+            $xfer += $output->writeString($iter949);
+=======
+          foreach ($this->success as $iter886)
+          {
+            $xfer += $output->writeString($iter886);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -23383,10 +23994,26 @@ class ThriftHiveMetastore_alter_table_result {
       }
       switch ($fid)
       {
+<<<<<<< HEAD
         case 1:
           if ($ftype == TType::STRUCT) {
             $this->o1 = new \metastore\InvalidOperationException();
             $xfer += $this->o1->read($input);
+=======
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size887 = 0;
+            $_etype890 = 0;
+            $xfer += $input->readListBegin($_etype890, $_size887);
+            for ($_i891 = 0; $_i891 < $_size887; ++$_i891)
+            {
+              $elem892 = null;
+              $xfer += $input->readString($elem892);
+              $this->success []= $elem892;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -23411,7 +24038,28 @@ class ThriftHiveMetastore_alter_table_result {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_alter_table_result');
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_materialized_views_for_rewriting_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRING, count($this->success));
+        {
+          foreach ($this->success as $iter893)
+          {
+            $xfer += $output->writeString($iter893);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
@@ -23522,6 +24170,7 @@ class ThriftHiveMetastore_alter_table_with_environment_context_args {
           }
           break;
         case 3:
+<<<<<<< HEAD
           if ($ftype == TType::STRUCT) {
             $this->new_tbl = new \metastore\Table();
             $xfer += $this->new_tbl->read($input);
@@ -23533,6 +24182,20 @@ class ThriftHiveMetastore_alter_table_with_environment_context_args {
           if ($ftype == TType::STRUCT) {
             $this->environment_context = new \metastore\EnvironmentContext();
             $xfer += $this->environment_context->read($input);
+=======
+          if ($ftype == TType::LST) {
+            $this->tbl_types = array();
+            $_size894 = 0;
+            $_etype897 = 0;
+            $xfer += $input->readListBegin($_etype897, $_size894);
+            for ($_i898 = 0; $_i898 < $_size894; ++$_i898)
+            {
+              $elem899 = null;
+              $xfer += $input->readString($elem899);
+              $this->tbl_types []= $elem899;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -23564,6 +24227,7 @@ class ThriftHiveMetastore_alter_table_with_environment_context_args {
       if (!is_object($this->new_tbl)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('new_tbl', TType::STRUCT, 3);
       $xfer += $this->new_tbl->write($output);
       $xfer += $output->writeFieldEnd();
@@ -23571,6 +24235,18 @@ class ThriftHiveMetastore_alter_table_with_environment_context_args {
     if ($this->environment_context !== null) {
       if (!is_object($this->environment_context)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+=======
+      $xfer += $output->writeFieldBegin('tbl_types', TType::LST, 3);
+      {
+        $output->writeListBegin(TType::STRING, count($this->tbl_types));
+        {
+          foreach ($this->tbl_types as $iter900)
+          {
+            $xfer += $output->writeString($iter900);
+          }
+        }
+        $output->writeListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       }
       $xfer += $output->writeFieldBegin('environment_context', TType::STRUCT, 4);
       $xfer += $this->environment_context->write($output);
@@ -23639,10 +24315,27 @@ class ThriftHiveMetastore_alter_table_with_environment_context_result {
       }
       switch ($fid)
       {
+<<<<<<< HEAD
         case 1:
           if ($ftype == TType::STRUCT) {
             $this->o1 = new \metastore\InvalidOperationException();
             $xfer += $this->o1->read($input);
+=======
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size901 = 0;
+            $_etype904 = 0;
+            $xfer += $input->readListBegin($_etype904, $_size901);
+            for ($_i905 = 0; $_i905 < $_size901; ++$_i905)
+            {
+              $elem906 = null;
+              $elem906 = new \metastore\TableMeta();
+              $xfer += $elem906->read($input);
+              $this->success []= $elem906;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -23667,7 +24360,28 @@ class ThriftHiveMetastore_alter_table_with_environment_context_result {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_alter_table_with_environment_context_result');
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_table_meta_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->success));
+        {
+          foreach ($this->success as $iter907)
+          {
+            $xfer += $iter907->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
@@ -23890,10 +24604,26 @@ class ThriftHiveMetastore_alter_table_with_cascade_result {
       }
       switch ($fid)
       {
+<<<<<<< HEAD
         case 1:
           if ($ftype == TType::STRUCT) {
             $this->o1 = new \metastore\InvalidOperationException();
             $xfer += $this->o1->read($input);
+=======
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size908 = 0;
+            $_etype911 = 0;
+            $xfer += $input->readListBegin($_etype911, $_size908);
+            for ($_i912 = 0; $_i912 < $_size908; ++$_i912)
+            {
+              $elem913 = null;
+              $xfer += $input->readString($elem913);
+              $this->success []= $elem913;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -23918,7 +24648,28 @@ class ThriftHiveMetastore_alter_table_with_cascade_result {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_alter_table_with_cascade_result');
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_all_tables_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRING, count($this->success));
+        {
+          foreach ($this->success as $iter914)
+          {
+            $xfer += $output->writeString($iter914);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
@@ -24236,9 +24987,24 @@ class ThriftHiveMetastore_add_partition_with_environment_context_args {
           }
           break;
         case 2:
+<<<<<<< HEAD
           if ($ftype == TType::STRUCT) {
             $this->environment_context = new \metastore\EnvironmentContext();
             $xfer += $this->environment_context->read($input);
+=======
+          if ($ftype == TType::LST) {
+            $this->tbl_names = array();
+            $_size915 = 0;
+            $_etype918 = 0;
+            $xfer += $input->readListBegin($_etype918, $_size915);
+            for ($_i919 = 0; $_i919 < $_size915; ++$_i919)
+            {
+              $elem920 = null;
+              $xfer += $input->readString($elem920);
+              $this->tbl_names []= $elem920;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -24268,8 +25034,22 @@ class ThriftHiveMetastore_add_partition_with_environment_context_args {
       if (!is_object($this->environment_context)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('environment_context', TType::STRUCT, 2);
       $xfer += $this->environment_context->write($output);
+=======
+      $xfer += $output->writeFieldBegin('tbl_names', TType::LST, 2);
+      {
+        $output->writeListBegin(TType::STRING, count($this->tbl_names));
+        {
+          foreach ($this->tbl_names as $iter921)
+          {
+            $xfer += $output->writeString($iter921);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -24360,6 +25140,7 @@ class ThriftHiveMetastore_add_partition_with_environment_context_result {
       switch ($fid)
       {
         case 0:
+<<<<<<< HEAD
           if ($ftype == TType::STRUCT) {
             $this->success = new \metastore\Partition();
             $xfer += $this->success->read($input);
@@ -24387,6 +25168,21 @@ class ThriftHiveMetastore_add_partition_with_environment_context_result {
           if ($ftype == TType::STRUCT) {
             $this->o3 = new \metastore\MetaException();
             $xfer += $this->o3->read($input);
+=======
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size922 = 0;
+            $_etype925 = 0;
+            $xfer += $input->readListBegin($_etype925, $_size922);
+            for ($_i926 = 0; $_i926 < $_size922; ++$_i926)
+            {
+              $elem927 = null;
+              $elem927 = new \metastore\Table();
+              $xfer += $elem927->read($input);
+              $this->success []= $elem927;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -24408,6 +25204,7 @@ class ThriftHiveMetastore_add_partition_with_environment_context_result {
       if (!is_object($this->success)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('success', TType::STRUCT, 0);
       $xfer += $this->success->write($output);
       $xfer += $output->writeFieldEnd();
@@ -24425,6 +25222,19 @@ class ThriftHiveMetastore_add_partition_with_environment_context_result {
     if ($this->o3 !== null) {
       $xfer += $output->writeFieldBegin('o3', TType::STRUCT, 3);
       $xfer += $this->o3->write($output);
+=======
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->success));
+        {
+          foreach ($this->success as $iter928)
+          {
+            $xfer += $iter928->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -25025,15 +25835,39 @@ class ThriftHiveMetastore_append_partition_args {
           break;
         case 3:
           if ($ftype == TType::LST) {
+<<<<<<< HEAD
             $this->part_vals = array();
             $_size992 = 0;
             $_etype995 = 0;
             $xfer += $input->readListBegin($_etype995, $_size992);
             for ($_i996 = 0; $_i996 < $_size992; ++$_i996)
             {
+<<<<<<< HEAD
               $elem997 = null;
               $xfer += $input->readString($elem997);
               $this->part_vals []= $elem997;
+=======
+<<<<<<< HEAD
+              $elem990 = null;
+              $xfer += $input->readString($elem990);
+              $this->part_vals []= $elem990;
+=======
+              $elem969 = null;
+              $xfer += $input->readString($elem969);
+              $this->part_vals []= $elem969;
+=======
+            $this->tbl_names = array();
+            $_size929 = 0;
+            $_etype932 = 0;
+            $xfer += $input->readListBegin($_etype932, $_size929);
+            for ($_i933 = 0; $_i933 < $_size929; ++$_i933)
+            {
+              $elem934 = null;
+              $xfer += $input->readString($elem934);
+              $this->tbl_names []= $elem934;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -25071,9 +25905,27 @@ class ThriftHiveMetastore_append_partition_args {
       {
         $output->writeListBegin(TType::STRING, count($this->part_vals));
         {
+<<<<<<< HEAD
           foreach ($this->part_vals as $iter998)
           {
             $xfer += $output->writeString($iter998);
+=======
+<<<<<<< HEAD
+          foreach ($this->part_vals as $iter991)
+          {
+            $xfer += $output->writeString($iter991);
+=======
+<<<<<<< HEAD
+          foreach ($this->part_vals as $iter970)
+          {
+            $xfer += $output->writeString($iter970);
+=======
+          foreach ($this->tbl_names as $iter935)
+          {
+            $xfer += $output->writeString($iter935);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -25168,9 +26020,28 @@ class ThriftHiveMetastore_append_partition_result {
       switch ($fid)
       {
         case 0:
+<<<<<<< HEAD
           if ($ftype == TType::STRUCT) {
             $this->success = new \metastore\Partition();
             $xfer += $this->success->read($input);
+=======
+          if ($ftype == TType::MAP) {
+            $this->success = array();
+            $_size936 = 0;
+            $_ktype937 = 0;
+            $_vtype938 = 0;
+            $xfer += $input->readMapBegin($_ktype937, $_vtype938, $_size936);
+            for ($_i940 = 0; $_i940 < $_size936; ++$_i940)
+            {
+              $key941 = '';
+              $val942 = new \metastore\Materialization();
+              $xfer += $input->readString($key941);
+              $val942 = new \metastore\Materialization();
+              $xfer += $val942->read($input);
+              $this->success[$key941] = $val942;
+            }
+            $xfer += $input->readMapEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -25216,8 +26087,23 @@ class ThriftHiveMetastore_append_partition_result {
       if (!is_object($this->success)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('success', TType::STRUCT, 0);
       $xfer += $this->success->write($output);
+=======
+      $xfer += $output->writeFieldBegin('success', TType::MAP, 0);
+      {
+        $output->writeMapBegin(TType::STRING, TType::STRUCT, count($this->success));
+        {
+          foreach ($this->success as $kiter943 => $viter944)
+          {
+            $xfer += $output->writeString($kiter943);
+            $xfer += $viter944->write($output);
+          }
+        }
+        $output->writeMapEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     if ($this->o1 !== null) {
@@ -25733,9 +26619,24 @@ class ThriftHiveMetastore_append_partition_with_environment_context_result {
       switch ($fid)
       {
         case 0:
+<<<<<<< HEAD
           if ($ftype == TType::STRUCT) {
             $this->success = new \metastore\Partition();
             $xfer += $this->success->read($input);
+=======
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size945 = 0;
+            $_etype948 = 0;
+            $xfer += $input->readListBegin($_etype948, $_size945);
+            for ($_i949 = 0; $_i949 < $_size945; ++$_i949)
+            {
+              $elem950 = null;
+              $xfer += $input->readString($elem950);
+              $this->success []= $elem950;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -25781,8 +26682,22 @@ class ThriftHiveMetastore_append_partition_with_environment_context_result {
       if (!is_object($this->success)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('success', TType::STRUCT, 0);
       $xfer += $this->success->write($output);
+=======
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRING, count($this->success));
+        {
+          foreach ($this->success as $iter951)
+          {
+            $xfer += $output->writeString($iter951);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     if ($this->o1 !== null) {
@@ -27363,6 +28278,7 @@ class ThriftHiveMetastore_drop_partition_by_name_with_environment_context_args {
       switch ($fid)
       {
         case 1:
+<<<<<<< HEAD
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->db_name);
           } else {
@@ -27394,6 +28310,21 @@ class ThriftHiveMetastore_drop_partition_by_name_with_environment_context_args {
           if ($ftype == TType::STRUCT) {
             $this->environment_context = new \metastore\EnvironmentContext();
             $xfer += $this->environment_context->read($input);
+=======
+          if ($ftype == TType::LST) {
+            $this->new_parts = array();
+            $_size952 = 0;
+            $_etype955 = 0;
+            $xfer += $input->readListBegin($_etype955, $_size952);
+            for ($_i956 = 0; $_i956 < $_size952; ++$_i956)
+            {
+              $elem957 = null;
+              $elem957 = new \metastore\Partition();
+              $xfer += $elem957->read($input);
+              $this->new_parts []= $elem957;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -27410,6 +28341,7 @@ class ThriftHiveMetastore_drop_partition_by_name_with_environment_context_args {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_drop_partition_by_name_with_environment_context_args');
     if ($this->db_name !== null) {
       $xfer += $output->writeFieldBegin('db_name', TType::STRING, 1);
@@ -27434,6 +28366,23 @@ class ThriftHiveMetastore_drop_partition_by_name_with_environment_context_args {
     if ($this->environment_context !== null) {
       if (!is_object($this->environment_context)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_add_partitions_args');
+    if ($this->new_parts !== null) {
+      if (!is_array($this->new_parts)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('new_parts', TType::LST, 1);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->new_parts));
+        {
+          foreach ($this->new_parts as $iter958)
+          {
+            $xfer += $iter958->write($output);
+          }
+        }
+        $output->writeListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       }
       $xfer += $output->writeFieldBegin('environment_context', TType::STRUCT, 5);
       $xfer += $this->environment_context->write($output);
@@ -27616,9 +28565,25 @@ class ThriftHiveMetastore_drop_partitions_req_args {
       switch ($fid)
       {
         case 1:
+<<<<<<< HEAD
           if ($ftype == TType::STRUCT) {
             $this->req = new \metastore\DropPartitionsRequest();
             $xfer += $this->req->read($input);
+=======
+          if ($ftype == TType::LST) {
+            $this->new_parts = array();
+            $_size959 = 0;
+            $_etype962 = 0;
+            $xfer += $input->readListBegin($_etype962, $_size959);
+            for ($_i963 = 0; $_i963 < $_size959; ++$_i963)
+            {
+              $elem964 = null;
+              $elem964 = new \metastore\PartitionSpec();
+              $xfer += $elem964->read($input);
+              $this->new_parts []= $elem964;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -27640,8 +28605,22 @@ class ThriftHiveMetastore_drop_partitions_req_args {
       if (!is_object($this->req)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('req', TType::STRUCT, 1);
       $xfer += $this->req->write($output);
+=======
+      $xfer += $output->writeFieldBegin('new_parts', TType::LST, 1);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->new_parts));
+        {
+          foreach ($this->new_parts as $iter965)
+          {
+            $xfer += $iter965->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -27867,6 +28846,7 @@ class ThriftHiveMetastore_get_partition_args {
         case 3:
           if ($ftype == TType::LST) {
             $this->part_vals = array();
+<<<<<<< HEAD
             $_size1020 = 0;
             $_etype1023 = 0;
             $xfer += $input->readListBegin($_etype1023, $_size1020);
@@ -27875,6 +28855,38 @@ class ThriftHiveMetastore_get_partition_args {
               $elem1025 = null;
               $xfer += $input->readString($elem1025);
               $this->part_vals []= $elem1025;
+=======
+<<<<<<< HEAD
+            $_size1013 = 0;
+            $_etype1016 = 0;
+            $xfer += $input->readListBegin($_etype1016, $_size1013);
+            for ($_i1017 = 0; $_i1017 < $_size1013; ++$_i1017)
+            {
+              $elem1018 = null;
+              $xfer += $input->readString($elem1018);
+              $this->part_vals []= $elem1018;
+=======
+<<<<<<< HEAD
+            $_size992 = 0;
+            $_etype995 = 0;
+            $xfer += $input->readListBegin($_etype995, $_size992);
+            for ($_i996 = 0; $_i996 < $_size992; ++$_i996)
+            {
+              $elem997 = null;
+              $xfer += $input->readString($elem997);
+              $this->part_vals []= $elem997;
+=======
+            $_size966 = 0;
+            $_etype969 = 0;
+            $xfer += $input->readListBegin($_etype969, $_size966);
+            for ($_i970 = 0; $_i970 < $_size966; ++$_i970)
+            {
+              $elem971 = null;
+              $xfer += $input->readString($elem971);
+              $this->part_vals []= $elem971;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -27912,9 +28924,27 @@ class ThriftHiveMetastore_get_partition_args {
       {
         $output->writeListBegin(TType::STRING, count($this->part_vals));
         {
+<<<<<<< HEAD
           foreach ($this->part_vals as $iter1026)
           {
             $xfer += $output->writeString($iter1026);
+=======
+<<<<<<< HEAD
+          foreach ($this->part_vals as $iter1019)
+          {
+            $xfer += $output->writeString($iter1019);
+=======
+<<<<<<< HEAD
+          foreach ($this->part_vals as $iter998)
+          {
+            $xfer += $output->writeString($iter998);
+=======
+          foreach ($this->part_vals as $iter972)
+          {
+            $xfer += $output->writeString($iter972);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -28181,8 +29211,23 @@ class ThriftHiveMetastore_exchange_partition_args {
           }
           break;
         case 3:
+<<<<<<< HEAD
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->source_table_name);
+=======
+          if ($ftype == TType::LST) {
+            $this->part_vals = array();
+            $_size973 = 0;
+            $_etype976 = 0;
+            $xfer += $input->readListBegin($_etype976, $_size973);
+            for ($_i977 = 0; $_i977 < $_size973; ++$_i977)
+            {
+              $elem978 = null;
+              $xfer += $input->readString($elem978);
+              $this->part_vals []= $elem978;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -28222,10 +29267,30 @@ class ThriftHiveMetastore_exchange_partition_args {
       {
         $output->writeMapBegin(TType::STRING, TType::STRING, count($this->partitionSpecs));
         {
+<<<<<<< HEAD
           foreach ($this->partitionSpecs as $kiter1034 => $viter1035)
           {
             $xfer += $output->writeString($kiter1034);
             $xfer += $output->writeString($viter1035);
+=======
+<<<<<<< HEAD
+          foreach ($this->partitionSpecs as $kiter1027 => $viter1028)
+          {
+            $xfer += $output->writeString($kiter1027);
+            $xfer += $output->writeString($viter1028);
+=======
+<<<<<<< HEAD
+          foreach ($this->partitionSpecs as $kiter1006 => $viter1007)
+          {
+            $xfer += $output->writeString($kiter1006);
+            $xfer += $output->writeString($viter1007);
+=======
+          foreach ($this->part_vals as $iter979)
+          {
+            $xfer += $output->writeString($iter979);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeMapEnd();
@@ -29272,8 +30337,30 @@ class ThriftHiveMetastore_get_partition_by_name_args {
           }
           break;
         case 3:
+<<<<<<< HEAD
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->part_name);
+=======
+          if ($ftype == TType::LST) {
+            $this->part_vals = array();
+            $_size980 = 0;
+            $_etype983 = 0;
+            $xfer += $input->readListBegin($_etype983, $_size980);
+            for ($_i984 = 0; $_i984 < $_size980; ++$_i984)
+            {
+              $elem985 = null;
+              $xfer += $input->readString($elem985);
+              $this->part_vals []= $elem985;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->deleteData);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -29301,9 +30388,32 @@ class ThriftHiveMetastore_get_partition_by_name_args {
       $xfer += $output->writeString($this->tbl_name);
       $xfer += $output->writeFieldEnd();
     }
+<<<<<<< HEAD
     if ($this->part_name !== null) {
       $xfer += $output->writeFieldBegin('part_name', TType::STRING, 3);
       $xfer += $output->writeString($this->part_name);
+=======
+    if ($this->part_vals !== null) {
+      if (!is_array($this->part_vals)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('part_vals', TType::LST, 3);
+      {
+        $output->writeListBegin(TType::STRING, count($this->part_vals));
+        {
+          foreach ($this->part_vals as $iter986)
+          {
+            $xfer += $output->writeString($iter986);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->deleteData !== null) {
+      $xfer += $output->writeFieldBegin('deleteData', TType::BOOL, 4);
+      $xfer += $output->writeBool($this->deleteData);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -29523,8 +30633,38 @@ class ThriftHiveMetastore_get_partitions_args {
           }
           break;
         case 3:
+<<<<<<< HEAD
           if ($ftype == TType::I16) {
             $xfer += $input->readI16($this->max_parts);
+=======
+          if ($ftype == TType::LST) {
+            $this->part_vals = array();
+            $_size987 = 0;
+            $_etype990 = 0;
+            $xfer += $input->readListBegin($_etype990, $_size987);
+            for ($_i991 = 0; $_i991 < $_size987; ++$_i991)
+            {
+              $elem992 = null;
+              $xfer += $input->readString($elem992);
+              $this->part_vals []= $elem992;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->deleteData);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::STRUCT) {
+            $this->environment_context = new \metastore\EnvironmentContext();
+            $xfer += $this->environment_context->read($input);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -29552,9 +30692,40 @@ class ThriftHiveMetastore_get_partitions_args {
       $xfer += $output->writeString($this->tbl_name);
       $xfer += $output->writeFieldEnd();
     }
+<<<<<<< HEAD
     if ($this->max_parts !== null) {
       $xfer += $output->writeFieldBegin('max_parts', TType::I16, 3);
       $xfer += $output->writeI16($this->max_parts);
+=======
+    if ($this->part_vals !== null) {
+      if (!is_array($this->part_vals)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('part_vals', TType::LST, 3);
+      {
+        $output->writeListBegin(TType::STRING, count($this->part_vals));
+        {
+          foreach ($this->part_vals as $iter993)
+          {
+            $xfer += $output->writeString($iter993);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->deleteData !== null) {
+      $xfer += $output->writeFieldBegin('deleteData', TType::BOOL, 4);
+      $xfer += $output->writeBool($this->deleteData);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->environment_context !== null) {
+      if (!is_object($this->environment_context)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('environment_context', TType::STRUCT, 5);
+      $xfer += $this->environment_context->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -30654,9 +31825,38 @@ class ThriftHiveMetastore_get_partition_values_args {
       switch ($fid)
       {
         case 1:
+<<<<<<< HEAD
           if ($ftype == TType::STRUCT) {
             $this->request = new \metastore\PartitionValuesRequest();
             $xfer += $this->request->read($input);
+=======
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->db_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tbl_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::LST) {
+            $this->part_vals = array();
+            $_size994 = 0;
+            $_etype997 = 0;
+            $xfer += $input->readListBegin($_etype997, $_size994);
+            for ($_i998 = 0; $_i998 < $_size994; ++$_i998)
+            {
+              $elem999 = null;
+              $xfer += $input->readString($elem999);
+              $this->part_vals []= $elem999;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -30678,8 +31878,22 @@ class ThriftHiveMetastore_get_partition_values_args {
       if (!is_object($this->request)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('request', TType::STRUCT, 1);
       $xfer += $this->request->write($output);
+=======
+      $xfer += $output->writeFieldBegin('part_vals', TType::LST, 3);
+      {
+        $output->writeListBegin(TType::STRING, count($this->part_vals));
+        {
+          foreach ($this->part_vals as $iter1000)
+          {
+            $xfer += $output->writeString($iter1000);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -30900,8 +32114,26 @@ class ThriftHiveMetastore_get_partitions_ps_args {
       switch ($fid)
       {
         case 1:
+<<<<<<< HEAD
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->db_name);
+=======
+          if ($ftype == TType::MAP) {
+            $this->partitionSpecs = array();
+            $_size1001 = 0;
+            $_ktype1002 = 0;
+            $_vtype1003 = 0;
+            $xfer += $input->readMapBegin($_ktype1002, $_vtype1003, $_size1001);
+            for ($_i1005 = 0; $_i1005 < $_size1001; ++$_i1005)
+            {
+              $key1006 = '';
+              $val1007 = '';
+              $xfer += $input->readString($key1006);
+              $xfer += $input->readString($val1007);
+              $this->partitionSpecs[$key1006] = $val1007;
+            }
+            $xfer += $input->readMapEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -30968,9 +32200,28 @@ class ThriftHiveMetastore_get_partitions_ps_args {
       {
         $output->writeListBegin(TType::STRING, count($this->part_vals));
         {
+<<<<<<< HEAD
           foreach ($this->part_vals as $iter1107)
           {
             $xfer += $output->writeString($iter1107);
+=======
+<<<<<<< HEAD
+          foreach ($this->part_vals as $iter1100)
+          {
+            $xfer += $output->writeString($iter1100);
+=======
+<<<<<<< HEAD
+          foreach ($this->part_vals as $iter1079)
+          {
+            $xfer += $output->writeString($iter1079);
+=======
+          foreach ($this->partitionSpecs as $kiter1008 => $viter1009)
+          {
+            $xfer += $output->writeString($kiter1008);
+            $xfer += $output->writeString($viter1009);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -31249,8 +32500,26 @@ class ThriftHiveMetastore_get_partitions_ps_with_auth_args {
       switch ($fid)
       {
         case 1:
+<<<<<<< HEAD
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->db_name);
+=======
+          if ($ftype == TType::MAP) {
+            $this->partitionSpecs = array();
+            $_size1010 = 0;
+            $_ktype1011 = 0;
+            $_vtype1012 = 0;
+            $xfer += $input->readMapBegin($_ktype1011, $_vtype1012, $_size1010);
+            for ($_i1014 = 0; $_i1014 < $_size1010; ++$_i1014)
+            {
+              $key1015 = '';
+              $val1016 = '';
+              $xfer += $input->readString($key1015);
+              $xfer += $input->readString($val1016);
+              $this->partitionSpecs[$key1015] = $val1016;
+            }
+            $xfer += $input->readMapEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -31341,9 +32610,28 @@ class ThriftHiveMetastore_get_partitions_ps_with_auth_args {
       {
         $output->writeListBegin(TType::STRING, count($this->part_vals));
         {
+<<<<<<< HEAD
           foreach ($this->part_vals as $iter1127)
           {
             $xfer += $output->writeString($iter1127);
+=======
+<<<<<<< HEAD
+          foreach ($this->part_vals as $iter1120)
+          {
+            $xfer += $output->writeString($iter1120);
+=======
+<<<<<<< HEAD
+          foreach ($this->part_vals as $iter1099)
+          {
+            $xfer += $output->writeString($iter1099);
+=======
+          foreach ($this->partitionSpecs as $kiter1017 => $viter1018)
+          {
+            $xfer += $output->writeString($kiter1017);
+            $xfer += $output->writeString($viter1018);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -31459,6 +32747,7 @@ class ThriftHiveMetastore_get_partitions_ps_with_auth_result {
         case 0:
           if ($ftype == TType::LST) {
             $this->success = array();
+<<<<<<< HEAD
             $_size1129 = 0;
             $_etype1132 = 0;
             $xfer += $input->readListBegin($_etype1132, $_size1129);
@@ -31468,6 +32757,41 @@ class ThriftHiveMetastore_get_partitions_ps_with_auth_result {
               $elem1134 = new \metastore\Partition();
               $xfer += $elem1134->read($input);
               $this->success []= $elem1134;
+=======
+<<<<<<< HEAD
+            $_size1122 = 0;
+            $_etype1125 = 0;
+            $xfer += $input->readListBegin($_etype1125, $_size1122);
+            for ($_i1126 = 0; $_i1126 < $_size1122; ++$_i1126)
+            {
+              $elem1127 = null;
+              $elem1127 = new \metastore\Partition();
+              $xfer += $elem1127->read($input);
+              $this->success []= $elem1127;
+=======
+<<<<<<< HEAD
+            $_size1101 = 0;
+            $_etype1104 = 0;
+            $xfer += $input->readListBegin($_etype1104, $_size1101);
+            for ($_i1105 = 0; $_i1105 < $_size1101; ++$_i1105)
+            {
+              $elem1106 = null;
+              $elem1106 = new \metastore\Partition();
+              $xfer += $elem1106->read($input);
+              $this->success []= $elem1106;
+=======
+            $_size1019 = 0;
+            $_etype1022 = 0;
+            $xfer += $input->readListBegin($_etype1022, $_size1019);
+            for ($_i1023 = 0; $_i1023 < $_size1019; ++$_i1023)
+            {
+              $elem1024 = null;
+              $elem1024 = new \metastore\Partition();
+              $xfer += $elem1024->read($input);
+              $this->success []= $elem1024;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -31511,9 +32835,27 @@ class ThriftHiveMetastore_get_partitions_ps_with_auth_result {
       {
         $output->writeListBegin(TType::STRUCT, count($this->success));
         {
+<<<<<<< HEAD
           foreach ($this->success as $iter1135)
           {
             $xfer += $iter1135->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->success as $iter1128)
+          {
+            $xfer += $iter1128->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->success as $iter1107)
+          {
+            $xfer += $iter1107->write($output);
+=======
+          foreach ($this->success as $iter1025)
+          {
+            $xfer += $iter1025->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -31634,6 +32976,7 @@ class ThriftHiveMetastore_get_partition_names_ps_args {
         case 3:
           if ($ftype == TType::LST) {
             $this->part_vals = array();
+<<<<<<< HEAD
             $_size1136 = 0;
             $_etype1139 = 0;
             $xfer += $input->readListBegin($_etype1139, $_size1136);
@@ -31642,6 +32985,38 @@ class ThriftHiveMetastore_get_partition_names_ps_args {
               $elem1141 = null;
               $xfer += $input->readString($elem1141);
               $this->part_vals []= $elem1141;
+=======
+<<<<<<< HEAD
+            $_size1129 = 0;
+            $_etype1132 = 0;
+            $xfer += $input->readListBegin($_etype1132, $_size1129);
+            for ($_i1133 = 0; $_i1133 < $_size1129; ++$_i1133)
+            {
+              $elem1134 = null;
+              $xfer += $input->readString($elem1134);
+              $this->part_vals []= $elem1134;
+=======
+<<<<<<< HEAD
+            $_size1108 = 0;
+            $_etype1111 = 0;
+            $xfer += $input->readListBegin($_etype1111, $_size1108);
+            for ($_i1112 = 0; $_i1112 < $_size1108; ++$_i1112)
+            {
+              $elem1113 = null;
+              $xfer += $input->readString($elem1113);
+              $this->part_vals []= $elem1113;
+=======
+            $_size1026 = 0;
+            $_etype1029 = 0;
+            $xfer += $input->readListBegin($_etype1029, $_size1026);
+            for ($_i1030 = 0; $_i1030 < $_size1026; ++$_i1030)
+            {
+              $elem1031 = null;
+              $xfer += $input->readString($elem1031);
+              $this->part_vals []= $elem1031;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -31649,8 +33024,30 @@ class ThriftHiveMetastore_get_partition_names_ps_args {
           }
           break;
         case 4:
+<<<<<<< HEAD
           if ($ftype == TType::I16) {
             $xfer += $input->readI16($this->max_parts);
+=======
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->user_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::LST) {
+            $this->group_names = array();
+            $_size1032 = 0;
+            $_etype1035 = 0;
+            $xfer += $input->readListBegin($_etype1035, $_size1032);
+            for ($_i1036 = 0; $_i1036 < $_size1032; ++$_i1036)
+            {
+              $elem1037 = null;
+              $xfer += $input->readString($elem1037);
+              $this->group_names []= $elem1037;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -31686,18 +33083,59 @@ class ThriftHiveMetastore_get_partition_names_ps_args {
       {
         $output->writeListBegin(TType::STRING, count($this->part_vals));
         {
+<<<<<<< HEAD
           foreach ($this->part_vals as $iter1142)
           {
             $xfer += $output->writeString($iter1142);
+=======
+<<<<<<< HEAD
+          foreach ($this->part_vals as $iter1135)
+          {
+            $xfer += $output->writeString($iter1135);
+=======
+<<<<<<< HEAD
+          foreach ($this->part_vals as $iter1114)
+          {
+            $xfer += $output->writeString($iter1114);
+=======
+          foreach ($this->part_vals as $iter1038)
+          {
+            $xfer += $output->writeString($iter1038);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
       }
       $xfer += $output->writeFieldEnd();
     }
+<<<<<<< HEAD
     if ($this->max_parts !== null) {
       $xfer += $output->writeFieldBegin('max_parts', TType::I16, 4);
       $xfer += $output->writeI16($this->max_parts);
+=======
+    if ($this->user_name !== null) {
+      $xfer += $output->writeFieldBegin('user_name', TType::STRING, 4);
+      $xfer += $output->writeString($this->user_name);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->group_names !== null) {
+      if (!is_array($this->group_names)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('group_names', TType::LST, 5);
+      {
+        $output->writeListBegin(TType::STRING, count($this->group_names));
+        {
+          foreach ($this->group_names as $iter1039)
+          {
+            $xfer += $output->writeString($iter1039);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -32374,6 +33812,7 @@ class ThriftHiveMetastore_get_part_specs_by_filter_result {
         case 0:
           if ($ftype == TType::LST) {
             $this->success = array();
+<<<<<<< HEAD
             $_size1157 = 0;
             $_etype1160 = 0;
             $xfer += $input->readListBegin($_etype1160, $_size1157);
@@ -32383,6 +33822,41 @@ class ThriftHiveMetastore_get_part_specs_by_filter_result {
               $elem1162 = new \metastore\PartitionSpec();
               $xfer += $elem1162->read($input);
               $this->success []= $elem1162;
+=======
+<<<<<<< HEAD
+            $_size1150 = 0;
+            $_etype1153 = 0;
+            $xfer += $input->readListBegin($_etype1153, $_size1150);
+            for ($_i1154 = 0; $_i1154 < $_size1150; ++$_i1154)
+            {
+              $elem1155 = null;
+              $elem1155 = new \metastore\PartitionSpec();
+              $xfer += $elem1155->read($input);
+              $this->success []= $elem1155;
+=======
+<<<<<<< HEAD
+            $_size1129 = 0;
+            $_etype1132 = 0;
+            $xfer += $input->readListBegin($_etype1132, $_size1129);
+            for ($_i1133 = 0; $_i1133 < $_size1129; ++$_i1133)
+            {
+              $elem1134 = null;
+              $elem1134 = new \metastore\PartitionSpec();
+              $xfer += $elem1134->read($input);
+              $this->success []= $elem1134;
+=======
+            $_size1040 = 0;
+            $_etype1043 = 0;
+            $xfer += $input->readListBegin($_etype1043, $_size1040);
+            for ($_i1044 = 0; $_i1044 < $_size1040; ++$_i1044)
+            {
+              $elem1045 = null;
+              $elem1045 = new \metastore\Partition();
+              $xfer += $elem1045->read($input);
+              $this->success []= $elem1045;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -32426,9 +33900,27 @@ class ThriftHiveMetastore_get_part_specs_by_filter_result {
       {
         $output->writeListBegin(TType::STRUCT, count($this->success));
         {
+<<<<<<< HEAD
           foreach ($this->success as $iter1163)
           {
             $xfer += $iter1163->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->success as $iter1156)
+          {
+            $xfer += $iter1156->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->success as $iter1135)
+          {
+            $xfer += $iter1135->write($output);
+=======
+          foreach ($this->success as $iter1046)
+          {
+            $xfer += $iter1046->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -32497,9 +33989,52 @@ class ThriftHiveMetastore_get_partitions_by_expr_args {
       switch ($fid)
       {
         case 1:
+<<<<<<< HEAD
           if ($ftype == TType::STRUCT) {
             $this->req = new \metastore\PartitionsByExprRequest();
             $xfer += $this->req->read($input);
+=======
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->db_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tbl_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::I16) {
+            $xfer += $input->readI16($this->max_parts);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->user_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::LST) {
+            $this->group_names = array();
+            $_size1047 = 0;
+            $_etype1050 = 0;
+            $xfer += $input->readListBegin($_etype1050, $_size1047);
+            for ($_i1051 = 0; $_i1051 < $_size1047; ++$_i1051)
+            {
+              $elem1052 = null;
+              $xfer += $input->readString($elem1052);
+              $this->group_names []= $elem1052;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -32521,8 +34056,22 @@ class ThriftHiveMetastore_get_partitions_by_expr_args {
       if (!is_object($this->req)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('req', TType::STRUCT, 1);
       $xfer += $this->req->write($output);
+=======
+      $xfer += $output->writeFieldBegin('group_names', TType::LST, 5);
+      {
+        $output->writeListBegin(TType::STRING, count($this->group_names));
+        {
+          foreach ($this->group_names as $iter1053)
+          {
+            $xfer += $output->writeString($iter1053);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -32601,9 +34150,25 @@ class ThriftHiveMetastore_get_partitions_by_expr_result {
       switch ($fid)
       {
         case 0:
+<<<<<<< HEAD
           if ($ftype == TType::STRUCT) {
             $this->success = new \metastore\PartitionsByExprResult();
             $xfer += $this->success->read($input);
+=======
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size1054 = 0;
+            $_etype1057 = 0;
+            $xfer += $input->readListBegin($_etype1057, $_size1054);
+            for ($_i1058 = 0; $_i1058 < $_size1054; ++$_i1058)
+            {
+              $elem1059 = null;
+              $elem1059 = new \metastore\Partition();
+              $xfer += $elem1059->read($input);
+              $this->success []= $elem1059;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -32641,8 +34206,22 @@ class ThriftHiveMetastore_get_partitions_by_expr_result {
       if (!is_object($this->success)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('success', TType::STRUCT, 0);
       $xfer += $this->success->write($output);
+=======
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->success));
+        {
+          foreach ($this->success as $iter1060)
+          {
+            $xfer += $iter1060->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     if ($this->o1 !== null) {
@@ -32851,8 +34430,24 @@ class ThriftHiveMetastore_get_num_partitions_by_filter_result {
       switch ($fid)
       {
         case 0:
+<<<<<<< HEAD
           if ($ftype == TType::I32) {
             $xfer += $input->readI32($this->success);
+=======
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size1061 = 0;
+            $_etype1064 = 0;
+            $xfer += $input->readListBegin($_etype1064, $_size1061);
+            for ($_i1065 = 0; $_i1065 < $_size1061; ++$_i1065)
+            {
+              $elem1066 = null;
+              $elem1066 = new \metastore\PartitionSpec();
+              $xfer += $elem1066->read($input);
+              $this->success []= $elem1066;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -32887,8 +34482,25 @@ class ThriftHiveMetastore_get_num_partitions_by_filter_result {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_num_partitions_by_filter_result');
     if ($this->success !== null) {
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('success', TType::I32, 0);
       $xfer += $output->writeI32($this->success);
+=======
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->success));
+        {
+          foreach ($this->success as $iter1067)
+          {
+            $xfer += $iter1067->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     if ($this->o1 !== null) {
@@ -33130,6 +34742,7 @@ class ThriftHiveMetastore_get_partitions_by_names_result {
         case 0:
           if ($ftype == TType::LST) {
             $this->success = array();
+<<<<<<< HEAD
             $_size1171 = 0;
             $_etype1174 = 0;
             $xfer += $input->readListBegin($_etype1174, $_size1171);
@@ -33139,6 +34752,40 @@ class ThriftHiveMetastore_get_partitions_by_names_result {
               $elem1176 = new \metastore\Partition();
               $xfer += $elem1176->read($input);
               $this->success []= $elem1176;
+=======
+<<<<<<< HEAD
+            $_size1164 = 0;
+            $_etype1167 = 0;
+            $xfer += $input->readListBegin($_etype1167, $_size1164);
+            for ($_i1168 = 0; $_i1168 < $_size1164; ++$_i1168)
+            {
+              $elem1169 = null;
+              $elem1169 = new \metastore\Partition();
+              $xfer += $elem1169->read($input);
+              $this->success []= $elem1169;
+=======
+<<<<<<< HEAD
+            $_size1143 = 0;
+            $_etype1146 = 0;
+            $xfer += $input->readListBegin($_etype1146, $_size1143);
+            for ($_i1147 = 0; $_i1147 < $_size1143; ++$_i1147)
+            {
+              $elem1148 = null;
+              $elem1148 = new \metastore\Partition();
+              $xfer += $elem1148->read($input);
+              $this->success []= $elem1148;
+=======
+            $_size1068 = 0;
+            $_etype1071 = 0;
+            $xfer += $input->readListBegin($_etype1071, $_size1068);
+            for ($_i1072 = 0; $_i1072 < $_size1068; ++$_i1072)
+            {
+              $elem1073 = null;
+              $xfer += $input->readString($elem1073);
+              $this->success []= $elem1073;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -33182,9 +34829,27 @@ class ThriftHiveMetastore_get_partitions_by_names_result {
       {
         $output->writeListBegin(TType::STRUCT, count($this->success));
         {
+<<<<<<< HEAD
           foreach ($this->success as $iter1177)
           {
             $xfer += $iter1177->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->success as $iter1170)
+          {
+            $xfer += $iter1170->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->success as $iter1149)
+          {
+            $xfer += $iter1149->write($output);
+=======
+          foreach ($this->success as $iter1074)
+          {
+            $xfer += $output->writeString($iter1074);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -33522,16 +35187,42 @@ class ThriftHiveMetastore_alter_partitions_args {
           break;
         case 3:
           if ($ftype == TType::LST) {
+<<<<<<< HEAD
             $this->new_parts = array();
             $_size1178 = 0;
             $_etype1181 = 0;
             $xfer += $input->readListBegin($_etype1181, $_size1178);
             for ($_i1182 = 0; $_i1182 < $_size1178; ++$_i1182)
             {
+<<<<<<< HEAD
               $elem1183 = null;
               $elem1183 = new \metastore\Partition();
               $xfer += $elem1183->read($input);
               $this->new_parts []= $elem1183;
+=======
+<<<<<<< HEAD
+              $elem1176 = null;
+              $elem1176 = new \metastore\Partition();
+              $xfer += $elem1176->read($input);
+              $this->new_parts []= $elem1176;
+=======
+              $elem1155 = null;
+              $elem1155 = new \metastore\Partition();
+              $xfer += $elem1155->read($input);
+              $this->new_parts []= $elem1155;
+=======
+            $this->part_vals = array();
+            $_size1075 = 0;
+            $_etype1078 = 0;
+            $xfer += $input->readListBegin($_etype1078, $_size1075);
+            for ($_i1079 = 0; $_i1079 < $_size1075; ++$_i1079)
+            {
+              $elem1080 = null;
+              $xfer += $input->readString($elem1080);
+              $this->part_vals []= $elem1080;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -33569,9 +35260,27 @@ class ThriftHiveMetastore_alter_partitions_args {
       {
         $output->writeListBegin(TType::STRUCT, count($this->new_parts));
         {
+<<<<<<< HEAD
           foreach ($this->new_parts as $iter1184)
           {
             $xfer += $iter1184->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->new_parts as $iter1177)
+          {
+            $xfer += $iter1177->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->new_parts as $iter1156)
+          {
+            $xfer += $iter1156->write($output);
+=======
+          foreach ($this->part_vals as $iter1081)
+          {
+            $xfer += $output->writeString($iter1081);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -33641,6 +35350,27 @@ class ThriftHiveMetastore_alter_partitions_result {
       }
       switch ($fid)
       {
+<<<<<<< HEAD
+=======
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size1082 = 0;
+            $_etype1085 = 0;
+            $xfer += $input->readListBegin($_etype1085, $_size1082);
+            for ($_i1086 = 0; $_i1086 < $_size1082; ++$_i1086)
+            {
+              $elem1087 = null;
+              $elem1087 = new \metastore\Partition();
+              $xfer += $elem1087->read($input);
+              $this->success []= $elem1087;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         case 1:
           if ($ftype == TType::STRUCT) {
             $this->o1 = new \metastore\InvalidOperationException();
@@ -33669,7 +35399,28 @@ class ThriftHiveMetastore_alter_partitions_result {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_alter_partitions_result');
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_partitions_ps_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->success));
+        {
+          foreach ($this->success as $iter1088)
+          {
+            $xfer += $iter1088->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
@@ -33785,16 +35536,42 @@ class ThriftHiveMetastore_alter_partitions_with_environment_context_args {
           break;
         case 3:
           if ($ftype == TType::LST) {
+<<<<<<< HEAD
             $this->new_parts = array();
             $_size1185 = 0;
             $_etype1188 = 0;
             $xfer += $input->readListBegin($_etype1188, $_size1185);
             for ($_i1189 = 0; $_i1189 < $_size1185; ++$_i1189)
             {
+<<<<<<< HEAD
               $elem1190 = null;
               $elem1190 = new \metastore\Partition();
               $xfer += $elem1190->read($input);
               $this->new_parts []= $elem1190;
+=======
+<<<<<<< HEAD
+              $elem1183 = null;
+              $elem1183 = new \metastore\Partition();
+              $xfer += $elem1183->read($input);
+              $this->new_parts []= $elem1183;
+=======
+              $elem1162 = null;
+              $elem1162 = new \metastore\Partition();
+              $xfer += $elem1162->read($input);
+              $this->new_parts []= $elem1162;
+=======
+            $this->part_vals = array();
+            $_size1089 = 0;
+            $_etype1092 = 0;
+            $xfer += $input->readListBegin($_etype1092, $_size1089);
+            for ($_i1093 = 0; $_i1093 < $_size1089; ++$_i1093)
+            {
+              $elem1094 = null;
+              $xfer += $input->readString($elem1094);
+              $this->part_vals []= $elem1094;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -33802,9 +35579,38 @@ class ThriftHiveMetastore_alter_partitions_with_environment_context_args {
           }
           break;
         case 4:
+<<<<<<< HEAD
           if ($ftype == TType::STRUCT) {
             $this->environment_context = new \metastore\EnvironmentContext();
             $xfer += $this->environment_context->read($input);
+=======
+          if ($ftype == TType::I16) {
+            $xfer += $input->readI16($this->max_parts);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->user_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
+          if ($ftype == TType::LST) {
+            $this->group_names = array();
+            $_size1095 = 0;
+            $_etype1098 = 0;
+            $xfer += $input->readListBegin($_etype1098, $_size1095);
+            for ($_i1099 = 0; $_i1099 < $_size1095; ++$_i1099)
+            {
+              $elem1100 = null;
+              $xfer += $input->readString($elem1100);
+              $this->group_names []= $elem1100;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -33840,9 +35646,27 @@ class ThriftHiveMetastore_alter_partitions_with_environment_context_args {
       {
         $output->writeListBegin(TType::STRUCT, count($this->new_parts));
         {
+<<<<<<< HEAD
           foreach ($this->new_parts as $iter1191)
           {
             $xfer += $iter1191->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->new_parts as $iter1184)
+          {
+            $xfer += $iter1184->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->new_parts as $iter1163)
+          {
+            $xfer += $iter1163->write($output);
+=======
+          foreach ($this->part_vals as $iter1101)
+          {
+            $xfer += $output->writeString($iter1101);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -33853,8 +35677,22 @@ class ThriftHiveMetastore_alter_partitions_with_environment_context_args {
       if (!is_object($this->environment_context)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('environment_context', TType::STRUCT, 4);
       $xfer += $this->environment_context->write($output);
+=======
+      $xfer += $output->writeFieldBegin('group_names', TType::LST, 6);
+      {
+        $output->writeListBegin(TType::STRING, count($this->group_names));
+        {
+          foreach ($this->group_names as $iter1102)
+          {
+            $xfer += $output->writeString($iter1102);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -33920,6 +35758,27 @@ class ThriftHiveMetastore_alter_partitions_with_environment_context_result {
       }
       switch ($fid)
       {
+<<<<<<< HEAD
+=======
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size1103 = 0;
+            $_etype1106 = 0;
+            $xfer += $input->readListBegin($_etype1106, $_size1103);
+            for ($_i1107 = 0; $_i1107 < $_size1103; ++$_i1107)
+            {
+              $elem1108 = null;
+              $elem1108 = new \metastore\Partition();
+              $xfer += $elem1108->read($input);
+              $this->success []= $elem1108;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         case 1:
           if ($ftype == TType::STRUCT) {
             $this->o1 = new \metastore\InvalidOperationException();
@@ -33948,7 +35807,28 @@ class ThriftHiveMetastore_alter_partitions_with_environment_context_result {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_alter_partitions_with_environment_context_result');
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_partitions_ps_with_auth_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->success));
+        {
+          foreach ($this->success as $iter1109)
+          {
+            $xfer += $iter1109->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
@@ -34059,9 +35939,24 @@ class ThriftHiveMetastore_alter_partition_with_environment_context_args {
           }
           break;
         case 3:
+<<<<<<< HEAD
           if ($ftype == TType::STRUCT) {
             $this->new_part = new \metastore\Partition();
             $xfer += $this->new_part->read($input);
+=======
+          if ($ftype == TType::LST) {
+            $this->part_vals = array();
+            $_size1110 = 0;
+            $_etype1113 = 0;
+            $xfer += $input->readListBegin($_etype1113, $_size1110);
+            for ($_i1114 = 0; $_i1114 < $_size1110; ++$_i1114)
+            {
+              $elem1115 = null;
+              $xfer += $input->readString($elem1115);
+              $this->part_vals []= $elem1115;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -34101,8 +35996,22 @@ class ThriftHiveMetastore_alter_partition_with_environment_context_args {
       if (!is_object($this->new_part)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('new_part', TType::STRUCT, 3);
       $xfer += $this->new_part->write($output);
+=======
+      $xfer += $output->writeFieldBegin('part_vals', TType::LST, 3);
+      {
+        $output->writeListBegin(TType::STRING, count($this->part_vals));
+        {
+          foreach ($this->part_vals as $iter1116)
+          {
+            $xfer += $output->writeString($iter1116);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     if ($this->environment_context !== null) {
@@ -34176,6 +36085,26 @@ class ThriftHiveMetastore_alter_partition_with_environment_context_result {
       }
       switch ($fid)
       {
+<<<<<<< HEAD
+=======
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size1117 = 0;
+            $_etype1120 = 0;
+            $xfer += $input->readListBegin($_etype1120, $_size1117);
+            for ($_i1121 = 0; $_i1121 < $_size1117; ++$_i1121)
+            {
+              $elem1122 = null;
+              $xfer += $input->readString($elem1122);
+              $this->success []= $elem1122;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         case 1:
           if ($ftype == TType::STRUCT) {
             $this->o1 = new \metastore\InvalidOperationException();
@@ -34204,7 +36133,28 @@ class ThriftHiveMetastore_alter_partition_with_environment_context_result {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_alter_partition_with_environment_context_result');
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_partition_names_ps_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRING, count($this->success));
+        {
+          foreach ($this->success as $iter1123)
+          {
+            $xfer += $output->writeString($iter1123);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
@@ -34453,6 +36403,27 @@ class ThriftHiveMetastore_rename_partition_result {
       }
       switch ($fid)
       {
+<<<<<<< HEAD
+=======
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size1124 = 0;
+            $_etype1127 = 0;
+            $xfer += $input->readListBegin($_etype1127, $_size1124);
+            for ($_i1128 = 0; $_i1128 < $_size1124; ++$_i1128)
+            {
+              $elem1129 = null;
+              $elem1129 = new \metastore\Partition();
+              $xfer += $elem1129->read($input);
+              $this->success []= $elem1129;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         case 1:
           if ($ftype == TType::STRUCT) {
             $this->o1 = new \metastore\InvalidOperationException();
@@ -34481,7 +36452,28 @@ class ThriftHiveMetastore_rename_partition_result {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_rename_partition_result');
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_partitions_by_filter_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->success));
+        {
+          foreach ($this->success as $iter1130)
+          {
+            $xfer += $iter1130->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
@@ -34679,8 +36671,24 @@ class ThriftHiveMetastore_partition_name_has_valid_characters_result {
       switch ($fid)
       {
         case 0:
+<<<<<<< HEAD
           if ($ftype == TType::BOOL) {
             $xfer += $input->readBool($this->success);
+=======
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size1131 = 0;
+            $_etype1134 = 0;
+            $xfer += $input->readListBegin($_etype1134, $_size1131);
+            for ($_i1135 = 0; $_i1135 < $_size1131; ++$_i1135)
+            {
+              $elem1136 = null;
+              $elem1136 = new \metastore\PartitionSpec();
+              $xfer += $elem1136->read($input);
+              $this->success []= $elem1136;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -34707,8 +36715,25 @@ class ThriftHiveMetastore_partition_name_has_valid_characters_result {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_partition_name_has_valid_characters_result');
     if ($this->success !== null) {
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('success', TType::BOOL, 0);
       $xfer += $output->writeBool($this->success);
+=======
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->success));
+        {
+          foreach ($this->success as $iter1137)
+          {
+            $xfer += $iter1137->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     if ($this->o1 !== null) {
@@ -35167,7 +37192,35 @@ class ThriftHiveMetastore_partition_name_to_spec_args {
       {
         case 1:
           if ($ftype == TType::STRING) {
+<<<<<<< HEAD
             $xfer += $input->readString($this->part_name);
+=======
+            $xfer += $input->readString($this->db_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tbl_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::LST) {
+            $this->names = array();
+            $_size1138 = 0;
+            $_etype1141 = 0;
+            $xfer += $input->readListBegin($_etype1141, $_size1138);
+            for ($_i1142 = 0; $_i1142 < $_size1138; ++$_i1142)
+            {
+              $elem1143 = null;
+              $xfer += $input->readString($elem1143);
+              $this->names []= $elem1143;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -35184,10 +37237,39 @@ class ThriftHiveMetastore_partition_name_to_spec_args {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_partition_name_to_spec_args');
     if ($this->part_name !== null) {
       $xfer += $output->writeFieldBegin('part_name', TType::STRING, 1);
       $xfer += $output->writeString($this->part_name);
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_partitions_by_names_args');
+    if ($this->db_name !== null) {
+      $xfer += $output->writeFieldBegin('db_name', TType::STRING, 1);
+      $xfer += $output->writeString($this->db_name);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->tbl_name !== null) {
+      $xfer += $output->writeFieldBegin('tbl_name', TType::STRING, 2);
+      $xfer += $output->writeString($this->tbl_name);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->names !== null) {
+      if (!is_array($this->names)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('names', TType::LST, 3);
+      {
+        $output->writeListBegin(TType::STRING, count($this->names));
+        {
+          foreach ($this->names as $iter1144)
+          {
+            $xfer += $output->writeString($iter1144);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -35263,6 +37345,7 @@ class ThriftHiveMetastore_partition_name_to_spec_result {
         case 0:
           if ($ftype == TType::MAP) {
             $this->success = array();
+<<<<<<< HEAD
             $_size1213 = 0;
             $_ktype1214 = 0;
             $_vtype1215 = 0;
@@ -35274,6 +37357,45 @@ class ThriftHiveMetastore_partition_name_to_spec_result {
               $xfer += $input->readString($key1218);
               $xfer += $input->readString($val1219);
               $this->success[$key1218] = $val1219;
+=======
+<<<<<<< HEAD
+            $_size1206 = 0;
+            $_ktype1207 = 0;
+            $_vtype1208 = 0;
+            $xfer += $input->readMapBegin($_ktype1207, $_vtype1208, $_size1206);
+            for ($_i1210 = 0; $_i1210 < $_size1206; ++$_i1210)
+            {
+              $key1211 = '';
+              $val1212 = '';
+              $xfer += $input->readString($key1211);
+              $xfer += $input->readString($val1212);
+              $this->success[$key1211] = $val1212;
+=======
+<<<<<<< HEAD
+            $_size1185 = 0;
+            $_ktype1186 = 0;
+            $_vtype1187 = 0;
+            $xfer += $input->readMapBegin($_ktype1186, $_vtype1187, $_size1185);
+            for ($_i1189 = 0; $_i1189 < $_size1185; ++$_i1189)
+            {
+              $key1190 = '';
+              $val1191 = '';
+              $xfer += $input->readString($key1190);
+              $xfer += $input->readString($val1191);
+              $this->success[$key1190] = $val1191;
+=======
+            $_size1145 = 0;
+            $_etype1148 = 0;
+            $xfer += $input->readListBegin($_etype1148, $_size1145);
+            for ($_i1149 = 0; $_i1149 < $_size1145; ++$_i1149)
+            {
+              $elem1150 = null;
+              $elem1150 = new \metastore\Partition();
+              $xfer += $elem1150->read($input);
+              $this->success []= $elem1150;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -35309,10 +37431,30 @@ class ThriftHiveMetastore_partition_name_to_spec_result {
       {
         $output->writeMapBegin(TType::STRING, TType::STRING, count($this->success));
         {
+<<<<<<< HEAD
           foreach ($this->success as $kiter1220 => $viter1221)
           {
             $xfer += $output->writeString($kiter1220);
             $xfer += $output->writeString($viter1221);
+=======
+<<<<<<< HEAD
+          foreach ($this->success as $kiter1213 => $viter1214)
+          {
+            $xfer += $output->writeString($kiter1213);
+            $xfer += $output->writeString($viter1214);
+=======
+<<<<<<< HEAD
+          foreach ($this->success as $kiter1192 => $viter1193)
+          {
+            $xfer += $output->writeString($kiter1192);
+            $xfer += $output->writeString($viter1193);
+=======
+          foreach ($this->success as $iter1151)
+          {
+            $xfer += $iter1151->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeMapEnd();
@@ -35810,6 +37952,7 @@ class ThriftHiveMetastore_isPartitionMarkedForEvent_args {
           }
           break;
         case 3:
+<<<<<<< HEAD
           if ($ftype == TType::MAP) {
             $this->part_vals = array();
             $_size1231 = 0;
@@ -35818,11 +37961,40 @@ class ThriftHiveMetastore_isPartitionMarkedForEvent_args {
             $xfer += $input->readMapBegin($_ktype1232, $_vtype1233, $_size1231);
             for ($_i1235 = 0; $_i1235 < $_size1231; ++$_i1235)
             {
+<<<<<<< HEAD
               $key1236 = '';
               $val1237 = '';
               $xfer += $input->readString($key1236);
               $xfer += $input->readString($val1237);
               $this->part_vals[$key1236] = $val1237;
+=======
+<<<<<<< HEAD
+              $key1229 = '';
+              $val1230 = '';
+              $xfer += $input->readString($key1229);
+              $xfer += $input->readString($val1230);
+              $this->part_vals[$key1229] = $val1230;
+=======
+              $key1208 = '';
+              $val1209 = '';
+              $xfer += $input->readString($key1208);
+              $xfer += $input->readString($val1209);
+              $this->part_vals[$key1208] = $val1209;
+=======
+          if ($ftype == TType::LST) {
+            $this->new_parts = array();
+            $_size1152 = 0;
+            $_etype1155 = 0;
+            $xfer += $input->readListBegin($_etype1155, $_size1152);
+            for ($_i1156 = 0; $_i1156 < $_size1152; ++$_i1156)
+            {
+              $elem1157 = null;
+              $elem1157 = new \metastore\Partition();
+              $xfer += $elem1157->read($input);
+              $this->new_parts []= $elem1157;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -35867,10 +38039,30 @@ class ThriftHiveMetastore_isPartitionMarkedForEvent_args {
       {
         $output->writeMapBegin(TType::STRING, TType::STRING, count($this->part_vals));
         {
+<<<<<<< HEAD
           foreach ($this->part_vals as $kiter1238 => $viter1239)
           {
             $xfer += $output->writeString($kiter1238);
             $xfer += $output->writeString($viter1239);
+=======
+<<<<<<< HEAD
+          foreach ($this->part_vals as $kiter1231 => $viter1232)
+          {
+            $xfer += $output->writeString($kiter1231);
+            $xfer += $output->writeString($viter1232);
+=======
+<<<<<<< HEAD
+          foreach ($this->part_vals as $kiter1210 => $viter1211)
+          {
+            $xfer += $output->writeString($kiter1210);
+            $xfer += $output->writeString($viter1211);
+=======
+          foreach ($this->new_parts as $iter1158)
+          {
+            $xfer += $iter1158->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeMapEnd();
@@ -36159,6 +38351,41 @@ class ThriftHiveMetastore_get_primary_keys_args {
       switch ($fid)
       {
         case 1:
+<<<<<<< HEAD
+=======
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->db_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tbl_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::LST) {
+            $this->new_parts = array();
+            $_size1159 = 0;
+            $_etype1162 = 0;
+            $xfer += $input->readListBegin($_etype1162, $_size1159);
+            for ($_i1163 = 0; $_i1163 < $_size1159; ++$_i1163)
+            {
+              $elem1164 = null;
+              $elem1164 = new \metastore\Partition();
+              $xfer += $elem1164->read($input);
+              $this->new_parts []= $elem1164;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           if ($ftype == TType::STRUCT) {
             $this->request = new \metastore\PrimaryKeysRequest();
             $xfer += $this->request->read($input);
@@ -36178,9 +38405,42 @@ class ThriftHiveMetastore_get_primary_keys_args {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_primary_keys_args');
     if ($this->request !== null) {
       if (!is_object($this->request)) {
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_alter_partitions_with_environment_context_args');
+    if ($this->db_name !== null) {
+      $xfer += $output->writeFieldBegin('db_name', TType::STRING, 1);
+      $xfer += $output->writeString($this->db_name);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->tbl_name !== null) {
+      $xfer += $output->writeFieldBegin('tbl_name', TType::STRING, 2);
+      $xfer += $output->writeString($this->tbl_name);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->new_parts !== null) {
+      if (!is_array($this->new_parts)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('new_parts', TType::LST, 3);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->new_parts));
+        {
+          foreach ($this->new_parts as $iter1165)
+          {
+            $xfer += $iter1165->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->environment_context !== null) {
+      if (!is_object($this->environment_context)) {
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
       $xfer += $output->writeFieldBegin('request', TType::STRUCT, 1);
@@ -36579,6 +38839,40 @@ class ThriftHiveMetastore_get_unique_constraints_args {
       switch ($fid)
       {
         case 1:
+<<<<<<< HEAD
+=======
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->db_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tbl_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::LST) {
+            $this->part_vals = array();
+            $_size1166 = 0;
+            $_etype1169 = 0;
+            $xfer += $input->readListBegin($_etype1169, $_size1166);
+            for ($_i1170 = 0; $_i1170 < $_size1166; ++$_i1170)
+            {
+              $elem1171 = null;
+              $xfer += $input->readString($elem1171);
+              $this->part_vals []= $elem1171;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           if ($ftype == TType::STRUCT) {
             $this->request = new \metastore\UniqueConstraintsRequest();
             $xfer += $this->request->read($input);
@@ -36598,9 +38892,42 @@ class ThriftHiveMetastore_get_unique_constraints_args {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_unique_constraints_args');
     if ($this->request !== null) {
       if (!is_object($this->request)) {
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_rename_partition_args');
+    if ($this->db_name !== null) {
+      $xfer += $output->writeFieldBegin('db_name', TType::STRING, 1);
+      $xfer += $output->writeString($this->db_name);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->tbl_name !== null) {
+      $xfer += $output->writeFieldBegin('tbl_name', TType::STRING, 2);
+      $xfer += $output->writeString($this->tbl_name);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->part_vals !== null) {
+      if (!is_array($this->part_vals)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('part_vals', TType::LST, 3);
+      {
+        $output->writeListBegin(TType::STRING, count($this->part_vals));
+        {
+          foreach ($this->part_vals as $iter1172)
+          {
+            $xfer += $output->writeString($iter1172);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->new_part !== null) {
+      if (!is_object($this->new_part)) {
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
       $xfer += $output->writeFieldBegin('request', TType::STRUCT, 1);
@@ -36789,9 +39116,31 @@ class ThriftHiveMetastore_get_not_null_constraints_args {
       switch ($fid)
       {
         case 1:
+<<<<<<< HEAD
           if ($ftype == TType::STRUCT) {
             $this->request = new \metastore\NotNullConstraintsRequest();
             $xfer += $this->request->read($input);
+=======
+          if ($ftype == TType::LST) {
+            $this->part_vals = array();
+            $_size1173 = 0;
+            $_etype1176 = 0;
+            $xfer += $input->readListBegin($_etype1176, $_size1173);
+            for ($_i1177 = 0; $_i1177 < $_size1173; ++$_i1177)
+            {
+              $elem1178 = null;
+              $xfer += $input->readString($elem1178);
+              $this->part_vals []= $elem1178;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->throw_exception);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -36813,8 +39162,27 @@ class ThriftHiveMetastore_get_not_null_constraints_args {
       if (!is_object($this->request)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('request', TType::STRUCT, 1);
       $xfer += $this->request->write($output);
+=======
+      $xfer += $output->writeFieldBegin('part_vals', TType::LST, 1);
+      {
+        $output->writeListBegin(TType::STRING, count($this->part_vals));
+        {
+          foreach ($this->part_vals as $iter1179)
+          {
+            $xfer += $output->writeString($iter1179);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->throw_exception !== null) {
+      $xfer += $output->writeFieldBegin('throw_exception', TType::BOOL, 2);
+      $xfer += $output->writeBool($this->throw_exception);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -37546,8 +39914,23 @@ class ThriftHiveMetastore_update_table_column_statistics_result {
       switch ($fid)
       {
         case 0:
+<<<<<<< HEAD
           if ($ftype == TType::BOOL) {
             $xfer += $input->readBool($this->success);
+=======
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size1180 = 0;
+            $_etype1183 = 0;
+            $xfer += $input->readListBegin($_etype1183, $_size1180);
+            for ($_i1184 = 0; $_i1184 < $_size1180; ++$_i1184)
+            {
+              $elem1185 = null;
+              $xfer += $input->readString($elem1185);
+              $this->success []= $elem1185;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -37598,8 +39981,25 @@ class ThriftHiveMetastore_update_table_column_statistics_result {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_update_table_column_statistics_result');
     if ($this->success !== null) {
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('success', TType::BOOL, 0);
       $xfer += $output->writeBool($this->success);
+=======
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRING, count($this->success));
+        {
+          foreach ($this->success as $iter1186)
+          {
+            $xfer += $output->writeString($iter1186);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     if ($this->o1 !== null) {
@@ -37801,8 +40201,26 @@ class ThriftHiveMetastore_update_partition_column_statistics_result {
       switch ($fid)
       {
         case 0:
+<<<<<<< HEAD
           if ($ftype == TType::BOOL) {
             $xfer += $input->readBool($this->success);
+=======
+          if ($ftype == TType::MAP) {
+            $this->success = array();
+            $_size1187 = 0;
+            $_ktype1188 = 0;
+            $_vtype1189 = 0;
+            $xfer += $input->readMapBegin($_ktype1188, $_vtype1189, $_size1187);
+            for ($_i1191 = 0; $_i1191 < $_size1187; ++$_i1191)
+            {
+              $key1192 = '';
+              $val1193 = '';
+              $xfer += $input->readString($key1192);
+              $xfer += $input->readString($val1193);
+              $this->success[$key1192] = $val1193;
+            }
+            $xfer += $input->readMapEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -37853,8 +40271,26 @@ class ThriftHiveMetastore_update_partition_column_statistics_result {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_update_partition_column_statistics_result');
     if ($this->success !== null) {
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('success', TType::BOOL, 0);
       $xfer += $output->writeBool($this->success);
+=======
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::MAP, 0);
+      {
+        $output->writeMapBegin(TType::STRING, TType::STRING, count($this->success));
+        {
+          foreach ($this->success as $kiter1194 => $viter1195)
+          {
+            $xfer += $output->writeString($kiter1194);
+            $xfer += $output->writeString($viter1195);
+          }
+        }
+        $output->writeMapEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     if ($this->o1 !== null) {
@@ -37964,8 +40400,33 @@ class ThriftHiveMetastore_get_table_column_statistics_args {
           }
           break;
         case 3:
+<<<<<<< HEAD
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->col_name);
+=======
+          if ($ftype == TType::MAP) {
+            $this->part_vals = array();
+            $_size1196 = 0;
+            $_ktype1197 = 0;
+            $_vtype1198 = 0;
+            $xfer += $input->readMapBegin($_ktype1197, $_vtype1198, $_size1196);
+            for ($_i1200 = 0; $_i1200 < $_size1196; ++$_i1200)
+            {
+              $key1201 = '';
+              $val1202 = '';
+              $xfer += $input->readString($key1201);
+              $xfer += $input->readString($val1202);
+              $this->part_vals[$key1201] = $val1202;
+            }
+            $xfer += $input->readMapEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->eventType);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -37993,9 +40454,33 @@ class ThriftHiveMetastore_get_table_column_statistics_args {
       $xfer += $output->writeString($this->tbl_name);
       $xfer += $output->writeFieldEnd();
     }
+<<<<<<< HEAD
     if ($this->col_name !== null) {
       $xfer += $output->writeFieldBegin('col_name', TType::STRING, 3);
       $xfer += $output->writeString($this->col_name);
+=======
+    if ($this->part_vals !== null) {
+      if (!is_array($this->part_vals)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('part_vals', TType::MAP, 3);
+      {
+        $output->writeMapBegin(TType::STRING, TType::STRING, count($this->part_vals));
+        {
+          foreach ($this->part_vals as $kiter1203 => $viter1204)
+          {
+            $xfer += $output->writeString($kiter1203);
+            $xfer += $output->writeString($viter1204);
+          }
+        }
+        $output->writeMapEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->eventType !== null) {
+      $xfer += $output->writeFieldBegin('eventType', TType::I32, 4);
+      $xfer += $output->writeI32($this->eventType);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -38276,8 +40761,26 @@ class ThriftHiveMetastore_get_partition_column_statistics_args {
           }
           break;
         case 3:
+<<<<<<< HEAD
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->part_name);
+=======
+          if ($ftype == TType::MAP) {
+            $this->part_vals = array();
+            $_size1205 = 0;
+            $_ktype1206 = 0;
+            $_vtype1207 = 0;
+            $xfer += $input->readMapBegin($_ktype1206, $_vtype1207, $_size1205);
+            for ($_i1209 = 0; $_i1209 < $_size1205; ++$_i1209)
+            {
+              $key1210 = '';
+              $val1211 = '';
+              $xfer += $input->readString($key1210);
+              $xfer += $input->readString($val1211);
+              $this->part_vals[$key1210] = $val1211;
+            }
+            $xfer += $input->readMapEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -38312,9 +40815,28 @@ class ThriftHiveMetastore_get_partition_column_statistics_args {
       $xfer += $output->writeString($this->tbl_name);
       $xfer += $output->writeFieldEnd();
     }
+<<<<<<< HEAD
     if ($this->part_name !== null) {
       $xfer += $output->writeFieldBegin('part_name', TType::STRING, 3);
       $xfer += $output->writeString($this->part_name);
+=======
+    if ($this->part_vals !== null) {
+      if (!is_array($this->part_vals)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('part_vals', TType::MAP, 3);
+      {
+        $output->writeMapBegin(TType::STRING, TType::STRING, count($this->part_vals));
+        {
+          foreach ($this->part_vals as $kiter1212 => $viter1213)
+          {
+            $xfer += $output->writeString($kiter1212);
+            $xfer += $output->writeString($viter1213);
+          }
+        }
+        $output->writeMapEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     if ($this->col_name !== null) {
@@ -39630,8 +42152,24 @@ class ThriftHiveMetastore_delete_partition_column_statistics_result {
       switch ($fid)
       {
         case 0:
+<<<<<<< HEAD
           if ($ftype == TType::BOOL) {
             $xfer += $input->readBool($this->success);
+=======
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size1214 = 0;
+            $_etype1217 = 0;
+            $xfer += $input->readListBegin($_etype1217, $_size1214);
+            for ($_i1218 = 0; $_i1218 < $_size1214; ++$_i1218)
+            {
+              $elem1219 = null;
+              $elem1219 = new \metastore\Index();
+              $xfer += $elem1219->read($input);
+              $this->success []= $elem1219;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -39682,8 +42220,25 @@ class ThriftHiveMetastore_delete_partition_column_statistics_result {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_delete_partition_column_statistics_result');
     if ($this->success !== null) {
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('success', TType::BOOL, 0);
       $xfer += $output->writeBool($this->success);
+=======
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->success));
+        {
+          foreach ($this->success as $iter1220)
+          {
+            $xfer += $iter1220->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     if ($this->o1 !== null) {
@@ -39926,8 +42481,23 @@ class ThriftHiveMetastore_delete_table_column_statistics_result {
       switch ($fid)
       {
         case 0:
+<<<<<<< HEAD
           if ($ftype == TType::BOOL) {
             $xfer += $input->readBool($this->success);
+=======
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size1221 = 0;
+            $_etype1224 = 0;
+            $xfer += $input->readListBegin($_etype1224, $_size1221);
+            for ($_i1225 = 0; $_i1225 < $_size1221; ++$_i1225)
+            {
+              $elem1226 = null;
+              $xfer += $input->readString($elem1226);
+              $this->success []= $elem1226;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -39978,6 +42548,7 @@ class ThriftHiveMetastore_delete_table_column_statistics_result {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_delete_table_column_statistics_result');
     if ($this->success !== null) {
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('success', TType::BOOL, 0);
       $xfer += $output->writeBool($this->success);
       $xfer += $output->writeFieldEnd();
@@ -39985,6 +42556,22 @@ class ThriftHiveMetastore_delete_table_column_statistics_result {
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
+=======
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRING, count($this->success));
+        {
+          foreach ($this->success as $iter1227)
+          {
+            $xfer += $output->writeString($iter1227);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     if ($this->o2 !== null) {
@@ -43926,8 +46513,23 @@ class ThriftHiveMetastore_revoke_privileges_result {
       switch ($fid)
       {
         case 0:
+<<<<<<< HEAD
           if ($ftype == TType::BOOL) {
             $xfer += $input->readBool($this->success);
+=======
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size1228 = 0;
+            $_etype1231 = 0;
+            $xfer += $input->readListBegin($_etype1231, $_size1228);
+            for ($_i1232 = 0; $_i1232 < $_size1228; ++$_i1232)
+            {
+              $elem1233 = null;
+              $xfer += $input->readString($elem1233);
+              $this->success []= $elem1233;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -43954,8 +46556,25 @@ class ThriftHiveMetastore_revoke_privileges_result {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_revoke_privileges_result');
     if ($this->success !== null) {
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('success', TType::BOOL, 0);
       $xfer += $output->writeBool($this->success);
+=======
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRING, count($this->success));
+        {
+          foreach ($this->success as $iter1234)
+          {
+            $xfer += $output->writeString($iter1234);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     if ($this->o1 !== null) {
@@ -44897,6 +47516,26 @@ class ThriftHiveMetastore_cancel_delegation_token_result {
       }
       switch ($fid)
       {
+<<<<<<< HEAD
+=======
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size1235 = 0;
+            $_etype1238 = 0;
+            $xfer += $input->readListBegin($_etype1238, $_size1235);
+            for ($_i1239 = 0; $_i1239 < $_size1235; ++$_i1239)
+            {
+              $elem1240 = null;
+              $xfer += $input->readString($elem1240);
+              $this->success []= $elem1240;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         case 1:
           if ($ftype == TType::STRUCT) {
             $this->o1 = new \metastore\MetaException();
@@ -44917,7 +47556,28 @@ class ThriftHiveMetastore_cancel_delegation_token_result {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_cancel_delegation_token_result');
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_role_names_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRING, count($this->success));
+        {
+          foreach ($this->success as $iter1241)
+          {
+            $xfer += $output->writeString($iter1241);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
@@ -45372,8 +48032,32 @@ class ThriftHiveMetastore_get_token_result {
       switch ($fid)
       {
         case 0:
+<<<<<<< HEAD
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->success);
+=======
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size1242 = 0;
+            $_etype1245 = 0;
+            $xfer += $input->readListBegin($_etype1245, $_size1242);
+            for ($_i1246 = 0; $_i1246 < $_size1242; ++$_i1246)
+            {
+              $elem1247 = null;
+              $elem1247 = new \metastore\Role();
+              $xfer += $elem1247->read($input);
+              $this->success []= $elem1247;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->o1 = new \metastore\MetaException();
+            $xfer += $this->o1->read($input);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -45392,8 +48076,30 @@ class ThriftHiveMetastore_get_token_result {
     $xfer = 0;
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_token_result');
     if ($this->success !== null) {
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('success', TType::STRING, 0);
       $xfer += $output->writeString($this->success);
+=======
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->success));
+        {
+          foreach ($this->success as $iter1248)
+          {
+            $xfer += $iter1248->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->o1 !== null) {
+      $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
+      $xfer += $this->o1->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -45973,8 +48679,38 @@ class ThriftHiveMetastore_remove_master_key_args {
       switch ($fid)
       {
         case 1:
+<<<<<<< HEAD
           if ($ftype == TType::I32) {
             $xfer += $input->readI32($this->key_seq);
+=======
+          if ($ftype == TType::STRUCT) {
+            $this->hiveObject = new \metastore\HiveObjectRef();
+            $xfer += $this->hiveObject->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->user_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::LST) {
+            $this->group_names = array();
+            $_size1249 = 0;
+            $_etype1252 = 0;
+            $xfer += $input->readListBegin($_etype1252, $_size1249);
+            for ($_i1253 = 0; $_i1253 < $_size1249; ++$_i1253)
+            {
+              $elem1254 = null;
+              $xfer += $input->readString($elem1254);
+              $this->group_names []= $elem1254;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -45991,10 +48727,42 @@ class ThriftHiveMetastore_remove_master_key_args {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_remove_master_key_args');
     if ($this->key_seq !== null) {
       $xfer += $output->writeFieldBegin('key_seq', TType::I32, 1);
       $xfer += $output->writeI32($this->key_seq);
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_privilege_set_args');
+    if ($this->hiveObject !== null) {
+      if (!is_object($this->hiveObject)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('hiveObject', TType::STRUCT, 1);
+      $xfer += $this->hiveObject->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->user_name !== null) {
+      $xfer += $output->writeFieldBegin('user_name', TType::STRING, 2);
+      $xfer += $output->writeString($this->user_name);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->group_names !== null) {
+      if (!is_array($this->group_names)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('group_names', TType::LST, 3);
+      {
+        $output->writeListBegin(TType::STRING, count($this->group_names));
+        {
+          foreach ($this->group_names as $iter1255)
+          {
+            $xfer += $output->writeString($iter1255);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -46179,6 +48947,7 @@ class ThriftHiveMetastore_get_master_keys_result {
         case 0:
           if ($ftype == TType::LST) {
             $this->success = array();
+<<<<<<< HEAD
             $_size1296 = 0;
             $_etype1299 = 0;
             $xfer += $input->readListBegin($_etype1299, $_size1296);
@@ -46187,6 +48956,39 @@ class ThriftHiveMetastore_get_master_keys_result {
               $elem1301 = null;
               $xfer += $input->readString($elem1301);
               $this->success []= $elem1301;
+=======
+<<<<<<< HEAD
+            $_size1289 = 0;
+            $_etype1292 = 0;
+            $xfer += $input->readListBegin($_etype1292, $_size1289);
+            for ($_i1293 = 0; $_i1293 < $_size1289; ++$_i1293)
+            {
+              $elem1294 = null;
+              $xfer += $input->readString($elem1294);
+              $this->success []= $elem1294;
+=======
+<<<<<<< HEAD
+            $_size1268 = 0;
+            $_etype1271 = 0;
+            $xfer += $input->readListBegin($_etype1271, $_size1268);
+            for ($_i1272 = 0; $_i1272 < $_size1268; ++$_i1272)
+            {
+              $elem1273 = null;
+              $xfer += $input->readString($elem1273);
+              $this->success []= $elem1273;
+=======
+            $_size1256 = 0;
+            $_etype1259 = 0;
+            $xfer += $input->readListBegin($_etype1259, $_size1256);
+            for ($_i1260 = 0; $_i1260 < $_size1256; ++$_i1260)
+            {
+              $elem1261 = null;
+              $elem1261 = new \metastore\HiveObjectPrivilege();
+              $xfer += $elem1261->read($input);
+              $this->success []= $elem1261;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -46214,9 +49016,27 @@ class ThriftHiveMetastore_get_master_keys_result {
       {
         $output->writeListBegin(TType::STRING, count($this->success));
         {
+<<<<<<< HEAD
           foreach ($this->success as $iter1302)
           {
             $xfer += $output->writeString($iter1302);
+=======
+<<<<<<< HEAD
+          foreach ($this->success as $iter1295)
+          {
+            $xfer += $output->writeString($iter1295);
+=======
+<<<<<<< HEAD
+          foreach ($this->success as $iter1274)
+          {
+            $xfer += $output->writeString($iter1274);
+=======
+          foreach ($this->success as $iter1262)
+          {
+            $xfer += $iter1262->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -46695,9 +49515,31 @@ class ThriftHiveMetastore_abort_txn_args {
       switch ($fid)
       {
         case 1:
+<<<<<<< HEAD
           if ($ftype == TType::STRUCT) {
             $this->rqst = new \metastore\AbortTxnRequest();
             $xfer += $this->rqst->read($input);
+=======
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->user_name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::LST) {
+            $this->group_names = array();
+            $_size1263 = 0;
+            $_etype1266 = 0;
+            $xfer += $input->readListBegin($_etype1266, $_size1263);
+            for ($_i1267 = 0; $_i1267 < $_size1263; ++$_i1267)
+            {
+              $elem1268 = null;
+              $xfer += $input->readString($elem1268);
+              $this->group_names []= $elem1268;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -46719,8 +49561,22 @@ class ThriftHiveMetastore_abort_txn_args {
       if (!is_object($this->rqst)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('rqst', TType::STRUCT, 1);
       $xfer += $this->rqst->write($output);
+=======
+      $xfer += $output->writeFieldBegin('group_names', TType::LST, 2);
+      {
+        $output->writeListBegin(TType::STRING, count($this->group_names));
+        {
+          foreach ($this->group_names as $iter1269)
+          {
+            $xfer += $output->writeString($iter1269);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -46774,6 +49630,26 @@ class ThriftHiveMetastore_abort_txn_result {
       }
       switch ($fid)
       {
+<<<<<<< HEAD
+=======
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size1270 = 0;
+            $_etype1273 = 0;
+            $xfer += $input->readListBegin($_etype1273, $_size1270);
+            for ($_i1274 = 0; $_i1274 < $_size1270; ++$_i1274)
+            {
+              $elem1275 = null;
+              $xfer += $input->readString($elem1275);
+              $this->success []= $elem1275;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         case 1:
           if ($ftype == TType::STRUCT) {
             $this->o1 = new \metastore\NoSuchTxnException();
@@ -46794,7 +49670,28 @@ class ThriftHiveMetastore_abort_txn_result {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_abort_txn_result');
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_set_ugi_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRING, count($this->success));
+        {
+          foreach ($this->success as $iter1276)
+          {
+            $xfer += $output->writeString($iter1276);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
       $xfer += $this->o1->write($output);
@@ -48172,6 +51069,7 @@ class ThriftHiveMetastore_unlock_result {
       }
       switch ($fid)
       {
+<<<<<<< HEAD
         case 1:
           if ($ftype == TType::STRUCT) {
             $this->o1 = new \metastore\NoSuchLockException();
@@ -48184,6 +51082,21 @@ class ThriftHiveMetastore_unlock_result {
           if ($ftype == TType::STRUCT) {
             $this->o2 = new \metastore\TxnOpenException();
             $xfer += $this->o2->read($input);
+=======
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size1277 = 0;
+            $_etype1280 = 0;
+            $xfer += $input->readListBegin($_etype1280, $_size1277);
+            for ($_i1281 = 0; $_i1281 < $_size1277; ++$_i1281)
+            {
+              $elem1282 = null;
+              $xfer += $input->readString($elem1282);
+              $this->success []= $elem1282;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -48200,6 +51113,7 @@ class ThriftHiveMetastore_unlock_result {
 
   public function write($output) {
     $xfer = 0;
+<<<<<<< HEAD
     $xfer += $output->writeStructBegin('ThriftHiveMetastore_unlock_result');
     if ($this->o1 !== null) {
       $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
@@ -48209,6 +51123,24 @@ class ThriftHiveMetastore_unlock_result {
     if ($this->o2 !== null) {
       $xfer += $output->writeFieldBegin('o2', TType::STRUCT, 2);
       $xfer += $this->o2->write($output);
+=======
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_all_token_identifiers_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRING, count($this->success));
+        {
+          foreach ($this->success as $iter1283)
+          {
+            $xfer += $output->writeString($iter1283);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -48789,10 +51721,26 @@ class ThriftHiveMetastore_compact_args {
       }
       switch ($fid)
       {
+<<<<<<< HEAD
         case 1:
           if ($ftype == TType::STRUCT) {
             $this->rqst = new \metastore\CompactionRequest();
             $xfer += $this->rqst->read($input);
+=======
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size1284 = 0;
+            $_etype1287 = 0;
+            $xfer += $input->readListBegin($_etype1287, $_size1284);
+            for ($_i1288 = 0; $_i1288 < $_size1284; ++$_i1288)
+            {
+              $elem1289 = null;
+              $xfer += $input->readString($elem1289);
+              $this->success []= $elem1289;
+            }
+            $xfer += $input->readListEnd();
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -48814,8 +51762,22 @@ class ThriftHiveMetastore_compact_args {
       if (!is_object($this->rqst)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
+<<<<<<< HEAD
       $xfer += $output->writeFieldBegin('rqst', TType::STRUCT, 1);
       $xfer += $this->rqst->write($output);
+=======
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRING, count($this->success));
+        {
+          foreach ($this->success as $iter1290)
+          {
+            $xfer += $output->writeString($iter1290);
+          }
+        }
+        $output->writeListEnd();
+      }
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

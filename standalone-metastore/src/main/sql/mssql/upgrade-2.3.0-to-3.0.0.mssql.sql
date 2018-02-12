@@ -211,7 +211,17 @@ ALTER TABLE COMPLETED_TXN_COMPONENTS ADD CTC_WRITEID bigint;
   -- add a new column to support default value for DEFAULT constraint
  ALTER TABLE KEY_CONSTRAINTS ADD DEFAULT_VALUE VARCHAR(400);
 
-ALTER TABLE HIVE_LOCKS ALTER COLUMN HL_TXNID bigint NOT NULL;
+ALTER TABLE HIVE_LOCKS MODIFY ALTER COLUMN HL_TXNID bigint NOT NULL;
+-- add a new column to support default value for DEFAULT constraint
+ALTER TABLE KEY_CONSTRAINTS ADD DEFAULT_VALUE VARCHAR(400);
+
+CREATE TABLE REPL_TXN_MAP (
+  REPL_POLICY nvarchar(128) NOT NULL,
+  SRC_TXN_ID bigint NOT NULL,
+  TARGET_TXN_ID bigint NOT NULL
+);
+
+ALTER TABLE REPL_TXN_MAP ADD CONSTRAINT TXN_MAP_PK PRIMARY KEY (REPL_POLICY, SRC_TXN_ID);
 
 -- HIVE-18755, add catalogs
 -- new catalog table
@@ -274,3 +284,4 @@ ALTER TABLE NOTIFICATION_LOG ADD CAT_NAME nvarchar(256);
 -- These lines need to be last.  Insert any changes above.
 UPDATE VERSION SET SCHEMA_VERSION='3.0.0', VERSION_COMMENT='Hive release version 3.0.0' where VER_ID=1;
 SELECT 'Finished upgrading MetaStore schema from 2.3.0 to 3.0.0' AS MESSAGE;
+

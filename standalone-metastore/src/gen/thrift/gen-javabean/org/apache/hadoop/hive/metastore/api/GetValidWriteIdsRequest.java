@@ -436,6 +436,7 @@ import org.slf4j.LoggerFactory;
           case 1: // FULL_TABLE_NAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list586 = iprot.readListBegin();
                 struct.fullTableNames = new ArrayList<String>(_list586.size);
                 String _elem587;
@@ -443,6 +444,35 @@ import org.slf4j.LoggerFactory;
                 {
                   _elem587 = iprot.readString();
                   struct.fullTableNames.add(_elem587);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list578 = iprot.readListBegin();
+                struct.fullTableNames = new ArrayList<String>(_list578.size);
+                String _elem579;
+                for (int _i580 = 0; _i580 < _list578.size; ++_i580)
+                {
+                  _elem579 = iprot.readString();
+                  struct.fullTableNames.add(_elem579);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list562 = iprot.readListBegin();
+                struct.fullTableNames = new ArrayList<String>(_list562.size);
+                String _elem563;
+                for (int _i564 = 0; _i564 < _list562.size; ++_i564)
+                {
+                  _elem563 = iprot.readString();
+                  struct.fullTableNames.add(_elem563);
+=======
+                org.apache.thrift.protocol.TList _list580 = iprot.readListBegin();
+                struct.fullTableNames = new ArrayList<String>(_list580.size);
+                String _elem581;
+                for (int _i582 = 0; _i582 < _list580.size; ++_i582)
+                {
+                  _elem581 = iprot.readString();
+                  struct.fullTableNames.add(_elem581);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
                 }
                 iprot.readListEnd();
               }
@@ -476,9 +506,27 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(FULL_TABLE_NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.fullTableNames.size()));
+<<<<<<< HEAD
           for (String _iter589 : struct.fullTableNames)
           {
             oprot.writeString(_iter589);
+=======
+<<<<<<< HEAD
+          for (String _iter581 : struct.fullTableNames)
+          {
+            oprot.writeString(_iter581);
+=======
+<<<<<<< HEAD
+          for (String _iter565 : struct.fullTableNames)
+          {
+            oprot.writeString(_iter565);
+=======
+          for (String _iter583 : struct.fullTableNames)
+          {
+            oprot.writeString(_iter583);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
           oprot.writeListEnd();
         }
@@ -508,9 +556,27 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.fullTableNames.size());
+<<<<<<< HEAD
         for (String _iter590 : struct.fullTableNames)
         {
           oprot.writeString(_iter590);
+=======
+<<<<<<< HEAD
+        for (String _iter582 : struct.fullTableNames)
+        {
+          oprot.writeString(_iter582);
+=======
+<<<<<<< HEAD
+        for (String _iter566 : struct.fullTableNames)
+        {
+          oprot.writeString(_iter566);
+=======
+        for (String _iter584 : struct.fullTableNames)
+        {
+          oprot.writeString(_iter584);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         }
       }
       oprot.writeString(struct.validTxnList);
@@ -520,6 +586,7 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetValidWriteIdsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
+<<<<<<< HEAD
         org.apache.thrift.protocol.TList _list591 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
         struct.fullTableNames = new ArrayList<String>(_list591.size);
         String _elem592;
@@ -527,6 +594,35 @@ import org.slf4j.LoggerFactory;
         {
           _elem592 = iprot.readString();
           struct.fullTableNames.add(_elem592);
+=======
+<<<<<<< HEAD
+        org.apache.thrift.protocol.TList _list583 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.fullTableNames = new ArrayList<String>(_list583.size);
+        String _elem584;
+        for (int _i585 = 0; _i585 < _list583.size; ++_i585)
+        {
+          _elem584 = iprot.readString();
+          struct.fullTableNames.add(_elem584);
+=======
+<<<<<<< HEAD
+        org.apache.thrift.protocol.TList _list567 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.fullTableNames = new ArrayList<String>(_list567.size);
+        String _elem568;
+        for (int _i569 = 0; _i569 < _list567.size; ++_i569)
+        {
+          _elem568 = iprot.readString();
+          struct.fullTableNames.add(_elem568);
+=======
+        org.apache.thrift.protocol.TList _list585 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.fullTableNames = new ArrayList<String>(_list585.size);
+        String _elem586;
+        for (int _i587 = 0; _i587 < _list585.size; ++_i587)
+        {
+          _elem586 = iprot.readString();
+          struct.fullTableNames.add(_elem586);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         }
       }
       struct.setFullTableNamesIsSet(true);

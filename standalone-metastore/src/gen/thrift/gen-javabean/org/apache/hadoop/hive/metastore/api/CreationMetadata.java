@@ -712,6 +712,7 @@ import org.slf4j.LoggerFactory;
           case 4: // TABLES_USED
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TSet _set684 = iprot.readSetBegin();
                 struct.tablesUsed = new HashSet<String>(2*_set684.size);
                 String _elem685;
@@ -719,6 +720,35 @@ import org.slf4j.LoggerFactory;
                 {
                   _elem685 = iprot.readString();
                   struct.tablesUsed.add(_elem685);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TSet _set676 = iprot.readSetBegin();
+                struct.tablesUsed = new HashSet<String>(2*_set676.size);
+                String _elem677;
+                for (int _i678 = 0; _i678 < _set676.size; ++_i678)
+                {
+                  _elem677 = iprot.readString();
+                  struct.tablesUsed.add(_elem677);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TSet _set660 = iprot.readSetBegin();
+                struct.tablesUsed = new HashSet<String>(2*_set660.size);
+                String _elem661;
+                for (int _i662 = 0; _i662 < _set660.size; ++_i662)
+                {
+                  _elem661 = iprot.readString();
+                  struct.tablesUsed.add(_elem661);
+=======
+                org.apache.thrift.protocol.TSet _set678 = iprot.readSetBegin();
+                struct.tablesUsed = new HashSet<String>(2*_set678.size);
+                String _elem679;
+                for (int _i680 = 0; _i680 < _set678.size; ++_i680)
+                {
+                  _elem679 = iprot.readString();
+                  struct.tablesUsed.add(_elem679);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
                 }
                 iprot.readSetEnd();
               }
@@ -767,9 +797,27 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(TABLES_USED_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, struct.tablesUsed.size()));
+<<<<<<< HEAD
           for (String _iter687 : struct.tablesUsed)
           {
             oprot.writeString(_iter687);
+=======
+<<<<<<< HEAD
+          for (String _iter679 : struct.tablesUsed)
+          {
+            oprot.writeString(_iter679);
+=======
+<<<<<<< HEAD
+          for (String _iter663 : struct.tablesUsed)
+          {
+            oprot.writeString(_iter663);
+=======
+          for (String _iter681 : struct.tablesUsed)
+          {
+            oprot.writeString(_iter681);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
           oprot.writeSetEnd();
         }
@@ -804,9 +852,27 @@ import org.slf4j.LoggerFactory;
       oprot.writeString(struct.tblName);
       {
         oprot.writeI32(struct.tablesUsed.size());
+<<<<<<< HEAD
         for (String _iter688 : struct.tablesUsed)
         {
           oprot.writeString(_iter688);
+=======
+<<<<<<< HEAD
+        for (String _iter680 : struct.tablesUsed)
+        {
+          oprot.writeString(_iter680);
+=======
+<<<<<<< HEAD
+        for (String _iter664 : struct.tablesUsed)
+        {
+          oprot.writeString(_iter664);
+=======
+        for (String _iter682 : struct.tablesUsed)
+        {
+          oprot.writeString(_iter682);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         }
       }
       BitSet optionals = new BitSet();
@@ -829,6 +895,7 @@ import org.slf4j.LoggerFactory;
       struct.tblName = iprot.readString();
       struct.setTblNameIsSet(true);
       {
+<<<<<<< HEAD
         org.apache.thrift.protocol.TSet _set689 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
         struct.tablesUsed = new HashSet<String>(2*_set689.size);
         String _elem690;
@@ -836,6 +903,35 @@ import org.slf4j.LoggerFactory;
         {
           _elem690 = iprot.readString();
           struct.tablesUsed.add(_elem690);
+=======
+<<<<<<< HEAD
+        org.apache.thrift.protocol.TSet _set681 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.tablesUsed = new HashSet<String>(2*_set681.size);
+        String _elem682;
+        for (int _i683 = 0; _i683 < _set681.size; ++_i683)
+        {
+          _elem682 = iprot.readString();
+          struct.tablesUsed.add(_elem682);
+=======
+<<<<<<< HEAD
+        org.apache.thrift.protocol.TSet _set665 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.tablesUsed = new HashSet<String>(2*_set665.size);
+        String _elem666;
+        for (int _i667 = 0; _i667 < _set665.size; ++_i667)
+        {
+          _elem666 = iprot.readString();
+          struct.tablesUsed.add(_elem666);
+=======
+        org.apache.thrift.protocol.TSet _set683 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.tablesUsed = new HashSet<String>(2*_set683.size);
+        String _elem684;
+        for (int _i685 = 0; _i685 < _set683.size; ++_i685)
+        {
+          _elem684 = iprot.readString();
+          struct.tablesUsed.add(_elem684);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         }
       }
       struct.setTablesUsedIsSet(true);

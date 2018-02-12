@@ -521,6 +521,7 @@ import org.slf4j.LoggerFactory;
           case 1: // TXN_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list610 = iprot.readListBegin();
                 struct.txnIds = new ArrayList<Long>(_list610.size);
                 long _elem611;
@@ -528,6 +529,35 @@ import org.slf4j.LoggerFactory;
                 {
                   _elem611 = iprot.readI64();
                   struct.txnIds.add(_elem611);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list602 = iprot.readListBegin();
+                struct.txnIds = new ArrayList<Long>(_list602.size);
+                long _elem603;
+                for (int _i604 = 0; _i604 < _list602.size; ++_i604)
+                {
+                  _elem603 = iprot.readI64();
+                  struct.txnIds.add(_elem603);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list586 = iprot.readListBegin();
+                struct.txnIds = new ArrayList<Long>(_list586.size);
+                long _elem587;
+                for (int _i588 = 0; _i588 < _list586.size; ++_i588)
+                {
+                  _elem587 = iprot.readI64();
+                  struct.txnIds.add(_elem587);
+=======
+                org.apache.thrift.protocol.TList _list604 = iprot.readListBegin();
+                struct.txnIds = new ArrayList<Long>(_list604.size);
+                long _elem605;
+                for (int _i606 = 0; _i606 < _list604.size; ++_i606)
+                {
+                  _elem605 = iprot.readI64();
+                  struct.txnIds.add(_elem605);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
                 }
                 iprot.readListEnd();
               }
@@ -569,9 +599,27 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(TXN_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.txnIds.size()));
+<<<<<<< HEAD
           for (long _iter613 : struct.txnIds)
           {
             oprot.writeI64(_iter613);
+=======
+<<<<<<< HEAD
+          for (long _iter605 : struct.txnIds)
+          {
+            oprot.writeI64(_iter605);
+=======
+<<<<<<< HEAD
+          for (long _iter589 : struct.txnIds)
+          {
+            oprot.writeI64(_iter589);
+=======
+          for (long _iter607 : struct.txnIds)
+          {
+            oprot.writeI64(_iter607);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
           oprot.writeListEnd();
         }
@@ -606,9 +654,27 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.txnIds.size());
+<<<<<<< HEAD
         for (long _iter614 : struct.txnIds)
         {
           oprot.writeI64(_iter614);
+=======
+<<<<<<< HEAD
+        for (long _iter606 : struct.txnIds)
+        {
+          oprot.writeI64(_iter606);
+=======
+<<<<<<< HEAD
+        for (long _iter590 : struct.txnIds)
+        {
+          oprot.writeI64(_iter590);
+=======
+        for (long _iter608 : struct.txnIds)
+        {
+          oprot.writeI64(_iter608);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         }
       }
       oprot.writeString(struct.dbName);
@@ -619,6 +685,7 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, AllocateTableWriteIdsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
+<<<<<<< HEAD
         org.apache.thrift.protocol.TList _list615 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
         struct.txnIds = new ArrayList<Long>(_list615.size);
         long _elem616;
@@ -626,6 +693,35 @@ import org.slf4j.LoggerFactory;
         {
           _elem616 = iprot.readI64();
           struct.txnIds.add(_elem616);
+=======
+<<<<<<< HEAD
+        org.apache.thrift.protocol.TList _list607 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.txnIds = new ArrayList<Long>(_list607.size);
+        long _elem608;
+        for (int _i609 = 0; _i609 < _list607.size; ++_i609)
+        {
+          _elem608 = iprot.readI64();
+          struct.txnIds.add(_elem608);
+=======
+<<<<<<< HEAD
+        org.apache.thrift.protocol.TList _list591 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.txnIds = new ArrayList<Long>(_list591.size);
+        long _elem592;
+        for (int _i593 = 0; _i593 < _list591.size; ++_i593)
+        {
+          _elem592 = iprot.readI64();
+          struct.txnIds.add(_elem592);
+=======
+        org.apache.thrift.protocol.TList _list609 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.txnIds = new ArrayList<Long>(_list609.size);
+        long _elem610;
+        for (int _i611 = 0; _i611 < _list609.size; ++_i611)
+        {
+          _elem610 = iprot.readI64();
+          struct.txnIds.add(_elem610);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         }
       }
       struct.setTxnIdsIsSet(true);

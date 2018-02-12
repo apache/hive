@@ -15906,6 +15906,16 @@ void OpenTxnRequest::__set_agentInfo(const std::string& val) {
 __isset.agentInfo = true;
 }
 
+void OpenTxnRequest::__set_replPolicy(const std::string& val) {
+  this->replPolicy = val;
+__isset.replPolicy = true;
+}
+
+void OpenTxnRequest::__set_replSrcTxnId(const std::vector<int64_t> & val) {
+  this->replSrcTxnId = val;
+__isset.replSrcTxnId = true;
+}
+
 uint32_t OpenTxnRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
@@ -15962,6 +15972,34 @@ uint32_t OpenTxnRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->replPolicy);
+          this->__isset.replPolicy = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 6:
+        if (ftype == ::apache::thrift::protocol::T_LIST) {
+          {
+            this->replSrcTxnId.clear();
+            uint32_t _size615;
+            ::apache::thrift::protocol::TType _etype618;
+            xfer += iprot->readListBegin(_etype618, _size615);
+            this->replSrcTxnId.resize(_size615);
+            uint32_t _i619;
+            for (_i619 = 0; _i619 < _size615; ++_i619)
+            {
+              xfer += iprot->readI64(this->replSrcTxnId[_i619]);
+            }
+            xfer += iprot->readListEnd();
+          }
+          this->__isset.replSrcTxnId = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -16002,6 +16040,24 @@ uint32_t OpenTxnRequest::write(::apache::thrift::protocol::TProtocol* oprot) con
     xfer += oprot->writeString(this->agentInfo);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.replPolicy) {
+    xfer += oprot->writeFieldBegin("replPolicy", ::apache::thrift::protocol::T_STRING, 5);
+    xfer += oprot->writeString(this->replPolicy);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.replSrcTxnId) {
+    xfer += oprot->writeFieldBegin("replSrcTxnId", ::apache::thrift::protocol::T_LIST, 6);
+    {
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->replSrcTxnId.size()));
+      std::vector<int64_t> ::const_iterator _iter620;
+      for (_iter620 = this->replSrcTxnId.begin(); _iter620 != this->replSrcTxnId.end(); ++_iter620)
+      {
+        xfer += oprot->writeI64((*_iter620));
+      }
+      xfer += oprot->writeListEnd();
+    }
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -16013,9 +16069,12 @@ void swap(OpenTxnRequest &a, OpenTxnRequest &b) {
   swap(a.user, b.user);
   swap(a.hostname, b.hostname);
   swap(a.agentInfo, b.agentInfo);
+  swap(a.replPolicy, b.replPolicy);
+  swap(a.replSrcTxnId, b.replSrcTxnId);
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 OpenTxnRequest::OpenTxnRequest(const OpenTxnRequest& other644) {
   num_txns = other644.num_txns;
   user = other644.user;
@@ -16029,6 +16088,57 @@ OpenTxnRequest& OpenTxnRequest::operator=(const OpenTxnRequest& other645) {
   hostname = other645.hostname;
   agentInfo = other645.agentInfo;
   __isset = other645.__isset;
+=======
+<<<<<<< HEAD
+OpenTxnRequest::OpenTxnRequest(const OpenTxnRequest& other626) {
+  num_txns = other626.num_txns;
+  user = other626.user;
+  hostname = other626.hostname;
+  agentInfo = other626.agentInfo;
+  __isset = other626.__isset;
+}
+OpenTxnRequest& OpenTxnRequest::operator=(const OpenTxnRequest& other627) {
+  num_txns = other627.num_txns;
+  user = other627.user;
+  hostname = other627.hostname;
+  agentInfo = other627.agentInfo;
+  __isset = other627.__isset;
+=======
+<<<<<<< HEAD
+OpenTxnRequest::OpenTxnRequest(const OpenTxnRequest& other606) {
+  num_txns = other606.num_txns;
+  user = other606.user;
+  hostname = other606.hostname;
+  agentInfo = other606.agentInfo;
+  __isset = other606.__isset;
+}
+OpenTxnRequest& OpenTxnRequest::operator=(const OpenTxnRequest& other607) {
+  num_txns = other607.num_txns;
+  user = other607.user;
+  hostname = other607.hostname;
+  agentInfo = other607.agentInfo;
+  __isset = other607.__isset;
+=======
+OpenTxnRequest::OpenTxnRequest(const OpenTxnRequest& other621) {
+  num_txns = other621.num_txns;
+  user = other621.user;
+  hostname = other621.hostname;
+  agentInfo = other621.agentInfo;
+  replPolicy = other621.replPolicy;
+  replSrcTxnId = other621.replSrcTxnId;
+  __isset = other621.__isset;
+}
+OpenTxnRequest& OpenTxnRequest::operator=(const OpenTxnRequest& other622) {
+  num_txns = other622.num_txns;
+  user = other622.user;
+  hostname = other622.hostname;
+  agentInfo = other622.agentInfo;
+  replPolicy = other622.replPolicy;
+  replSrcTxnId = other622.replSrcTxnId;
+  __isset = other622.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void OpenTxnRequest::printTo(std::ostream& out) const {
@@ -16038,6 +16148,8 @@ void OpenTxnRequest::printTo(std::ostream& out) const {
   out << ", " << "user=" << to_string(user);
   out << ", " << "hostname=" << to_string(hostname);
   out << ", " << "agentInfo="; (__isset.agentInfo ? (out << to_string(agentInfo)) : (out << "<null>"));
+  out << ", " << "replPolicy="; (__isset.replPolicy ? (out << to_string(replPolicy)) : (out << "<null>"));
+  out << ", " << "replSrcTxnId="; (__isset.replSrcTxnId ? (out << to_string(replSrcTxnId)) : (out << "<null>"));
   out << ")";
 }
 
@@ -16076,6 +16188,7 @@ uint32_t OpenTxnsResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->txn_ids.clear();
+<<<<<<< HEAD
             uint32_t _size646;
             ::apache::thrift::protocol::TType _etype649;
             xfer += iprot->readListBegin(_etype649, _size646);
@@ -16084,6 +16197,38 @@ uint32_t OpenTxnsResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
             for (_i650 = 0; _i650 < _size646; ++_i650)
             {
               xfer += iprot->readI64(this->txn_ids[_i650]);
+=======
+<<<<<<< HEAD
+            uint32_t _size628;
+            ::apache::thrift::protocol::TType _etype631;
+            xfer += iprot->readListBegin(_etype631, _size628);
+            this->txn_ids.resize(_size628);
+            uint32_t _i632;
+            for (_i632 = 0; _i632 < _size628; ++_i632)
+            {
+              xfer += iprot->readI64(this->txn_ids[_i632]);
+=======
+<<<<<<< HEAD
+            uint32_t _size608;
+            ::apache::thrift::protocol::TType _etype611;
+            xfer += iprot->readListBegin(_etype611, _size608);
+            this->txn_ids.resize(_size608);
+            uint32_t _i612;
+            for (_i612 = 0; _i612 < _size608; ++_i612)
+            {
+              xfer += iprot->readI64(this->txn_ids[_i612]);
+=======
+            uint32_t _size623;
+            ::apache::thrift::protocol::TType _etype626;
+            xfer += iprot->readListBegin(_etype626, _size623);
+            this->txn_ids.resize(_size623);
+            uint32_t _i627;
+            for (_i627 = 0; _i627 < _size623; ++_i627)
+            {
+              xfer += iprot->readI64(this->txn_ids[_i627]);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -16114,10 +16259,31 @@ uint32_t OpenTxnsResponse::write(::apache::thrift::protocol::TProtocol* oprot) c
   xfer += oprot->writeFieldBegin("txn_ids", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->txn_ids.size()));
+<<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter651;
     for (_iter651 = this->txn_ids.begin(); _iter651 != this->txn_ids.end(); ++_iter651)
     {
       xfer += oprot->writeI64((*_iter651));
+=======
+<<<<<<< HEAD
+    std::vector<int64_t> ::const_iterator _iter633;
+    for (_iter633 = this->txn_ids.begin(); _iter633 != this->txn_ids.end(); ++_iter633)
+    {
+      xfer += oprot->writeI64((*_iter633));
+=======
+<<<<<<< HEAD
+    std::vector<int64_t> ::const_iterator _iter613;
+    for (_iter613 = this->txn_ids.begin(); _iter613 != this->txn_ids.end(); ++_iter613)
+    {
+      xfer += oprot->writeI64((*_iter613));
+=======
+    std::vector<int64_t> ::const_iterator _iter628;
+    for (_iter628 = this->txn_ids.begin(); _iter628 != this->txn_ids.end(); ++_iter628)
+    {
+      xfer += oprot->writeI64((*_iter628));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -16133,11 +16299,35 @@ void swap(OpenTxnsResponse &a, OpenTxnsResponse &b) {
   swap(a.txn_ids, b.txn_ids);
 }
 
+<<<<<<< HEAD
 OpenTxnsResponse::OpenTxnsResponse(const OpenTxnsResponse& other652) {
   txn_ids = other652.txn_ids;
 }
 OpenTxnsResponse& OpenTxnsResponse::operator=(const OpenTxnsResponse& other653) {
   txn_ids = other653.txn_ids;
+=======
+<<<<<<< HEAD
+OpenTxnsResponse::OpenTxnsResponse(const OpenTxnsResponse& other634) {
+  txn_ids = other634.txn_ids;
+}
+OpenTxnsResponse& OpenTxnsResponse::operator=(const OpenTxnsResponse& other635) {
+  txn_ids = other635.txn_ids;
+=======
+<<<<<<< HEAD
+OpenTxnsResponse::OpenTxnsResponse(const OpenTxnsResponse& other614) {
+  txn_ids = other614.txn_ids;
+}
+OpenTxnsResponse& OpenTxnsResponse::operator=(const OpenTxnsResponse& other615) {
+  txn_ids = other615.txn_ids;
+=======
+OpenTxnsResponse::OpenTxnsResponse(const OpenTxnsResponse& other629) {
+  txn_ids = other629.txn_ids;
+}
+OpenTxnsResponse& OpenTxnsResponse::operator=(const OpenTxnsResponse& other630) {
+  txn_ids = other630.txn_ids;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void OpenTxnsResponse::printTo(std::ostream& out) const {
@@ -16154,6 +16344,11 @@ AbortTxnRequest::~AbortTxnRequest() throw() {
 
 void AbortTxnRequest::__set_txnid(const int64_t val) {
   this->txnid = val;
+}
+
+void AbortTxnRequest::__set_replPolicy(const std::string& val) {
+  this->replPolicy = val;
+__isset.replPolicy = true;
 }
 
 uint32_t AbortTxnRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
@@ -16186,6 +16381,14 @@ uint32_t AbortTxnRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->replPolicy);
+          this->__isset.replPolicy = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -16209,6 +16412,11 @@ uint32_t AbortTxnRequest::write(::apache::thrift::protocol::TProtocol* oprot) co
   xfer += oprot->writeI64(this->txnid);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.replPolicy) {
+    xfer += oprot->writeFieldBegin("replPolicy", ::apache::thrift::protocol::T_STRING, 2);
+    xfer += oprot->writeString(this->replPolicy);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -16217,19 +16425,50 @@ uint32_t AbortTxnRequest::write(::apache::thrift::protocol::TProtocol* oprot) co
 void swap(AbortTxnRequest &a, AbortTxnRequest &b) {
   using ::std::swap;
   swap(a.txnid, b.txnid);
+  swap(a.replPolicy, b.replPolicy);
+  swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 AbortTxnRequest::AbortTxnRequest(const AbortTxnRequest& other654) {
   txnid = other654.txnid;
 }
 AbortTxnRequest& AbortTxnRequest::operator=(const AbortTxnRequest& other655) {
   txnid = other655.txnid;
+=======
+<<<<<<< HEAD
+AbortTxnRequest::AbortTxnRequest(const AbortTxnRequest& other636) {
+  txnid = other636.txnid;
+}
+AbortTxnRequest& AbortTxnRequest::operator=(const AbortTxnRequest& other637) {
+  txnid = other637.txnid;
+=======
+<<<<<<< HEAD
+AbortTxnRequest::AbortTxnRequest(const AbortTxnRequest& other616) {
+  txnid = other616.txnid;
+}
+AbortTxnRequest& AbortTxnRequest::operator=(const AbortTxnRequest& other617) {
+  txnid = other617.txnid;
+=======
+AbortTxnRequest::AbortTxnRequest(const AbortTxnRequest& other631) {
+  txnid = other631.txnid;
+  replPolicy = other631.replPolicy;
+  __isset = other631.__isset;
+}
+AbortTxnRequest& AbortTxnRequest::operator=(const AbortTxnRequest& other632) {
+  txnid = other632.txnid;
+  replPolicy = other632.replPolicy;
+  __isset = other632.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void AbortTxnRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "AbortTxnRequest(";
   out << "txnid=" << to_string(txnid);
+  out << ", " << "replPolicy="; (__isset.replPolicy ? (out << to_string(replPolicy)) : (out << "<null>"));
   out << ")";
 }
 
@@ -16268,6 +16507,7 @@ uint32_t AbortTxnsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->txn_ids.clear();
+<<<<<<< HEAD
             uint32_t _size656;
             ::apache::thrift::protocol::TType _etype659;
             xfer += iprot->readListBegin(_etype659, _size656);
@@ -16276,6 +16516,38 @@ uint32_t AbortTxnsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
             for (_i660 = 0; _i660 < _size656; ++_i660)
             {
               xfer += iprot->readI64(this->txn_ids[_i660]);
+=======
+<<<<<<< HEAD
+            uint32_t _size638;
+            ::apache::thrift::protocol::TType _etype641;
+            xfer += iprot->readListBegin(_etype641, _size638);
+            this->txn_ids.resize(_size638);
+            uint32_t _i642;
+            for (_i642 = 0; _i642 < _size638; ++_i642)
+            {
+              xfer += iprot->readI64(this->txn_ids[_i642]);
+=======
+<<<<<<< HEAD
+            uint32_t _size618;
+            ::apache::thrift::protocol::TType _etype621;
+            xfer += iprot->readListBegin(_etype621, _size618);
+            this->txn_ids.resize(_size618);
+            uint32_t _i622;
+            for (_i622 = 0; _i622 < _size618; ++_i622)
+            {
+              xfer += iprot->readI64(this->txn_ids[_i622]);
+=======
+            uint32_t _size633;
+            ::apache::thrift::protocol::TType _etype636;
+            xfer += iprot->readListBegin(_etype636, _size633);
+            this->txn_ids.resize(_size633);
+            uint32_t _i637;
+            for (_i637 = 0; _i637 < _size633; ++_i637)
+            {
+              xfer += iprot->readI64(this->txn_ids[_i637]);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -16306,10 +16578,31 @@ uint32_t AbortTxnsRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
   xfer += oprot->writeFieldBegin("txn_ids", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->txn_ids.size()));
+<<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter661;
     for (_iter661 = this->txn_ids.begin(); _iter661 != this->txn_ids.end(); ++_iter661)
     {
       xfer += oprot->writeI64((*_iter661));
+=======
+<<<<<<< HEAD
+    std::vector<int64_t> ::const_iterator _iter643;
+    for (_iter643 = this->txn_ids.begin(); _iter643 != this->txn_ids.end(); ++_iter643)
+    {
+      xfer += oprot->writeI64((*_iter643));
+=======
+<<<<<<< HEAD
+    std::vector<int64_t> ::const_iterator _iter623;
+    for (_iter623 = this->txn_ids.begin(); _iter623 != this->txn_ids.end(); ++_iter623)
+    {
+      xfer += oprot->writeI64((*_iter623));
+=======
+    std::vector<int64_t> ::const_iterator _iter638;
+    for (_iter638 = this->txn_ids.begin(); _iter638 != this->txn_ids.end(); ++_iter638)
+    {
+      xfer += oprot->writeI64((*_iter638));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -16325,11 +16618,35 @@ void swap(AbortTxnsRequest &a, AbortTxnsRequest &b) {
   swap(a.txn_ids, b.txn_ids);
 }
 
+<<<<<<< HEAD
 AbortTxnsRequest::AbortTxnsRequest(const AbortTxnsRequest& other662) {
   txn_ids = other662.txn_ids;
 }
 AbortTxnsRequest& AbortTxnsRequest::operator=(const AbortTxnsRequest& other663) {
   txn_ids = other663.txn_ids;
+=======
+<<<<<<< HEAD
+AbortTxnsRequest::AbortTxnsRequest(const AbortTxnsRequest& other644) {
+  txn_ids = other644.txn_ids;
+}
+AbortTxnsRequest& AbortTxnsRequest::operator=(const AbortTxnsRequest& other645) {
+  txn_ids = other645.txn_ids;
+=======
+<<<<<<< HEAD
+AbortTxnsRequest::AbortTxnsRequest(const AbortTxnsRequest& other624) {
+  txn_ids = other624.txn_ids;
+}
+AbortTxnsRequest& AbortTxnsRequest::operator=(const AbortTxnsRequest& other625) {
+  txn_ids = other625.txn_ids;
+=======
+AbortTxnsRequest::AbortTxnsRequest(const AbortTxnsRequest& other639) {
+  txn_ids = other639.txn_ids;
+}
+AbortTxnsRequest& AbortTxnsRequest::operator=(const AbortTxnsRequest& other640) {
+  txn_ids = other640.txn_ids;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void AbortTxnsRequest::printTo(std::ostream& out) const {
@@ -16348,7 +16665,142 @@ void CommitTxnRequest::__set_txnid(const int64_t val) {
   this->txnid = val;
 }
 
+void CommitTxnRequest::__set_replPolicy(const std::string& val) {
+  this->replPolicy = val;
+__isset.replPolicy = true;
+}
+
 uint32_t CommitTxnRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_txnid = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->txnid);
+          isset_txnid = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->replPolicy);
+          this->__isset.replPolicy = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_txnid)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t CommitTxnRequest::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("CommitTxnRequest");
+
+  xfer += oprot->writeFieldBegin("txnid", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->txnid);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.replPolicy) {
+    xfer += oprot->writeFieldBegin("replPolicy", ::apache::thrift::protocol::T_STRING, 2);
+    xfer += oprot->writeString(this->replPolicy);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(CommitTxnRequest &a, CommitTxnRequest &b) {
+  using ::std::swap;
+  swap(a.txnid, b.txnid);
+  swap(a.replPolicy, b.replPolicy);
+  swap(a.__isset, b.__isset);
+}
+
+<<<<<<< HEAD
+CommitTxnRequest::CommitTxnRequest(const CommitTxnRequest& other664) {
+  txnid = other664.txnid;
+}
+CommitTxnRequest& CommitTxnRequest::operator=(const CommitTxnRequest& other665) {
+  txnid = other665.txnid;
+=======
+<<<<<<< HEAD
+CommitTxnRequest::CommitTxnRequest(const CommitTxnRequest& other646) {
+  txnid = other646.txnid;
+}
+CommitTxnRequest& CommitTxnRequest::operator=(const CommitTxnRequest& other647) {
+  txnid = other647.txnid;
+=======
+<<<<<<< HEAD
+CommitTxnRequest::CommitTxnRequest(const CommitTxnRequest& other626) {
+  txnid = other626.txnid;
+}
+CommitTxnRequest& CommitTxnRequest::operator=(const CommitTxnRequest& other627) {
+  txnid = other627.txnid;
+=======
+CommitTxnRequest::CommitTxnRequest(const CommitTxnRequest& other641) {
+  txnid = other641.txnid;
+  replPolicy = other641.replPolicy;
+  __isset = other641.__isset;
+}
+CommitTxnRequest& CommitTxnRequest::operator=(const CommitTxnRequest& other642) {
+  txnid = other642.txnid;
+  replPolicy = other642.replPolicy;
+  __isset = other642.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+  return *this;
+}
+void CommitTxnRequest::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "CommitTxnRequest(";
+  out << "txnid=" << to_string(txnid);
+  out << ", " << "replPolicy="; (__isset.replPolicy ? (out << to_string(replPolicy)) : (out << "<null>"));
+  out << ")";
+}
+
+
+GetTargetTxnIdRequest::~GetTargetTxnIdRequest() throw() {
+}
+
+
+void GetTargetTxnIdRequest::__set_txnid(const int64_t val) {
+  this->txnid = val;
+}
+
+uint32_t GetTargetTxnIdRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -16392,10 +16844,10 @@ uint32_t CommitTxnRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
   return xfer;
 }
 
-uint32_t CommitTxnRequest::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t GetTargetTxnIdRequest::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("CommitTxnRequest");
+  xfer += oprot->writeStructBegin("GetTargetTxnIdRequest");
 
   xfer += oprot->writeFieldBegin("txnid", ::apache::thrift::protocol::T_I64, 1);
   xfer += oprot->writeI64(this->txnid);
@@ -16406,21 +16858,107 @@ uint32_t CommitTxnRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
   return xfer;
 }
 
-void swap(CommitTxnRequest &a, CommitTxnRequest &b) {
+void swap(GetTargetTxnIdRequest &a, GetTargetTxnIdRequest &b) {
   using ::std::swap;
   swap(a.txnid, b.txnid);
 }
 
-CommitTxnRequest::CommitTxnRequest(const CommitTxnRequest& other664) {
-  txnid = other664.txnid;
+GetTargetTxnIdRequest::GetTargetTxnIdRequest(const GetTargetTxnIdRequest& other643) {
+  txnid = other643.txnid;
 }
-CommitTxnRequest& CommitTxnRequest::operator=(const CommitTxnRequest& other665) {
-  txnid = other665.txnid;
+GetTargetTxnIdRequest& GetTargetTxnIdRequest::operator=(const GetTargetTxnIdRequest& other644) {
+  txnid = other644.txnid;
   return *this;
 }
-void CommitTxnRequest::printTo(std::ostream& out) const {
+void GetTargetTxnIdRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
-  out << "CommitTxnRequest(";
+  out << "GetTargetTxnIdRequest(";
+  out << "txnid=" << to_string(txnid);
+  out << ")";
+}
+
+
+GetTargetTxnIdResponse::~GetTargetTxnIdResponse() throw() {
+}
+
+
+void GetTargetTxnIdResponse::__set_txnid(const int64_t val) {
+  this->txnid = val;
+}
+
+uint32_t GetTargetTxnIdResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_txnid = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->txnid);
+          isset_txnid = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_txnid)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t GetTargetTxnIdResponse::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("GetTargetTxnIdResponse");
+
+  xfer += oprot->writeFieldBegin("txnid", ::apache::thrift::protocol::T_I64, 1);
+  xfer += oprot->writeI64(this->txnid);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(GetTargetTxnIdResponse &a, GetTargetTxnIdResponse &b) {
+  using ::std::swap;
+  swap(a.txnid, b.txnid);
+}
+
+GetTargetTxnIdResponse::GetTargetTxnIdResponse(const GetTargetTxnIdResponse& other645) {
+  txnid = other645.txnid;
+}
+GetTargetTxnIdResponse& GetTargetTxnIdResponse::operator=(const GetTargetTxnIdResponse& other646) {
+  txnid = other646.txnid;
+  return *this;
+}
+void GetTargetTxnIdResponse::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "GetTargetTxnIdResponse(";
   out << "txnid=" << to_string(txnid);
   out << ")";
 }
@@ -16465,6 +17003,7 @@ uint32_t GetValidWriteIdsRequest::read(::apache::thrift::protocol::TProtocol* ip
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->fullTableNames.clear();
+<<<<<<< HEAD
             uint32_t _size666;
             ::apache::thrift::protocol::TType _etype669;
             xfer += iprot->readListBegin(_etype669, _size666);
@@ -16473,6 +17012,38 @@ uint32_t GetValidWriteIdsRequest::read(::apache::thrift::protocol::TProtocol* ip
             for (_i670 = 0; _i670 < _size666; ++_i670)
             {
               xfer += iprot->readString(this->fullTableNames[_i670]);
+=======
+<<<<<<< HEAD
+            uint32_t _size648;
+            ::apache::thrift::protocol::TType _etype651;
+            xfer += iprot->readListBegin(_etype651, _size648);
+            this->fullTableNames.resize(_size648);
+            uint32_t _i652;
+            for (_i652 = 0; _i652 < _size648; ++_i652)
+            {
+              xfer += iprot->readString(this->fullTableNames[_i652]);
+=======
+<<<<<<< HEAD
+            uint32_t _size628;
+            ::apache::thrift::protocol::TType _etype631;
+            xfer += iprot->readListBegin(_etype631, _size628);
+            this->fullTableNames.resize(_size628);
+            uint32_t _i632;
+            for (_i632 = 0; _i632 < _size628; ++_i632)
+            {
+              xfer += iprot->readString(this->fullTableNames[_i632]);
+=======
+            uint32_t _size647;
+            ::apache::thrift::protocol::TType _etype650;
+            xfer += iprot->readListBegin(_etype650, _size647);
+            this->fullTableNames.resize(_size647);
+            uint32_t _i651;
+            for (_i651 = 0; _i651 < _size647; ++_i651)
+            {
+              xfer += iprot->readString(this->fullTableNames[_i651]);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -16513,10 +17084,31 @@ uint32_t GetValidWriteIdsRequest::write(::apache::thrift::protocol::TProtocol* o
   xfer += oprot->writeFieldBegin("fullTableNames", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->fullTableNames.size()));
+<<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter671;
     for (_iter671 = this->fullTableNames.begin(); _iter671 != this->fullTableNames.end(); ++_iter671)
     {
       xfer += oprot->writeString((*_iter671));
+=======
+<<<<<<< HEAD
+    std::vector<std::string> ::const_iterator _iter653;
+    for (_iter653 = this->fullTableNames.begin(); _iter653 != this->fullTableNames.end(); ++_iter653)
+    {
+      xfer += oprot->writeString((*_iter653));
+=======
+<<<<<<< HEAD
+    std::vector<std::string> ::const_iterator _iter633;
+    for (_iter633 = this->fullTableNames.begin(); _iter633 != this->fullTableNames.end(); ++_iter633)
+    {
+      xfer += oprot->writeString((*_iter633));
+=======
+    std::vector<std::string> ::const_iterator _iter652;
+    for (_iter652 = this->fullTableNames.begin(); _iter652 != this->fullTableNames.end(); ++_iter652)
+    {
+      xfer += oprot->writeString((*_iter652));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -16537,6 +17129,7 @@ void swap(GetValidWriteIdsRequest &a, GetValidWriteIdsRequest &b) {
   swap(a.validTxnList, b.validTxnList);
 }
 
+<<<<<<< HEAD
 GetValidWriteIdsRequest::GetValidWriteIdsRequest(const GetValidWriteIdsRequest& other672) {
   fullTableNames = other672.fullTableNames;
   validTxnList = other672.validTxnList;
@@ -16544,6 +17137,35 @@ GetValidWriteIdsRequest::GetValidWriteIdsRequest(const GetValidWriteIdsRequest& 
 GetValidWriteIdsRequest& GetValidWriteIdsRequest::operator=(const GetValidWriteIdsRequest& other673) {
   fullTableNames = other673.fullTableNames;
   validTxnList = other673.validTxnList;
+=======
+<<<<<<< HEAD
+GetValidWriteIdsRequest::GetValidWriteIdsRequest(const GetValidWriteIdsRequest& other654) {
+  fullTableNames = other654.fullTableNames;
+  validTxnList = other654.validTxnList;
+}
+GetValidWriteIdsRequest& GetValidWriteIdsRequest::operator=(const GetValidWriteIdsRequest& other655) {
+  fullTableNames = other655.fullTableNames;
+  validTxnList = other655.validTxnList;
+=======
+<<<<<<< HEAD
+GetValidWriteIdsRequest::GetValidWriteIdsRequest(const GetValidWriteIdsRequest& other634) {
+  fullTableNames = other634.fullTableNames;
+  validTxnList = other634.validTxnList;
+}
+GetValidWriteIdsRequest& GetValidWriteIdsRequest::operator=(const GetValidWriteIdsRequest& other635) {
+  fullTableNames = other635.fullTableNames;
+  validTxnList = other635.validTxnList;
+=======
+GetValidWriteIdsRequest::GetValidWriteIdsRequest(const GetValidWriteIdsRequest& other653) {
+  fullTableNames = other653.fullTableNames;
+  validTxnList = other653.validTxnList;
+}
+GetValidWriteIdsRequest& GetValidWriteIdsRequest::operator=(const GetValidWriteIdsRequest& other654) {
+  fullTableNames = other654.fullTableNames;
+  validTxnList = other654.validTxnList;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void GetValidWriteIdsRequest::printTo(std::ostream& out) const {
@@ -16625,6 +17247,7 @@ uint32_t TableValidWriteIds::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->invalidWriteIds.clear();
+<<<<<<< HEAD
             uint32_t _size674;
             ::apache::thrift::protocol::TType _etype677;
             xfer += iprot->readListBegin(_etype677, _size674);
@@ -16633,6 +17256,38 @@ uint32_t TableValidWriteIds::read(::apache::thrift::protocol::TProtocol* iprot) 
             for (_i678 = 0; _i678 < _size674; ++_i678)
             {
               xfer += iprot->readI64(this->invalidWriteIds[_i678]);
+=======
+<<<<<<< HEAD
+            uint32_t _size656;
+            ::apache::thrift::protocol::TType _etype659;
+            xfer += iprot->readListBegin(_etype659, _size656);
+            this->invalidWriteIds.resize(_size656);
+            uint32_t _i660;
+            for (_i660 = 0; _i660 < _size656; ++_i660)
+            {
+              xfer += iprot->readI64(this->invalidWriteIds[_i660]);
+=======
+<<<<<<< HEAD
+            uint32_t _size636;
+            ::apache::thrift::protocol::TType _etype639;
+            xfer += iprot->readListBegin(_etype639, _size636);
+            this->invalidWriteIds.resize(_size636);
+            uint32_t _i640;
+            for (_i640 = 0; _i640 < _size636; ++_i640)
+            {
+              xfer += iprot->readI64(this->invalidWriteIds[_i640]);
+=======
+            uint32_t _size655;
+            ::apache::thrift::protocol::TType _etype658;
+            xfer += iprot->readListBegin(_etype658, _size655);
+            this->invalidWriteIds.resize(_size655);
+            uint32_t _i659;
+            for (_i659 = 0; _i659 < _size655; ++_i659)
+            {
+              xfer += iprot->readI64(this->invalidWriteIds[_i659]);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -16693,10 +17348,31 @@ uint32_t TableValidWriteIds::write(::apache::thrift::protocol::TProtocol* oprot)
   xfer += oprot->writeFieldBegin("invalidWriteIds", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->invalidWriteIds.size()));
+<<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter679;
     for (_iter679 = this->invalidWriteIds.begin(); _iter679 != this->invalidWriteIds.end(); ++_iter679)
     {
       xfer += oprot->writeI64((*_iter679));
+=======
+<<<<<<< HEAD
+    std::vector<int64_t> ::const_iterator _iter661;
+    for (_iter661 = this->invalidWriteIds.begin(); _iter661 != this->invalidWriteIds.end(); ++_iter661)
+    {
+      xfer += oprot->writeI64((*_iter661));
+=======
+<<<<<<< HEAD
+    std::vector<int64_t> ::const_iterator _iter641;
+    for (_iter641 = this->invalidWriteIds.begin(); _iter641 != this->invalidWriteIds.end(); ++_iter641)
+    {
+      xfer += oprot->writeI64((*_iter641));
+=======
+    std::vector<int64_t> ::const_iterator _iter660;
+    for (_iter660 = this->invalidWriteIds.begin(); _iter660 != this->invalidWriteIds.end(); ++_iter660)
+    {
+      xfer += oprot->writeI64((*_iter660));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -16726,6 +17402,7 @@ void swap(TableValidWriteIds &a, TableValidWriteIds &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 TableValidWriteIds::TableValidWriteIds(const TableValidWriteIds& other680) {
   fullTableName = other680.fullTableName;
   writeIdHighWaterMark = other680.writeIdHighWaterMark;
@@ -16741,6 +17418,56 @@ TableValidWriteIds& TableValidWriteIds::operator=(const TableValidWriteIds& othe
   minOpenWriteId = other681.minOpenWriteId;
   abortedBits = other681.abortedBits;
   __isset = other681.__isset;
+=======
+<<<<<<< HEAD
+TableValidWriteIds::TableValidWriteIds(const TableValidWriteIds& other662) {
+=======
+<<<<<<< HEAD
+TableValidWriteIds::TableValidWriteIds(const TableValidWriteIds& other642) {
+  fullTableName = other642.fullTableName;
+  writeIdHighWaterMark = other642.writeIdHighWaterMark;
+  invalidWriteIds = other642.invalidWriteIds;
+  minOpenWriteId = other642.minOpenWriteId;
+  abortedBits = other642.abortedBits;
+  __isset = other642.__isset;
+}
+TableValidWriteIds& TableValidWriteIds::operator=(const TableValidWriteIds& other643) {
+  fullTableName = other643.fullTableName;
+  writeIdHighWaterMark = other643.writeIdHighWaterMark;
+  invalidWriteIds = other643.invalidWriteIds;
+  minOpenWriteId = other643.minOpenWriteId;
+  abortedBits = other643.abortedBits;
+  __isset = other643.__isset;
+=======
+TableValidWriteIds::TableValidWriteIds(const TableValidWriteIds& other661) {
+  fullTableName = other661.fullTableName;
+  writeIdHighWaterMark = other661.writeIdHighWaterMark;
+  invalidWriteIds = other661.invalidWriteIds;
+  minOpenWriteId = other661.minOpenWriteId;
+  abortedBits = other661.abortedBits;
+  __isset = other661.__isset;
+}
+TableValidWriteIds& TableValidWriteIds::operator=(const TableValidWriteIds& other662) {
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+  fullTableName = other662.fullTableName;
+  writeIdHighWaterMark = other662.writeIdHighWaterMark;
+  invalidWriteIds = other662.invalidWriteIds;
+  minOpenWriteId = other662.minOpenWriteId;
+  abortedBits = other662.abortedBits;
+  __isset = other662.__isset;
+<<<<<<< HEAD
+}
+TableValidWriteIds& TableValidWriteIds::operator=(const TableValidWriteIds& other663) {
+  fullTableName = other663.fullTableName;
+  writeIdHighWaterMark = other663.writeIdHighWaterMark;
+  invalidWriteIds = other663.invalidWriteIds;
+  minOpenWriteId = other663.minOpenWriteId;
+  abortedBits = other663.abortedBits;
+  __isset = other663.__isset;
+=======
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void TableValidWriteIds::printTo(std::ostream& out) const {
@@ -16789,6 +17516,7 @@ uint32_t GetValidWriteIdsResponse::read(::apache::thrift::protocol::TProtocol* i
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->tblValidWriteIds.clear();
+<<<<<<< HEAD
             uint32_t _size682;
             ::apache::thrift::protocol::TType _etype685;
             xfer += iprot->readListBegin(_etype685, _size682);
@@ -16797,6 +17525,38 @@ uint32_t GetValidWriteIdsResponse::read(::apache::thrift::protocol::TProtocol* i
             for (_i686 = 0; _i686 < _size682; ++_i686)
             {
               xfer += this->tblValidWriteIds[_i686].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size664;
+            ::apache::thrift::protocol::TType _etype667;
+            xfer += iprot->readListBegin(_etype667, _size664);
+            this->tblValidWriteIds.resize(_size664);
+            uint32_t _i668;
+            for (_i668 = 0; _i668 < _size664; ++_i668)
+            {
+              xfer += this->tblValidWriteIds[_i668].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size644;
+            ::apache::thrift::protocol::TType _etype647;
+            xfer += iprot->readListBegin(_etype647, _size644);
+            this->tblValidWriteIds.resize(_size644);
+            uint32_t _i648;
+            for (_i648 = 0; _i648 < _size644; ++_i648)
+            {
+              xfer += this->tblValidWriteIds[_i648].read(iprot);
+=======
+            uint32_t _size663;
+            ::apache::thrift::protocol::TType _etype666;
+            xfer += iprot->readListBegin(_etype666, _size663);
+            this->tblValidWriteIds.resize(_size663);
+            uint32_t _i667;
+            for (_i667 = 0; _i667 < _size663; ++_i667)
+            {
+              xfer += this->tblValidWriteIds[_i667].read(iprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -16827,10 +17587,31 @@ uint32_t GetValidWriteIdsResponse::write(::apache::thrift::protocol::TProtocol* 
   xfer += oprot->writeFieldBegin("tblValidWriteIds", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->tblValidWriteIds.size()));
+<<<<<<< HEAD
     std::vector<TableValidWriteIds> ::const_iterator _iter687;
     for (_iter687 = this->tblValidWriteIds.begin(); _iter687 != this->tblValidWriteIds.end(); ++_iter687)
     {
       xfer += (*_iter687).write(oprot);
+=======
+<<<<<<< HEAD
+    std::vector<TableValidWriteIds> ::const_iterator _iter669;
+    for (_iter669 = this->tblValidWriteIds.begin(); _iter669 != this->tblValidWriteIds.end(); ++_iter669)
+    {
+      xfer += (*_iter669).write(oprot);
+=======
+<<<<<<< HEAD
+    std::vector<TableValidWriteIds> ::const_iterator _iter649;
+    for (_iter649 = this->tblValidWriteIds.begin(); _iter649 != this->tblValidWriteIds.end(); ++_iter649)
+    {
+      xfer += (*_iter649).write(oprot);
+=======
+    std::vector<TableValidWriteIds> ::const_iterator _iter668;
+    for (_iter668 = this->tblValidWriteIds.begin(); _iter668 != this->tblValidWriteIds.end(); ++_iter668)
+    {
+      xfer += (*_iter668).write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -16846,11 +17627,35 @@ void swap(GetValidWriteIdsResponse &a, GetValidWriteIdsResponse &b) {
   swap(a.tblValidWriteIds, b.tblValidWriteIds);
 }
 
+<<<<<<< HEAD
 GetValidWriteIdsResponse::GetValidWriteIdsResponse(const GetValidWriteIdsResponse& other688) {
   tblValidWriteIds = other688.tblValidWriteIds;
 }
 GetValidWriteIdsResponse& GetValidWriteIdsResponse::operator=(const GetValidWriteIdsResponse& other689) {
   tblValidWriteIds = other689.tblValidWriteIds;
+=======
+<<<<<<< HEAD
+GetValidWriteIdsResponse::GetValidWriteIdsResponse(const GetValidWriteIdsResponse& other670) {
+  tblValidWriteIds = other670.tblValidWriteIds;
+}
+GetValidWriteIdsResponse& GetValidWriteIdsResponse::operator=(const GetValidWriteIdsResponse& other671) {
+  tblValidWriteIds = other671.tblValidWriteIds;
+=======
+<<<<<<< HEAD
+GetValidWriteIdsResponse::GetValidWriteIdsResponse(const GetValidWriteIdsResponse& other650) {
+  tblValidWriteIds = other650.tblValidWriteIds;
+}
+GetValidWriteIdsResponse& GetValidWriteIdsResponse::operator=(const GetValidWriteIdsResponse& other651) {
+  tblValidWriteIds = other651.tblValidWriteIds;
+=======
+GetValidWriteIdsResponse::GetValidWriteIdsResponse(const GetValidWriteIdsResponse& other669) {
+  tblValidWriteIds = other669.tblValidWriteIds;
+}
+GetValidWriteIdsResponse& GetValidWriteIdsResponse::operator=(const GetValidWriteIdsResponse& other670) {
+  tblValidWriteIds = other670.tblValidWriteIds;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void GetValidWriteIdsResponse::printTo(std::ostream& out) const {
@@ -16905,6 +17710,7 @@ uint32_t AllocateTableWriteIdsRequest::read(::apache::thrift::protocol::TProtoco
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->txnIds.clear();
+<<<<<<< HEAD
             uint32_t _size690;
             ::apache::thrift::protocol::TType _etype693;
             xfer += iprot->readListBegin(_etype693, _size690);
@@ -16913,6 +17719,38 @@ uint32_t AllocateTableWriteIdsRequest::read(::apache::thrift::protocol::TProtoco
             for (_i694 = 0; _i694 < _size690; ++_i694)
             {
               xfer += iprot->readI64(this->txnIds[_i694]);
+=======
+<<<<<<< HEAD
+            uint32_t _size672;
+            ::apache::thrift::protocol::TType _etype675;
+            xfer += iprot->readListBegin(_etype675, _size672);
+            this->txnIds.resize(_size672);
+            uint32_t _i676;
+            for (_i676 = 0; _i676 < _size672; ++_i676)
+            {
+              xfer += iprot->readI64(this->txnIds[_i676]);
+=======
+<<<<<<< HEAD
+            uint32_t _size652;
+            ::apache::thrift::protocol::TType _etype655;
+            xfer += iprot->readListBegin(_etype655, _size652);
+            this->txnIds.resize(_size652);
+            uint32_t _i656;
+            for (_i656 = 0; _i656 < _size652; ++_i656)
+            {
+              xfer += iprot->readI64(this->txnIds[_i656]);
+=======
+            uint32_t _size671;
+            ::apache::thrift::protocol::TType _etype674;
+            xfer += iprot->readListBegin(_etype674, _size671);
+            this->txnIds.resize(_size671);
+            uint32_t _i675;
+            for (_i675 = 0; _i675 < _size671; ++_i675)
+            {
+              xfer += iprot->readI64(this->txnIds[_i675]);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -16963,10 +17801,31 @@ uint32_t AllocateTableWriteIdsRequest::write(::apache::thrift::protocol::TProtoc
   xfer += oprot->writeFieldBegin("txnIds", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->txnIds.size()));
+<<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter695;
     for (_iter695 = this->txnIds.begin(); _iter695 != this->txnIds.end(); ++_iter695)
     {
       xfer += oprot->writeI64((*_iter695));
+=======
+<<<<<<< HEAD
+    std::vector<int64_t> ::const_iterator _iter677;
+    for (_iter677 = this->txnIds.begin(); _iter677 != this->txnIds.end(); ++_iter677)
+    {
+      xfer += oprot->writeI64((*_iter677));
+=======
+<<<<<<< HEAD
+    std::vector<int64_t> ::const_iterator _iter657;
+    for (_iter657 = this->txnIds.begin(); _iter657 != this->txnIds.end(); ++_iter657)
+    {
+      xfer += oprot->writeI64((*_iter657));
+=======
+    std::vector<int64_t> ::const_iterator _iter676;
+    for (_iter676 = this->txnIds.begin(); _iter676 != this->txnIds.end(); ++_iter676)
+    {
+      xfer += oprot->writeI64((*_iter676));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -16992,6 +17851,7 @@ void swap(AllocateTableWriteIdsRequest &a, AllocateTableWriteIdsRequest &b) {
   swap(a.tableName, b.tableName);
 }
 
+<<<<<<< HEAD
 AllocateTableWriteIdsRequest::AllocateTableWriteIdsRequest(const AllocateTableWriteIdsRequest& other696) {
   txnIds = other696.txnIds;
   dbName = other696.dbName;
@@ -17001,6 +17861,41 @@ AllocateTableWriteIdsRequest& AllocateTableWriteIdsRequest::operator=(const Allo
   txnIds = other697.txnIds;
   dbName = other697.dbName;
   tableName = other697.tableName;
+=======
+<<<<<<< HEAD
+AllocateTableWriteIdsRequest::AllocateTableWriteIdsRequest(const AllocateTableWriteIdsRequest& other678) {
+  txnIds = other678.txnIds;
+  dbName = other678.dbName;
+  tableName = other678.tableName;
+}
+AllocateTableWriteIdsRequest& AllocateTableWriteIdsRequest::operator=(const AllocateTableWriteIdsRequest& other679) {
+  txnIds = other679.txnIds;
+  dbName = other679.dbName;
+  tableName = other679.tableName;
+=======
+<<<<<<< HEAD
+AllocateTableWriteIdsRequest::AllocateTableWriteIdsRequest(const AllocateTableWriteIdsRequest& other658) {
+  txnIds = other658.txnIds;
+  dbName = other658.dbName;
+  tableName = other658.tableName;
+}
+AllocateTableWriteIdsRequest& AllocateTableWriteIdsRequest::operator=(const AllocateTableWriteIdsRequest& other659) {
+  txnIds = other659.txnIds;
+  dbName = other659.dbName;
+  tableName = other659.tableName;
+=======
+AllocateTableWriteIdsRequest::AllocateTableWriteIdsRequest(const AllocateTableWriteIdsRequest& other677) {
+  txnIds = other677.txnIds;
+  dbName = other677.dbName;
+  tableName = other677.tableName;
+}
+AllocateTableWriteIdsRequest& AllocateTableWriteIdsRequest::operator=(const AllocateTableWriteIdsRequest& other678) {
+  txnIds = other678.txnIds;
+  dbName = other678.dbName;
+  tableName = other678.tableName;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void AllocateTableWriteIdsRequest::printTo(std::ostream& out) const {
@@ -17104,6 +17999,7 @@ void swap(TxnToWriteId &a, TxnToWriteId &b) {
   swap(a.writeId, b.writeId);
 }
 
+<<<<<<< HEAD
 TxnToWriteId::TxnToWriteId(const TxnToWriteId& other698) {
   txnId = other698.txnId;
   writeId = other698.writeId;
@@ -17111,6 +18007,35 @@ TxnToWriteId::TxnToWriteId(const TxnToWriteId& other698) {
 TxnToWriteId& TxnToWriteId::operator=(const TxnToWriteId& other699) {
   txnId = other699.txnId;
   writeId = other699.writeId;
+=======
+<<<<<<< HEAD
+TxnToWriteId::TxnToWriteId(const TxnToWriteId& other680) {
+  txnId = other680.txnId;
+  writeId = other680.writeId;
+}
+TxnToWriteId& TxnToWriteId::operator=(const TxnToWriteId& other681) {
+  txnId = other681.txnId;
+  writeId = other681.writeId;
+=======
+<<<<<<< HEAD
+TxnToWriteId::TxnToWriteId(const TxnToWriteId& other660) {
+  txnId = other660.txnId;
+  writeId = other660.writeId;
+}
+TxnToWriteId& TxnToWriteId::operator=(const TxnToWriteId& other661) {
+  txnId = other661.txnId;
+  writeId = other661.writeId;
+=======
+TxnToWriteId::TxnToWriteId(const TxnToWriteId& other679) {
+  txnId = other679.txnId;
+  writeId = other679.writeId;
+}
+TxnToWriteId& TxnToWriteId::operator=(const TxnToWriteId& other680) {
+  txnId = other680.txnId;
+  writeId = other680.writeId;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void TxnToWriteId::printTo(std::ostream& out) const {
@@ -17156,6 +18081,7 @@ uint32_t AllocateTableWriteIdsResponse::read(::apache::thrift::protocol::TProtoc
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->txnToWriteIds.clear();
+<<<<<<< HEAD
             uint32_t _size700;
             ::apache::thrift::protocol::TType _etype703;
             xfer += iprot->readListBegin(_etype703, _size700);
@@ -17164,6 +18090,38 @@ uint32_t AllocateTableWriteIdsResponse::read(::apache::thrift::protocol::TProtoc
             for (_i704 = 0; _i704 < _size700; ++_i704)
             {
               xfer += this->txnToWriteIds[_i704].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size682;
+            ::apache::thrift::protocol::TType _etype685;
+            xfer += iprot->readListBegin(_etype685, _size682);
+            this->txnToWriteIds.resize(_size682);
+            uint32_t _i686;
+            for (_i686 = 0; _i686 < _size682; ++_i686)
+            {
+              xfer += this->txnToWriteIds[_i686].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size662;
+            ::apache::thrift::protocol::TType _etype665;
+            xfer += iprot->readListBegin(_etype665, _size662);
+            this->txnToWriteIds.resize(_size662);
+            uint32_t _i666;
+            for (_i666 = 0; _i666 < _size662; ++_i666)
+            {
+              xfer += this->txnToWriteIds[_i666].read(iprot);
+=======
+            uint32_t _size681;
+            ::apache::thrift::protocol::TType _etype684;
+            xfer += iprot->readListBegin(_etype684, _size681);
+            this->txnToWriteIds.resize(_size681);
+            uint32_t _i685;
+            for (_i685 = 0; _i685 < _size681; ++_i685)
+            {
+              xfer += this->txnToWriteIds[_i685].read(iprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -17194,10 +18152,31 @@ uint32_t AllocateTableWriteIdsResponse::write(::apache::thrift::protocol::TProto
   xfer += oprot->writeFieldBegin("txnToWriteIds", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->txnToWriteIds.size()));
+<<<<<<< HEAD
     std::vector<TxnToWriteId> ::const_iterator _iter705;
     for (_iter705 = this->txnToWriteIds.begin(); _iter705 != this->txnToWriteIds.end(); ++_iter705)
     {
       xfer += (*_iter705).write(oprot);
+=======
+<<<<<<< HEAD
+    std::vector<TxnToWriteId> ::const_iterator _iter687;
+    for (_iter687 = this->txnToWriteIds.begin(); _iter687 != this->txnToWriteIds.end(); ++_iter687)
+    {
+      xfer += (*_iter687).write(oprot);
+=======
+<<<<<<< HEAD
+    std::vector<TxnToWriteId> ::const_iterator _iter667;
+    for (_iter667 = this->txnToWriteIds.begin(); _iter667 != this->txnToWriteIds.end(); ++_iter667)
+    {
+      xfer += (*_iter667).write(oprot);
+=======
+    std::vector<TxnToWriteId> ::const_iterator _iter686;
+    for (_iter686 = this->txnToWriteIds.begin(); _iter686 != this->txnToWriteIds.end(); ++_iter686)
+    {
+      xfer += (*_iter686).write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -17213,11 +18192,35 @@ void swap(AllocateTableWriteIdsResponse &a, AllocateTableWriteIdsResponse &b) {
   swap(a.txnToWriteIds, b.txnToWriteIds);
 }
 
+<<<<<<< HEAD
 AllocateTableWriteIdsResponse::AllocateTableWriteIdsResponse(const AllocateTableWriteIdsResponse& other706) {
   txnToWriteIds = other706.txnToWriteIds;
 }
 AllocateTableWriteIdsResponse& AllocateTableWriteIdsResponse::operator=(const AllocateTableWriteIdsResponse& other707) {
   txnToWriteIds = other707.txnToWriteIds;
+=======
+<<<<<<< HEAD
+AllocateTableWriteIdsResponse::AllocateTableWriteIdsResponse(const AllocateTableWriteIdsResponse& other688) {
+  txnToWriteIds = other688.txnToWriteIds;
+}
+AllocateTableWriteIdsResponse& AllocateTableWriteIdsResponse::operator=(const AllocateTableWriteIdsResponse& other689) {
+  txnToWriteIds = other689.txnToWriteIds;
+=======
+<<<<<<< HEAD
+AllocateTableWriteIdsResponse::AllocateTableWriteIdsResponse(const AllocateTableWriteIdsResponse& other668) {
+  txnToWriteIds = other668.txnToWriteIds;
+}
+AllocateTableWriteIdsResponse& AllocateTableWriteIdsResponse::operator=(const AllocateTableWriteIdsResponse& other669) {
+  txnToWriteIds = other669.txnToWriteIds;
+=======
+AllocateTableWriteIdsResponse::AllocateTableWriteIdsResponse(const AllocateTableWriteIdsResponse& other687) {
+  txnToWriteIds = other687.txnToWriteIds;
+}
+AllocateTableWriteIdsResponse& AllocateTableWriteIdsResponse::operator=(const AllocateTableWriteIdsResponse& other688) {
+  txnToWriteIds = other688.txnToWriteIds;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void AllocateTableWriteIdsResponse::printTo(std::ostream& out) const {
@@ -17295,9 +18298,27 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
           int32_t ecast708;
           xfer += iprot->readI32(ecast708);
           this->type = (LockType::type)ecast708;
+=======
+<<<<<<< HEAD
+          int32_t ecast690;
+          xfer += iprot->readI32(ecast690);
+          this->type = (LockType::type)ecast690;
+=======
+<<<<<<< HEAD
+          int32_t ecast670;
+          xfer += iprot->readI32(ecast670);
+          this->type = (LockType::type)ecast670;
+=======
+          int32_t ecast689;
+          xfer += iprot->readI32(ecast689);
+          this->type = (LockType::type)ecast689;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           isset_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -17305,9 +18326,27 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
           int32_t ecast709;
           xfer += iprot->readI32(ecast709);
           this->level = (LockLevel::type)ecast709;
+=======
+<<<<<<< HEAD
+          int32_t ecast691;
+          xfer += iprot->readI32(ecast691);
+          this->level = (LockLevel::type)ecast691;
+=======
+<<<<<<< HEAD
+          int32_t ecast671;
+          xfer += iprot->readI32(ecast671);
+          this->level = (LockLevel::type)ecast671;
+=======
+          int32_t ecast690;
+          xfer += iprot->readI32(ecast690);
+          this->level = (LockLevel::type)ecast690;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           isset_level = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -17339,9 +18378,27 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 6:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
           int32_t ecast710;
           xfer += iprot->readI32(ecast710);
           this->operationType = (DataOperationType::type)ecast710;
+=======
+<<<<<<< HEAD
+          int32_t ecast692;
+          xfer += iprot->readI32(ecast692);
+          this->operationType = (DataOperationType::type)ecast692;
+=======
+<<<<<<< HEAD
+          int32_t ecast672;
+          xfer += iprot->readI32(ecast672);
+          this->operationType = (DataOperationType::type)ecast672;
+=======
+          int32_t ecast691;
+          xfer += iprot->readI32(ecast691);
+          this->operationType = (DataOperationType::type)ecast691;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           this->__isset.operationType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -17441,6 +18498,7 @@ void swap(LockComponent &a, LockComponent &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 LockComponent::LockComponent(const LockComponent& other711) {
   type = other711.type;
   level = other711.level;
@@ -17462,6 +18520,74 @@ LockComponent& LockComponent::operator=(const LockComponent& other712) {
   isTransactional = other712.isTransactional;
   isDynamicPartitionWrite = other712.isDynamicPartitionWrite;
   __isset = other712.__isset;
+=======
+<<<<<<< HEAD
+LockComponent::LockComponent(const LockComponent& other693) {
+=======
+<<<<<<< HEAD
+LockComponent::LockComponent(const LockComponent& other673) {
+  type = other673.type;
+  level = other673.level;
+  dbname = other673.dbname;
+  tablename = other673.tablename;
+  partitionname = other673.partitionname;
+  operationType = other673.operationType;
+  isTransactional = other673.isTransactional;
+  isDynamicPartitionWrite = other673.isDynamicPartitionWrite;
+  __isset = other673.__isset;
+}
+LockComponent& LockComponent::operator=(const LockComponent& other674) {
+  type = other674.type;
+  level = other674.level;
+  dbname = other674.dbname;
+  tablename = other674.tablename;
+  partitionname = other674.partitionname;
+  operationType = other674.operationType;
+  isTransactional = other674.isTransactional;
+  isDynamicPartitionWrite = other674.isDynamicPartitionWrite;
+  __isset = other674.__isset;
+=======
+LockComponent::LockComponent(const LockComponent& other692) {
+  type = other692.type;
+  level = other692.level;
+  dbname = other692.dbname;
+  tablename = other692.tablename;
+  partitionname = other692.partitionname;
+  operationType = other692.operationType;
+  isAcid = other692.isAcid;
+  isDynamicPartitionWrite = other692.isDynamicPartitionWrite;
+  __isset = other692.__isset;
+}
+LockComponent& LockComponent::operator=(const LockComponent& other693) {
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+  type = other693.type;
+  level = other693.level;
+  dbname = other693.dbname;
+  tablename = other693.tablename;
+  partitionname = other693.partitionname;
+  operationType = other693.operationType;
+<<<<<<< HEAD
+  isTransactional = other693.isTransactional;
+  isDynamicPartitionWrite = other693.isDynamicPartitionWrite;
+  __isset = other693.__isset;
+}
+LockComponent& LockComponent::operator=(const LockComponent& other694) {
+  type = other694.type;
+  level = other694.level;
+  dbname = other694.dbname;
+  tablename = other694.tablename;
+  partitionname = other694.partitionname;
+  operationType = other694.operationType;
+  isTransactional = other694.isTransactional;
+  isDynamicPartitionWrite = other694.isDynamicPartitionWrite;
+  __isset = other694.__isset;
+=======
+  isAcid = other693.isAcid;
+  isDynamicPartitionWrite = other693.isDynamicPartitionWrite;
+  __isset = other693.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void LockComponent::printTo(std::ostream& out) const {
@@ -17533,6 +18659,7 @@ uint32_t LockRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->component.clear();
+<<<<<<< HEAD
             uint32_t _size713;
             ::apache::thrift::protocol::TType _etype716;
             xfer += iprot->readListBegin(_etype716, _size713);
@@ -17541,6 +18668,38 @@ uint32_t LockRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
             for (_i717 = 0; _i717 < _size713; ++_i717)
             {
               xfer += this->component[_i717].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size695;
+            ::apache::thrift::protocol::TType _etype698;
+            xfer += iprot->readListBegin(_etype698, _size695);
+            this->component.resize(_size695);
+            uint32_t _i699;
+            for (_i699 = 0; _i699 < _size695; ++_i699)
+            {
+              xfer += this->component[_i699].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size675;
+            ::apache::thrift::protocol::TType _etype678;
+            xfer += iprot->readListBegin(_etype678, _size675);
+            this->component.resize(_size675);
+            uint32_t _i679;
+            for (_i679 = 0; _i679 < _size675; ++_i679)
+            {
+              xfer += this->component[_i679].read(iprot);
+=======
+            uint32_t _size694;
+            ::apache::thrift::protocol::TType _etype697;
+            xfer += iprot->readListBegin(_etype697, _size694);
+            this->component.resize(_size694);
+            uint32_t _i698;
+            for (_i698 = 0; _i698 < _size694; ++_i698)
+            {
+              xfer += this->component[_i698].read(iprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -17607,10 +18766,31 @@ uint32_t LockRequest::write(::apache::thrift::protocol::TProtocol* oprot) const 
   xfer += oprot->writeFieldBegin("component", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->component.size()));
+<<<<<<< HEAD
     std::vector<LockComponent> ::const_iterator _iter718;
     for (_iter718 = this->component.begin(); _iter718 != this->component.end(); ++_iter718)
     {
       xfer += (*_iter718).write(oprot);
+=======
+<<<<<<< HEAD
+    std::vector<LockComponent> ::const_iterator _iter700;
+    for (_iter700 = this->component.begin(); _iter700 != this->component.end(); ++_iter700)
+    {
+      xfer += (*_iter700).write(oprot);
+=======
+<<<<<<< HEAD
+    std::vector<LockComponent> ::const_iterator _iter680;
+    for (_iter680 = this->component.begin(); _iter680 != this->component.end(); ++_iter680)
+    {
+      xfer += (*_iter680).write(oprot);
+=======
+    std::vector<LockComponent> ::const_iterator _iter699;
+    for (_iter699 = this->component.begin(); _iter699 != this->component.end(); ++_iter699)
+    {
+      xfer += (*_iter699).write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -17649,6 +18829,7 @@ void swap(LockRequest &a, LockRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 LockRequest::LockRequest(const LockRequest& other719) {
   component = other719.component;
   txnid = other719.txnid;
@@ -17664,6 +18845,56 @@ LockRequest& LockRequest::operator=(const LockRequest& other720) {
   hostname = other720.hostname;
   agentInfo = other720.agentInfo;
   __isset = other720.__isset;
+=======
+<<<<<<< HEAD
+LockRequest::LockRequest(const LockRequest& other701) {
+=======
+<<<<<<< HEAD
+LockRequest::LockRequest(const LockRequest& other681) {
+  component = other681.component;
+  txnid = other681.txnid;
+  user = other681.user;
+  hostname = other681.hostname;
+  agentInfo = other681.agentInfo;
+  __isset = other681.__isset;
+}
+LockRequest& LockRequest::operator=(const LockRequest& other682) {
+  component = other682.component;
+  txnid = other682.txnid;
+  user = other682.user;
+  hostname = other682.hostname;
+  agentInfo = other682.agentInfo;
+  __isset = other682.__isset;
+=======
+LockRequest::LockRequest(const LockRequest& other700) {
+  component = other700.component;
+  txnid = other700.txnid;
+  user = other700.user;
+  hostname = other700.hostname;
+  agentInfo = other700.agentInfo;
+  __isset = other700.__isset;
+}
+LockRequest& LockRequest::operator=(const LockRequest& other701) {
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+  component = other701.component;
+  txnid = other701.txnid;
+  user = other701.user;
+  hostname = other701.hostname;
+  agentInfo = other701.agentInfo;
+  __isset = other701.__isset;
+<<<<<<< HEAD
+}
+LockRequest& LockRequest::operator=(const LockRequest& other702) {
+  component = other702.component;
+  txnid = other702.txnid;
+  user = other702.user;
+  hostname = other702.hostname;
+  agentInfo = other702.agentInfo;
+  __isset = other702.__isset;
+=======
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void LockRequest::printTo(std::ostream& out) const {
@@ -17723,9 +18954,27 @@ uint32_t LockResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
           int32_t ecast721;
           xfer += iprot->readI32(ecast721);
           this->state = (LockState::type)ecast721;
+=======
+<<<<<<< HEAD
+          int32_t ecast703;
+          xfer += iprot->readI32(ecast703);
+          this->state = (LockState::type)ecast703;
+=======
+<<<<<<< HEAD
+          int32_t ecast683;
+          xfer += iprot->readI32(ecast683);
+          this->state = (LockState::type)ecast683;
+=======
+          int32_t ecast702;
+          xfer += iprot->readI32(ecast702);
+          this->state = (LockState::type)ecast702;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           isset_state = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -17771,6 +19020,7 @@ void swap(LockResponse &a, LockResponse &b) {
   swap(a.state, b.state);
 }
 
+<<<<<<< HEAD
 LockResponse::LockResponse(const LockResponse& other722) {
   lockid = other722.lockid;
   state = other722.state;
@@ -17778,6 +19028,35 @@ LockResponse::LockResponse(const LockResponse& other722) {
 LockResponse& LockResponse::operator=(const LockResponse& other723) {
   lockid = other723.lockid;
   state = other723.state;
+=======
+<<<<<<< HEAD
+LockResponse::LockResponse(const LockResponse& other704) {
+  lockid = other704.lockid;
+  state = other704.state;
+}
+LockResponse& LockResponse::operator=(const LockResponse& other705) {
+  lockid = other705.lockid;
+  state = other705.state;
+=======
+<<<<<<< HEAD
+LockResponse::LockResponse(const LockResponse& other684) {
+  lockid = other684.lockid;
+  state = other684.state;
+}
+LockResponse& LockResponse::operator=(const LockResponse& other685) {
+  lockid = other685.lockid;
+  state = other685.state;
+=======
+LockResponse::LockResponse(const LockResponse& other703) {
+  lockid = other703.lockid;
+  state = other703.state;
+}
+LockResponse& LockResponse::operator=(const LockResponse& other704) {
+  lockid = other704.lockid;
+  state = other704.state;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void LockResponse::printTo(std::ostream& out) const {
@@ -17899,6 +19178,7 @@ void swap(CheckLockRequest &a, CheckLockRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 CheckLockRequest::CheckLockRequest(const CheckLockRequest& other724) {
   lockid = other724.lockid;
   txnid = other724.txnid;
@@ -17910,6 +19190,47 @@ CheckLockRequest& CheckLockRequest::operator=(const CheckLockRequest& other725) 
   txnid = other725.txnid;
   elapsed_ms = other725.elapsed_ms;
   __isset = other725.__isset;
+=======
+<<<<<<< HEAD
+CheckLockRequest::CheckLockRequest(const CheckLockRequest& other706) {
+  lockid = other706.lockid;
+  txnid = other706.txnid;
+  elapsed_ms = other706.elapsed_ms;
+  __isset = other706.__isset;
+}
+CheckLockRequest& CheckLockRequest::operator=(const CheckLockRequest& other707) {
+  lockid = other707.lockid;
+  txnid = other707.txnid;
+  elapsed_ms = other707.elapsed_ms;
+  __isset = other707.__isset;
+=======
+<<<<<<< HEAD
+CheckLockRequest::CheckLockRequest(const CheckLockRequest& other686) {
+  lockid = other686.lockid;
+  txnid = other686.txnid;
+  elapsed_ms = other686.elapsed_ms;
+  __isset = other686.__isset;
+}
+CheckLockRequest& CheckLockRequest::operator=(const CheckLockRequest& other687) {
+  lockid = other687.lockid;
+  txnid = other687.txnid;
+  elapsed_ms = other687.elapsed_ms;
+  __isset = other687.__isset;
+=======
+CheckLockRequest::CheckLockRequest(const CheckLockRequest& other705) {
+  lockid = other705.lockid;
+  txnid = other705.txnid;
+  elapsed_ms = other705.elapsed_ms;
+  __isset = other705.__isset;
+}
+CheckLockRequest& CheckLockRequest::operator=(const CheckLockRequest& other706) {
+  lockid = other706.lockid;
+  txnid = other706.txnid;
+  elapsed_ms = other706.elapsed_ms;
+  __isset = other706.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void CheckLockRequest::printTo(std::ostream& out) const {
@@ -17993,11 +19314,35 @@ void swap(UnlockRequest &a, UnlockRequest &b) {
   swap(a.lockid, b.lockid);
 }
 
+<<<<<<< HEAD
 UnlockRequest::UnlockRequest(const UnlockRequest& other726) {
   lockid = other726.lockid;
 }
 UnlockRequest& UnlockRequest::operator=(const UnlockRequest& other727) {
   lockid = other727.lockid;
+=======
+<<<<<<< HEAD
+UnlockRequest::UnlockRequest(const UnlockRequest& other708) {
+  lockid = other708.lockid;
+}
+UnlockRequest& UnlockRequest::operator=(const UnlockRequest& other709) {
+  lockid = other709.lockid;
+=======
+<<<<<<< HEAD
+UnlockRequest::UnlockRequest(const UnlockRequest& other688) {
+  lockid = other688.lockid;
+}
+UnlockRequest& UnlockRequest::operator=(const UnlockRequest& other689) {
+  lockid = other689.lockid;
+=======
+UnlockRequest::UnlockRequest(const UnlockRequest& other707) {
+  lockid = other707.lockid;
+}
+UnlockRequest& UnlockRequest::operator=(const UnlockRequest& other708) {
+  lockid = other708.lockid;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void UnlockRequest::printTo(std::ostream& out) const {
@@ -18136,6 +19481,7 @@ void swap(ShowLocksRequest &a, ShowLocksRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 ShowLocksRequest::ShowLocksRequest(const ShowLocksRequest& other728) {
   dbname = other728.dbname;
   tablename = other728.tablename;
@@ -18149,6 +19495,53 @@ ShowLocksRequest& ShowLocksRequest::operator=(const ShowLocksRequest& other729) 
   partname = other729.partname;
   isExtended = other729.isExtended;
   __isset = other729.__isset;
+=======
+<<<<<<< HEAD
+ShowLocksRequest::ShowLocksRequest(const ShowLocksRequest& other710) {
+  dbname = other710.dbname;
+  tablename = other710.tablename;
+  partname = other710.partname;
+  isExtended = other710.isExtended;
+  __isset = other710.__isset;
+}
+ShowLocksRequest& ShowLocksRequest::operator=(const ShowLocksRequest& other711) {
+  dbname = other711.dbname;
+  tablename = other711.tablename;
+  partname = other711.partname;
+  isExtended = other711.isExtended;
+  __isset = other711.__isset;
+=======
+<<<<<<< HEAD
+ShowLocksRequest::ShowLocksRequest(const ShowLocksRequest& other690) {
+  dbname = other690.dbname;
+  tablename = other690.tablename;
+  partname = other690.partname;
+  isExtended = other690.isExtended;
+  __isset = other690.__isset;
+}
+ShowLocksRequest& ShowLocksRequest::operator=(const ShowLocksRequest& other691) {
+  dbname = other691.dbname;
+  tablename = other691.tablename;
+  partname = other691.partname;
+  isExtended = other691.isExtended;
+  __isset = other691.__isset;
+=======
+ShowLocksRequest::ShowLocksRequest(const ShowLocksRequest& other709) {
+  dbname = other709.dbname;
+  tablename = other709.tablename;
+  partname = other709.partname;
+  isExtended = other709.isExtended;
+  __isset = other709.__isset;
+}
+ShowLocksRequest& ShowLocksRequest::operator=(const ShowLocksRequest& other710) {
+  dbname = other710.dbname;
+  tablename = other710.tablename;
+  partname = other710.partname;
+  isExtended = other710.isExtended;
+  __isset = other710.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void ShowLocksRequest::printTo(std::ostream& out) const {
@@ -18301,9 +19694,27 @@ uint32_t ShowLocksResponseElement::read(::apache::thrift::protocol::TProtocol* i
         break;
       case 5:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
           int32_t ecast730;
           xfer += iprot->readI32(ecast730);
           this->state = (LockState::type)ecast730;
+=======
+<<<<<<< HEAD
+          int32_t ecast712;
+          xfer += iprot->readI32(ecast712);
+          this->state = (LockState::type)ecast712;
+=======
+<<<<<<< HEAD
+          int32_t ecast692;
+          xfer += iprot->readI32(ecast692);
+          this->state = (LockState::type)ecast692;
+=======
+          int32_t ecast711;
+          xfer += iprot->readI32(ecast711);
+          this->state = (LockState::type)ecast711;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           isset_state = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -18311,9 +19722,27 @@ uint32_t ShowLocksResponseElement::read(::apache::thrift::protocol::TProtocol* i
         break;
       case 6:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
           int32_t ecast731;
           xfer += iprot->readI32(ecast731);
           this->type = (LockType::type)ecast731;
+=======
+<<<<<<< HEAD
+          int32_t ecast713;
+          xfer += iprot->readI32(ecast713);
+          this->type = (LockType::type)ecast713;
+=======
+<<<<<<< HEAD
+          int32_t ecast693;
+          xfer += iprot->readI32(ecast693);
+          this->type = (LockType::type)ecast693;
+=======
+          int32_t ecast712;
+          xfer += iprot->readI32(ecast712);
+          this->type = (LockType::type)ecast712;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           isset_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -18529,6 +19958,7 @@ void swap(ShowLocksResponseElement &a, ShowLocksResponseElement &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 ShowLocksResponseElement::ShowLocksResponseElement(const ShowLocksResponseElement& other732) {
   lockid = other732.lockid;
   dbname = other732.dbname;
@@ -18566,6 +19996,111 @@ ShowLocksResponseElement& ShowLocksResponseElement::operator=(const ShowLocksRes
   blockedByIntId = other733.blockedByIntId;
   lockIdInternal = other733.lockIdInternal;
   __isset = other733.__isset;
+=======
+<<<<<<< HEAD
+ShowLocksResponseElement::ShowLocksResponseElement(const ShowLocksResponseElement& other714) {
+=======
+<<<<<<< HEAD
+ShowLocksResponseElement::ShowLocksResponseElement(const ShowLocksResponseElement& other694) {
+  lockid = other694.lockid;
+  dbname = other694.dbname;
+  tablename = other694.tablename;
+  partname = other694.partname;
+  state = other694.state;
+  type = other694.type;
+  txnid = other694.txnid;
+  lastheartbeat = other694.lastheartbeat;
+  acquiredat = other694.acquiredat;
+  user = other694.user;
+  hostname = other694.hostname;
+  heartbeatCount = other694.heartbeatCount;
+  agentInfo = other694.agentInfo;
+  blockedByExtId = other694.blockedByExtId;
+  blockedByIntId = other694.blockedByIntId;
+  lockIdInternal = other694.lockIdInternal;
+  __isset = other694.__isset;
+}
+ShowLocksResponseElement& ShowLocksResponseElement::operator=(const ShowLocksResponseElement& other695) {
+  lockid = other695.lockid;
+  dbname = other695.dbname;
+  tablename = other695.tablename;
+  partname = other695.partname;
+  state = other695.state;
+  type = other695.type;
+  txnid = other695.txnid;
+  lastheartbeat = other695.lastheartbeat;
+  acquiredat = other695.acquiredat;
+  user = other695.user;
+  hostname = other695.hostname;
+  heartbeatCount = other695.heartbeatCount;
+  agentInfo = other695.agentInfo;
+  blockedByExtId = other695.blockedByExtId;
+  blockedByIntId = other695.blockedByIntId;
+  lockIdInternal = other695.lockIdInternal;
+  __isset = other695.__isset;
+=======
+ShowLocksResponseElement::ShowLocksResponseElement(const ShowLocksResponseElement& other713) {
+  lockid = other713.lockid;
+  dbname = other713.dbname;
+  tablename = other713.tablename;
+  partname = other713.partname;
+  state = other713.state;
+  type = other713.type;
+  txnid = other713.txnid;
+  lastheartbeat = other713.lastheartbeat;
+  acquiredat = other713.acquiredat;
+  user = other713.user;
+  hostname = other713.hostname;
+  heartbeatCount = other713.heartbeatCount;
+  agentInfo = other713.agentInfo;
+  blockedByExtId = other713.blockedByExtId;
+  blockedByIntId = other713.blockedByIntId;
+  lockIdInternal = other713.lockIdInternal;
+  __isset = other713.__isset;
+}
+ShowLocksResponseElement& ShowLocksResponseElement::operator=(const ShowLocksResponseElement& other714) {
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+  lockid = other714.lockid;
+  dbname = other714.dbname;
+  tablename = other714.tablename;
+  partname = other714.partname;
+  state = other714.state;
+  type = other714.type;
+  txnid = other714.txnid;
+  lastheartbeat = other714.lastheartbeat;
+  acquiredat = other714.acquiredat;
+  user = other714.user;
+  hostname = other714.hostname;
+  heartbeatCount = other714.heartbeatCount;
+  agentInfo = other714.agentInfo;
+  blockedByExtId = other714.blockedByExtId;
+  blockedByIntId = other714.blockedByIntId;
+  lockIdInternal = other714.lockIdInternal;
+  __isset = other714.__isset;
+<<<<<<< HEAD
+}
+ShowLocksResponseElement& ShowLocksResponseElement::operator=(const ShowLocksResponseElement& other715) {
+  lockid = other715.lockid;
+  dbname = other715.dbname;
+  tablename = other715.tablename;
+  partname = other715.partname;
+  state = other715.state;
+  type = other715.type;
+  txnid = other715.txnid;
+  lastheartbeat = other715.lastheartbeat;
+  acquiredat = other715.acquiredat;
+  user = other715.user;
+  hostname = other715.hostname;
+  heartbeatCount = other715.heartbeatCount;
+  agentInfo = other715.agentInfo;
+  blockedByExtId = other715.blockedByExtId;
+  blockedByIntId = other715.blockedByIntId;
+  lockIdInternal = other715.lockIdInternal;
+  __isset = other715.__isset;
+=======
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void ShowLocksResponseElement::printTo(std::ostream& out) const {
@@ -18624,6 +20159,7 @@ uint32_t ShowLocksResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->locks.clear();
+<<<<<<< HEAD
             uint32_t _size734;
             ::apache::thrift::protocol::TType _etype737;
             xfer += iprot->readListBegin(_etype737, _size734);
@@ -18632,6 +20168,38 @@ uint32_t ShowLocksResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
             for (_i738 = 0; _i738 < _size734; ++_i738)
             {
               xfer += this->locks[_i738].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size716;
+            ::apache::thrift::protocol::TType _etype719;
+            xfer += iprot->readListBegin(_etype719, _size716);
+            this->locks.resize(_size716);
+            uint32_t _i720;
+            for (_i720 = 0; _i720 < _size716; ++_i720)
+            {
+              xfer += this->locks[_i720].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size696;
+            ::apache::thrift::protocol::TType _etype699;
+            xfer += iprot->readListBegin(_etype699, _size696);
+            this->locks.resize(_size696);
+            uint32_t _i700;
+            for (_i700 = 0; _i700 < _size696; ++_i700)
+            {
+              xfer += this->locks[_i700].read(iprot);
+=======
+            uint32_t _size715;
+            ::apache::thrift::protocol::TType _etype718;
+            xfer += iprot->readListBegin(_etype718, _size715);
+            this->locks.resize(_size715);
+            uint32_t _i719;
+            for (_i719 = 0; _i719 < _size715; ++_i719)
+            {
+              xfer += this->locks[_i719].read(iprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -18660,10 +20228,31 @@ uint32_t ShowLocksResponse::write(::apache::thrift::protocol::TProtocol* oprot) 
   xfer += oprot->writeFieldBegin("locks", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->locks.size()));
+<<<<<<< HEAD
     std::vector<ShowLocksResponseElement> ::const_iterator _iter739;
     for (_iter739 = this->locks.begin(); _iter739 != this->locks.end(); ++_iter739)
     {
       xfer += (*_iter739).write(oprot);
+=======
+<<<<<<< HEAD
+    std::vector<ShowLocksResponseElement> ::const_iterator _iter721;
+    for (_iter721 = this->locks.begin(); _iter721 != this->locks.end(); ++_iter721)
+    {
+      xfer += (*_iter721).write(oprot);
+=======
+<<<<<<< HEAD
+    std::vector<ShowLocksResponseElement> ::const_iterator _iter701;
+    for (_iter701 = this->locks.begin(); _iter701 != this->locks.end(); ++_iter701)
+    {
+      xfer += (*_iter701).write(oprot);
+=======
+    std::vector<ShowLocksResponseElement> ::const_iterator _iter720;
+    for (_iter720 = this->locks.begin(); _iter720 != this->locks.end(); ++_iter720)
+    {
+      xfer += (*_iter720).write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -18680,6 +20269,7 @@ void swap(ShowLocksResponse &a, ShowLocksResponse &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 ShowLocksResponse::ShowLocksResponse(const ShowLocksResponse& other740) {
   locks = other740.locks;
   __isset = other740.__isset;
@@ -18687,6 +20277,35 @@ ShowLocksResponse::ShowLocksResponse(const ShowLocksResponse& other740) {
 ShowLocksResponse& ShowLocksResponse::operator=(const ShowLocksResponse& other741) {
   locks = other741.locks;
   __isset = other741.__isset;
+=======
+<<<<<<< HEAD
+ShowLocksResponse::ShowLocksResponse(const ShowLocksResponse& other722) {
+  locks = other722.locks;
+  __isset = other722.__isset;
+}
+ShowLocksResponse& ShowLocksResponse::operator=(const ShowLocksResponse& other723) {
+  locks = other723.locks;
+  __isset = other723.__isset;
+=======
+<<<<<<< HEAD
+ShowLocksResponse::ShowLocksResponse(const ShowLocksResponse& other702) {
+  locks = other702.locks;
+  __isset = other702.__isset;
+}
+ShowLocksResponse& ShowLocksResponse::operator=(const ShowLocksResponse& other703) {
+  locks = other703.locks;
+  __isset = other703.__isset;
+=======
+ShowLocksResponse::ShowLocksResponse(const ShowLocksResponse& other721) {
+  locks = other721.locks;
+  __isset = other721.__isset;
+}
+ShowLocksResponse& ShowLocksResponse::operator=(const ShowLocksResponse& other722) {
+  locks = other722.locks;
+  __isset = other722.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void ShowLocksResponse::printTo(std::ostream& out) const {
@@ -18787,6 +20406,7 @@ void swap(HeartbeatRequest &a, HeartbeatRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 HeartbeatRequest::HeartbeatRequest(const HeartbeatRequest& other742) {
   lockid = other742.lockid;
   txnid = other742.txnid;
@@ -18796,6 +20416,41 @@ HeartbeatRequest& HeartbeatRequest::operator=(const HeartbeatRequest& other743) 
   lockid = other743.lockid;
   txnid = other743.txnid;
   __isset = other743.__isset;
+=======
+<<<<<<< HEAD
+HeartbeatRequest::HeartbeatRequest(const HeartbeatRequest& other724) {
+  lockid = other724.lockid;
+  txnid = other724.txnid;
+  __isset = other724.__isset;
+}
+HeartbeatRequest& HeartbeatRequest::operator=(const HeartbeatRequest& other725) {
+  lockid = other725.lockid;
+  txnid = other725.txnid;
+  __isset = other725.__isset;
+=======
+<<<<<<< HEAD
+HeartbeatRequest::HeartbeatRequest(const HeartbeatRequest& other704) {
+  lockid = other704.lockid;
+  txnid = other704.txnid;
+  __isset = other704.__isset;
+}
+HeartbeatRequest& HeartbeatRequest::operator=(const HeartbeatRequest& other705) {
+  lockid = other705.lockid;
+  txnid = other705.txnid;
+  __isset = other705.__isset;
+=======
+HeartbeatRequest::HeartbeatRequest(const HeartbeatRequest& other723) {
+  lockid = other723.lockid;
+  txnid = other723.txnid;
+  __isset = other723.__isset;
+}
+HeartbeatRequest& HeartbeatRequest::operator=(const HeartbeatRequest& other724) {
+  lockid = other724.lockid;
+  txnid = other724.txnid;
+  __isset = other724.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void HeartbeatRequest::printTo(std::ostream& out) const {
@@ -18898,6 +20553,7 @@ void swap(HeartbeatTxnRangeRequest &a, HeartbeatTxnRangeRequest &b) {
   swap(a.max, b.max);
 }
 
+<<<<<<< HEAD
 HeartbeatTxnRangeRequest::HeartbeatTxnRangeRequest(const HeartbeatTxnRangeRequest& other744) {
   min = other744.min;
   max = other744.max;
@@ -18905,6 +20561,35 @@ HeartbeatTxnRangeRequest::HeartbeatTxnRangeRequest(const HeartbeatTxnRangeReques
 HeartbeatTxnRangeRequest& HeartbeatTxnRangeRequest::operator=(const HeartbeatTxnRangeRequest& other745) {
   min = other745.min;
   max = other745.max;
+=======
+<<<<<<< HEAD
+HeartbeatTxnRangeRequest::HeartbeatTxnRangeRequest(const HeartbeatTxnRangeRequest& other726) {
+  min = other726.min;
+  max = other726.max;
+}
+HeartbeatTxnRangeRequest& HeartbeatTxnRangeRequest::operator=(const HeartbeatTxnRangeRequest& other727) {
+  min = other727.min;
+  max = other727.max;
+=======
+<<<<<<< HEAD
+HeartbeatTxnRangeRequest::HeartbeatTxnRangeRequest(const HeartbeatTxnRangeRequest& other706) {
+  min = other706.min;
+  max = other706.max;
+}
+HeartbeatTxnRangeRequest& HeartbeatTxnRangeRequest::operator=(const HeartbeatTxnRangeRequest& other707) {
+  min = other707.min;
+  max = other707.max;
+=======
+HeartbeatTxnRangeRequest::HeartbeatTxnRangeRequest(const HeartbeatTxnRangeRequest& other725) {
+  min = other725.min;
+  max = other725.max;
+}
+HeartbeatTxnRangeRequest& HeartbeatTxnRangeRequest::operator=(const HeartbeatTxnRangeRequest& other726) {
+  min = other726.min;
+  max = other726.max;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void HeartbeatTxnRangeRequest::printTo(std::ostream& out) const {
@@ -18955,6 +20640,7 @@ uint32_t HeartbeatTxnRangeResponse::read(::apache::thrift::protocol::TProtocol* 
         if (ftype == ::apache::thrift::protocol::T_SET) {
           {
             this->aborted.clear();
+<<<<<<< HEAD
             uint32_t _size746;
             ::apache::thrift::protocol::TType _etype749;
             xfer += iprot->readSetBegin(_etype749, _size746);
@@ -18964,6 +20650,41 @@ uint32_t HeartbeatTxnRangeResponse::read(::apache::thrift::protocol::TProtocol* 
               int64_t _elem751;
               xfer += iprot->readI64(_elem751);
               this->aborted.insert(_elem751);
+=======
+<<<<<<< HEAD
+            uint32_t _size728;
+            ::apache::thrift::protocol::TType _etype731;
+            xfer += iprot->readSetBegin(_etype731, _size728);
+            uint32_t _i732;
+            for (_i732 = 0; _i732 < _size728; ++_i732)
+            {
+              int64_t _elem733;
+              xfer += iprot->readI64(_elem733);
+              this->aborted.insert(_elem733);
+=======
+<<<<<<< HEAD
+            uint32_t _size708;
+            ::apache::thrift::protocol::TType _etype711;
+            xfer += iprot->readSetBegin(_etype711, _size708);
+            uint32_t _i712;
+            for (_i712 = 0; _i712 < _size708; ++_i712)
+            {
+              int64_t _elem713;
+              xfer += iprot->readI64(_elem713);
+              this->aborted.insert(_elem713);
+=======
+            uint32_t _size727;
+            ::apache::thrift::protocol::TType _etype730;
+            xfer += iprot->readSetBegin(_etype730, _size727);
+            uint32_t _i731;
+            for (_i731 = 0; _i731 < _size727; ++_i731)
+            {
+              int64_t _elem732;
+              xfer += iprot->readI64(_elem732);
+              this->aborted.insert(_elem732);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readSetEnd();
           }
@@ -18976,6 +20697,7 @@ uint32_t HeartbeatTxnRangeResponse::read(::apache::thrift::protocol::TProtocol* 
         if (ftype == ::apache::thrift::protocol::T_SET) {
           {
             this->nosuch.clear();
+<<<<<<< HEAD
             uint32_t _size752;
             ::apache::thrift::protocol::TType _etype755;
             xfer += iprot->readSetBegin(_etype755, _size752);
@@ -18985,6 +20707,41 @@ uint32_t HeartbeatTxnRangeResponse::read(::apache::thrift::protocol::TProtocol* 
               int64_t _elem757;
               xfer += iprot->readI64(_elem757);
               this->nosuch.insert(_elem757);
+=======
+<<<<<<< HEAD
+            uint32_t _size734;
+            ::apache::thrift::protocol::TType _etype737;
+            xfer += iprot->readSetBegin(_etype737, _size734);
+            uint32_t _i738;
+            for (_i738 = 0; _i738 < _size734; ++_i738)
+            {
+              int64_t _elem739;
+              xfer += iprot->readI64(_elem739);
+              this->nosuch.insert(_elem739);
+=======
+<<<<<<< HEAD
+            uint32_t _size714;
+            ::apache::thrift::protocol::TType _etype717;
+            xfer += iprot->readSetBegin(_etype717, _size714);
+            uint32_t _i718;
+            for (_i718 = 0; _i718 < _size714; ++_i718)
+            {
+              int64_t _elem719;
+              xfer += iprot->readI64(_elem719);
+              this->nosuch.insert(_elem719);
+=======
+            uint32_t _size733;
+            ::apache::thrift::protocol::TType _etype736;
+            xfer += iprot->readSetBegin(_etype736, _size733);
+            uint32_t _i737;
+            for (_i737 = 0; _i737 < _size733; ++_i737)
+            {
+              int64_t _elem738;
+              xfer += iprot->readI64(_elem738);
+              this->nosuch.insert(_elem738);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readSetEnd();
           }
@@ -19017,10 +20774,31 @@ uint32_t HeartbeatTxnRangeResponse::write(::apache::thrift::protocol::TProtocol*
   xfer += oprot->writeFieldBegin("aborted", ::apache::thrift::protocol::T_SET, 1);
   {
     xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->aborted.size()));
+<<<<<<< HEAD
     std::set<int64_t> ::const_iterator _iter758;
     for (_iter758 = this->aborted.begin(); _iter758 != this->aborted.end(); ++_iter758)
     {
       xfer += oprot->writeI64((*_iter758));
+=======
+<<<<<<< HEAD
+    std::set<int64_t> ::const_iterator _iter740;
+    for (_iter740 = this->aborted.begin(); _iter740 != this->aborted.end(); ++_iter740)
+    {
+      xfer += oprot->writeI64((*_iter740));
+=======
+<<<<<<< HEAD
+    std::set<int64_t> ::const_iterator _iter720;
+    for (_iter720 = this->aborted.begin(); _iter720 != this->aborted.end(); ++_iter720)
+    {
+      xfer += oprot->writeI64((*_iter720));
+=======
+    std::set<int64_t> ::const_iterator _iter739;
+    for (_iter739 = this->aborted.begin(); _iter739 != this->aborted.end(); ++_iter739)
+    {
+      xfer += oprot->writeI64((*_iter739));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeSetEnd();
   }
@@ -19029,10 +20807,31 @@ uint32_t HeartbeatTxnRangeResponse::write(::apache::thrift::protocol::TProtocol*
   xfer += oprot->writeFieldBegin("nosuch", ::apache::thrift::protocol::T_SET, 2);
   {
     xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->nosuch.size()));
+<<<<<<< HEAD
     std::set<int64_t> ::const_iterator _iter759;
     for (_iter759 = this->nosuch.begin(); _iter759 != this->nosuch.end(); ++_iter759)
     {
       xfer += oprot->writeI64((*_iter759));
+=======
+<<<<<<< HEAD
+    std::set<int64_t> ::const_iterator _iter741;
+    for (_iter741 = this->nosuch.begin(); _iter741 != this->nosuch.end(); ++_iter741)
+    {
+      xfer += oprot->writeI64((*_iter741));
+=======
+<<<<<<< HEAD
+    std::set<int64_t> ::const_iterator _iter721;
+    for (_iter721 = this->nosuch.begin(); _iter721 != this->nosuch.end(); ++_iter721)
+    {
+      xfer += oprot->writeI64((*_iter721));
+=======
+    std::set<int64_t> ::const_iterator _iter740;
+    for (_iter740 = this->nosuch.begin(); _iter740 != this->nosuch.end(); ++_iter740)
+    {
+      xfer += oprot->writeI64((*_iter740));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeSetEnd();
   }
@@ -19049,6 +20848,7 @@ void swap(HeartbeatTxnRangeResponse &a, HeartbeatTxnRangeResponse &b) {
   swap(a.nosuch, b.nosuch);
 }
 
+<<<<<<< HEAD
 HeartbeatTxnRangeResponse::HeartbeatTxnRangeResponse(const HeartbeatTxnRangeResponse& other760) {
   aborted = other760.aborted;
   nosuch = other760.nosuch;
@@ -19056,6 +20856,35 @@ HeartbeatTxnRangeResponse::HeartbeatTxnRangeResponse(const HeartbeatTxnRangeResp
 HeartbeatTxnRangeResponse& HeartbeatTxnRangeResponse::operator=(const HeartbeatTxnRangeResponse& other761) {
   aborted = other761.aborted;
   nosuch = other761.nosuch;
+=======
+<<<<<<< HEAD
+HeartbeatTxnRangeResponse::HeartbeatTxnRangeResponse(const HeartbeatTxnRangeResponse& other742) {
+  aborted = other742.aborted;
+  nosuch = other742.nosuch;
+}
+HeartbeatTxnRangeResponse& HeartbeatTxnRangeResponse::operator=(const HeartbeatTxnRangeResponse& other743) {
+  aborted = other743.aborted;
+  nosuch = other743.nosuch;
+=======
+<<<<<<< HEAD
+HeartbeatTxnRangeResponse::HeartbeatTxnRangeResponse(const HeartbeatTxnRangeResponse& other722) {
+  aborted = other722.aborted;
+  nosuch = other722.nosuch;
+}
+HeartbeatTxnRangeResponse& HeartbeatTxnRangeResponse::operator=(const HeartbeatTxnRangeResponse& other723) {
+  aborted = other723.aborted;
+  nosuch = other723.nosuch;
+=======
+HeartbeatTxnRangeResponse::HeartbeatTxnRangeResponse(const HeartbeatTxnRangeResponse& other741) {
+  aborted = other741.aborted;
+  nosuch = other741.nosuch;
+}
+HeartbeatTxnRangeResponse& HeartbeatTxnRangeResponse::operator=(const HeartbeatTxnRangeResponse& other742) {
+  aborted = other742.aborted;
+  nosuch = other742.nosuch;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void HeartbeatTxnRangeResponse::printTo(std::ostream& out) const {
@@ -19148,9 +20977,27 @@ uint32_t CompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 4:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
           int32_t ecast762;
           xfer += iprot->readI32(ecast762);
           this->type = (CompactionType::type)ecast762;
+=======
+<<<<<<< HEAD
+          int32_t ecast744;
+          xfer += iprot->readI32(ecast744);
+          this->type = (CompactionType::type)ecast744;
+=======
+<<<<<<< HEAD
+          int32_t ecast724;
+          xfer += iprot->readI32(ecast724);
+          this->type = (CompactionType::type)ecast724;
+=======
+          int32_t ecast743;
+          xfer += iprot->readI32(ecast743);
+          this->type = (CompactionType::type)ecast743;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           isset_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -19168,6 +21015,7 @@ uint32_t CompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->properties.clear();
+<<<<<<< HEAD
             uint32_t _size763;
             ::apache::thrift::protocol::TType _ktype764;
             ::apache::thrift::protocol::TType _vtype765;
@@ -19179,6 +21027,47 @@ uint32_t CompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
               xfer += iprot->readString(_key768);
               std::string& _val769 = this->properties[_key768];
               xfer += iprot->readString(_val769);
+=======
+<<<<<<< HEAD
+            uint32_t _size745;
+            ::apache::thrift::protocol::TType _ktype746;
+            ::apache::thrift::protocol::TType _vtype747;
+            xfer += iprot->readMapBegin(_ktype746, _vtype747, _size745);
+            uint32_t _i749;
+            for (_i749 = 0; _i749 < _size745; ++_i749)
+            {
+              std::string _key750;
+              xfer += iprot->readString(_key750);
+              std::string& _val751 = this->properties[_key750];
+              xfer += iprot->readString(_val751);
+=======
+<<<<<<< HEAD
+            uint32_t _size725;
+            ::apache::thrift::protocol::TType _ktype726;
+            ::apache::thrift::protocol::TType _vtype727;
+            xfer += iprot->readMapBegin(_ktype726, _vtype727, _size725);
+            uint32_t _i729;
+            for (_i729 = 0; _i729 < _size725; ++_i729)
+            {
+              std::string _key730;
+              xfer += iprot->readString(_key730);
+              std::string& _val731 = this->properties[_key730];
+              xfer += iprot->readString(_val731);
+=======
+            uint32_t _size744;
+            ::apache::thrift::protocol::TType _ktype745;
+            ::apache::thrift::protocol::TType _vtype746;
+            xfer += iprot->readMapBegin(_ktype745, _vtype746, _size744);
+            uint32_t _i748;
+            for (_i748 = 0; _i748 < _size744; ++_i748)
+            {
+              std::string _key749;
+              xfer += iprot->readString(_key749);
+              std::string& _val750 = this->properties[_key749];
+              xfer += iprot->readString(_val750);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readMapEnd();
           }
@@ -19236,11 +21125,35 @@ uint32_t CompactionRequest::write(::apache::thrift::protocol::TProtocol* oprot) 
     xfer += oprot->writeFieldBegin("properties", ::apache::thrift::protocol::T_MAP, 6);
     {
       xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->properties.size()));
+<<<<<<< HEAD
       std::map<std::string, std::string> ::const_iterator _iter770;
       for (_iter770 = this->properties.begin(); _iter770 != this->properties.end(); ++_iter770)
       {
         xfer += oprot->writeString(_iter770->first);
         xfer += oprot->writeString(_iter770->second);
+=======
+<<<<<<< HEAD
+      std::map<std::string, std::string> ::const_iterator _iter752;
+      for (_iter752 = this->properties.begin(); _iter752 != this->properties.end(); ++_iter752)
+      {
+        xfer += oprot->writeString(_iter752->first);
+        xfer += oprot->writeString(_iter752->second);
+=======
+<<<<<<< HEAD
+      std::map<std::string, std::string> ::const_iterator _iter732;
+      for (_iter732 = this->properties.begin(); _iter732 != this->properties.end(); ++_iter732)
+      {
+        xfer += oprot->writeString(_iter732->first);
+        xfer += oprot->writeString(_iter732->second);
+=======
+      std::map<std::string, std::string> ::const_iterator _iter751;
+      for (_iter751 = this->properties.begin(); _iter751 != this->properties.end(); ++_iter751)
+      {
+        xfer += oprot->writeString(_iter751->first);
+        xfer += oprot->writeString(_iter751->second);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       }
       xfer += oprot->writeMapEnd();
     }
@@ -19262,6 +21175,7 @@ void swap(CompactionRequest &a, CompactionRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 CompactionRequest::CompactionRequest(const CompactionRequest& other771) {
   dbname = other771.dbname;
   tablename = other771.tablename;
@@ -19279,6 +21193,61 @@ CompactionRequest& CompactionRequest::operator=(const CompactionRequest& other77
   runas = other772.runas;
   properties = other772.properties;
   __isset = other772.__isset;
+=======
+<<<<<<< HEAD
+CompactionRequest::CompactionRequest(const CompactionRequest& other753) {
+=======
+<<<<<<< HEAD
+CompactionRequest::CompactionRequest(const CompactionRequest& other733) {
+  dbname = other733.dbname;
+  tablename = other733.tablename;
+  partitionname = other733.partitionname;
+  type = other733.type;
+  runas = other733.runas;
+  properties = other733.properties;
+  __isset = other733.__isset;
+}
+CompactionRequest& CompactionRequest::operator=(const CompactionRequest& other734) {
+  dbname = other734.dbname;
+  tablename = other734.tablename;
+  partitionname = other734.partitionname;
+  type = other734.type;
+  runas = other734.runas;
+  properties = other734.properties;
+  __isset = other734.__isset;
+=======
+CompactionRequest::CompactionRequest(const CompactionRequest& other752) {
+  dbname = other752.dbname;
+  tablename = other752.tablename;
+  partitionname = other752.partitionname;
+  type = other752.type;
+  runas = other752.runas;
+  properties = other752.properties;
+  __isset = other752.__isset;
+}
+CompactionRequest& CompactionRequest::operator=(const CompactionRequest& other753) {
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+  dbname = other753.dbname;
+  tablename = other753.tablename;
+  partitionname = other753.partitionname;
+  type = other753.type;
+  runas = other753.runas;
+  properties = other753.properties;
+  __isset = other753.__isset;
+<<<<<<< HEAD
+}
+CompactionRequest& CompactionRequest::operator=(const CompactionRequest& other754) {
+  dbname = other754.dbname;
+  tablename = other754.tablename;
+  partitionname = other754.partitionname;
+  type = other754.type;
+  runas = other754.runas;
+  properties = other754.properties;
+  __isset = other754.__isset;
+=======
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void CompactionRequest::printTo(std::ostream& out) const {
@@ -19405,6 +21374,7 @@ void swap(CompactionResponse &a, CompactionResponse &b) {
   swap(a.accepted, b.accepted);
 }
 
+<<<<<<< HEAD
 CompactionResponse::CompactionResponse(const CompactionResponse& other773) {
   id = other773.id;
   state = other773.state;
@@ -19414,6 +21384,41 @@ CompactionResponse& CompactionResponse::operator=(const CompactionResponse& othe
   id = other774.id;
   state = other774.state;
   accepted = other774.accepted;
+=======
+<<<<<<< HEAD
+CompactionResponse::CompactionResponse(const CompactionResponse& other755) {
+  id = other755.id;
+  state = other755.state;
+  accepted = other755.accepted;
+}
+CompactionResponse& CompactionResponse::operator=(const CompactionResponse& other756) {
+  id = other756.id;
+  state = other756.state;
+  accepted = other756.accepted;
+=======
+<<<<<<< HEAD
+CompactionResponse::CompactionResponse(const CompactionResponse& other735) {
+  id = other735.id;
+  state = other735.state;
+  accepted = other735.accepted;
+}
+CompactionResponse& CompactionResponse::operator=(const CompactionResponse& other736) {
+  id = other736.id;
+  state = other736.state;
+  accepted = other736.accepted;
+=======
+CompactionResponse::CompactionResponse(const CompactionResponse& other754) {
+  id = other754.id;
+  state = other754.state;
+  accepted = other754.accepted;
+}
+CompactionResponse& CompactionResponse::operator=(const CompactionResponse& other755) {
+  id = other755.id;
+  state = other755.state;
+  accepted = other755.accepted;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void CompactionResponse::printTo(std::ostream& out) const {
@@ -19474,11 +21479,35 @@ void swap(ShowCompactRequest &a, ShowCompactRequest &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 ShowCompactRequest::ShowCompactRequest(const ShowCompactRequest& other775) {
   (void) other775;
 }
 ShowCompactRequest& ShowCompactRequest::operator=(const ShowCompactRequest& other776) {
   (void) other776;
+=======
+<<<<<<< HEAD
+ShowCompactRequest::ShowCompactRequest(const ShowCompactRequest& other757) {
+  (void) other757;
+}
+ShowCompactRequest& ShowCompactRequest::operator=(const ShowCompactRequest& other758) {
+  (void) other758;
+=======
+<<<<<<< HEAD
+ShowCompactRequest::ShowCompactRequest(const ShowCompactRequest& other737) {
+  (void) other737;
+}
+ShowCompactRequest& ShowCompactRequest::operator=(const ShowCompactRequest& other738) {
+  (void) other738;
+=======
+ShowCompactRequest::ShowCompactRequest(const ShowCompactRequest& other756) {
+  (void) other756;
+}
+ShowCompactRequest& ShowCompactRequest::operator=(const ShowCompactRequest& other757) {
+  (void) other757;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void ShowCompactRequest::printTo(std::ostream& out) const {
@@ -19604,9 +21633,27 @@ uint32_t ShowCompactResponseElement::read(::apache::thrift::protocol::TProtocol*
         break;
       case 4:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
           int32_t ecast777;
           xfer += iprot->readI32(ecast777);
           this->type = (CompactionType::type)ecast777;
+=======
+<<<<<<< HEAD
+          int32_t ecast759;
+          xfer += iprot->readI32(ecast759);
+          this->type = (CompactionType::type)ecast759;
+=======
+<<<<<<< HEAD
+          int32_t ecast739;
+          xfer += iprot->readI32(ecast739);
+          this->type = (CompactionType::type)ecast739;
+=======
+          int32_t ecast758;
+          xfer += iprot->readI32(ecast758);
+          this->type = (CompactionType::type)ecast758;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           isset_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -19793,6 +21840,7 @@ void swap(ShowCompactResponseElement &a, ShowCompactResponseElement &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponseElement& other778) {
   dbname = other778.dbname;
   tablename = other778.tablename;
@@ -19824,6 +21872,96 @@ ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowComp
   hadoopJobId = other779.hadoopJobId;
   id = other779.id;
   __isset = other779.__isset;
+=======
+<<<<<<< HEAD
+ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponseElement& other760) {
+=======
+<<<<<<< HEAD
+ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponseElement& other740) {
+  dbname = other740.dbname;
+  tablename = other740.tablename;
+  partitionname = other740.partitionname;
+  type = other740.type;
+  state = other740.state;
+  workerid = other740.workerid;
+  start = other740.start;
+  runAs = other740.runAs;
+  hightestTxnId = other740.hightestTxnId;
+  metaInfo = other740.metaInfo;
+  endTime = other740.endTime;
+  hadoopJobId = other740.hadoopJobId;
+  id = other740.id;
+  __isset = other740.__isset;
+}
+ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowCompactResponseElement& other741) {
+  dbname = other741.dbname;
+  tablename = other741.tablename;
+  partitionname = other741.partitionname;
+  type = other741.type;
+  state = other741.state;
+  workerid = other741.workerid;
+  start = other741.start;
+  runAs = other741.runAs;
+  hightestTxnId = other741.hightestTxnId;
+  metaInfo = other741.metaInfo;
+  endTime = other741.endTime;
+  hadoopJobId = other741.hadoopJobId;
+  id = other741.id;
+  __isset = other741.__isset;
+=======
+ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponseElement& other759) {
+  dbname = other759.dbname;
+  tablename = other759.tablename;
+  partitionname = other759.partitionname;
+  type = other759.type;
+  state = other759.state;
+  workerid = other759.workerid;
+  start = other759.start;
+  runAs = other759.runAs;
+  hightestTxnId = other759.hightestTxnId;
+  metaInfo = other759.metaInfo;
+  endTime = other759.endTime;
+  hadoopJobId = other759.hadoopJobId;
+  id = other759.id;
+  __isset = other759.__isset;
+}
+ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowCompactResponseElement& other760) {
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+  dbname = other760.dbname;
+  tablename = other760.tablename;
+  partitionname = other760.partitionname;
+  type = other760.type;
+  state = other760.state;
+  workerid = other760.workerid;
+  start = other760.start;
+  runAs = other760.runAs;
+  hightestTxnId = other760.hightestTxnId;
+  metaInfo = other760.metaInfo;
+  endTime = other760.endTime;
+  hadoopJobId = other760.hadoopJobId;
+  id = other760.id;
+  __isset = other760.__isset;
+<<<<<<< HEAD
+}
+ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowCompactResponseElement& other761) {
+  dbname = other761.dbname;
+  tablename = other761.tablename;
+  partitionname = other761.partitionname;
+  type = other761.type;
+  state = other761.state;
+  workerid = other761.workerid;
+  start = other761.start;
+  runAs = other761.runAs;
+  hightestTxnId = other761.hightestTxnId;
+  metaInfo = other761.metaInfo;
+  endTime = other761.endTime;
+  hadoopJobId = other761.hadoopJobId;
+  id = other761.id;
+  __isset = other761.__isset;
+=======
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void ShowCompactResponseElement::printTo(std::ostream& out) const {
@@ -19880,6 +22018,7 @@ uint32_t ShowCompactResponse::read(::apache::thrift::protocol::TProtocol* iprot)
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->compacts.clear();
+<<<<<<< HEAD
             uint32_t _size780;
             ::apache::thrift::protocol::TType _etype783;
             xfer += iprot->readListBegin(_etype783, _size780);
@@ -19888,6 +22027,38 @@ uint32_t ShowCompactResponse::read(::apache::thrift::protocol::TProtocol* iprot)
             for (_i784 = 0; _i784 < _size780; ++_i784)
             {
               xfer += this->compacts[_i784].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size762;
+            ::apache::thrift::protocol::TType _etype765;
+            xfer += iprot->readListBegin(_etype765, _size762);
+            this->compacts.resize(_size762);
+            uint32_t _i766;
+            for (_i766 = 0; _i766 < _size762; ++_i766)
+            {
+              xfer += this->compacts[_i766].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size742;
+            ::apache::thrift::protocol::TType _etype745;
+            xfer += iprot->readListBegin(_etype745, _size742);
+            this->compacts.resize(_size742);
+            uint32_t _i746;
+            for (_i746 = 0; _i746 < _size742; ++_i746)
+            {
+              xfer += this->compacts[_i746].read(iprot);
+=======
+            uint32_t _size761;
+            ::apache::thrift::protocol::TType _etype764;
+            xfer += iprot->readListBegin(_etype764, _size761);
+            this->compacts.resize(_size761);
+            uint32_t _i765;
+            for (_i765 = 0; _i765 < _size761; ++_i765)
+            {
+              xfer += this->compacts[_i765].read(iprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -19918,10 +22089,31 @@ uint32_t ShowCompactResponse::write(::apache::thrift::protocol::TProtocol* oprot
   xfer += oprot->writeFieldBegin("compacts", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->compacts.size()));
+<<<<<<< HEAD
     std::vector<ShowCompactResponseElement> ::const_iterator _iter785;
     for (_iter785 = this->compacts.begin(); _iter785 != this->compacts.end(); ++_iter785)
     {
       xfer += (*_iter785).write(oprot);
+=======
+<<<<<<< HEAD
+    std::vector<ShowCompactResponseElement> ::const_iterator _iter767;
+    for (_iter767 = this->compacts.begin(); _iter767 != this->compacts.end(); ++_iter767)
+    {
+      xfer += (*_iter767).write(oprot);
+=======
+<<<<<<< HEAD
+    std::vector<ShowCompactResponseElement> ::const_iterator _iter747;
+    for (_iter747 = this->compacts.begin(); _iter747 != this->compacts.end(); ++_iter747)
+    {
+      xfer += (*_iter747).write(oprot);
+=======
+    std::vector<ShowCompactResponseElement> ::const_iterator _iter766;
+    for (_iter766 = this->compacts.begin(); _iter766 != this->compacts.end(); ++_iter766)
+    {
+      xfer += (*_iter766).write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -19937,11 +22129,35 @@ void swap(ShowCompactResponse &a, ShowCompactResponse &b) {
   swap(a.compacts, b.compacts);
 }
 
+<<<<<<< HEAD
 ShowCompactResponse::ShowCompactResponse(const ShowCompactResponse& other786) {
   compacts = other786.compacts;
 }
 ShowCompactResponse& ShowCompactResponse::operator=(const ShowCompactResponse& other787) {
   compacts = other787.compacts;
+=======
+<<<<<<< HEAD
+ShowCompactResponse::ShowCompactResponse(const ShowCompactResponse& other768) {
+  compacts = other768.compacts;
+}
+ShowCompactResponse& ShowCompactResponse::operator=(const ShowCompactResponse& other769) {
+  compacts = other769.compacts;
+=======
+<<<<<<< HEAD
+ShowCompactResponse::ShowCompactResponse(const ShowCompactResponse& other748) {
+  compacts = other748.compacts;
+}
+ShowCompactResponse& ShowCompactResponse::operator=(const ShowCompactResponse& other749) {
+  compacts = other749.compacts;
+=======
+ShowCompactResponse::ShowCompactResponse(const ShowCompactResponse& other767) {
+  compacts = other767.compacts;
+}
+ShowCompactResponse& ShowCompactResponse::operator=(const ShowCompactResponse& other768) {
+  compacts = other768.compacts;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void ShowCompactResponse::printTo(std::ostream& out) const {
@@ -20043,6 +22259,7 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->partitionnames.clear();
+<<<<<<< HEAD
             uint32_t _size788;
             ::apache::thrift::protocol::TType _etype791;
             xfer += iprot->readListBegin(_etype791, _size788);
@@ -20051,6 +22268,38 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
             for (_i792 = 0; _i792 < _size788; ++_i792)
             {
               xfer += iprot->readString(this->partitionnames[_i792]);
+=======
+<<<<<<< HEAD
+            uint32_t _size770;
+            ::apache::thrift::protocol::TType _etype773;
+            xfer += iprot->readListBegin(_etype773, _size770);
+            this->partitionnames.resize(_size770);
+            uint32_t _i774;
+            for (_i774 = 0; _i774 < _size770; ++_i774)
+            {
+              xfer += iprot->readString(this->partitionnames[_i774]);
+=======
+<<<<<<< HEAD
+            uint32_t _size750;
+            ::apache::thrift::protocol::TType _etype753;
+            xfer += iprot->readListBegin(_etype753, _size750);
+            this->partitionnames.resize(_size750);
+            uint32_t _i754;
+            for (_i754 = 0; _i754 < _size750; ++_i754)
+            {
+              xfer += iprot->readString(this->partitionnames[_i754]);
+=======
+            uint32_t _size769;
+            ::apache::thrift::protocol::TType _etype772;
+            xfer += iprot->readListBegin(_etype772, _size769);
+            this->partitionnames.resize(_size769);
+            uint32_t _i773;
+            for (_i773 = 0; _i773 < _size769; ++_i773)
+            {
+              xfer += iprot->readString(this->partitionnames[_i773]);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -20061,9 +22310,27 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
         break;
       case 6:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
           int32_t ecast793;
           xfer += iprot->readI32(ecast793);
           this->operationType = (DataOperationType::type)ecast793;
+=======
+<<<<<<< HEAD
+          int32_t ecast775;
+          xfer += iprot->readI32(ecast775);
+          this->operationType = (DataOperationType::type)ecast775;
+=======
+<<<<<<< HEAD
+          int32_t ecast755;
+          xfer += iprot->readI32(ecast755);
+          this->operationType = (DataOperationType::type)ecast755;
+=======
+          int32_t ecast774;
+          xfer += iprot->readI32(ecast774);
+          this->operationType = (DataOperationType::type)ecast774;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           this->__isset.operationType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -20115,10 +22382,31 @@ uint32_t AddDynamicPartitions::write(::apache::thrift::protocol::TProtocol* opro
   xfer += oprot->writeFieldBegin("partitionnames", ::apache::thrift::protocol::T_LIST, 5);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->partitionnames.size()));
+<<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter794;
     for (_iter794 = this->partitionnames.begin(); _iter794 != this->partitionnames.end(); ++_iter794)
     {
       xfer += oprot->writeString((*_iter794));
+=======
+<<<<<<< HEAD
+    std::vector<std::string> ::const_iterator _iter776;
+    for (_iter776 = this->partitionnames.begin(); _iter776 != this->partitionnames.end(); ++_iter776)
+    {
+      xfer += oprot->writeString((*_iter776));
+=======
+<<<<<<< HEAD
+    std::vector<std::string> ::const_iterator _iter756;
+    for (_iter756 = this->partitionnames.begin(); _iter756 != this->partitionnames.end(); ++_iter756)
+    {
+      xfer += oprot->writeString((*_iter756));
+=======
+    std::vector<std::string> ::const_iterator _iter775;
+    for (_iter775 = this->partitionnames.begin(); _iter775 != this->partitionnames.end(); ++_iter775)
+    {
+      xfer += oprot->writeString((*_iter775));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -20145,6 +22433,7 @@ void swap(AddDynamicPartitions &a, AddDynamicPartitions &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 AddDynamicPartitions::AddDynamicPartitions(const AddDynamicPartitions& other795) {
   txnid = other795.txnid;
   writeid = other795.writeid;
@@ -20162,6 +22451,61 @@ AddDynamicPartitions& AddDynamicPartitions::operator=(const AddDynamicPartitions
   partitionnames = other796.partitionnames;
   operationType = other796.operationType;
   __isset = other796.__isset;
+=======
+<<<<<<< HEAD
+AddDynamicPartitions::AddDynamicPartitions(const AddDynamicPartitions& other777) {
+=======
+<<<<<<< HEAD
+AddDynamicPartitions::AddDynamicPartitions(const AddDynamicPartitions& other757) {
+  txnid = other757.txnid;
+  writeid = other757.writeid;
+  dbname = other757.dbname;
+  tablename = other757.tablename;
+  partitionnames = other757.partitionnames;
+  operationType = other757.operationType;
+  __isset = other757.__isset;
+}
+AddDynamicPartitions& AddDynamicPartitions::operator=(const AddDynamicPartitions& other758) {
+  txnid = other758.txnid;
+  writeid = other758.writeid;
+  dbname = other758.dbname;
+  tablename = other758.tablename;
+  partitionnames = other758.partitionnames;
+  operationType = other758.operationType;
+  __isset = other758.__isset;
+=======
+AddDynamicPartitions::AddDynamicPartitions(const AddDynamicPartitions& other776) {
+  txnid = other776.txnid;
+  writeid = other776.writeid;
+  dbname = other776.dbname;
+  tablename = other776.tablename;
+  partitionnames = other776.partitionnames;
+  operationType = other776.operationType;
+  __isset = other776.__isset;
+}
+AddDynamicPartitions& AddDynamicPartitions::operator=(const AddDynamicPartitions& other777) {
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+  txnid = other777.txnid;
+  writeid = other777.writeid;
+  dbname = other777.dbname;
+  tablename = other777.tablename;
+  partitionnames = other777.partitionnames;
+  operationType = other777.operationType;
+  __isset = other777.__isset;
+<<<<<<< HEAD
+}
+AddDynamicPartitions& AddDynamicPartitions::operator=(const AddDynamicPartitions& other778) {
+  txnid = other778.txnid;
+  writeid = other778.writeid;
+  dbname = other778.dbname;
+  tablename = other778.tablename;
+  partitionnames = other778.partitionnames;
+  operationType = other778.operationType;
+  __isset = other778.__isset;
+=======
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void AddDynamicPartitions::printTo(std::ostream& out) const {
@@ -20344,6 +22688,7 @@ void swap(BasicTxnInfo &a, BasicTxnInfo &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 BasicTxnInfo::BasicTxnInfo(const BasicTxnInfo& other797) {
   isnull = other797.isnull;
   time = other797.time;
@@ -20361,6 +22706,61 @@ BasicTxnInfo& BasicTxnInfo::operator=(const BasicTxnInfo& other798) {
   tablename = other798.tablename;
   partitionname = other798.partitionname;
   __isset = other798.__isset;
+=======
+<<<<<<< HEAD
+BasicTxnInfo::BasicTxnInfo(const BasicTxnInfo& other779) {
+=======
+<<<<<<< HEAD
+BasicTxnInfo::BasicTxnInfo(const BasicTxnInfo& other759) {
+  isnull = other759.isnull;
+  time = other759.time;
+  txnid = other759.txnid;
+  dbname = other759.dbname;
+  tablename = other759.tablename;
+  partitionname = other759.partitionname;
+  __isset = other759.__isset;
+}
+BasicTxnInfo& BasicTxnInfo::operator=(const BasicTxnInfo& other760) {
+  isnull = other760.isnull;
+  time = other760.time;
+  txnid = other760.txnid;
+  dbname = other760.dbname;
+  tablename = other760.tablename;
+  partitionname = other760.partitionname;
+  __isset = other760.__isset;
+=======
+BasicTxnInfo::BasicTxnInfo(const BasicTxnInfo& other778) {
+  isnull = other778.isnull;
+  time = other778.time;
+  txnid = other778.txnid;
+  dbname = other778.dbname;
+  tablename = other778.tablename;
+  partitionname = other778.partitionname;
+  __isset = other778.__isset;
+}
+BasicTxnInfo& BasicTxnInfo::operator=(const BasicTxnInfo& other779) {
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+  isnull = other779.isnull;
+  time = other779.time;
+  txnid = other779.txnid;
+  dbname = other779.dbname;
+  tablename = other779.tablename;
+  partitionname = other779.partitionname;
+  __isset = other779.__isset;
+<<<<<<< HEAD
+}
+BasicTxnInfo& BasicTxnInfo::operator=(const BasicTxnInfo& other780) {
+  isnull = other780.isnull;
+  time = other780.time;
+  txnid = other780.txnid;
+  dbname = other780.dbname;
+  tablename = other780.tablename;
+  partitionname = other780.partitionname;
+  __isset = other780.__isset;
+=======
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void BasicTxnInfo::printTo(std::ostream& out) const {
@@ -20454,6 +22854,7 @@ uint32_t CreationMetadata::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_SET) {
           {
             this->tablesUsed.clear();
+<<<<<<< HEAD
             uint32_t _size799;
             ::apache::thrift::protocol::TType _etype802;
             xfer += iprot->readSetBegin(_etype802, _size799);
@@ -20463,6 +22864,41 @@ uint32_t CreationMetadata::read(::apache::thrift::protocol::TProtocol* iprot) {
               std::string _elem804;
               xfer += iprot->readString(_elem804);
               this->tablesUsed.insert(_elem804);
+=======
+<<<<<<< HEAD
+            uint32_t _size781;
+            ::apache::thrift::protocol::TType _etype784;
+            xfer += iprot->readSetBegin(_etype784, _size781);
+            uint32_t _i785;
+            for (_i785 = 0; _i785 < _size781; ++_i785)
+            {
+              std::string _elem786;
+              xfer += iprot->readString(_elem786);
+              this->tablesUsed.insert(_elem786);
+=======
+<<<<<<< HEAD
+            uint32_t _size761;
+            ::apache::thrift::protocol::TType _etype764;
+            xfer += iprot->readSetBegin(_etype764, _size761);
+            uint32_t _i765;
+            for (_i765 = 0; _i765 < _size761; ++_i765)
+            {
+              std::string _elem766;
+              xfer += iprot->readString(_elem766);
+              this->tablesUsed.insert(_elem766);
+=======
+            uint32_t _size780;
+            ::apache::thrift::protocol::TType _etype783;
+            xfer += iprot->readSetBegin(_etype783, _size780);
+            uint32_t _i784;
+            for (_i784 = 0; _i784 < _size780; ++_i784)
+            {
+              std::string _elem785;
+              xfer += iprot->readString(_elem785);
+              this->tablesUsed.insert(_elem785);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readSetEnd();
           }
@@ -20519,10 +22955,31 @@ uint32_t CreationMetadata::write(::apache::thrift::protocol::TProtocol* oprot) c
   xfer += oprot->writeFieldBegin("tablesUsed", ::apache::thrift::protocol::T_SET, 4);
   {
     xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->tablesUsed.size()));
+<<<<<<< HEAD
     std::set<std::string> ::const_iterator _iter805;
     for (_iter805 = this->tablesUsed.begin(); _iter805 != this->tablesUsed.end(); ++_iter805)
     {
       xfer += oprot->writeString((*_iter805));
+=======
+<<<<<<< HEAD
+    std::set<std::string> ::const_iterator _iter787;
+    for (_iter787 = this->tablesUsed.begin(); _iter787 != this->tablesUsed.end(); ++_iter787)
+    {
+      xfer += oprot->writeString((*_iter787));
+=======
+<<<<<<< HEAD
+    std::set<std::string> ::const_iterator _iter767;
+    for (_iter767 = this->tablesUsed.begin(); _iter767 != this->tablesUsed.end(); ++_iter767)
+    {
+      xfer += oprot->writeString((*_iter767));
+=======
+    std::set<std::string> ::const_iterator _iter786;
+    for (_iter786 = this->tablesUsed.begin(); _iter786 != this->tablesUsed.end(); ++_iter786)
+    {
+      xfer += oprot->writeString((*_iter786));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeSetEnd();
   }
@@ -20548,6 +23005,7 @@ void swap(CreationMetadata &a, CreationMetadata &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 CreationMetadata::CreationMetadata(const CreationMetadata& other806) {
   catName = other806.catName;
   dbName = other806.dbName;
@@ -20563,6 +23021,53 @@ CreationMetadata& CreationMetadata::operator=(const CreationMetadata& other807) 
   tablesUsed = other807.tablesUsed;
   validTxnList = other807.validTxnList;
   __isset = other807.__isset;
+=======
+<<<<<<< HEAD
+CreationMetadata::CreationMetadata(const CreationMetadata& other788) {
+  dbName = other788.dbName;
+  tblName = other788.tblName;
+  tablesUsed = other788.tablesUsed;
+  validTxnList = other788.validTxnList;
+  __isset = other788.__isset;
+}
+CreationMetadata& CreationMetadata::operator=(const CreationMetadata& other789) {
+  dbName = other789.dbName;
+  tblName = other789.tblName;
+  tablesUsed = other789.tablesUsed;
+  validTxnList = other789.validTxnList;
+  __isset = other789.__isset;
+=======
+<<<<<<< HEAD
+CreationMetadata::CreationMetadata(const CreationMetadata& other768) {
+  dbName = other768.dbName;
+  tblName = other768.tblName;
+  tablesUsed = other768.tablesUsed;
+  validTxnList = other768.validTxnList;
+  __isset = other768.__isset;
+}
+CreationMetadata& CreationMetadata::operator=(const CreationMetadata& other769) {
+  dbName = other769.dbName;
+  tblName = other769.tblName;
+  tablesUsed = other769.tablesUsed;
+  validTxnList = other769.validTxnList;
+  __isset = other769.__isset;
+=======
+CreationMetadata::CreationMetadata(const CreationMetadata& other787) {
+  dbName = other787.dbName;
+  tblName = other787.tblName;
+  tablesUsed = other787.tablesUsed;
+  validTxnList = other787.validTxnList;
+  __isset = other787.__isset;
+}
+CreationMetadata& CreationMetadata::operator=(const CreationMetadata& other788) {
+  dbName = other788.dbName;
+  tblName = other788.tblName;
+  tablesUsed = other788.tablesUsed;
+  validTxnList = other788.validTxnList;
+  __isset = other788.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void CreationMetadata::printTo(std::ostream& out) const {
@@ -20668,6 +23173,7 @@ void swap(NotificationEventRequest &a, NotificationEventRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 NotificationEventRequest::NotificationEventRequest(const NotificationEventRequest& other808) {
   lastEvent = other808.lastEvent;
   maxEvents = other808.maxEvents;
@@ -20677,6 +23183,41 @@ NotificationEventRequest& NotificationEventRequest::operator=(const Notification
   lastEvent = other809.lastEvent;
   maxEvents = other809.maxEvents;
   __isset = other809.__isset;
+=======
+<<<<<<< HEAD
+NotificationEventRequest::NotificationEventRequest(const NotificationEventRequest& other790) {
+  lastEvent = other790.lastEvent;
+  maxEvents = other790.maxEvents;
+  __isset = other790.__isset;
+}
+NotificationEventRequest& NotificationEventRequest::operator=(const NotificationEventRequest& other791) {
+  lastEvent = other791.lastEvent;
+  maxEvents = other791.maxEvents;
+  __isset = other791.__isset;
+=======
+<<<<<<< HEAD
+NotificationEventRequest::NotificationEventRequest(const NotificationEventRequest& other770) {
+  lastEvent = other770.lastEvent;
+  maxEvents = other770.maxEvents;
+  __isset = other770.__isset;
+}
+NotificationEventRequest& NotificationEventRequest::operator=(const NotificationEventRequest& other771) {
+  lastEvent = other771.lastEvent;
+  maxEvents = other771.maxEvents;
+  __isset = other771.__isset;
+=======
+NotificationEventRequest::NotificationEventRequest(const NotificationEventRequest& other789) {
+  lastEvent = other789.lastEvent;
+  maxEvents = other789.maxEvents;
+  __isset = other789.__isset;
+}
+NotificationEventRequest& NotificationEventRequest::operator=(const NotificationEventRequest& other790) {
+  lastEvent = other790.lastEvent;
+  maxEvents = other790.maxEvents;
+  __isset = other790.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void NotificationEventRequest::printTo(std::ostream& out) const {
@@ -20896,6 +23437,7 @@ void swap(NotificationEvent &a, NotificationEvent &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 NotificationEvent::NotificationEvent(const NotificationEvent& other810) {
   eventId = other810.eventId;
   eventTime = other810.eventTime;
@@ -20917,6 +23459,66 @@ NotificationEvent& NotificationEvent::operator=(const NotificationEvent& other81
   messageFormat = other811.messageFormat;
   catName = other811.catName;
   __isset = other811.__isset;
+=======
+<<<<<<< HEAD
+NotificationEvent::NotificationEvent(const NotificationEvent& other792) {
+=======
+<<<<<<< HEAD
+NotificationEvent::NotificationEvent(const NotificationEvent& other772) {
+  eventId = other772.eventId;
+  eventTime = other772.eventTime;
+  eventType = other772.eventType;
+  dbName = other772.dbName;
+  tableName = other772.tableName;
+  message = other772.message;
+  messageFormat = other772.messageFormat;
+  __isset = other772.__isset;
+}
+NotificationEvent& NotificationEvent::operator=(const NotificationEvent& other773) {
+  eventId = other773.eventId;
+  eventTime = other773.eventTime;
+  eventType = other773.eventType;
+  dbName = other773.dbName;
+  tableName = other773.tableName;
+  message = other773.message;
+  messageFormat = other773.messageFormat;
+  __isset = other773.__isset;
+=======
+NotificationEvent::NotificationEvent(const NotificationEvent& other791) {
+  eventId = other791.eventId;
+  eventTime = other791.eventTime;
+  eventType = other791.eventType;
+  dbName = other791.dbName;
+  tableName = other791.tableName;
+  message = other791.message;
+  messageFormat = other791.messageFormat;
+  __isset = other791.__isset;
+}
+NotificationEvent& NotificationEvent::operator=(const NotificationEvent& other792) {
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+  eventId = other792.eventId;
+  eventTime = other792.eventTime;
+  eventType = other792.eventType;
+  dbName = other792.dbName;
+  tableName = other792.tableName;
+  message = other792.message;
+  messageFormat = other792.messageFormat;
+  __isset = other792.__isset;
+<<<<<<< HEAD
+}
+NotificationEvent& NotificationEvent::operator=(const NotificationEvent& other793) {
+  eventId = other793.eventId;
+  eventTime = other793.eventTime;
+  eventType = other793.eventType;
+  dbName = other793.dbName;
+  tableName = other793.tableName;
+  message = other793.message;
+  messageFormat = other793.messageFormat;
+  __isset = other793.__isset;
+=======
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void NotificationEvent::printTo(std::ostream& out) const {
@@ -20968,6 +23570,7 @@ uint32_t NotificationEventResponse::read(::apache::thrift::protocol::TProtocol* 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->events.clear();
+<<<<<<< HEAD
             uint32_t _size812;
             ::apache::thrift::protocol::TType _etype815;
             xfer += iprot->readListBegin(_etype815, _size812);
@@ -20976,6 +23579,38 @@ uint32_t NotificationEventResponse::read(::apache::thrift::protocol::TProtocol* 
             for (_i816 = 0; _i816 < _size812; ++_i816)
             {
               xfer += this->events[_i816].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size794;
+            ::apache::thrift::protocol::TType _etype797;
+            xfer += iprot->readListBegin(_etype797, _size794);
+            this->events.resize(_size794);
+            uint32_t _i798;
+            for (_i798 = 0; _i798 < _size794; ++_i798)
+            {
+              xfer += this->events[_i798].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size774;
+            ::apache::thrift::protocol::TType _etype777;
+            xfer += iprot->readListBegin(_etype777, _size774);
+            this->events.resize(_size774);
+            uint32_t _i778;
+            for (_i778 = 0; _i778 < _size774; ++_i778)
+            {
+              xfer += this->events[_i778].read(iprot);
+=======
+            uint32_t _size793;
+            ::apache::thrift::protocol::TType _etype796;
+            xfer += iprot->readListBegin(_etype796, _size793);
+            this->events.resize(_size793);
+            uint32_t _i797;
+            for (_i797 = 0; _i797 < _size793; ++_i797)
+            {
+              xfer += this->events[_i797].read(iprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -21006,10 +23641,31 @@ uint32_t NotificationEventResponse::write(::apache::thrift::protocol::TProtocol*
   xfer += oprot->writeFieldBegin("events", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->events.size()));
+<<<<<<< HEAD
     std::vector<NotificationEvent> ::const_iterator _iter817;
     for (_iter817 = this->events.begin(); _iter817 != this->events.end(); ++_iter817)
     {
       xfer += (*_iter817).write(oprot);
+=======
+<<<<<<< HEAD
+    std::vector<NotificationEvent> ::const_iterator _iter799;
+    for (_iter799 = this->events.begin(); _iter799 != this->events.end(); ++_iter799)
+    {
+      xfer += (*_iter799).write(oprot);
+=======
+<<<<<<< HEAD
+    std::vector<NotificationEvent> ::const_iterator _iter779;
+    for (_iter779 = this->events.begin(); _iter779 != this->events.end(); ++_iter779)
+    {
+      xfer += (*_iter779).write(oprot);
+=======
+    std::vector<NotificationEvent> ::const_iterator _iter798;
+    for (_iter798 = this->events.begin(); _iter798 != this->events.end(); ++_iter798)
+    {
+      xfer += (*_iter798).write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -21025,11 +23681,35 @@ void swap(NotificationEventResponse &a, NotificationEventResponse &b) {
   swap(a.events, b.events);
 }
 
+<<<<<<< HEAD
 NotificationEventResponse::NotificationEventResponse(const NotificationEventResponse& other818) {
   events = other818.events;
 }
 NotificationEventResponse& NotificationEventResponse::operator=(const NotificationEventResponse& other819) {
   events = other819.events;
+=======
+<<<<<<< HEAD
+NotificationEventResponse::NotificationEventResponse(const NotificationEventResponse& other800) {
+  events = other800.events;
+}
+NotificationEventResponse& NotificationEventResponse::operator=(const NotificationEventResponse& other801) {
+  events = other801.events;
+=======
+<<<<<<< HEAD
+NotificationEventResponse::NotificationEventResponse(const NotificationEventResponse& other780) {
+  events = other780.events;
+}
+NotificationEventResponse& NotificationEventResponse::operator=(const NotificationEventResponse& other781) {
+  events = other781.events;
+=======
+NotificationEventResponse::NotificationEventResponse(const NotificationEventResponse& other799) {
+  events = other799.events;
+}
+NotificationEventResponse& NotificationEventResponse::operator=(const NotificationEventResponse& other800) {
+  events = other800.events;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void NotificationEventResponse::printTo(std::ostream& out) const {
@@ -21111,11 +23791,35 @@ void swap(CurrentNotificationEventId &a, CurrentNotificationEventId &b) {
   swap(a.eventId, b.eventId);
 }
 
+<<<<<<< HEAD
 CurrentNotificationEventId::CurrentNotificationEventId(const CurrentNotificationEventId& other820) {
   eventId = other820.eventId;
 }
 CurrentNotificationEventId& CurrentNotificationEventId::operator=(const CurrentNotificationEventId& other821) {
   eventId = other821.eventId;
+=======
+<<<<<<< HEAD
+CurrentNotificationEventId::CurrentNotificationEventId(const CurrentNotificationEventId& other802) {
+  eventId = other802.eventId;
+}
+CurrentNotificationEventId& CurrentNotificationEventId::operator=(const CurrentNotificationEventId& other803) {
+  eventId = other803.eventId;
+=======
+<<<<<<< HEAD
+CurrentNotificationEventId::CurrentNotificationEventId(const CurrentNotificationEventId& other782) {
+  eventId = other782.eventId;
+}
+CurrentNotificationEventId& CurrentNotificationEventId::operator=(const CurrentNotificationEventId& other783) {
+  eventId = other783.eventId;
+=======
+CurrentNotificationEventId::CurrentNotificationEventId(const CurrentNotificationEventId& other801) {
+  eventId = other801.eventId;
+}
+CurrentNotificationEventId& CurrentNotificationEventId::operator=(const CurrentNotificationEventId& other802) {
+  eventId = other802.eventId;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void CurrentNotificationEventId::printTo(std::ostream& out) const {
@@ -21237,6 +23941,7 @@ void swap(NotificationEventsCountRequest &a, NotificationEventsCountRequest &b) 
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 NotificationEventsCountRequest::NotificationEventsCountRequest(const NotificationEventsCountRequest& other822) {
   fromEventId = other822.fromEventId;
   dbName = other822.dbName;
@@ -21248,6 +23953,35 @@ NotificationEventsCountRequest& NotificationEventsCountRequest::operator=(const 
   dbName = other823.dbName;
   catName = other823.catName;
   __isset = other823.__isset;
+=======
+<<<<<<< HEAD
+NotificationEventsCountRequest::NotificationEventsCountRequest(const NotificationEventsCountRequest& other804) {
+  fromEventId = other804.fromEventId;
+  dbName = other804.dbName;
+}
+NotificationEventsCountRequest& NotificationEventsCountRequest::operator=(const NotificationEventsCountRequest& other805) {
+  fromEventId = other805.fromEventId;
+  dbName = other805.dbName;
+=======
+<<<<<<< HEAD
+NotificationEventsCountRequest::NotificationEventsCountRequest(const NotificationEventsCountRequest& other784) {
+  fromEventId = other784.fromEventId;
+  dbName = other784.dbName;
+}
+NotificationEventsCountRequest& NotificationEventsCountRequest::operator=(const NotificationEventsCountRequest& other785) {
+  fromEventId = other785.fromEventId;
+  dbName = other785.dbName;
+=======
+NotificationEventsCountRequest::NotificationEventsCountRequest(const NotificationEventsCountRequest& other803) {
+  fromEventId = other803.fromEventId;
+  dbName = other803.dbName;
+}
+NotificationEventsCountRequest& NotificationEventsCountRequest::operator=(const NotificationEventsCountRequest& other804) {
+  fromEventId = other804.fromEventId;
+  dbName = other804.dbName;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void NotificationEventsCountRequest::printTo(std::ostream& out) const {
@@ -21331,11 +24065,35 @@ void swap(NotificationEventsCountResponse &a, NotificationEventsCountResponse &b
   swap(a.eventsCount, b.eventsCount);
 }
 
+<<<<<<< HEAD
 NotificationEventsCountResponse::NotificationEventsCountResponse(const NotificationEventsCountResponse& other824) {
   eventsCount = other824.eventsCount;
 }
 NotificationEventsCountResponse& NotificationEventsCountResponse::operator=(const NotificationEventsCountResponse& other825) {
   eventsCount = other825.eventsCount;
+=======
+<<<<<<< HEAD
+NotificationEventsCountResponse::NotificationEventsCountResponse(const NotificationEventsCountResponse& other806) {
+  eventsCount = other806.eventsCount;
+}
+NotificationEventsCountResponse& NotificationEventsCountResponse::operator=(const NotificationEventsCountResponse& other807) {
+  eventsCount = other807.eventsCount;
+=======
+<<<<<<< HEAD
+NotificationEventsCountResponse::NotificationEventsCountResponse(const NotificationEventsCountResponse& other786) {
+  eventsCount = other786.eventsCount;
+}
+NotificationEventsCountResponse& NotificationEventsCountResponse::operator=(const NotificationEventsCountResponse& other787) {
+  eventsCount = other787.eventsCount;
+=======
+NotificationEventsCountResponse::NotificationEventsCountResponse(const NotificationEventsCountResponse& other805) {
+  eventsCount = other805.eventsCount;
+}
+NotificationEventsCountResponse& NotificationEventsCountResponse::operator=(const NotificationEventsCountResponse& other806) {
+  eventsCount = other806.eventsCount;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void NotificationEventsCountResponse::printTo(std::ostream& out) const {
@@ -21398,6 +24156,7 @@ uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->filesAdded.clear();
+<<<<<<< HEAD
             uint32_t _size826;
             ::apache::thrift::protocol::TType _etype829;
             xfer += iprot->readListBegin(_etype829, _size826);
@@ -21406,6 +24165,38 @@ uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* ipr
             for (_i830 = 0; _i830 < _size826; ++_i830)
             {
               xfer += iprot->readString(this->filesAdded[_i830]);
+=======
+<<<<<<< HEAD
+            uint32_t _size808;
+            ::apache::thrift::protocol::TType _etype811;
+            xfer += iprot->readListBegin(_etype811, _size808);
+            this->filesAdded.resize(_size808);
+            uint32_t _i812;
+            for (_i812 = 0; _i812 < _size808; ++_i812)
+            {
+              xfer += iprot->readString(this->filesAdded[_i812]);
+=======
+<<<<<<< HEAD
+            uint32_t _size788;
+            ::apache::thrift::protocol::TType _etype791;
+            xfer += iprot->readListBegin(_etype791, _size788);
+            this->filesAdded.resize(_size788);
+            uint32_t _i792;
+            for (_i792 = 0; _i792 < _size788; ++_i792)
+            {
+              xfer += iprot->readString(this->filesAdded[_i792]);
+=======
+            uint32_t _size807;
+            ::apache::thrift::protocol::TType _etype810;
+            xfer += iprot->readListBegin(_etype810, _size807);
+            this->filesAdded.resize(_size807);
+            uint32_t _i811;
+            for (_i811 = 0; _i811 < _size807; ++_i811)
+            {
+              xfer += iprot->readString(this->filesAdded[_i811]);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -21418,6 +24209,7 @@ uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->filesAddedChecksum.clear();
+<<<<<<< HEAD
             uint32_t _size831;
             ::apache::thrift::protocol::TType _etype834;
             xfer += iprot->readListBegin(_etype834, _size831);
@@ -21426,6 +24218,38 @@ uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* ipr
             for (_i835 = 0; _i835 < _size831; ++_i835)
             {
               xfer += iprot->readString(this->filesAddedChecksum[_i835]);
+=======
+<<<<<<< HEAD
+            uint32_t _size813;
+            ::apache::thrift::protocol::TType _etype816;
+            xfer += iprot->readListBegin(_etype816, _size813);
+            this->filesAddedChecksum.resize(_size813);
+            uint32_t _i817;
+            for (_i817 = 0; _i817 < _size813; ++_i817)
+            {
+              xfer += iprot->readString(this->filesAddedChecksum[_i817]);
+=======
+<<<<<<< HEAD
+            uint32_t _size793;
+            ::apache::thrift::protocol::TType _etype796;
+            xfer += iprot->readListBegin(_etype796, _size793);
+            this->filesAddedChecksum.resize(_size793);
+            uint32_t _i797;
+            for (_i797 = 0; _i797 < _size793; ++_i797)
+            {
+              xfer += iprot->readString(this->filesAddedChecksum[_i797]);
+=======
+            uint32_t _size812;
+            ::apache::thrift::protocol::TType _etype815;
+            xfer += iprot->readListBegin(_etype815, _size812);
+            this->filesAddedChecksum.resize(_size812);
+            uint32_t _i816;
+            for (_i816 = 0; _i816 < _size812; ++_i816)
+            {
+              xfer += iprot->readString(this->filesAddedChecksum[_i816]);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -21461,10 +24285,31 @@ uint32_t InsertEventRequestData::write(::apache::thrift::protocol::TProtocol* op
   xfer += oprot->writeFieldBegin("filesAdded", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->filesAdded.size()));
+<<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter836;
     for (_iter836 = this->filesAdded.begin(); _iter836 != this->filesAdded.end(); ++_iter836)
     {
       xfer += oprot->writeString((*_iter836));
+=======
+<<<<<<< HEAD
+    std::vector<std::string> ::const_iterator _iter818;
+    for (_iter818 = this->filesAdded.begin(); _iter818 != this->filesAdded.end(); ++_iter818)
+    {
+      xfer += oprot->writeString((*_iter818));
+=======
+<<<<<<< HEAD
+    std::vector<std::string> ::const_iterator _iter798;
+    for (_iter798 = this->filesAdded.begin(); _iter798 != this->filesAdded.end(); ++_iter798)
+    {
+      xfer += oprot->writeString((*_iter798));
+=======
+    std::vector<std::string> ::const_iterator _iter817;
+    for (_iter817 = this->filesAdded.begin(); _iter817 != this->filesAdded.end(); ++_iter817)
+    {
+      xfer += oprot->writeString((*_iter817));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -21474,10 +24319,31 @@ uint32_t InsertEventRequestData::write(::apache::thrift::protocol::TProtocol* op
     xfer += oprot->writeFieldBegin("filesAddedChecksum", ::apache::thrift::protocol::T_LIST, 3);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->filesAddedChecksum.size()));
+<<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter837;
       for (_iter837 = this->filesAddedChecksum.begin(); _iter837 != this->filesAddedChecksum.end(); ++_iter837)
       {
         xfer += oprot->writeString((*_iter837));
+=======
+<<<<<<< HEAD
+      std::vector<std::string> ::const_iterator _iter819;
+      for (_iter819 = this->filesAddedChecksum.begin(); _iter819 != this->filesAddedChecksum.end(); ++_iter819)
+      {
+        xfer += oprot->writeString((*_iter819));
+=======
+<<<<<<< HEAD
+      std::vector<std::string> ::const_iterator _iter799;
+      for (_iter799 = this->filesAddedChecksum.begin(); _iter799 != this->filesAddedChecksum.end(); ++_iter799)
+      {
+        xfer += oprot->writeString((*_iter799));
+=======
+      std::vector<std::string> ::const_iterator _iter818;
+      for (_iter818 = this->filesAddedChecksum.begin(); _iter818 != this->filesAddedChecksum.end(); ++_iter818)
+      {
+        xfer += oprot->writeString((*_iter818));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       }
       xfer += oprot->writeListEnd();
     }
@@ -21496,6 +24362,7 @@ void swap(InsertEventRequestData &a, InsertEventRequestData &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 InsertEventRequestData::InsertEventRequestData(const InsertEventRequestData& other838) {
   replace = other838.replace;
   filesAdded = other838.filesAdded;
@@ -21507,6 +24374,47 @@ InsertEventRequestData& InsertEventRequestData::operator=(const InsertEventReque
   filesAdded = other839.filesAdded;
   filesAddedChecksum = other839.filesAddedChecksum;
   __isset = other839.__isset;
+=======
+<<<<<<< HEAD
+InsertEventRequestData::InsertEventRequestData(const InsertEventRequestData& other820) {
+  replace = other820.replace;
+  filesAdded = other820.filesAdded;
+  filesAddedChecksum = other820.filesAddedChecksum;
+  __isset = other820.__isset;
+}
+InsertEventRequestData& InsertEventRequestData::operator=(const InsertEventRequestData& other821) {
+  replace = other821.replace;
+  filesAdded = other821.filesAdded;
+  filesAddedChecksum = other821.filesAddedChecksum;
+  __isset = other821.__isset;
+=======
+<<<<<<< HEAD
+InsertEventRequestData::InsertEventRequestData(const InsertEventRequestData& other800) {
+  replace = other800.replace;
+  filesAdded = other800.filesAdded;
+  filesAddedChecksum = other800.filesAddedChecksum;
+  __isset = other800.__isset;
+}
+InsertEventRequestData& InsertEventRequestData::operator=(const InsertEventRequestData& other801) {
+  replace = other801.replace;
+  filesAdded = other801.filesAdded;
+  filesAddedChecksum = other801.filesAddedChecksum;
+  __isset = other801.__isset;
+=======
+InsertEventRequestData::InsertEventRequestData(const InsertEventRequestData& other819) {
+  replace = other819.replace;
+  filesAdded = other819.filesAdded;
+  filesAddedChecksum = other819.filesAddedChecksum;
+  __isset = other819.__isset;
+}
+InsertEventRequestData& InsertEventRequestData::operator=(const InsertEventRequestData& other820) {
+  replace = other820.replace;
+  filesAdded = other820.filesAdded;
+  filesAddedChecksum = other820.filesAddedChecksum;
+  __isset = other820.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void InsertEventRequestData::printTo(std::ostream& out) const {
@@ -21588,6 +24496,7 @@ void swap(FireEventRequestData &a, FireEventRequestData &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 FireEventRequestData::FireEventRequestData(const FireEventRequestData& other840) {
   insertData = other840.insertData;
   __isset = other840.__isset;
@@ -21595,6 +24504,35 @@ FireEventRequestData::FireEventRequestData(const FireEventRequestData& other840)
 FireEventRequestData& FireEventRequestData::operator=(const FireEventRequestData& other841) {
   insertData = other841.insertData;
   __isset = other841.__isset;
+=======
+<<<<<<< HEAD
+FireEventRequestData::FireEventRequestData(const FireEventRequestData& other822) {
+  insertData = other822.insertData;
+  __isset = other822.__isset;
+}
+FireEventRequestData& FireEventRequestData::operator=(const FireEventRequestData& other823) {
+  insertData = other823.insertData;
+  __isset = other823.__isset;
+=======
+<<<<<<< HEAD
+FireEventRequestData::FireEventRequestData(const FireEventRequestData& other802) {
+  insertData = other802.insertData;
+  __isset = other802.__isset;
+}
+FireEventRequestData& FireEventRequestData::operator=(const FireEventRequestData& other803) {
+  insertData = other803.insertData;
+  __isset = other803.__isset;
+=======
+FireEventRequestData::FireEventRequestData(const FireEventRequestData& other821) {
+  insertData = other821.insertData;
+  __isset = other821.__isset;
+}
+FireEventRequestData& FireEventRequestData::operator=(const FireEventRequestData& other822) {
+  insertData = other822.insertData;
+  __isset = other822.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void FireEventRequestData::printTo(std::ostream& out) const {
@@ -21696,6 +24634,7 @@ uint32_t FireEventRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->partitionVals.clear();
+<<<<<<< HEAD
             uint32_t _size842;
             ::apache::thrift::protocol::TType _etype845;
             xfer += iprot->readListBegin(_etype845, _size842);
@@ -21704,6 +24643,38 @@ uint32_t FireEventRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
             for (_i846 = 0; _i846 < _size842; ++_i846)
             {
               xfer += iprot->readString(this->partitionVals[_i846]);
+=======
+<<<<<<< HEAD
+            uint32_t _size824;
+            ::apache::thrift::protocol::TType _etype827;
+            xfer += iprot->readListBegin(_etype827, _size824);
+            this->partitionVals.resize(_size824);
+            uint32_t _i828;
+            for (_i828 = 0; _i828 < _size824; ++_i828)
+            {
+              xfer += iprot->readString(this->partitionVals[_i828]);
+=======
+<<<<<<< HEAD
+            uint32_t _size804;
+            ::apache::thrift::protocol::TType _etype807;
+            xfer += iprot->readListBegin(_etype807, _size804);
+            this->partitionVals.resize(_size804);
+            uint32_t _i808;
+            for (_i808 = 0; _i808 < _size804; ++_i808)
+            {
+              xfer += iprot->readString(this->partitionVals[_i808]);
+=======
+            uint32_t _size823;
+            ::apache::thrift::protocol::TType _etype826;
+            xfer += iprot->readListBegin(_etype826, _size823);
+            this->partitionVals.resize(_size823);
+            uint32_t _i827;
+            for (_i827 = 0; _i827 < _size823; ++_i827)
+            {
+              xfer += iprot->readString(this->partitionVals[_i827]);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -21763,10 +24734,31 @@ uint32_t FireEventRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
     xfer += oprot->writeFieldBegin("partitionVals", ::apache::thrift::protocol::T_LIST, 5);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->partitionVals.size()));
+<<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter847;
       for (_iter847 = this->partitionVals.begin(); _iter847 != this->partitionVals.end(); ++_iter847)
       {
         xfer += oprot->writeString((*_iter847));
+=======
+<<<<<<< HEAD
+      std::vector<std::string> ::const_iterator _iter829;
+      for (_iter829 = this->partitionVals.begin(); _iter829 != this->partitionVals.end(); ++_iter829)
+      {
+        xfer += oprot->writeString((*_iter829));
+=======
+<<<<<<< HEAD
+      std::vector<std::string> ::const_iterator _iter809;
+      for (_iter809 = this->partitionVals.begin(); _iter809 != this->partitionVals.end(); ++_iter809)
+      {
+        xfer += oprot->writeString((*_iter809));
+=======
+      std::vector<std::string> ::const_iterator _iter828;
+      for (_iter828 = this->partitionVals.begin(); _iter828 != this->partitionVals.end(); ++_iter828)
+      {
+        xfer += oprot->writeString((*_iter828));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       }
       xfer += oprot->writeListEnd();
     }
@@ -21793,6 +24785,7 @@ void swap(FireEventRequest &a, FireEventRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 FireEventRequest::FireEventRequest(const FireEventRequest& other848) {
   successful = other848.successful;
   data = other848.data;
@@ -21810,6 +24803,56 @@ FireEventRequest& FireEventRequest::operator=(const FireEventRequest& other849) 
   partitionVals = other849.partitionVals;
   catName = other849.catName;
   __isset = other849.__isset;
+=======
+<<<<<<< HEAD
+FireEventRequest::FireEventRequest(const FireEventRequest& other830) {
+=======
+<<<<<<< HEAD
+FireEventRequest::FireEventRequest(const FireEventRequest& other810) {
+  successful = other810.successful;
+  data = other810.data;
+  dbName = other810.dbName;
+  tableName = other810.tableName;
+  partitionVals = other810.partitionVals;
+  __isset = other810.__isset;
+}
+FireEventRequest& FireEventRequest::operator=(const FireEventRequest& other811) {
+  successful = other811.successful;
+  data = other811.data;
+  dbName = other811.dbName;
+  tableName = other811.tableName;
+  partitionVals = other811.partitionVals;
+  __isset = other811.__isset;
+=======
+FireEventRequest::FireEventRequest(const FireEventRequest& other829) {
+  successful = other829.successful;
+  data = other829.data;
+  dbName = other829.dbName;
+  tableName = other829.tableName;
+  partitionVals = other829.partitionVals;
+  __isset = other829.__isset;
+}
+FireEventRequest& FireEventRequest::operator=(const FireEventRequest& other830) {
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+  successful = other830.successful;
+  data = other830.data;
+  dbName = other830.dbName;
+  tableName = other830.tableName;
+  partitionVals = other830.partitionVals;
+  __isset = other830.__isset;
+<<<<<<< HEAD
+}
+FireEventRequest& FireEventRequest::operator=(const FireEventRequest& other831) {
+  successful = other831.successful;
+  data = other831.data;
+  dbName = other831.dbName;
+  tableName = other831.tableName;
+  partitionVals = other831.partitionVals;
+  __isset = other831.__isset;
+=======
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void FireEventRequest::printTo(std::ostream& out) const {
@@ -21873,11 +24916,35 @@ void swap(FireEventResponse &a, FireEventResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 FireEventResponse::FireEventResponse(const FireEventResponse& other850) {
   (void) other850;
 }
 FireEventResponse& FireEventResponse::operator=(const FireEventResponse& other851) {
   (void) other851;
+=======
+<<<<<<< HEAD
+FireEventResponse::FireEventResponse(const FireEventResponse& other832) {
+  (void) other832;
+}
+FireEventResponse& FireEventResponse::operator=(const FireEventResponse& other833) {
+  (void) other833;
+=======
+<<<<<<< HEAD
+FireEventResponse::FireEventResponse(const FireEventResponse& other812) {
+  (void) other812;
+}
+FireEventResponse& FireEventResponse::operator=(const FireEventResponse& other813) {
+  (void) other813;
+=======
+FireEventResponse::FireEventResponse(const FireEventResponse& other831) {
+  (void) other831;
+}
+FireEventResponse& FireEventResponse::operator=(const FireEventResponse& other832) {
+  (void) other832;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void FireEventResponse::printTo(std::ostream& out) const {
@@ -21977,6 +25044,7 @@ void swap(MetadataPpdResult &a, MetadataPpdResult &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 MetadataPpdResult::MetadataPpdResult(const MetadataPpdResult& other852) {
   metadata = other852.metadata;
   includeBitset = other852.includeBitset;
@@ -21986,6 +25054,41 @@ MetadataPpdResult& MetadataPpdResult::operator=(const MetadataPpdResult& other85
   metadata = other853.metadata;
   includeBitset = other853.includeBitset;
   __isset = other853.__isset;
+=======
+<<<<<<< HEAD
+MetadataPpdResult::MetadataPpdResult(const MetadataPpdResult& other834) {
+  metadata = other834.metadata;
+  includeBitset = other834.includeBitset;
+  __isset = other834.__isset;
+}
+MetadataPpdResult& MetadataPpdResult::operator=(const MetadataPpdResult& other835) {
+  metadata = other835.metadata;
+  includeBitset = other835.includeBitset;
+  __isset = other835.__isset;
+=======
+<<<<<<< HEAD
+MetadataPpdResult::MetadataPpdResult(const MetadataPpdResult& other814) {
+  metadata = other814.metadata;
+  includeBitset = other814.includeBitset;
+  __isset = other814.__isset;
+}
+MetadataPpdResult& MetadataPpdResult::operator=(const MetadataPpdResult& other815) {
+  metadata = other815.metadata;
+  includeBitset = other815.includeBitset;
+  __isset = other815.__isset;
+=======
+MetadataPpdResult::MetadataPpdResult(const MetadataPpdResult& other833) {
+  metadata = other833.metadata;
+  includeBitset = other833.includeBitset;
+  __isset = other833.__isset;
+}
+MetadataPpdResult& MetadataPpdResult::operator=(const MetadataPpdResult& other834) {
+  metadata = other834.metadata;
+  includeBitset = other834.includeBitset;
+  __isset = other834.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void MetadataPpdResult::printTo(std::ostream& out) const {
@@ -22036,6 +25139,7 @@ uint32_t GetFileMetadataByExprResult::read(::apache::thrift::protocol::TProtocol
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->metadata.clear();
+<<<<<<< HEAD
             uint32_t _size854;
             ::apache::thrift::protocol::TType _ktype855;
             ::apache::thrift::protocol::TType _vtype856;
@@ -22047,6 +25151,47 @@ uint32_t GetFileMetadataByExprResult::read(::apache::thrift::protocol::TProtocol
               xfer += iprot->readI64(_key859);
               MetadataPpdResult& _val860 = this->metadata[_key859];
               xfer += _val860.read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size836;
+            ::apache::thrift::protocol::TType _ktype837;
+            ::apache::thrift::protocol::TType _vtype838;
+            xfer += iprot->readMapBegin(_ktype837, _vtype838, _size836);
+            uint32_t _i840;
+            for (_i840 = 0; _i840 < _size836; ++_i840)
+            {
+              int64_t _key841;
+              xfer += iprot->readI64(_key841);
+              MetadataPpdResult& _val842 = this->metadata[_key841];
+              xfer += _val842.read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size816;
+            ::apache::thrift::protocol::TType _ktype817;
+            ::apache::thrift::protocol::TType _vtype818;
+            xfer += iprot->readMapBegin(_ktype817, _vtype818, _size816);
+            uint32_t _i820;
+            for (_i820 = 0; _i820 < _size816; ++_i820)
+            {
+              int64_t _key821;
+              xfer += iprot->readI64(_key821);
+              MetadataPpdResult& _val822 = this->metadata[_key821];
+              xfer += _val822.read(iprot);
+=======
+            uint32_t _size835;
+            ::apache::thrift::protocol::TType _ktype836;
+            ::apache::thrift::protocol::TType _vtype837;
+            xfer += iprot->readMapBegin(_ktype836, _vtype837, _size835);
+            uint32_t _i839;
+            for (_i839 = 0; _i839 < _size835; ++_i839)
+            {
+              int64_t _key840;
+              xfer += iprot->readI64(_key840);
+              MetadataPpdResult& _val841 = this->metadata[_key840];
+              xfer += _val841.read(iprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readMapEnd();
           }
@@ -22087,11 +25232,35 @@ uint32_t GetFileMetadataByExprResult::write(::apache::thrift::protocol::TProtoco
   xfer += oprot->writeFieldBegin("metadata", ::apache::thrift::protocol::T_MAP, 1);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_I64, ::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->metadata.size()));
+<<<<<<< HEAD
     std::map<int64_t, MetadataPpdResult> ::const_iterator _iter861;
     for (_iter861 = this->metadata.begin(); _iter861 != this->metadata.end(); ++_iter861)
     {
       xfer += oprot->writeI64(_iter861->first);
       xfer += _iter861->second.write(oprot);
+=======
+<<<<<<< HEAD
+    std::map<int64_t, MetadataPpdResult> ::const_iterator _iter843;
+    for (_iter843 = this->metadata.begin(); _iter843 != this->metadata.end(); ++_iter843)
+    {
+      xfer += oprot->writeI64(_iter843->first);
+      xfer += _iter843->second.write(oprot);
+=======
+<<<<<<< HEAD
+    std::map<int64_t, MetadataPpdResult> ::const_iterator _iter823;
+    for (_iter823 = this->metadata.begin(); _iter823 != this->metadata.end(); ++_iter823)
+    {
+      xfer += oprot->writeI64(_iter823->first);
+      xfer += _iter823->second.write(oprot);
+=======
+    std::map<int64_t, MetadataPpdResult> ::const_iterator _iter842;
+    for (_iter842 = this->metadata.begin(); _iter842 != this->metadata.end(); ++_iter842)
+    {
+      xfer += oprot->writeI64(_iter842->first);
+      xfer += _iter842->second.write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeMapEnd();
   }
@@ -22112,6 +25281,7 @@ void swap(GetFileMetadataByExprResult &a, GetFileMetadataByExprResult &b) {
   swap(a.isSupported, b.isSupported);
 }
 
+<<<<<<< HEAD
 GetFileMetadataByExprResult::GetFileMetadataByExprResult(const GetFileMetadataByExprResult& other862) {
   metadata = other862.metadata;
   isSupported = other862.isSupported;
@@ -22119,6 +25289,35 @@ GetFileMetadataByExprResult::GetFileMetadataByExprResult(const GetFileMetadataBy
 GetFileMetadataByExprResult& GetFileMetadataByExprResult::operator=(const GetFileMetadataByExprResult& other863) {
   metadata = other863.metadata;
   isSupported = other863.isSupported;
+=======
+<<<<<<< HEAD
+GetFileMetadataByExprResult::GetFileMetadataByExprResult(const GetFileMetadataByExprResult& other844) {
+  metadata = other844.metadata;
+  isSupported = other844.isSupported;
+}
+GetFileMetadataByExprResult& GetFileMetadataByExprResult::operator=(const GetFileMetadataByExprResult& other845) {
+  metadata = other845.metadata;
+  isSupported = other845.isSupported;
+=======
+<<<<<<< HEAD
+GetFileMetadataByExprResult::GetFileMetadataByExprResult(const GetFileMetadataByExprResult& other824) {
+  metadata = other824.metadata;
+  isSupported = other824.isSupported;
+}
+GetFileMetadataByExprResult& GetFileMetadataByExprResult::operator=(const GetFileMetadataByExprResult& other825) {
+  metadata = other825.metadata;
+  isSupported = other825.isSupported;
+=======
+GetFileMetadataByExprResult::GetFileMetadataByExprResult(const GetFileMetadataByExprResult& other843) {
+  metadata = other843.metadata;
+  isSupported = other843.isSupported;
+}
+GetFileMetadataByExprResult& GetFileMetadataByExprResult::operator=(const GetFileMetadataByExprResult& other844) {
+  metadata = other844.metadata;
+  isSupported = other844.isSupported;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void GetFileMetadataByExprResult::printTo(std::ostream& out) const {
@@ -22179,6 +25378,7 @@ uint32_t GetFileMetadataByExprRequest::read(::apache::thrift::protocol::TProtoco
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->fileIds.clear();
+<<<<<<< HEAD
             uint32_t _size864;
             ::apache::thrift::protocol::TType _etype867;
             xfer += iprot->readListBegin(_etype867, _size864);
@@ -22187,6 +25387,38 @@ uint32_t GetFileMetadataByExprRequest::read(::apache::thrift::protocol::TProtoco
             for (_i868 = 0; _i868 < _size864; ++_i868)
             {
               xfer += iprot->readI64(this->fileIds[_i868]);
+=======
+<<<<<<< HEAD
+            uint32_t _size846;
+            ::apache::thrift::protocol::TType _etype849;
+            xfer += iprot->readListBegin(_etype849, _size846);
+            this->fileIds.resize(_size846);
+            uint32_t _i850;
+            for (_i850 = 0; _i850 < _size846; ++_i850)
+            {
+              xfer += iprot->readI64(this->fileIds[_i850]);
+=======
+<<<<<<< HEAD
+            uint32_t _size826;
+            ::apache::thrift::protocol::TType _etype829;
+            xfer += iprot->readListBegin(_etype829, _size826);
+            this->fileIds.resize(_size826);
+            uint32_t _i830;
+            for (_i830 = 0; _i830 < _size826; ++_i830)
+            {
+              xfer += iprot->readI64(this->fileIds[_i830]);
+=======
+            uint32_t _size845;
+            ::apache::thrift::protocol::TType _etype848;
+            xfer += iprot->readListBegin(_etype848, _size845);
+            this->fileIds.resize(_size845);
+            uint32_t _i849;
+            for (_i849 = 0; _i849 < _size845; ++_i849)
+            {
+              xfer += iprot->readI64(this->fileIds[_i849]);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -22213,9 +25445,27 @@ uint32_t GetFileMetadataByExprRequest::read(::apache::thrift::protocol::TProtoco
         break;
       case 4:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
           int32_t ecast869;
           xfer += iprot->readI32(ecast869);
           this->type = (FileMetadataExprType::type)ecast869;
+=======
+<<<<<<< HEAD
+          int32_t ecast851;
+          xfer += iprot->readI32(ecast851);
+          this->type = (FileMetadataExprType::type)ecast851;
+=======
+<<<<<<< HEAD
+          int32_t ecast831;
+          xfer += iprot->readI32(ecast831);
+          this->type = (FileMetadataExprType::type)ecast831;
+=======
+          int32_t ecast850;
+          xfer += iprot->readI32(ecast850);
+          this->type = (FileMetadataExprType::type)ecast850;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           this->__isset.type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -22245,10 +25495,31 @@ uint32_t GetFileMetadataByExprRequest::write(::apache::thrift::protocol::TProtoc
   xfer += oprot->writeFieldBegin("fileIds", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->fileIds.size()));
+<<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter870;
     for (_iter870 = this->fileIds.begin(); _iter870 != this->fileIds.end(); ++_iter870)
     {
       xfer += oprot->writeI64((*_iter870));
+=======
+<<<<<<< HEAD
+    std::vector<int64_t> ::const_iterator _iter852;
+    for (_iter852 = this->fileIds.begin(); _iter852 != this->fileIds.end(); ++_iter852)
+    {
+      xfer += oprot->writeI64((*_iter852));
+=======
+<<<<<<< HEAD
+    std::vector<int64_t> ::const_iterator _iter832;
+    for (_iter832 = this->fileIds.begin(); _iter832 != this->fileIds.end(); ++_iter832)
+    {
+      xfer += oprot->writeI64((*_iter832));
+=======
+    std::vector<int64_t> ::const_iterator _iter851;
+    for (_iter851 = this->fileIds.begin(); _iter851 != this->fileIds.end(); ++_iter851)
+    {
+      xfer += oprot->writeI64((*_iter851));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -22282,6 +25553,7 @@ void swap(GetFileMetadataByExprRequest &a, GetFileMetadataByExprRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 GetFileMetadataByExprRequest::GetFileMetadataByExprRequest(const GetFileMetadataByExprRequest& other871) {
   fileIds = other871.fileIds;
   expr = other871.expr;
@@ -22295,6 +25567,53 @@ GetFileMetadataByExprRequest& GetFileMetadataByExprRequest::operator=(const GetF
   doGetFooters = other872.doGetFooters;
   type = other872.type;
   __isset = other872.__isset;
+=======
+<<<<<<< HEAD
+GetFileMetadataByExprRequest::GetFileMetadataByExprRequest(const GetFileMetadataByExprRequest& other853) {
+  fileIds = other853.fileIds;
+  expr = other853.expr;
+  doGetFooters = other853.doGetFooters;
+  type = other853.type;
+  __isset = other853.__isset;
+}
+GetFileMetadataByExprRequest& GetFileMetadataByExprRequest::operator=(const GetFileMetadataByExprRequest& other854) {
+  fileIds = other854.fileIds;
+  expr = other854.expr;
+  doGetFooters = other854.doGetFooters;
+  type = other854.type;
+  __isset = other854.__isset;
+=======
+<<<<<<< HEAD
+GetFileMetadataByExprRequest::GetFileMetadataByExprRequest(const GetFileMetadataByExprRequest& other833) {
+  fileIds = other833.fileIds;
+  expr = other833.expr;
+  doGetFooters = other833.doGetFooters;
+  type = other833.type;
+  __isset = other833.__isset;
+}
+GetFileMetadataByExprRequest& GetFileMetadataByExprRequest::operator=(const GetFileMetadataByExprRequest& other834) {
+  fileIds = other834.fileIds;
+  expr = other834.expr;
+  doGetFooters = other834.doGetFooters;
+  type = other834.type;
+  __isset = other834.__isset;
+=======
+GetFileMetadataByExprRequest::GetFileMetadataByExprRequest(const GetFileMetadataByExprRequest& other852) {
+  fileIds = other852.fileIds;
+  expr = other852.expr;
+  doGetFooters = other852.doGetFooters;
+  type = other852.type;
+  __isset = other852.__isset;
+}
+GetFileMetadataByExprRequest& GetFileMetadataByExprRequest::operator=(const GetFileMetadataByExprRequest& other853) {
+  fileIds = other853.fileIds;
+  expr = other853.expr;
+  doGetFooters = other853.doGetFooters;
+  type = other853.type;
+  __isset = other853.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void GetFileMetadataByExprRequest::printTo(std::ostream& out) const {
@@ -22347,6 +25666,7 @@ uint32_t GetFileMetadataResult::read(::apache::thrift::protocol::TProtocol* ipro
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->metadata.clear();
+<<<<<<< HEAD
             uint32_t _size873;
             ::apache::thrift::protocol::TType _ktype874;
             ::apache::thrift::protocol::TType _vtype875;
@@ -22358,6 +25678,47 @@ uint32_t GetFileMetadataResult::read(::apache::thrift::protocol::TProtocol* ipro
               xfer += iprot->readI64(_key878);
               std::string& _val879 = this->metadata[_key878];
               xfer += iprot->readBinary(_val879);
+=======
+<<<<<<< HEAD
+            uint32_t _size855;
+            ::apache::thrift::protocol::TType _ktype856;
+            ::apache::thrift::protocol::TType _vtype857;
+            xfer += iprot->readMapBegin(_ktype856, _vtype857, _size855);
+            uint32_t _i859;
+            for (_i859 = 0; _i859 < _size855; ++_i859)
+            {
+              int64_t _key860;
+              xfer += iprot->readI64(_key860);
+              std::string& _val861 = this->metadata[_key860];
+              xfer += iprot->readBinary(_val861);
+=======
+<<<<<<< HEAD
+            uint32_t _size835;
+            ::apache::thrift::protocol::TType _ktype836;
+            ::apache::thrift::protocol::TType _vtype837;
+            xfer += iprot->readMapBegin(_ktype836, _vtype837, _size835);
+            uint32_t _i839;
+            for (_i839 = 0; _i839 < _size835; ++_i839)
+            {
+              int64_t _key840;
+              xfer += iprot->readI64(_key840);
+              std::string& _val841 = this->metadata[_key840];
+              xfer += iprot->readBinary(_val841);
+=======
+            uint32_t _size854;
+            ::apache::thrift::protocol::TType _ktype855;
+            ::apache::thrift::protocol::TType _vtype856;
+            xfer += iprot->readMapBegin(_ktype855, _vtype856, _size854);
+            uint32_t _i858;
+            for (_i858 = 0; _i858 < _size854; ++_i858)
+            {
+              int64_t _key859;
+              xfer += iprot->readI64(_key859);
+              std::string& _val860 = this->metadata[_key859];
+              xfer += iprot->readBinary(_val860);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readMapEnd();
           }
@@ -22398,11 +25759,35 @@ uint32_t GetFileMetadataResult::write(::apache::thrift::protocol::TProtocol* opr
   xfer += oprot->writeFieldBegin("metadata", ::apache::thrift::protocol::T_MAP, 1);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_I64, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->metadata.size()));
+<<<<<<< HEAD
     std::map<int64_t, std::string> ::const_iterator _iter880;
     for (_iter880 = this->metadata.begin(); _iter880 != this->metadata.end(); ++_iter880)
     {
       xfer += oprot->writeI64(_iter880->first);
       xfer += oprot->writeBinary(_iter880->second);
+=======
+<<<<<<< HEAD
+    std::map<int64_t, std::string> ::const_iterator _iter862;
+    for (_iter862 = this->metadata.begin(); _iter862 != this->metadata.end(); ++_iter862)
+    {
+      xfer += oprot->writeI64(_iter862->first);
+      xfer += oprot->writeBinary(_iter862->second);
+=======
+<<<<<<< HEAD
+    std::map<int64_t, std::string> ::const_iterator _iter842;
+    for (_iter842 = this->metadata.begin(); _iter842 != this->metadata.end(); ++_iter842)
+    {
+      xfer += oprot->writeI64(_iter842->first);
+      xfer += oprot->writeBinary(_iter842->second);
+=======
+    std::map<int64_t, std::string> ::const_iterator _iter861;
+    for (_iter861 = this->metadata.begin(); _iter861 != this->metadata.end(); ++_iter861)
+    {
+      xfer += oprot->writeI64(_iter861->first);
+      xfer += oprot->writeBinary(_iter861->second);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeMapEnd();
   }
@@ -22423,6 +25808,7 @@ void swap(GetFileMetadataResult &a, GetFileMetadataResult &b) {
   swap(a.isSupported, b.isSupported);
 }
 
+<<<<<<< HEAD
 GetFileMetadataResult::GetFileMetadataResult(const GetFileMetadataResult& other881) {
   metadata = other881.metadata;
   isSupported = other881.isSupported;
@@ -22430,6 +25816,35 @@ GetFileMetadataResult::GetFileMetadataResult(const GetFileMetadataResult& other8
 GetFileMetadataResult& GetFileMetadataResult::operator=(const GetFileMetadataResult& other882) {
   metadata = other882.metadata;
   isSupported = other882.isSupported;
+=======
+<<<<<<< HEAD
+GetFileMetadataResult::GetFileMetadataResult(const GetFileMetadataResult& other863) {
+  metadata = other863.metadata;
+  isSupported = other863.isSupported;
+}
+GetFileMetadataResult& GetFileMetadataResult::operator=(const GetFileMetadataResult& other864) {
+  metadata = other864.metadata;
+  isSupported = other864.isSupported;
+=======
+<<<<<<< HEAD
+GetFileMetadataResult::GetFileMetadataResult(const GetFileMetadataResult& other843) {
+  metadata = other843.metadata;
+  isSupported = other843.isSupported;
+}
+GetFileMetadataResult& GetFileMetadataResult::operator=(const GetFileMetadataResult& other844) {
+  metadata = other844.metadata;
+  isSupported = other844.isSupported;
+=======
+GetFileMetadataResult::GetFileMetadataResult(const GetFileMetadataResult& other862) {
+  metadata = other862.metadata;
+  isSupported = other862.isSupported;
+}
+GetFileMetadataResult& GetFileMetadataResult::operator=(const GetFileMetadataResult& other863) {
+  metadata = other863.metadata;
+  isSupported = other863.isSupported;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void GetFileMetadataResult::printTo(std::ostream& out) const {
@@ -22475,6 +25890,7 @@ uint32_t GetFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->fileIds.clear();
+<<<<<<< HEAD
             uint32_t _size883;
             ::apache::thrift::protocol::TType _etype886;
             xfer += iprot->readListBegin(_etype886, _size883);
@@ -22483,6 +25899,38 @@ uint32_t GetFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
             for (_i887 = 0; _i887 < _size883; ++_i887)
             {
               xfer += iprot->readI64(this->fileIds[_i887]);
+=======
+<<<<<<< HEAD
+            uint32_t _size865;
+            ::apache::thrift::protocol::TType _etype868;
+            xfer += iprot->readListBegin(_etype868, _size865);
+            this->fileIds.resize(_size865);
+            uint32_t _i869;
+            for (_i869 = 0; _i869 < _size865; ++_i869)
+            {
+              xfer += iprot->readI64(this->fileIds[_i869]);
+=======
+<<<<<<< HEAD
+            uint32_t _size845;
+            ::apache::thrift::protocol::TType _etype848;
+            xfer += iprot->readListBegin(_etype848, _size845);
+            this->fileIds.resize(_size845);
+            uint32_t _i849;
+            for (_i849 = 0; _i849 < _size845; ++_i849)
+            {
+              xfer += iprot->readI64(this->fileIds[_i849]);
+=======
+            uint32_t _size864;
+            ::apache::thrift::protocol::TType _etype867;
+            xfer += iprot->readListBegin(_etype867, _size864);
+            this->fileIds.resize(_size864);
+            uint32_t _i868;
+            for (_i868 = 0; _i868 < _size864; ++_i868)
+            {
+              xfer += iprot->readI64(this->fileIds[_i868]);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -22513,10 +25961,31 @@ uint32_t GetFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
   xfer += oprot->writeFieldBegin("fileIds", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->fileIds.size()));
+<<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter888;
     for (_iter888 = this->fileIds.begin(); _iter888 != this->fileIds.end(); ++_iter888)
     {
       xfer += oprot->writeI64((*_iter888));
+=======
+<<<<<<< HEAD
+    std::vector<int64_t> ::const_iterator _iter870;
+    for (_iter870 = this->fileIds.begin(); _iter870 != this->fileIds.end(); ++_iter870)
+    {
+      xfer += oprot->writeI64((*_iter870));
+=======
+<<<<<<< HEAD
+    std::vector<int64_t> ::const_iterator _iter850;
+    for (_iter850 = this->fileIds.begin(); _iter850 != this->fileIds.end(); ++_iter850)
+    {
+      xfer += oprot->writeI64((*_iter850));
+=======
+    std::vector<int64_t> ::const_iterator _iter869;
+    for (_iter869 = this->fileIds.begin(); _iter869 != this->fileIds.end(); ++_iter869)
+    {
+      xfer += oprot->writeI64((*_iter869));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -22532,11 +26001,35 @@ void swap(GetFileMetadataRequest &a, GetFileMetadataRequest &b) {
   swap(a.fileIds, b.fileIds);
 }
 
+<<<<<<< HEAD
 GetFileMetadataRequest::GetFileMetadataRequest(const GetFileMetadataRequest& other889) {
   fileIds = other889.fileIds;
 }
 GetFileMetadataRequest& GetFileMetadataRequest::operator=(const GetFileMetadataRequest& other890) {
   fileIds = other890.fileIds;
+=======
+<<<<<<< HEAD
+GetFileMetadataRequest::GetFileMetadataRequest(const GetFileMetadataRequest& other871) {
+  fileIds = other871.fileIds;
+}
+GetFileMetadataRequest& GetFileMetadataRequest::operator=(const GetFileMetadataRequest& other872) {
+  fileIds = other872.fileIds;
+=======
+<<<<<<< HEAD
+GetFileMetadataRequest::GetFileMetadataRequest(const GetFileMetadataRequest& other851) {
+  fileIds = other851.fileIds;
+}
+GetFileMetadataRequest& GetFileMetadataRequest::operator=(const GetFileMetadataRequest& other852) {
+  fileIds = other852.fileIds;
+=======
+GetFileMetadataRequest::GetFileMetadataRequest(const GetFileMetadataRequest& other870) {
+  fileIds = other870.fileIds;
+}
+GetFileMetadataRequest& GetFileMetadataRequest::operator=(const GetFileMetadataRequest& other871) {
+  fileIds = other871.fileIds;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void GetFileMetadataRequest::printTo(std::ostream& out) const {
@@ -22595,11 +26088,35 @@ void swap(PutFileMetadataResult &a, PutFileMetadataResult &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 PutFileMetadataResult::PutFileMetadataResult(const PutFileMetadataResult& other891) {
   (void) other891;
 }
 PutFileMetadataResult& PutFileMetadataResult::operator=(const PutFileMetadataResult& other892) {
   (void) other892;
+=======
+<<<<<<< HEAD
+PutFileMetadataResult::PutFileMetadataResult(const PutFileMetadataResult& other873) {
+  (void) other873;
+}
+PutFileMetadataResult& PutFileMetadataResult::operator=(const PutFileMetadataResult& other874) {
+  (void) other874;
+=======
+<<<<<<< HEAD
+PutFileMetadataResult::PutFileMetadataResult(const PutFileMetadataResult& other853) {
+  (void) other853;
+}
+PutFileMetadataResult& PutFileMetadataResult::operator=(const PutFileMetadataResult& other854) {
+  (void) other854;
+=======
+PutFileMetadataResult::PutFileMetadataResult(const PutFileMetadataResult& other872) {
+  (void) other872;
+}
+PutFileMetadataResult& PutFileMetadataResult::operator=(const PutFileMetadataResult& other873) {
+  (void) other873;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void PutFileMetadataResult::printTo(std::ostream& out) const {
@@ -22653,6 +26170,7 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->fileIds.clear();
+<<<<<<< HEAD
             uint32_t _size893;
             ::apache::thrift::protocol::TType _etype896;
             xfer += iprot->readListBegin(_etype896, _size893);
@@ -22661,6 +26179,38 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
             for (_i897 = 0; _i897 < _size893; ++_i897)
             {
               xfer += iprot->readI64(this->fileIds[_i897]);
+=======
+<<<<<<< HEAD
+            uint32_t _size875;
+            ::apache::thrift::protocol::TType _etype878;
+            xfer += iprot->readListBegin(_etype878, _size875);
+            this->fileIds.resize(_size875);
+            uint32_t _i879;
+            for (_i879 = 0; _i879 < _size875; ++_i879)
+            {
+              xfer += iprot->readI64(this->fileIds[_i879]);
+=======
+<<<<<<< HEAD
+            uint32_t _size855;
+            ::apache::thrift::protocol::TType _etype858;
+            xfer += iprot->readListBegin(_etype858, _size855);
+            this->fileIds.resize(_size855);
+            uint32_t _i859;
+            for (_i859 = 0; _i859 < _size855; ++_i859)
+            {
+              xfer += iprot->readI64(this->fileIds[_i859]);
+=======
+            uint32_t _size874;
+            ::apache::thrift::protocol::TType _etype877;
+            xfer += iprot->readListBegin(_etype877, _size874);
+            this->fileIds.resize(_size874);
+            uint32_t _i878;
+            for (_i878 = 0; _i878 < _size874; ++_i878)
+            {
+              xfer += iprot->readI64(this->fileIds[_i878]);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -22673,6 +26223,7 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->metadata.clear();
+<<<<<<< HEAD
             uint32_t _size898;
             ::apache::thrift::protocol::TType _etype901;
             xfer += iprot->readListBegin(_etype901, _size898);
@@ -22681,6 +26232,38 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
             for (_i902 = 0; _i902 < _size898; ++_i902)
             {
               xfer += iprot->readBinary(this->metadata[_i902]);
+=======
+<<<<<<< HEAD
+            uint32_t _size880;
+            ::apache::thrift::protocol::TType _etype883;
+            xfer += iprot->readListBegin(_etype883, _size880);
+            this->metadata.resize(_size880);
+            uint32_t _i884;
+            for (_i884 = 0; _i884 < _size880; ++_i884)
+            {
+              xfer += iprot->readBinary(this->metadata[_i884]);
+=======
+<<<<<<< HEAD
+            uint32_t _size860;
+            ::apache::thrift::protocol::TType _etype863;
+            xfer += iprot->readListBegin(_etype863, _size860);
+            this->metadata.resize(_size860);
+            uint32_t _i864;
+            for (_i864 = 0; _i864 < _size860; ++_i864)
+            {
+              xfer += iprot->readBinary(this->metadata[_i864]);
+=======
+            uint32_t _size879;
+            ::apache::thrift::protocol::TType _etype882;
+            xfer += iprot->readListBegin(_etype882, _size879);
+            this->metadata.resize(_size879);
+            uint32_t _i883;
+            for (_i883 = 0; _i883 < _size879; ++_i883)
+            {
+              xfer += iprot->readBinary(this->metadata[_i883]);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -22691,9 +26274,27 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
         break;
       case 3:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
           int32_t ecast903;
           xfer += iprot->readI32(ecast903);
           this->type = (FileMetadataExprType::type)ecast903;
+=======
+<<<<<<< HEAD
+          int32_t ecast885;
+          xfer += iprot->readI32(ecast885);
+          this->type = (FileMetadataExprType::type)ecast885;
+=======
+<<<<<<< HEAD
+          int32_t ecast865;
+          xfer += iprot->readI32(ecast865);
+          this->type = (FileMetadataExprType::type)ecast865;
+=======
+          int32_t ecast884;
+          xfer += iprot->readI32(ecast884);
+          this->type = (FileMetadataExprType::type)ecast884;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           this->__isset.type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -22723,10 +26324,31 @@ uint32_t PutFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
   xfer += oprot->writeFieldBegin("fileIds", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->fileIds.size()));
+<<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter904;
     for (_iter904 = this->fileIds.begin(); _iter904 != this->fileIds.end(); ++_iter904)
     {
       xfer += oprot->writeI64((*_iter904));
+=======
+<<<<<<< HEAD
+    std::vector<int64_t> ::const_iterator _iter886;
+    for (_iter886 = this->fileIds.begin(); _iter886 != this->fileIds.end(); ++_iter886)
+    {
+      xfer += oprot->writeI64((*_iter886));
+=======
+<<<<<<< HEAD
+    std::vector<int64_t> ::const_iterator _iter866;
+    for (_iter866 = this->fileIds.begin(); _iter866 != this->fileIds.end(); ++_iter866)
+    {
+      xfer += oprot->writeI64((*_iter866));
+=======
+    std::vector<int64_t> ::const_iterator _iter885;
+    for (_iter885 = this->fileIds.begin(); _iter885 != this->fileIds.end(); ++_iter885)
+    {
+      xfer += oprot->writeI64((*_iter885));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -22735,10 +26357,31 @@ uint32_t PutFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
   xfer += oprot->writeFieldBegin("metadata", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->metadata.size()));
+<<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter905;
     for (_iter905 = this->metadata.begin(); _iter905 != this->metadata.end(); ++_iter905)
     {
       xfer += oprot->writeBinary((*_iter905));
+=======
+<<<<<<< HEAD
+    std::vector<std::string> ::const_iterator _iter887;
+    for (_iter887 = this->metadata.begin(); _iter887 != this->metadata.end(); ++_iter887)
+    {
+      xfer += oprot->writeBinary((*_iter887));
+=======
+<<<<<<< HEAD
+    std::vector<std::string> ::const_iterator _iter867;
+    for (_iter867 = this->metadata.begin(); _iter867 != this->metadata.end(); ++_iter867)
+    {
+      xfer += oprot->writeBinary((*_iter867));
+=======
+    std::vector<std::string> ::const_iterator _iter886;
+    for (_iter886 = this->metadata.begin(); _iter886 != this->metadata.end(); ++_iter886)
+    {
+      xfer += oprot->writeBinary((*_iter886));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -22762,6 +26405,7 @@ void swap(PutFileMetadataRequest &a, PutFileMetadataRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 PutFileMetadataRequest::PutFileMetadataRequest(const PutFileMetadataRequest& other906) {
   fileIds = other906.fileIds;
   metadata = other906.metadata;
@@ -22773,6 +26417,47 @@ PutFileMetadataRequest& PutFileMetadataRequest::operator=(const PutFileMetadataR
   metadata = other907.metadata;
   type = other907.type;
   __isset = other907.__isset;
+=======
+<<<<<<< HEAD
+PutFileMetadataRequest::PutFileMetadataRequest(const PutFileMetadataRequest& other888) {
+  fileIds = other888.fileIds;
+  metadata = other888.metadata;
+  type = other888.type;
+  __isset = other888.__isset;
+}
+PutFileMetadataRequest& PutFileMetadataRequest::operator=(const PutFileMetadataRequest& other889) {
+  fileIds = other889.fileIds;
+  metadata = other889.metadata;
+  type = other889.type;
+  __isset = other889.__isset;
+=======
+<<<<<<< HEAD
+PutFileMetadataRequest::PutFileMetadataRequest(const PutFileMetadataRequest& other868) {
+  fileIds = other868.fileIds;
+  metadata = other868.metadata;
+  type = other868.type;
+  __isset = other868.__isset;
+}
+PutFileMetadataRequest& PutFileMetadataRequest::operator=(const PutFileMetadataRequest& other869) {
+  fileIds = other869.fileIds;
+  metadata = other869.metadata;
+  type = other869.type;
+  __isset = other869.__isset;
+=======
+PutFileMetadataRequest::PutFileMetadataRequest(const PutFileMetadataRequest& other887) {
+  fileIds = other887.fileIds;
+  metadata = other887.metadata;
+  type = other887.type;
+  __isset = other887.__isset;
+}
+PutFileMetadataRequest& PutFileMetadataRequest::operator=(const PutFileMetadataRequest& other888) {
+  fileIds = other888.fileIds;
+  metadata = other888.metadata;
+  type = other888.type;
+  __isset = other888.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void PutFileMetadataRequest::printTo(std::ostream& out) const {
@@ -22833,11 +26518,35 @@ void swap(ClearFileMetadataResult &a, ClearFileMetadataResult &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 ClearFileMetadataResult::ClearFileMetadataResult(const ClearFileMetadataResult& other908) {
   (void) other908;
 }
 ClearFileMetadataResult& ClearFileMetadataResult::operator=(const ClearFileMetadataResult& other909) {
   (void) other909;
+=======
+<<<<<<< HEAD
+ClearFileMetadataResult::ClearFileMetadataResult(const ClearFileMetadataResult& other890) {
+  (void) other890;
+}
+ClearFileMetadataResult& ClearFileMetadataResult::operator=(const ClearFileMetadataResult& other891) {
+  (void) other891;
+=======
+<<<<<<< HEAD
+ClearFileMetadataResult::ClearFileMetadataResult(const ClearFileMetadataResult& other870) {
+  (void) other870;
+}
+ClearFileMetadataResult& ClearFileMetadataResult::operator=(const ClearFileMetadataResult& other871) {
+  (void) other871;
+=======
+ClearFileMetadataResult::ClearFileMetadataResult(const ClearFileMetadataResult& other889) {
+  (void) other889;
+}
+ClearFileMetadataResult& ClearFileMetadataResult::operator=(const ClearFileMetadataResult& other890) {
+  (void) other890;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void ClearFileMetadataResult::printTo(std::ostream& out) const {
@@ -22881,6 +26590,7 @@ uint32_t ClearFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* i
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->fileIds.clear();
+<<<<<<< HEAD
             uint32_t _size910;
             ::apache::thrift::protocol::TType _etype913;
             xfer += iprot->readListBegin(_etype913, _size910);
@@ -22889,6 +26599,38 @@ uint32_t ClearFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* i
             for (_i914 = 0; _i914 < _size910; ++_i914)
             {
               xfer += iprot->readI64(this->fileIds[_i914]);
+=======
+<<<<<<< HEAD
+            uint32_t _size892;
+            ::apache::thrift::protocol::TType _etype895;
+            xfer += iprot->readListBegin(_etype895, _size892);
+            this->fileIds.resize(_size892);
+            uint32_t _i896;
+            for (_i896 = 0; _i896 < _size892; ++_i896)
+            {
+              xfer += iprot->readI64(this->fileIds[_i896]);
+=======
+<<<<<<< HEAD
+            uint32_t _size872;
+            ::apache::thrift::protocol::TType _etype875;
+            xfer += iprot->readListBegin(_etype875, _size872);
+            this->fileIds.resize(_size872);
+            uint32_t _i876;
+            for (_i876 = 0; _i876 < _size872; ++_i876)
+            {
+              xfer += iprot->readI64(this->fileIds[_i876]);
+=======
+            uint32_t _size891;
+            ::apache::thrift::protocol::TType _etype894;
+            xfer += iprot->readListBegin(_etype894, _size891);
+            this->fileIds.resize(_size891);
+            uint32_t _i895;
+            for (_i895 = 0; _i895 < _size891; ++_i895)
+            {
+              xfer += iprot->readI64(this->fileIds[_i895]);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -22919,10 +26661,31 @@ uint32_t ClearFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* 
   xfer += oprot->writeFieldBegin("fileIds", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->fileIds.size()));
+<<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter915;
     for (_iter915 = this->fileIds.begin(); _iter915 != this->fileIds.end(); ++_iter915)
     {
       xfer += oprot->writeI64((*_iter915));
+=======
+<<<<<<< HEAD
+    std::vector<int64_t> ::const_iterator _iter897;
+    for (_iter897 = this->fileIds.begin(); _iter897 != this->fileIds.end(); ++_iter897)
+    {
+      xfer += oprot->writeI64((*_iter897));
+=======
+<<<<<<< HEAD
+    std::vector<int64_t> ::const_iterator _iter877;
+    for (_iter877 = this->fileIds.begin(); _iter877 != this->fileIds.end(); ++_iter877)
+    {
+      xfer += oprot->writeI64((*_iter877));
+=======
+    std::vector<int64_t> ::const_iterator _iter896;
+    for (_iter896 = this->fileIds.begin(); _iter896 != this->fileIds.end(); ++_iter896)
+    {
+      xfer += oprot->writeI64((*_iter896));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -22938,11 +26701,35 @@ void swap(ClearFileMetadataRequest &a, ClearFileMetadataRequest &b) {
   swap(a.fileIds, b.fileIds);
 }
 
+<<<<<<< HEAD
 ClearFileMetadataRequest::ClearFileMetadataRequest(const ClearFileMetadataRequest& other916) {
   fileIds = other916.fileIds;
 }
 ClearFileMetadataRequest& ClearFileMetadataRequest::operator=(const ClearFileMetadataRequest& other917) {
   fileIds = other917.fileIds;
+=======
+<<<<<<< HEAD
+ClearFileMetadataRequest::ClearFileMetadataRequest(const ClearFileMetadataRequest& other898) {
+  fileIds = other898.fileIds;
+}
+ClearFileMetadataRequest& ClearFileMetadataRequest::operator=(const ClearFileMetadataRequest& other899) {
+  fileIds = other899.fileIds;
+=======
+<<<<<<< HEAD
+ClearFileMetadataRequest::ClearFileMetadataRequest(const ClearFileMetadataRequest& other878) {
+  fileIds = other878.fileIds;
+}
+ClearFileMetadataRequest& ClearFileMetadataRequest::operator=(const ClearFileMetadataRequest& other879) {
+  fileIds = other879.fileIds;
+=======
+ClearFileMetadataRequest::ClearFileMetadataRequest(const ClearFileMetadataRequest& other897) {
+  fileIds = other897.fileIds;
+}
+ClearFileMetadataRequest& ClearFileMetadataRequest::operator=(const ClearFileMetadataRequest& other898) {
+  fileIds = other898.fileIds;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void ClearFileMetadataRequest::printTo(std::ostream& out) const {
@@ -23024,11 +26811,35 @@ void swap(CacheFileMetadataResult &a, CacheFileMetadataResult &b) {
   swap(a.isSupported, b.isSupported);
 }
 
+<<<<<<< HEAD
 CacheFileMetadataResult::CacheFileMetadataResult(const CacheFileMetadataResult& other918) {
   isSupported = other918.isSupported;
 }
 CacheFileMetadataResult& CacheFileMetadataResult::operator=(const CacheFileMetadataResult& other919) {
   isSupported = other919.isSupported;
+=======
+<<<<<<< HEAD
+CacheFileMetadataResult::CacheFileMetadataResult(const CacheFileMetadataResult& other900) {
+  isSupported = other900.isSupported;
+}
+CacheFileMetadataResult& CacheFileMetadataResult::operator=(const CacheFileMetadataResult& other901) {
+  isSupported = other901.isSupported;
+=======
+<<<<<<< HEAD
+CacheFileMetadataResult::CacheFileMetadataResult(const CacheFileMetadataResult& other880) {
+  isSupported = other880.isSupported;
+}
+CacheFileMetadataResult& CacheFileMetadataResult::operator=(const CacheFileMetadataResult& other881) {
+  isSupported = other881.isSupported;
+=======
+CacheFileMetadataResult::CacheFileMetadataResult(const CacheFileMetadataResult& other899) {
+  isSupported = other899.isSupported;
+}
+CacheFileMetadataResult& CacheFileMetadataResult::operator=(const CacheFileMetadataResult& other900) {
+  isSupported = other900.isSupported;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void CacheFileMetadataResult::printTo(std::ostream& out) const {
@@ -23169,6 +26980,7 @@ void swap(CacheFileMetadataRequest &a, CacheFileMetadataRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 CacheFileMetadataRequest::CacheFileMetadataRequest(const CacheFileMetadataRequest& other920) {
   dbName = other920.dbName;
   tblName = other920.tblName;
@@ -23182,6 +26994,53 @@ CacheFileMetadataRequest& CacheFileMetadataRequest::operator=(const CacheFileMet
   partName = other921.partName;
   isAllParts = other921.isAllParts;
   __isset = other921.__isset;
+=======
+<<<<<<< HEAD
+CacheFileMetadataRequest::CacheFileMetadataRequest(const CacheFileMetadataRequest& other902) {
+  dbName = other902.dbName;
+  tblName = other902.tblName;
+  partName = other902.partName;
+  isAllParts = other902.isAllParts;
+  __isset = other902.__isset;
+}
+CacheFileMetadataRequest& CacheFileMetadataRequest::operator=(const CacheFileMetadataRequest& other903) {
+  dbName = other903.dbName;
+  tblName = other903.tblName;
+  partName = other903.partName;
+  isAllParts = other903.isAllParts;
+  __isset = other903.__isset;
+=======
+<<<<<<< HEAD
+CacheFileMetadataRequest::CacheFileMetadataRequest(const CacheFileMetadataRequest& other882) {
+  dbName = other882.dbName;
+  tblName = other882.tblName;
+  partName = other882.partName;
+  isAllParts = other882.isAllParts;
+  __isset = other882.__isset;
+}
+CacheFileMetadataRequest& CacheFileMetadataRequest::operator=(const CacheFileMetadataRequest& other883) {
+  dbName = other883.dbName;
+  tblName = other883.tblName;
+  partName = other883.partName;
+  isAllParts = other883.isAllParts;
+  __isset = other883.__isset;
+=======
+CacheFileMetadataRequest::CacheFileMetadataRequest(const CacheFileMetadataRequest& other901) {
+  dbName = other901.dbName;
+  tblName = other901.tblName;
+  partName = other901.partName;
+  isAllParts = other901.isAllParts;
+  __isset = other901.__isset;
+}
+CacheFileMetadataRequest& CacheFileMetadataRequest::operator=(const CacheFileMetadataRequest& other902) {
+  dbName = other902.dbName;
+  tblName = other902.tblName;
+  partName = other902.partName;
+  isAllParts = other902.isAllParts;
+  __isset = other902.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void CacheFileMetadataRequest::printTo(std::ostream& out) const {
@@ -23229,6 +27088,7 @@ uint32_t GetAllFunctionsResponse::read(::apache::thrift::protocol::TProtocol* ip
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->functions.clear();
+<<<<<<< HEAD
             uint32_t _size922;
             ::apache::thrift::protocol::TType _etype925;
             xfer += iprot->readListBegin(_etype925, _size922);
@@ -23237,6 +27097,38 @@ uint32_t GetAllFunctionsResponse::read(::apache::thrift::protocol::TProtocol* ip
             for (_i926 = 0; _i926 < _size922; ++_i926)
             {
               xfer += this->functions[_i926].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size904;
+            ::apache::thrift::protocol::TType _etype907;
+            xfer += iprot->readListBegin(_etype907, _size904);
+            this->functions.resize(_size904);
+            uint32_t _i908;
+            for (_i908 = 0; _i908 < _size904; ++_i908)
+            {
+              xfer += this->functions[_i908].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size884;
+            ::apache::thrift::protocol::TType _etype887;
+            xfer += iprot->readListBegin(_etype887, _size884);
+            this->functions.resize(_size884);
+            uint32_t _i888;
+            for (_i888 = 0; _i888 < _size884; ++_i888)
+            {
+              xfer += this->functions[_i888].read(iprot);
+=======
+            uint32_t _size903;
+            ::apache::thrift::protocol::TType _etype906;
+            xfer += iprot->readListBegin(_etype906, _size903);
+            this->functions.resize(_size903);
+            uint32_t _i907;
+            for (_i907 = 0; _i907 < _size903; ++_i907)
+            {
+              xfer += this->functions[_i907].read(iprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -23266,10 +27158,31 @@ uint32_t GetAllFunctionsResponse::write(::apache::thrift::protocol::TProtocol* o
     xfer += oprot->writeFieldBegin("functions", ::apache::thrift::protocol::T_LIST, 1);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->functions.size()));
+<<<<<<< HEAD
       std::vector<Function> ::const_iterator _iter927;
       for (_iter927 = this->functions.begin(); _iter927 != this->functions.end(); ++_iter927)
       {
         xfer += (*_iter927).write(oprot);
+=======
+<<<<<<< HEAD
+      std::vector<Function> ::const_iterator _iter909;
+      for (_iter909 = this->functions.begin(); _iter909 != this->functions.end(); ++_iter909)
+      {
+        xfer += (*_iter909).write(oprot);
+=======
+<<<<<<< HEAD
+      std::vector<Function> ::const_iterator _iter889;
+      for (_iter889 = this->functions.begin(); _iter889 != this->functions.end(); ++_iter889)
+      {
+        xfer += (*_iter889).write(oprot);
+=======
+      std::vector<Function> ::const_iterator _iter908;
+      for (_iter908 = this->functions.begin(); _iter908 != this->functions.end(); ++_iter908)
+      {
+        xfer += (*_iter908).write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       }
       xfer += oprot->writeListEnd();
     }
@@ -23286,6 +27199,7 @@ void swap(GetAllFunctionsResponse &a, GetAllFunctionsResponse &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 GetAllFunctionsResponse::GetAllFunctionsResponse(const GetAllFunctionsResponse& other928) {
   functions = other928.functions;
   __isset = other928.__isset;
@@ -23293,6 +27207,35 @@ GetAllFunctionsResponse::GetAllFunctionsResponse(const GetAllFunctionsResponse& 
 GetAllFunctionsResponse& GetAllFunctionsResponse::operator=(const GetAllFunctionsResponse& other929) {
   functions = other929.functions;
   __isset = other929.__isset;
+=======
+<<<<<<< HEAD
+GetAllFunctionsResponse::GetAllFunctionsResponse(const GetAllFunctionsResponse& other910) {
+  functions = other910.functions;
+  __isset = other910.__isset;
+}
+GetAllFunctionsResponse& GetAllFunctionsResponse::operator=(const GetAllFunctionsResponse& other911) {
+  functions = other911.functions;
+  __isset = other911.__isset;
+=======
+<<<<<<< HEAD
+GetAllFunctionsResponse::GetAllFunctionsResponse(const GetAllFunctionsResponse& other890) {
+  functions = other890.functions;
+  __isset = other890.__isset;
+}
+GetAllFunctionsResponse& GetAllFunctionsResponse::operator=(const GetAllFunctionsResponse& other891) {
+  functions = other891.functions;
+  __isset = other891.__isset;
+=======
+GetAllFunctionsResponse::GetAllFunctionsResponse(const GetAllFunctionsResponse& other909) {
+  functions = other909.functions;
+  __isset = other909.__isset;
+}
+GetAllFunctionsResponse& GetAllFunctionsResponse::operator=(const GetAllFunctionsResponse& other910) {
+  functions = other910.functions;
+  __isset = other910.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void GetAllFunctionsResponse::printTo(std::ostream& out) const {
@@ -23337,6 +27280,7 @@ uint32_t ClientCapabilities::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->values.clear();
+<<<<<<< HEAD
             uint32_t _size930;
             ::apache::thrift::protocol::TType _etype933;
             xfer += iprot->readListBegin(_etype933, _size930);
@@ -23347,6 +27291,44 @@ uint32_t ClientCapabilities::read(::apache::thrift::protocol::TProtocol* iprot) 
               int32_t ecast935;
               xfer += iprot->readI32(ecast935);
               this->values[_i934] = (ClientCapability::type)ecast935;
+=======
+<<<<<<< HEAD
+            uint32_t _size912;
+            ::apache::thrift::protocol::TType _etype915;
+            xfer += iprot->readListBegin(_etype915, _size912);
+            this->values.resize(_size912);
+            uint32_t _i916;
+            for (_i916 = 0; _i916 < _size912; ++_i916)
+            {
+              int32_t ecast917;
+              xfer += iprot->readI32(ecast917);
+              this->values[_i916] = (ClientCapability::type)ecast917;
+=======
+<<<<<<< HEAD
+            uint32_t _size892;
+            ::apache::thrift::protocol::TType _etype895;
+            xfer += iprot->readListBegin(_etype895, _size892);
+            this->values.resize(_size892);
+            uint32_t _i896;
+            for (_i896 = 0; _i896 < _size892; ++_i896)
+            {
+              int32_t ecast897;
+              xfer += iprot->readI32(ecast897);
+              this->values[_i896] = (ClientCapability::type)ecast897;
+=======
+            uint32_t _size911;
+            ::apache::thrift::protocol::TType _etype914;
+            xfer += iprot->readListBegin(_etype914, _size911);
+            this->values.resize(_size911);
+            uint32_t _i915;
+            for (_i915 = 0; _i915 < _size911; ++_i915)
+            {
+              int32_t ecast916;
+              xfer += iprot->readI32(ecast916);
+              this->values[_i915] = (ClientCapability::type)ecast916;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -23377,10 +27359,31 @@ uint32_t ClientCapabilities::write(::apache::thrift::protocol::TProtocol* oprot)
   xfer += oprot->writeFieldBegin("values", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I32, static_cast<uint32_t>(this->values.size()));
+<<<<<<< HEAD
     std::vector<ClientCapability::type> ::const_iterator _iter936;
     for (_iter936 = this->values.begin(); _iter936 != this->values.end(); ++_iter936)
     {
       xfer += oprot->writeI32((int32_t)(*_iter936));
+=======
+<<<<<<< HEAD
+    std::vector<ClientCapability::type> ::const_iterator _iter918;
+    for (_iter918 = this->values.begin(); _iter918 != this->values.end(); ++_iter918)
+    {
+      xfer += oprot->writeI32((int32_t)(*_iter918));
+=======
+<<<<<<< HEAD
+    std::vector<ClientCapability::type> ::const_iterator _iter898;
+    for (_iter898 = this->values.begin(); _iter898 != this->values.end(); ++_iter898)
+    {
+      xfer += oprot->writeI32((int32_t)(*_iter898));
+=======
+    std::vector<ClientCapability::type> ::const_iterator _iter917;
+    for (_iter917 = this->values.begin(); _iter917 != this->values.end(); ++_iter917)
+    {
+      xfer += oprot->writeI32((int32_t)(*_iter917));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -23396,11 +27399,35 @@ void swap(ClientCapabilities &a, ClientCapabilities &b) {
   swap(a.values, b.values);
 }
 
+<<<<<<< HEAD
 ClientCapabilities::ClientCapabilities(const ClientCapabilities& other937) {
   values = other937.values;
 }
 ClientCapabilities& ClientCapabilities::operator=(const ClientCapabilities& other938) {
   values = other938.values;
+=======
+<<<<<<< HEAD
+ClientCapabilities::ClientCapabilities(const ClientCapabilities& other919) {
+  values = other919.values;
+}
+ClientCapabilities& ClientCapabilities::operator=(const ClientCapabilities& other920) {
+  values = other920.values;
+=======
+<<<<<<< HEAD
+ClientCapabilities::ClientCapabilities(const ClientCapabilities& other899) {
+  values = other899.values;
+}
+ClientCapabilities& ClientCapabilities::operator=(const ClientCapabilities& other900) {
+  values = other900.values;
+=======
+ClientCapabilities::ClientCapabilities(const ClientCapabilities& other918) {
+  values = other918.values;
+}
+ClientCapabilities& ClientCapabilities::operator=(const ClientCapabilities& other919) {
+  values = other919.values;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void ClientCapabilities::printTo(std::ostream& out) const {
@@ -23541,6 +27568,7 @@ void swap(GetTableRequest &a, GetTableRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 GetTableRequest::GetTableRequest(const GetTableRequest& other939) {
   dbName = other939.dbName;
   tblName = other939.tblName;
@@ -23554,6 +27582,47 @@ GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other940) {
   capabilities = other940.capabilities;
   catName = other940.catName;
   __isset = other940.__isset;
+=======
+<<<<<<< HEAD
+GetTableRequest::GetTableRequest(const GetTableRequest& other921) {
+  dbName = other921.dbName;
+  tblName = other921.tblName;
+  capabilities = other921.capabilities;
+  __isset = other921.__isset;
+}
+GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other922) {
+  dbName = other922.dbName;
+  tblName = other922.tblName;
+  capabilities = other922.capabilities;
+  __isset = other922.__isset;
+=======
+<<<<<<< HEAD
+GetTableRequest::GetTableRequest(const GetTableRequest& other901) {
+  dbName = other901.dbName;
+  tblName = other901.tblName;
+  capabilities = other901.capabilities;
+  __isset = other901.__isset;
+}
+GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other902) {
+  dbName = other902.dbName;
+  tblName = other902.tblName;
+  capabilities = other902.capabilities;
+  __isset = other902.__isset;
+=======
+GetTableRequest::GetTableRequest(const GetTableRequest& other920) {
+  dbName = other920.dbName;
+  tblName = other920.tblName;
+  capabilities = other920.capabilities;
+  __isset = other920.__isset;
+}
+GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other921) {
+  dbName = other921.dbName;
+  tblName = other921.tblName;
+  capabilities = other921.capabilities;
+  __isset = other921.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void GetTableRequest::printTo(std::ostream& out) const {
@@ -23638,11 +27707,35 @@ void swap(GetTableResult &a, GetTableResult &b) {
   swap(a.table, b.table);
 }
 
+<<<<<<< HEAD
 GetTableResult::GetTableResult(const GetTableResult& other941) {
   table = other941.table;
 }
 GetTableResult& GetTableResult::operator=(const GetTableResult& other942) {
   table = other942.table;
+=======
+<<<<<<< HEAD
+GetTableResult::GetTableResult(const GetTableResult& other923) {
+  table = other923.table;
+}
+GetTableResult& GetTableResult::operator=(const GetTableResult& other924) {
+  table = other924.table;
+=======
+<<<<<<< HEAD
+GetTableResult::GetTableResult(const GetTableResult& other903) {
+  table = other903.table;
+}
+GetTableResult& GetTableResult::operator=(const GetTableResult& other904) {
+  table = other904.table;
+=======
+GetTableResult::GetTableResult(const GetTableResult& other922) {
+  table = other922.table;
+}
+GetTableResult& GetTableResult::operator=(const GetTableResult& other923) {
+  table = other923.table;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void GetTableResult::printTo(std::ostream& out) const {
@@ -23710,6 +27803,7 @@ uint32_t GetTablesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->tblNames.clear();
+<<<<<<< HEAD
             uint32_t _size943;
             ::apache::thrift::protocol::TType _etype946;
             xfer += iprot->readListBegin(_etype946, _size943);
@@ -23718,6 +27812,38 @@ uint32_t GetTablesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
             for (_i947 = 0; _i947 < _size943; ++_i947)
             {
               xfer += iprot->readString(this->tblNames[_i947]);
+=======
+<<<<<<< HEAD
+            uint32_t _size925;
+            ::apache::thrift::protocol::TType _etype928;
+            xfer += iprot->readListBegin(_etype928, _size925);
+            this->tblNames.resize(_size925);
+            uint32_t _i929;
+            for (_i929 = 0; _i929 < _size925; ++_i929)
+            {
+              xfer += iprot->readString(this->tblNames[_i929]);
+=======
+<<<<<<< HEAD
+            uint32_t _size905;
+            ::apache::thrift::protocol::TType _etype908;
+            xfer += iprot->readListBegin(_etype908, _size905);
+            this->tblNames.resize(_size905);
+            uint32_t _i909;
+            for (_i909 = 0; _i909 < _size905; ++_i909)
+            {
+              xfer += iprot->readString(this->tblNames[_i909]);
+=======
+            uint32_t _size924;
+            ::apache::thrift::protocol::TType _etype927;
+            xfer += iprot->readListBegin(_etype927, _size924);
+            this->tblNames.resize(_size924);
+            uint32_t _i928;
+            for (_i928 = 0; _i928 < _size924; ++_i928)
+            {
+              xfer += iprot->readString(this->tblNames[_i928]);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -23769,10 +27895,31 @@ uint32_t GetTablesRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
     xfer += oprot->writeFieldBegin("tblNames", ::apache::thrift::protocol::T_LIST, 2);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->tblNames.size()));
+<<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter948;
       for (_iter948 = this->tblNames.begin(); _iter948 != this->tblNames.end(); ++_iter948)
       {
         xfer += oprot->writeString((*_iter948));
+=======
+<<<<<<< HEAD
+      std::vector<std::string> ::const_iterator _iter930;
+      for (_iter930 = this->tblNames.begin(); _iter930 != this->tblNames.end(); ++_iter930)
+      {
+        xfer += oprot->writeString((*_iter930));
+=======
+<<<<<<< HEAD
+      std::vector<std::string> ::const_iterator _iter910;
+      for (_iter910 = this->tblNames.begin(); _iter910 != this->tblNames.end(); ++_iter910)
+      {
+        xfer += oprot->writeString((*_iter910));
+=======
+      std::vector<std::string> ::const_iterator _iter929;
+      for (_iter929 = this->tblNames.begin(); _iter929 != this->tblNames.end(); ++_iter929)
+      {
+        xfer += oprot->writeString((*_iter929));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       }
       xfer += oprot->writeListEnd();
     }
@@ -23802,6 +27949,7 @@ void swap(GetTablesRequest &a, GetTablesRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 GetTablesRequest::GetTablesRequest(const GetTablesRequest& other949) {
   dbName = other949.dbName;
   tblNames = other949.tblNames;
@@ -23815,6 +27963,47 @@ GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other950) 
   capabilities = other950.capabilities;
   catName = other950.catName;
   __isset = other950.__isset;
+=======
+<<<<<<< HEAD
+GetTablesRequest::GetTablesRequest(const GetTablesRequest& other931) {
+  dbName = other931.dbName;
+  tblNames = other931.tblNames;
+  capabilities = other931.capabilities;
+  __isset = other931.__isset;
+}
+GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other932) {
+  dbName = other932.dbName;
+  tblNames = other932.tblNames;
+  capabilities = other932.capabilities;
+  __isset = other932.__isset;
+=======
+<<<<<<< HEAD
+GetTablesRequest::GetTablesRequest(const GetTablesRequest& other911) {
+  dbName = other911.dbName;
+  tblNames = other911.tblNames;
+  capabilities = other911.capabilities;
+  __isset = other911.__isset;
+}
+GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other912) {
+  dbName = other912.dbName;
+  tblNames = other912.tblNames;
+  capabilities = other912.capabilities;
+  __isset = other912.__isset;
+=======
+GetTablesRequest::GetTablesRequest(const GetTablesRequest& other930) {
+  dbName = other930.dbName;
+  tblNames = other930.tblNames;
+  capabilities = other930.capabilities;
+  __isset = other930.__isset;
+}
+GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other931) {
+  dbName = other931.dbName;
+  tblNames = other931.tblNames;
+  capabilities = other931.capabilities;
+  __isset = other931.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void GetTablesRequest::printTo(std::ostream& out) const {
@@ -23862,6 +28051,7 @@ uint32_t GetTablesResult::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->tables.clear();
+<<<<<<< HEAD
             uint32_t _size951;
             ::apache::thrift::protocol::TType _etype954;
             xfer += iprot->readListBegin(_etype954, _size951);
@@ -23870,6 +28060,38 @@ uint32_t GetTablesResult::read(::apache::thrift::protocol::TProtocol* iprot) {
             for (_i955 = 0; _i955 < _size951; ++_i955)
             {
               xfer += this->tables[_i955].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size933;
+            ::apache::thrift::protocol::TType _etype936;
+            xfer += iprot->readListBegin(_etype936, _size933);
+            this->tables.resize(_size933);
+            uint32_t _i937;
+            for (_i937 = 0; _i937 < _size933; ++_i937)
+            {
+              xfer += this->tables[_i937].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size913;
+            ::apache::thrift::protocol::TType _etype916;
+            xfer += iprot->readListBegin(_etype916, _size913);
+            this->tables.resize(_size913);
+            uint32_t _i917;
+            for (_i917 = 0; _i917 < _size913; ++_i917)
+            {
+              xfer += this->tables[_i917].read(iprot);
+=======
+            uint32_t _size932;
+            ::apache::thrift::protocol::TType _etype935;
+            xfer += iprot->readListBegin(_etype935, _size932);
+            this->tables.resize(_size932);
+            uint32_t _i936;
+            for (_i936 = 0; _i936 < _size932; ++_i936)
+            {
+              xfer += this->tables[_i936].read(iprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -23900,10 +28122,31 @@ uint32_t GetTablesResult::write(::apache::thrift::protocol::TProtocol* oprot) co
   xfer += oprot->writeFieldBegin("tables", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->tables.size()));
+<<<<<<< HEAD
     std::vector<Table> ::const_iterator _iter956;
     for (_iter956 = this->tables.begin(); _iter956 != this->tables.end(); ++_iter956)
     {
       xfer += (*_iter956).write(oprot);
+=======
+<<<<<<< HEAD
+    std::vector<Table> ::const_iterator _iter938;
+    for (_iter938 = this->tables.begin(); _iter938 != this->tables.end(); ++_iter938)
+    {
+      xfer += (*_iter938).write(oprot);
+=======
+<<<<<<< HEAD
+    std::vector<Table> ::const_iterator _iter918;
+    for (_iter918 = this->tables.begin(); _iter918 != this->tables.end(); ++_iter918)
+    {
+      xfer += (*_iter918).write(oprot);
+=======
+    std::vector<Table> ::const_iterator _iter937;
+    for (_iter937 = this->tables.begin(); _iter937 != this->tables.end(); ++_iter937)
+    {
+      xfer += (*_iter937).write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -23919,11 +28162,35 @@ void swap(GetTablesResult &a, GetTablesResult &b) {
   swap(a.tables, b.tables);
 }
 
+<<<<<<< HEAD
 GetTablesResult::GetTablesResult(const GetTablesResult& other957) {
   tables = other957.tables;
 }
 GetTablesResult& GetTablesResult::operator=(const GetTablesResult& other958) {
   tables = other958.tables;
+=======
+<<<<<<< HEAD
+GetTablesResult::GetTablesResult(const GetTablesResult& other939) {
+  tables = other939.tables;
+}
+GetTablesResult& GetTablesResult::operator=(const GetTablesResult& other940) {
+  tables = other940.tables;
+=======
+<<<<<<< HEAD
+GetTablesResult::GetTablesResult(const GetTablesResult& other919) {
+  tables = other919.tables;
+}
+GetTablesResult& GetTablesResult::operator=(const GetTablesResult& other920) {
+  tables = other920.tables;
+=======
+GetTablesResult::GetTablesResult(const GetTablesResult& other938) {
+  tables = other938.tables;
+}
+GetTablesResult& GetTablesResult::operator=(const GetTablesResult& other939) {
+  tables = other939.tables;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void GetTablesResult::printTo(std::ostream& out) const {
@@ -24025,6 +28292,7 @@ void swap(CmRecycleRequest &a, CmRecycleRequest &b) {
   swap(a.purge, b.purge);
 }
 
+<<<<<<< HEAD
 CmRecycleRequest::CmRecycleRequest(const CmRecycleRequest& other959) {
   dataPath = other959.dataPath;
   purge = other959.purge;
@@ -24032,6 +28300,35 @@ CmRecycleRequest::CmRecycleRequest(const CmRecycleRequest& other959) {
 CmRecycleRequest& CmRecycleRequest::operator=(const CmRecycleRequest& other960) {
   dataPath = other960.dataPath;
   purge = other960.purge;
+=======
+<<<<<<< HEAD
+CmRecycleRequest::CmRecycleRequest(const CmRecycleRequest& other941) {
+  dataPath = other941.dataPath;
+  purge = other941.purge;
+}
+CmRecycleRequest& CmRecycleRequest::operator=(const CmRecycleRequest& other942) {
+  dataPath = other942.dataPath;
+  purge = other942.purge;
+=======
+<<<<<<< HEAD
+CmRecycleRequest::CmRecycleRequest(const CmRecycleRequest& other921) {
+  dataPath = other921.dataPath;
+  purge = other921.purge;
+}
+CmRecycleRequest& CmRecycleRequest::operator=(const CmRecycleRequest& other922) {
+  dataPath = other922.dataPath;
+  purge = other922.purge;
+=======
+CmRecycleRequest::CmRecycleRequest(const CmRecycleRequest& other940) {
+  dataPath = other940.dataPath;
+  purge = other940.purge;
+}
+CmRecycleRequest& CmRecycleRequest::operator=(const CmRecycleRequest& other941) {
+  dataPath = other941.dataPath;
+  purge = other941.purge;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void CmRecycleRequest::printTo(std::ostream& out) const {
@@ -24091,11 +28388,35 @@ void swap(CmRecycleResponse &a, CmRecycleResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 CmRecycleResponse::CmRecycleResponse(const CmRecycleResponse& other961) {
   (void) other961;
 }
 CmRecycleResponse& CmRecycleResponse::operator=(const CmRecycleResponse& other962) {
   (void) other962;
+=======
+<<<<<<< HEAD
+CmRecycleResponse::CmRecycleResponse(const CmRecycleResponse& other943) {
+  (void) other943;
+}
+CmRecycleResponse& CmRecycleResponse::operator=(const CmRecycleResponse& other944) {
+  (void) other944;
+=======
+<<<<<<< HEAD
+CmRecycleResponse::CmRecycleResponse(const CmRecycleResponse& other923) {
+  (void) other923;
+}
+CmRecycleResponse& CmRecycleResponse::operator=(const CmRecycleResponse& other924) {
+  (void) other924;
+=======
+CmRecycleResponse::CmRecycleResponse(const CmRecycleResponse& other942) {
+  (void) other942;
+}
+CmRecycleResponse& CmRecycleResponse::operator=(const CmRecycleResponse& other943) {
+  (void) other943;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void CmRecycleResponse::printTo(std::ostream& out) const {
@@ -24255,6 +28576,7 @@ void swap(TableMeta &a, TableMeta &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 TableMeta::TableMeta(const TableMeta& other963) {
   dbName = other963.dbName;
   tableName = other963.tableName;
@@ -24270,6 +28592,53 @@ TableMeta& TableMeta::operator=(const TableMeta& other964) {
   comments = other964.comments;
   catName = other964.catName;
   __isset = other964.__isset;
+=======
+<<<<<<< HEAD
+TableMeta::TableMeta(const TableMeta& other945) {
+  dbName = other945.dbName;
+  tableName = other945.tableName;
+  tableType = other945.tableType;
+  comments = other945.comments;
+  __isset = other945.__isset;
+}
+TableMeta& TableMeta::operator=(const TableMeta& other946) {
+  dbName = other946.dbName;
+  tableName = other946.tableName;
+  tableType = other946.tableType;
+  comments = other946.comments;
+  __isset = other946.__isset;
+=======
+<<<<<<< HEAD
+TableMeta::TableMeta(const TableMeta& other925) {
+  dbName = other925.dbName;
+  tableName = other925.tableName;
+  tableType = other925.tableType;
+  comments = other925.comments;
+  __isset = other925.__isset;
+}
+TableMeta& TableMeta::operator=(const TableMeta& other926) {
+  dbName = other926.dbName;
+  tableName = other926.tableName;
+  tableType = other926.tableType;
+  comments = other926.comments;
+  __isset = other926.__isset;
+=======
+TableMeta::TableMeta(const TableMeta& other944) {
+  dbName = other944.dbName;
+  tableName = other944.tableName;
+  tableType = other944.tableType;
+  comments = other944.comments;
+  __isset = other944.__isset;
+}
+TableMeta& TableMeta::operator=(const TableMeta& other945) {
+  dbName = other945.dbName;
+  tableName = other945.tableName;
+  tableType = other945.tableType;
+  comments = other945.comments;
+  __isset = other945.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void TableMeta::printTo(std::ostream& out) const {
@@ -24328,6 +28697,7 @@ uint32_t Materialization::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_SET) {
           {
             this->tablesUsed.clear();
+<<<<<<< HEAD
             uint32_t _size965;
             ::apache::thrift::protocol::TType _etype968;
             xfer += iprot->readSetBegin(_etype968, _size965);
@@ -24337,6 +28707,41 @@ uint32_t Materialization::read(::apache::thrift::protocol::TProtocol* iprot) {
               std::string _elem970;
               xfer += iprot->readString(_elem970);
               this->tablesUsed.insert(_elem970);
+=======
+<<<<<<< HEAD
+            uint32_t _size947;
+            ::apache::thrift::protocol::TType _etype950;
+            xfer += iprot->readSetBegin(_etype950, _size947);
+            uint32_t _i951;
+            for (_i951 = 0; _i951 < _size947; ++_i951)
+            {
+              std::string _elem952;
+              xfer += iprot->readString(_elem952);
+              this->tablesUsed.insert(_elem952);
+=======
+<<<<<<< HEAD
+            uint32_t _size927;
+            ::apache::thrift::protocol::TType _etype930;
+            xfer += iprot->readSetBegin(_etype930, _size927);
+            uint32_t _i931;
+            for (_i931 = 0; _i931 < _size927; ++_i931)
+            {
+              std::string _elem932;
+              xfer += iprot->readString(_elem932);
+              this->tablesUsed.insert(_elem932);
+=======
+            uint32_t _size946;
+            ::apache::thrift::protocol::TType _etype949;
+            xfer += iprot->readSetBegin(_etype949, _size946);
+            uint32_t _i950;
+            for (_i950 = 0; _i950 < _size946; ++_i950)
+            {
+              std::string _elem951;
+              xfer += iprot->readString(_elem951);
+              this->tablesUsed.insert(_elem951);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readSetEnd();
           }
@@ -24385,10 +28790,31 @@ uint32_t Materialization::write(::apache::thrift::protocol::TProtocol* oprot) co
   xfer += oprot->writeFieldBegin("tablesUsed", ::apache::thrift::protocol::T_SET, 1);
   {
     xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->tablesUsed.size()));
+<<<<<<< HEAD
     std::set<std::string> ::const_iterator _iter971;
     for (_iter971 = this->tablesUsed.begin(); _iter971 != this->tablesUsed.end(); ++_iter971)
     {
       xfer += oprot->writeString((*_iter971));
+=======
+<<<<<<< HEAD
+    std::set<std::string> ::const_iterator _iter953;
+    for (_iter953 = this->tablesUsed.begin(); _iter953 != this->tablesUsed.end(); ++_iter953)
+    {
+      xfer += oprot->writeString((*_iter953));
+=======
+<<<<<<< HEAD
+    std::set<std::string> ::const_iterator _iter933;
+    for (_iter933 = this->tablesUsed.begin(); _iter933 != this->tablesUsed.end(); ++_iter933)
+    {
+      xfer += oprot->writeString((*_iter933));
+=======
+    std::set<std::string> ::const_iterator _iter952;
+    for (_iter952 = this->tablesUsed.begin(); _iter952 != this->tablesUsed.end(); ++_iter952)
+    {
+      xfer += oprot->writeString((*_iter952));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeSetEnd();
   }
@@ -24416,6 +28842,7 @@ void swap(Materialization &a, Materialization &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 Materialization::Materialization(const Materialization& other972) {
   tablesUsed = other972.tablesUsed;
   validTxnList = other972.validTxnList;
@@ -24427,6 +28854,47 @@ Materialization& Materialization::operator=(const Materialization& other973) {
   validTxnList = other973.validTxnList;
   invalidationTime = other973.invalidationTime;
   __isset = other973.__isset;
+=======
+<<<<<<< HEAD
+Materialization::Materialization(const Materialization& other954) {
+  tablesUsed = other954.tablesUsed;
+  validTxnList = other954.validTxnList;
+  invalidationTime = other954.invalidationTime;
+  __isset = other954.__isset;
+}
+Materialization& Materialization::operator=(const Materialization& other955) {
+  tablesUsed = other955.tablesUsed;
+  validTxnList = other955.validTxnList;
+  invalidationTime = other955.invalidationTime;
+  __isset = other955.__isset;
+=======
+<<<<<<< HEAD
+Materialization::Materialization(const Materialization& other934) {
+  tablesUsed = other934.tablesUsed;
+  validTxnList = other934.validTxnList;
+  invalidationTime = other934.invalidationTime;
+  __isset = other934.__isset;
+}
+Materialization& Materialization::operator=(const Materialization& other935) {
+  tablesUsed = other935.tablesUsed;
+  validTxnList = other935.validTxnList;
+  invalidationTime = other935.invalidationTime;
+  __isset = other935.__isset;
+=======
+Materialization::Materialization(const Materialization& other953) {
+  tablesUsed = other953.tablesUsed;
+  validTxnList = other953.validTxnList;
+  invalidationTime = other953.invalidationTime;
+  __isset = other953.__isset;
+}
+Materialization& Materialization::operator=(const Materialization& other954) {
+  tablesUsed = other954.tablesUsed;
+  validTxnList = other954.validTxnList;
+  invalidationTime = other954.invalidationTime;
+  __isset = other954.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void Materialization::printTo(std::ostream& out) const {
@@ -24494,9 +28962,27 @@ uint32_t WMResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
           int32_t ecast974;
           xfer += iprot->readI32(ecast974);
           this->status = (WMResourcePlanStatus::type)ecast974;
+=======
+<<<<<<< HEAD
+          int32_t ecast956;
+          xfer += iprot->readI32(ecast956);
+          this->status = (WMResourcePlanStatus::type)ecast956;
+=======
+<<<<<<< HEAD
+          int32_t ecast936;
+          xfer += iprot->readI32(ecast936);
+          this->status = (WMResourcePlanStatus::type)ecast936;
+=======
+          int32_t ecast955;
+          xfer += iprot->readI32(ecast955);
+          this->status = (WMResourcePlanStatus::type)ecast955;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           this->__isset.status = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -24570,6 +29056,7 @@ void swap(WMResourcePlan &a, WMResourcePlan &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMResourcePlan::WMResourcePlan(const WMResourcePlan& other975) {
   name = other975.name;
   status = other975.status;
@@ -24583,6 +29070,53 @@ WMResourcePlan& WMResourcePlan::operator=(const WMResourcePlan& other976) {
   queryParallelism = other976.queryParallelism;
   defaultPoolPath = other976.defaultPoolPath;
   __isset = other976.__isset;
+=======
+<<<<<<< HEAD
+WMResourcePlan::WMResourcePlan(const WMResourcePlan& other957) {
+  name = other957.name;
+  status = other957.status;
+  queryParallelism = other957.queryParallelism;
+  defaultPoolPath = other957.defaultPoolPath;
+  __isset = other957.__isset;
+}
+WMResourcePlan& WMResourcePlan::operator=(const WMResourcePlan& other958) {
+  name = other958.name;
+  status = other958.status;
+  queryParallelism = other958.queryParallelism;
+  defaultPoolPath = other958.defaultPoolPath;
+  __isset = other958.__isset;
+=======
+<<<<<<< HEAD
+WMResourcePlan::WMResourcePlan(const WMResourcePlan& other937) {
+  name = other937.name;
+  status = other937.status;
+  queryParallelism = other937.queryParallelism;
+  defaultPoolPath = other937.defaultPoolPath;
+  __isset = other937.__isset;
+}
+WMResourcePlan& WMResourcePlan::operator=(const WMResourcePlan& other938) {
+  name = other938.name;
+  status = other938.status;
+  queryParallelism = other938.queryParallelism;
+  defaultPoolPath = other938.defaultPoolPath;
+  __isset = other938.__isset;
+=======
+WMResourcePlan::WMResourcePlan(const WMResourcePlan& other956) {
+  name = other956.name;
+  status = other956.status;
+  queryParallelism = other956.queryParallelism;
+  defaultPoolPath = other956.defaultPoolPath;
+  __isset = other956.__isset;
+}
+WMResourcePlan& WMResourcePlan::operator=(const WMResourcePlan& other957) {
+  name = other957.name;
+  status = other957.status;
+  queryParallelism = other957.queryParallelism;
+  defaultPoolPath = other957.defaultPoolPath;
+  __isset = other957.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMResourcePlan::printTo(std::ostream& out) const {
@@ -24661,9 +29195,27 @@ uint32_t WMNullableResourcePlan::read(::apache::thrift::protocol::TProtocol* ipr
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
           int32_t ecast977;
           xfer += iprot->readI32(ecast977);
           this->status = (WMResourcePlanStatus::type)ecast977;
+=======
+<<<<<<< HEAD
+          int32_t ecast959;
+          xfer += iprot->readI32(ecast959);
+          this->status = (WMResourcePlanStatus::type)ecast959;
+=======
+<<<<<<< HEAD
+          int32_t ecast939;
+          xfer += iprot->readI32(ecast939);
+          this->status = (WMResourcePlanStatus::type)ecast939;
+=======
+          int32_t ecast958;
+          xfer += iprot->readI32(ecast958);
+          this->status = (WMResourcePlanStatus::type)ecast958;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           this->__isset.status = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -24764,6 +29316,7 @@ void swap(WMNullableResourcePlan &a, WMNullableResourcePlan &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMNullableResourcePlan::WMNullableResourcePlan(const WMNullableResourcePlan& other978) {
   name = other978.name;
   status = other978.status;
@@ -24781,6 +29334,61 @@ WMNullableResourcePlan& WMNullableResourcePlan::operator=(const WMNullableResour
   defaultPoolPath = other979.defaultPoolPath;
   isSetDefaultPoolPath = other979.isSetDefaultPoolPath;
   __isset = other979.__isset;
+=======
+<<<<<<< HEAD
+WMNullableResourcePlan::WMNullableResourcePlan(const WMNullableResourcePlan& other960) {
+=======
+<<<<<<< HEAD
+WMNullableResourcePlan::WMNullableResourcePlan(const WMNullableResourcePlan& other940) {
+  name = other940.name;
+  status = other940.status;
+  queryParallelism = other940.queryParallelism;
+  isSetQueryParallelism = other940.isSetQueryParallelism;
+  defaultPoolPath = other940.defaultPoolPath;
+  isSetDefaultPoolPath = other940.isSetDefaultPoolPath;
+  __isset = other940.__isset;
+}
+WMNullableResourcePlan& WMNullableResourcePlan::operator=(const WMNullableResourcePlan& other941) {
+  name = other941.name;
+  status = other941.status;
+  queryParallelism = other941.queryParallelism;
+  isSetQueryParallelism = other941.isSetQueryParallelism;
+  defaultPoolPath = other941.defaultPoolPath;
+  isSetDefaultPoolPath = other941.isSetDefaultPoolPath;
+  __isset = other941.__isset;
+=======
+WMNullableResourcePlan::WMNullableResourcePlan(const WMNullableResourcePlan& other959) {
+  name = other959.name;
+  status = other959.status;
+  queryParallelism = other959.queryParallelism;
+  isSetQueryParallelism = other959.isSetQueryParallelism;
+  defaultPoolPath = other959.defaultPoolPath;
+  isSetDefaultPoolPath = other959.isSetDefaultPoolPath;
+  __isset = other959.__isset;
+}
+WMNullableResourcePlan& WMNullableResourcePlan::operator=(const WMNullableResourcePlan& other960) {
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+  name = other960.name;
+  status = other960.status;
+  queryParallelism = other960.queryParallelism;
+  isSetQueryParallelism = other960.isSetQueryParallelism;
+  defaultPoolPath = other960.defaultPoolPath;
+  isSetDefaultPoolPath = other960.isSetDefaultPoolPath;
+  __isset = other960.__isset;
+<<<<<<< HEAD
+}
+WMNullableResourcePlan& WMNullableResourcePlan::operator=(const WMNullableResourcePlan& other961) {
+  name = other961.name;
+  status = other961.status;
+  queryParallelism = other961.queryParallelism;
+  isSetQueryParallelism = other961.isSetQueryParallelism;
+  defaultPoolPath = other961.defaultPoolPath;
+  isSetDefaultPoolPath = other961.isSetDefaultPoolPath;
+  __isset = other961.__isset;
+=======
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMNullableResourcePlan::printTo(std::ostream& out) const {
@@ -24945,6 +29553,7 @@ void swap(WMPool &a, WMPool &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMPool::WMPool(const WMPool& other980) {
   resourcePlanName = other980.resourcePlanName;
   poolPath = other980.poolPath;
@@ -24960,6 +29569,56 @@ WMPool& WMPool::operator=(const WMPool& other981) {
   queryParallelism = other981.queryParallelism;
   schedulingPolicy = other981.schedulingPolicy;
   __isset = other981.__isset;
+=======
+<<<<<<< HEAD
+WMPool::WMPool(const WMPool& other962) {
+=======
+<<<<<<< HEAD
+WMPool::WMPool(const WMPool& other942) {
+  resourcePlanName = other942.resourcePlanName;
+  poolPath = other942.poolPath;
+  allocFraction = other942.allocFraction;
+  queryParallelism = other942.queryParallelism;
+  schedulingPolicy = other942.schedulingPolicy;
+  __isset = other942.__isset;
+}
+WMPool& WMPool::operator=(const WMPool& other943) {
+  resourcePlanName = other943.resourcePlanName;
+  poolPath = other943.poolPath;
+  allocFraction = other943.allocFraction;
+  queryParallelism = other943.queryParallelism;
+  schedulingPolicy = other943.schedulingPolicy;
+  __isset = other943.__isset;
+=======
+WMPool::WMPool(const WMPool& other961) {
+  resourcePlanName = other961.resourcePlanName;
+  poolPath = other961.poolPath;
+  allocFraction = other961.allocFraction;
+  queryParallelism = other961.queryParallelism;
+  schedulingPolicy = other961.schedulingPolicy;
+  __isset = other961.__isset;
+}
+WMPool& WMPool::operator=(const WMPool& other962) {
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+  resourcePlanName = other962.resourcePlanName;
+  poolPath = other962.poolPath;
+  allocFraction = other962.allocFraction;
+  queryParallelism = other962.queryParallelism;
+  schedulingPolicy = other962.schedulingPolicy;
+  __isset = other962.__isset;
+<<<<<<< HEAD
+}
+WMPool& WMPool::operator=(const WMPool& other963) {
+  resourcePlanName = other963.resourcePlanName;
+  poolPath = other963.poolPath;
+  allocFraction = other963.allocFraction;
+  queryParallelism = other963.queryParallelism;
+  schedulingPolicy = other963.schedulingPolicy;
+  __isset = other963.__isset;
+=======
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMPool::printTo(std::ostream& out) const {
@@ -25142,6 +29801,7 @@ void swap(WMNullablePool &a, WMNullablePool &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMNullablePool::WMNullablePool(const WMNullablePool& other982) {
   resourcePlanName = other982.resourcePlanName;
   poolPath = other982.poolPath;
@@ -25159,6 +29819,61 @@ WMNullablePool& WMNullablePool::operator=(const WMNullablePool& other983) {
   schedulingPolicy = other983.schedulingPolicy;
   isSetSchedulingPolicy = other983.isSetSchedulingPolicy;
   __isset = other983.__isset;
+=======
+<<<<<<< HEAD
+WMNullablePool::WMNullablePool(const WMNullablePool& other964) {
+=======
+<<<<<<< HEAD
+WMNullablePool::WMNullablePool(const WMNullablePool& other944) {
+  resourcePlanName = other944.resourcePlanName;
+  poolPath = other944.poolPath;
+  allocFraction = other944.allocFraction;
+  queryParallelism = other944.queryParallelism;
+  schedulingPolicy = other944.schedulingPolicy;
+  isSetSchedulingPolicy = other944.isSetSchedulingPolicy;
+  __isset = other944.__isset;
+}
+WMNullablePool& WMNullablePool::operator=(const WMNullablePool& other945) {
+  resourcePlanName = other945.resourcePlanName;
+  poolPath = other945.poolPath;
+  allocFraction = other945.allocFraction;
+  queryParallelism = other945.queryParallelism;
+  schedulingPolicy = other945.schedulingPolicy;
+  isSetSchedulingPolicy = other945.isSetSchedulingPolicy;
+  __isset = other945.__isset;
+=======
+WMNullablePool::WMNullablePool(const WMNullablePool& other963) {
+  resourcePlanName = other963.resourcePlanName;
+  poolPath = other963.poolPath;
+  allocFraction = other963.allocFraction;
+  queryParallelism = other963.queryParallelism;
+  schedulingPolicy = other963.schedulingPolicy;
+  isSetSchedulingPolicy = other963.isSetSchedulingPolicy;
+  __isset = other963.__isset;
+}
+WMNullablePool& WMNullablePool::operator=(const WMNullablePool& other964) {
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+  resourcePlanName = other964.resourcePlanName;
+  poolPath = other964.poolPath;
+  allocFraction = other964.allocFraction;
+  queryParallelism = other964.queryParallelism;
+  schedulingPolicy = other964.schedulingPolicy;
+  isSetSchedulingPolicy = other964.isSetSchedulingPolicy;
+  __isset = other964.__isset;
+<<<<<<< HEAD
+}
+WMNullablePool& WMNullablePool::operator=(const WMNullablePool& other965) {
+  resourcePlanName = other965.resourcePlanName;
+  poolPath = other965.poolPath;
+  allocFraction = other965.allocFraction;
+  queryParallelism = other965.queryParallelism;
+  schedulingPolicy = other965.schedulingPolicy;
+  isSetSchedulingPolicy = other965.isSetSchedulingPolicy;
+  __isset = other965.__isset;
+=======
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMNullablePool::printTo(std::ostream& out) const {
@@ -25323,6 +30038,7 @@ void swap(WMTrigger &a, WMTrigger &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMTrigger::WMTrigger(const WMTrigger& other984) {
   resourcePlanName = other984.resourcePlanName;
   triggerName = other984.triggerName;
@@ -25338,6 +30054,56 @@ WMTrigger& WMTrigger::operator=(const WMTrigger& other985) {
   actionExpression = other985.actionExpression;
   isInUnmanaged = other985.isInUnmanaged;
   __isset = other985.__isset;
+=======
+<<<<<<< HEAD
+WMTrigger::WMTrigger(const WMTrigger& other966) {
+=======
+<<<<<<< HEAD
+WMTrigger::WMTrigger(const WMTrigger& other946) {
+  resourcePlanName = other946.resourcePlanName;
+  triggerName = other946.triggerName;
+  triggerExpression = other946.triggerExpression;
+  actionExpression = other946.actionExpression;
+  isInUnmanaged = other946.isInUnmanaged;
+  __isset = other946.__isset;
+}
+WMTrigger& WMTrigger::operator=(const WMTrigger& other947) {
+  resourcePlanName = other947.resourcePlanName;
+  triggerName = other947.triggerName;
+  triggerExpression = other947.triggerExpression;
+  actionExpression = other947.actionExpression;
+  isInUnmanaged = other947.isInUnmanaged;
+  __isset = other947.__isset;
+=======
+WMTrigger::WMTrigger(const WMTrigger& other965) {
+  resourcePlanName = other965.resourcePlanName;
+  triggerName = other965.triggerName;
+  triggerExpression = other965.triggerExpression;
+  actionExpression = other965.actionExpression;
+  isInUnmanaged = other965.isInUnmanaged;
+  __isset = other965.__isset;
+}
+WMTrigger& WMTrigger::operator=(const WMTrigger& other966) {
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+  resourcePlanName = other966.resourcePlanName;
+  triggerName = other966.triggerName;
+  triggerExpression = other966.triggerExpression;
+  actionExpression = other966.actionExpression;
+  isInUnmanaged = other966.isInUnmanaged;
+  __isset = other966.__isset;
+<<<<<<< HEAD
+}
+WMTrigger& WMTrigger::operator=(const WMTrigger& other967) {
+  resourcePlanName = other967.resourcePlanName;
+  triggerName = other967.triggerName;
+  triggerExpression = other967.triggerExpression;
+  actionExpression = other967.actionExpression;
+  isInUnmanaged = other967.isInUnmanaged;
+  __isset = other967.__isset;
+=======
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMTrigger::printTo(std::ostream& out) const {
@@ -25502,6 +30268,7 @@ void swap(WMMapping &a, WMMapping &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMMapping::WMMapping(const WMMapping& other986) {
   resourcePlanName = other986.resourcePlanName;
   entityType = other986.entityType;
@@ -25517,6 +30284,56 @@ WMMapping& WMMapping::operator=(const WMMapping& other987) {
   poolPath = other987.poolPath;
   ordering = other987.ordering;
   __isset = other987.__isset;
+=======
+<<<<<<< HEAD
+WMMapping::WMMapping(const WMMapping& other968) {
+=======
+<<<<<<< HEAD
+WMMapping::WMMapping(const WMMapping& other948) {
+  resourcePlanName = other948.resourcePlanName;
+  entityType = other948.entityType;
+  entityName = other948.entityName;
+  poolPath = other948.poolPath;
+  ordering = other948.ordering;
+  __isset = other948.__isset;
+}
+WMMapping& WMMapping::operator=(const WMMapping& other949) {
+  resourcePlanName = other949.resourcePlanName;
+  entityType = other949.entityType;
+  entityName = other949.entityName;
+  poolPath = other949.poolPath;
+  ordering = other949.ordering;
+  __isset = other949.__isset;
+=======
+WMMapping::WMMapping(const WMMapping& other967) {
+  resourcePlanName = other967.resourcePlanName;
+  entityType = other967.entityType;
+  entityName = other967.entityName;
+  poolPath = other967.poolPath;
+  ordering = other967.ordering;
+  __isset = other967.__isset;
+}
+WMMapping& WMMapping::operator=(const WMMapping& other968) {
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+  resourcePlanName = other968.resourcePlanName;
+  entityType = other968.entityType;
+  entityName = other968.entityName;
+  poolPath = other968.poolPath;
+  ordering = other968.ordering;
+  __isset = other968.__isset;
+<<<<<<< HEAD
+}
+WMMapping& WMMapping::operator=(const WMMapping& other969) {
+  resourcePlanName = other969.resourcePlanName;
+  entityType = other969.entityType;
+  entityName = other969.entityName;
+  poolPath = other969.poolPath;
+  ordering = other969.ordering;
+  __isset = other969.__isset;
+=======
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMMapping::printTo(std::ostream& out) const {
@@ -25622,6 +30439,7 @@ void swap(WMPoolTrigger &a, WMPoolTrigger &b) {
   swap(a.trigger, b.trigger);
 }
 
+<<<<<<< HEAD
 WMPoolTrigger::WMPoolTrigger(const WMPoolTrigger& other988) {
   pool = other988.pool;
   trigger = other988.trigger;
@@ -25629,6 +30447,35 @@ WMPoolTrigger::WMPoolTrigger(const WMPoolTrigger& other988) {
 WMPoolTrigger& WMPoolTrigger::operator=(const WMPoolTrigger& other989) {
   pool = other989.pool;
   trigger = other989.trigger;
+=======
+<<<<<<< HEAD
+WMPoolTrigger::WMPoolTrigger(const WMPoolTrigger& other970) {
+  pool = other970.pool;
+  trigger = other970.trigger;
+}
+WMPoolTrigger& WMPoolTrigger::operator=(const WMPoolTrigger& other971) {
+  pool = other971.pool;
+  trigger = other971.trigger;
+=======
+<<<<<<< HEAD
+WMPoolTrigger::WMPoolTrigger(const WMPoolTrigger& other950) {
+  pool = other950.pool;
+  trigger = other950.trigger;
+}
+WMPoolTrigger& WMPoolTrigger::operator=(const WMPoolTrigger& other951) {
+  pool = other951.pool;
+  trigger = other951.trigger;
+=======
+WMPoolTrigger::WMPoolTrigger(const WMPoolTrigger& other969) {
+  pool = other969.pool;
+  trigger = other969.trigger;
+}
+WMPoolTrigger& WMPoolTrigger::operator=(const WMPoolTrigger& other970) {
+  pool = other970.pool;
+  trigger = other970.trigger;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMPoolTrigger::printTo(std::ostream& out) const {
@@ -25702,6 +30549,7 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->pools.clear();
+<<<<<<< HEAD
             uint32_t _size990;
             ::apache::thrift::protocol::TType _etype993;
             xfer += iprot->readListBegin(_etype993, _size990);
@@ -25710,6 +30558,38 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
             for (_i994 = 0; _i994 < _size990; ++_i994)
             {
               xfer += this->pools[_i994].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size972;
+            ::apache::thrift::protocol::TType _etype975;
+            xfer += iprot->readListBegin(_etype975, _size972);
+            this->pools.resize(_size972);
+            uint32_t _i976;
+            for (_i976 = 0; _i976 < _size972; ++_i976)
+            {
+              xfer += this->pools[_i976].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size952;
+            ::apache::thrift::protocol::TType _etype955;
+            xfer += iprot->readListBegin(_etype955, _size952);
+            this->pools.resize(_size952);
+            uint32_t _i956;
+            for (_i956 = 0; _i956 < _size952; ++_i956)
+            {
+              xfer += this->pools[_i956].read(iprot);
+=======
+            uint32_t _size971;
+            ::apache::thrift::protocol::TType _etype974;
+            xfer += iprot->readListBegin(_etype974, _size971);
+            this->pools.resize(_size971);
+            uint32_t _i975;
+            for (_i975 = 0; _i975 < _size971; ++_i975)
+            {
+              xfer += this->pools[_i975].read(iprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -25722,6 +30602,7 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->mappings.clear();
+<<<<<<< HEAD
             uint32_t _size995;
             ::apache::thrift::protocol::TType _etype998;
             xfer += iprot->readListBegin(_etype998, _size995);
@@ -25730,6 +30611,38 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
             for (_i999 = 0; _i999 < _size995; ++_i999)
             {
               xfer += this->mappings[_i999].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size977;
+            ::apache::thrift::protocol::TType _etype980;
+            xfer += iprot->readListBegin(_etype980, _size977);
+            this->mappings.resize(_size977);
+            uint32_t _i981;
+            for (_i981 = 0; _i981 < _size977; ++_i981)
+            {
+              xfer += this->mappings[_i981].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size957;
+            ::apache::thrift::protocol::TType _etype960;
+            xfer += iprot->readListBegin(_etype960, _size957);
+            this->mappings.resize(_size957);
+            uint32_t _i961;
+            for (_i961 = 0; _i961 < _size957; ++_i961)
+            {
+              xfer += this->mappings[_i961].read(iprot);
+=======
+            uint32_t _size976;
+            ::apache::thrift::protocol::TType _etype979;
+            xfer += iprot->readListBegin(_etype979, _size976);
+            this->mappings.resize(_size976);
+            uint32_t _i980;
+            for (_i980 = 0; _i980 < _size976; ++_i980)
+            {
+              xfer += this->mappings[_i980].read(iprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -25742,6 +30655,7 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->triggers.clear();
+<<<<<<< HEAD
             uint32_t _size1000;
             ::apache::thrift::protocol::TType _etype1003;
             xfer += iprot->readListBegin(_etype1003, _size1000);
@@ -25750,6 +30664,38 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
             for (_i1004 = 0; _i1004 < _size1000; ++_i1004)
             {
               xfer += this->triggers[_i1004].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size982;
+            ::apache::thrift::protocol::TType _etype985;
+            xfer += iprot->readListBegin(_etype985, _size982);
+            this->triggers.resize(_size982);
+            uint32_t _i986;
+            for (_i986 = 0; _i986 < _size982; ++_i986)
+            {
+              xfer += this->triggers[_i986].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size962;
+            ::apache::thrift::protocol::TType _etype965;
+            xfer += iprot->readListBegin(_etype965, _size962);
+            this->triggers.resize(_size962);
+            uint32_t _i966;
+            for (_i966 = 0; _i966 < _size962; ++_i966)
+            {
+              xfer += this->triggers[_i966].read(iprot);
+=======
+            uint32_t _size981;
+            ::apache::thrift::protocol::TType _etype984;
+            xfer += iprot->readListBegin(_etype984, _size981);
+            this->triggers.resize(_size981);
+            uint32_t _i985;
+            for (_i985 = 0; _i985 < _size981; ++_i985)
+            {
+              xfer += this->triggers[_i985].read(iprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -25762,6 +30708,7 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->poolTriggers.clear();
+<<<<<<< HEAD
             uint32_t _size1005;
             ::apache::thrift::protocol::TType _etype1008;
             xfer += iprot->readListBegin(_etype1008, _size1005);
@@ -25770,6 +30717,38 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
             for (_i1009 = 0; _i1009 < _size1005; ++_i1009)
             {
               xfer += this->poolTriggers[_i1009].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size987;
+            ::apache::thrift::protocol::TType _etype990;
+            xfer += iprot->readListBegin(_etype990, _size987);
+            this->poolTriggers.resize(_size987);
+            uint32_t _i991;
+            for (_i991 = 0; _i991 < _size987; ++_i991)
+            {
+              xfer += this->poolTriggers[_i991].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size967;
+            ::apache::thrift::protocol::TType _etype970;
+            xfer += iprot->readListBegin(_etype970, _size967);
+            this->poolTriggers.resize(_size967);
+            uint32_t _i971;
+            for (_i971 = 0; _i971 < _size967; ++_i971)
+            {
+              xfer += this->poolTriggers[_i971].read(iprot);
+=======
+            uint32_t _size986;
+            ::apache::thrift::protocol::TType _etype989;
+            xfer += iprot->readListBegin(_etype989, _size986);
+            this->poolTriggers.resize(_size986);
+            uint32_t _i990;
+            for (_i990 = 0; _i990 < _size986; ++_i990)
+            {
+              xfer += this->poolTriggers[_i990].read(iprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -25806,10 +30785,31 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
   xfer += oprot->writeFieldBegin("pools", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->pools.size()));
+<<<<<<< HEAD
     std::vector<WMPool> ::const_iterator _iter1010;
     for (_iter1010 = this->pools.begin(); _iter1010 != this->pools.end(); ++_iter1010)
     {
       xfer += (*_iter1010).write(oprot);
+=======
+<<<<<<< HEAD
+    std::vector<WMPool> ::const_iterator _iter992;
+    for (_iter992 = this->pools.begin(); _iter992 != this->pools.end(); ++_iter992)
+    {
+      xfer += (*_iter992).write(oprot);
+=======
+<<<<<<< HEAD
+    std::vector<WMPool> ::const_iterator _iter972;
+    for (_iter972 = this->pools.begin(); _iter972 != this->pools.end(); ++_iter972)
+    {
+      xfer += (*_iter972).write(oprot);
+=======
+    std::vector<WMPool> ::const_iterator _iter991;
+    for (_iter991 = this->pools.begin(); _iter991 != this->pools.end(); ++_iter991)
+    {
+      xfer += (*_iter991).write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
     }
     xfer += oprot->writeListEnd();
   }
@@ -25819,10 +30819,31 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeFieldBegin("mappings", ::apache::thrift::protocol::T_LIST, 3);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->mappings.size()));
+<<<<<<< HEAD
       std::vector<WMMapping> ::const_iterator _iter1011;
       for (_iter1011 = this->mappings.begin(); _iter1011 != this->mappings.end(); ++_iter1011)
       {
         xfer += (*_iter1011).write(oprot);
+=======
+<<<<<<< HEAD
+      std::vector<WMMapping> ::const_iterator _iter993;
+      for (_iter993 = this->mappings.begin(); _iter993 != this->mappings.end(); ++_iter993)
+      {
+        xfer += (*_iter993).write(oprot);
+=======
+<<<<<<< HEAD
+      std::vector<WMMapping> ::const_iterator _iter973;
+      for (_iter973 = this->mappings.begin(); _iter973 != this->mappings.end(); ++_iter973)
+      {
+        xfer += (*_iter973).write(oprot);
+=======
+      std::vector<WMMapping> ::const_iterator _iter992;
+      for (_iter992 = this->mappings.begin(); _iter992 != this->mappings.end(); ++_iter992)
+      {
+        xfer += (*_iter992).write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       }
       xfer += oprot->writeListEnd();
     }
@@ -25832,10 +30853,31 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeFieldBegin("triggers", ::apache::thrift::protocol::T_LIST, 4);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->triggers.size()));
+<<<<<<< HEAD
       std::vector<WMTrigger> ::const_iterator _iter1012;
       for (_iter1012 = this->triggers.begin(); _iter1012 != this->triggers.end(); ++_iter1012)
       {
         xfer += (*_iter1012).write(oprot);
+=======
+<<<<<<< HEAD
+      std::vector<WMTrigger> ::const_iterator _iter994;
+      for (_iter994 = this->triggers.begin(); _iter994 != this->triggers.end(); ++_iter994)
+      {
+        xfer += (*_iter994).write(oprot);
+=======
+<<<<<<< HEAD
+      std::vector<WMTrigger> ::const_iterator _iter974;
+      for (_iter974 = this->triggers.begin(); _iter974 != this->triggers.end(); ++_iter974)
+      {
+        xfer += (*_iter974).write(oprot);
+=======
+      std::vector<WMTrigger> ::const_iterator _iter993;
+      for (_iter993 = this->triggers.begin(); _iter993 != this->triggers.end(); ++_iter993)
+      {
+        xfer += (*_iter993).write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       }
       xfer += oprot->writeListEnd();
     }
@@ -25845,10 +30887,31 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeFieldBegin("poolTriggers", ::apache::thrift::protocol::T_LIST, 5);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->poolTriggers.size()));
+<<<<<<< HEAD
       std::vector<WMPoolTrigger> ::const_iterator _iter1013;
       for (_iter1013 = this->poolTriggers.begin(); _iter1013 != this->poolTriggers.end(); ++_iter1013)
       {
         xfer += (*_iter1013).write(oprot);
+=======
+<<<<<<< HEAD
+      std::vector<WMPoolTrigger> ::const_iterator _iter995;
+      for (_iter995 = this->poolTriggers.begin(); _iter995 != this->poolTriggers.end(); ++_iter995)
+      {
+        xfer += (*_iter995).write(oprot);
+=======
+<<<<<<< HEAD
+      std::vector<WMPoolTrigger> ::const_iterator _iter975;
+      for (_iter975 = this->poolTriggers.begin(); _iter975 != this->poolTriggers.end(); ++_iter975)
+      {
+        xfer += (*_iter975).write(oprot);
+=======
+      std::vector<WMPoolTrigger> ::const_iterator _iter994;
+      for (_iter994 = this->poolTriggers.begin(); _iter994 != this->poolTriggers.end(); ++_iter994)
+      {
+        xfer += (*_iter994).write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       }
       xfer += oprot->writeListEnd();
     }
@@ -25869,6 +30932,7 @@ void swap(WMFullResourcePlan &a, WMFullResourcePlan &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMFullResourcePlan::WMFullResourcePlan(const WMFullResourcePlan& other1014) {
   plan = other1014.plan;
   pools = other1014.pools;
@@ -25884,6 +30948,56 @@ WMFullResourcePlan& WMFullResourcePlan::operator=(const WMFullResourcePlan& othe
   triggers = other1015.triggers;
   poolTriggers = other1015.poolTriggers;
   __isset = other1015.__isset;
+=======
+<<<<<<< HEAD
+WMFullResourcePlan::WMFullResourcePlan(const WMFullResourcePlan& other996) {
+=======
+<<<<<<< HEAD
+WMFullResourcePlan::WMFullResourcePlan(const WMFullResourcePlan& other976) {
+  plan = other976.plan;
+  pools = other976.pools;
+  mappings = other976.mappings;
+  triggers = other976.triggers;
+  poolTriggers = other976.poolTriggers;
+  __isset = other976.__isset;
+}
+WMFullResourcePlan& WMFullResourcePlan::operator=(const WMFullResourcePlan& other977) {
+  plan = other977.plan;
+  pools = other977.pools;
+  mappings = other977.mappings;
+  triggers = other977.triggers;
+  poolTriggers = other977.poolTriggers;
+  __isset = other977.__isset;
+=======
+WMFullResourcePlan::WMFullResourcePlan(const WMFullResourcePlan& other995) {
+  plan = other995.plan;
+  pools = other995.pools;
+  mappings = other995.mappings;
+  triggers = other995.triggers;
+  poolTriggers = other995.poolTriggers;
+  __isset = other995.__isset;
+}
+WMFullResourcePlan& WMFullResourcePlan::operator=(const WMFullResourcePlan& other996) {
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+  plan = other996.plan;
+  pools = other996.pools;
+  mappings = other996.mappings;
+  triggers = other996.triggers;
+  poolTriggers = other996.poolTriggers;
+  __isset = other996.__isset;
+<<<<<<< HEAD
+}
+WMFullResourcePlan& WMFullResourcePlan::operator=(const WMFullResourcePlan& other997) {
+  plan = other997.plan;
+  pools = other997.pools;
+  mappings = other997.mappings;
+  triggers = other997.triggers;
+  poolTriggers = other997.poolTriggers;
+  __isset = other997.__isset;
+=======
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMFullResourcePlan::printTo(std::ostream& out) const {
@@ -25988,6 +31102,7 @@ void swap(WMCreateResourcePlanRequest &a, WMCreateResourcePlanRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMCreateResourcePlanRequest::WMCreateResourcePlanRequest(const WMCreateResourcePlanRequest& other1016) {
   resourcePlan = other1016.resourcePlan;
   copyFrom = other1016.copyFrom;
@@ -25997,6 +31112,41 @@ WMCreateResourcePlanRequest& WMCreateResourcePlanRequest::operator=(const WMCrea
   resourcePlan = other1017.resourcePlan;
   copyFrom = other1017.copyFrom;
   __isset = other1017.__isset;
+=======
+<<<<<<< HEAD
+WMCreateResourcePlanRequest::WMCreateResourcePlanRequest(const WMCreateResourcePlanRequest& other998) {
+  resourcePlan = other998.resourcePlan;
+  copyFrom = other998.copyFrom;
+  __isset = other998.__isset;
+}
+WMCreateResourcePlanRequest& WMCreateResourcePlanRequest::operator=(const WMCreateResourcePlanRequest& other999) {
+  resourcePlan = other999.resourcePlan;
+  copyFrom = other999.copyFrom;
+  __isset = other999.__isset;
+=======
+<<<<<<< HEAD
+WMCreateResourcePlanRequest::WMCreateResourcePlanRequest(const WMCreateResourcePlanRequest& other978) {
+  resourcePlan = other978.resourcePlan;
+  copyFrom = other978.copyFrom;
+  __isset = other978.__isset;
+}
+WMCreateResourcePlanRequest& WMCreateResourcePlanRequest::operator=(const WMCreateResourcePlanRequest& other979) {
+  resourcePlan = other979.resourcePlan;
+  copyFrom = other979.copyFrom;
+  __isset = other979.__isset;
+=======
+WMCreateResourcePlanRequest::WMCreateResourcePlanRequest(const WMCreateResourcePlanRequest& other997) {
+  resourcePlan = other997.resourcePlan;
+  copyFrom = other997.copyFrom;
+  __isset = other997.__isset;
+}
+WMCreateResourcePlanRequest& WMCreateResourcePlanRequest::operator=(const WMCreateResourcePlanRequest& other998) {
+  resourcePlan = other998.resourcePlan;
+  copyFrom = other998.copyFrom;
+  __isset = other998.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMCreateResourcePlanRequest::printTo(std::ostream& out) const {
@@ -26056,11 +31206,35 @@ void swap(WMCreateResourcePlanResponse &a, WMCreateResourcePlanResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 WMCreateResourcePlanResponse::WMCreateResourcePlanResponse(const WMCreateResourcePlanResponse& other1018) {
   (void) other1018;
 }
 WMCreateResourcePlanResponse& WMCreateResourcePlanResponse::operator=(const WMCreateResourcePlanResponse& other1019) {
   (void) other1019;
+=======
+<<<<<<< HEAD
+WMCreateResourcePlanResponse::WMCreateResourcePlanResponse(const WMCreateResourcePlanResponse& other1000) {
+  (void) other1000;
+}
+WMCreateResourcePlanResponse& WMCreateResourcePlanResponse::operator=(const WMCreateResourcePlanResponse& other1001) {
+  (void) other1001;
+=======
+<<<<<<< HEAD
+WMCreateResourcePlanResponse::WMCreateResourcePlanResponse(const WMCreateResourcePlanResponse& other980) {
+  (void) other980;
+}
+WMCreateResourcePlanResponse& WMCreateResourcePlanResponse::operator=(const WMCreateResourcePlanResponse& other981) {
+  (void) other981;
+=======
+WMCreateResourcePlanResponse::WMCreateResourcePlanResponse(const WMCreateResourcePlanResponse& other999) {
+  (void) other999;
+}
+WMCreateResourcePlanResponse& WMCreateResourcePlanResponse::operator=(const WMCreateResourcePlanResponse& other1000) {
+  (void) other1000;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMCreateResourcePlanResponse::printTo(std::ostream& out) const {
@@ -26118,11 +31292,35 @@ void swap(WMGetActiveResourcePlanRequest &a, WMGetActiveResourcePlanRequest &b) 
   (void) b;
 }
 
+<<<<<<< HEAD
 WMGetActiveResourcePlanRequest::WMGetActiveResourcePlanRequest(const WMGetActiveResourcePlanRequest& other1020) {
   (void) other1020;
 }
 WMGetActiveResourcePlanRequest& WMGetActiveResourcePlanRequest::operator=(const WMGetActiveResourcePlanRequest& other1021) {
   (void) other1021;
+=======
+<<<<<<< HEAD
+WMGetActiveResourcePlanRequest::WMGetActiveResourcePlanRequest(const WMGetActiveResourcePlanRequest& other1002) {
+  (void) other1002;
+}
+WMGetActiveResourcePlanRequest& WMGetActiveResourcePlanRequest::operator=(const WMGetActiveResourcePlanRequest& other1003) {
+  (void) other1003;
+=======
+<<<<<<< HEAD
+WMGetActiveResourcePlanRequest::WMGetActiveResourcePlanRequest(const WMGetActiveResourcePlanRequest& other982) {
+  (void) other982;
+}
+WMGetActiveResourcePlanRequest& WMGetActiveResourcePlanRequest::operator=(const WMGetActiveResourcePlanRequest& other983) {
+  (void) other983;
+=======
+WMGetActiveResourcePlanRequest::WMGetActiveResourcePlanRequest(const WMGetActiveResourcePlanRequest& other1001) {
+  (void) other1001;
+}
+WMGetActiveResourcePlanRequest& WMGetActiveResourcePlanRequest::operator=(const WMGetActiveResourcePlanRequest& other1002) {
+  (void) other1002;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMGetActiveResourcePlanRequest::printTo(std::ostream& out) const {
@@ -26203,6 +31401,7 @@ void swap(WMGetActiveResourcePlanResponse &a, WMGetActiveResourcePlanResponse &b
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMGetActiveResourcePlanResponse::WMGetActiveResourcePlanResponse(const WMGetActiveResourcePlanResponse& other1022) {
   resourcePlan = other1022.resourcePlan;
   __isset = other1022.__isset;
@@ -26210,6 +31409,35 @@ WMGetActiveResourcePlanResponse::WMGetActiveResourcePlanResponse(const WMGetActi
 WMGetActiveResourcePlanResponse& WMGetActiveResourcePlanResponse::operator=(const WMGetActiveResourcePlanResponse& other1023) {
   resourcePlan = other1023.resourcePlan;
   __isset = other1023.__isset;
+=======
+<<<<<<< HEAD
+WMGetActiveResourcePlanResponse::WMGetActiveResourcePlanResponse(const WMGetActiveResourcePlanResponse& other1004) {
+  resourcePlan = other1004.resourcePlan;
+  __isset = other1004.__isset;
+}
+WMGetActiveResourcePlanResponse& WMGetActiveResourcePlanResponse::operator=(const WMGetActiveResourcePlanResponse& other1005) {
+  resourcePlan = other1005.resourcePlan;
+  __isset = other1005.__isset;
+=======
+<<<<<<< HEAD
+WMGetActiveResourcePlanResponse::WMGetActiveResourcePlanResponse(const WMGetActiveResourcePlanResponse& other984) {
+  resourcePlan = other984.resourcePlan;
+  __isset = other984.__isset;
+}
+WMGetActiveResourcePlanResponse& WMGetActiveResourcePlanResponse::operator=(const WMGetActiveResourcePlanResponse& other985) {
+  resourcePlan = other985.resourcePlan;
+  __isset = other985.__isset;
+=======
+WMGetActiveResourcePlanResponse::WMGetActiveResourcePlanResponse(const WMGetActiveResourcePlanResponse& other1003) {
+  resourcePlan = other1003.resourcePlan;
+  __isset = other1003.__isset;
+}
+WMGetActiveResourcePlanResponse& WMGetActiveResourcePlanResponse::operator=(const WMGetActiveResourcePlanResponse& other1004) {
+  resourcePlan = other1004.resourcePlan;
+  __isset = other1004.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMGetActiveResourcePlanResponse::printTo(std::ostream& out) const {
@@ -26291,6 +31519,7 @@ void swap(WMGetResourcePlanRequest &a, WMGetResourcePlanRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMGetResourcePlanRequest::WMGetResourcePlanRequest(const WMGetResourcePlanRequest& other1024) {
   resourcePlanName = other1024.resourcePlanName;
   __isset = other1024.__isset;
@@ -26298,6 +31527,35 @@ WMGetResourcePlanRequest::WMGetResourcePlanRequest(const WMGetResourcePlanReques
 WMGetResourcePlanRequest& WMGetResourcePlanRequest::operator=(const WMGetResourcePlanRequest& other1025) {
   resourcePlanName = other1025.resourcePlanName;
   __isset = other1025.__isset;
+=======
+<<<<<<< HEAD
+WMGetResourcePlanRequest::WMGetResourcePlanRequest(const WMGetResourcePlanRequest& other1006) {
+  resourcePlanName = other1006.resourcePlanName;
+  __isset = other1006.__isset;
+}
+WMGetResourcePlanRequest& WMGetResourcePlanRequest::operator=(const WMGetResourcePlanRequest& other1007) {
+  resourcePlanName = other1007.resourcePlanName;
+  __isset = other1007.__isset;
+=======
+<<<<<<< HEAD
+WMGetResourcePlanRequest::WMGetResourcePlanRequest(const WMGetResourcePlanRequest& other986) {
+  resourcePlanName = other986.resourcePlanName;
+  __isset = other986.__isset;
+}
+WMGetResourcePlanRequest& WMGetResourcePlanRequest::operator=(const WMGetResourcePlanRequest& other987) {
+  resourcePlanName = other987.resourcePlanName;
+  __isset = other987.__isset;
+=======
+WMGetResourcePlanRequest::WMGetResourcePlanRequest(const WMGetResourcePlanRequest& other1005) {
+  resourcePlanName = other1005.resourcePlanName;
+  __isset = other1005.__isset;
+}
+WMGetResourcePlanRequest& WMGetResourcePlanRequest::operator=(const WMGetResourcePlanRequest& other1006) {
+  resourcePlanName = other1006.resourcePlanName;
+  __isset = other1006.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMGetResourcePlanRequest::printTo(std::ostream& out) const {
@@ -26379,6 +31637,7 @@ void swap(WMGetResourcePlanResponse &a, WMGetResourcePlanResponse &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMGetResourcePlanResponse::WMGetResourcePlanResponse(const WMGetResourcePlanResponse& other1026) {
   resourcePlan = other1026.resourcePlan;
   __isset = other1026.__isset;
@@ -26386,6 +31645,35 @@ WMGetResourcePlanResponse::WMGetResourcePlanResponse(const WMGetResourcePlanResp
 WMGetResourcePlanResponse& WMGetResourcePlanResponse::operator=(const WMGetResourcePlanResponse& other1027) {
   resourcePlan = other1027.resourcePlan;
   __isset = other1027.__isset;
+=======
+<<<<<<< HEAD
+WMGetResourcePlanResponse::WMGetResourcePlanResponse(const WMGetResourcePlanResponse& other1008) {
+  resourcePlan = other1008.resourcePlan;
+  __isset = other1008.__isset;
+}
+WMGetResourcePlanResponse& WMGetResourcePlanResponse::operator=(const WMGetResourcePlanResponse& other1009) {
+  resourcePlan = other1009.resourcePlan;
+  __isset = other1009.__isset;
+=======
+<<<<<<< HEAD
+WMGetResourcePlanResponse::WMGetResourcePlanResponse(const WMGetResourcePlanResponse& other988) {
+  resourcePlan = other988.resourcePlan;
+  __isset = other988.__isset;
+}
+WMGetResourcePlanResponse& WMGetResourcePlanResponse::operator=(const WMGetResourcePlanResponse& other989) {
+  resourcePlan = other989.resourcePlan;
+  __isset = other989.__isset;
+=======
+WMGetResourcePlanResponse::WMGetResourcePlanResponse(const WMGetResourcePlanResponse& other1007) {
+  resourcePlan = other1007.resourcePlan;
+  __isset = other1007.__isset;
+}
+WMGetResourcePlanResponse& WMGetResourcePlanResponse::operator=(const WMGetResourcePlanResponse& other1008) {
+  resourcePlan = other1008.resourcePlan;
+  __isset = other1008.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMGetResourcePlanResponse::printTo(std::ostream& out) const {
@@ -26444,11 +31732,35 @@ void swap(WMGetAllResourcePlanRequest &a, WMGetAllResourcePlanRequest &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 WMGetAllResourcePlanRequest::WMGetAllResourcePlanRequest(const WMGetAllResourcePlanRequest& other1028) {
   (void) other1028;
 }
 WMGetAllResourcePlanRequest& WMGetAllResourcePlanRequest::operator=(const WMGetAllResourcePlanRequest& other1029) {
   (void) other1029;
+=======
+<<<<<<< HEAD
+WMGetAllResourcePlanRequest::WMGetAllResourcePlanRequest(const WMGetAllResourcePlanRequest& other1010) {
+  (void) other1010;
+}
+WMGetAllResourcePlanRequest& WMGetAllResourcePlanRequest::operator=(const WMGetAllResourcePlanRequest& other1011) {
+  (void) other1011;
+=======
+<<<<<<< HEAD
+WMGetAllResourcePlanRequest::WMGetAllResourcePlanRequest(const WMGetAllResourcePlanRequest& other990) {
+  (void) other990;
+}
+WMGetAllResourcePlanRequest& WMGetAllResourcePlanRequest::operator=(const WMGetAllResourcePlanRequest& other991) {
+  (void) other991;
+=======
+WMGetAllResourcePlanRequest::WMGetAllResourcePlanRequest(const WMGetAllResourcePlanRequest& other1009) {
+  (void) other1009;
+}
+WMGetAllResourcePlanRequest& WMGetAllResourcePlanRequest::operator=(const WMGetAllResourcePlanRequest& other1010) {
+  (void) other1010;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMGetAllResourcePlanRequest::printTo(std::ostream& out) const {
@@ -26492,6 +31804,7 @@ uint32_t WMGetAllResourcePlanResponse::read(::apache::thrift::protocol::TProtoco
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->resourcePlans.clear();
+<<<<<<< HEAD
             uint32_t _size1030;
             ::apache::thrift::protocol::TType _etype1033;
             xfer += iprot->readListBegin(_etype1033, _size1030);
@@ -26500,6 +31813,38 @@ uint32_t WMGetAllResourcePlanResponse::read(::apache::thrift::protocol::TProtoco
             for (_i1034 = 0; _i1034 < _size1030; ++_i1034)
             {
               xfer += this->resourcePlans[_i1034].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size1012;
+            ::apache::thrift::protocol::TType _etype1015;
+            xfer += iprot->readListBegin(_etype1015, _size1012);
+            this->resourcePlans.resize(_size1012);
+            uint32_t _i1016;
+            for (_i1016 = 0; _i1016 < _size1012; ++_i1016)
+            {
+              xfer += this->resourcePlans[_i1016].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size992;
+            ::apache::thrift::protocol::TType _etype995;
+            xfer += iprot->readListBegin(_etype995, _size992);
+            this->resourcePlans.resize(_size992);
+            uint32_t _i996;
+            for (_i996 = 0; _i996 < _size992; ++_i996)
+            {
+              xfer += this->resourcePlans[_i996].read(iprot);
+=======
+            uint32_t _size1011;
+            ::apache::thrift::protocol::TType _etype1014;
+            xfer += iprot->readListBegin(_etype1014, _size1011);
+            this->resourcePlans.resize(_size1011);
+            uint32_t _i1015;
+            for (_i1015 = 0; _i1015 < _size1011; ++_i1015)
+            {
+              xfer += this->resourcePlans[_i1015].read(iprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -26529,10 +31874,31 @@ uint32_t WMGetAllResourcePlanResponse::write(::apache::thrift::protocol::TProtoc
     xfer += oprot->writeFieldBegin("resourcePlans", ::apache::thrift::protocol::T_LIST, 1);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->resourcePlans.size()));
+<<<<<<< HEAD
       std::vector<WMResourcePlan> ::const_iterator _iter1035;
       for (_iter1035 = this->resourcePlans.begin(); _iter1035 != this->resourcePlans.end(); ++_iter1035)
       {
         xfer += (*_iter1035).write(oprot);
+=======
+<<<<<<< HEAD
+      std::vector<WMResourcePlan> ::const_iterator _iter1017;
+      for (_iter1017 = this->resourcePlans.begin(); _iter1017 != this->resourcePlans.end(); ++_iter1017)
+      {
+        xfer += (*_iter1017).write(oprot);
+=======
+<<<<<<< HEAD
+      std::vector<WMResourcePlan> ::const_iterator _iter997;
+      for (_iter997 = this->resourcePlans.begin(); _iter997 != this->resourcePlans.end(); ++_iter997)
+      {
+        xfer += (*_iter997).write(oprot);
+=======
+      std::vector<WMResourcePlan> ::const_iterator _iter1016;
+      for (_iter1016 = this->resourcePlans.begin(); _iter1016 != this->resourcePlans.end(); ++_iter1016)
+      {
+        xfer += (*_iter1016).write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       }
       xfer += oprot->writeListEnd();
     }
@@ -26549,6 +31915,7 @@ void swap(WMGetAllResourcePlanResponse &a, WMGetAllResourcePlanResponse &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMGetAllResourcePlanResponse::WMGetAllResourcePlanResponse(const WMGetAllResourcePlanResponse& other1036) {
   resourcePlans = other1036.resourcePlans;
   __isset = other1036.__isset;
@@ -26556,6 +31923,35 @@ WMGetAllResourcePlanResponse::WMGetAllResourcePlanResponse(const WMGetAllResourc
 WMGetAllResourcePlanResponse& WMGetAllResourcePlanResponse::operator=(const WMGetAllResourcePlanResponse& other1037) {
   resourcePlans = other1037.resourcePlans;
   __isset = other1037.__isset;
+=======
+<<<<<<< HEAD
+WMGetAllResourcePlanResponse::WMGetAllResourcePlanResponse(const WMGetAllResourcePlanResponse& other1018) {
+  resourcePlans = other1018.resourcePlans;
+  __isset = other1018.__isset;
+}
+WMGetAllResourcePlanResponse& WMGetAllResourcePlanResponse::operator=(const WMGetAllResourcePlanResponse& other1019) {
+  resourcePlans = other1019.resourcePlans;
+  __isset = other1019.__isset;
+=======
+<<<<<<< HEAD
+WMGetAllResourcePlanResponse::WMGetAllResourcePlanResponse(const WMGetAllResourcePlanResponse& other998) {
+  resourcePlans = other998.resourcePlans;
+  __isset = other998.__isset;
+}
+WMGetAllResourcePlanResponse& WMGetAllResourcePlanResponse::operator=(const WMGetAllResourcePlanResponse& other999) {
+  resourcePlans = other999.resourcePlans;
+  __isset = other999.__isset;
+=======
+WMGetAllResourcePlanResponse::WMGetAllResourcePlanResponse(const WMGetAllResourcePlanResponse& other1017) {
+  resourcePlans = other1017.resourcePlans;
+  __isset = other1017.__isset;
+}
+WMGetAllResourcePlanResponse& WMGetAllResourcePlanResponse::operator=(const WMGetAllResourcePlanResponse& other1018) {
+  resourcePlans = other1018.resourcePlans;
+  __isset = other1018.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMGetAllResourcePlanResponse::printTo(std::ostream& out) const {
@@ -26713,6 +32109,7 @@ void swap(WMAlterResourcePlanRequest &a, WMAlterResourcePlanRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMAlterResourcePlanRequest::WMAlterResourcePlanRequest(const WMAlterResourcePlanRequest& other1038) {
   resourcePlanName = other1038.resourcePlanName;
   resourcePlan = other1038.resourcePlan;
@@ -26728,6 +32125,56 @@ WMAlterResourcePlanRequest& WMAlterResourcePlanRequest::operator=(const WMAlterR
   isForceDeactivate = other1039.isForceDeactivate;
   isReplace = other1039.isReplace;
   __isset = other1039.__isset;
+=======
+<<<<<<< HEAD
+WMAlterResourcePlanRequest::WMAlterResourcePlanRequest(const WMAlterResourcePlanRequest& other1020) {
+=======
+<<<<<<< HEAD
+WMAlterResourcePlanRequest::WMAlterResourcePlanRequest(const WMAlterResourcePlanRequest& other1000) {
+  resourcePlanName = other1000.resourcePlanName;
+  resourcePlan = other1000.resourcePlan;
+  isEnableAndActivate = other1000.isEnableAndActivate;
+  isForceDeactivate = other1000.isForceDeactivate;
+  isReplace = other1000.isReplace;
+  __isset = other1000.__isset;
+}
+WMAlterResourcePlanRequest& WMAlterResourcePlanRequest::operator=(const WMAlterResourcePlanRequest& other1001) {
+  resourcePlanName = other1001.resourcePlanName;
+  resourcePlan = other1001.resourcePlan;
+  isEnableAndActivate = other1001.isEnableAndActivate;
+  isForceDeactivate = other1001.isForceDeactivate;
+  isReplace = other1001.isReplace;
+  __isset = other1001.__isset;
+=======
+WMAlterResourcePlanRequest::WMAlterResourcePlanRequest(const WMAlterResourcePlanRequest& other1019) {
+  resourcePlanName = other1019.resourcePlanName;
+  resourcePlan = other1019.resourcePlan;
+  isEnableAndActivate = other1019.isEnableAndActivate;
+  isForceDeactivate = other1019.isForceDeactivate;
+  isReplace = other1019.isReplace;
+  __isset = other1019.__isset;
+}
+WMAlterResourcePlanRequest& WMAlterResourcePlanRequest::operator=(const WMAlterResourcePlanRequest& other1020) {
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+  resourcePlanName = other1020.resourcePlanName;
+  resourcePlan = other1020.resourcePlan;
+  isEnableAndActivate = other1020.isEnableAndActivate;
+  isForceDeactivate = other1020.isForceDeactivate;
+  isReplace = other1020.isReplace;
+  __isset = other1020.__isset;
+<<<<<<< HEAD
+}
+WMAlterResourcePlanRequest& WMAlterResourcePlanRequest::operator=(const WMAlterResourcePlanRequest& other1021) {
+  resourcePlanName = other1021.resourcePlanName;
+  resourcePlan = other1021.resourcePlan;
+  isEnableAndActivate = other1021.isEnableAndActivate;
+  isForceDeactivate = other1021.isForceDeactivate;
+  isReplace = other1021.isReplace;
+  __isset = other1021.__isset;
+=======
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMAlterResourcePlanRequest::printTo(std::ostream& out) const {
@@ -26813,6 +32260,7 @@ void swap(WMAlterResourcePlanResponse &a, WMAlterResourcePlanResponse &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMAlterResourcePlanResponse::WMAlterResourcePlanResponse(const WMAlterResourcePlanResponse& other1040) {
   fullResourcePlan = other1040.fullResourcePlan;
   __isset = other1040.__isset;
@@ -26820,6 +32268,35 @@ WMAlterResourcePlanResponse::WMAlterResourcePlanResponse(const WMAlterResourcePl
 WMAlterResourcePlanResponse& WMAlterResourcePlanResponse::operator=(const WMAlterResourcePlanResponse& other1041) {
   fullResourcePlan = other1041.fullResourcePlan;
   __isset = other1041.__isset;
+=======
+<<<<<<< HEAD
+WMAlterResourcePlanResponse::WMAlterResourcePlanResponse(const WMAlterResourcePlanResponse& other1022) {
+  fullResourcePlan = other1022.fullResourcePlan;
+  __isset = other1022.__isset;
+}
+WMAlterResourcePlanResponse& WMAlterResourcePlanResponse::operator=(const WMAlterResourcePlanResponse& other1023) {
+  fullResourcePlan = other1023.fullResourcePlan;
+  __isset = other1023.__isset;
+=======
+<<<<<<< HEAD
+WMAlterResourcePlanResponse::WMAlterResourcePlanResponse(const WMAlterResourcePlanResponse& other1002) {
+  fullResourcePlan = other1002.fullResourcePlan;
+  __isset = other1002.__isset;
+}
+WMAlterResourcePlanResponse& WMAlterResourcePlanResponse::operator=(const WMAlterResourcePlanResponse& other1003) {
+  fullResourcePlan = other1003.fullResourcePlan;
+  __isset = other1003.__isset;
+=======
+WMAlterResourcePlanResponse::WMAlterResourcePlanResponse(const WMAlterResourcePlanResponse& other1021) {
+  fullResourcePlan = other1021.fullResourcePlan;
+  __isset = other1021.__isset;
+}
+WMAlterResourcePlanResponse& WMAlterResourcePlanResponse::operator=(const WMAlterResourcePlanResponse& other1022) {
+  fullResourcePlan = other1022.fullResourcePlan;
+  __isset = other1022.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMAlterResourcePlanResponse::printTo(std::ostream& out) const {
@@ -26901,6 +32378,7 @@ void swap(WMValidateResourcePlanRequest &a, WMValidateResourcePlanRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMValidateResourcePlanRequest::WMValidateResourcePlanRequest(const WMValidateResourcePlanRequest& other1042) {
   resourcePlanName = other1042.resourcePlanName;
   __isset = other1042.__isset;
@@ -26908,6 +32386,35 @@ WMValidateResourcePlanRequest::WMValidateResourcePlanRequest(const WMValidateRes
 WMValidateResourcePlanRequest& WMValidateResourcePlanRequest::operator=(const WMValidateResourcePlanRequest& other1043) {
   resourcePlanName = other1043.resourcePlanName;
   __isset = other1043.__isset;
+=======
+<<<<<<< HEAD
+WMValidateResourcePlanRequest::WMValidateResourcePlanRequest(const WMValidateResourcePlanRequest& other1024) {
+  resourcePlanName = other1024.resourcePlanName;
+  __isset = other1024.__isset;
+}
+WMValidateResourcePlanRequest& WMValidateResourcePlanRequest::operator=(const WMValidateResourcePlanRequest& other1025) {
+  resourcePlanName = other1025.resourcePlanName;
+  __isset = other1025.__isset;
+=======
+<<<<<<< HEAD
+WMValidateResourcePlanRequest::WMValidateResourcePlanRequest(const WMValidateResourcePlanRequest& other1004) {
+  resourcePlanName = other1004.resourcePlanName;
+  __isset = other1004.__isset;
+}
+WMValidateResourcePlanRequest& WMValidateResourcePlanRequest::operator=(const WMValidateResourcePlanRequest& other1005) {
+  resourcePlanName = other1005.resourcePlanName;
+  __isset = other1005.__isset;
+=======
+WMValidateResourcePlanRequest::WMValidateResourcePlanRequest(const WMValidateResourcePlanRequest& other1023) {
+  resourcePlanName = other1023.resourcePlanName;
+  __isset = other1023.__isset;
+}
+WMValidateResourcePlanRequest& WMValidateResourcePlanRequest::operator=(const WMValidateResourcePlanRequest& other1024) {
+  resourcePlanName = other1024.resourcePlanName;
+  __isset = other1024.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMValidateResourcePlanRequest::printTo(std::ostream& out) const {
@@ -26957,6 +32464,7 @@ uint32_t WMValidateResourcePlanResponse::read(::apache::thrift::protocol::TProto
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->errors.clear();
+<<<<<<< HEAD
             uint32_t _size1044;
             ::apache::thrift::protocol::TType _etype1047;
             xfer += iprot->readListBegin(_etype1047, _size1044);
@@ -26965,6 +32473,38 @@ uint32_t WMValidateResourcePlanResponse::read(::apache::thrift::protocol::TProto
             for (_i1048 = 0; _i1048 < _size1044; ++_i1048)
             {
               xfer += iprot->readString(this->errors[_i1048]);
+=======
+<<<<<<< HEAD
+            uint32_t _size1026;
+            ::apache::thrift::protocol::TType _etype1029;
+            xfer += iprot->readListBegin(_etype1029, _size1026);
+            this->errors.resize(_size1026);
+            uint32_t _i1030;
+            for (_i1030 = 0; _i1030 < _size1026; ++_i1030)
+            {
+              xfer += iprot->readString(this->errors[_i1030]);
+=======
+<<<<<<< HEAD
+            uint32_t _size1006;
+            ::apache::thrift::protocol::TType _etype1009;
+            xfer += iprot->readListBegin(_etype1009, _size1006);
+            this->errors.resize(_size1006);
+            uint32_t _i1010;
+            for (_i1010 = 0; _i1010 < _size1006; ++_i1010)
+            {
+              xfer += iprot->readString(this->errors[_i1010]);
+=======
+            uint32_t _size1025;
+            ::apache::thrift::protocol::TType _etype1028;
+            xfer += iprot->readListBegin(_etype1028, _size1025);
+            this->errors.resize(_size1025);
+            uint32_t _i1029;
+            for (_i1029 = 0; _i1029 < _size1025; ++_i1029)
+            {
+              xfer += iprot->readString(this->errors[_i1029]);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -26977,6 +32517,7 @@ uint32_t WMValidateResourcePlanResponse::read(::apache::thrift::protocol::TProto
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->warnings.clear();
+<<<<<<< HEAD
             uint32_t _size1049;
             ::apache::thrift::protocol::TType _etype1052;
             xfer += iprot->readListBegin(_etype1052, _size1049);
@@ -26985,6 +32526,38 @@ uint32_t WMValidateResourcePlanResponse::read(::apache::thrift::protocol::TProto
             for (_i1053 = 0; _i1053 < _size1049; ++_i1053)
             {
               xfer += iprot->readString(this->warnings[_i1053]);
+=======
+<<<<<<< HEAD
+            uint32_t _size1031;
+            ::apache::thrift::protocol::TType _etype1034;
+            xfer += iprot->readListBegin(_etype1034, _size1031);
+            this->warnings.resize(_size1031);
+            uint32_t _i1035;
+            for (_i1035 = 0; _i1035 < _size1031; ++_i1035)
+            {
+              xfer += iprot->readString(this->warnings[_i1035]);
+=======
+<<<<<<< HEAD
+            uint32_t _size1011;
+            ::apache::thrift::protocol::TType _etype1014;
+            xfer += iprot->readListBegin(_etype1014, _size1011);
+            this->warnings.resize(_size1011);
+            uint32_t _i1015;
+            for (_i1015 = 0; _i1015 < _size1011; ++_i1015)
+            {
+              xfer += iprot->readString(this->warnings[_i1015]);
+=======
+            uint32_t _size1030;
+            ::apache::thrift::protocol::TType _etype1033;
+            xfer += iprot->readListBegin(_etype1033, _size1030);
+            this->warnings.resize(_size1030);
+            uint32_t _i1034;
+            for (_i1034 = 0; _i1034 < _size1030; ++_i1034)
+            {
+              xfer += iprot->readString(this->warnings[_i1034]);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -27014,10 +32587,31 @@ uint32_t WMValidateResourcePlanResponse::write(::apache::thrift::protocol::TProt
     xfer += oprot->writeFieldBegin("errors", ::apache::thrift::protocol::T_LIST, 1);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->errors.size()));
+<<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter1054;
       for (_iter1054 = this->errors.begin(); _iter1054 != this->errors.end(); ++_iter1054)
       {
         xfer += oprot->writeString((*_iter1054));
+=======
+<<<<<<< HEAD
+      std::vector<std::string> ::const_iterator _iter1036;
+      for (_iter1036 = this->errors.begin(); _iter1036 != this->errors.end(); ++_iter1036)
+      {
+        xfer += oprot->writeString((*_iter1036));
+=======
+<<<<<<< HEAD
+      std::vector<std::string> ::const_iterator _iter1016;
+      for (_iter1016 = this->errors.begin(); _iter1016 != this->errors.end(); ++_iter1016)
+      {
+        xfer += oprot->writeString((*_iter1016));
+=======
+      std::vector<std::string> ::const_iterator _iter1035;
+      for (_iter1035 = this->errors.begin(); _iter1035 != this->errors.end(); ++_iter1035)
+      {
+        xfer += oprot->writeString((*_iter1035));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       }
       xfer += oprot->writeListEnd();
     }
@@ -27027,10 +32621,31 @@ uint32_t WMValidateResourcePlanResponse::write(::apache::thrift::protocol::TProt
     xfer += oprot->writeFieldBegin("warnings", ::apache::thrift::protocol::T_LIST, 2);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->warnings.size()));
+<<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter1055;
       for (_iter1055 = this->warnings.begin(); _iter1055 != this->warnings.end(); ++_iter1055)
       {
         xfer += oprot->writeString((*_iter1055));
+=======
+<<<<<<< HEAD
+      std::vector<std::string> ::const_iterator _iter1037;
+      for (_iter1037 = this->warnings.begin(); _iter1037 != this->warnings.end(); ++_iter1037)
+      {
+        xfer += oprot->writeString((*_iter1037));
+=======
+<<<<<<< HEAD
+      std::vector<std::string> ::const_iterator _iter1017;
+      for (_iter1017 = this->warnings.begin(); _iter1017 != this->warnings.end(); ++_iter1017)
+      {
+        xfer += oprot->writeString((*_iter1017));
+=======
+      std::vector<std::string> ::const_iterator _iter1036;
+      for (_iter1036 = this->warnings.begin(); _iter1036 != this->warnings.end(); ++_iter1036)
+      {
+        xfer += oprot->writeString((*_iter1036));
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       }
       xfer += oprot->writeListEnd();
     }
@@ -27048,6 +32663,7 @@ void swap(WMValidateResourcePlanResponse &a, WMValidateResourcePlanResponse &b) 
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMValidateResourcePlanResponse::WMValidateResourcePlanResponse(const WMValidateResourcePlanResponse& other1056) {
   errors = other1056.errors;
   warnings = other1056.warnings;
@@ -27057,6 +32673,41 @@ WMValidateResourcePlanResponse& WMValidateResourcePlanResponse::operator=(const 
   errors = other1057.errors;
   warnings = other1057.warnings;
   __isset = other1057.__isset;
+=======
+<<<<<<< HEAD
+WMValidateResourcePlanResponse::WMValidateResourcePlanResponse(const WMValidateResourcePlanResponse& other1038) {
+  errors = other1038.errors;
+  warnings = other1038.warnings;
+  __isset = other1038.__isset;
+}
+WMValidateResourcePlanResponse& WMValidateResourcePlanResponse::operator=(const WMValidateResourcePlanResponse& other1039) {
+  errors = other1039.errors;
+  warnings = other1039.warnings;
+  __isset = other1039.__isset;
+=======
+<<<<<<< HEAD
+WMValidateResourcePlanResponse::WMValidateResourcePlanResponse(const WMValidateResourcePlanResponse& other1018) {
+  errors = other1018.errors;
+  warnings = other1018.warnings;
+  __isset = other1018.__isset;
+}
+WMValidateResourcePlanResponse& WMValidateResourcePlanResponse::operator=(const WMValidateResourcePlanResponse& other1019) {
+  errors = other1019.errors;
+  warnings = other1019.warnings;
+  __isset = other1019.__isset;
+=======
+WMValidateResourcePlanResponse::WMValidateResourcePlanResponse(const WMValidateResourcePlanResponse& other1037) {
+  errors = other1037.errors;
+  warnings = other1037.warnings;
+  __isset = other1037.__isset;
+}
+WMValidateResourcePlanResponse& WMValidateResourcePlanResponse::operator=(const WMValidateResourcePlanResponse& other1038) {
+  errors = other1038.errors;
+  warnings = other1038.warnings;
+  __isset = other1038.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMValidateResourcePlanResponse::printTo(std::ostream& out) const {
@@ -27139,6 +32790,7 @@ void swap(WMDropResourcePlanRequest &a, WMDropResourcePlanRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMDropResourcePlanRequest::WMDropResourcePlanRequest(const WMDropResourcePlanRequest& other1058) {
   resourcePlanName = other1058.resourcePlanName;
   __isset = other1058.__isset;
@@ -27146,6 +32798,35 @@ WMDropResourcePlanRequest::WMDropResourcePlanRequest(const WMDropResourcePlanReq
 WMDropResourcePlanRequest& WMDropResourcePlanRequest::operator=(const WMDropResourcePlanRequest& other1059) {
   resourcePlanName = other1059.resourcePlanName;
   __isset = other1059.__isset;
+=======
+<<<<<<< HEAD
+WMDropResourcePlanRequest::WMDropResourcePlanRequest(const WMDropResourcePlanRequest& other1040) {
+  resourcePlanName = other1040.resourcePlanName;
+  __isset = other1040.__isset;
+}
+WMDropResourcePlanRequest& WMDropResourcePlanRequest::operator=(const WMDropResourcePlanRequest& other1041) {
+  resourcePlanName = other1041.resourcePlanName;
+  __isset = other1041.__isset;
+=======
+<<<<<<< HEAD
+WMDropResourcePlanRequest::WMDropResourcePlanRequest(const WMDropResourcePlanRequest& other1020) {
+  resourcePlanName = other1020.resourcePlanName;
+  __isset = other1020.__isset;
+}
+WMDropResourcePlanRequest& WMDropResourcePlanRequest::operator=(const WMDropResourcePlanRequest& other1021) {
+  resourcePlanName = other1021.resourcePlanName;
+  __isset = other1021.__isset;
+=======
+WMDropResourcePlanRequest::WMDropResourcePlanRequest(const WMDropResourcePlanRequest& other1039) {
+  resourcePlanName = other1039.resourcePlanName;
+  __isset = other1039.__isset;
+}
+WMDropResourcePlanRequest& WMDropResourcePlanRequest::operator=(const WMDropResourcePlanRequest& other1040) {
+  resourcePlanName = other1040.resourcePlanName;
+  __isset = other1040.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMDropResourcePlanRequest::printTo(std::ostream& out) const {
@@ -27204,11 +32885,35 @@ void swap(WMDropResourcePlanResponse &a, WMDropResourcePlanResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 WMDropResourcePlanResponse::WMDropResourcePlanResponse(const WMDropResourcePlanResponse& other1060) {
   (void) other1060;
 }
 WMDropResourcePlanResponse& WMDropResourcePlanResponse::operator=(const WMDropResourcePlanResponse& other1061) {
   (void) other1061;
+=======
+<<<<<<< HEAD
+WMDropResourcePlanResponse::WMDropResourcePlanResponse(const WMDropResourcePlanResponse& other1042) {
+  (void) other1042;
+}
+WMDropResourcePlanResponse& WMDropResourcePlanResponse::operator=(const WMDropResourcePlanResponse& other1043) {
+  (void) other1043;
+=======
+<<<<<<< HEAD
+WMDropResourcePlanResponse::WMDropResourcePlanResponse(const WMDropResourcePlanResponse& other1022) {
+  (void) other1022;
+}
+WMDropResourcePlanResponse& WMDropResourcePlanResponse::operator=(const WMDropResourcePlanResponse& other1023) {
+  (void) other1023;
+=======
+WMDropResourcePlanResponse::WMDropResourcePlanResponse(const WMDropResourcePlanResponse& other1041) {
+  (void) other1041;
+}
+WMDropResourcePlanResponse& WMDropResourcePlanResponse::operator=(const WMDropResourcePlanResponse& other1042) {
+  (void) other1042;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMDropResourcePlanResponse::printTo(std::ostream& out) const {
@@ -27289,6 +32994,7 @@ void swap(WMCreateTriggerRequest &a, WMCreateTriggerRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMCreateTriggerRequest::WMCreateTriggerRequest(const WMCreateTriggerRequest& other1062) {
   trigger = other1062.trigger;
   __isset = other1062.__isset;
@@ -27296,6 +33002,35 @@ WMCreateTriggerRequest::WMCreateTriggerRequest(const WMCreateTriggerRequest& oth
 WMCreateTriggerRequest& WMCreateTriggerRequest::operator=(const WMCreateTriggerRequest& other1063) {
   trigger = other1063.trigger;
   __isset = other1063.__isset;
+=======
+<<<<<<< HEAD
+WMCreateTriggerRequest::WMCreateTriggerRequest(const WMCreateTriggerRequest& other1044) {
+  trigger = other1044.trigger;
+  __isset = other1044.__isset;
+}
+WMCreateTriggerRequest& WMCreateTriggerRequest::operator=(const WMCreateTriggerRequest& other1045) {
+  trigger = other1045.trigger;
+  __isset = other1045.__isset;
+=======
+<<<<<<< HEAD
+WMCreateTriggerRequest::WMCreateTriggerRequest(const WMCreateTriggerRequest& other1024) {
+  trigger = other1024.trigger;
+  __isset = other1024.__isset;
+}
+WMCreateTriggerRequest& WMCreateTriggerRequest::operator=(const WMCreateTriggerRequest& other1025) {
+  trigger = other1025.trigger;
+  __isset = other1025.__isset;
+=======
+WMCreateTriggerRequest::WMCreateTriggerRequest(const WMCreateTriggerRequest& other1043) {
+  trigger = other1043.trigger;
+  __isset = other1043.__isset;
+}
+WMCreateTriggerRequest& WMCreateTriggerRequest::operator=(const WMCreateTriggerRequest& other1044) {
+  trigger = other1044.trigger;
+  __isset = other1044.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMCreateTriggerRequest::printTo(std::ostream& out) const {
@@ -27354,11 +33089,35 @@ void swap(WMCreateTriggerResponse &a, WMCreateTriggerResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 WMCreateTriggerResponse::WMCreateTriggerResponse(const WMCreateTriggerResponse& other1064) {
   (void) other1064;
 }
 WMCreateTriggerResponse& WMCreateTriggerResponse::operator=(const WMCreateTriggerResponse& other1065) {
   (void) other1065;
+=======
+<<<<<<< HEAD
+WMCreateTriggerResponse::WMCreateTriggerResponse(const WMCreateTriggerResponse& other1046) {
+  (void) other1046;
+}
+WMCreateTriggerResponse& WMCreateTriggerResponse::operator=(const WMCreateTriggerResponse& other1047) {
+  (void) other1047;
+=======
+<<<<<<< HEAD
+WMCreateTriggerResponse::WMCreateTriggerResponse(const WMCreateTriggerResponse& other1026) {
+  (void) other1026;
+}
+WMCreateTriggerResponse& WMCreateTriggerResponse::operator=(const WMCreateTriggerResponse& other1027) {
+  (void) other1027;
+=======
+WMCreateTriggerResponse::WMCreateTriggerResponse(const WMCreateTriggerResponse& other1045) {
+  (void) other1045;
+}
+WMCreateTriggerResponse& WMCreateTriggerResponse::operator=(const WMCreateTriggerResponse& other1046) {
+  (void) other1046;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMCreateTriggerResponse::printTo(std::ostream& out) const {
@@ -27439,6 +33198,7 @@ void swap(WMAlterTriggerRequest &a, WMAlterTriggerRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMAlterTriggerRequest::WMAlterTriggerRequest(const WMAlterTriggerRequest& other1066) {
   trigger = other1066.trigger;
   __isset = other1066.__isset;
@@ -27446,6 +33206,35 @@ WMAlterTriggerRequest::WMAlterTriggerRequest(const WMAlterTriggerRequest& other1
 WMAlterTriggerRequest& WMAlterTriggerRequest::operator=(const WMAlterTriggerRequest& other1067) {
   trigger = other1067.trigger;
   __isset = other1067.__isset;
+=======
+<<<<<<< HEAD
+WMAlterTriggerRequest::WMAlterTriggerRequest(const WMAlterTriggerRequest& other1048) {
+  trigger = other1048.trigger;
+  __isset = other1048.__isset;
+}
+WMAlterTriggerRequest& WMAlterTriggerRequest::operator=(const WMAlterTriggerRequest& other1049) {
+  trigger = other1049.trigger;
+  __isset = other1049.__isset;
+=======
+<<<<<<< HEAD
+WMAlterTriggerRequest::WMAlterTriggerRequest(const WMAlterTriggerRequest& other1028) {
+  trigger = other1028.trigger;
+  __isset = other1028.__isset;
+}
+WMAlterTriggerRequest& WMAlterTriggerRequest::operator=(const WMAlterTriggerRequest& other1029) {
+  trigger = other1029.trigger;
+  __isset = other1029.__isset;
+=======
+WMAlterTriggerRequest::WMAlterTriggerRequest(const WMAlterTriggerRequest& other1047) {
+  trigger = other1047.trigger;
+  __isset = other1047.__isset;
+}
+WMAlterTriggerRequest& WMAlterTriggerRequest::operator=(const WMAlterTriggerRequest& other1048) {
+  trigger = other1048.trigger;
+  __isset = other1048.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMAlterTriggerRequest::printTo(std::ostream& out) const {
@@ -27504,11 +33293,35 @@ void swap(WMAlterTriggerResponse &a, WMAlterTriggerResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 WMAlterTriggerResponse::WMAlterTriggerResponse(const WMAlterTriggerResponse& other1068) {
   (void) other1068;
 }
 WMAlterTriggerResponse& WMAlterTriggerResponse::operator=(const WMAlterTriggerResponse& other1069) {
   (void) other1069;
+=======
+<<<<<<< HEAD
+WMAlterTriggerResponse::WMAlterTriggerResponse(const WMAlterTriggerResponse& other1050) {
+  (void) other1050;
+}
+WMAlterTriggerResponse& WMAlterTriggerResponse::operator=(const WMAlterTriggerResponse& other1051) {
+  (void) other1051;
+=======
+<<<<<<< HEAD
+WMAlterTriggerResponse::WMAlterTriggerResponse(const WMAlterTriggerResponse& other1030) {
+  (void) other1030;
+}
+WMAlterTriggerResponse& WMAlterTriggerResponse::operator=(const WMAlterTriggerResponse& other1031) {
+  (void) other1031;
+=======
+WMAlterTriggerResponse::WMAlterTriggerResponse(const WMAlterTriggerResponse& other1049) {
+  (void) other1049;
+}
+WMAlterTriggerResponse& WMAlterTriggerResponse::operator=(const WMAlterTriggerResponse& other1050) {
+  (void) other1050;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMAlterTriggerResponse::printTo(std::ostream& out) const {
@@ -27608,6 +33421,7 @@ void swap(WMDropTriggerRequest &a, WMDropTriggerRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMDropTriggerRequest::WMDropTriggerRequest(const WMDropTriggerRequest& other1070) {
   resourcePlanName = other1070.resourcePlanName;
   triggerName = other1070.triggerName;
@@ -27617,6 +33431,41 @@ WMDropTriggerRequest& WMDropTriggerRequest::operator=(const WMDropTriggerRequest
   resourcePlanName = other1071.resourcePlanName;
   triggerName = other1071.triggerName;
   __isset = other1071.__isset;
+=======
+<<<<<<< HEAD
+WMDropTriggerRequest::WMDropTriggerRequest(const WMDropTriggerRequest& other1052) {
+  resourcePlanName = other1052.resourcePlanName;
+  triggerName = other1052.triggerName;
+  __isset = other1052.__isset;
+}
+WMDropTriggerRequest& WMDropTriggerRequest::operator=(const WMDropTriggerRequest& other1053) {
+  resourcePlanName = other1053.resourcePlanName;
+  triggerName = other1053.triggerName;
+  __isset = other1053.__isset;
+=======
+<<<<<<< HEAD
+WMDropTriggerRequest::WMDropTriggerRequest(const WMDropTriggerRequest& other1032) {
+  resourcePlanName = other1032.resourcePlanName;
+  triggerName = other1032.triggerName;
+  __isset = other1032.__isset;
+}
+WMDropTriggerRequest& WMDropTriggerRequest::operator=(const WMDropTriggerRequest& other1033) {
+  resourcePlanName = other1033.resourcePlanName;
+  triggerName = other1033.triggerName;
+  __isset = other1033.__isset;
+=======
+WMDropTriggerRequest::WMDropTriggerRequest(const WMDropTriggerRequest& other1051) {
+  resourcePlanName = other1051.resourcePlanName;
+  triggerName = other1051.triggerName;
+  __isset = other1051.__isset;
+}
+WMDropTriggerRequest& WMDropTriggerRequest::operator=(const WMDropTriggerRequest& other1052) {
+  resourcePlanName = other1052.resourcePlanName;
+  triggerName = other1052.triggerName;
+  __isset = other1052.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMDropTriggerRequest::printTo(std::ostream& out) const {
@@ -27676,11 +33525,35 @@ void swap(WMDropTriggerResponse &a, WMDropTriggerResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 WMDropTriggerResponse::WMDropTriggerResponse(const WMDropTriggerResponse& other1072) {
   (void) other1072;
 }
 WMDropTriggerResponse& WMDropTriggerResponse::operator=(const WMDropTriggerResponse& other1073) {
   (void) other1073;
+=======
+<<<<<<< HEAD
+WMDropTriggerResponse::WMDropTriggerResponse(const WMDropTriggerResponse& other1054) {
+  (void) other1054;
+}
+WMDropTriggerResponse& WMDropTriggerResponse::operator=(const WMDropTriggerResponse& other1055) {
+  (void) other1055;
+=======
+<<<<<<< HEAD
+WMDropTriggerResponse::WMDropTriggerResponse(const WMDropTriggerResponse& other1034) {
+  (void) other1034;
+}
+WMDropTriggerResponse& WMDropTriggerResponse::operator=(const WMDropTriggerResponse& other1035) {
+  (void) other1035;
+=======
+WMDropTriggerResponse::WMDropTriggerResponse(const WMDropTriggerResponse& other1053) {
+  (void) other1053;
+}
+WMDropTriggerResponse& WMDropTriggerResponse::operator=(const WMDropTriggerResponse& other1054) {
+  (void) other1054;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMDropTriggerResponse::printTo(std::ostream& out) const {
@@ -27761,6 +33634,7 @@ void swap(WMGetTriggersForResourePlanRequest &a, WMGetTriggersForResourePlanRequ
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMGetTriggersForResourePlanRequest::WMGetTriggersForResourePlanRequest(const WMGetTriggersForResourePlanRequest& other1074) {
   resourcePlanName = other1074.resourcePlanName;
   __isset = other1074.__isset;
@@ -27768,6 +33642,35 @@ WMGetTriggersForResourePlanRequest::WMGetTriggersForResourePlanRequest(const WMG
 WMGetTriggersForResourePlanRequest& WMGetTriggersForResourePlanRequest::operator=(const WMGetTriggersForResourePlanRequest& other1075) {
   resourcePlanName = other1075.resourcePlanName;
   __isset = other1075.__isset;
+=======
+<<<<<<< HEAD
+WMGetTriggersForResourePlanRequest::WMGetTriggersForResourePlanRequest(const WMGetTriggersForResourePlanRequest& other1056) {
+  resourcePlanName = other1056.resourcePlanName;
+  __isset = other1056.__isset;
+}
+WMGetTriggersForResourePlanRequest& WMGetTriggersForResourePlanRequest::operator=(const WMGetTriggersForResourePlanRequest& other1057) {
+  resourcePlanName = other1057.resourcePlanName;
+  __isset = other1057.__isset;
+=======
+<<<<<<< HEAD
+WMGetTriggersForResourePlanRequest::WMGetTriggersForResourePlanRequest(const WMGetTriggersForResourePlanRequest& other1036) {
+  resourcePlanName = other1036.resourcePlanName;
+  __isset = other1036.__isset;
+}
+WMGetTriggersForResourePlanRequest& WMGetTriggersForResourePlanRequest::operator=(const WMGetTriggersForResourePlanRequest& other1037) {
+  resourcePlanName = other1037.resourcePlanName;
+  __isset = other1037.__isset;
+=======
+WMGetTriggersForResourePlanRequest::WMGetTriggersForResourePlanRequest(const WMGetTriggersForResourePlanRequest& other1055) {
+  resourcePlanName = other1055.resourcePlanName;
+  __isset = other1055.__isset;
+}
+WMGetTriggersForResourePlanRequest& WMGetTriggersForResourePlanRequest::operator=(const WMGetTriggersForResourePlanRequest& other1056) {
+  resourcePlanName = other1056.resourcePlanName;
+  __isset = other1056.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMGetTriggersForResourePlanRequest::printTo(std::ostream& out) const {
@@ -27812,6 +33715,7 @@ uint32_t WMGetTriggersForResourePlanResponse::read(::apache::thrift::protocol::T
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->triggers.clear();
+<<<<<<< HEAD
             uint32_t _size1076;
             ::apache::thrift::protocol::TType _etype1079;
             xfer += iprot->readListBegin(_etype1079, _size1076);
@@ -27820,6 +33724,38 @@ uint32_t WMGetTriggersForResourePlanResponse::read(::apache::thrift::protocol::T
             for (_i1080 = 0; _i1080 < _size1076; ++_i1080)
             {
               xfer += this->triggers[_i1080].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size1058;
+            ::apache::thrift::protocol::TType _etype1061;
+            xfer += iprot->readListBegin(_etype1061, _size1058);
+            this->triggers.resize(_size1058);
+            uint32_t _i1062;
+            for (_i1062 = 0; _i1062 < _size1058; ++_i1062)
+            {
+              xfer += this->triggers[_i1062].read(iprot);
+=======
+<<<<<<< HEAD
+            uint32_t _size1038;
+            ::apache::thrift::protocol::TType _etype1041;
+            xfer += iprot->readListBegin(_etype1041, _size1038);
+            this->triggers.resize(_size1038);
+            uint32_t _i1042;
+            for (_i1042 = 0; _i1042 < _size1038; ++_i1042)
+            {
+              xfer += this->triggers[_i1042].read(iprot);
+=======
+            uint32_t _size1057;
+            ::apache::thrift::protocol::TType _etype1060;
+            xfer += iprot->readListBegin(_etype1060, _size1057);
+            this->triggers.resize(_size1057);
+            uint32_t _i1061;
+            for (_i1061 = 0; _i1061 < _size1057; ++_i1061)
+            {
+              xfer += this->triggers[_i1061].read(iprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             xfer += iprot->readListEnd();
           }
@@ -27849,10 +33785,31 @@ uint32_t WMGetTriggersForResourePlanResponse::write(::apache::thrift::protocol::
     xfer += oprot->writeFieldBegin("triggers", ::apache::thrift::protocol::T_LIST, 1);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->triggers.size()));
+<<<<<<< HEAD
       std::vector<WMTrigger> ::const_iterator _iter1081;
       for (_iter1081 = this->triggers.begin(); _iter1081 != this->triggers.end(); ++_iter1081)
       {
         xfer += (*_iter1081).write(oprot);
+=======
+<<<<<<< HEAD
+      std::vector<WMTrigger> ::const_iterator _iter1063;
+      for (_iter1063 = this->triggers.begin(); _iter1063 != this->triggers.end(); ++_iter1063)
+      {
+        xfer += (*_iter1063).write(oprot);
+=======
+<<<<<<< HEAD
+      std::vector<WMTrigger> ::const_iterator _iter1043;
+      for (_iter1043 = this->triggers.begin(); _iter1043 != this->triggers.end(); ++_iter1043)
+      {
+        xfer += (*_iter1043).write(oprot);
+=======
+      std::vector<WMTrigger> ::const_iterator _iter1062;
+      for (_iter1062 = this->triggers.begin(); _iter1062 != this->triggers.end(); ++_iter1062)
+      {
+        xfer += (*_iter1062).write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
       }
       xfer += oprot->writeListEnd();
     }
@@ -27869,6 +33826,7 @@ void swap(WMGetTriggersForResourePlanResponse &a, WMGetTriggersForResourePlanRes
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMGetTriggersForResourePlanResponse::WMGetTriggersForResourePlanResponse(const WMGetTriggersForResourePlanResponse& other1082) {
   triggers = other1082.triggers;
   __isset = other1082.__isset;
@@ -27876,6 +33834,35 @@ WMGetTriggersForResourePlanResponse::WMGetTriggersForResourePlanResponse(const W
 WMGetTriggersForResourePlanResponse& WMGetTriggersForResourePlanResponse::operator=(const WMGetTriggersForResourePlanResponse& other1083) {
   triggers = other1083.triggers;
   __isset = other1083.__isset;
+=======
+<<<<<<< HEAD
+WMGetTriggersForResourePlanResponse::WMGetTriggersForResourePlanResponse(const WMGetTriggersForResourePlanResponse& other1064) {
+  triggers = other1064.triggers;
+  __isset = other1064.__isset;
+}
+WMGetTriggersForResourePlanResponse& WMGetTriggersForResourePlanResponse::operator=(const WMGetTriggersForResourePlanResponse& other1065) {
+  triggers = other1065.triggers;
+  __isset = other1065.__isset;
+=======
+<<<<<<< HEAD
+WMGetTriggersForResourePlanResponse::WMGetTriggersForResourePlanResponse(const WMGetTriggersForResourePlanResponse& other1044) {
+  triggers = other1044.triggers;
+  __isset = other1044.__isset;
+}
+WMGetTriggersForResourePlanResponse& WMGetTriggersForResourePlanResponse::operator=(const WMGetTriggersForResourePlanResponse& other1045) {
+  triggers = other1045.triggers;
+  __isset = other1045.__isset;
+=======
+WMGetTriggersForResourePlanResponse::WMGetTriggersForResourePlanResponse(const WMGetTriggersForResourePlanResponse& other1063) {
+  triggers = other1063.triggers;
+  __isset = other1063.__isset;
+}
+WMGetTriggersForResourePlanResponse& WMGetTriggersForResourePlanResponse::operator=(const WMGetTriggersForResourePlanResponse& other1064) {
+  triggers = other1064.triggers;
+  __isset = other1064.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMGetTriggersForResourePlanResponse::printTo(std::ostream& out) const {
@@ -27957,6 +33944,7 @@ void swap(WMCreatePoolRequest &a, WMCreatePoolRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMCreatePoolRequest::WMCreatePoolRequest(const WMCreatePoolRequest& other1084) {
   pool = other1084.pool;
   __isset = other1084.__isset;
@@ -27964,6 +33952,35 @@ WMCreatePoolRequest::WMCreatePoolRequest(const WMCreatePoolRequest& other1084) {
 WMCreatePoolRequest& WMCreatePoolRequest::operator=(const WMCreatePoolRequest& other1085) {
   pool = other1085.pool;
   __isset = other1085.__isset;
+=======
+<<<<<<< HEAD
+WMCreatePoolRequest::WMCreatePoolRequest(const WMCreatePoolRequest& other1066) {
+  pool = other1066.pool;
+  __isset = other1066.__isset;
+}
+WMCreatePoolRequest& WMCreatePoolRequest::operator=(const WMCreatePoolRequest& other1067) {
+  pool = other1067.pool;
+  __isset = other1067.__isset;
+=======
+<<<<<<< HEAD
+WMCreatePoolRequest::WMCreatePoolRequest(const WMCreatePoolRequest& other1046) {
+  pool = other1046.pool;
+  __isset = other1046.__isset;
+}
+WMCreatePoolRequest& WMCreatePoolRequest::operator=(const WMCreatePoolRequest& other1047) {
+  pool = other1047.pool;
+  __isset = other1047.__isset;
+=======
+WMCreatePoolRequest::WMCreatePoolRequest(const WMCreatePoolRequest& other1065) {
+  pool = other1065.pool;
+  __isset = other1065.__isset;
+}
+WMCreatePoolRequest& WMCreatePoolRequest::operator=(const WMCreatePoolRequest& other1066) {
+  pool = other1066.pool;
+  __isset = other1066.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMCreatePoolRequest::printTo(std::ostream& out) const {
@@ -28022,11 +34039,35 @@ void swap(WMCreatePoolResponse &a, WMCreatePoolResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 WMCreatePoolResponse::WMCreatePoolResponse(const WMCreatePoolResponse& other1086) {
   (void) other1086;
 }
 WMCreatePoolResponse& WMCreatePoolResponse::operator=(const WMCreatePoolResponse& other1087) {
   (void) other1087;
+=======
+<<<<<<< HEAD
+WMCreatePoolResponse::WMCreatePoolResponse(const WMCreatePoolResponse& other1068) {
+  (void) other1068;
+}
+WMCreatePoolResponse& WMCreatePoolResponse::operator=(const WMCreatePoolResponse& other1069) {
+  (void) other1069;
+=======
+<<<<<<< HEAD
+WMCreatePoolResponse::WMCreatePoolResponse(const WMCreatePoolResponse& other1048) {
+  (void) other1048;
+}
+WMCreatePoolResponse& WMCreatePoolResponse::operator=(const WMCreatePoolResponse& other1049) {
+  (void) other1049;
+=======
+WMCreatePoolResponse::WMCreatePoolResponse(const WMCreatePoolResponse& other1067) {
+  (void) other1067;
+}
+WMCreatePoolResponse& WMCreatePoolResponse::operator=(const WMCreatePoolResponse& other1068) {
+  (void) other1068;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMCreatePoolResponse::printTo(std::ostream& out) const {
@@ -28126,6 +34167,7 @@ void swap(WMAlterPoolRequest &a, WMAlterPoolRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMAlterPoolRequest::WMAlterPoolRequest(const WMAlterPoolRequest& other1088) {
   pool = other1088.pool;
   poolPath = other1088.poolPath;
@@ -28135,6 +34177,41 @@ WMAlterPoolRequest& WMAlterPoolRequest::operator=(const WMAlterPoolRequest& othe
   pool = other1089.pool;
   poolPath = other1089.poolPath;
   __isset = other1089.__isset;
+=======
+<<<<<<< HEAD
+WMAlterPoolRequest::WMAlterPoolRequest(const WMAlterPoolRequest& other1070) {
+  pool = other1070.pool;
+  poolPath = other1070.poolPath;
+  __isset = other1070.__isset;
+}
+WMAlterPoolRequest& WMAlterPoolRequest::operator=(const WMAlterPoolRequest& other1071) {
+  pool = other1071.pool;
+  poolPath = other1071.poolPath;
+  __isset = other1071.__isset;
+=======
+<<<<<<< HEAD
+WMAlterPoolRequest::WMAlterPoolRequest(const WMAlterPoolRequest& other1050) {
+  pool = other1050.pool;
+  poolPath = other1050.poolPath;
+  __isset = other1050.__isset;
+}
+WMAlterPoolRequest& WMAlterPoolRequest::operator=(const WMAlterPoolRequest& other1051) {
+  pool = other1051.pool;
+  poolPath = other1051.poolPath;
+  __isset = other1051.__isset;
+=======
+WMAlterPoolRequest::WMAlterPoolRequest(const WMAlterPoolRequest& other1069) {
+  pool = other1069.pool;
+  poolPath = other1069.poolPath;
+  __isset = other1069.__isset;
+}
+WMAlterPoolRequest& WMAlterPoolRequest::operator=(const WMAlterPoolRequest& other1070) {
+  pool = other1070.pool;
+  poolPath = other1070.poolPath;
+  __isset = other1070.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMAlterPoolRequest::printTo(std::ostream& out) const {
@@ -28194,11 +34271,35 @@ void swap(WMAlterPoolResponse &a, WMAlterPoolResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 WMAlterPoolResponse::WMAlterPoolResponse(const WMAlterPoolResponse& other1090) {
   (void) other1090;
 }
 WMAlterPoolResponse& WMAlterPoolResponse::operator=(const WMAlterPoolResponse& other1091) {
   (void) other1091;
+=======
+<<<<<<< HEAD
+WMAlterPoolResponse::WMAlterPoolResponse(const WMAlterPoolResponse& other1072) {
+  (void) other1072;
+}
+WMAlterPoolResponse& WMAlterPoolResponse::operator=(const WMAlterPoolResponse& other1073) {
+  (void) other1073;
+=======
+<<<<<<< HEAD
+WMAlterPoolResponse::WMAlterPoolResponse(const WMAlterPoolResponse& other1052) {
+  (void) other1052;
+}
+WMAlterPoolResponse& WMAlterPoolResponse::operator=(const WMAlterPoolResponse& other1053) {
+  (void) other1053;
+=======
+WMAlterPoolResponse::WMAlterPoolResponse(const WMAlterPoolResponse& other1071) {
+  (void) other1071;
+}
+WMAlterPoolResponse& WMAlterPoolResponse::operator=(const WMAlterPoolResponse& other1072) {
+  (void) other1072;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMAlterPoolResponse::printTo(std::ostream& out) const {
@@ -28298,6 +34399,7 @@ void swap(WMDropPoolRequest &a, WMDropPoolRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMDropPoolRequest::WMDropPoolRequest(const WMDropPoolRequest& other1092) {
   resourcePlanName = other1092.resourcePlanName;
   poolPath = other1092.poolPath;
@@ -28307,6 +34409,41 @@ WMDropPoolRequest& WMDropPoolRequest::operator=(const WMDropPoolRequest& other10
   resourcePlanName = other1093.resourcePlanName;
   poolPath = other1093.poolPath;
   __isset = other1093.__isset;
+=======
+<<<<<<< HEAD
+WMDropPoolRequest::WMDropPoolRequest(const WMDropPoolRequest& other1074) {
+  resourcePlanName = other1074.resourcePlanName;
+  poolPath = other1074.poolPath;
+  __isset = other1074.__isset;
+}
+WMDropPoolRequest& WMDropPoolRequest::operator=(const WMDropPoolRequest& other1075) {
+  resourcePlanName = other1075.resourcePlanName;
+  poolPath = other1075.poolPath;
+  __isset = other1075.__isset;
+=======
+<<<<<<< HEAD
+WMDropPoolRequest::WMDropPoolRequest(const WMDropPoolRequest& other1054) {
+  resourcePlanName = other1054.resourcePlanName;
+  poolPath = other1054.poolPath;
+  __isset = other1054.__isset;
+}
+WMDropPoolRequest& WMDropPoolRequest::operator=(const WMDropPoolRequest& other1055) {
+  resourcePlanName = other1055.resourcePlanName;
+  poolPath = other1055.poolPath;
+  __isset = other1055.__isset;
+=======
+WMDropPoolRequest::WMDropPoolRequest(const WMDropPoolRequest& other1073) {
+  resourcePlanName = other1073.resourcePlanName;
+  poolPath = other1073.poolPath;
+  __isset = other1073.__isset;
+}
+WMDropPoolRequest& WMDropPoolRequest::operator=(const WMDropPoolRequest& other1074) {
+  resourcePlanName = other1074.resourcePlanName;
+  poolPath = other1074.poolPath;
+  __isset = other1074.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMDropPoolRequest::printTo(std::ostream& out) const {
@@ -28366,11 +34503,35 @@ void swap(WMDropPoolResponse &a, WMDropPoolResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 WMDropPoolResponse::WMDropPoolResponse(const WMDropPoolResponse& other1094) {
   (void) other1094;
 }
 WMDropPoolResponse& WMDropPoolResponse::operator=(const WMDropPoolResponse& other1095) {
   (void) other1095;
+=======
+<<<<<<< HEAD
+WMDropPoolResponse::WMDropPoolResponse(const WMDropPoolResponse& other1076) {
+  (void) other1076;
+}
+WMDropPoolResponse& WMDropPoolResponse::operator=(const WMDropPoolResponse& other1077) {
+  (void) other1077;
+=======
+<<<<<<< HEAD
+WMDropPoolResponse::WMDropPoolResponse(const WMDropPoolResponse& other1056) {
+  (void) other1056;
+}
+WMDropPoolResponse& WMDropPoolResponse::operator=(const WMDropPoolResponse& other1057) {
+  (void) other1057;
+=======
+WMDropPoolResponse::WMDropPoolResponse(const WMDropPoolResponse& other1075) {
+  (void) other1075;
+}
+WMDropPoolResponse& WMDropPoolResponse::operator=(const WMDropPoolResponse& other1076) {
+  (void) other1076;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMDropPoolResponse::printTo(std::ostream& out) const {
@@ -28470,6 +34631,7 @@ void swap(WMCreateOrUpdateMappingRequest &a, WMCreateOrUpdateMappingRequest &b) 
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMCreateOrUpdateMappingRequest::WMCreateOrUpdateMappingRequest(const WMCreateOrUpdateMappingRequest& other1096) {
   mapping = other1096.mapping;
   update = other1096.update;
@@ -28479,6 +34641,41 @@ WMCreateOrUpdateMappingRequest& WMCreateOrUpdateMappingRequest::operator=(const 
   mapping = other1097.mapping;
   update = other1097.update;
   __isset = other1097.__isset;
+=======
+<<<<<<< HEAD
+WMCreateOrUpdateMappingRequest::WMCreateOrUpdateMappingRequest(const WMCreateOrUpdateMappingRequest& other1078) {
+  mapping = other1078.mapping;
+  update = other1078.update;
+  __isset = other1078.__isset;
+}
+WMCreateOrUpdateMappingRequest& WMCreateOrUpdateMappingRequest::operator=(const WMCreateOrUpdateMappingRequest& other1079) {
+  mapping = other1079.mapping;
+  update = other1079.update;
+  __isset = other1079.__isset;
+=======
+<<<<<<< HEAD
+WMCreateOrUpdateMappingRequest::WMCreateOrUpdateMappingRequest(const WMCreateOrUpdateMappingRequest& other1058) {
+  mapping = other1058.mapping;
+  update = other1058.update;
+  __isset = other1058.__isset;
+}
+WMCreateOrUpdateMappingRequest& WMCreateOrUpdateMappingRequest::operator=(const WMCreateOrUpdateMappingRequest& other1059) {
+  mapping = other1059.mapping;
+  update = other1059.update;
+  __isset = other1059.__isset;
+=======
+WMCreateOrUpdateMappingRequest::WMCreateOrUpdateMappingRequest(const WMCreateOrUpdateMappingRequest& other1077) {
+  mapping = other1077.mapping;
+  update = other1077.update;
+  __isset = other1077.__isset;
+}
+WMCreateOrUpdateMappingRequest& WMCreateOrUpdateMappingRequest::operator=(const WMCreateOrUpdateMappingRequest& other1078) {
+  mapping = other1078.mapping;
+  update = other1078.update;
+  __isset = other1078.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMCreateOrUpdateMappingRequest::printTo(std::ostream& out) const {
@@ -28538,11 +34735,35 @@ void swap(WMCreateOrUpdateMappingResponse &a, WMCreateOrUpdateMappingResponse &b
   (void) b;
 }
 
+<<<<<<< HEAD
 WMCreateOrUpdateMappingResponse::WMCreateOrUpdateMappingResponse(const WMCreateOrUpdateMappingResponse& other1098) {
   (void) other1098;
 }
 WMCreateOrUpdateMappingResponse& WMCreateOrUpdateMappingResponse::operator=(const WMCreateOrUpdateMappingResponse& other1099) {
   (void) other1099;
+=======
+<<<<<<< HEAD
+WMCreateOrUpdateMappingResponse::WMCreateOrUpdateMappingResponse(const WMCreateOrUpdateMappingResponse& other1080) {
+  (void) other1080;
+}
+WMCreateOrUpdateMappingResponse& WMCreateOrUpdateMappingResponse::operator=(const WMCreateOrUpdateMappingResponse& other1081) {
+  (void) other1081;
+=======
+<<<<<<< HEAD
+WMCreateOrUpdateMappingResponse::WMCreateOrUpdateMappingResponse(const WMCreateOrUpdateMappingResponse& other1060) {
+  (void) other1060;
+}
+WMCreateOrUpdateMappingResponse& WMCreateOrUpdateMappingResponse::operator=(const WMCreateOrUpdateMappingResponse& other1061) {
+  (void) other1061;
+=======
+WMCreateOrUpdateMappingResponse::WMCreateOrUpdateMappingResponse(const WMCreateOrUpdateMappingResponse& other1079) {
+  (void) other1079;
+}
+WMCreateOrUpdateMappingResponse& WMCreateOrUpdateMappingResponse::operator=(const WMCreateOrUpdateMappingResponse& other1080) {
+  (void) other1080;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMCreateOrUpdateMappingResponse::printTo(std::ostream& out) const {
@@ -28623,6 +34844,7 @@ void swap(WMDropMappingRequest &a, WMDropMappingRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMDropMappingRequest::WMDropMappingRequest(const WMDropMappingRequest& other1100) {
   mapping = other1100.mapping;
   __isset = other1100.__isset;
@@ -28630,6 +34852,35 @@ WMDropMappingRequest::WMDropMappingRequest(const WMDropMappingRequest& other1100
 WMDropMappingRequest& WMDropMappingRequest::operator=(const WMDropMappingRequest& other1101) {
   mapping = other1101.mapping;
   __isset = other1101.__isset;
+=======
+<<<<<<< HEAD
+WMDropMappingRequest::WMDropMappingRequest(const WMDropMappingRequest& other1082) {
+  mapping = other1082.mapping;
+  __isset = other1082.__isset;
+}
+WMDropMappingRequest& WMDropMappingRequest::operator=(const WMDropMappingRequest& other1083) {
+  mapping = other1083.mapping;
+  __isset = other1083.__isset;
+=======
+<<<<<<< HEAD
+WMDropMappingRequest::WMDropMappingRequest(const WMDropMappingRequest& other1062) {
+  mapping = other1062.mapping;
+  __isset = other1062.__isset;
+}
+WMDropMappingRequest& WMDropMappingRequest::operator=(const WMDropMappingRequest& other1063) {
+  mapping = other1063.mapping;
+  __isset = other1063.__isset;
+=======
+WMDropMappingRequest::WMDropMappingRequest(const WMDropMappingRequest& other1081) {
+  mapping = other1081.mapping;
+  __isset = other1081.__isset;
+}
+WMDropMappingRequest& WMDropMappingRequest::operator=(const WMDropMappingRequest& other1082) {
+  mapping = other1082.mapping;
+  __isset = other1082.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMDropMappingRequest::printTo(std::ostream& out) const {
@@ -28688,11 +34939,35 @@ void swap(WMDropMappingResponse &a, WMDropMappingResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 WMDropMappingResponse::WMDropMappingResponse(const WMDropMappingResponse& other1102) {
   (void) other1102;
 }
 WMDropMappingResponse& WMDropMappingResponse::operator=(const WMDropMappingResponse& other1103) {
   (void) other1103;
+=======
+<<<<<<< HEAD
+WMDropMappingResponse::WMDropMappingResponse(const WMDropMappingResponse& other1084) {
+  (void) other1084;
+}
+WMDropMappingResponse& WMDropMappingResponse::operator=(const WMDropMappingResponse& other1085) {
+  (void) other1085;
+=======
+<<<<<<< HEAD
+WMDropMappingResponse::WMDropMappingResponse(const WMDropMappingResponse& other1064) {
+  (void) other1064;
+}
+WMDropMappingResponse& WMDropMappingResponse::operator=(const WMDropMappingResponse& other1065) {
+  (void) other1065;
+=======
+WMDropMappingResponse::WMDropMappingResponse(const WMDropMappingResponse& other1083) {
+  (void) other1083;
+}
+WMDropMappingResponse& WMDropMappingResponse::operator=(const WMDropMappingResponse& other1084) {
+  (void) other1084;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMDropMappingResponse::printTo(std::ostream& out) const {
@@ -28830,6 +35105,7 @@ void swap(WMCreateOrDropTriggerToPoolMappingRequest &a, WMCreateOrDropTriggerToP
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 WMCreateOrDropTriggerToPoolMappingRequest::WMCreateOrDropTriggerToPoolMappingRequest(const WMCreateOrDropTriggerToPoolMappingRequest& other1104) {
   resourcePlanName = other1104.resourcePlanName;
   triggerName = other1104.triggerName;
@@ -28843,6 +35119,53 @@ WMCreateOrDropTriggerToPoolMappingRequest& WMCreateOrDropTriggerToPoolMappingReq
   poolPath = other1105.poolPath;
   drop = other1105.drop;
   __isset = other1105.__isset;
+=======
+<<<<<<< HEAD
+WMCreateOrDropTriggerToPoolMappingRequest::WMCreateOrDropTriggerToPoolMappingRequest(const WMCreateOrDropTriggerToPoolMappingRequest& other1086) {
+  resourcePlanName = other1086.resourcePlanName;
+  triggerName = other1086.triggerName;
+  poolPath = other1086.poolPath;
+  drop = other1086.drop;
+  __isset = other1086.__isset;
+}
+WMCreateOrDropTriggerToPoolMappingRequest& WMCreateOrDropTriggerToPoolMappingRequest::operator=(const WMCreateOrDropTriggerToPoolMappingRequest& other1087) {
+  resourcePlanName = other1087.resourcePlanName;
+  triggerName = other1087.triggerName;
+  poolPath = other1087.poolPath;
+  drop = other1087.drop;
+  __isset = other1087.__isset;
+=======
+<<<<<<< HEAD
+WMCreateOrDropTriggerToPoolMappingRequest::WMCreateOrDropTriggerToPoolMappingRequest(const WMCreateOrDropTriggerToPoolMappingRequest& other1066) {
+  resourcePlanName = other1066.resourcePlanName;
+  triggerName = other1066.triggerName;
+  poolPath = other1066.poolPath;
+  drop = other1066.drop;
+  __isset = other1066.__isset;
+}
+WMCreateOrDropTriggerToPoolMappingRequest& WMCreateOrDropTriggerToPoolMappingRequest::operator=(const WMCreateOrDropTriggerToPoolMappingRequest& other1067) {
+  resourcePlanName = other1067.resourcePlanName;
+  triggerName = other1067.triggerName;
+  poolPath = other1067.poolPath;
+  drop = other1067.drop;
+  __isset = other1067.__isset;
+=======
+WMCreateOrDropTriggerToPoolMappingRequest::WMCreateOrDropTriggerToPoolMappingRequest(const WMCreateOrDropTriggerToPoolMappingRequest& other1085) {
+  resourcePlanName = other1085.resourcePlanName;
+  triggerName = other1085.triggerName;
+  poolPath = other1085.poolPath;
+  drop = other1085.drop;
+  __isset = other1085.__isset;
+}
+WMCreateOrDropTriggerToPoolMappingRequest& WMCreateOrDropTriggerToPoolMappingRequest::operator=(const WMCreateOrDropTriggerToPoolMappingRequest& other1086) {
+  resourcePlanName = other1086.resourcePlanName;
+  triggerName = other1086.triggerName;
+  poolPath = other1086.poolPath;
+  drop = other1086.drop;
+  __isset = other1086.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMCreateOrDropTriggerToPoolMappingRequest::printTo(std::ostream& out) const {
@@ -28904,11 +35227,35 @@ void swap(WMCreateOrDropTriggerToPoolMappingResponse &a, WMCreateOrDropTriggerTo
   (void) b;
 }
 
+<<<<<<< HEAD
 WMCreateOrDropTriggerToPoolMappingResponse::WMCreateOrDropTriggerToPoolMappingResponse(const WMCreateOrDropTriggerToPoolMappingResponse& other1106) {
   (void) other1106;
 }
 WMCreateOrDropTriggerToPoolMappingResponse& WMCreateOrDropTriggerToPoolMappingResponse::operator=(const WMCreateOrDropTriggerToPoolMappingResponse& other1107) {
   (void) other1107;
+=======
+<<<<<<< HEAD
+WMCreateOrDropTriggerToPoolMappingResponse::WMCreateOrDropTriggerToPoolMappingResponse(const WMCreateOrDropTriggerToPoolMappingResponse& other1088) {
+  (void) other1088;
+}
+WMCreateOrDropTriggerToPoolMappingResponse& WMCreateOrDropTriggerToPoolMappingResponse::operator=(const WMCreateOrDropTriggerToPoolMappingResponse& other1089) {
+  (void) other1089;
+=======
+<<<<<<< HEAD
+WMCreateOrDropTriggerToPoolMappingResponse::WMCreateOrDropTriggerToPoolMappingResponse(const WMCreateOrDropTriggerToPoolMappingResponse& other1068) {
+  (void) other1068;
+}
+WMCreateOrDropTriggerToPoolMappingResponse& WMCreateOrDropTriggerToPoolMappingResponse::operator=(const WMCreateOrDropTriggerToPoolMappingResponse& other1069) {
+  (void) other1069;
+=======
+WMCreateOrDropTriggerToPoolMappingResponse::WMCreateOrDropTriggerToPoolMappingResponse(const WMCreateOrDropTriggerToPoolMappingResponse& other1087) {
+  (void) other1087;
+}
+WMCreateOrDropTriggerToPoolMappingResponse& WMCreateOrDropTriggerToPoolMappingResponse::operator=(const WMCreateOrDropTriggerToPoolMappingResponse& other1088) {
+  (void) other1088;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void WMCreateOrDropTriggerToPoolMappingResponse::printTo(std::ostream& out) const {
@@ -29133,6 +35480,7 @@ void swap(ISchema &a, ISchema &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 ISchema::ISchema(const ISchema& other1111) {
   schemaType = other1111.schemaType;
   name = other1111.name;
@@ -29156,6 +35504,63 @@ ISchema& ISchema::operator=(const ISchema& other1112) {
   schemaGroup = other1112.schemaGroup;
   description = other1112.description;
   __isset = other1112.__isset;
+=======
+<<<<<<< HEAD
+ISchema::ISchema(const ISchema& other1093) {
+  schemaType = other1093.schemaType;
+  name = other1093.name;
+  dbName = other1093.dbName;
+  compatibility = other1093.compatibility;
+  validationLevel = other1093.validationLevel;
+  canEvolve = other1093.canEvolve;
+  schemaGroup = other1093.schemaGroup;
+  description = other1093.description;
+  __isset = other1093.__isset;
+}
+ISchema& ISchema::operator=(const ISchema& other1094) {
+  schemaType = other1094.schemaType;
+  name = other1094.name;
+  dbName = other1094.dbName;
+  compatibility = other1094.compatibility;
+  validationLevel = other1094.validationLevel;
+  canEvolve = other1094.canEvolve;
+  schemaGroup = other1094.schemaGroup;
+  description = other1094.description;
+  __isset = other1094.__isset;
+=======
+<<<<<<< HEAD
+ISchema::ISchema(const ISchema& other1073) {
+  schemaType = other1073.schemaType;
+  name = other1073.name;
+  dbName = other1073.dbName;
+  compatibility = other1073.compatibility;
+  validationLevel = other1073.validationLevel;
+  canEvolve = other1073.canEvolve;
+  schemaGroup = other1073.schemaGroup;
+  description = other1073.description;
+  __isset = other1073.__isset;
+}
+ISchema& ISchema::operator=(const ISchema& other1074) {
+  schemaType = other1074.schemaType;
+  name = other1074.name;
+  dbName = other1074.dbName;
+  compatibility = other1074.compatibility;
+  validationLevel = other1074.validationLevel;
+  canEvolve = other1074.canEvolve;
+  schemaGroup = other1074.schemaGroup;
+  description = other1074.description;
+  __isset = other1074.__isset;
+=======
+MetaException::MetaException(const MetaException& other1089) : TException() {
+  message = other1089.message;
+  __isset = other1089.__isset;
+}
+MetaException& MetaException::operator=(const MetaException& other1090) {
+  message = other1090.message;
+  __isset = other1090.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void ISchema::printTo(std::ostream& out) const {
@@ -30419,6 +36824,7 @@ void swap(MetaException &a, MetaException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 MetaException::MetaException(const MetaException& other1145) : TException() {
   message = other1145.message;
   __isset = other1145.__isset;
@@ -30426,6 +36832,35 @@ MetaException::MetaException(const MetaException& other1145) : TException() {
 MetaException& MetaException::operator=(const MetaException& other1146) {
   message = other1146.message;
   __isset = other1146.__isset;
+=======
+<<<<<<< HEAD
+MetaException::MetaException(const MetaException& other1127) : TException() {
+  message = other1127.message;
+  __isset = other1127.__isset;
+}
+MetaException& MetaException::operator=(const MetaException& other1128) {
+  message = other1128.message;
+  __isset = other1128.__isset;
+=======
+<<<<<<< HEAD
+MetaException::MetaException(const MetaException& other1107) : TException() {
+  message = other1107.message;
+  __isset = other1107.__isset;
+}
+MetaException& MetaException::operator=(const MetaException& other1108) {
+  message = other1108.message;
+  __isset = other1108.__isset;
+=======
+UnknownTableException::UnknownTableException(const UnknownTableException& other1091) : TException() {
+  message = other1091.message;
+  __isset = other1091.__isset;
+}
+UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1092) {
+  message = other1092.message;
+  __isset = other1092.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void MetaException::printTo(std::ostream& out) const {
@@ -30516,6 +36951,7 @@ void swap(UnknownTableException &a, UnknownTableException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 UnknownTableException::UnknownTableException(const UnknownTableException& other1147) : TException() {
   message = other1147.message;
   __isset = other1147.__isset;
@@ -30523,6 +36959,35 @@ UnknownTableException::UnknownTableException(const UnknownTableException& other1
 UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1148) {
   message = other1148.message;
   __isset = other1148.__isset;
+=======
+<<<<<<< HEAD
+UnknownTableException::UnknownTableException(const UnknownTableException& other1129) : TException() {
+  message = other1129.message;
+  __isset = other1129.__isset;
+}
+UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1130) {
+  message = other1130.message;
+  __isset = other1130.__isset;
+=======
+<<<<<<< HEAD
+UnknownTableException::UnknownTableException(const UnknownTableException& other1109) : TException() {
+  message = other1109.message;
+  __isset = other1109.__isset;
+}
+UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1110) {
+  message = other1110.message;
+  __isset = other1110.__isset;
+=======
+UnknownDBException::UnknownDBException(const UnknownDBException& other1093) : TException() {
+  message = other1093.message;
+  __isset = other1093.__isset;
+}
+UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1094) {
+  message = other1094.message;
+  __isset = other1094.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void UnknownTableException::printTo(std::ostream& out) const {
@@ -30613,6 +37078,7 @@ void swap(UnknownDBException &a, UnknownDBException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 UnknownDBException::UnknownDBException(const UnknownDBException& other1149) : TException() {
   message = other1149.message;
   __isset = other1149.__isset;
@@ -30620,6 +37086,35 @@ UnknownDBException::UnknownDBException(const UnknownDBException& other1149) : TE
 UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1150) {
   message = other1150.message;
   __isset = other1150.__isset;
+=======
+<<<<<<< HEAD
+UnknownDBException::UnknownDBException(const UnknownDBException& other1131) : TException() {
+  message = other1131.message;
+  __isset = other1131.__isset;
+}
+UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1132) {
+  message = other1132.message;
+  __isset = other1132.__isset;
+=======
+<<<<<<< HEAD
+UnknownDBException::UnknownDBException(const UnknownDBException& other1111) : TException() {
+  message = other1111.message;
+  __isset = other1111.__isset;
+}
+UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1112) {
+  message = other1112.message;
+  __isset = other1112.__isset;
+=======
+AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1095) : TException() {
+  message = other1095.message;
+  __isset = other1095.__isset;
+}
+AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1096) {
+  message = other1096.message;
+  __isset = other1096.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void UnknownDBException::printTo(std::ostream& out) const {
@@ -30710,6 +37205,7 @@ void swap(AlreadyExistsException &a, AlreadyExistsException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1151) : TException() {
   message = other1151.message;
   __isset = other1151.__isset;
@@ -30717,6 +37213,35 @@ AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& oth
 AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1152) {
   message = other1152.message;
   __isset = other1152.__isset;
+=======
+<<<<<<< HEAD
+AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1133) : TException() {
+  message = other1133.message;
+  __isset = other1133.__isset;
+}
+AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1134) {
+  message = other1134.message;
+  __isset = other1134.__isset;
+=======
+<<<<<<< HEAD
+AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1113) : TException() {
+  message = other1113.message;
+  __isset = other1113.__isset;
+}
+AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1114) {
+  message = other1114.message;
+  __isset = other1114.__isset;
+=======
+InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1097) : TException() {
+  message = other1097.message;
+  __isset = other1097.__isset;
+}
+InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1098) {
+  message = other1098.message;
+  __isset = other1098.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void AlreadyExistsException::printTo(std::ostream& out) const {
@@ -30807,6 +37332,7 @@ void swap(InvalidPartitionException &a, InvalidPartitionException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1153) : TException() {
   message = other1153.message;
   __isset = other1153.__isset;
@@ -30814,6 +37340,35 @@ InvalidPartitionException::InvalidPartitionException(const InvalidPartitionExcep
 InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1154) {
   message = other1154.message;
   __isset = other1154.__isset;
+=======
+<<<<<<< HEAD
+InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1135) : TException() {
+  message = other1135.message;
+  __isset = other1135.__isset;
+}
+InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1136) {
+  message = other1136.message;
+  __isset = other1136.__isset;
+=======
+<<<<<<< HEAD
+InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1115) : TException() {
+  message = other1115.message;
+  __isset = other1115.__isset;
+}
+InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1116) {
+  message = other1116.message;
+  __isset = other1116.__isset;
+=======
+UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1099) : TException() {
+  message = other1099.message;
+  __isset = other1099.__isset;
+}
+UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1100) {
+  message = other1100.message;
+  __isset = other1100.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void InvalidPartitionException::printTo(std::ostream& out) const {
@@ -30904,6 +37459,7 @@ void swap(UnknownPartitionException &a, UnknownPartitionException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1155) : TException() {
   message = other1155.message;
   __isset = other1155.__isset;
@@ -30911,6 +37467,35 @@ UnknownPartitionException::UnknownPartitionException(const UnknownPartitionExcep
 UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1156) {
   message = other1156.message;
   __isset = other1156.__isset;
+=======
+<<<<<<< HEAD
+UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1137) : TException() {
+  message = other1137.message;
+  __isset = other1137.__isset;
+}
+UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1138) {
+  message = other1138.message;
+  __isset = other1138.__isset;
+=======
+<<<<<<< HEAD
+UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1117) : TException() {
+  message = other1117.message;
+  __isset = other1117.__isset;
+}
+UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1118) {
+  message = other1118.message;
+  __isset = other1118.__isset;
+=======
+InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1101) : TException() {
+  message = other1101.message;
+  __isset = other1101.__isset;
+}
+InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1102) {
+  message = other1102.message;
+  __isset = other1102.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void UnknownPartitionException::printTo(std::ostream& out) const {
@@ -31001,6 +37586,7 @@ void swap(InvalidObjectException &a, InvalidObjectException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1157) : TException() {
   message = other1157.message;
   __isset = other1157.__isset;
@@ -31008,6 +37594,35 @@ InvalidObjectException::InvalidObjectException(const InvalidObjectException& oth
 InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1158) {
   message = other1158.message;
   __isset = other1158.__isset;
+=======
+<<<<<<< HEAD
+InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1139) : TException() {
+  message = other1139.message;
+  __isset = other1139.__isset;
+}
+InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1140) {
+  message = other1140.message;
+  __isset = other1140.__isset;
+=======
+<<<<<<< HEAD
+InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1119) : TException() {
+  message = other1119.message;
+  __isset = other1119.__isset;
+}
+InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1120) {
+  message = other1120.message;
+  __isset = other1120.__isset;
+=======
+NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1103) : TException() {
+  message = other1103.message;
+  __isset = other1103.__isset;
+}
+NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other1104) {
+  message = other1104.message;
+  __isset = other1104.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void InvalidObjectException::printTo(std::ostream& out) const {
@@ -31098,6 +37713,7 @@ void swap(NoSuchObjectException &a, NoSuchObjectException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1159) : TException() {
   message = other1159.message;
   __isset = other1159.__isset;
@@ -31105,6 +37721,35 @@ NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1
 NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other1160) {
   message = other1160.message;
   __isset = other1160.__isset;
+=======
+<<<<<<< HEAD
+NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1141) : TException() {
+  message = other1141.message;
+  __isset = other1141.__isset;
+}
+NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other1142) {
+  message = other1142.message;
+  __isset = other1142.__isset;
+=======
+<<<<<<< HEAD
+NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1121) : TException() {
+  message = other1121.message;
+  __isset = other1121.__isset;
+}
+NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other1122) {
+  message = other1122.message;
+  __isset = other1122.__isset;
+=======
+IndexAlreadyExistsException::IndexAlreadyExistsException(const IndexAlreadyExistsException& other1105) : TException() {
+  message = other1105.message;
+  __isset = other1105.__isset;
+}
+IndexAlreadyExistsException& IndexAlreadyExistsException::operator=(const IndexAlreadyExistsException& other1106) {
+  message = other1106.message;
+  __isset = other1106.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void NoSuchObjectException::printTo(std::ostream& out) const {
@@ -31195,6 +37840,7 @@ void swap(InvalidOperationException &a, InvalidOperationException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1161) : TException() {
   message = other1161.message;
   __isset = other1161.__isset;
@@ -31202,6 +37848,35 @@ InvalidOperationException::InvalidOperationException(const InvalidOperationExcep
 InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other1162) {
   message = other1162.message;
   __isset = other1162.__isset;
+=======
+<<<<<<< HEAD
+InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1143) : TException() {
+  message = other1143.message;
+  __isset = other1143.__isset;
+}
+InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other1144) {
+  message = other1144.message;
+  __isset = other1144.__isset;
+=======
+<<<<<<< HEAD
+InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1123) : TException() {
+  message = other1123.message;
+  __isset = other1123.__isset;
+}
+InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other1124) {
+  message = other1124.message;
+  __isset = other1124.__isset;
+=======
+InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1107) : TException() {
+  message = other1107.message;
+  __isset = other1107.__isset;
+}
+InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other1108) {
+  message = other1108.message;
+  __isset = other1108.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void InvalidOperationException::printTo(std::ostream& out) const {
@@ -31292,6 +37967,7 @@ void swap(ConfigValSecurityException &a, ConfigValSecurityException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1163) : TException() {
   message = other1163.message;
   __isset = other1163.__isset;
@@ -31299,6 +37975,35 @@ ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityEx
 ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other1164) {
   message = other1164.message;
   __isset = other1164.__isset;
+=======
+<<<<<<< HEAD
+ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1145) : TException() {
+  message = other1145.message;
+  __isset = other1145.__isset;
+}
+ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other1146) {
+  message = other1146.message;
+  __isset = other1146.__isset;
+=======
+<<<<<<< HEAD
+ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1125) : TException() {
+  message = other1125.message;
+  __isset = other1125.__isset;
+}
+ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other1126) {
+  message = other1126.message;
+  __isset = other1126.__isset;
+=======
+ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1109) : TException() {
+  message = other1109.message;
+  __isset = other1109.__isset;
+}
+ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other1110) {
+  message = other1110.message;
+  __isset = other1110.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void ConfigValSecurityException::printTo(std::ostream& out) const {
@@ -31389,6 +38094,7 @@ void swap(InvalidInputException &a, InvalidInputException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 InvalidInputException::InvalidInputException(const InvalidInputException& other1165) : TException() {
   message = other1165.message;
   __isset = other1165.__isset;
@@ -31396,6 +38102,35 @@ InvalidInputException::InvalidInputException(const InvalidInputException& other1
 InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other1166) {
   message = other1166.message;
   __isset = other1166.__isset;
+=======
+<<<<<<< HEAD
+InvalidInputException::InvalidInputException(const InvalidInputException& other1147) : TException() {
+  message = other1147.message;
+  __isset = other1147.__isset;
+}
+InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other1148) {
+  message = other1148.message;
+  __isset = other1148.__isset;
+=======
+<<<<<<< HEAD
+InvalidInputException::InvalidInputException(const InvalidInputException& other1127) : TException() {
+  message = other1127.message;
+  __isset = other1127.__isset;
+}
+InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other1128) {
+  message = other1128.message;
+  __isset = other1128.__isset;
+=======
+InvalidInputException::InvalidInputException(const InvalidInputException& other1111) : TException() {
+  message = other1111.message;
+  __isset = other1111.__isset;
+}
+InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other1112) {
+  message = other1112.message;
+  __isset = other1112.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void InvalidInputException::printTo(std::ostream& out) const {
@@ -31486,6 +38221,7 @@ void swap(NoSuchTxnException &a, NoSuchTxnException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1167) : TException() {
   message = other1167.message;
   __isset = other1167.__isset;
@@ -31493,6 +38229,35 @@ NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1167) : TE
 NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other1168) {
   message = other1168.message;
   __isset = other1168.__isset;
+=======
+<<<<<<< HEAD
+NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1149) : TException() {
+  message = other1149.message;
+  __isset = other1149.__isset;
+}
+NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other1150) {
+  message = other1150.message;
+  __isset = other1150.__isset;
+=======
+<<<<<<< HEAD
+NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1129) : TException() {
+  message = other1129.message;
+  __isset = other1129.__isset;
+}
+NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other1130) {
+  message = other1130.message;
+  __isset = other1130.__isset;
+=======
+NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1113) : TException() {
+  message = other1113.message;
+  __isset = other1113.__isset;
+}
+NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other1114) {
+  message = other1114.message;
+  __isset = other1114.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void NoSuchTxnException::printTo(std::ostream& out) const {
@@ -31583,6 +38348,7 @@ void swap(TxnAbortedException &a, TxnAbortedException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1169) : TException() {
   message = other1169.message;
   __isset = other1169.__isset;
@@ -31590,6 +38356,35 @@ TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1169) :
 TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other1170) {
   message = other1170.message;
   __isset = other1170.__isset;
+=======
+<<<<<<< HEAD
+TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1151) : TException() {
+  message = other1151.message;
+  __isset = other1151.__isset;
+}
+TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other1152) {
+  message = other1152.message;
+  __isset = other1152.__isset;
+=======
+<<<<<<< HEAD
+TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1131) : TException() {
+  message = other1131.message;
+  __isset = other1131.__isset;
+}
+TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other1132) {
+  message = other1132.message;
+  __isset = other1132.__isset;
+=======
+TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1115) : TException() {
+  message = other1115.message;
+  __isset = other1115.__isset;
+}
+TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other1116) {
+  message = other1116.message;
+  __isset = other1116.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void TxnAbortedException::printTo(std::ostream& out) const {
@@ -31680,6 +38475,7 @@ void swap(TxnOpenException &a, TxnOpenException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 TxnOpenException::TxnOpenException(const TxnOpenException& other1171) : TException() {
   message = other1171.message;
   __isset = other1171.__isset;
@@ -31687,6 +38483,35 @@ TxnOpenException::TxnOpenException(const TxnOpenException& other1171) : TExcepti
 TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1172) {
   message = other1172.message;
   __isset = other1172.__isset;
+=======
+<<<<<<< HEAD
+TxnOpenException::TxnOpenException(const TxnOpenException& other1153) : TException() {
+  message = other1153.message;
+  __isset = other1153.__isset;
+}
+TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1154) {
+  message = other1154.message;
+  __isset = other1154.__isset;
+=======
+<<<<<<< HEAD
+TxnOpenException::TxnOpenException(const TxnOpenException& other1133) : TException() {
+  message = other1133.message;
+  __isset = other1133.__isset;
+}
+TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1134) {
+  message = other1134.message;
+  __isset = other1134.__isset;
+=======
+TxnOpenException::TxnOpenException(const TxnOpenException& other1117) : TException() {
+  message = other1117.message;
+  __isset = other1117.__isset;
+}
+TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1118) {
+  message = other1118.message;
+  __isset = other1118.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void TxnOpenException::printTo(std::ostream& out) const {
@@ -31777,6 +38602,7 @@ void swap(NoSuchLockException &a, NoSuchLockException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1173) : TException() {
   message = other1173.message;
   __isset = other1173.__isset;
@@ -31784,6 +38610,35 @@ NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1173) :
 NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other1174) {
   message = other1174.message;
   __isset = other1174.__isset;
+=======
+<<<<<<< HEAD
+NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1155) : TException() {
+  message = other1155.message;
+  __isset = other1155.__isset;
+}
+NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other1156) {
+  message = other1156.message;
+  __isset = other1156.__isset;
+=======
+<<<<<<< HEAD
+NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1135) : TException() {
+  message = other1135.message;
+  __isset = other1135.__isset;
+}
+NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other1136) {
+  message = other1136.message;
+  __isset = other1136.__isset;
+=======
+NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1119) : TException() {
+  message = other1119.message;
+  __isset = other1119.__isset;
+}
+NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other1120) {
+  message = other1120.message;
+  __isset = other1120.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
   return *this;
 }
 void NoSuchLockException::printTo(std::ostream& out) const {

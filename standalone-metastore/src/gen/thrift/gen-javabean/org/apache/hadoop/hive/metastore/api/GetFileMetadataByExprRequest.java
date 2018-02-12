@@ -619,6 +619,7 @@ import org.slf4j.LoggerFactory;
           case 1: // FILE_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list734 = iprot.readListBegin();
                 struct.fileIds = new ArrayList<Long>(_list734.size);
                 long _elem735;
@@ -626,6 +627,35 @@ import org.slf4j.LoggerFactory;
                 {
                   _elem735 = iprot.readI64();
                   struct.fileIds.add(_elem735);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list726 = iprot.readListBegin();
+                struct.fileIds = new ArrayList<Long>(_list726.size);
+                long _elem727;
+                for (int _i728 = 0; _i728 < _list726.size; ++_i728)
+                {
+                  _elem727 = iprot.readI64();
+                  struct.fileIds.add(_elem727);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list710 = iprot.readListBegin();
+                struct.fileIds = new ArrayList<Long>(_list710.size);
+                long _elem711;
+                for (int _i712 = 0; _i712 < _list710.size; ++_i712)
+                {
+                  _elem711 = iprot.readI64();
+                  struct.fileIds.add(_elem711);
+=======
+                org.apache.thrift.protocol.TList _list728 = iprot.readListBegin();
+                struct.fileIds = new ArrayList<Long>(_list728.size);
+                long _elem729;
+                for (int _i730 = 0; _i730 < _list728.size; ++_i730)
+                {
+                  _elem729 = iprot.readI64();
+                  struct.fileIds.add(_elem729);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
                 }
                 iprot.readListEnd();
               }
@@ -675,9 +705,27 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(FILE_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.fileIds.size()));
+<<<<<<< HEAD
           for (long _iter737 : struct.fileIds)
           {
             oprot.writeI64(_iter737);
+=======
+<<<<<<< HEAD
+          for (long _iter729 : struct.fileIds)
+          {
+            oprot.writeI64(_iter729);
+=======
+<<<<<<< HEAD
+          for (long _iter713 : struct.fileIds)
+          {
+            oprot.writeI64(_iter713);
+=======
+          for (long _iter731 : struct.fileIds)
+          {
+            oprot.writeI64(_iter731);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
           oprot.writeListEnd();
         }
@@ -719,9 +767,27 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.fileIds.size());
+<<<<<<< HEAD
         for (long _iter738 : struct.fileIds)
         {
           oprot.writeI64(_iter738);
+=======
+<<<<<<< HEAD
+        for (long _iter730 : struct.fileIds)
+        {
+          oprot.writeI64(_iter730);
+=======
+<<<<<<< HEAD
+        for (long _iter714 : struct.fileIds)
+        {
+          oprot.writeI64(_iter714);
+=======
+        for (long _iter732 : struct.fileIds)
+        {
+          oprot.writeI64(_iter732);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         }
       }
       oprot.writeBinary(struct.expr);
@@ -745,6 +811,7 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetFileMetadataByExprRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
+<<<<<<< HEAD
         org.apache.thrift.protocol.TList _list739 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
         struct.fileIds = new ArrayList<Long>(_list739.size);
         long _elem740;
@@ -752,6 +819,35 @@ import org.slf4j.LoggerFactory;
         {
           _elem740 = iprot.readI64();
           struct.fileIds.add(_elem740);
+=======
+<<<<<<< HEAD
+        org.apache.thrift.protocol.TList _list731 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.fileIds = new ArrayList<Long>(_list731.size);
+        long _elem732;
+        for (int _i733 = 0; _i733 < _list731.size; ++_i733)
+        {
+          _elem732 = iprot.readI64();
+          struct.fileIds.add(_elem732);
+=======
+<<<<<<< HEAD
+        org.apache.thrift.protocol.TList _list715 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.fileIds = new ArrayList<Long>(_list715.size);
+        long _elem716;
+        for (int _i717 = 0; _i717 < _list715.size; ++_i717)
+        {
+          _elem716 = iprot.readI64();
+          struct.fileIds.add(_elem716);
+=======
+        org.apache.thrift.protocol.TList _list733 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.fileIds = new ArrayList<Long>(_list733.size);
+        long _elem734;
+        for (int _i735 = 0; _i735 < _list733.size; ++_i735)
+        {
+          _elem734 = iprot.readI64();
+          struct.fileIds.add(_elem734);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         }
       }
       struct.setFileIdsIsSet(true);

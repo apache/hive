@@ -56,6 +56,8 @@ public abstract class EventMessage {
     DROP_SCHEMA_VERSION(MessageFactory.DROP_SCHEMA_VERSION_EVENT),
     CREATE_CATALOG(MessageFactory.CREATE_CATALOG_EVENT),
     DROP_CATALOG(MessageFactory.DROP_CATALOG_EVENT);
+    OPEN_TXN(MessageFactory.OPEN_TXN_EVENT),
+    COMMIT_TXN(MessageFactory.COMMIT_TXN_EVENT);
 
     private String typeString;
 

@@ -218,5 +218,13 @@ ALTER TABLE "APP"."PARTITION_EVENTS" ADD COLUMN "CAT_NAME" VARCHAR(256);
 -- Add column to notification log
 ALTER TABLE "APP"."NOTIFICATION_LOG" ADD COLUMN "CAT_NAME" VARCHAR(256);
 
+CREATE TABLE REPL_TXN_MAP (
+  REPL_POLICY varchar(128) NOT NULL,
+  SRC_TXN_ID bigint NOT NULL,
+  TARGET_TXN_ID bigint NOT NULL,
+  PRIMARY KEY (REPL_POLICY, SRC_TXN_ID)
+);
+
 -- This needs to be the last thing done.  Insert any changes above this line.
 UPDATE "APP".VERSION SET SCHEMA_VERSION='3.0.0', VERSION_COMMENT='Hive release version 3.0.0' where VER_ID=1;
+

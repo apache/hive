@@ -538,6 +538,7 @@ import org.slf4j.LoggerFactory;
           case 2: // FILES_ADDED
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list700 = iprot.readListBegin();
                 struct.filesAdded = new ArrayList<String>(_list700.size);
                 String _elem701;
@@ -545,6 +546,35 @@ import org.slf4j.LoggerFactory;
                 {
                   _elem701 = iprot.readString();
                   struct.filesAdded.add(_elem701);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list692 = iprot.readListBegin();
+                struct.filesAdded = new ArrayList<String>(_list692.size);
+                String _elem693;
+                for (int _i694 = 0; _i694 < _list692.size; ++_i694)
+                {
+                  _elem693 = iprot.readString();
+                  struct.filesAdded.add(_elem693);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list676 = iprot.readListBegin();
+                struct.filesAdded = new ArrayList<String>(_list676.size);
+                String _elem677;
+                for (int _i678 = 0; _i678 < _list676.size; ++_i678)
+                {
+                  _elem677 = iprot.readString();
+                  struct.filesAdded.add(_elem677);
+=======
+                org.apache.thrift.protocol.TList _list694 = iprot.readListBegin();
+                struct.filesAdded = new ArrayList<String>(_list694.size);
+                String _elem695;
+                for (int _i696 = 0; _i696 < _list694.size; ++_i696)
+                {
+                  _elem695 = iprot.readString();
+                  struct.filesAdded.add(_elem695);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
                 }
                 iprot.readListEnd();
               }
@@ -556,6 +586,7 @@ import org.slf4j.LoggerFactory;
           case 3: // FILES_ADDED_CHECKSUM
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list703 = iprot.readListBegin();
                 struct.filesAddedChecksum = new ArrayList<String>(_list703.size);
                 String _elem704;
@@ -563,6 +594,35 @@ import org.slf4j.LoggerFactory;
                 {
                   _elem704 = iprot.readString();
                   struct.filesAddedChecksum.add(_elem704);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list695 = iprot.readListBegin();
+                struct.filesAddedChecksum = new ArrayList<String>(_list695.size);
+                String _elem696;
+                for (int _i697 = 0; _i697 < _list695.size; ++_i697)
+                {
+                  _elem696 = iprot.readString();
+                  struct.filesAddedChecksum.add(_elem696);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list679 = iprot.readListBegin();
+                struct.filesAddedChecksum = new ArrayList<String>(_list679.size);
+                String _elem680;
+                for (int _i681 = 0; _i681 < _list679.size; ++_i681)
+                {
+                  _elem680 = iprot.readString();
+                  struct.filesAddedChecksum.add(_elem680);
+=======
+                org.apache.thrift.protocol.TList _list697 = iprot.readListBegin();
+                struct.filesAddedChecksum = new ArrayList<String>(_list697.size);
+                String _elem698;
+                for (int _i699 = 0; _i699 < _list697.size; ++_i699)
+                {
+                  _elem698 = iprot.readString();
+                  struct.filesAddedChecksum.add(_elem698);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
                 }
                 iprot.readListEnd();
               }
@@ -593,9 +653,27 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(FILES_ADDED_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.filesAdded.size()));
+<<<<<<< HEAD
           for (String _iter706 : struct.filesAdded)
           {
             oprot.writeString(_iter706);
+=======
+<<<<<<< HEAD
+          for (String _iter698 : struct.filesAdded)
+          {
+            oprot.writeString(_iter698);
+=======
+<<<<<<< HEAD
+          for (String _iter682 : struct.filesAdded)
+          {
+            oprot.writeString(_iter682);
+=======
+          for (String _iter700 : struct.filesAdded)
+          {
+            oprot.writeString(_iter700);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
           oprot.writeListEnd();
         }
@@ -606,9 +684,27 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(FILES_ADDED_CHECKSUM_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.filesAddedChecksum.size()));
+<<<<<<< HEAD
             for (String _iter707 : struct.filesAddedChecksum)
             {
               oprot.writeString(_iter707);
+=======
+<<<<<<< HEAD
+            for (String _iter699 : struct.filesAddedChecksum)
+            {
+              oprot.writeString(_iter699);
+=======
+<<<<<<< HEAD
+            for (String _iter683 : struct.filesAddedChecksum)
+            {
+              oprot.writeString(_iter683);
+=======
+            for (String _iter701 : struct.filesAddedChecksum)
+            {
+              oprot.writeString(_iter701);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             oprot.writeListEnd();
           }
@@ -634,9 +730,27 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.filesAdded.size());
+<<<<<<< HEAD
         for (String _iter708 : struct.filesAdded)
         {
           oprot.writeString(_iter708);
+=======
+<<<<<<< HEAD
+        for (String _iter700 : struct.filesAdded)
+        {
+          oprot.writeString(_iter700);
+=======
+<<<<<<< HEAD
+        for (String _iter684 : struct.filesAdded)
+        {
+          oprot.writeString(_iter684);
+=======
+        for (String _iter702 : struct.filesAdded)
+        {
+          oprot.writeString(_iter702);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         }
       }
       BitSet optionals = new BitSet();
@@ -653,9 +767,27 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetFilesAddedChecksum()) {
         {
           oprot.writeI32(struct.filesAddedChecksum.size());
+<<<<<<< HEAD
           for (String _iter709 : struct.filesAddedChecksum)
           {
             oprot.writeString(_iter709);
+=======
+<<<<<<< HEAD
+          for (String _iter701 : struct.filesAddedChecksum)
+          {
+            oprot.writeString(_iter701);
+=======
+<<<<<<< HEAD
+          for (String _iter685 : struct.filesAddedChecksum)
+          {
+            oprot.writeString(_iter685);
+=======
+          for (String _iter703 : struct.filesAddedChecksum)
+          {
+            oprot.writeString(_iter703);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
       }
@@ -665,6 +797,7 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, InsertEventRequestData struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
+<<<<<<< HEAD
         org.apache.thrift.protocol.TList _list710 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
         struct.filesAdded = new ArrayList<String>(_list710.size);
         String _elem711;
@@ -672,6 +805,35 @@ import org.slf4j.LoggerFactory;
         {
           _elem711 = iprot.readString();
           struct.filesAdded.add(_elem711);
+=======
+<<<<<<< HEAD
+        org.apache.thrift.protocol.TList _list702 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.filesAdded = new ArrayList<String>(_list702.size);
+        String _elem703;
+        for (int _i704 = 0; _i704 < _list702.size; ++_i704)
+        {
+          _elem703 = iprot.readString();
+          struct.filesAdded.add(_elem703);
+=======
+<<<<<<< HEAD
+        org.apache.thrift.protocol.TList _list686 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.filesAdded = new ArrayList<String>(_list686.size);
+        String _elem687;
+        for (int _i688 = 0; _i688 < _list686.size; ++_i688)
+        {
+          _elem687 = iprot.readString();
+          struct.filesAdded.add(_elem687);
+=======
+        org.apache.thrift.protocol.TList _list704 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.filesAdded = new ArrayList<String>(_list704.size);
+        String _elem705;
+        for (int _i706 = 0; _i706 < _list704.size; ++_i706)
+        {
+          _elem705 = iprot.readString();
+          struct.filesAdded.add(_elem705);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         }
       }
       struct.setFilesAddedIsSet(true);
@@ -682,6 +844,7 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(1)) {
         {
+<<<<<<< HEAD
           org.apache.thrift.protocol.TList _list713 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
           struct.filesAddedChecksum = new ArrayList<String>(_list713.size);
           String _elem714;
@@ -689,6 +852,35 @@ import org.slf4j.LoggerFactory;
           {
             _elem714 = iprot.readString();
             struct.filesAddedChecksum.add(_elem714);
+=======
+<<<<<<< HEAD
+          org.apache.thrift.protocol.TList _list705 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.filesAddedChecksum = new ArrayList<String>(_list705.size);
+          String _elem706;
+          for (int _i707 = 0; _i707 < _list705.size; ++_i707)
+          {
+            _elem706 = iprot.readString();
+            struct.filesAddedChecksum.add(_elem706);
+=======
+<<<<<<< HEAD
+          org.apache.thrift.protocol.TList _list689 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.filesAddedChecksum = new ArrayList<String>(_list689.size);
+          String _elem690;
+          for (int _i691 = 0; _i691 < _list689.size; ++_i691)
+          {
+            _elem690 = iprot.readString();
+            struct.filesAddedChecksum.add(_elem690);
+=======
+          org.apache.thrift.protocol.TList _list707 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.filesAddedChecksum = new ArrayList<String>(_list707.size);
+          String _elem708;
+          for (int _i709 = 0; _i709 < _list707.size; ++_i709)
+          {
+            _elem708 = iprot.readString();
+            struct.filesAddedChecksum.add(_elem708);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         struct.setFilesAddedChecksumIsSet(true);

@@ -794,6 +794,7 @@ import org.slf4j.LoggerFactory;
           case 5: // PARTITION_VALS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list716 = iprot.readListBegin();
                 struct.partitionVals = new ArrayList<String>(_list716.size);
                 String _elem717;
@@ -801,6 +802,35 @@ import org.slf4j.LoggerFactory;
                 {
                   _elem717 = iprot.readString();
                   struct.partitionVals.add(_elem717);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list708 = iprot.readListBegin();
+                struct.partitionVals = new ArrayList<String>(_list708.size);
+                String _elem709;
+                for (int _i710 = 0; _i710 < _list708.size; ++_i710)
+                {
+                  _elem709 = iprot.readString();
+                  struct.partitionVals.add(_elem709);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list692 = iprot.readListBegin();
+                struct.partitionVals = new ArrayList<String>(_list692.size);
+                String _elem693;
+                for (int _i694 = 0; _i694 < _list692.size; ++_i694)
+                {
+                  _elem693 = iprot.readString();
+                  struct.partitionVals.add(_elem693);
+=======
+                org.apache.thrift.protocol.TList _list710 = iprot.readListBegin();
+                struct.partitionVals = new ArrayList<String>(_list710.size);
+                String _elem711;
+                for (int _i712 = 0; _i712 < _list710.size; ++_i712)
+                {
+                  _elem711 = iprot.readString();
+                  struct.partitionVals.add(_elem711);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
                 }
                 iprot.readListEnd();
               }
@@ -857,9 +887,27 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(PARTITION_VALS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.partitionVals.size()));
+<<<<<<< HEAD
             for (String _iter719 : struct.partitionVals)
             {
               oprot.writeString(_iter719);
+=======
+<<<<<<< HEAD
+            for (String _iter711 : struct.partitionVals)
+            {
+              oprot.writeString(_iter711);
+=======
+<<<<<<< HEAD
+            for (String _iter695 : struct.partitionVals)
+            {
+              oprot.writeString(_iter695);
+=======
+            for (String _iter713 : struct.partitionVals)
+            {
+              oprot.writeString(_iter713);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             oprot.writeListEnd();
           }
@@ -915,9 +963,27 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetPartitionVals()) {
         {
           oprot.writeI32(struct.partitionVals.size());
+<<<<<<< HEAD
           for (String _iter720 : struct.partitionVals)
           {
             oprot.writeString(_iter720);
+=======
+<<<<<<< HEAD
+          for (String _iter712 : struct.partitionVals)
+          {
+            oprot.writeString(_iter712);
+=======
+<<<<<<< HEAD
+          for (String _iter696 : struct.partitionVals)
+          {
+            oprot.writeString(_iter696);
+=======
+          for (String _iter714 : struct.partitionVals)
+          {
+            oprot.writeString(_iter714);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
       }
@@ -945,6 +1011,7 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(2)) {
         {
+<<<<<<< HEAD
           org.apache.thrift.protocol.TList _list721 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
           struct.partitionVals = new ArrayList<String>(_list721.size);
           String _elem722;
@@ -952,6 +1019,35 @@ import org.slf4j.LoggerFactory;
           {
             _elem722 = iprot.readString();
             struct.partitionVals.add(_elem722);
+=======
+<<<<<<< HEAD
+          org.apache.thrift.protocol.TList _list713 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.partitionVals = new ArrayList<String>(_list713.size);
+          String _elem714;
+          for (int _i715 = 0; _i715 < _list713.size; ++_i715)
+          {
+            _elem714 = iprot.readString();
+            struct.partitionVals.add(_elem714);
+=======
+<<<<<<< HEAD
+          org.apache.thrift.protocol.TList _list697 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.partitionVals = new ArrayList<String>(_list697.size);
+          String _elem698;
+          for (int _i699 = 0; _i699 < _list697.size; ++_i699)
+          {
+            _elem698 = iprot.readString();
+            struct.partitionVals.add(_elem698);
+=======
+          org.apache.thrift.protocol.TList _list715 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.partitionVals = new ArrayList<String>(_list715.size);
+          String _elem716;
+          for (int _i717 = 0; _i717 < _list715.size; ++_i717)
+          {
+            _elem716 = iprot.readString();
+            struct.partitionVals.add(_elem716);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         struct.setPartitionValsIsSet(true);

@@ -49,6 +49,8 @@ import org.apache.hadoop.hive.metastore.events.DropSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
+import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
+import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 
 import java.util.List;
 import java.util.Map;
@@ -206,6 +208,18 @@ public class MetaStoreListenerNotifier {
               (listener, event) -> listener.onCreateCatalog((CreateCatalogEvent)event))
           .put(EventType.DROP_CATALOG,
               (listener, event) -> listener.onDropCatalog((DropCatalogEvent)event))
+          .put(EventType.OPEN_TXN, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+              listener.onOpenTxn((OpenTxnEvent)event);
+            }
+          })
+          .put(EventType.COMMIT_TXN, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+              listener.onCommitTxn((CommitTxnEvent) event);
+            }
+          })
           .build()
   );
 

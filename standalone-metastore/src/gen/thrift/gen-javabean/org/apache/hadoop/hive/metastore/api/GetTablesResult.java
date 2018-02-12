@@ -354,6 +354,7 @@ import org.slf4j.LoggerFactory;
           case 1: // TABLES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list808 = iprot.readListBegin();
                 struct.tables = new ArrayList<Table>(_list808.size);
                 Table _elem809;
@@ -362,6 +363,38 @@ import org.slf4j.LoggerFactory;
                   _elem809 = new Table();
                   _elem809.read(iprot);
                   struct.tables.add(_elem809);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list800 = iprot.readListBegin();
+                struct.tables = new ArrayList<Table>(_list800.size);
+                Table _elem801;
+                for (int _i802 = 0; _i802 < _list800.size; ++_i802)
+                {
+                  _elem801 = new Table();
+                  _elem801.read(iprot);
+                  struct.tables.add(_elem801);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list784 = iprot.readListBegin();
+                struct.tables = new ArrayList<Table>(_list784.size);
+                Table _elem785;
+                for (int _i786 = 0; _i786 < _list784.size; ++_i786)
+                {
+                  _elem785 = new Table();
+                  _elem785.read(iprot);
+                  struct.tables.add(_elem785);
+=======
+                org.apache.thrift.protocol.TList _list802 = iprot.readListBegin();
+                struct.tables = new ArrayList<Table>(_list802.size);
+                Table _elem803;
+                for (int _i804 = 0; _i804 < _list802.size; ++_i804)
+                {
+                  _elem803 = new Table();
+                  _elem803.read(iprot);
+                  struct.tables.add(_elem803);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
                 }
                 iprot.readListEnd();
               }
@@ -387,9 +420,27 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(TABLES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.tables.size()));
+<<<<<<< HEAD
           for (Table _iter811 : struct.tables)
           {
             _iter811.write(oprot);
+=======
+<<<<<<< HEAD
+          for (Table _iter803 : struct.tables)
+          {
+            _iter803.write(oprot);
+=======
+<<<<<<< HEAD
+          for (Table _iter787 : struct.tables)
+          {
+            _iter787.write(oprot);
+=======
+          for (Table _iter805 : struct.tables)
+          {
+            _iter805.write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
           oprot.writeListEnd();
         }
@@ -414,9 +465,27 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.tables.size());
+<<<<<<< HEAD
         for (Table _iter812 : struct.tables)
         {
           _iter812.write(oprot);
+=======
+<<<<<<< HEAD
+        for (Table _iter804 : struct.tables)
+        {
+          _iter804.write(oprot);
+=======
+<<<<<<< HEAD
+        for (Table _iter788 : struct.tables)
+        {
+          _iter788.write(oprot);
+=======
+        for (Table _iter806 : struct.tables)
+        {
+          _iter806.write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         }
       }
     }
@@ -425,6 +494,7 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetTablesResult struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
+<<<<<<< HEAD
         org.apache.thrift.protocol.TList _list813 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
         struct.tables = new ArrayList<Table>(_list813.size);
         Table _elem814;
@@ -433,6 +503,38 @@ import org.slf4j.LoggerFactory;
           _elem814 = new Table();
           _elem814.read(iprot);
           struct.tables.add(_elem814);
+=======
+<<<<<<< HEAD
+        org.apache.thrift.protocol.TList _list805 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.tables = new ArrayList<Table>(_list805.size);
+        Table _elem806;
+        for (int _i807 = 0; _i807 < _list805.size; ++_i807)
+        {
+          _elem806 = new Table();
+          _elem806.read(iprot);
+          struct.tables.add(_elem806);
+=======
+<<<<<<< HEAD
+        org.apache.thrift.protocol.TList _list789 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.tables = new ArrayList<Table>(_list789.size);
+        Table _elem790;
+        for (int _i791 = 0; _i791 < _list789.size; ++_i791)
+        {
+          _elem790 = new Table();
+          _elem790.read(iprot);
+          struct.tables.add(_elem790);
+=======
+        org.apache.thrift.protocol.TList _list807 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.tables = new ArrayList<Table>(_list807.size);
+        Table _elem808;
+        for (int _i809 = 0; _i809 < _list807.size; ++_i809)
+        {
+          _elem808 = new Table();
+          _elem808.read(iprot);
+          struct.tables.add(_elem808);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         }
       }
       struct.setTablesIsSet(true);

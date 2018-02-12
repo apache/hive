@@ -584,6 +584,32 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           LOG.debug("Going to execute update <" + q + ">");
           stmt.execute(q);
         }
+
+        if (rqst.isSetReplPolicy()) {
+          List<String> rowsRepl = new ArrayList<>();
+          List<String> selectRepl = new ArrayList<>();
+
+          for (int i = 0; i < numTxns; i++) {
+            selectRepl.add("select target_txn_id from REPL_TXN_MAP where repl_policy = " + quoteString(
+                    rqst.getReplPolicy()) + "and src_txn_id = " + rqst.getReplSrcTxnId().get(i));
+            long txnId = i + first;
+            rowsRepl.add(
+                quoteString(rqst.getReplPolicy()) + "," + rqst.getReplSrcTxnId().get(i) + "," + txnId);
+          }
+
+          List<String> queriesRepl = sqlGenerator.createInsertValuesStmt(
+              "REPL_TXN_MAP (repl_policy, src_txn_id, target_txn_id)", rowsRepl);
+
+          for (int i = 0; i < numTxns; i++) {
+            rs = stmt.executeQuery(selectRepl.get(i));
+            //no rows in the result set
+            if (!rs.next()) {
+              LOG.debug("Going to execute insert <" + queriesRepl.get(i) + ">");
+              stmt.execute(queriesRepl.get(i));
+            }
+          }
+        }
+
         LOG.debug("Going to commit");
         dbConn.commit();
         return new OpenTxnsResponse(txnIds);
@@ -698,7 +724,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @RetrySemantics.Idempotent("No-op if already committed")
   public void commitTxn(CommitTxnRequest rqst)
     throws NoSuchTxnException, TxnAbortedException,  MetaException {
-    long txnid = rqst.getTxnid();
+    long txnid;
+    long sourceTxnId = -1;
     try {
       Connection dbConn = null;
       Statement stmt = null;
@@ -708,6 +735,23 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
+
+        if (rqst.isSetReplPolicy()) {
+          sourceTxnId = rqst.getTxnid();
+          String query = "select TARGET_TXN_ID from TXN_MAP where SRC_TXN_ID = " + sourceTxnId +
+                  " and REPL_POLICY = " + quoteString(rqst.getReplPolicy());
+          String s = sqlGenerator.addForUpdateClause(query);
+          LOG.debug("Going to execute query <" + s + ">");
+          rs = stmt.executeQuery(s);
+          if (!rs.next()) {
+            LOG.debug("Target txn for Transaction not present <" + quoteString(rqst.getReplPolicy()) +":" +sourceTxnId + ">");
+            return;
+          }
+          txnid = rs.getLong(1);
+        } else {
+          txnid = rqst.getTxnid();
+        }
+
         /**
          * Runs at READ_COMMITTED with S4U on TXNS row for "txnid".  S4U ensures that no other
          * operation can change this txn (such acquiring locks). While lock() and commitTxn()
@@ -857,6 +901,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               rs.getString(1), rs.getString(2), txnid,
               rs.getTimestamp(3, Calendar.getInstance(TimeZone.getTimeZone("UTC"))).getTime());
         }
+
+        if (rqst.isSetReplPolicy()) {
+          s = "delete from TXN_MAP where SRC_TXN_ID = " + sourceTxnId +
+                  " and REPL_POLICY = " + quoteString(rqst.getReplPolicy());
+          LOG.debug("Going to execute  <" + s + ">");
+          stmt.executeUpdate(s);
+        }
+
         close(rs);
         dbConn.commit();
       } catch (SQLException e) {

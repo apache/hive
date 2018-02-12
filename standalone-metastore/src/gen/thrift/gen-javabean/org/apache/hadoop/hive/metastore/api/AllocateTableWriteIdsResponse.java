@@ -354,6 +354,7 @@ import org.slf4j.LoggerFactory;
           case 1: // TXN_TO_WRITE_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list618 = iprot.readListBegin();
                 struct.txnToWriteIds = new ArrayList<TxnToWriteId>(_list618.size);
                 TxnToWriteId _elem619;
@@ -362,6 +363,38 @@ import org.slf4j.LoggerFactory;
                   _elem619 = new TxnToWriteId();
                   _elem619.read(iprot);
                   struct.txnToWriteIds.add(_elem619);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list610 = iprot.readListBegin();
+                struct.txnToWriteIds = new ArrayList<TxnToWriteId>(_list610.size);
+                TxnToWriteId _elem611;
+                for (int _i612 = 0; _i612 < _list610.size; ++_i612)
+                {
+                  _elem611 = new TxnToWriteId();
+                  _elem611.read(iprot);
+                  struct.txnToWriteIds.add(_elem611);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list594 = iprot.readListBegin();
+                struct.txnToWriteIds = new ArrayList<TxnToWriteId>(_list594.size);
+                TxnToWriteId _elem595;
+                for (int _i596 = 0; _i596 < _list594.size; ++_i596)
+                {
+                  _elem595 = new TxnToWriteId();
+                  _elem595.read(iprot);
+                  struct.txnToWriteIds.add(_elem595);
+=======
+                org.apache.thrift.protocol.TList _list612 = iprot.readListBegin();
+                struct.txnToWriteIds = new ArrayList<TxnToWriteId>(_list612.size);
+                TxnToWriteId _elem613;
+                for (int _i614 = 0; _i614 < _list612.size; ++_i614)
+                {
+                  _elem613 = new TxnToWriteId();
+                  _elem613.read(iprot);
+                  struct.txnToWriteIds.add(_elem613);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
                 }
                 iprot.readListEnd();
               }
@@ -387,9 +420,27 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(TXN_TO_WRITE_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.txnToWriteIds.size()));
+<<<<<<< HEAD
           for (TxnToWriteId _iter621 : struct.txnToWriteIds)
           {
             _iter621.write(oprot);
+=======
+<<<<<<< HEAD
+          for (TxnToWriteId _iter613 : struct.txnToWriteIds)
+          {
+            _iter613.write(oprot);
+=======
+<<<<<<< HEAD
+          for (TxnToWriteId _iter597 : struct.txnToWriteIds)
+          {
+            _iter597.write(oprot);
+=======
+          for (TxnToWriteId _iter615 : struct.txnToWriteIds)
+          {
+            _iter615.write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
           oprot.writeListEnd();
         }
@@ -414,9 +465,27 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.txnToWriteIds.size());
+<<<<<<< HEAD
         for (TxnToWriteId _iter622 : struct.txnToWriteIds)
         {
           _iter622.write(oprot);
+=======
+<<<<<<< HEAD
+        for (TxnToWriteId _iter614 : struct.txnToWriteIds)
+        {
+          _iter614.write(oprot);
+=======
+<<<<<<< HEAD
+        for (TxnToWriteId _iter598 : struct.txnToWriteIds)
+        {
+          _iter598.write(oprot);
+=======
+        for (TxnToWriteId _iter616 : struct.txnToWriteIds)
+        {
+          _iter616.write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         }
       }
     }
@@ -425,6 +494,7 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, AllocateTableWriteIdsResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
+<<<<<<< HEAD
         org.apache.thrift.protocol.TList _list623 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
         struct.txnToWriteIds = new ArrayList<TxnToWriteId>(_list623.size);
         TxnToWriteId _elem624;
@@ -433,6 +503,38 @@ import org.slf4j.LoggerFactory;
           _elem624 = new TxnToWriteId();
           _elem624.read(iprot);
           struct.txnToWriteIds.add(_elem624);
+=======
+<<<<<<< HEAD
+        org.apache.thrift.protocol.TList _list615 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.txnToWriteIds = new ArrayList<TxnToWriteId>(_list615.size);
+        TxnToWriteId _elem616;
+        for (int _i617 = 0; _i617 < _list615.size; ++_i617)
+        {
+          _elem616 = new TxnToWriteId();
+          _elem616.read(iprot);
+          struct.txnToWriteIds.add(_elem616);
+=======
+<<<<<<< HEAD
+        org.apache.thrift.protocol.TList _list599 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.txnToWriteIds = new ArrayList<TxnToWriteId>(_list599.size);
+        TxnToWriteId _elem600;
+        for (int _i601 = 0; _i601 < _list599.size; ++_i601)
+        {
+          _elem600 = new TxnToWriteId();
+          _elem600.read(iprot);
+          struct.txnToWriteIds.add(_elem600);
+=======
+        org.apache.thrift.protocol.TList _list617 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.txnToWriteIds = new ArrayList<TxnToWriteId>(_list617.size);
+        TxnToWriteId _elem618;
+        for (int _i619 = 0; _i619 < _list617.size; ++_i619)
+        {
+          _elem618 = new TxnToWriteId();
+          _elem618.read(iprot);
+          struct.txnToWriteIds.add(_elem618);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
         }
       }
       struct.setTxnToWriteIdsIsSet(true);

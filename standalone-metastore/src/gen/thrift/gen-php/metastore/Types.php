@@ -15901,6 +15901,14 @@ class OpenTxnRequest {
    * @var string
    */
   public $agentInfo = "Unknown";
+  /**
+   * @var string
+   */
+  public $replPolicy = null;
+  /**
+   * @var int[]
+   */
+  public $replSrcTxnId = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -15921,6 +15929,18 @@ class OpenTxnRequest {
           'var' => 'agentInfo',
           'type' => TType::STRING,
           ),
+        5 => array(
+          'var' => 'replPolicy',
+          'type' => TType::STRING,
+          ),
+        6 => array(
+          'var' => 'replSrcTxnId',
+          'type' => TType::LST,
+          'etype' => TType::I64,
+          'elem' => array(
+            'type' => TType::I64,
+            ),
+          ),
         );
     }
     if (is_array($vals)) {
@@ -15935,6 +15955,12 @@ class OpenTxnRequest {
       }
       if (isset($vals['agentInfo'])) {
         $this->agentInfo = $vals['agentInfo'];
+      }
+      if (isset($vals['replPolicy'])) {
+        $this->replPolicy = $vals['replPolicy'];
+      }
+      if (isset($vals['replSrcTxnId'])) {
+        $this->replSrcTxnId = $vals['replSrcTxnId'];
       }
     }
   }
@@ -15986,6 +16012,30 @@ class OpenTxnRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->replPolicy);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
+          if ($ftype == TType::LST) {
+            $this->replSrcTxnId = array();
+            $_size490 = 0;
+            $_etype493 = 0;
+            $xfer += $input->readListBegin($_etype493, $_size490);
+            for ($_i494 = 0; $_i494 < $_size490; ++$_i494)
+            {
+              $elem495 = null;
+              $xfer += $input->readI64($elem495);
+              $this->replSrcTxnId []= $elem495;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -16017,6 +16067,28 @@ class OpenTxnRequest {
     if ($this->agentInfo !== null) {
       $xfer += $output->writeFieldBegin('agentInfo', TType::STRING, 4);
       $xfer += $output->writeString($this->agentInfo);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->replPolicy !== null) {
+      $xfer += $output->writeFieldBegin('replPolicy', TType::STRING, 5);
+      $xfer += $output->writeString($this->replPolicy);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->replSrcTxnId !== null) {
+      if (!is_array($this->replSrcTxnId)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('replSrcTxnId', TType::LST, 6);
+      {
+        $output->writeListBegin(TType::I64, count($this->replSrcTxnId));
+        {
+          foreach ($this->replSrcTxnId as $iter496)
+          {
+            $xfer += $output->writeI64($iter496);
+          }
+        }
+        $output->writeListEnd();
+      }
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -16076,6 +16148,7 @@ class OpenTxnsResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->txn_ids = array();
+<<<<<<< HEAD
             $_size502 = 0;
             $_etype505 = 0;
             $xfer += $input->readListBegin($_etype505, $_size502);
@@ -16084,6 +16157,38 @@ class OpenTxnsResponse {
               $elem507 = null;
               $xfer += $input->readI64($elem507);
               $this->txn_ids []= $elem507;
+=======
+<<<<<<< HEAD
+            $_size495 = 0;
+            $_etype498 = 0;
+            $xfer += $input->readListBegin($_etype498, $_size495);
+            for ($_i499 = 0; $_i499 < $_size495; ++$_i499)
+            {
+              $elem500 = null;
+              $xfer += $input->readI64($elem500);
+              $this->txn_ids []= $elem500;
+=======
+<<<<<<< HEAD
+            $_size481 = 0;
+            $_etype484 = 0;
+            $xfer += $input->readListBegin($_etype484, $_size481);
+            for ($_i485 = 0; $_i485 < $_size481; ++$_i485)
+            {
+              $elem486 = null;
+              $xfer += $input->readI64($elem486);
+              $this->txn_ids []= $elem486;
+=======
+            $_size497 = 0;
+            $_etype500 = 0;
+            $xfer += $input->readListBegin($_etype500, $_size497);
+            for ($_i501 = 0; $_i501 < $_size497; ++$_i501)
+            {
+              $elem502 = null;
+              $xfer += $input->readI64($elem502);
+              $this->txn_ids []= $elem502;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -16111,9 +16216,27 @@ class OpenTxnsResponse {
       {
         $output->writeListBegin(TType::I64, count($this->txn_ids));
         {
+<<<<<<< HEAD
           foreach ($this->txn_ids as $iter508)
           {
             $xfer += $output->writeI64($iter508);
+=======
+<<<<<<< HEAD
+          foreach ($this->txn_ids as $iter501)
+          {
+            $xfer += $output->writeI64($iter501);
+=======
+<<<<<<< HEAD
+          foreach ($this->txn_ids as $iter487)
+          {
+            $xfer += $output->writeI64($iter487);
+=======
+          foreach ($this->txn_ids as $iter503)
+          {
+            $xfer += $output->writeI64($iter503);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -16134,6 +16257,10 @@ class AbortTxnRequest {
    * @var int
    */
   public $txnid = null;
+  /**
+   * @var string
+   */
+  public $replPolicy = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -16142,11 +16269,18 @@ class AbortTxnRequest {
           'var' => 'txnid',
           'type' => TType::I64,
           ),
+        2 => array(
+          'var' => 'replPolicy',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['txnid'])) {
         $this->txnid = $vals['txnid'];
+      }
+      if (isset($vals['replPolicy'])) {
+        $this->replPolicy = $vals['replPolicy'];
       }
     }
   }
@@ -16177,6 +16311,13 @@ class AbortTxnRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->replPolicy);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -16193,6 +16334,11 @@ class AbortTxnRequest {
     if ($this->txnid !== null) {
       $xfer += $output->writeFieldBegin('txnid', TType::I64, 1);
       $xfer += $output->writeI64($this->txnid);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->replPolicy !== null) {
+      $xfer += $output->writeFieldBegin('replPolicy', TType::STRING, 2);
+      $xfer += $output->writeString($this->replPolicy);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -16252,6 +16398,7 @@ class AbortTxnsRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->txn_ids = array();
+<<<<<<< HEAD
             $_size509 = 0;
             $_etype512 = 0;
             $xfer += $input->readListBegin($_etype512, $_size509);
@@ -16260,6 +16407,38 @@ class AbortTxnsRequest {
               $elem514 = null;
               $xfer += $input->readI64($elem514);
               $this->txn_ids []= $elem514;
+=======
+<<<<<<< HEAD
+            $_size502 = 0;
+            $_etype505 = 0;
+            $xfer += $input->readListBegin($_etype505, $_size502);
+            for ($_i506 = 0; $_i506 < $_size502; ++$_i506)
+            {
+              $elem507 = null;
+              $xfer += $input->readI64($elem507);
+              $this->txn_ids []= $elem507;
+=======
+<<<<<<< HEAD
+            $_size488 = 0;
+            $_etype491 = 0;
+            $xfer += $input->readListBegin($_etype491, $_size488);
+            for ($_i492 = 0; $_i492 < $_size488; ++$_i492)
+            {
+              $elem493 = null;
+              $xfer += $input->readI64($elem493);
+              $this->txn_ids []= $elem493;
+=======
+            $_size504 = 0;
+            $_etype507 = 0;
+            $xfer += $input->readListBegin($_etype507, $_size504);
+            for ($_i508 = 0; $_i508 < $_size504; ++$_i508)
+            {
+              $elem509 = null;
+              $xfer += $input->readI64($elem509);
+              $this->txn_ids []= $elem509;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -16287,9 +16466,27 @@ class AbortTxnsRequest {
       {
         $output->writeListBegin(TType::I64, count($this->txn_ids));
         {
+<<<<<<< HEAD
           foreach ($this->txn_ids as $iter515)
           {
             $xfer += $output->writeI64($iter515);
+=======
+<<<<<<< HEAD
+          foreach ($this->txn_ids as $iter508)
+          {
+            $xfer += $output->writeI64($iter508);
+=======
+<<<<<<< HEAD
+          foreach ($this->txn_ids as $iter494)
+          {
+            $xfer += $output->writeI64($iter494);
+=======
+          foreach ($this->txn_ids as $iter510)
+          {
+            $xfer += $output->writeI64($iter510);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -16304,6 +16501,104 @@ class AbortTxnsRequest {
 }
 
 class CommitTxnRequest {
+  static $_TSPEC;
+
+  /**
+   * @var int
+   */
+  public $txnid = null;
+  /**
+   * @var string
+   */
+  public $replPolicy = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'txnid',
+          'type' => TType::I64,
+          ),
+        2 => array(
+          'var' => 'replPolicy',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['txnid'])) {
+        $this->txnid = $vals['txnid'];
+      }
+      if (isset($vals['replPolicy'])) {
+        $this->replPolicy = $vals['replPolicy'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'CommitTxnRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->txnid);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->replPolicy);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('CommitTxnRequest');
+    if ($this->txnid !== null) {
+      $xfer += $output->writeFieldBegin('txnid', TType::I64, 1);
+      $xfer += $output->writeI64($this->txnid);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->replPolicy !== null) {
+      $xfer += $output->writeFieldBegin('replPolicy', TType::STRING, 2);
+      $xfer += $output->writeString($this->replPolicy);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class GetTargetTxnIdRequest {
   static $_TSPEC;
 
   /**
@@ -16328,7 +16623,7 @@ class CommitTxnRequest {
   }
 
   public function getName() {
-    return 'CommitTxnRequest';
+    return 'GetTargetTxnIdRequest';
   }
 
   public function read($input)
@@ -16365,7 +16660,82 @@ class CommitTxnRequest {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('CommitTxnRequest');
+    $xfer += $output->writeStructBegin('GetTargetTxnIdRequest');
+    if ($this->txnid !== null) {
+      $xfer += $output->writeFieldBegin('txnid', TType::I64, 1);
+      $xfer += $output->writeI64($this->txnid);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class GetTargetTxnIdResponse {
+  static $_TSPEC;
+
+  /**
+   * @var int
+   */
+  public $txnid = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'txnid',
+          'type' => TType::I64,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['txnid'])) {
+        $this->txnid = $vals['txnid'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'GetTargetTxnIdResponse';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->txnid);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('GetTargetTxnIdResponse');
     if ($this->txnid !== null) {
       $xfer += $output->writeFieldBegin('txnid', TType::I64, 1);
       $xfer += $output->writeI64($this->txnid);
@@ -16439,6 +16809,7 @@ class GetValidWriteIdsRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->fullTableNames = array();
+<<<<<<< HEAD
             $_size516 = 0;
             $_etype519 = 0;
             $xfer += $input->readListBegin($_etype519, $_size516);
@@ -16447,6 +16818,38 @@ class GetValidWriteIdsRequest {
               $elem521 = null;
               $xfer += $input->readString($elem521);
               $this->fullTableNames []= $elem521;
+=======
+<<<<<<< HEAD
+            $_size509 = 0;
+            $_etype512 = 0;
+            $xfer += $input->readListBegin($_etype512, $_size509);
+            for ($_i513 = 0; $_i513 < $_size509; ++$_i513)
+            {
+              $elem514 = null;
+              $xfer += $input->readString($elem514);
+              $this->fullTableNames []= $elem514;
+=======
+<<<<<<< HEAD
+            $_size495 = 0;
+            $_etype498 = 0;
+            $xfer += $input->readListBegin($_etype498, $_size495);
+            for ($_i499 = 0; $_i499 < $_size495; ++$_i499)
+            {
+              $elem500 = null;
+              $xfer += $input->readString($elem500);
+              $this->fullTableNames []= $elem500;
+=======
+            $_size511 = 0;
+            $_etype514 = 0;
+            $xfer += $input->readListBegin($_etype514, $_size511);
+            for ($_i515 = 0; $_i515 < $_size511; ++$_i515)
+            {
+              $elem516 = null;
+              $xfer += $input->readString($elem516);
+              $this->fullTableNames []= $elem516;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -16481,9 +16884,27 @@ class GetValidWriteIdsRequest {
       {
         $output->writeListBegin(TType::STRING, count($this->fullTableNames));
         {
+<<<<<<< HEAD
           foreach ($this->fullTableNames as $iter522)
           {
             $xfer += $output->writeString($iter522);
+=======
+<<<<<<< HEAD
+          foreach ($this->fullTableNames as $iter515)
+          {
+            $xfer += $output->writeString($iter515);
+=======
+<<<<<<< HEAD
+          foreach ($this->fullTableNames as $iter501)
+          {
+            $xfer += $output->writeString($iter501);
+=======
+          foreach ($this->fullTableNames as $iter517)
+          {
+            $xfer += $output->writeString($iter517);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -16610,6 +17031,7 @@ class TableValidWriteIds {
         case 3:
           if ($ftype == TType::LST) {
             $this->invalidWriteIds = array();
+<<<<<<< HEAD
             $_size523 = 0;
             $_etype526 = 0;
             $xfer += $input->readListBegin($_etype526, $_size523);
@@ -16618,6 +17040,38 @@ class TableValidWriteIds {
               $elem528 = null;
               $xfer += $input->readI64($elem528);
               $this->invalidWriteIds []= $elem528;
+=======
+<<<<<<< HEAD
+            $_size516 = 0;
+            $_etype519 = 0;
+            $xfer += $input->readListBegin($_etype519, $_size516);
+            for ($_i520 = 0; $_i520 < $_size516; ++$_i520)
+            {
+              $elem521 = null;
+              $xfer += $input->readI64($elem521);
+              $this->invalidWriteIds []= $elem521;
+=======
+<<<<<<< HEAD
+            $_size502 = 0;
+            $_etype505 = 0;
+            $xfer += $input->readListBegin($_etype505, $_size502);
+            for ($_i506 = 0; $_i506 < $_size502; ++$_i506)
+            {
+              $elem507 = null;
+              $xfer += $input->readI64($elem507);
+              $this->invalidWriteIds []= $elem507;
+=======
+            $_size518 = 0;
+            $_etype521 = 0;
+            $xfer += $input->readListBegin($_etype521, $_size518);
+            for ($_i522 = 0; $_i522 < $_size518; ++$_i522)
+            {
+              $elem523 = null;
+              $xfer += $input->readI64($elem523);
+              $this->invalidWriteIds []= $elem523;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -16669,9 +17123,27 @@ class TableValidWriteIds {
       {
         $output->writeListBegin(TType::I64, count($this->invalidWriteIds));
         {
+<<<<<<< HEAD
           foreach ($this->invalidWriteIds as $iter529)
           {
             $xfer += $output->writeI64($iter529);
+=======
+<<<<<<< HEAD
+          foreach ($this->invalidWriteIds as $iter522)
+          {
+            $xfer += $output->writeI64($iter522);
+=======
+<<<<<<< HEAD
+          foreach ($this->invalidWriteIds as $iter508)
+          {
+            $xfer += $output->writeI64($iter508);
+=======
+          foreach ($this->invalidWriteIds as $iter524)
+          {
+            $xfer += $output->writeI64($iter524);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -16746,6 +17218,7 @@ class GetValidWriteIdsResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->tblValidWriteIds = array();
+<<<<<<< HEAD
             $_size530 = 0;
             $_etype533 = 0;
             $xfer += $input->readListBegin($_etype533, $_size530);
@@ -16755,6 +17228,41 @@ class GetValidWriteIdsResponse {
               $elem535 = new \metastore\TableValidWriteIds();
               $xfer += $elem535->read($input);
               $this->tblValidWriteIds []= $elem535;
+=======
+<<<<<<< HEAD
+            $_size523 = 0;
+            $_etype526 = 0;
+            $xfer += $input->readListBegin($_etype526, $_size523);
+            for ($_i527 = 0; $_i527 < $_size523; ++$_i527)
+            {
+              $elem528 = null;
+              $elem528 = new \metastore\TableValidWriteIds();
+              $xfer += $elem528->read($input);
+              $this->tblValidWriteIds []= $elem528;
+=======
+<<<<<<< HEAD
+            $_size509 = 0;
+            $_etype512 = 0;
+            $xfer += $input->readListBegin($_etype512, $_size509);
+            for ($_i513 = 0; $_i513 < $_size509; ++$_i513)
+            {
+              $elem514 = null;
+              $elem514 = new \metastore\TableValidWriteIds();
+              $xfer += $elem514->read($input);
+              $this->tblValidWriteIds []= $elem514;
+=======
+            $_size525 = 0;
+            $_etype528 = 0;
+            $xfer += $input->readListBegin($_etype528, $_size525);
+            for ($_i529 = 0; $_i529 < $_size525; ++$_i529)
+            {
+              $elem530 = null;
+              $elem530 = new \metastore\TableValidWriteIds();
+              $xfer += $elem530->read($input);
+              $this->tblValidWriteIds []= $elem530;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -16782,9 +17290,27 @@ class GetValidWriteIdsResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->tblValidWriteIds));
         {
+<<<<<<< HEAD
           foreach ($this->tblValidWriteIds as $iter536)
           {
             $xfer += $iter536->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->tblValidWriteIds as $iter529)
+          {
+            $xfer += $iter529->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->tblValidWriteIds as $iter515)
+          {
+            $xfer += $iter515->write($output);
+=======
+          foreach ($this->tblValidWriteIds as $iter531)
+          {
+            $xfer += $iter531->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -16870,6 +17396,7 @@ class AllocateTableWriteIdsRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->txnIds = array();
+<<<<<<< HEAD
             $_size537 = 0;
             $_etype540 = 0;
             $xfer += $input->readListBegin($_etype540, $_size537);
@@ -16878,6 +17405,38 @@ class AllocateTableWriteIdsRequest {
               $elem542 = null;
               $xfer += $input->readI64($elem542);
               $this->txnIds []= $elem542;
+=======
+<<<<<<< HEAD
+            $_size530 = 0;
+            $_etype533 = 0;
+            $xfer += $input->readListBegin($_etype533, $_size530);
+            for ($_i534 = 0; $_i534 < $_size530; ++$_i534)
+            {
+              $elem535 = null;
+              $xfer += $input->readI64($elem535);
+              $this->txnIds []= $elem535;
+=======
+<<<<<<< HEAD
+            $_size516 = 0;
+            $_etype519 = 0;
+            $xfer += $input->readListBegin($_etype519, $_size516);
+            for ($_i520 = 0; $_i520 < $_size516; ++$_i520)
+            {
+              $elem521 = null;
+              $xfer += $input->readI64($elem521);
+              $this->txnIds []= $elem521;
+=======
+            $_size532 = 0;
+            $_etype535 = 0;
+            $xfer += $input->readListBegin($_etype535, $_size532);
+            for ($_i536 = 0; $_i536 < $_size532; ++$_i536)
+            {
+              $elem537 = null;
+              $xfer += $input->readI64($elem537);
+              $this->txnIds []= $elem537;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -16919,9 +17478,27 @@ class AllocateTableWriteIdsRequest {
       {
         $output->writeListBegin(TType::I64, count($this->txnIds));
         {
+<<<<<<< HEAD
           foreach ($this->txnIds as $iter543)
           {
             $xfer += $output->writeI64($iter543);
+=======
+<<<<<<< HEAD
+          foreach ($this->txnIds as $iter536)
+          {
+            $xfer += $output->writeI64($iter536);
+=======
+<<<<<<< HEAD
+          foreach ($this->txnIds as $iter522)
+          {
+            $xfer += $output->writeI64($iter522);
+=======
+          foreach ($this->txnIds as $iter538)
+          {
+            $xfer += $output->writeI64($iter538);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -17094,6 +17671,7 @@ class AllocateTableWriteIdsResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->txnToWriteIds = array();
+<<<<<<< HEAD
             $_size544 = 0;
             $_etype547 = 0;
             $xfer += $input->readListBegin($_etype547, $_size544);
@@ -17103,6 +17681,41 @@ class AllocateTableWriteIdsResponse {
               $elem549 = new \metastore\TxnToWriteId();
               $xfer += $elem549->read($input);
               $this->txnToWriteIds []= $elem549;
+=======
+<<<<<<< HEAD
+            $_size537 = 0;
+            $_etype540 = 0;
+            $xfer += $input->readListBegin($_etype540, $_size537);
+            for ($_i541 = 0; $_i541 < $_size537; ++$_i541)
+            {
+              $elem542 = null;
+              $elem542 = new \metastore\TxnToWriteId();
+              $xfer += $elem542->read($input);
+              $this->txnToWriteIds []= $elem542;
+=======
+<<<<<<< HEAD
+            $_size523 = 0;
+            $_etype526 = 0;
+            $xfer += $input->readListBegin($_etype526, $_size523);
+            for ($_i527 = 0; $_i527 < $_size523; ++$_i527)
+            {
+              $elem528 = null;
+              $elem528 = new \metastore\TxnToWriteId();
+              $xfer += $elem528->read($input);
+              $this->txnToWriteIds []= $elem528;
+=======
+            $_size539 = 0;
+            $_etype542 = 0;
+            $xfer += $input->readListBegin($_etype542, $_size539);
+            for ($_i543 = 0; $_i543 < $_size539; ++$_i543)
+            {
+              $elem544 = null;
+              $elem544 = new \metastore\TxnToWriteId();
+              $xfer += $elem544->read($input);
+              $this->txnToWriteIds []= $elem544;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -17130,9 +17743,27 @@ class AllocateTableWriteIdsResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->txnToWriteIds));
         {
+<<<<<<< HEAD
           foreach ($this->txnToWriteIds as $iter550)
           {
             $xfer += $iter550->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->txnToWriteIds as $iter543)
+          {
+            $xfer += $iter543->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->txnToWriteIds as $iter529)
+          {
+            $xfer += $iter529->write($output);
+=======
+          foreach ($this->txnToWriteIds as $iter545)
+          {
+            $xfer += $iter545->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -17477,6 +18108,7 @@ class LockRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->component = array();
+<<<<<<< HEAD
             $_size551 = 0;
             $_etype554 = 0;
             $xfer += $input->readListBegin($_etype554, $_size551);
@@ -17486,6 +18118,41 @@ class LockRequest {
               $elem556 = new \metastore\LockComponent();
               $xfer += $elem556->read($input);
               $this->component []= $elem556;
+=======
+<<<<<<< HEAD
+            $_size544 = 0;
+            $_etype547 = 0;
+            $xfer += $input->readListBegin($_etype547, $_size544);
+            for ($_i548 = 0; $_i548 < $_size544; ++$_i548)
+            {
+              $elem549 = null;
+              $elem549 = new \metastore\LockComponent();
+              $xfer += $elem549->read($input);
+              $this->component []= $elem549;
+=======
+<<<<<<< HEAD
+            $_size530 = 0;
+            $_etype533 = 0;
+            $xfer += $input->readListBegin($_etype533, $_size530);
+            for ($_i534 = 0; $_i534 < $_size530; ++$_i534)
+            {
+              $elem535 = null;
+              $elem535 = new \metastore\LockComponent();
+              $xfer += $elem535->read($input);
+              $this->component []= $elem535;
+=======
+            $_size546 = 0;
+            $_etype549 = 0;
+            $xfer += $input->readListBegin($_etype549, $_size546);
+            for ($_i550 = 0; $_i550 < $_size546; ++$_i550)
+            {
+              $elem551 = null;
+              $elem551 = new \metastore\LockComponent();
+              $xfer += $elem551->read($input);
+              $this->component []= $elem551;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -17541,9 +18208,27 @@ class LockRequest {
       {
         $output->writeListBegin(TType::STRUCT, count($this->component));
         {
+<<<<<<< HEAD
           foreach ($this->component as $iter557)
           {
             $xfer += $iter557->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->component as $iter550)
+          {
+            $xfer += $iter550->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->component as $iter536)
+          {
+            $xfer += $iter536->write($output);
+=======
+          foreach ($this->component as $iter552)
+          {
+            $xfer += $iter552->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -18486,6 +19171,7 @@ class ShowLocksResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->locks = array();
+<<<<<<< HEAD
             $_size558 = 0;
             $_etype561 = 0;
             $xfer += $input->readListBegin($_etype561, $_size558);
@@ -18495,6 +19181,41 @@ class ShowLocksResponse {
               $elem563 = new \metastore\ShowLocksResponseElement();
               $xfer += $elem563->read($input);
               $this->locks []= $elem563;
+=======
+<<<<<<< HEAD
+            $_size551 = 0;
+            $_etype554 = 0;
+            $xfer += $input->readListBegin($_etype554, $_size551);
+            for ($_i555 = 0; $_i555 < $_size551; ++$_i555)
+            {
+              $elem556 = null;
+              $elem556 = new \metastore\ShowLocksResponseElement();
+              $xfer += $elem556->read($input);
+              $this->locks []= $elem556;
+=======
+<<<<<<< HEAD
+            $_size537 = 0;
+            $_etype540 = 0;
+            $xfer += $input->readListBegin($_etype540, $_size537);
+            for ($_i541 = 0; $_i541 < $_size537; ++$_i541)
+            {
+              $elem542 = null;
+              $elem542 = new \metastore\ShowLocksResponseElement();
+              $xfer += $elem542->read($input);
+              $this->locks []= $elem542;
+=======
+            $_size553 = 0;
+            $_etype556 = 0;
+            $xfer += $input->readListBegin($_etype556, $_size553);
+            for ($_i557 = 0; $_i557 < $_size553; ++$_i557)
+            {
+              $elem558 = null;
+              $elem558 = new \metastore\ShowLocksResponseElement();
+              $xfer += $elem558->read($input);
+              $this->locks []= $elem558;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -18522,9 +19243,27 @@ class ShowLocksResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->locks));
         {
+<<<<<<< HEAD
           foreach ($this->locks as $iter564)
           {
             $xfer += $iter564->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->locks as $iter557)
+          {
+            $xfer += $iter557->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->locks as $iter543)
+          {
+            $xfer += $iter543->write($output);
+=======
+          foreach ($this->locks as $iter559)
+          {
+            $xfer += $iter559->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -18799,17 +19538,53 @@ class HeartbeatTxnRangeResponse {
         case 1:
           if ($ftype == TType::SET) {
             $this->aborted = array();
+<<<<<<< HEAD
             $_size565 = 0;
             $_etype568 = 0;
             $xfer += $input->readSetBegin($_etype568, $_size565);
             for ($_i569 = 0; $_i569 < $_size565; ++$_i569)
+=======
+<<<<<<< HEAD
+            $_size558 = 0;
+            $_etype561 = 0;
+            $xfer += $input->readSetBegin($_etype561, $_size558);
+            for ($_i562 = 0; $_i562 < $_size558; ++$_i562)
+=======
+<<<<<<< HEAD
+            $_size544 = 0;
+            $_etype547 = 0;
+            $xfer += $input->readSetBegin($_etype547, $_size544);
+            for ($_i548 = 0; $_i548 < $_size544; ++$_i548)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             {
               $elem570 = null;
               $xfer += $input->readI64($elem570);
               if (is_scalar($elem570)) {
                 $this->aborted[$elem570] = true;
               } else {
+<<<<<<< HEAD
                 $this->aborted []= $elem570;
+=======
+<<<<<<< HEAD
+                $this->aborted []= $elem563;
+=======
+                $this->aborted []= $elem549;
+=======
+            $_size560 = 0;
+            $_etype563 = 0;
+            $xfer += $input->readSetBegin($_etype563, $_size560);
+            for ($_i564 = 0; $_i564 < $_size560; ++$_i564)
+            {
+              $elem565 = null;
+              $xfer += $input->readI64($elem565);
+              if (is_scalar($elem565)) {
+                $this->aborted[$elem565] = true;
+              } else {
+                $this->aborted []= $elem565;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
               }
             }
             $xfer += $input->readSetEnd();
@@ -18820,17 +19595,53 @@ class HeartbeatTxnRangeResponse {
         case 2:
           if ($ftype == TType::SET) {
             $this->nosuch = array();
+<<<<<<< HEAD
             $_size571 = 0;
             $_etype574 = 0;
             $xfer += $input->readSetBegin($_etype574, $_size571);
             for ($_i575 = 0; $_i575 < $_size571; ++$_i575)
+=======
+<<<<<<< HEAD
+            $_size564 = 0;
+            $_etype567 = 0;
+            $xfer += $input->readSetBegin($_etype567, $_size564);
+            for ($_i568 = 0; $_i568 < $_size564; ++$_i568)
+=======
+<<<<<<< HEAD
+            $_size550 = 0;
+            $_etype553 = 0;
+            $xfer += $input->readSetBegin($_etype553, $_size550);
+            for ($_i554 = 0; $_i554 < $_size550; ++$_i554)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             {
               $elem576 = null;
               $xfer += $input->readI64($elem576);
               if (is_scalar($elem576)) {
                 $this->nosuch[$elem576] = true;
               } else {
+<<<<<<< HEAD
                 $this->nosuch []= $elem576;
+=======
+<<<<<<< HEAD
+                $this->nosuch []= $elem569;
+=======
+                $this->nosuch []= $elem555;
+=======
+            $_size566 = 0;
+            $_etype569 = 0;
+            $xfer += $input->readSetBegin($_etype569, $_size566);
+            for ($_i570 = 0; $_i570 < $_size566; ++$_i570)
+            {
+              $elem571 = null;
+              $xfer += $input->readI64($elem571);
+              if (is_scalar($elem571)) {
+                $this->nosuch[$elem571] = true;
+              } else {
+                $this->nosuch []= $elem571;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
               }
             }
             $xfer += $input->readSetEnd();
@@ -18859,12 +19670,37 @@ class HeartbeatTxnRangeResponse {
       {
         $output->writeSetBegin(TType::I64, count($this->aborted));
         {
+<<<<<<< HEAD
           foreach ($this->aborted as $iter577 => $iter578)
+=======
+<<<<<<< HEAD
+          foreach ($this->aborted as $iter570 => $iter571)
+=======
+<<<<<<< HEAD
+          foreach ($this->aborted as $iter556 => $iter557)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           {
             if (is_scalar($iter578)) {
             $xfer += $output->writeI64($iter577);
             } else {
+<<<<<<< HEAD
             $xfer += $output->writeI64($iter578);
+=======
+<<<<<<< HEAD
+            $xfer += $output->writeI64($iter571);
+=======
+            $xfer += $output->writeI64($iter557);
+=======
+          foreach ($this->aborted as $iter572 => $iter573)
+          {
+            if (is_scalar($iter573)) {
+            $xfer += $output->writeI64($iter572);
+            } else {
+            $xfer += $output->writeI64($iter573);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
           }
         }
@@ -18880,12 +19716,37 @@ class HeartbeatTxnRangeResponse {
       {
         $output->writeSetBegin(TType::I64, count($this->nosuch));
         {
+<<<<<<< HEAD
           foreach ($this->nosuch as $iter579 => $iter580)
+=======
+<<<<<<< HEAD
+          foreach ($this->nosuch as $iter572 => $iter573)
+=======
+<<<<<<< HEAD
+          foreach ($this->nosuch as $iter558 => $iter559)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           {
             if (is_scalar($iter580)) {
             $xfer += $output->writeI64($iter579);
             } else {
+<<<<<<< HEAD
             $xfer += $output->writeI64($iter580);
+=======
+<<<<<<< HEAD
+            $xfer += $output->writeI64($iter573);
+=======
+            $xfer += $output->writeI64($iter559);
+=======
+          foreach ($this->nosuch as $iter574 => $iter575)
+          {
+            if (is_scalar($iter575)) {
+            $xfer += $output->writeI64($iter574);
+            } else {
+            $xfer += $output->writeI64($iter575);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
           }
         }
@@ -19044,6 +19905,7 @@ class CompactionRequest {
         case 6:
           if ($ftype == TType::MAP) {
             $this->properties = array();
+<<<<<<< HEAD
             $_size581 = 0;
             $_ktype582 = 0;
             $_vtype583 = 0;
@@ -19055,6 +19917,47 @@ class CompactionRequest {
               $xfer += $input->readString($key586);
               $xfer += $input->readString($val587);
               $this->properties[$key586] = $val587;
+=======
+<<<<<<< HEAD
+            $_size574 = 0;
+            $_ktype575 = 0;
+            $_vtype576 = 0;
+            $xfer += $input->readMapBegin($_ktype575, $_vtype576, $_size574);
+            for ($_i578 = 0; $_i578 < $_size574; ++$_i578)
+            {
+              $key579 = '';
+              $val580 = '';
+              $xfer += $input->readString($key579);
+              $xfer += $input->readString($val580);
+              $this->properties[$key579] = $val580;
+=======
+<<<<<<< HEAD
+            $_size560 = 0;
+            $_ktype561 = 0;
+            $_vtype562 = 0;
+            $xfer += $input->readMapBegin($_ktype561, $_vtype562, $_size560);
+            for ($_i564 = 0; $_i564 < $_size560; ++$_i564)
+            {
+              $key565 = '';
+              $val566 = '';
+              $xfer += $input->readString($key565);
+              $xfer += $input->readString($val566);
+              $this->properties[$key565] = $val566;
+=======
+            $_size576 = 0;
+            $_ktype577 = 0;
+            $_vtype578 = 0;
+            $xfer += $input->readMapBegin($_ktype577, $_vtype578, $_size576);
+            for ($_i580 = 0; $_i580 < $_size576; ++$_i580)
+            {
+              $key581 = '';
+              $val582 = '';
+              $xfer += $input->readString($key581);
+              $xfer += $input->readString($val582);
+              $this->properties[$key581] = $val582;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -19107,10 +20010,31 @@ class CompactionRequest {
       {
         $output->writeMapBegin(TType::STRING, TType::STRING, count($this->properties));
         {
+<<<<<<< HEAD
           foreach ($this->properties as $kiter588 => $viter589)
           {
             $xfer += $output->writeString($kiter588);
             $xfer += $output->writeString($viter589);
+=======
+<<<<<<< HEAD
+          foreach ($this->properties as $kiter581 => $viter582)
+          {
+            $xfer += $output->writeString($kiter581);
+            $xfer += $output->writeString($viter582);
+=======
+<<<<<<< HEAD
+          foreach ($this->properties as $kiter567 => $viter568)
+          {
+            $xfer += $output->writeString($kiter567);
+            $xfer += $output->writeString($viter568);
+=======
+          foreach ($this->properties as $kiter583 => $viter584)
+          {
+            $xfer += $output->writeString($kiter583);
+            $xfer += $output->writeString($viter584);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeMapEnd();
@@ -19697,6 +20621,7 @@ class ShowCompactResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->compacts = array();
+<<<<<<< HEAD
             $_size590 = 0;
             $_etype593 = 0;
             $xfer += $input->readListBegin($_etype593, $_size590);
@@ -19706,6 +20631,41 @@ class ShowCompactResponse {
               $elem595 = new \metastore\ShowCompactResponseElement();
               $xfer += $elem595->read($input);
               $this->compacts []= $elem595;
+=======
+<<<<<<< HEAD
+            $_size583 = 0;
+            $_etype586 = 0;
+            $xfer += $input->readListBegin($_etype586, $_size583);
+            for ($_i587 = 0; $_i587 < $_size583; ++$_i587)
+            {
+              $elem588 = null;
+              $elem588 = new \metastore\ShowCompactResponseElement();
+              $xfer += $elem588->read($input);
+              $this->compacts []= $elem588;
+=======
+<<<<<<< HEAD
+            $_size569 = 0;
+            $_etype572 = 0;
+            $xfer += $input->readListBegin($_etype572, $_size569);
+            for ($_i573 = 0; $_i573 < $_size569; ++$_i573)
+            {
+              $elem574 = null;
+              $elem574 = new \metastore\ShowCompactResponseElement();
+              $xfer += $elem574->read($input);
+              $this->compacts []= $elem574;
+=======
+            $_size585 = 0;
+            $_etype588 = 0;
+            $xfer += $input->readListBegin($_etype588, $_size585);
+            for ($_i589 = 0; $_i589 < $_size585; ++$_i589)
+            {
+              $elem590 = null;
+              $elem590 = new \metastore\ShowCompactResponseElement();
+              $xfer += $elem590->read($input);
+              $this->compacts []= $elem590;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -19733,9 +20693,27 @@ class ShowCompactResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->compacts));
         {
+<<<<<<< HEAD
           foreach ($this->compacts as $iter596)
           {
             $xfer += $iter596->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->compacts as $iter589)
+          {
+            $xfer += $iter589->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->compacts as $iter575)
+          {
+            $xfer += $iter575->write($output);
+=======
+          foreach ($this->compacts as $iter591)
+          {
+            $xfer += $iter591->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -19882,6 +20860,7 @@ class AddDynamicPartitions {
         case 5:
           if ($ftype == TType::LST) {
             $this->partitionnames = array();
+<<<<<<< HEAD
             $_size597 = 0;
             $_etype600 = 0;
             $xfer += $input->readListBegin($_etype600, $_size597);
@@ -19890,6 +20869,38 @@ class AddDynamicPartitions {
               $elem602 = null;
               $xfer += $input->readString($elem602);
               $this->partitionnames []= $elem602;
+=======
+<<<<<<< HEAD
+            $_size590 = 0;
+            $_etype593 = 0;
+            $xfer += $input->readListBegin($_etype593, $_size590);
+            for ($_i594 = 0; $_i594 < $_size590; ++$_i594)
+            {
+              $elem595 = null;
+              $xfer += $input->readString($elem595);
+              $this->partitionnames []= $elem595;
+=======
+<<<<<<< HEAD
+            $_size576 = 0;
+            $_etype579 = 0;
+            $xfer += $input->readListBegin($_etype579, $_size576);
+            for ($_i580 = 0; $_i580 < $_size576; ++$_i580)
+            {
+              $elem581 = null;
+              $xfer += $input->readString($elem581);
+              $this->partitionnames []= $elem581;
+=======
+            $_size592 = 0;
+            $_etype595 = 0;
+            $xfer += $input->readListBegin($_etype595, $_size592);
+            for ($_i596 = 0; $_i596 < $_size592; ++$_i596)
+            {
+              $elem597 = null;
+              $xfer += $input->readString($elem597);
+              $this->partitionnames []= $elem597;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -19944,9 +20955,27 @@ class AddDynamicPartitions {
       {
         $output->writeListBegin(TType::STRING, count($this->partitionnames));
         {
+<<<<<<< HEAD
           foreach ($this->partitionnames as $iter603)
           {
             $xfer += $output->writeString($iter603);
+=======
+<<<<<<< HEAD
+          foreach ($this->partitionnames as $iter596)
+          {
+            $xfer += $output->writeString($iter596);
+=======
+<<<<<<< HEAD
+          foreach ($this->partitionnames as $iter582)
+          {
+            $xfer += $output->writeString($iter582);
+=======
+          foreach ($this->partitionnames as $iter598)
+          {
+            $xfer += $output->writeString($iter598);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -20270,17 +21299,53 @@ class CreationMetadata {
         case 4:
           if ($ftype == TType::SET) {
             $this->tablesUsed = array();
+<<<<<<< HEAD
             $_size604 = 0;
             $_etype607 = 0;
             $xfer += $input->readSetBegin($_etype607, $_size604);
             for ($_i608 = 0; $_i608 < $_size604; ++$_i608)
+=======
+<<<<<<< HEAD
+            $_size597 = 0;
+            $_etype600 = 0;
+            $xfer += $input->readSetBegin($_etype600, $_size597);
+            for ($_i601 = 0; $_i601 < $_size597; ++$_i601)
+=======
+<<<<<<< HEAD
+            $_size583 = 0;
+            $_etype586 = 0;
+            $xfer += $input->readSetBegin($_etype586, $_size583);
+            for ($_i587 = 0; $_i587 < $_size583; ++$_i587)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             {
               $elem609 = null;
               $xfer += $input->readString($elem609);
               if (is_scalar($elem609)) {
                 $this->tablesUsed[$elem609] = true;
               } else {
+<<<<<<< HEAD
                 $this->tablesUsed []= $elem609;
+=======
+<<<<<<< HEAD
+                $this->tablesUsed []= $elem602;
+=======
+                $this->tablesUsed []= $elem588;
+=======
+            $_size599 = 0;
+            $_etype602 = 0;
+            $xfer += $input->readSetBegin($_etype602, $_size599);
+            for ($_i603 = 0; $_i603 < $_size599; ++$_i603)
+            {
+              $elem604 = null;
+              $xfer += $input->readString($elem604);
+              if (is_scalar($elem604)) {
+                $this->tablesUsed[$elem604] = true;
+              } else {
+                $this->tablesUsed []= $elem604;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
               }
             }
             $xfer += $input->readSetEnd();
@@ -20331,12 +21396,37 @@ class CreationMetadata {
       {
         $output->writeSetBegin(TType::STRING, count($this->tablesUsed));
         {
+<<<<<<< HEAD
           foreach ($this->tablesUsed as $iter610 => $iter611)
+=======
+<<<<<<< HEAD
+          foreach ($this->tablesUsed as $iter603 => $iter604)
+=======
+<<<<<<< HEAD
+          foreach ($this->tablesUsed as $iter589 => $iter590)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           {
             if (is_scalar($iter611)) {
             $xfer += $output->writeString($iter610);
             } else {
+<<<<<<< HEAD
             $xfer += $output->writeString($iter611);
+=======
+<<<<<<< HEAD
+            $xfer += $output->writeString($iter604);
+=======
+            $xfer += $output->writeString($iter590);
+=======
+          foreach ($this->tablesUsed as $iter605 => $iter606)
+          {
+            if (is_scalar($iter606)) {
+            $xfer += $output->writeString($iter605);
+            } else {
+            $xfer += $output->writeString($iter606);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
           }
         }
@@ -20741,6 +21831,7 @@ class NotificationEventResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->events = array();
+<<<<<<< HEAD
             $_size612 = 0;
             $_etype615 = 0;
             $xfer += $input->readListBegin($_etype615, $_size612);
@@ -20750,6 +21841,41 @@ class NotificationEventResponse {
               $elem617 = new \metastore\NotificationEvent();
               $xfer += $elem617->read($input);
               $this->events []= $elem617;
+=======
+<<<<<<< HEAD
+            $_size605 = 0;
+            $_etype608 = 0;
+            $xfer += $input->readListBegin($_etype608, $_size605);
+            for ($_i609 = 0; $_i609 < $_size605; ++$_i609)
+            {
+              $elem610 = null;
+              $elem610 = new \metastore\NotificationEvent();
+              $xfer += $elem610->read($input);
+              $this->events []= $elem610;
+=======
+<<<<<<< HEAD
+            $_size591 = 0;
+            $_etype594 = 0;
+            $xfer += $input->readListBegin($_etype594, $_size591);
+            for ($_i595 = 0; $_i595 < $_size591; ++$_i595)
+            {
+              $elem596 = null;
+              $elem596 = new \metastore\NotificationEvent();
+              $xfer += $elem596->read($input);
+              $this->events []= $elem596;
+=======
+            $_size607 = 0;
+            $_etype610 = 0;
+            $xfer += $input->readListBegin($_etype610, $_size607);
+            for ($_i611 = 0; $_i611 < $_size607; ++$_i611)
+            {
+              $elem612 = null;
+              $elem612 = new \metastore\NotificationEvent();
+              $xfer += $elem612->read($input);
+              $this->events []= $elem612;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -20777,9 +21903,27 @@ class NotificationEventResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->events));
         {
+<<<<<<< HEAD
           foreach ($this->events as $iter618)
           {
             $xfer += $iter618->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->events as $iter611)
+          {
+            $xfer += $iter611->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->events as $iter597)
+          {
+            $xfer += $iter597->write($output);
+=======
+          foreach ($this->events as $iter613)
+          {
+            $xfer += $iter613->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -21147,6 +22291,7 @@ class InsertEventRequestData {
         case 2:
           if ($ftype == TType::LST) {
             $this->filesAdded = array();
+<<<<<<< HEAD
             $_size619 = 0;
             $_etype622 = 0;
             $xfer += $input->readListBegin($_etype622, $_size619);
@@ -21155,6 +22300,38 @@ class InsertEventRequestData {
               $elem624 = null;
               $xfer += $input->readString($elem624);
               $this->filesAdded []= $elem624;
+=======
+<<<<<<< HEAD
+            $_size612 = 0;
+            $_etype615 = 0;
+            $xfer += $input->readListBegin($_etype615, $_size612);
+            for ($_i616 = 0; $_i616 < $_size612; ++$_i616)
+            {
+              $elem617 = null;
+              $xfer += $input->readString($elem617);
+              $this->filesAdded []= $elem617;
+=======
+<<<<<<< HEAD
+            $_size598 = 0;
+            $_etype601 = 0;
+            $xfer += $input->readListBegin($_etype601, $_size598);
+            for ($_i602 = 0; $_i602 < $_size598; ++$_i602)
+            {
+              $elem603 = null;
+              $xfer += $input->readString($elem603);
+              $this->filesAdded []= $elem603;
+=======
+            $_size614 = 0;
+            $_etype617 = 0;
+            $xfer += $input->readListBegin($_etype617, $_size614);
+            for ($_i618 = 0; $_i618 < $_size614; ++$_i618)
+            {
+              $elem619 = null;
+              $xfer += $input->readString($elem619);
+              $this->filesAdded []= $elem619;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -21164,6 +22341,7 @@ class InsertEventRequestData {
         case 3:
           if ($ftype == TType::LST) {
             $this->filesAddedChecksum = array();
+<<<<<<< HEAD
             $_size625 = 0;
             $_etype628 = 0;
             $xfer += $input->readListBegin($_etype628, $_size625);
@@ -21172,6 +22350,38 @@ class InsertEventRequestData {
               $elem630 = null;
               $xfer += $input->readString($elem630);
               $this->filesAddedChecksum []= $elem630;
+=======
+<<<<<<< HEAD
+            $_size618 = 0;
+            $_etype621 = 0;
+            $xfer += $input->readListBegin($_etype621, $_size618);
+            for ($_i622 = 0; $_i622 < $_size618; ++$_i622)
+            {
+              $elem623 = null;
+              $xfer += $input->readString($elem623);
+              $this->filesAddedChecksum []= $elem623;
+=======
+<<<<<<< HEAD
+            $_size604 = 0;
+            $_etype607 = 0;
+            $xfer += $input->readListBegin($_etype607, $_size604);
+            for ($_i608 = 0; $_i608 < $_size604; ++$_i608)
+            {
+              $elem609 = null;
+              $xfer += $input->readString($elem609);
+              $this->filesAddedChecksum []= $elem609;
+=======
+            $_size620 = 0;
+            $_etype623 = 0;
+            $xfer += $input->readListBegin($_etype623, $_size620);
+            for ($_i624 = 0; $_i624 < $_size620; ++$_i624)
+            {
+              $elem625 = null;
+              $xfer += $input->readString($elem625);
+              $this->filesAddedChecksum []= $elem625;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -21204,9 +22414,27 @@ class InsertEventRequestData {
       {
         $output->writeListBegin(TType::STRING, count($this->filesAdded));
         {
+<<<<<<< HEAD
           foreach ($this->filesAdded as $iter631)
           {
             $xfer += $output->writeString($iter631);
+=======
+<<<<<<< HEAD
+          foreach ($this->filesAdded as $iter624)
+          {
+            $xfer += $output->writeString($iter624);
+=======
+<<<<<<< HEAD
+          foreach ($this->filesAdded as $iter610)
+          {
+            $xfer += $output->writeString($iter610);
+=======
+          foreach ($this->filesAdded as $iter626)
+          {
+            $xfer += $output->writeString($iter626);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -21221,9 +22449,27 @@ class InsertEventRequestData {
       {
         $output->writeListBegin(TType::STRING, count($this->filesAddedChecksum));
         {
+<<<<<<< HEAD
           foreach ($this->filesAddedChecksum as $iter632)
           {
             $xfer += $output->writeString($iter632);
+=======
+<<<<<<< HEAD
+          foreach ($this->filesAddedChecksum as $iter625)
+          {
+            $xfer += $output->writeString($iter625);
+=======
+<<<<<<< HEAD
+          foreach ($this->filesAddedChecksum as $iter611)
+          {
+            $xfer += $output->writeString($iter611);
+=======
+          foreach ($this->filesAddedChecksum as $iter627)
+          {
+            $xfer += $output->writeString($iter627);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -21452,6 +22698,7 @@ class FireEventRequest {
         case 5:
           if ($ftype == TType::LST) {
             $this->partitionVals = array();
+<<<<<<< HEAD
             $_size633 = 0;
             $_etype636 = 0;
             $xfer += $input->readListBegin($_etype636, $_size633);
@@ -21460,6 +22707,38 @@ class FireEventRequest {
               $elem638 = null;
               $xfer += $input->readString($elem638);
               $this->partitionVals []= $elem638;
+=======
+<<<<<<< HEAD
+            $_size626 = 0;
+            $_etype629 = 0;
+            $xfer += $input->readListBegin($_etype629, $_size626);
+            for ($_i630 = 0; $_i630 < $_size626; ++$_i630)
+            {
+              $elem631 = null;
+              $xfer += $input->readString($elem631);
+              $this->partitionVals []= $elem631;
+=======
+<<<<<<< HEAD
+            $_size612 = 0;
+            $_etype615 = 0;
+            $xfer += $input->readListBegin($_etype615, $_size612);
+            for ($_i616 = 0; $_i616 < $_size612; ++$_i616)
+            {
+              $elem617 = null;
+              $xfer += $input->readString($elem617);
+              $this->partitionVals []= $elem617;
+=======
+            $_size628 = 0;
+            $_etype631 = 0;
+            $xfer += $input->readListBegin($_etype631, $_size628);
+            for ($_i632 = 0; $_i632 < $_size628; ++$_i632)
+            {
+              $elem633 = null;
+              $xfer += $input->readString($elem633);
+              $this->partitionVals []= $elem633;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -21517,9 +22796,27 @@ class FireEventRequest {
       {
         $output->writeListBegin(TType::STRING, count($this->partitionVals));
         {
+<<<<<<< HEAD
           foreach ($this->partitionVals as $iter639)
           {
             $xfer += $output->writeString($iter639);
+=======
+<<<<<<< HEAD
+          foreach ($this->partitionVals as $iter632)
+          {
+            $xfer += $output->writeString($iter632);
+=======
+<<<<<<< HEAD
+          foreach ($this->partitionVals as $iter618)
+          {
+            $xfer += $output->writeString($iter618);
+=======
+          foreach ($this->partitionVals as $iter634)
+          {
+            $xfer += $output->writeString($iter634);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -21752,6 +23049,7 @@ class GetFileMetadataByExprResult {
         case 1:
           if ($ftype == TType::MAP) {
             $this->metadata = array();
+<<<<<<< HEAD
             $_size640 = 0;
             $_ktype641 = 0;
             $_vtype642 = 0;
@@ -21764,6 +23062,50 @@ class GetFileMetadataByExprResult {
               $val646 = new \metastore\MetadataPpdResult();
               $xfer += $val646->read($input);
               $this->metadata[$key645] = $val646;
+=======
+<<<<<<< HEAD
+            $_size633 = 0;
+            $_ktype634 = 0;
+            $_vtype635 = 0;
+            $xfer += $input->readMapBegin($_ktype634, $_vtype635, $_size633);
+            for ($_i637 = 0; $_i637 < $_size633; ++$_i637)
+            {
+              $key638 = 0;
+              $val639 = new \metastore\MetadataPpdResult();
+              $xfer += $input->readI64($key638);
+              $val639 = new \metastore\MetadataPpdResult();
+              $xfer += $val639->read($input);
+              $this->metadata[$key638] = $val639;
+=======
+<<<<<<< HEAD
+            $_size619 = 0;
+            $_ktype620 = 0;
+            $_vtype621 = 0;
+            $xfer += $input->readMapBegin($_ktype620, $_vtype621, $_size619);
+            for ($_i623 = 0; $_i623 < $_size619; ++$_i623)
+            {
+              $key624 = 0;
+              $val625 = new \metastore\MetadataPpdResult();
+              $xfer += $input->readI64($key624);
+              $val625 = new \metastore\MetadataPpdResult();
+              $xfer += $val625->read($input);
+              $this->metadata[$key624] = $val625;
+=======
+            $_size635 = 0;
+            $_ktype636 = 0;
+            $_vtype637 = 0;
+            $xfer += $input->readMapBegin($_ktype636, $_vtype637, $_size635);
+            for ($_i639 = 0; $_i639 < $_size635; ++$_i639)
+            {
+              $key640 = 0;
+              $val641 = new \metastore\MetadataPpdResult();
+              $xfer += $input->readI64($key640);
+              $val641 = new \metastore\MetadataPpdResult();
+              $xfer += $val641->read($input);
+              $this->metadata[$key640] = $val641;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -21798,10 +23140,31 @@ class GetFileMetadataByExprResult {
       {
         $output->writeMapBegin(TType::I64, TType::STRUCT, count($this->metadata));
         {
+<<<<<<< HEAD
           foreach ($this->metadata as $kiter647 => $viter648)
           {
             $xfer += $output->writeI64($kiter647);
             $xfer += $viter648->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->metadata as $kiter640 => $viter641)
+          {
+            $xfer += $output->writeI64($kiter640);
+            $xfer += $viter641->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->metadata as $kiter626 => $viter627)
+          {
+            $xfer += $output->writeI64($kiter626);
+            $xfer += $viter627->write($output);
+=======
+          foreach ($this->metadata as $kiter642 => $viter643)
+          {
+            $xfer += $output->writeI64($kiter642);
+            $xfer += $viter643->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeMapEnd();
@@ -21903,6 +23266,7 @@ class GetFileMetadataByExprRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->fileIds = array();
+<<<<<<< HEAD
             $_size649 = 0;
             $_etype652 = 0;
             $xfer += $input->readListBegin($_etype652, $_size649);
@@ -21911,6 +23275,38 @@ class GetFileMetadataByExprRequest {
               $elem654 = null;
               $xfer += $input->readI64($elem654);
               $this->fileIds []= $elem654;
+=======
+<<<<<<< HEAD
+            $_size642 = 0;
+            $_etype645 = 0;
+            $xfer += $input->readListBegin($_etype645, $_size642);
+            for ($_i646 = 0; $_i646 < $_size642; ++$_i646)
+            {
+              $elem647 = null;
+              $xfer += $input->readI64($elem647);
+              $this->fileIds []= $elem647;
+=======
+<<<<<<< HEAD
+            $_size628 = 0;
+            $_etype631 = 0;
+            $xfer += $input->readListBegin($_etype631, $_size628);
+            for ($_i632 = 0; $_i632 < $_size628; ++$_i632)
+            {
+              $elem633 = null;
+              $xfer += $input->readI64($elem633);
+              $this->fileIds []= $elem633;
+=======
+            $_size644 = 0;
+            $_etype647 = 0;
+            $xfer += $input->readListBegin($_etype647, $_size644);
+            for ($_i648 = 0; $_i648 < $_size644; ++$_i648)
+            {
+              $elem649 = null;
+              $xfer += $input->readI64($elem649);
+              $this->fileIds []= $elem649;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -21959,9 +23355,27 @@ class GetFileMetadataByExprRequest {
       {
         $output->writeListBegin(TType::I64, count($this->fileIds));
         {
+<<<<<<< HEAD
           foreach ($this->fileIds as $iter655)
           {
             $xfer += $output->writeI64($iter655);
+=======
+<<<<<<< HEAD
+          foreach ($this->fileIds as $iter648)
+          {
+            $xfer += $output->writeI64($iter648);
+=======
+<<<<<<< HEAD
+          foreach ($this->fileIds as $iter634)
+          {
+            $xfer += $output->writeI64($iter634);
+=======
+          foreach ($this->fileIds as $iter650)
+          {
+            $xfer += $output->writeI64($iter650);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -22055,6 +23469,7 @@ class GetFileMetadataResult {
         case 1:
           if ($ftype == TType::MAP) {
             $this->metadata = array();
+<<<<<<< HEAD
             $_size656 = 0;
             $_ktype657 = 0;
             $_vtype658 = 0;
@@ -22066,6 +23481,47 @@ class GetFileMetadataResult {
               $xfer += $input->readI64($key661);
               $xfer += $input->readString($val662);
               $this->metadata[$key661] = $val662;
+=======
+<<<<<<< HEAD
+            $_size649 = 0;
+            $_ktype650 = 0;
+            $_vtype651 = 0;
+            $xfer += $input->readMapBegin($_ktype650, $_vtype651, $_size649);
+            for ($_i653 = 0; $_i653 < $_size649; ++$_i653)
+            {
+              $key654 = 0;
+              $val655 = '';
+              $xfer += $input->readI64($key654);
+              $xfer += $input->readString($val655);
+              $this->metadata[$key654] = $val655;
+=======
+<<<<<<< HEAD
+            $_size635 = 0;
+            $_ktype636 = 0;
+            $_vtype637 = 0;
+            $xfer += $input->readMapBegin($_ktype636, $_vtype637, $_size635);
+            for ($_i639 = 0; $_i639 < $_size635; ++$_i639)
+            {
+              $key640 = 0;
+              $val641 = '';
+              $xfer += $input->readI64($key640);
+              $xfer += $input->readString($val641);
+              $this->metadata[$key640] = $val641;
+=======
+            $_size651 = 0;
+            $_ktype652 = 0;
+            $_vtype653 = 0;
+            $xfer += $input->readMapBegin($_ktype652, $_vtype653, $_size651);
+            for ($_i655 = 0; $_i655 < $_size651; ++$_i655)
+            {
+              $key656 = 0;
+              $val657 = '';
+              $xfer += $input->readI64($key656);
+              $xfer += $input->readString($val657);
+              $this->metadata[$key656] = $val657;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -22100,10 +23556,31 @@ class GetFileMetadataResult {
       {
         $output->writeMapBegin(TType::I64, TType::STRING, count($this->metadata));
         {
+<<<<<<< HEAD
           foreach ($this->metadata as $kiter663 => $viter664)
           {
             $xfer += $output->writeI64($kiter663);
             $xfer += $output->writeString($viter664);
+=======
+<<<<<<< HEAD
+          foreach ($this->metadata as $kiter656 => $viter657)
+          {
+            $xfer += $output->writeI64($kiter656);
+            $xfer += $output->writeString($viter657);
+=======
+<<<<<<< HEAD
+          foreach ($this->metadata as $kiter642 => $viter643)
+          {
+            $xfer += $output->writeI64($kiter642);
+            $xfer += $output->writeString($viter643);
+=======
+          foreach ($this->metadata as $kiter658 => $viter659)
+          {
+            $xfer += $output->writeI64($kiter658);
+            $xfer += $output->writeString($viter659);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeMapEnd();
@@ -22172,6 +23649,7 @@ class GetFileMetadataRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->fileIds = array();
+<<<<<<< HEAD
             $_size665 = 0;
             $_etype668 = 0;
             $xfer += $input->readListBegin($_etype668, $_size665);
@@ -22180,6 +23658,38 @@ class GetFileMetadataRequest {
               $elem670 = null;
               $xfer += $input->readI64($elem670);
               $this->fileIds []= $elem670;
+=======
+<<<<<<< HEAD
+            $_size658 = 0;
+            $_etype661 = 0;
+            $xfer += $input->readListBegin($_etype661, $_size658);
+            for ($_i662 = 0; $_i662 < $_size658; ++$_i662)
+            {
+              $elem663 = null;
+              $xfer += $input->readI64($elem663);
+              $this->fileIds []= $elem663;
+=======
+<<<<<<< HEAD
+            $_size644 = 0;
+            $_etype647 = 0;
+            $xfer += $input->readListBegin($_etype647, $_size644);
+            for ($_i648 = 0; $_i648 < $_size644; ++$_i648)
+            {
+              $elem649 = null;
+              $xfer += $input->readI64($elem649);
+              $this->fileIds []= $elem649;
+=======
+            $_size660 = 0;
+            $_etype663 = 0;
+            $xfer += $input->readListBegin($_etype663, $_size660);
+            for ($_i664 = 0; $_i664 < $_size660; ++$_i664)
+            {
+              $elem665 = null;
+              $xfer += $input->readI64($elem665);
+              $this->fileIds []= $elem665;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -22207,9 +23717,27 @@ class GetFileMetadataRequest {
       {
         $output->writeListBegin(TType::I64, count($this->fileIds));
         {
+<<<<<<< HEAD
           foreach ($this->fileIds as $iter671)
           {
             $xfer += $output->writeI64($iter671);
+=======
+<<<<<<< HEAD
+          foreach ($this->fileIds as $iter664)
+          {
+            $xfer += $output->writeI64($iter664);
+=======
+<<<<<<< HEAD
+          foreach ($this->fileIds as $iter650)
+          {
+            $xfer += $output->writeI64($iter650);
+=======
+          foreach ($this->fileIds as $iter666)
+          {
+            $xfer += $output->writeI64($iter666);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -22349,6 +23877,7 @@ class PutFileMetadataRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->fileIds = array();
+<<<<<<< HEAD
             $_size672 = 0;
             $_etype675 = 0;
             $xfer += $input->readListBegin($_etype675, $_size672);
@@ -22357,6 +23886,38 @@ class PutFileMetadataRequest {
               $elem677 = null;
               $xfer += $input->readI64($elem677);
               $this->fileIds []= $elem677;
+=======
+<<<<<<< HEAD
+            $_size665 = 0;
+            $_etype668 = 0;
+            $xfer += $input->readListBegin($_etype668, $_size665);
+            for ($_i669 = 0; $_i669 < $_size665; ++$_i669)
+            {
+              $elem670 = null;
+              $xfer += $input->readI64($elem670);
+              $this->fileIds []= $elem670;
+=======
+<<<<<<< HEAD
+            $_size651 = 0;
+            $_etype654 = 0;
+            $xfer += $input->readListBegin($_etype654, $_size651);
+            for ($_i655 = 0; $_i655 < $_size651; ++$_i655)
+            {
+              $elem656 = null;
+              $xfer += $input->readI64($elem656);
+              $this->fileIds []= $elem656;
+=======
+            $_size667 = 0;
+            $_etype670 = 0;
+            $xfer += $input->readListBegin($_etype670, $_size667);
+            for ($_i671 = 0; $_i671 < $_size667; ++$_i671)
+            {
+              $elem672 = null;
+              $xfer += $input->readI64($elem672);
+              $this->fileIds []= $elem672;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -22366,6 +23927,7 @@ class PutFileMetadataRequest {
         case 2:
           if ($ftype == TType::LST) {
             $this->metadata = array();
+<<<<<<< HEAD
             $_size678 = 0;
             $_etype681 = 0;
             $xfer += $input->readListBegin($_etype681, $_size678);
@@ -22374,6 +23936,38 @@ class PutFileMetadataRequest {
               $elem683 = null;
               $xfer += $input->readString($elem683);
               $this->metadata []= $elem683;
+=======
+<<<<<<< HEAD
+            $_size671 = 0;
+            $_etype674 = 0;
+            $xfer += $input->readListBegin($_etype674, $_size671);
+            for ($_i675 = 0; $_i675 < $_size671; ++$_i675)
+            {
+              $elem676 = null;
+              $xfer += $input->readString($elem676);
+              $this->metadata []= $elem676;
+=======
+<<<<<<< HEAD
+            $_size657 = 0;
+            $_etype660 = 0;
+            $xfer += $input->readListBegin($_etype660, $_size657);
+            for ($_i661 = 0; $_i661 < $_size657; ++$_i661)
+            {
+              $elem662 = null;
+              $xfer += $input->readString($elem662);
+              $this->metadata []= $elem662;
+=======
+            $_size673 = 0;
+            $_etype676 = 0;
+            $xfer += $input->readListBegin($_etype676, $_size673);
+            for ($_i677 = 0; $_i677 < $_size673; ++$_i677)
+            {
+              $elem678 = null;
+              $xfer += $input->readString($elem678);
+              $this->metadata []= $elem678;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -22408,9 +24002,27 @@ class PutFileMetadataRequest {
       {
         $output->writeListBegin(TType::I64, count($this->fileIds));
         {
+<<<<<<< HEAD
           foreach ($this->fileIds as $iter684)
           {
             $xfer += $output->writeI64($iter684);
+=======
+<<<<<<< HEAD
+          foreach ($this->fileIds as $iter677)
+          {
+            $xfer += $output->writeI64($iter677);
+=======
+<<<<<<< HEAD
+          foreach ($this->fileIds as $iter663)
+          {
+            $xfer += $output->writeI64($iter663);
+=======
+          foreach ($this->fileIds as $iter679)
+          {
+            $xfer += $output->writeI64($iter679);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -22425,9 +24037,27 @@ class PutFileMetadataRequest {
       {
         $output->writeListBegin(TType::STRING, count($this->metadata));
         {
+<<<<<<< HEAD
           foreach ($this->metadata as $iter685)
           {
             $xfer += $output->writeString($iter685);
+=======
+<<<<<<< HEAD
+          foreach ($this->metadata as $iter678)
+          {
+            $xfer += $output->writeString($iter678);
+=======
+<<<<<<< HEAD
+          foreach ($this->metadata as $iter664)
+          {
+            $xfer += $output->writeString($iter664);
+=======
+          foreach ($this->metadata as $iter680)
+          {
+            $xfer += $output->writeString($iter680);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -22546,6 +24176,7 @@ class ClearFileMetadataRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->fileIds = array();
+<<<<<<< HEAD
             $_size686 = 0;
             $_etype689 = 0;
             $xfer += $input->readListBegin($_etype689, $_size686);
@@ -22554,6 +24185,38 @@ class ClearFileMetadataRequest {
               $elem691 = null;
               $xfer += $input->readI64($elem691);
               $this->fileIds []= $elem691;
+=======
+<<<<<<< HEAD
+            $_size679 = 0;
+            $_etype682 = 0;
+            $xfer += $input->readListBegin($_etype682, $_size679);
+            for ($_i683 = 0; $_i683 < $_size679; ++$_i683)
+            {
+              $elem684 = null;
+              $xfer += $input->readI64($elem684);
+              $this->fileIds []= $elem684;
+=======
+<<<<<<< HEAD
+            $_size665 = 0;
+            $_etype668 = 0;
+            $xfer += $input->readListBegin($_etype668, $_size665);
+            for ($_i669 = 0; $_i669 < $_size665; ++$_i669)
+            {
+              $elem670 = null;
+              $xfer += $input->readI64($elem670);
+              $this->fileIds []= $elem670;
+=======
+            $_size681 = 0;
+            $_etype684 = 0;
+            $xfer += $input->readListBegin($_etype684, $_size681);
+            for ($_i685 = 0; $_i685 < $_size681; ++$_i685)
+            {
+              $elem686 = null;
+              $xfer += $input->readI64($elem686);
+              $this->fileIds []= $elem686;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -22581,9 +24244,27 @@ class ClearFileMetadataRequest {
       {
         $output->writeListBegin(TType::I64, count($this->fileIds));
         {
+<<<<<<< HEAD
           foreach ($this->fileIds as $iter692)
           {
             $xfer += $output->writeI64($iter692);
+=======
+<<<<<<< HEAD
+          foreach ($this->fileIds as $iter685)
+          {
+            $xfer += $output->writeI64($iter685);
+=======
+<<<<<<< HEAD
+          foreach ($this->fileIds as $iter671)
+          {
+            $xfer += $output->writeI64($iter671);
+=======
+          foreach ($this->fileIds as $iter687)
+          {
+            $xfer += $output->writeI64($iter687);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -22867,6 +24548,7 @@ class GetAllFunctionsResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->functions = array();
+<<<<<<< HEAD
             $_size693 = 0;
             $_etype696 = 0;
             $xfer += $input->readListBegin($_etype696, $_size693);
@@ -22876,6 +24558,41 @@ class GetAllFunctionsResponse {
               $elem698 = new \metastore\Function();
               $xfer += $elem698->read($input);
               $this->functions []= $elem698;
+=======
+<<<<<<< HEAD
+            $_size686 = 0;
+            $_etype689 = 0;
+            $xfer += $input->readListBegin($_etype689, $_size686);
+            for ($_i690 = 0; $_i690 < $_size686; ++$_i690)
+            {
+              $elem691 = null;
+              $elem691 = new \metastore\Function();
+              $xfer += $elem691->read($input);
+              $this->functions []= $elem691;
+=======
+<<<<<<< HEAD
+            $_size672 = 0;
+            $_etype675 = 0;
+            $xfer += $input->readListBegin($_etype675, $_size672);
+            for ($_i676 = 0; $_i676 < $_size672; ++$_i676)
+            {
+              $elem677 = null;
+              $elem677 = new \metastore\Function();
+              $xfer += $elem677->read($input);
+              $this->functions []= $elem677;
+=======
+            $_size688 = 0;
+            $_etype691 = 0;
+            $xfer += $input->readListBegin($_etype691, $_size688);
+            for ($_i692 = 0; $_i692 < $_size688; ++$_i692)
+            {
+              $elem693 = null;
+              $elem693 = new \metastore\Function();
+              $xfer += $elem693->read($input);
+              $this->functions []= $elem693;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -22903,9 +24620,27 @@ class GetAllFunctionsResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->functions));
         {
+<<<<<<< HEAD
           foreach ($this->functions as $iter699)
           {
             $xfer += $iter699->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->functions as $iter692)
+          {
+            $xfer += $iter692->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->functions as $iter678)
+          {
+            $xfer += $iter678->write($output);
+=======
+          foreach ($this->functions as $iter694)
+          {
+            $xfer += $iter694->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -22969,6 +24704,7 @@ class ClientCapabilities {
         case 1:
           if ($ftype == TType::LST) {
             $this->values = array();
+<<<<<<< HEAD
             $_size700 = 0;
             $_etype703 = 0;
             $xfer += $input->readListBegin($_etype703, $_size700);
@@ -22977,6 +24713,38 @@ class ClientCapabilities {
               $elem705 = null;
               $xfer += $input->readI32($elem705);
               $this->values []= $elem705;
+=======
+<<<<<<< HEAD
+            $_size693 = 0;
+            $_etype696 = 0;
+            $xfer += $input->readListBegin($_etype696, $_size693);
+            for ($_i697 = 0; $_i697 < $_size693; ++$_i697)
+            {
+              $elem698 = null;
+              $xfer += $input->readI32($elem698);
+              $this->values []= $elem698;
+=======
+<<<<<<< HEAD
+            $_size679 = 0;
+            $_etype682 = 0;
+            $xfer += $input->readListBegin($_etype682, $_size679);
+            for ($_i683 = 0; $_i683 < $_size679; ++$_i683)
+            {
+              $elem684 = null;
+              $xfer += $input->readI32($elem684);
+              $this->values []= $elem684;
+=======
+            $_size695 = 0;
+            $_etype698 = 0;
+            $xfer += $input->readListBegin($_etype698, $_size695);
+            for ($_i699 = 0; $_i699 < $_size695; ++$_i699)
+            {
+              $elem700 = null;
+              $xfer += $input->readI32($elem700);
+              $this->values []= $elem700;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -23004,9 +24772,27 @@ class ClientCapabilities {
       {
         $output->writeListBegin(TType::I32, count($this->values));
         {
+<<<<<<< HEAD
           foreach ($this->values as $iter706)
           {
             $xfer += $output->writeI32($iter706);
+=======
+<<<<<<< HEAD
+          foreach ($this->values as $iter699)
+          {
+            $xfer += $output->writeI32($iter699);
+=======
+<<<<<<< HEAD
+          foreach ($this->values as $iter685)
+          {
+            $xfer += $output->writeI32($iter685);
+=======
+          foreach ($this->values as $iter701)
+          {
+            $xfer += $output->writeI32($iter701);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -23340,6 +25126,7 @@ class GetTablesRequest {
         case 2:
           if ($ftype == TType::LST) {
             $this->tblNames = array();
+<<<<<<< HEAD
             $_size707 = 0;
             $_etype710 = 0;
             $xfer += $input->readListBegin($_etype710, $_size707);
@@ -23348,6 +25135,38 @@ class GetTablesRequest {
               $elem712 = null;
               $xfer += $input->readString($elem712);
               $this->tblNames []= $elem712;
+=======
+<<<<<<< HEAD
+            $_size700 = 0;
+            $_etype703 = 0;
+            $xfer += $input->readListBegin($_etype703, $_size700);
+            for ($_i704 = 0; $_i704 < $_size700; ++$_i704)
+            {
+              $elem705 = null;
+              $xfer += $input->readString($elem705);
+              $this->tblNames []= $elem705;
+=======
+<<<<<<< HEAD
+            $_size686 = 0;
+            $_etype689 = 0;
+            $xfer += $input->readListBegin($_etype689, $_size686);
+            for ($_i690 = 0; $_i690 < $_size686; ++$_i690)
+            {
+              $elem691 = null;
+              $xfer += $input->readString($elem691);
+              $this->tblNames []= $elem691;
+=======
+            $_size702 = 0;
+            $_etype705 = 0;
+            $xfer += $input->readListBegin($_etype705, $_size702);
+            for ($_i706 = 0; $_i706 < $_size702; ++$_i706)
+            {
+              $elem707 = null;
+              $xfer += $input->readString($elem707);
+              $this->tblNames []= $elem707;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -23395,9 +25214,27 @@ class GetTablesRequest {
       {
         $output->writeListBegin(TType::STRING, count($this->tblNames));
         {
+<<<<<<< HEAD
           foreach ($this->tblNames as $iter713)
           {
             $xfer += $output->writeString($iter713);
+=======
+<<<<<<< HEAD
+          foreach ($this->tblNames as $iter706)
+          {
+            $xfer += $output->writeString($iter706);
+=======
+<<<<<<< HEAD
+          foreach ($this->tblNames as $iter692)
+          {
+            $xfer += $output->writeString($iter692);
+=======
+          foreach ($this->tblNames as $iter708)
+          {
+            $xfer += $output->writeString($iter708);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -23475,6 +25312,7 @@ class GetTablesResult {
         case 1:
           if ($ftype == TType::LST) {
             $this->tables = array();
+<<<<<<< HEAD
             $_size714 = 0;
             $_etype717 = 0;
             $xfer += $input->readListBegin($_etype717, $_size714);
@@ -23484,6 +25322,41 @@ class GetTablesResult {
               $elem719 = new \metastore\Table();
               $xfer += $elem719->read($input);
               $this->tables []= $elem719;
+=======
+<<<<<<< HEAD
+            $_size707 = 0;
+            $_etype710 = 0;
+            $xfer += $input->readListBegin($_etype710, $_size707);
+            for ($_i711 = 0; $_i711 < $_size707; ++$_i711)
+            {
+              $elem712 = null;
+              $elem712 = new \metastore\Table();
+              $xfer += $elem712->read($input);
+              $this->tables []= $elem712;
+=======
+<<<<<<< HEAD
+            $_size693 = 0;
+            $_etype696 = 0;
+            $xfer += $input->readListBegin($_etype696, $_size693);
+            for ($_i697 = 0; $_i697 < $_size693; ++$_i697)
+            {
+              $elem698 = null;
+              $elem698 = new \metastore\Table();
+              $xfer += $elem698->read($input);
+              $this->tables []= $elem698;
+=======
+            $_size709 = 0;
+            $_etype712 = 0;
+            $xfer += $input->readListBegin($_etype712, $_size709);
+            for ($_i713 = 0; $_i713 < $_size709; ++$_i713)
+            {
+              $elem714 = null;
+              $elem714 = new \metastore\Table();
+              $xfer += $elem714->read($input);
+              $this->tables []= $elem714;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -23511,9 +25384,27 @@ class GetTablesResult {
       {
         $output->writeListBegin(TType::STRUCT, count($this->tables));
         {
+<<<<<<< HEAD
           foreach ($this->tables as $iter720)
           {
             $xfer += $iter720->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->tables as $iter713)
+          {
+            $xfer += $iter713->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->tables as $iter699)
+          {
+            $xfer += $iter699->write($output);
+=======
+          foreach ($this->tables as $iter715)
+          {
+            $xfer += $iter715->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -23914,17 +25805,53 @@ class Materialization {
         case 1:
           if ($ftype == TType::SET) {
             $this->tablesUsed = array();
+<<<<<<< HEAD
             $_size721 = 0;
             $_etype724 = 0;
             $xfer += $input->readSetBegin($_etype724, $_size721);
             for ($_i725 = 0; $_i725 < $_size721; ++$_i725)
+=======
+<<<<<<< HEAD
+            $_size714 = 0;
+            $_etype717 = 0;
+            $xfer += $input->readSetBegin($_etype717, $_size714);
+            for ($_i718 = 0; $_i718 < $_size714; ++$_i718)
+=======
+<<<<<<< HEAD
+            $_size700 = 0;
+            $_etype703 = 0;
+            $xfer += $input->readSetBegin($_etype703, $_size700);
+            for ($_i704 = 0; $_i704 < $_size700; ++$_i704)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             {
               $elem726 = null;
               $xfer += $input->readString($elem726);
               if (is_scalar($elem726)) {
                 $this->tablesUsed[$elem726] = true;
               } else {
+<<<<<<< HEAD
                 $this->tablesUsed []= $elem726;
+=======
+<<<<<<< HEAD
+                $this->tablesUsed []= $elem719;
+=======
+                $this->tablesUsed []= $elem705;
+=======
+            $_size716 = 0;
+            $_etype719 = 0;
+            $xfer += $input->readSetBegin($_etype719, $_size716);
+            for ($_i720 = 0; $_i720 < $_size716; ++$_i720)
+            {
+              $elem721 = null;
+              $xfer += $input->readString($elem721);
+              if (is_scalar($elem721)) {
+                $this->tablesUsed[$elem721] = true;
+              } else {
+                $this->tablesUsed []= $elem721;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
               }
             }
             $xfer += $input->readSetEnd();
@@ -23967,12 +25894,37 @@ class Materialization {
       {
         $output->writeSetBegin(TType::STRING, count($this->tablesUsed));
         {
+<<<<<<< HEAD
           foreach ($this->tablesUsed as $iter727 => $iter728)
+=======
+<<<<<<< HEAD
+          foreach ($this->tablesUsed as $iter720 => $iter721)
+=======
+<<<<<<< HEAD
+          foreach ($this->tablesUsed as $iter706 => $iter707)
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           {
             if (is_scalar($iter728)) {
             $xfer += $output->writeString($iter727);
             } else {
+<<<<<<< HEAD
             $xfer += $output->writeString($iter728);
+=======
+<<<<<<< HEAD
+            $xfer += $output->writeString($iter721);
+=======
+            $xfer += $output->writeString($iter707);
+=======
+          foreach ($this->tablesUsed as $iter722 => $iter723)
+          {
+            if (is_scalar($iter723)) {
+            $xfer += $output->writeString($iter722);
+            } else {
+            $xfer += $output->writeString($iter723);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
           }
         }
@@ -25239,6 +27191,7 @@ class WMFullResourcePlan {
         case 2:
           if ($ftype == TType::LST) {
             $this->pools = array();
+<<<<<<< HEAD
             $_size729 = 0;
             $_etype732 = 0;
             $xfer += $input->readListBegin($_etype732, $_size729);
@@ -25248,6 +27201,41 @@ class WMFullResourcePlan {
               $elem734 = new \metastore\WMPool();
               $xfer += $elem734->read($input);
               $this->pools []= $elem734;
+=======
+<<<<<<< HEAD
+            $_size722 = 0;
+            $_etype725 = 0;
+            $xfer += $input->readListBegin($_etype725, $_size722);
+            for ($_i726 = 0; $_i726 < $_size722; ++$_i726)
+            {
+              $elem727 = null;
+              $elem727 = new \metastore\WMPool();
+              $xfer += $elem727->read($input);
+              $this->pools []= $elem727;
+=======
+<<<<<<< HEAD
+            $_size708 = 0;
+            $_etype711 = 0;
+            $xfer += $input->readListBegin($_etype711, $_size708);
+            for ($_i712 = 0; $_i712 < $_size708; ++$_i712)
+            {
+              $elem713 = null;
+              $elem713 = new \metastore\WMPool();
+              $xfer += $elem713->read($input);
+              $this->pools []= $elem713;
+=======
+            $_size724 = 0;
+            $_etype727 = 0;
+            $xfer += $input->readListBegin($_etype727, $_size724);
+            for ($_i728 = 0; $_i728 < $_size724; ++$_i728)
+            {
+              $elem729 = null;
+              $elem729 = new \metastore\WMPool();
+              $xfer += $elem729->read($input);
+              $this->pools []= $elem729;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -25257,6 +27245,7 @@ class WMFullResourcePlan {
         case 3:
           if ($ftype == TType::LST) {
             $this->mappings = array();
+<<<<<<< HEAD
             $_size735 = 0;
             $_etype738 = 0;
             $xfer += $input->readListBegin($_etype738, $_size735);
@@ -25266,6 +27255,41 @@ class WMFullResourcePlan {
               $elem740 = new \metastore\WMMapping();
               $xfer += $elem740->read($input);
               $this->mappings []= $elem740;
+=======
+<<<<<<< HEAD
+            $_size728 = 0;
+            $_etype731 = 0;
+            $xfer += $input->readListBegin($_etype731, $_size728);
+            for ($_i732 = 0; $_i732 < $_size728; ++$_i732)
+            {
+              $elem733 = null;
+              $elem733 = new \metastore\WMMapping();
+              $xfer += $elem733->read($input);
+              $this->mappings []= $elem733;
+=======
+<<<<<<< HEAD
+            $_size714 = 0;
+            $_etype717 = 0;
+            $xfer += $input->readListBegin($_etype717, $_size714);
+            for ($_i718 = 0; $_i718 < $_size714; ++$_i718)
+            {
+              $elem719 = null;
+              $elem719 = new \metastore\WMMapping();
+              $xfer += $elem719->read($input);
+              $this->mappings []= $elem719;
+=======
+            $_size730 = 0;
+            $_etype733 = 0;
+            $xfer += $input->readListBegin($_etype733, $_size730);
+            for ($_i734 = 0; $_i734 < $_size730; ++$_i734)
+            {
+              $elem735 = null;
+              $elem735 = new \metastore\WMMapping();
+              $xfer += $elem735->read($input);
+              $this->mappings []= $elem735;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -25275,6 +27299,7 @@ class WMFullResourcePlan {
         case 4:
           if ($ftype == TType::LST) {
             $this->triggers = array();
+<<<<<<< HEAD
             $_size741 = 0;
             $_etype744 = 0;
             $xfer += $input->readListBegin($_etype744, $_size741);
@@ -25284,6 +27309,41 @@ class WMFullResourcePlan {
               $elem746 = new \metastore\WMTrigger();
               $xfer += $elem746->read($input);
               $this->triggers []= $elem746;
+=======
+<<<<<<< HEAD
+            $_size734 = 0;
+            $_etype737 = 0;
+            $xfer += $input->readListBegin($_etype737, $_size734);
+            for ($_i738 = 0; $_i738 < $_size734; ++$_i738)
+            {
+              $elem739 = null;
+              $elem739 = new \metastore\WMTrigger();
+              $xfer += $elem739->read($input);
+              $this->triggers []= $elem739;
+=======
+<<<<<<< HEAD
+            $_size720 = 0;
+            $_etype723 = 0;
+            $xfer += $input->readListBegin($_etype723, $_size720);
+            for ($_i724 = 0; $_i724 < $_size720; ++$_i724)
+            {
+              $elem725 = null;
+              $elem725 = new \metastore\WMTrigger();
+              $xfer += $elem725->read($input);
+              $this->triggers []= $elem725;
+=======
+            $_size736 = 0;
+            $_etype739 = 0;
+            $xfer += $input->readListBegin($_etype739, $_size736);
+            for ($_i740 = 0; $_i740 < $_size736; ++$_i740)
+            {
+              $elem741 = null;
+              $elem741 = new \metastore\WMTrigger();
+              $xfer += $elem741->read($input);
+              $this->triggers []= $elem741;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -25293,6 +27353,7 @@ class WMFullResourcePlan {
         case 5:
           if ($ftype == TType::LST) {
             $this->poolTriggers = array();
+<<<<<<< HEAD
             $_size747 = 0;
             $_etype750 = 0;
             $xfer += $input->readListBegin($_etype750, $_size747);
@@ -25302,6 +27363,41 @@ class WMFullResourcePlan {
               $elem752 = new \metastore\WMPoolTrigger();
               $xfer += $elem752->read($input);
               $this->poolTriggers []= $elem752;
+=======
+<<<<<<< HEAD
+            $_size740 = 0;
+            $_etype743 = 0;
+            $xfer += $input->readListBegin($_etype743, $_size740);
+            for ($_i744 = 0; $_i744 < $_size740; ++$_i744)
+            {
+              $elem745 = null;
+              $elem745 = new \metastore\WMPoolTrigger();
+              $xfer += $elem745->read($input);
+              $this->poolTriggers []= $elem745;
+=======
+<<<<<<< HEAD
+            $_size726 = 0;
+            $_etype729 = 0;
+            $xfer += $input->readListBegin($_etype729, $_size726);
+            for ($_i730 = 0; $_i730 < $_size726; ++$_i730)
+            {
+              $elem731 = null;
+              $elem731 = new \metastore\WMPoolTrigger();
+              $xfer += $elem731->read($input);
+              $this->poolTriggers []= $elem731;
+=======
+            $_size742 = 0;
+            $_etype745 = 0;
+            $xfer += $input->readListBegin($_etype745, $_size742);
+            for ($_i746 = 0; $_i746 < $_size742; ++$_i746)
+            {
+              $elem747 = null;
+              $elem747 = new \metastore\WMPoolTrigger();
+              $xfer += $elem747->read($input);
+              $this->poolTriggers []= $elem747;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -25337,9 +27433,27 @@ class WMFullResourcePlan {
       {
         $output->writeListBegin(TType::STRUCT, count($this->pools));
         {
+<<<<<<< HEAD
           foreach ($this->pools as $iter753)
           {
             $xfer += $iter753->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->pools as $iter746)
+          {
+            $xfer += $iter746->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->pools as $iter732)
+          {
+            $xfer += $iter732->write($output);
+=======
+          foreach ($this->pools as $iter748)
+          {
+            $xfer += $iter748->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -25354,9 +27468,27 @@ class WMFullResourcePlan {
       {
         $output->writeListBegin(TType::STRUCT, count($this->mappings));
         {
+<<<<<<< HEAD
           foreach ($this->mappings as $iter754)
           {
             $xfer += $iter754->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->mappings as $iter747)
+          {
+            $xfer += $iter747->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->mappings as $iter733)
+          {
+            $xfer += $iter733->write($output);
+=======
+          foreach ($this->mappings as $iter749)
+          {
+            $xfer += $iter749->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -25371,9 +27503,27 @@ class WMFullResourcePlan {
       {
         $output->writeListBegin(TType::STRUCT, count($this->triggers));
         {
+<<<<<<< HEAD
           foreach ($this->triggers as $iter755)
           {
             $xfer += $iter755->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->triggers as $iter748)
+          {
+            $xfer += $iter748->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->triggers as $iter734)
+          {
+            $xfer += $iter734->write($output);
+=======
+          foreach ($this->triggers as $iter750)
+          {
+            $xfer += $iter750->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -25388,9 +27538,27 @@ class WMFullResourcePlan {
       {
         $output->writeListBegin(TType::STRUCT, count($this->poolTriggers));
         {
+<<<<<<< HEAD
           foreach ($this->poolTriggers as $iter756)
           {
             $xfer += $iter756->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->poolTriggers as $iter749)
+          {
+            $xfer += $iter749->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->poolTriggers as $iter735)
+          {
+            $xfer += $iter735->write($output);
+=======
+          foreach ($this->poolTriggers as $iter751)
+          {
+            $xfer += $iter751->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -25943,6 +28111,7 @@ class WMGetAllResourcePlanResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->resourcePlans = array();
+<<<<<<< HEAD
             $_size757 = 0;
             $_etype760 = 0;
             $xfer += $input->readListBegin($_etype760, $_size757);
@@ -25952,6 +28121,41 @@ class WMGetAllResourcePlanResponse {
               $elem762 = new \metastore\WMResourcePlan();
               $xfer += $elem762->read($input);
               $this->resourcePlans []= $elem762;
+=======
+<<<<<<< HEAD
+            $_size750 = 0;
+            $_etype753 = 0;
+            $xfer += $input->readListBegin($_etype753, $_size750);
+            for ($_i754 = 0; $_i754 < $_size750; ++$_i754)
+            {
+              $elem755 = null;
+              $elem755 = new \metastore\WMResourcePlan();
+              $xfer += $elem755->read($input);
+              $this->resourcePlans []= $elem755;
+=======
+<<<<<<< HEAD
+            $_size736 = 0;
+            $_etype739 = 0;
+            $xfer += $input->readListBegin($_etype739, $_size736);
+            for ($_i740 = 0; $_i740 < $_size736; ++$_i740)
+            {
+              $elem741 = null;
+              $elem741 = new \metastore\WMResourcePlan();
+              $xfer += $elem741->read($input);
+              $this->resourcePlans []= $elem741;
+=======
+            $_size752 = 0;
+            $_etype755 = 0;
+            $xfer += $input->readListBegin($_etype755, $_size752);
+            for ($_i756 = 0; $_i756 < $_size752; ++$_i756)
+            {
+              $elem757 = null;
+              $elem757 = new \metastore\WMResourcePlan();
+              $xfer += $elem757->read($input);
+              $this->resourcePlans []= $elem757;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -25979,9 +28183,27 @@ class WMGetAllResourcePlanResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->resourcePlans));
         {
+<<<<<<< HEAD
           foreach ($this->resourcePlans as $iter763)
           {
             $xfer += $iter763->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->resourcePlans as $iter756)
+          {
+            $xfer += $iter756->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->resourcePlans as $iter742)
+          {
+            $xfer += $iter742->write($output);
+=======
+          foreach ($this->resourcePlans as $iter758)
+          {
+            $xfer += $iter758->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -26387,6 +28609,7 @@ class WMValidateResourcePlanResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->errors = array();
+<<<<<<< HEAD
             $_size764 = 0;
             $_etype767 = 0;
             $xfer += $input->readListBegin($_etype767, $_size764);
@@ -26395,6 +28618,38 @@ class WMValidateResourcePlanResponse {
               $elem769 = null;
               $xfer += $input->readString($elem769);
               $this->errors []= $elem769;
+=======
+<<<<<<< HEAD
+            $_size757 = 0;
+            $_etype760 = 0;
+            $xfer += $input->readListBegin($_etype760, $_size757);
+            for ($_i761 = 0; $_i761 < $_size757; ++$_i761)
+            {
+              $elem762 = null;
+              $xfer += $input->readString($elem762);
+              $this->errors []= $elem762;
+=======
+<<<<<<< HEAD
+            $_size743 = 0;
+            $_etype746 = 0;
+            $xfer += $input->readListBegin($_etype746, $_size743);
+            for ($_i747 = 0; $_i747 < $_size743; ++$_i747)
+            {
+              $elem748 = null;
+              $xfer += $input->readString($elem748);
+              $this->errors []= $elem748;
+=======
+            $_size759 = 0;
+            $_etype762 = 0;
+            $xfer += $input->readListBegin($_etype762, $_size759);
+            for ($_i763 = 0; $_i763 < $_size759; ++$_i763)
+            {
+              $elem764 = null;
+              $xfer += $input->readString($elem764);
+              $this->errors []= $elem764;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -26404,6 +28659,7 @@ class WMValidateResourcePlanResponse {
         case 2:
           if ($ftype == TType::LST) {
             $this->warnings = array();
+<<<<<<< HEAD
             $_size770 = 0;
             $_etype773 = 0;
             $xfer += $input->readListBegin($_etype773, $_size770);
@@ -26412,6 +28668,38 @@ class WMValidateResourcePlanResponse {
               $elem775 = null;
               $xfer += $input->readString($elem775);
               $this->warnings []= $elem775;
+=======
+<<<<<<< HEAD
+            $_size763 = 0;
+            $_etype766 = 0;
+            $xfer += $input->readListBegin($_etype766, $_size763);
+            for ($_i767 = 0; $_i767 < $_size763; ++$_i767)
+            {
+              $elem768 = null;
+              $xfer += $input->readString($elem768);
+              $this->warnings []= $elem768;
+=======
+<<<<<<< HEAD
+            $_size749 = 0;
+            $_etype752 = 0;
+            $xfer += $input->readListBegin($_etype752, $_size749);
+            for ($_i753 = 0; $_i753 < $_size749; ++$_i753)
+            {
+              $elem754 = null;
+              $xfer += $input->readString($elem754);
+              $this->warnings []= $elem754;
+=======
+            $_size765 = 0;
+            $_etype768 = 0;
+            $xfer += $input->readListBegin($_etype768, $_size765);
+            for ($_i769 = 0; $_i769 < $_size765; ++$_i769)
+            {
+              $elem770 = null;
+              $xfer += $input->readString($elem770);
+              $this->warnings []= $elem770;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -26439,9 +28727,27 @@ class WMValidateResourcePlanResponse {
       {
         $output->writeListBegin(TType::STRING, count($this->errors));
         {
+<<<<<<< HEAD
           foreach ($this->errors as $iter776)
           {
             $xfer += $output->writeString($iter776);
+=======
+<<<<<<< HEAD
+          foreach ($this->errors as $iter769)
+          {
+            $xfer += $output->writeString($iter769);
+=======
+<<<<<<< HEAD
+          foreach ($this->errors as $iter755)
+          {
+            $xfer += $output->writeString($iter755);
+=======
+          foreach ($this->errors as $iter771)
+          {
+            $xfer += $output->writeString($iter771);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -26456,9 +28762,27 @@ class WMValidateResourcePlanResponse {
       {
         $output->writeListBegin(TType::STRING, count($this->warnings));
         {
+<<<<<<< HEAD
           foreach ($this->warnings as $iter777)
           {
             $xfer += $output->writeString($iter777);
+=======
+<<<<<<< HEAD
+          foreach ($this->warnings as $iter770)
+          {
+            $xfer += $output->writeString($iter770);
+=======
+<<<<<<< HEAD
+          foreach ($this->warnings as $iter756)
+          {
+            $xfer += $output->writeString($iter756);
+=======
+          foreach ($this->warnings as $iter772)
+          {
+            $xfer += $output->writeString($iter772);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();
@@ -27131,6 +29455,7 @@ class WMGetTriggersForResourePlanResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->triggers = array();
+<<<<<<< HEAD
             $_size778 = 0;
             $_etype781 = 0;
             $xfer += $input->readListBegin($_etype781, $_size778);
@@ -27140,6 +29465,41 @@ class WMGetTriggersForResourePlanResponse {
               $elem783 = new \metastore\WMTrigger();
               $xfer += $elem783->read($input);
               $this->triggers []= $elem783;
+=======
+<<<<<<< HEAD
+            $_size771 = 0;
+            $_etype774 = 0;
+            $xfer += $input->readListBegin($_etype774, $_size771);
+            for ($_i775 = 0; $_i775 < $_size771; ++$_i775)
+            {
+              $elem776 = null;
+              $elem776 = new \metastore\WMTrigger();
+              $xfer += $elem776->read($input);
+              $this->triggers []= $elem776;
+=======
+<<<<<<< HEAD
+            $_size757 = 0;
+            $_etype760 = 0;
+            $xfer += $input->readListBegin($_etype760, $_size757);
+            for ($_i761 = 0; $_i761 < $_size757; ++$_i761)
+            {
+              $elem762 = null;
+              $elem762 = new \metastore\WMTrigger();
+              $xfer += $elem762->read($input);
+              $this->triggers []= $elem762;
+=======
+            $_size773 = 0;
+            $_etype776 = 0;
+            $xfer += $input->readListBegin($_etype776, $_size773);
+            for ($_i777 = 0; $_i777 < $_size773; ++$_i777)
+            {
+              $elem778 = null;
+              $elem778 = new \metastore\WMTrigger();
+              $xfer += $elem778->read($input);
+              $this->triggers []= $elem778;
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             $xfer += $input->readListEnd();
           } else {
@@ -27167,9 +29527,27 @@ class WMGetTriggersForResourePlanResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->triggers));
         {
+<<<<<<< HEAD
           foreach ($this->triggers as $iter784)
           {
             $xfer += $iter784->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->triggers as $iter777)
+          {
+            $xfer += $iter777->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->triggers as $iter763)
+          {
+            $xfer += $iter763->write($output);
+=======
+          foreach ($this->triggers as $iter779)
+          {
+            $xfer += $iter779->write($output);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         $output->writeListEnd();

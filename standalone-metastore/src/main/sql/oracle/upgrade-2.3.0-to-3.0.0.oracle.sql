@@ -278,6 +278,14 @@ ALTER TABLE PARTITION_EVENTS ADD CAT_NAME VARCHAR2(256);
 -- Add column to notification log
 ALTER TABLE NOTIFICATION_LOG ADD CAT_NAME VARCHAR2(256);
 
+CREATE TABLE REPL_TXN_MAP (
+  REPL_POLICY varchar(128) NOT NULL,
+  SRC_TXN_ID number(19) NOT NULL,
+  TARGET_TXN_ID number(19) NOT NULL,
+  PRIMARY KEY (REPL_POLICY, SRC_TXN_ID)
+);
+
 -- These lines need to be last.  Insert any changes above.
 UPDATE VERSION SET SCHEMA_VERSION='3.0.0', VERSION_COMMENT='Hive release version 3.0.0' where VER_ID=1;
 SELECT 'Finished upgrading MetaStore schema from 2.3.0 to 3.0.0' AS Status from dual;
+

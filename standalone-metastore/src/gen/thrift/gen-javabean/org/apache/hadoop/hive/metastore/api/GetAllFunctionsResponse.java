@@ -346,6 +346,7 @@ import org.slf4j.LoggerFactory;
           case 1: // FUNCTIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list784 = iprot.readListBegin();
                 struct.functions = new ArrayList<Function>(_list784.size);
                 Function _elem785;
@@ -354,6 +355,38 @@ import org.slf4j.LoggerFactory;
                   _elem785 = new Function();
                   _elem785.read(iprot);
                   struct.functions.add(_elem785);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list776 = iprot.readListBegin();
+                struct.functions = new ArrayList<Function>(_list776.size);
+                Function _elem777;
+                for (int _i778 = 0; _i778 < _list776.size; ++_i778)
+                {
+                  _elem777 = new Function();
+                  _elem777.read(iprot);
+                  struct.functions.add(_elem777);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list760 = iprot.readListBegin();
+                struct.functions = new ArrayList<Function>(_list760.size);
+                Function _elem761;
+                for (int _i762 = 0; _i762 < _list760.size; ++_i762)
+                {
+                  _elem761 = new Function();
+                  _elem761.read(iprot);
+                  struct.functions.add(_elem761);
+=======
+                org.apache.thrift.protocol.TList _list778 = iprot.readListBegin();
+                struct.functions = new ArrayList<Function>(_list778.size);
+                Function _elem779;
+                for (int _i780 = 0; _i780 < _list778.size; ++_i780)
+                {
+                  _elem779 = new Function();
+                  _elem779.read(iprot);
+                  struct.functions.add(_elem779);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
                 }
                 iprot.readListEnd();
               }
@@ -380,9 +413,27 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(FUNCTIONS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.functions.size()));
+<<<<<<< HEAD
             for (Function _iter787 : struct.functions)
             {
               _iter787.write(oprot);
+=======
+<<<<<<< HEAD
+            for (Function _iter779 : struct.functions)
+            {
+              _iter779.write(oprot);
+=======
+<<<<<<< HEAD
+            for (Function _iter763 : struct.functions)
+            {
+              _iter763.write(oprot);
+=======
+            for (Function _iter781 : struct.functions)
+            {
+              _iter781.write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
             }
             oprot.writeListEnd();
           }
@@ -414,9 +465,27 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetFunctions()) {
         {
           oprot.writeI32(struct.functions.size());
+<<<<<<< HEAD
           for (Function _iter788 : struct.functions)
           {
             _iter788.write(oprot);
+=======
+<<<<<<< HEAD
+          for (Function _iter780 : struct.functions)
+          {
+            _iter780.write(oprot);
+=======
+<<<<<<< HEAD
+          for (Function _iter764 : struct.functions)
+          {
+            _iter764.write(oprot);
+=======
+          for (Function _iter782 : struct.functions)
+          {
+            _iter782.write(oprot);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
       }
@@ -428,6 +497,7 @@ import org.slf4j.LoggerFactory;
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
+<<<<<<< HEAD
           org.apache.thrift.protocol.TList _list789 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
           struct.functions = new ArrayList<Function>(_list789.size);
           Function _elem790;
@@ -436,6 +506,38 @@ import org.slf4j.LoggerFactory;
             _elem790 = new Function();
             _elem790.read(iprot);
             struct.functions.add(_elem790);
+=======
+<<<<<<< HEAD
+          org.apache.thrift.protocol.TList _list781 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.functions = new ArrayList<Function>(_list781.size);
+          Function _elem782;
+          for (int _i783 = 0; _i783 < _list781.size; ++_i783)
+          {
+            _elem782 = new Function();
+            _elem782.read(iprot);
+            struct.functions.add(_elem782);
+=======
+<<<<<<< HEAD
+          org.apache.thrift.protocol.TList _list765 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.functions = new ArrayList<Function>(_list765.size);
+          Function _elem766;
+          for (int _i767 = 0; _i767 < _list765.size; ++_i767)
+          {
+            _elem766 = new Function();
+            _elem766.read(iprot);
+            struct.functions.add(_elem766);
+=======
+          org.apache.thrift.protocol.TList _list783 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.functions = new ArrayList<Function>(_list783.size);
+          Function _elem784;
+          for (int _i785 = 0; _i785 < _list783.size; ++_i785)
+          {
+            _elem784 = new Function();
+            _elem784.read(iprot);
+            struct.functions.add(_elem784);
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
+>>>>>>> HIVE-18679 : create/replicate open transaction event
           }
         }
         struct.setFunctionsIsSet(true);
