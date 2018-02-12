@@ -78,8 +78,8 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
         // push down filters
         HiveInputFormat.pushFilters(job, ts, null);
 
-        AcidUtils.setAcidTableScan(job, ts.getConf().isAcidTable());
-        AcidUtils.setAcidOperationalProperties(job, ts.getConf().getAcidOperationalProperties());
+        AcidUtils.setAcidOperationalProperties(job, ts.getConf().isTranscationalTable(),
+            ts.getConf().getAcidOperationalProperties());
       }
       sink = work.getSink();
       fetch = new FetchOperator(work, job, source, getVirtualColumns(source));

@@ -233,14 +233,16 @@ public class OrcSplit extends FileSplit implements ColumnarSplit, LlapAwareSplit
   @Override
   public boolean canUseLlapIo(Configuration conf) {
     final boolean hasDelta = deltas != null && !deltas.isEmpty();
-    final boolean isAcidRead = HiveConf.getBoolVar(conf,
-        HiveConf.ConfVars.HIVE_ACID_TABLE_SCAN);
+    final boolean isAcidRead = AcidUtils.isFullAcidScan(conf);
     final boolean isVectorized = HiveConf.getBoolVar(conf,
         HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
-    final AcidUtils.AcidOperationalProperties acidOperationalProperties
-        = AcidUtils.getAcidOperationalProperties(conf);
-    final boolean isSplitUpdate = acidOperationalProperties.isSplitUpdate();
-    assert isSplitUpdate : "should be true in Hive 3.0";
+    Boolean isSplitUpdate = null;
+    if (isAcidRead) {
+      final AcidUtils.AcidOperationalProperties acidOperationalProperties
+          = AcidUtils.getAcidOperationalProperties(conf);
+      isSplitUpdate = acidOperationalProperties.isSplitUpdate();
+      assert isSplitUpdate : "should be true in Hive 3.0";
+    }
 
     if (isOriginal) {
       if (!isAcidRead && !hasDelta) {

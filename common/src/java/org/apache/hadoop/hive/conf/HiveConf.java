@@ -1337,8 +1337,9 @@ public class HiveConf extends Configuration {
     HIVE_SCHEMA_EVOLUTION("hive.exec.schema.evolution", true,
         "Use schema evolution to convert self-describing file format's data to the schema desired by the reader."),
 
-    HIVE_ACID_TABLE_SCAN("hive.acid.table.scan", false,
-        "internal usage only -- do transaction (ACID) table scan.", true),
+    /** Don't use this directly - use AcidUtils! */
+    HIVE_TRANSACTIONAL_TABLE_SCAN("hive.transactional.table.scan", false,
+        "internal usage only -- do transaction (ACID or insert-only) table scan.", true),
 
     HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY("hive.transactional.events.mem", 10000000,
         "Vectorized ACID readers can often load all the delete events from all the delete deltas\n"

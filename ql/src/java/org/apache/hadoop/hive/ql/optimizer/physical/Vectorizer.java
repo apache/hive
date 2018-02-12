@@ -1145,7 +1145,7 @@ public class Vectorizer implements PhysicalPlanResolver {
      *      This picks up Input File Format not supported by the other two.
      */
     private boolean verifyAndSetVectorPartDesc(
-        PartitionDesc pd, boolean isAcidTable,
+        PartitionDesc pd, boolean isFullAcidTable,
         Set<String> inputFileFormatClassNameSet,
         Map<VectorPartitionDesc, VectorPartitionDesc> vectorPartitionDescMap,
         Set<String> enabledConditionsMetSet, ArrayList<String> enabledConditionsNotMetList,
@@ -1159,7 +1159,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       boolean isInputFileFormatVectorized = Utilities.isInputFileFormatVectorized(pd);
 
-      if (isAcidTable) {
+      if (isFullAcidTable) {
 
         // Today, ACID tables are only ORC and that format is vectorizable.  Verify these
         // assumptions.
@@ -1167,8 +1167,8 @@ public class Vectorizer implements PhysicalPlanResolver {
         Preconditions.checkState(inputFileFormatClassName.equals(OrcInputFormat.class.getName()));
 
         if (!useVectorizedInputFileFormat) {
-          enabledConditionsNotMetList.add(
-              "Vectorizing ACID tables requires " + HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTORIZED_INPUT_FILE_FORMAT.varname);
+          enabledConditionsNotMetList.add("Vectorizing ACID tables requires "
+        + HiveConf.ConfVars.HIVE_VECTORIZATION_USE_VECTORIZED_INPUT_FILE_FORMAT.varname);
           return false;
         }
 
@@ -1377,7 +1377,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         TableScanOperator tableScanOperator, VectorTaskColumnInfo vectorTaskColumnInfo)
             throws SemanticException {
 
-      boolean isAcidTable = tableScanOperator.getConf().isAcidTable();
+      boolean isFullAcidTable = tableScanOperator.getConf().isFullAcidTable();
 
       // These names/types are the data columns plus partition columns.
       final List<String> allColumnNameList = new ArrayList<String>();
@@ -1436,7 +1436,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         }
         Set<Support> newSupportSet = new TreeSet<Support>();
         if (!verifyAndSetVectorPartDesc(
-            partDesc, isAcidTable,
+            partDesc, isFullAcidTable,
             inputFileFormatClassNameSet,
             vectorPartitionDescMap,
             enabledConditionsMetSet, enabledConditionsNotMetList,
@@ -1594,7 +1594,8 @@ public class Vectorizer implements PhysicalPlanResolver {
       // vectorTaskColumnInfo.
       currentOperator = tableScanOperator;
       ImmutablePair<Boolean, Boolean> validateInputFormatAndSchemaEvolutionPair =
-          validateInputFormatAndSchemaEvolution(mapWork, alias, tableScanOperator, vectorTaskColumnInfo);
+          validateInputFormatAndSchemaEvolution(
+              mapWork, alias, tableScanOperator, vectorTaskColumnInfo);
       if (!validateInputFormatAndSchemaEvolutionPair.left) {
         // Have we already set the enabled conditions not met?
         if (!validateInputFormatAndSchemaEvolutionPair.right) {
