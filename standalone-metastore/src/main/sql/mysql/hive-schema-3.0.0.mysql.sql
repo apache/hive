@@ -1063,6 +1063,14 @@ CREATE TABLE WRITE_SET (
   WS_COMMIT_ID bigint NOT NULL,
   WS_OPERATION_TYPE char(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE TXN_MAP (
+  REPL_POLICY varchar(128) NOT NULL,
+  SRC_TXN_ID bigint NOT NULL,
+  TARGET_TXN_ID bigint NOT NULL,
+  PRIMARY KEY (REPL_POLICY, SRC_TXN_ID)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
 -- -----------------------------------------------------------------

@@ -49,9 +49,7 @@ public class JSONOpenTxnMessage extends OpenTxnMessage {
   }
 
   @Override
-  public Long getTxnId() {
-    return txnid;
-  }
+  public Long getTxnId() { return txnid; }
 
 
   @Override
@@ -82,4 +80,5 @@ public class JSONOpenTxnMessage extends OpenTxnMessage {
       throw new IllegalArgumentException("Could not serialize: ", exception);
     }
   }
+
 }
