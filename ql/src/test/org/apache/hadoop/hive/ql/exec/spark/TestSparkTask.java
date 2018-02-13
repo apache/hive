@@ -20,11 +20,18 @@ package org.apache.hadoop.hive.ql.exec.spark;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.spark.status.RemoteSparkJobMonitor;
+import org.apache.hadoop.hive.ql.exec.spark.status.impl.RemoteSparkJobStatus;
+import org.apache.hadoop.hive.ql.plan.SparkWork;
+import org.apache.hive.spark.client.JobHandle.State;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -43,4 +50,13 @@ public class TestSparkTask {
     verify(mockMetrics, never()).incrementCounter(MetricsConstant.HIVE_MR_TASKS);
   }
 
+  @Test
+  public void testRemoteSparkCancel() {
+    RemoteSparkJobStatus jobSts = Mockito.mock(RemoteSparkJobStatus.class);
+    when(jobSts.getRemoteJobState()).thenReturn(State.CANCELLED);
+    when(jobSts.isRemoteActive()).thenReturn(true);
+    HiveConf hiveConf = new HiveConf();
+    RemoteSparkJobMonitor remoteSparkJobMonitor = new RemoteSparkJobMonitor(hiveConf, jobSts);
+    Assert.assertEquals(remoteSparkJobMonitor.startMonitor(), 3);
+  }
 }
