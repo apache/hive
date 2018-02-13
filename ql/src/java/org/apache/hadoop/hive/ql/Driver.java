@@ -1230,7 +1230,7 @@ public class Driver implements IDriver {
         String fullTableName = AcidUtils.getFullTableName(tsOp.getConf().getDatabaseName(),
                                                           tsOp.getConf().getTableName());
         ValidWriteIdList writeIdList = txnWriteIds.getTableValidWriteIdList(fullTableName);
-        if (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, false) && (writeIdList == null)) {
+        if (HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, false) && (writeIdList == null)) {
           throw new IllegalStateException("ACID table: " + fullTableName
                   + " is missing from the ValidWriteIdList config: " + writeIdStr);
         }

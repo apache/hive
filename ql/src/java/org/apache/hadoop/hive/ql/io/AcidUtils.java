@@ -1510,7 +1510,7 @@ public class AcidUtils {
   public static void setValidWriteIdList(Configuration conf, ValidWriteIdList validWriteIds) {
     conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY, validWriteIds.toString());
     LOG.debug("Setting ValidWriteIdList: " + validWriteIds.toString()
-            + " isAcidTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, false)
+            + " isAcidTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, false)
             + " acidProperty: " + getAcidOperationalProperties(conf));
   }
 
@@ -1525,10 +1525,10 @@ public class AcidUtils {
                                                     AcidUtils.getFullTableName(dbName, tableName));
       if (validWriteIdList != null) {
         setValidWriteIdList(conf, validWriteIdList);
-      } else if (HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, false)) {
+      } else if (HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, false)) {
         // Log error if the acid table is missing from the ValidWriteIdList conf
         LOG.error("setValidWriteIdList on table: " + AcidUtils.getFullTableName(dbName, tableName)
-                + " isAcidTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, false)
+                + " isAcidTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, false)
                 + " acidProperty: " + getAcidOperationalProperties(conf)
                 + " couldn't find the ValidWriteId list from ValidTxnWriteIdList: "
                 + conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));

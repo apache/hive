@@ -653,7 +653,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       String value = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
       writeIdList = value == null ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(value);
       LOG.debug("Context:: Read ValidWriteIdList: " + writeIdList.toString()
-              + " isAcidTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, false));
+              + " isAcidTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, false));
 
       // Determine the transactional_properties of the table from the job conf stored in context.
       // The table properties are copied to job conf at HiveInputFormat::addSplitsForGroup(),
@@ -2010,7 +2010,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     ValidWriteIdList validWriteIdList
             = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
     LOG.debug("getReader:: Read ValidWriteIdList: " + validWriteIdList.toString()
-            + " isAcidTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_ACID_TABLE_SCAN, false));
+            + " isAcidTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, false));
 
     final OrcRawRecordMerger records =
         new OrcRawRecordMerger(conf, true, reader, split.isOriginal(), bucket,
