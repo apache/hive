@@ -34,7 +34,7 @@ public class ImportCommitTask extends Task<ImportCommitWork> {
   @Override
   public int execute(DriverContext driverContext) {
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-      Utilities.FILE_OP_LOGGER.trace("Executing ImportCommit for " + work.getTxnId());
+      Utilities.FILE_OP_LOGGER.trace("Executing ImportCommit for " + work.getWriteId());
     }
 
     try {
