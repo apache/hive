@@ -20,6 +20,7 @@ package org.apache.hive.hcatalog.mapreduce;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.Policy;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +56,7 @@ import org.apache.hadoop.mapred.MiniMRCluster;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hive.hcatalog.DerbyPolicy;
 import org.apache.hive.hcatalog.NoExitSecurityManager;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hive.hcatalog.data.DefaultHCatRecord;
@@ -110,6 +112,7 @@ public class TestHCatPartitionPublish {
     isServerRunning = true;
     securityManager = System.getSecurityManager();
     System.setSecurityManager(new NoExitSecurityManager());
+    Policy.setPolicy(new DerbyPolicy());
 
     hcatConf = new HiveConf(TestHCatPartitionPublish.class);
     hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
