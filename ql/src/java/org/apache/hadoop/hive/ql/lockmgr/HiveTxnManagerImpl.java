@@ -21,6 +21,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
@@ -42,12 +44,22 @@ import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
  * transaction managers need to implement but that we don't want to expose to
  * outside.
  */
-abstract class HiveTxnManagerImpl implements HiveTxnManager {
+abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
 
   protected HiveConf conf;
 
   void setHiveConf(HiveConf c) {
-    conf = c;
+    setConf(c);
+  }
+
+  @Override
+  public void setConf(Configuration c) {
+    conf = (HiveConf) c;
+  }
+
+  @Override
+  public Configuration getConf() {
+    return conf;
   }
 
   abstract protected void destruct();

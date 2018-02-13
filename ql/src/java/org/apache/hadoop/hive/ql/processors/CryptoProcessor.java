@@ -176,4 +176,8 @@ public class CryptoProcessor implements CommandProcessor {
 
     writeTestOutput("Encryption key deleted: '" + keyName + "'");
   }
+
+  @Override
+  public void close() throws Exception {
+  }
 }

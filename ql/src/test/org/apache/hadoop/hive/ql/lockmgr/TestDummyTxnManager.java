@@ -59,6 +59,9 @@ public class TestDummyTxnManager {
   HiveLockManager mockLockManager;
 
   @Mock
+  HiveLockManagerCtx mockLockManagerCtx;
+
+  @Mock
   QueryPlan mockQueryPlan;
 
   @Before
@@ -73,11 +76,17 @@ public class TestDummyTxnManager {
 
     txnMgr = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     Assert.assertTrue(txnMgr instanceof DummyTxnManager);
+
     // Use reflection to set LockManager since creating the object using the
     // relection in DummyTxnManager won't take Mocked object
     Field field = DummyTxnManager.class.getDeclaredField("lockMgr");
     field.setAccessible(true);
     field.set(txnMgr, mockLockManager);
+
+    Field field2 = DummyTxnManager.class.getDeclaredField("lockManagerCtx");
+    field2.setAccessible(true);
+    field2.set(txnMgr, mockLockManagerCtx);
+
   }
 
   @After

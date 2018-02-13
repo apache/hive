@@ -2,6 +2,7 @@ set hive.cbo.enable=true;
 set hive.exec.check.crossproducts=false;
 set hive.stats.fetch.column.stats=true;
 set hive.auto.convert.join=false;
+set hive.strict.checks.cartesian.product=false;
 
 -- SORT_QUERY_RESULTS
 
