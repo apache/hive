@@ -174,6 +174,12 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
           done = true;
           rc = 3;
           break;
+        case CANCELLED:
+          console.printInfo("Status: Cancelled");
+          running = false;
+          done = true;
+          rc = 3;
+          break;
         }
 
         if (!done) {
