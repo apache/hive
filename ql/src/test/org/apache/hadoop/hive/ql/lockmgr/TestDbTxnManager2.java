@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Before;
@@ -63,17 +64,17 @@ import java.util.Map;
  * code path that CLI would but with the advantage that you can create a 2nd HiveTxnManager and then
  * simulate interleaved transactional/locking operations but all from within a single thread.
  * The later not only controls concurrency precisely but is the only way to run in UT env with DerbyDB.
- * 
+ *
  * A slightly different (and simpler) approach is to use "start transaction/(commit/rollback)"
  * command with the Driver.run().  This allows you to "see" the state of the Lock Manager after
  * each statement and can also simulate concurrent (but very controlled) work but w/o forking any
  * threads.  The limitation here is that not all statements are allowed in an explicit transaction.
  * For example, "drop table foo".  This approach will also cause the query to execute which will
  * make tests slower but will exericise the code path that is much closer to the actual user calls.
- * 
+ *
  * In either approach, each logical "session" should use it's own Transaction Manager.  This requires
  * using {@link #swapTxnManager(HiveTxnManager)} since in the SessionState the TM is associated with
- * each thread.  
+ * each thread.
  */
 public class TestDbTxnManager2 {
   private static final Logger LOG = LoggerFactory.getLogger(TestDbTxnManager2.class);
@@ -94,7 +95,7 @@ public class TestDbTxnManager2 {
   public void setUp() throws Exception {
     SessionState.start(conf);
     ctx = new Context(conf);
-    driver = new Driver(conf);
+    driver = new Driver(new QueryState.Builder().withHiveConf(conf).nonIsolated().build(), null);
     TxnDbUtil.cleanDb(conf);
     TxnDbUtil.prepDb(conf);
     SessionState ss = SessionState.get();
@@ -663,7 +664,7 @@ public class TestDbTxnManager2 {
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "acidPart", "p=1", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "_dummy_database", "_dummy_table", null, locks);
     txnMgr.rollbackTxn();
-    
+
     cpr = driver.compileAndRespond("update acidPart set b = 17 where a = 1");
     checkCmdOnDriver(cpr);
     lockState = ((DbTxnManager) txnMgr).acquireLocks(driver.getPlan(), ctx, "Practical", false);

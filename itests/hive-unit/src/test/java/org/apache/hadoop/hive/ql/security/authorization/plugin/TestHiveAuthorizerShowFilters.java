@@ -121,7 +121,8 @@ public class TestHiveAuthorizerShowFilters {
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     UtilsForTest.setNewDerbyDbLocation(conf, TestHiveAuthorizerShowFilters.class.getSimpleName());
 
-    SessionState.start(conf);
+    SessionState ss = SessionState.start(conf);
+    ss.applyAuthorizationPolicy();
     driver = DriverFactory.newDriver(conf);
     runCmd("create table " + tableName1
         + " (i int, j int, k string) partitioned by (city string, `date` string) ");

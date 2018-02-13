@@ -62,4 +62,8 @@ public class ListResourceProcessor implements CommandProcessor {
     }
     return new CommandProcessorResponse(0, null, null, SCHEMA);
   }
+
+  @Override
+  public void close() throws Exception {
+  }
 }
