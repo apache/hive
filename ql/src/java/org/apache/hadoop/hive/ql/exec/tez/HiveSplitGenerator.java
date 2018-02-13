@@ -97,7 +97,8 @@ public class HiveSplitGenerator extends InputInitializer {
     // Assuming grouping enabled always.
     userPayloadProto = MRInputUserPayloadProto.newBuilder().setGroupingEnabled(true).build();
 
-    this.splitLocationProvider = Utils.getSplitLocationProvider(conf, LOG);
+    this.splitLocationProvider =
+        Utils.getSplitLocationProvider(conf, work.getCacheAffinity(), LOG);
     LOG.info("SplitLocationProvider: " + splitLocationProvider);
 
     // Read all credentials into the credentials instance stored in JobConf.
@@ -123,13 +124,14 @@ public class HiveSplitGenerator extends InputInitializer {
 
     this.jobConf = new JobConf(conf);
 
-    this.splitLocationProvider = Utils.getSplitLocationProvider(conf, LOG);
-    LOG.info("SplitLocationProvider: " + splitLocationProvider);
-
     // Read all credentials into the credentials instance stored in JobConf.
     ShimLoader.getHadoopShims().getMergedCredentials(jobConf);
 
     this.work = Utilities.getMapWork(jobConf);
+
+    this.splitLocationProvider =
+        Utils.getSplitLocationProvider(conf, work.getCacheAffinity(), LOG);
+    LOG.info("SplitLocationProvider: " + splitLocationProvider);
 
     // Events can start coming in the moment the InputInitializer is created. The pruner
     // must be setup and initialized here so that it sets up it's structures to start accepting events.
