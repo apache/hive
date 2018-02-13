@@ -90,7 +90,7 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   protected Set<Support> supportSetInUse;
   protected List<String> supportRemovedReasons;
 
-  private VectorizerReason notVectorizedReason;
+  private transient VectorizerReason notVectorizedReason;
 
   private boolean groupByVectorOutput;
   private boolean allNative;
