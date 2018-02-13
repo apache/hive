@@ -114,7 +114,7 @@ public class DfsProcessor implements CommandProcessor {
 
       switch(x) {
         case ' ':
-          if ((int) y == 0) {
+          if (y == 0) {
             String str = command.substring(start, i).trim();
             if (!str.equals("")) {
               paras.add(str);
@@ -123,7 +123,7 @@ public class DfsProcessor implements CommandProcessor {
           }
           break;
         case '"':
-          if ((int) y == 0) {
+          if (y == 0) {
             y = x;
             start = i + 1;
           } else if ('"' == y) {
@@ -133,7 +133,7 @@ public class DfsProcessor implements CommandProcessor {
           }
           break;
         case '\'':
-          if ((int) y == 0) {
+          if (y == 0) {
             y = x;
             start = i + 1;
           } else if ('\'' == y) {
@@ -150,7 +150,7 @@ public class DfsProcessor implements CommandProcessor {
       }
     }
 
-    if ((int) y != 0) {
+    if (y != 0) {
       String message = "Syntax error on hadoop options: dfs " + command;
       console.printError(message);
       throw new HiveException(message);
@@ -159,4 +159,7 @@ public class DfsProcessor implements CommandProcessor {
     return paras.toArray(new String[paras.size()]);
   }
 
+  @Override
+  public void close() throws Exception {
+  }
 }

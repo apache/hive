@@ -80,14 +80,9 @@ public abstract class Operation {
   protected Operation(HiveSession parentSession, OperationType opType) {
     this(parentSession, null, opType);
   }
-  
-  protected Operation(HiveSession parentSession, Map<String, String> confOverlay,
-      OperationType opType) {
-    this(parentSession, confOverlay, opType, false);
-  }
 
   protected Operation(HiveSession parentSession,
-      Map<String, String> confOverlay, OperationType opType, boolean isAsyncQueryState) {
+      Map<String, String> confOverlay, OperationType opType) {
     this.parentSession = parentSession;
     this.opHandle = new OperationHandle(opType, parentSession.getProtocolVersion());
     beginTime = System.currentTimeMillis();
@@ -99,7 +94,6 @@ public abstract class Operation {
         MetricsConstant.COMPLETED_OPERATION_PREFIX, state);
     queryState = new QueryState.Builder()
                      .withConfOverlay(confOverlay)
-                     .withRunAsync(isAsyncQueryState)
                      .withGenerateNewQueryId(true)
                      .withHiveConf(parentSession.getHiveConf())
                      .build();

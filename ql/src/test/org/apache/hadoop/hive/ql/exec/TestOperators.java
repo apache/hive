@@ -413,7 +413,7 @@ public class TestOperators extends TestCase {
         "inputformat 'org.apache.hadoop.hive.ql.exec.TestOperators$CustomInFmt' " +
         "outputformat 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat' " +
         "tblproperties ('myprop1'='val1', 'myprop2' = 'val2')";
-    Driver driver = new Driver();
+    Driver driver = new Driver(conf);
     CommandProcessorResponse response = driver.run(cmd);
     assertEquals(0, response.getResponseCode());
     List<Object> result = new ArrayList<Object>();

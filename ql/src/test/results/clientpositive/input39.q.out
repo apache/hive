@@ -165,4 +165,4 @@ POSTHOOK: Input: default@t2@ds=1
 #### A masked pattern was here ####
 18
 mapreduce.framework.name=yarn
-mapreduce.jobtracker.address=local
+mapreduce.jobtracker.address=localhost:58

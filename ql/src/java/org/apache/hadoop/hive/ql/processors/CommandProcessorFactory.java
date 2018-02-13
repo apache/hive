@@ -21,18 +21,15 @@ package org.apache.hadoop.hive.ql.processors;
 import static org.apache.commons.lang.StringUtils.isBlank;
 
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverFactory;
-import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
@@ -44,13 +41,6 @@ public final class CommandProcessorFactory {
 
   private CommandProcessorFactory() {
     // prevent instantiation
-  }
-
-  private static final Map<HiveConf, IDriver> mapDrivers = Collections.synchronizedMap(new HashMap<HiveConf, IDriver>());
-
-  public static CommandProcessor get(String cmd)
-      throws SQLException {
-    return get(new String[]{cmd}, null);
   }
 
   public static CommandProcessor getForHiveCommand(String[] cmd, HiveConf conf)
@@ -111,8 +101,8 @@ public final class CommandProcessorFactory {
   }
 
   static Logger LOG = LoggerFactory.getLogger(CommandProcessorFactory.class);
-  public static CommandProcessor get(String[] cmd, HiveConf conf)
-      throws SQLException {
+
+  public static CommandProcessor get(String[] cmd, @Nonnull HiveConf conf) throws SQLException {
     CommandProcessor result = getForHiveCommand(cmd, conf);
     if (result != null) {
       return result;
@@ -120,27 +110,7 @@ public final class CommandProcessorFactory {
     if (isBlank(cmd[0])) {
       return null;
     } else {
-      if (conf == null) {
-        return new Driver();
-      }
-      IDriver drv = mapDrivers.get(conf);
-      if (drv == null) {
-        // FIXME: why this method didn't use the conf constructor?
-        drv = DriverFactory.newDriver();
-        mapDrivers.put(conf, drv);
-      } else {
-        drv.resetQueryState();
-      }
-      return drv;
+      return DriverFactory.newDriver(conf);
     }
-  }
-
-  public static void clean(HiveConf conf) {
-    IDriver drv = mapDrivers.get(conf);
-    if (drv != null) {
-      drv.destroy();
-    }
-
-    mapDrivers.remove(conf);
   }
 }

@@ -58,8 +58,8 @@ public class HooksLoader {
    * @throws IllegalAccessException if the specified class names could not be accessed
    * @throws InstantiationException if the specified class names could not be instantiated
    */
-  public final <T extends Hook> List<T> getHooks(HiveConf.ConfVars hookConfVar, SessionState.LogHelper console, Class<?> clazz)
-      throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+  public final <T extends Hook> List<T> getHooks(HiveConf.ConfVars hookConfVar, SessionState.LogHelper console,
+      Class<T> clazz) throws IllegalAccessException, InstantiationException, ClassNotFoundException {
     try {
       return getHooks(hookConfVar, clazz);
     } catch (ClassNotFoundException e) {
@@ -85,8 +85,8 @@ public class HooksLoader {
    * @throws IllegalAccessException if the specified class names could not be accessed
    * @throws InstantiationException if the specified class names could not be instantiated
    */
-  public <T extends Hook> List<T> getHooks(HiveConf.ConfVars hookConfVar, Class<?> clazz)
-          throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+  public <T extends Hook> List<T> getHooks(HiveConf.ConfVars hookConfVar, Class<T> clazz)
+      throws InstantiationException, IllegalAccessException, ClassNotFoundException {
     String csHooks = conf.getVar(hookConfVar);
     ImmutableList.Builder<T> hooks = ImmutableList.builder();
     if (csHooks == null) {
