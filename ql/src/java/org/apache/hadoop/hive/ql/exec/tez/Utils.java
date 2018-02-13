@@ -32,11 +32,19 @@ import org.apache.hadoop.mapred.split.SplitLocationProvider;
 import org.slf4j.Logger;
 
 public class Utils {
-  public static SplitLocationProvider getSplitLocationProvider(Configuration conf, Logger LOG) throws
+
+  public static SplitLocationProvider getSplitLocationProvider(Configuration conf, Logger LOG)
+      throws IOException {
+    // fall back to checking confs
+    return getSplitLocationProvider(conf, true, LOG);
+  }
+
+  public static SplitLocationProvider getSplitLocationProvider(Configuration conf, boolean useCacheAffinity, Logger LOG) throws
       IOException {
     boolean useCustomLocations =
         HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE).equals("llap")
-        && HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS);
+        && HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS) 
+        && useCacheAffinity;
     SplitLocationProvider splitLocationProvider;
     LOG.info("SplitGenerator using llap affinitized locations: " + useCustomLocations);
     if (useCustomLocations) {
