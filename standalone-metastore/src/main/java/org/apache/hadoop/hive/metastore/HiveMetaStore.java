@@ -4989,6 +4989,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         long time = System.currentTimeMillis() / 1000;
         Table indexTbl = indexTable;
         if (indexTbl != null) {
+          if (!TableType.INDEX_TABLE.name().equals(indexTbl.getTableType())){
+            throw new InvalidObjectException(
+                    "The table " + indexTbl.getTableName()+ " provided as index table must have "
+                            + TableType.INDEX_TABLE + " table type");
+          }
           try {
             indexTbl = ms.getTable(qualified[0], qualified[1]);
           } catch (Exception e) {
