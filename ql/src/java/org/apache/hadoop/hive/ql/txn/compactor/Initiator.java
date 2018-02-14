@@ -144,8 +144,8 @@ public class Initiator extends CompactorThread {
                 continue;
               }
 
-              // Compaction doesn't work under a transaction and hence pass 0 for current txn Id
-              // The response will have one entry per table and hence we get only one OpenWriteIds
+              // Compaction doesn't work under a transaction and hence pass null for validTxnList
+              // The response will have one entry per table and hence we get only one ValidWriteIdList
               String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
               GetValidWriteIdsRequest rqst
                       = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName), null);

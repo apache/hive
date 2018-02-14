@@ -373,7 +373,7 @@ class CompactionTxnHandler extends TxnHandler {
           s += " and ctc_partition = ?";
         }
         if(info.highestWriteId != 0) {
-          s += " and ctc_txnid <= ?";
+          s += " and ctc_writeid <= ?";
         }
         pStmt = dbConn.prepareStatement(s);
         int paramCount = 1;
@@ -393,7 +393,7 @@ class CompactionTxnHandler extends TxnHandler {
 
         s = "select distinct txn_id from TXNS, TXN_COMPONENTS where txn_id = tc_txnid and txn_state = '" +
           TXN_ABORTED + "' and tc_database = ? and tc_table = ?";
-        if (info.highestWriteId != 0) s += " and txn_id <= ?";
+        if (info.highestWriteId != 0) s += " and tc_writeid <= ?";
         if (info.partName != null) s += " and tc_partition = ?";
 
         pStmt = dbConn.prepareStatement(s);

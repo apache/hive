@@ -826,8 +826,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         // Move the record from txn_components into completed_txn_components so that the compactor
         // knows where to look to compact.
         String s = "insert into COMPLETED_TXN_COMPONENTS (ctc_txnid, ctc_database, " +
-          "ctc_table, ctc_partition) select tc_txnid, tc_database, tc_table, " +
-          "tc_partition from TXN_COMPONENTS where tc_txnid = " + txnid;
+            "ctc_table, ctc_partition, ctc_writeid) select tc_txnid, tc_database, tc_table, " +
+            "tc_partition, tc_writeid from TXN_COMPONENTS where tc_txnid = " + txnid;
         LOG.debug("Going to execute insert <" + s + ">");
         int modCount = 0;
         if ((modCount = stmt.executeUpdate(s)) < 1) {
@@ -1362,13 +1362,24 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             String dbName = lc.getDbname();
             String tblName = lc.getTablename();
             String partName = lc.getPartitionname();
+            Long writeId = null;
+            s = "select t2w_writeid from TXN_TO_WRITE_ID where"
+                    + " t2w_database = " + quoteString(dbName.toLowerCase())
+                    + " and t2w_table = " + quoteString(tblName.toLowerCase())
+                    + " and t2w_txnid = " + txnid;
+            LOG.debug("Going to execute query <" + s + ">");
+            rs = stmt.executeQuery(s);
+            if (rs.next()) {
+              writeId = rs.getLong(1);
+            }
             rows.add(txnid + ", '" + dbName + "', " +
-              (tblName == null ? "null" : "'" + tblName + "'") + ", " +
-              (partName == null ? "null" : "'" + partName + "'")+ "," +
-              quoteString(OpertaionType.fromDataOperationType(lc.getOperationType()).toString()));
+                    (tblName == null ? "null" : "'" + tblName + "'") + ", " +
+                    (partName == null ? "null" : "'" + partName + "'")+ "," +
+                    quoteString(OpertaionType.fromDataOperationType(lc.getOperationType()).toString())+ "," +
+                    (writeId == null ? "null" : writeId));
           }
           List<String> queries = sqlGenerator.createInsertValuesStmt(
-            "TXN_COMPONENTS (tc_txnid, tc_database, tc_table, tc_partition, tc_operation_type)", rows);
+              "TXN_COMPONENTS (tc_txnid, tc_database, tc_table, tc_partition, tc_operation_type, tc_writeid)", rows);
           for(String query : queries) {
             LOG.debug("Going to execute update <" + query + ">");
             int modCount = stmt.executeUpdate(query);
@@ -2067,15 +2078,29 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         if(rqst.isSetOperationType()) {
           ot = OpertaionType.fromDataOperationType(rqst.getOperationType());
         }
+
+        // Get the write id allocated by this txn for the given table writes
+        String s = "select t2w_writeid from TXN_TO_WRITE_ID where"
+                + " t2w_database = " + quoteString(rqst.getDbname().toLowerCase())
+                + " and t2w_table = " + quoteString(rqst.getTablename().toLowerCase())
+                + " and t2w_txnid = " + rqst.getTxnid();
+        LOG.debug("Going to execute query <" + s + ">");
+        rs = stmt.executeQuery(s);
+        if (!rs.next()) {
+          throw new IllegalStateException("Adding dynamic partitions failed as no write id allocated for"
+                  + " the table: " + rqst.getDbname() + "." + rqst.getTablename()
+                  + " by txn: " + rqst.getTxnid());
+        }
+        Long writeId = rs.getLong(1);
         List<String> rows = new ArrayList<>();
         for (String partName : rqst.getPartitionnames()) {
           rows.add(rqst.getTxnid() + "," + quoteString(rqst.getDbname()) + "," + quoteString(rqst.getTablename()) +
-            "," + quoteString(partName) + "," + quoteChar(ot.sqlConst));
+              "," + quoteString(partName) + "," + quoteChar(ot.sqlConst) + "," + writeId);
         }
         int modCount = 0;
         //record partitions that were written to
         List<String> queries = sqlGenerator.createInsertValuesStmt(
-          "TXN_COMPONENTS (tc_txnid, tc_database, tc_table, tc_partition, tc_operation_type)", rows);
+            "TXN_COMPONENTS (tc_txnid, tc_database, tc_table, tc_partition, tc_operation_type, tc_writeid)", rows);
         for(String query : queries) {
           LOG.debug("Going to execute update <" + query + ">");
           modCount = stmt.executeUpdate(query);
@@ -2089,6 +2114,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         throw new MetaException("Unable to insert into from transaction database " +
           StringUtils.stringifyException(e));
       } finally {
+        close(rs);
         close(lockHandle, stmt, dbConn);
         unlockInternal();
       }

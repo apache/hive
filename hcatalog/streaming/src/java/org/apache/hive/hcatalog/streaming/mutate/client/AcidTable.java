@@ -48,7 +48,7 @@ public class AcidTable implements Serializable {
   /**
    * Returns {@code 0} until such a time that a {@link Transaction} has been acquired (when
    * {@link MutatorClient#newTransaction()} exits), at which point this will return the
-   * transaction id.
+   * write id.
    */
   public long getWriteId() {
     return writeId;
