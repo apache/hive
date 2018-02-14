@@ -178,7 +178,7 @@ public class MetastoreSchemaTool {
   Connection getConnectionToMetastore(boolean printInfo)
       throws HiveMetaException {
     return HiveSchemaHelper.getConnectionToMetastore(userName,
-        passWord, url, driver, printInfo, conf, hiveDb);
+        passWord, url, driver, printInfo, conf, null);
   }
 
   private NestedScriptParser getDbCommandParser(String dbType) {
