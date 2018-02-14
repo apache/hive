@@ -11338,6 +11338,7 @@ class AbortTxnRequest:
   Attributes:
    - txnid
    - replPolicy
+<<<<<<< HEAD
   """
 
   thrift_spec = (
@@ -12154,10 +12155,13 @@ class AllocateTableWriteIdsRequest:
    - txnIds
    - dbName
    - tableName
+=======
+>>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
   """
 
   thrift_spec = (
     None, # 0
+<<<<<<< HEAD
     (1, TType.LIST, 'txnIds', (TType.I64,None), None, ), # 1
     (2, TType.STRING, 'dbName', None, None, ), # 2
     (3, TType.STRING, 'tableName', None, None, ), # 3
@@ -12167,6 +12171,15 @@ class AllocateTableWriteIdsRequest:
     self.txnIds = txnIds
     self.dbName = dbName
     self.tableName = tableName
+=======
+    (1, TType.I64, 'txnid', None, None, ), # 1
+    (2, TType.STRING, 'replPolicy', None, None, ), # 2
+  )
+
+  def __init__(self, txnid=None, replPolicy=None,):
+    self.txnid = txnid
+    self.replPolicy = replPolicy
+>>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -12218,6 +12231,11 @@ class AllocateTableWriteIdsRequest:
           self.tableName = iprot.readString()
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.replPolicy = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -12258,6 +12276,10 @@ class AllocateTableWriteIdsRequest:
       oprot.writeFieldBegin('tableName', TType.STRING, 3)
       oprot.writeString(self.tableName)
       oprot.writeFieldEnd()
+    if self.replPolicy is not None:
+      oprot.writeFieldBegin('replPolicy', TType.STRING, 2)
+      oprot.writeString(self.replPolicy)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -12273,9 +12295,14 @@ class AllocateTableWriteIdsRequest:
 
   def __hash__(self):
     value = 17
+<<<<<<< HEAD
     value = (value * 31) ^ hash(self.txnIds)
     value = (value * 31) ^ hash(self.dbName)
     value = (value * 31) ^ hash(self.tableName)
+=======
+    value = (value * 31) ^ hash(self.txnid)
+    value = (value * 31) ^ hash(self.replPolicy)
+>>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
     return value
 
   def __repr__(self):
@@ -12374,16 +12401,31 @@ class TxnToWriteId:
 class AllocateTableWriteIdsResponse:
   """
   Attributes:
+<<<<<<< HEAD
    - txnToWriteIds
+=======
+   - txnid
+   - replPolicy
+>>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
   """
 
   thrift_spec = (
     None, # 0
+<<<<<<< HEAD
     (1, TType.LIST, 'txnToWriteIds', (TType.STRUCT,(TxnToWriteId, TxnToWriteId.thrift_spec)), None, ), # 1
   )
 
   def __init__(self, txnToWriteIds=None,):
     self.txnToWriteIds = txnToWriteIds
+=======
+    (1, TType.I64, 'txnid', None, None, ), # 1
+    (2, TType.STRING, 'replPolicy', None, None, ), # 2
+  )
+
+  def __init__(self, txnid=None, replPolicy=None,):
+    self.txnid = txnid
+    self.replPolicy = replPolicy
+>>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -12429,6 +12471,11 @@ class AllocateTableWriteIdsResponse:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.replPolicy = iprot.readString()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -12460,6 +12507,145 @@ class AllocateTableWriteIdsResponse:
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeListEnd()
+      oprot.writeFieldEnd()
+    if self.replPolicy is not None:
+      oprot.writeFieldBegin('replPolicy', TType.STRING, 2)
+      oprot.writeString(self.replPolicy)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.txnid is None:
+      raise TProtocol.TProtocolException(message='Required field txnid is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.txnid)
+    value = (value * 31) ^ hash(self.replPolicy)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class GetTargetTxnIdRequest:
+  """
+  Attributes:
+   - txnid
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'txnid', None, None, ), # 1
+  )
+
+  def __init__(self, txnid=None,):
+    self.txnid = txnid
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.txnid = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('GetTargetTxnIdRequest')
+    if self.txnid is not None:
+      oprot.writeFieldBegin('txnid', TType.I64, 1)
+      oprot.writeI64(self.txnid)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.txnid is None:
+      raise TProtocol.TProtocolException(message='Required field txnid is unset!')
+    return
+
+
+  def __hash__(self):
+    value = 17
+    value = (value * 31) ^ hash(self.txnid)
+    return value
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class GetTargetTxnIdResponse:
+  """
+  Attributes:
+   - txnid
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.I64, 'txnid', None, None, ), # 1
+  )
+
+  def __init__(self, txnid=None,):
+    self.txnid = txnid
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.I64:
+          self.txnid = iprot.readI64()
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('GetTargetTxnIdResponse')
+    if self.txnid is not None:
+      oprot.writeFieldBegin('txnid', TType.I64, 1)
+      oprot.writeI64(self.txnid)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

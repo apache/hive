@@ -6980,6 +6980,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
               EventType.COMMIT_TXN,
               new CommitTxnEvent(rqst.getTxnid(), this));
+
     }
 
     @Override

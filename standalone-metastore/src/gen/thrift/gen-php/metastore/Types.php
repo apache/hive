@@ -16261,6 +16261,7 @@ class AbortTxnRequest {
    * @var string
    */
   public $replPolicy = null;
+<<<<<<< HEAD
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -16511,6 +16512,8 @@ class CommitTxnRequest {
    * @var string
    */
   public $replPolicy = null;
+=======
+>>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -16532,6 +16535,7 @@ class CommitTxnRequest {
       if (isset($vals['replPolicy'])) {
         $this->replPolicy = $vals['replPolicy'];
       }
+<<<<<<< HEAD
     }
   }
 
@@ -17371,6 +17375,8 @@ class AllocateTableWriteIdsRequest {
       if (isset($vals['tableName'])) {
         $this->tableName = $vals['tableName'];
       }
+=======
+>>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
     }
   }
 
@@ -17457,6 +17463,13 @@ class AllocateTableWriteIdsRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->replPolicy);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -17513,6 +17526,11 @@ class AllocateTableWriteIdsRequest {
     if ($this->tableName !== null) {
       $xfer += $output->writeFieldBegin('tableName', TType::STRING, 3);
       $xfer += $output->writeString($this->tableName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->replPolicy !== null) {
+      $xfer += $output->writeFieldBegin('replPolicy', TType::STRING, 2);
+      $xfer += $output->writeString($this->replPolicy);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -17626,7 +17644,15 @@ class AllocateTableWriteIdsResponse {
   /**
    * @var \metastore\TxnToWriteId[]
    */
+<<<<<<< HEAD
   public $txnToWriteIds = null;
+=======
+  public $txnid = null;
+  /**
+   * @var string
+   */
+  public $replPolicy = null;
+>>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -17640,11 +17666,18 @@ class AllocateTableWriteIdsResponse {
             'class' => '\metastore\TxnToWriteId',
             ),
           ),
+        2 => array(
+          'var' => 'replPolicy',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['txnToWriteIds'])) {
         $this->txnToWriteIds = $vals['txnToWriteIds'];
+      }
+      if (isset($vals['replPolicy'])) {
+        $this->replPolicy = $vals['replPolicy'];
       }
     }
   }
@@ -17722,6 +17755,13 @@ class AllocateTableWriteIdsResponse {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->replPolicy);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -17768,6 +17808,161 @@ class AllocateTableWriteIdsResponse {
         }
         $output->writeListEnd();
       }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->replPolicy !== null) {
+      $xfer += $output->writeFieldBegin('replPolicy', TType::STRING, 2);
+      $xfer += $output->writeString($this->replPolicy);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class GetTargetTxnIdRequest {
+  static $_TSPEC;
+
+  /**
+   * @var int
+   */
+  public $txnid = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'txnid',
+          'type' => TType::I64,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['txnid'])) {
+        $this->txnid = $vals['txnid'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'GetTargetTxnIdRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->txnid);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('GetTargetTxnIdRequest');
+    if ($this->txnid !== null) {
+      $xfer += $output->writeFieldBegin('txnid', TType::I64, 1);
+      $xfer += $output->writeI64($this->txnid);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class GetTargetTxnIdResponse {
+  static $_TSPEC;
+
+  /**
+   * @var int
+   */
+  public $txnid = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'txnid',
+          'type' => TType::I64,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['txnid'])) {
+        $this->txnid = $vals['txnid'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'GetTargetTxnIdResponse';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->txnid);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('GetTargetTxnIdResponse');
+    if ($this->txnid !== null) {
+      $xfer += $output->writeFieldBegin('txnid', TType::I64, 1);
+      $xfer += $output->writeI64($this->txnid);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

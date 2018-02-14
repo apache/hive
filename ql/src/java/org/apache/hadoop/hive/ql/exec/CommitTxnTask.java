@@ -21,39 +21,24 @@ package org.apache.hadoop.hive.ql.exec;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
-import com.google.common.collect.Lists;
 
-import java.util.Iterator;
-import java.util.List;
-
-public class ReplTxnTask extends Task<ReplTxnWork> {
+public class CommitTxnTask extends Task<CommitTxnWork> {
 
   private static final long serialVersionUID = 1L;
 
-  public ReplTxnTask() {
+  public CommitTxnTask() {
     super();
   }
 
   @Override
   public int execute(DriverContext driverContext) {
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-      Utilities.FILE_OP_LOGGER.trace("Executing ReplTxnTask for " + work.getTxnIds());
+      Utilities.FILE_OP_LOGGER.trace("Executing CommitTxn for " + work.getTxnId());
     }
 
     try {
-      if (work.getOperationType() ==  ReplTxnWork.OperationType.REPL_OPEN_TXN) {
-        List<Long> txnIdsItr = driverContext.getCtx().getHiveTxnManager()
-            .replOpenTxn(work.getReplPolicy(), work.getTxnIds(), work.getNumTxns());
-        for (int i = 0; i < txnIdsItr.size(); i++) {
-          LOG.info(
-              "Replayed OpenTxn Event for policy " + work.getReplPolicy() + " with srcTxn " + work
-                  .getTxnId(i) + " and target txn id " + txnIdsItr.get(i));
-        }
-      } else if (work.getOperationType() ==  ReplTxnWork.OperationType.REPL_COMMI_TXN) {
-        driverContext.getCtx().getHiveTxnManager().replCommitTxn(work.getReplPolicy(), work.getTxnId(0));
-        LOG.info("Replayed CommitTxn Event for policy " + work.getReplPolicy() +
-                " with srcTxn " + work.getTxnId(0) + " and target txn id " + work.getTxnId(0));
-      }
+      driverContext.getCtx().getHiveTxnManager().replCommitTxn(work.getReplPolicy(), work.getTxnId());
+      LOG.info("Replayed OpenTxn Event for policy " + work.getReplPolicy() + " with srcTxn " + work.getTxnId() + " and target txn id " + work.getTxnId());
       return 0;
     } catch (Exception e) {
       console.printError("Failed with exception " + e.getMessage(), "\n"
@@ -70,6 +55,6 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
 
   @Override
   public String getName() {
-    return "OPEN_TRANSACTION";
+    return "COMMIT_TRANSACTION";
   }
 }

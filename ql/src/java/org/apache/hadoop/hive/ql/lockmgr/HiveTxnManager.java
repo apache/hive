@@ -68,7 +68,7 @@ public interface HiveTxnManager {
    * @throws LockException in case of failure to start the trasnaction.
    */
   void replCommitTxn(String replPolicy, long srcTxnId)  throws LockException ;
-
+  
   /**
    * Get the lock manager.  This must be used rather than instantiating an
    * instance of the lock manager directly as the transaction manager will
