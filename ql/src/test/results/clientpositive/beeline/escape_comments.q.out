@@ -36,13 +36,6 @@ POSTHOOK: Output: database:escape_comments_db
 POSTHOOK: Output: escape_comments_db@escape_comments_view1
 POSTHOOK: Lineage: escape_comments_view1.col1 SIMPLE [(escape_comments_tbl1)escape_comments_tbl1.FieldSchema(name:col1, type:string, comment:a
 b';), ]
-PREHOOK: query: create index index2 on table escape_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment 'a\nb'
-PREHOOK: type: CREATEINDEX
-PREHOOK: Input: escape_comments_db@escape_comments_tbl1
-POSTHOOK: query: create index index2 on table escape_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment 'a\nb'
-POSTHOOK: type: CREATEINDEX
-POSTHOOK: Input: escape_comments_db@escape_comments_tbl1
-POSTHOOK: Output: escape_comments_db@escape_comments_db__escape_comments_tbl1_index2__
 PREHOOK: query: describe database extended escape_comments_db
 PREHOOK: type: DESCDATABASE
 PREHOOK: Input: database:escape_comments_db
@@ -169,23 +162,15 @@ Sort Columns:       	[]                  	NULL
 View Original Text: 	select col1 from escape_comments_tbl1	NULL
 View Expanded Text: 	SELECT `col1` AS `col1` FROM (select `escape_comments_tbl1`.`col1` from `escape_comments_db`.`escape_comments_tbl1`) `escape_comments_db.escape_comments_view1`	NULL
 View Rewrite Enabled:	No                  	NULL
-PREHOOK: query: show formatted index on escape_comments_tbl1
-PREHOOK: type: SHOWINDEXES
-POSTHOOK: query: show formatted index on escape_comments_tbl1
-POSTHOOK: type: SHOWINDEXES
-idx_name            	tab_name            	col_names           	idx_tab_name        	idx_type            	comment             
-index2              	escape_comments_tbl1	col1                	escape_comments_db__escape_comments_tbl1_index2__	compact             	a\nb                
 PREHOOK: query: drop database escape_comments_db cascade
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:escape_comments_db
 PREHOOK: Output: database:escape_comments_db
-PREHOOK: Output: escape_comments_db@escape_comments_db__escape_comments_tbl1_index2__
 PREHOOK: Output: escape_comments_db@escape_comments_tbl1
 PREHOOK: Output: escape_comments_db@escape_comments_view1
 POSTHOOK: query: drop database escape_comments_db cascade
 POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:escape_comments_db
 POSTHOOK: Output: database:escape_comments_db
-POSTHOOK: Output: escape_comments_db@escape_comments_db__escape_comments_tbl1_index2__
 POSTHOOK: Output: escape_comments_db@escape_comments_tbl1
 POSTHOOK: Output: escape_comments_db@escape_comments_view1

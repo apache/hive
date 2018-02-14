@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.security.authorization;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.AccessControlException;
 import java.util.ArrayList;
@@ -293,9 +292,6 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
       return FsAction.WRITE;
     case DROP:
       return FsAction.WRITE;
-    case INDEX:
-      throw new AuthorizationException(
-          "StorageBasedAuthorizationProvider cannot handle INDEX privilege");
     case LOCK:
       throw new AuthorizationException(
           "StorageBasedAuthorizationProvider cannot handle LOCK privilege");

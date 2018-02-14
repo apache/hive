@@ -197,33 +197,6 @@ public class OperatorUtils {
     return lastOp;
   }
 
-  /**
-   * Starting at the input operator, finds the last operator upstream that is
-   * an instance of the input class.
-   *
-   * @param op the starting operator
-   * @param clazz the class that the operator that we are looking for instantiates
-   * @return null if no such operator exists or multiple branches are found in
-   * the stream, the last operator otherwise
-   */
-  @SuppressWarnings("unchecked")
-  public static <T> T findLastOperatorUpstream(Operator<?> op, Class<T> clazz) {
-    Operator<?> currentOp = op;
-    T lastOp = null;
-    while (currentOp != null) {
-      if (clazz.isInstance(currentOp)) {
-        lastOp = (T) currentOp;
-      }
-      if (currentOp.getParentOperators().size() == 1) {
-        currentOp = currentOp.getParentOperators().get(0);
-      }
-      else {
-        currentOp = null;
-      }
-    }
-    return lastOp;
-  }
-
   public static void iterateParents(Operator<?> operator, Function<Operator<?>> function) {
     iterateParents(operator, function, new HashSet<Operator<?>>());
   }
@@ -238,10 +211,6 @@ public class OperatorUtils {
         iterateParents(parent, function, visited);
       }
     }
-  }
-
-  public static boolean sameRowSchema(Operator<?> operator1, Operator<?> operator2) {
-    return operator1.getSchema().equals(operator2.getSchema());
   }
 
   /**

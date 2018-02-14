@@ -597,7 +597,7 @@ public class HiveConf extends Configuration {
         "When hive.exec.mode.local.auto is true, the number of tasks should less than this for local mode."),
 
     DROPIGNORESNONEXISTENT("hive.exec.drop.ignorenonexistent", true,
-        "Do not report an error if DROP TABLE/VIEW/Index/Function specifies a non-existent table/view/index/function"),
+        "Do not report an error if DROP TABLE/VIEW/Index/Function specifies a non-existent table/view/function"),
 
     HIVEIGNOREMAPJOINHINT("hive.ignore.mapjoin.hint", true, "Ignore the mapjoin hint"),
 
@@ -1616,10 +1616,8 @@ public class HiveConf extends Configuration {
         "Whether to provide the row offset virtual column"),
 
     // Optimizer
-    HIVEOPTINDEXFILTER("hive.optimize.index.filter", false,
-        "Whether to enable automatic use of indexes"),
-    HIVEINDEXAUTOUPDATE("hive.optimize.index.autoupdate", false,
-        "Whether to update stale indexes automatically"),
+    HIVEOPTINDEXFILTER("hive.optimize.index.filter", false, "Whether to enable automatic use of indexes"),
+
     HIVEOPTPPD("hive.optimize.ppd", true,
         "Whether to enable predicate pushdown"),
     HIVEOPTPPD_WINDOWING("hive.optimize.ppd.windowing", true,
@@ -1756,18 +1754,6 @@ public class HiveConf extends Configuration {
     HIVE_CTE_MATERIALIZE_THRESHOLD("hive.optimize.cte.materialize.threshold", -1,
         "If the number of references to a CTE clause exceeds this threshold, Hive will materialize it\n" +
         "before executing the main query block. -1 will disable this feature."),
-
-    // Indexes
-    HIVEOPTINDEXFILTER_COMPACT_MINSIZE("hive.optimize.index.filter.compact.minsize", (long) 5 * 1024 * 1024 * 1024,
-        "Minimum size (in bytes) of the inputs on which a compact index is automatically used."), // 5G
-    HIVEOPTINDEXFILTER_COMPACT_MAXSIZE("hive.optimize.index.filter.compact.maxsize", (long) -1,
-        "Maximum size (in bytes) of the inputs on which a compact index is automatically used.  A negative number is equivalent to infinity."), // infinity
-    HIVE_INDEX_COMPACT_QUERY_MAX_ENTRIES("hive.index.compact.query.max.entries", (long) 10000000,
-        "The maximum number of index entries to read during a query that uses the compact index. Negative value is equivalent to infinity."), // 10M
-    HIVE_INDEX_COMPACT_QUERY_MAX_SIZE("hive.index.compact.query.max.size", (long) 10 * 1024 * 1024 * 1024,
-        "The maximum number of bytes that a query using the compact index can read. Negative value is equivalent to infinity."), // 10G
-    HIVE_INDEX_COMPACT_BINARY_SEARCH("hive.index.compact.binary.search", true,
-        "Whether or not to use a binary search to find the entries in an index table that match the filter, where possible"),
 
     // Statistics
     HIVE_STATS_ESTIMATE_STATS("hive.stats.estimate", true,
@@ -2139,9 +2125,6 @@ public class HiveConf extends Configuration {
     // For har files
     HIVEARCHIVEENABLED("hive.archive.enabled", false, "Whether archiving operations are permitted"),
 
-    HIVEOPTGBYUSINGINDEX("hive.optimize.index.groupby", false,
-        "Whether to enable optimization of group-by queries using Aggregate indexes."),
-
     HIVEFETCHTASKCONVERSION("hive.fetch.task.conversion", "more", new StringSet("none", "minimal", "more"),
         "Some select queries can be converted to single FETCH task minimizing latency.\n" +
         "Currently the query should be single sourced not having any subquery and should not have\n" +
@@ -2265,12 +2248,6 @@ public class HiveConf extends Configuration {
     HIVE_ERROR_ON_EMPTY_PARTITION("hive.error.on.empty.partition", false,
         "Whether to throw an exception if dynamic partition insert generates empty results."),
 
-    HIVE_INDEX_COMPACT_FILE("hive.index.compact.file", "", "internal variable"),
-    HIVE_INDEX_BLOCKFILTER_FILE("hive.index.blockfilter.file", "", "internal variable"),
-    HIVE_INDEX_IGNORE_HDFS_LOC("hive.index.compact.file.ignore.hdfs", false,
-        "When true the HDFS location stored in the index file will be ignored at runtime.\n" +
-        "If the data got moved or the name of the cluster got changed, the index data should still be usable."),
-
     HIVE_EXIM_URI_SCHEME_WL("hive.exim.uri.scheme.whitelist", "hdfs,pfile,file,s3,s3a",
         "A comma separated list of acceptable URI schemes for import and export."),
     // temporary variable for testing. This is added just to turn off this feature in case of a bug in
@@ -2289,12 +2266,6 @@ public class HiveConf extends Configuration {
     HIVE_REWORK_MAPREDWORK("hive.rework.mapredwork", false,
         "should rework the mapred work or not.\n" +
         "This is first introduced by SymlinkTextInputFormat to replace symlink files with real paths at compile time."),
-    HIVE_CONCATENATE_CHECK_INDEX ("hive.exec.concatenate.check.index", true,
-        "If this is set to true, Hive will throw error when doing\n" +
-        "'alter table tbl_name [partSpec] concatenate' on a table/partition\n" +
-        "that has indexes on it. The reason the user want to set this to true\n" +
-        "is because it can help user to avoid handling all index drop, recreation,\n" +
-        "rebuild work. This is very helpful for tables with thousands of partitions."),
     HIVE_IO_EXCEPTION_HANDLERS("hive.io.exception.handlers", "",
         "A list of io exception handler class names. This is used\n" +
         "to construct a list exception handlers to handle exceptions thrown\n" +
@@ -3073,7 +3044,7 @@ public class HiveConf extends Configuration {
         "hive.tez.bucket.pruning", false,
          "When pruning is enabled, filters on bucket columns will be processed by \n" +
          "filtering the splits against a bitset of included buckets. This needs predicates \n"+
-         "produced by hive.optimize.ppd and hive.optimize.index.filters."),
+            "produced by hive.optimize.ppd and hive.optimize.index.filters."),
     TEZ_OPTIMIZE_BUCKET_PRUNING_COMPAT(
         "hive.tez.bucket.pruning.compat", true,
         "When pruning is enabled, handle possibly broken inserts due to negative hashcodes.\n" +
@@ -4616,7 +4587,6 @@ public class HiveConf extends Configuration {
     ConfVars.HIVE_CHECK_CROSS_PRODUCT.varname,
     ConfVars.HIVE_CLI_TEZ_SESSION_ASYNC.varname,
     ConfVars.HIVE_COMPAT.varname,
-    ConfVars.HIVE_CONCATENATE_CHECK_INDEX.varname,
     ConfVars.HIVE_DISPLAY_PARTITION_COLUMNS_SEPARATELY.varname,
     ConfVars.HIVE_ERROR_ON_EMPTY_PARTITION.varname,
     ConfVars.HIVE_EXECUTION_ENGINE.varname,

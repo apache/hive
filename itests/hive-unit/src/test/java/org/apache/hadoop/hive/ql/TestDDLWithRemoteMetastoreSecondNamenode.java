@@ -29,7 +29,6 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.metadata.*;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -240,24 +239,6 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
     return table;
   }
 
-  private void createIndexAndCheck(Table table, String indexName, String indexLocation) throws Exception {
-    executeQuery("CREATE INDEX " + indexName + " ON TABLE " + table.getTableName()
-            + " (col1) AS 'COMPACT' WITH DEFERRED REBUILD "
-            + buildLocationClause(indexLocation));
-    Index index = db.getIndex(table.getTableName(), indexName);
-    assertNotNull("Index object is expected for " + indexName , index);
-    String location = index.getSd().getLocation();
-    if (indexLocation != null) {
-      assertEquals("Index should be located in the second filesystem",
-              fs2.makeQualified(new Path(indexLocation)).toString(), location);
-    }
-    else {
-      // Since warehouse path is non-qualified the index should be located on second filesystem
-      assertEquals("Index should be located in the second filesystem",
-              fs2.getUri().getScheme(), new URI(location).getScheme());
-    }
-  }
-
   private void createDatabaseAndCheck(String databaseName, String databaseLocation) throws Exception {
     executeQuery("CREATE DATABASE " + databaseName + buildLocationClause(databaseLocation));
     Database database = db.getDatabase(databaseName);
@@ -272,41 +253,6 @@ public class TestDDLWithRemoteMetastoreSecondNamenode extends TestCase {
       assertEquals("Database should be located in the second filesystem",
               fs2.getUri().getScheme(), new URI(location).getScheme());
     }
-  }
-
-  public void testCreateTableWithIndexAndPartitionsNonDefaultNameNode() throws Exception {
-    assertTrue("Test suite should be initialied", isInitialized );
-    final String tableLocation = tmppathFs2 + "/" + Table1Name;
-    final String table5Location = tmppathFs2 + "/" + Table5Name;
-    final String indexLocation = tmppathFs2 + "/" + Index1Name;
-    final String partition3Location = fs.makeQualified(new Path(tmppath + "/p3")).toString();
-
-    // Create table with absolute non-qualified path
-    Table table1 = createTableAndCheck(Table1Name, tableLocation);
-
-    // Create table without location
-    createTableAndCheck(Table2Name, null);
-
-    // Add partition without location
-    addPartitionAndCheck(table1, "p", "p1", null);
-
-    // Add partition with absolute location
-    addPartitionAndCheck(table1, "p", "p2", tableLocation + "/p2");
-
-    // Add partition with qualified location in default fs
-    addPartitionAndCheck(table1, "p", "p3", partition3Location);
-
-    // Create index with absolute non-qualified path
-    createIndexAndCheck(table1, Index1Name, indexLocation);
-
-    // Create index with absolute non-qualified path
-    createIndexAndCheck(table1, Index2Name, null);
-
-    // Create table like Table1Name absolute non-qualified path
-    createTableAndCheck(table1, Table5Name, table5Location);
-
-    // Create table without location
-    createTableAndCheck(table1, Table6Name, null);
   }
 
   public void testAlterPartitionSetLocationNonDefaultNameNode() throws Exception {

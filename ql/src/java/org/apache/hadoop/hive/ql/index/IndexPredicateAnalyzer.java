@@ -61,7 +61,10 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
  * Currently, it only supports pure conjunctions over binary expressions
  * comparing a column reference with a constant value.  It is assumed
  * that all column aliases encountered refer to the same table.
+ *
+ * @deprecated kept only because some storagehandlers are using it internally
  */
+@Deprecated
 public class IndexPredicateAnalyzer {
 
   private final Set<String> udfNames;
