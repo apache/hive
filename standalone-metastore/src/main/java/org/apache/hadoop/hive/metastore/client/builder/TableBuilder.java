@@ -142,6 +142,7 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
     dbName = index.getDbName();
     tableName = index.getIndexTableName();
     setCols(index.getSd().getCols());
+    setType(TableType.INDEX_TABLE.name());
     return this;
   }
 
