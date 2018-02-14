@@ -23,7 +23,6 @@ INSERT OVERWRITE TABLE test2a SELECT ARRAY(1, 2), 1 FROM src LIMIT 1;
 CREATE TABLE test2b (a INT) STORED AS ORC;
 INSERT OVERWRITE TABLE test2b VALUES (2), (3), (4);
 
-set hive.cbo.enable=false;
 explain vectorization expression
 select *  from test2b join test2a on test2b.a = test2a.a[1];
 
