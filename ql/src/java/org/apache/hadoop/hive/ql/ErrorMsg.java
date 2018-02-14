@@ -557,10 +557,10 @@ public enum ErrorMsg {
 
   SPARK_GET_JOB_INFO_TIMEOUT(30036,
       "Spark job timed out after {0} seconds while getting job info", true),
-  SPARK_JOB_MONITOR_TIMEOUT(30037, "Job hasn't been submitted after {0}s." +
+  SPARK_JOB_MONITOR_TIMEOUT(30037, "Job hasn''t been submitted after {0}s." +
       " Aborting it.\nPossible reasons include network issues, " +
       "errors in remote driver or the cluster has no available resources, etc.\n" +
-      "Please check YARN or Spark driver's logs for further information.\n" +
+      "Please check YARN or Spark driver''s logs for further information.\n" +
       "The timeout is controlled by " + HiveConf.ConfVars.SPARK_JOB_MONITOR_TIMEOUT + ".", true),
 
   // Various errors when creating Spark client
