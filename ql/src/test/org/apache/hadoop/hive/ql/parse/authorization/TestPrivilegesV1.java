@@ -66,7 +66,6 @@ public class TestPrivilegesV1 extends PrivilegesTestBase{
     grantUserTable("alter", PrivilegeType.ALTER_METADATA);
     grantUserTable("create", PrivilegeType.CREATE);
     grantUserTable("drop", PrivilegeType.DROP);
-    grantUserTable("index", PrivilegeType.INDEX);
     grantUserTable("lock", PrivilegeType.LOCK);
     grantUserTable("select", PrivilegeType.SELECT);
     grantUserTable("show_database", PrivilegeType.SHOW_DATABASE);

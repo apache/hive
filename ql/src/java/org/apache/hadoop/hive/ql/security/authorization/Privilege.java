@@ -101,9 +101,6 @@ public class Privilege {
   public static Privilege DROP = new Privilege(PrivilegeType.DROP,
       PrivilegeScope.ALLSCOPE_EXCEPT_COLUMN);
 
-  public static Privilege INDEX = new Privilege(PrivilegeType.INDEX,
-      PrivilegeScope.ALLSCOPE);
-
   public static Privilege LOCK = new Privilege(PrivilegeType.LOCK,
       PrivilegeScope.ALLSCOPE_EXCEPT_COLUMN);
 

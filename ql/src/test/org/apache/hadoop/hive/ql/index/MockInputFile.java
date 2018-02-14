@@ -74,7 +74,8 @@ public final class MockInputFile {
       DefaultSplitLengthStep {
 
     private String path;
-    private long defaultSplitSize = SplitFilterTestCase.DEFAULT_SPLIT_SIZE;;
+    public static final long DEFAULT_SPLIT_SIZE = 1024 * 1024;
+    private long defaultSplitSize = DEFAULT_SPLIT_SIZE;
     private final List<HiveInputSplit> splits = new ArrayList<>();
     private final List<HiveInputSplit> selectedSplits = new ArrayList<>();
     private long position = 0;

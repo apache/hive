@@ -36,10 +36,7 @@ public class DDLWork implements Serializable {
   // TODO: this can probably be replaced with much less code via dynamic dispatch and/or templates.
   private PreInsertTableDesc preInsertTableDesc;
   private InsertTableDesc insertTableDesc;
-  private CreateIndexDesc createIndexDesc;
-  private AlterIndexDesc alterIndexDesc;
   private AlterMaterializedViewDesc alterMVDesc;
-  private DropIndexDesc dropIdxDesc;
   private CreateDatabaseDesc createDatabaseDesc;
   private SwitchDatabaseDesc switchDatabaseDesc;
   private DropDatabaseDesc dropDatabaseDesc;
@@ -71,7 +68,6 @@ public class DDLWork implements Serializable {
   private AlterTableSimpleDesc alterTblSimpleDesc;
   private MsckDesc msckDesc;
   private ShowTableStatusDesc showTblStatusDesc;
-  private ShowIndexesDesc showIndexesDesc;
   private DescDatabaseDesc descDbDesc;
   private AlterDatabaseDesc alterDbDesc;
   private AlterTableAlterPartDesc alterTableAlterPartDesc;
@@ -123,16 +119,6 @@ public class DDLWork implements Serializable {
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs) {
     this.inputs = inputs;
     this.outputs = outputs;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      CreateIndexDesc createIndex) {
-    this(inputs, outputs);
-    this.createIndexDesc = createIndex;
-  }
-
-  public DDLWork(AlterIndexDesc alterIndex) {
-    this.alterIndexDesc = alterIndex;
   }
 
   /**
@@ -206,16 +192,6 @@ public class DDLWork implements Serializable {
       AlterTableDesc alterTblDesc) {
     this(inputs, outputs);
     this.alterTblDesc = alterTblDesc;
-  }
-
-  /**
-   * @param alterIdxDesc
-   *          alter index descriptor
-   */
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      AlterIndexDesc alterIndexDesc) {
-    this(inputs, outputs);
-    this.alterIndexDesc = alterIndexDesc;
   }
 
   /**
@@ -492,12 +468,6 @@ public class DDLWork implements Serializable {
   }
 
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      DropIndexDesc dropIndexDesc) {
-    this(inputs, outputs);
-    this.dropIdxDesc = dropIndexDesc;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       RoleDDLDesc roleDDLDesc) {
     this(inputs, outputs);
     this.roleDDLDesc = roleDDLDesc;
@@ -525,12 +495,6 @@ public class DDLWork implements Serializable {
       GrantRevokeRoleDDL grantRevokeRoleDDL) {
     this(inputs, outputs);
     this.grantRevokeRoleDDL = grantRevokeRoleDDL;
-  }
-
-  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
-      ShowIndexesDesc showIndexesDesc) {
-    this(inputs, outputs);
-    this.showIndexesDesc = showIndexesDesc;
   }
 
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
@@ -722,36 +686,6 @@ public class DDLWork implements Serializable {
    */
   public void setCreateTblDesc(CreateTableDesc createTblDesc) {
     this.createTblDesc = createTblDesc;
-  }
-
-  /**
-   * @return the createIndexDesc
-   */
-  public CreateIndexDesc getCreateIndexDesc() {
-    return createIndexDesc;
-  }
-
-  /**
-   * @param createIndexDesc
-   *          the createIndexDesc to set
-   */
-  public void setCreateIndexDesc(CreateIndexDesc createIndexDesc) {
-    this.createIndexDesc = createIndexDesc;
-  }
-
-  /**
-   * @return the alterIndexDesc
-   */
-  public AlterIndexDesc getAlterIndexDesc() {
-    return alterIndexDesc;
-  }
-
-  /**
-   * @param alterIndexDesc
-   *          the alterIndexDesc to set
-   */
-  public void setAlterIndexDesc(AlterIndexDesc alterIndexDesc) {
-    this.alterIndexDesc = alterIndexDesc;
   }
 
   /**
@@ -1041,18 +975,6 @@ public class DDLWork implements Serializable {
   }
 
   /**
-   * @return the showIndexesDesc
-   */
-  @Explain(displayName = "Show Index Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public ShowIndexesDesc getShowIndexesDesc() {
-    return showIndexesDesc;
-  }
-
-  public void setShowIndexesDesc(ShowIndexesDesc showIndexesDesc) {
-    this.showIndexesDesc = showIndexesDesc;
-  }
-
-  /**
    * @return the descTblDesc
    */
   @Explain(displayName = "Describe Table Operator", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -1170,14 +1092,6 @@ public class DDLWork implements Serializable {
 
   public void setOutputs(HashSet<WriteEntity> outputs) {
     this.outputs = outputs;
-  }
-
-  public DropIndexDesc getDropIdxDesc() {
-    return dropIdxDesc;
-  }
-
-  public void setDropIdxDesc(DropIndexDesc dropIdxDesc) {
-    this.dropIdxDesc = dropIdxDesc;
   }
 
   /**

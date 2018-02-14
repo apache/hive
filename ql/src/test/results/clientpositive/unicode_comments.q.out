@@ -35,13 +35,6 @@ POSTHOOK: Input: unicode_comments_db@unicode_comments_tbl1
 POSTHOOK: Output: database:unicode_comments_db
 POSTHOOK: Output: unicode_comments_db@unicode_comments_view1
 POSTHOOK: Lineage: unicode_comments_view1.col1 SIMPLE [(unicode_comments_tbl1)unicode_comments_tbl1.FieldSchema(name:col1, type:string, comment:第一列), ]
-PREHOOK: query: create index index2 on table unicode_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment '索引'
-PREHOOK: type: CREATEINDEX
-PREHOOK: Input: unicode_comments_db@unicode_comments_tbl1
-POSTHOOK: query: create index index2 on table unicode_comments_tbl1(col1) as 'COMPACT' with deferred rebuild comment '索引'
-POSTHOOK: type: CREATEINDEX
-POSTHOOK: Input: unicode_comments_db@unicode_comments_tbl1
-POSTHOOK: Output: unicode_comments_db@unicode_comments_db__unicode_comments_tbl1_index2__
 PREHOOK: query: describe database extended unicode_comments_db
 PREHOOK: type: DESCDATABASE
 PREHOOK: Input: database:unicode_comments_db
@@ -147,23 +140,15 @@ Sort Columns:       	[]
 View Original Text: 	select col1 from unicode_comments_tbl1	 
 View Expanded Text: 	SELECT `col1` AS `col1` FROM (select `unicode_comments_tbl1`.`col1` from `unicode_comments_db`.`unicode_comments_tbl1`) `unicode_comments_db.unicode_comments_view1`	 
 View Rewrite Enabled:	No                  	 
-PREHOOK: query: show formatted index on unicode_comments_tbl1
-PREHOOK: type: SHOWINDEXES
-POSTHOOK: query: show formatted index on unicode_comments_tbl1
-POSTHOOK: type: SHOWINDEXES
-idx_name            	tab_name            	col_names           	idx_tab_name        	idx_type            	comment             
-index2              	unicode_comments_tbl1	col1                	unicode_comments_db__unicode_comments_tbl1_index2__	compact             	索引                  
 PREHOOK: query: drop database unicode_comments_db cascade
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:unicode_comments_db
 PREHOOK: Output: database:unicode_comments_db
-PREHOOK: Output: unicode_comments_db@unicode_comments_db__unicode_comments_tbl1_index2__
 PREHOOK: Output: unicode_comments_db@unicode_comments_tbl1
 PREHOOK: Output: unicode_comments_db@unicode_comments_view1
 POSTHOOK: query: drop database unicode_comments_db cascade
 POSTHOOK: type: DROPDATABASE
 POSTHOOK: Input: database:unicode_comments_db
 POSTHOOK: Output: database:unicode_comments_db
-POSTHOOK: Output: unicode_comments_db@unicode_comments_db__unicode_comments_tbl1_index2__
 POSTHOOK: Output: unicode_comments_db@unicode_comments_tbl1
 POSTHOOK: Output: unicode_comments_db@unicode_comments_view1
