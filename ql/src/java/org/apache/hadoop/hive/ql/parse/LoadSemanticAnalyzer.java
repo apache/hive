@@ -360,25 +360,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       statTask = TaskFactory.get(columnStatsWork, conf);
     }
 
-    // HIVE-3334 has been filed for load file with index auto update
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEINDEXAUTOUPDATE)) {
-      IndexUpdater indexUpdater = new IndexUpdater(loadTableWork, getInputs(), conf);
-      try {
-        List<Task<? extends Serializable>> indexUpdateTasks = indexUpdater.generateUpdateTasks();
-
-        for (Task<? extends Serializable> updateTask : indexUpdateTasks) {
-          //LOAD DATA will either have a copy & move or just a move,
-          // we always want the update to be dependent on the move
-          childTask.addDependentTask(updateTask);
-          if (statTask != null) {
-            updateTask.addDependentTask(statTask);
-          }
-        }
-      } catch (HiveException e) {
-        console.printInfo("WARNING: could not auto-update stale indexes, indexes are not out of sync");
-      }
-    }
-    else if (statTask != null) {
+    if (statTask != null) {
       childTask.addDependentTask(statTask);
     }
   }

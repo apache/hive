@@ -25,7 +25,9 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
  * IndexSearchCondition represents an individual search condition
  * found by {@link IndexPredicateAnalyzer}.
  *
+ * @deprecated kept only because some storagehandlers are using it internally
  */
+@Deprecated
 public class IndexSearchCondition
 {
   private ExprNodeColumnDesc columnDesc;
@@ -56,7 +58,7 @@ public class IndexSearchCondition
    * @param constantDesc constant value to search for
    *
    * @param indexExpr the comparison expression for the index
-   * 
+   *
    * @param originalExpr the original comparison expression
    */
   public IndexSearchCondition(

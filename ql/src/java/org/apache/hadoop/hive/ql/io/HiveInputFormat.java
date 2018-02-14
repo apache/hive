@@ -23,6 +23,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hive.common.util.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -105,6 +107,22 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   protected Map<Path, PartitionDesc> pathToPartitionInfo;
   protected MapWork mrwork;
 
+  public static final class HiveInputSplitComparator implements Comparator<HiveInputSplit> {
+    @Override
+    public int compare(HiveInputSplit o1, HiveInputSplit o2) {
+      int pathCompare = comparePath(o1.getPath(), o2.getPath());
+      if (pathCompare != 0) {
+        return pathCompare;
+      }
+      return Long.compare(o1.getStart(), o2.getStart());
+    }
+
+    private int comparePath(Path p1, Path p2) {
+      return p1.compareTo(p2);
+    }
+  }
+
+
   /**
    * HiveInputSplit encapsulates an InputSplit with its corresponding
    * inputFormatClass. The reason that it derives from FileSplit is to make sure
@@ -112,6 +130,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
    */
   public static class HiveInputSplit extends FileSplit implements InputSplit,
       Configurable {
+
 
     InputSplit inputSplit;
     String inputFormatClassName;

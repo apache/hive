@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverterPostProc;
 import org.apache.hadoop.hive.ql.optimizer.correlation.CorrelationOptimizer;
 import org.apache.hadoop.hive.ql.optimizer.correlation.ReduceSinkDeDuplication;
-import org.apache.hadoop.hive.ql.optimizer.index.RewriteGBUsingIndex;
 import org.apache.hadoop.hive.ql.optimizer.lineage.Generator;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPruner;
 import org.apache.hadoop.hive.ql.optimizer.metainfo.annotation.AnnotateWithOpTraits;
@@ -110,9 +109,9 @@ public class Optimizer {
     }
 
     if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTCONSTANTPROPAGATION) &&
-            !pctx.getContext().isCboSucceeded()) {    
-      // We run constant propagation twice because after predicate pushdown, filter expressions   
-      // are combined and may become eligible for reduction (like is not null filter).    
+            !pctx.getContext().isCboSucceeded()) {
+      // We run constant propagation twice because after predicate pushdown, filter expressions
+      // are combined and may become eligible for reduction (like is not null filter).
       transformations.add(new ConstantPropagate());
     }
 
@@ -154,9 +153,6 @@ public class Optimizer {
       } else {
         LOG.warn("Skew join is currently not supported in tez! Disabling the skew join optimization.");
       }
-    }
-    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTGBYUSINGINDEX)) {
-      transformations.add(new RewriteGBUsingIndex());
     }
     transformations.add(new SamplePruner());
 

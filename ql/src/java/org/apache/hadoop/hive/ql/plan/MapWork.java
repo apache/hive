@@ -118,8 +118,6 @@ public class MapWork extends BaseWork {
 
   private String inputformat;
 
-  private String indexIntermediateFile;
-
   private Integer numMapTasks;
   private Long maxSplitSize;
   private Long minSplitSize;
@@ -587,10 +585,6 @@ public class MapWork extends BaseWork {
     return this.mapperCannotSpanPartns;
   }
 
-  public String getIndexIntermediateFile() {
-    return indexIntermediateFile;
-  }
-
   public ArrayList<String> getAliases() {
     return new ArrayList<String>(aliasToWork.keySet());
   }
@@ -639,14 +633,6 @@ public class MapWork extends BaseWork {
   @Explain(displayName = "Path -> Sorted Columns", explainLevels = { Level.EXTENDED })
   public Map<String, List<SortCol>> getSortedColsByDirectory() {
     return sortedColsByDirectory;
-  }
-
-  public void addIndexIntermediateFile(String fileName) {
-    if (this.indexIntermediateFile == null) {
-      this.indexIntermediateFile = fileName;
-    } else {
-      this.indexIntermediateFile += "," + fileName;
-    }
   }
 
   public int getSamplingType() {

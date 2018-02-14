@@ -95,12 +95,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hive.druid.MiniDruidCluster;
-import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.apache.hadoop.hive.llap.LlapItUtils;
 import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -966,14 +964,6 @@ public class QTestUtil {
             continue;
           }
           db.dropTable(dbName, tblName, true, true, fsType == FsType.encrypted_hdfs);
-        } else {
-          // this table is defined in srcTables, drop all indexes on it
-         List<Index> indexes = db.getIndexes(dbName, tblName, (short)-1);
-          if (indexes != null && indexes.size() > 0) {
-            for (Index index : indexes) {
-              db.dropIndex(dbName, tblName, index.getIndexName(), true, true);
-            }
-          }
         }
       }
       if (!DEFAULT_DATABASE_NAME.equals(dbName)) {

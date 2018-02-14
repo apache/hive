@@ -90,12 +90,6 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
     case HiveParser.TOK_DESCDATABASE:
     case HiveParser.TOK_ALTERDATABASE_PROPERTIES:
 
-      // Index DDL
-    case HiveParser.TOK_ALTERINDEX_PROPERTIES:
-    case HiveParser.TOK_CREATEINDEX:
-    case HiveParser.TOK_DROPINDEX:
-    case HiveParser.TOK_SHOWINDEXES:
-
       // View DDL
       // "alter view add partition" does not work because of the nature of implementation
       // of the DDL in hive. Hive will internally invoke another Driver on the select statement,
@@ -174,11 +168,6 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
       case HiveParser.TOK_DESCDATABASE:
       case HiveParser.TOK_ALTERDATABASE_PROPERTIES:
 
-        // Index DDL
-      case HiveParser.TOK_ALTERINDEX_PROPERTIES:
-      case HiveParser.TOK_CREATEINDEX:
-      case HiveParser.TOK_DROPINDEX:
-      case HiveParser.TOK_SHOWINDEXES:
         break;
 
         // View DDL
