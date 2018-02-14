@@ -188,6 +188,10 @@ public abstract class MessageDeserializer {
    */
   public abstract OpenTxnMessage getOpenTxnMessage(String messageBody);
 
+  /**
+   * Method to de-serialize OpenTxnMessage instance.
+   */
+  public abstract CommitTxnMessage getCommitTxnMessage(String messageBody);
 
   // Protection against construction.
   protected MessageDeserializer() {}

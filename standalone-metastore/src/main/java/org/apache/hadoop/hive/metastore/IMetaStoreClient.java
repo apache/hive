@@ -1428,6 +1428,21 @@ public interface IMetaStoreClient {
       throws NoSuchTxnException, TxnAbortedException, TException;
 
   /**
+   * Commit a transaction.  This will also unlock any locks associated with
+   * this transaction.
+   * @param txnid id of transaction to be committed.
+   * @param replPolicy the replication policy to identify the source cluster
+   * @throws NoSuchTxnException if the requested transaction does not exist.
+   * This can result fro the transaction having timed out and been deleted by
+   * the compactor.
+   * @throws TxnAbortedException if the requested transaction has been
+   * aborted.  This can result from the transaction timing out.
+   * @throws TException
+   */
+  void commitTxn(long txnid, String replPolicy)
+          throws NoSuchTxnException, TxnAbortedException, TException;
+
+  /**
    * Abort a list of transactions. This is for use by "ABORT TRANSACTIONS" in the grammar.
    * @throws TException
    */

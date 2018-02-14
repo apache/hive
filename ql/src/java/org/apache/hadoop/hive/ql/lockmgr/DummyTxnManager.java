@@ -204,6 +204,11 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
+  public void replCommitTxn(String replPolicy, long srcTxnId) throws LockException {
+    // No-op
+  }
+
+  @Override
   public void rollbackTxn() throws LockException {
     // No-op
   }

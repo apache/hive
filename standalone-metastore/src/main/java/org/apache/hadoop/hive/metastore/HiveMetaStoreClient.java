@@ -2264,9 +2264,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public void commitTxn(long txnid, String replPolicy)
+          throws NoSuchTxnException, TxnAbortedException, TException {
+    CommitTxnRequest rqst = new CommitTxnRequest(txnid);
+    rqst.setReplPolicy(replPolicy);
+    client.commit_txn(rqst);
+  }
+
+  @Override
   public void commitTxn(long txnid)
       throws NoSuchTxnException, TxnAbortedException, TException {
-    client.commit_txn(new CommitTxnRequest(txnid));
+    commitTxn(txnid, null);
   }
 
   @Override

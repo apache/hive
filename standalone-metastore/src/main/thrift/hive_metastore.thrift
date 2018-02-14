@@ -723,6 +723,7 @@ struct OpenTxnsResponse {
 
 struct AbortTxnRequest {
     1: required i64 txnid,
+    2: optional string replPolicy,
 }
 
 struct AbortTxnsRequest {
@@ -730,6 +731,15 @@ struct AbortTxnsRequest {
 }
 
 struct CommitTxnRequest {
+    1: required i64 txnid,
+    2: optional string replPolicy,
+}
+
+struct GetTargetTxnIdRequest {
+    1: required i64 txnid,
+}
+
+struct GetTargetTxnIdResponse {
     1: required i64 txnid,
 }
 

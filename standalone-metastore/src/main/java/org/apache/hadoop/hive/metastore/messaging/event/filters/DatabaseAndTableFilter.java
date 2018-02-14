@@ -41,9 +41,14 @@ public class DatabaseAndTableFilter extends BasicFilter {
     this.tableName = tableName;
   }
 
+  private boolean isTxnRelatedEvent(final NotificationEvent event) {
+    return ((event.getEventType().equals(MessageFactory.OPEN_TXN_EVENT)) ||
+            (event.getEventType().equals(MessageFactory.COMMIT_TXN_EVENT)));
+  }
+
   @Override
   boolean shouldAccept(final NotificationEvent event) {
-    if ((dbPattern == null) || (event.getEventType().equals(MessageFactory.OPEN_TXN_EVENT))) {
+    if ((dbPattern == null) || isTxnRelatedEvent(event)) {
       return true; // if our dbName is null or its of open txn type, we're interested in all wh events
     }
     if (dbPattern.matcher(event.getDbName()).matches()) {

@@ -64,6 +64,7 @@ public abstract class MessageFactory {
   public static final String ADD_NOTNULLCONSTRAINT_EVENT = "ADD_NOTNULLCONSTRAINT";
   public static final String DROP_CONSTRAINT_EVENT = "DROP_CONSTRAINT";
   public static final String OPEN_TXN_EVENT = "OPEN_TXN";
+  public static final String COMMIT_TXN_EVENT = "COMMIT_TXN";
 
   private static MessageFactory instance = null;
 
@@ -262,6 +263,14 @@ public abstract class MessageFactory {
    * @return instance of OpenTxnMessage
    */
   public abstract OpenTxnMessage buildOpenTxnMessage(Iterator<Long> txnIdsItr);
+
+  /**
+   * Factory method for building commit txn message
+   *
+   * @param txnId Id of the transaction to be committed
+   * @return instance of OpenTxnMessage
+   */
+  public abstract CommitTxnMessage buildCommitTxnMessage(Long txnId);
 
   /***
    * Factory method for building add primary key message

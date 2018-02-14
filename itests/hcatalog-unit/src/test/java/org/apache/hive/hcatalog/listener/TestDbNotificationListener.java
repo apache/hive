@@ -77,6 +77,7 @@ import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
+import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterIndexMessage;
@@ -232,6 +233,10 @@ public class TestDbNotificationListener {
 
     public void onOpenTxn(OpenTxnEvent openTxnEvent) throws MetaException {
       pushEventId(EventType.OPEN_TXN, openTxnEvent);
+    }
+
+    public void onCommitTxn(CommitTxnEvent commitTxnEvent) throws MetaException {
+      pushEventId(EventType.COMMIT_TXN, commitTxnEvent);
     }
   }
 

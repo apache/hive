@@ -50,7 +50,8 @@ public abstract class EventMessage {
     ADD_UNIQUECONSTRAINT(MessageFactory.ADD_UNIQUECONSTRAINT_EVENT),
     ADD_NOTNULLCONSTRAINT(MessageFactory.ADD_NOTNULLCONSTRAINT_EVENT),
     DROP_CONSTRAINT(MessageFactory.DROP_CONSTRAINT_EVENT),
-    OPEN_TXN(MessageFactory.OPEN_TXN_EVENT);
+    OPEN_TXN(MessageFactory.OPEN_TXN_EVENT),
+    COMMIT_TXN(MessageFactory.COMMIT_TXN_EVENT);
 
     private String typeString;
 

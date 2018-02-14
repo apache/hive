@@ -717,7 +717,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @RetrySemantics.Idempotent("No-op if already committed")
   public void commitTxn(CommitTxnRequest rqst)
     throws NoSuchTxnException, TxnAbortedException,  MetaException {
-    long txnid = rqst.getTxnid();
+    long txnid;
+    long sourceTxnId = -1;
     try {
       Connection dbConn = null;
       Statement stmt = null;
@@ -727,6 +728,23 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
+
+        if (rqst.isSetReplPolicy()) {
+          sourceTxnId = rqst.getTxnid();
+          String query = "select TARGET_TXN_ID from TXN_MAP where SRC_TXN_ID = " + sourceTxnId +
+                  " and REPL_POLICY = " + quoteString(rqst.getReplPolicy());
+          String s = sqlGenerator.addForUpdateClause(query);
+          LOG.debug("Going to execute query <" + s + ">");
+          rs = stmt.executeQuery(s);
+          if (!rs.next()) {
+            LOG.debug("Target txn for Transaction not present <" + quoteString(rqst.getReplPolicy()) +":" +sourceTxnId + ">");
+            return;
+          }
+          txnid = rs.getLong(1);
+        } else {
+          txnid = rqst.getTxnid();
+        }
+
         /**
          * Runs at READ_COMMITTED with S4U on TXNS row for "txnid".  S4U ensures that no other
          * operation can change this txn (such acquiring locks). While lock() and commitTxn()
@@ -876,6 +894,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               rs.getString(1), rs.getString(2), txnid,
               rs.getTimestamp(3, Calendar.getInstance(TimeZone.getTimeZone("UTC"))).getTime());
         }
+
+        if (rqst.isSetReplPolicy()) {
+          s = "delete from TXN_MAP where SRC_TXN_ID = " + sourceTxnId +
+                  " and REPL_POLICY = " + quoteString(rqst.getReplPolicy());
+          LOG.debug("Going to execute  <" + s + ">");
+          stmt.executeUpdate(s);
+        }
+
         close(rs);
         dbConn.commit();
       } catch (SQLException e) {

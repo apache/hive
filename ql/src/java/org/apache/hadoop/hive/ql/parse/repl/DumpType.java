@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.parse.repl.load.message.TableHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.TruncatePartitionHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.TruncateTableHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.OpenTxnHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.CommitTxnHandler;
 
 public enum DumpType {
 
@@ -190,8 +191,13 @@ public enum DumpType {
     public MessageHandler handler() {
       return new OpenTxnHandler();
     }
+  },
+  EVENT_COMMIT_TXN("EVENT_COMMIT_TXN") {
+    @Override
+    public MessageHandler handler() {
+      return new CommitTxnHandler();
+    }
   };
-
   String type = null;
   DumpType(String type) {
     this.type = type;

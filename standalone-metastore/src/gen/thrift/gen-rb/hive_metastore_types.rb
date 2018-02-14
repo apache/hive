@@ -2176,9 +2176,11 @@ end
 class AbortTxnRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TXNID = 1
+  REPLPOLICY = 2
 
   FIELDS = {
-    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'}
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'},
+    REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2208,6 +2210,42 @@ class AbortTxnsRequest
 end
 
 class CommitTxnRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TXNID = 1
+  REPLPOLICY = 2
+
+  FIELDS = {
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'},
+    REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnid is unset!') unless @txnid
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetTargetTxnIdRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TXNID = 1
+
+  FIELDS = {
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnid is unset!') unless @txnid
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetTargetTxnIdResponse
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TXNID = 1
 

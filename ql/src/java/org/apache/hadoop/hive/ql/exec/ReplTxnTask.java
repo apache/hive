@@ -49,6 +49,10 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
               "Replayed OpenTxn Event for policy " + work.getReplPolicy() + " with srcTxn " + work
                   .getTxnId(i) + " and target txn id " + txnIdsItr.get(i));
         }
+      } else if (work.getOperationType() ==  ReplTxnWork.OperationType.REPL_COMMI_TXN) {
+        driverContext.getCtx().getHiveTxnManager().replCommitTxn(work.getReplPolicy(), work.getTxnId(0));
+        LOG.info("Replayed CommitTxn Event for policy " + work.getReplPolicy() +
+                " with srcTxn " + work.getTxnId(0) + " and target txn id " + work.getTxnId(0));
       }
       return 0;
     } catch (Exception e) {
