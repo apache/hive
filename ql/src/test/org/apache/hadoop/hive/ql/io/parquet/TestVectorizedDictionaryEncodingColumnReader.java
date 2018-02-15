@@ -41,21 +41,34 @@ public class TestVectorizedDictionaryEncodingColumnReader extends VectorizedColu
   @Test
   public void testIntRead() throws Exception {
     intRead(isDictionaryEncoding);
+    longReadInt(isDictionaryEncoding);
+    floatReadInt(isDictionaryEncoding);
+    doubleReadInt(isDictionaryEncoding);
   }
 
   @Test
   public void testLongRead() throws Exception {
     longRead(isDictionaryEncoding);
+    floatReadLong(isDictionaryEncoding);
+    doubleReadLong(isDictionaryEncoding);
+  }
+
+  @Test
+  public void testTimestamp() throws Exception {
+    timestampRead(isDictionaryEncoding);
+    stringReadTimestamp(isDictionaryEncoding);
   }
 
   @Test
   public void testDoubleRead() throws Exception {
     doubleRead(isDictionaryEncoding);
+    stringReadDouble(isDictionaryEncoding);
   }
 
   @Test
   public void testFloatRead() throws Exception {
     floatRead(isDictionaryEncoding);
+    doubleReadFloat(isDictionaryEncoding);
   }
 
   @Test
@@ -81,5 +94,6 @@ public class TestVectorizedDictionaryEncodingColumnReader extends VectorizedColu
   @Test
   public void decimalRead() throws Exception {
     decimalRead(isDictionaryEncoding);
+    stringReadDecimal(isDictionaryEncoding);
   }
 }
