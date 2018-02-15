@@ -93,6 +93,7 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
             if (!running) {
               perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_TO_RUNNING);
               printAppInfo();
+              console.printInfo("Hive on Spark Session Web UI URL: " + sparkJobStatus.getWebUIURL());
               // print job stages.
               console.printInfo("\nQuery Hive on Spark job[" + sparkJobStatus.getJobId() +
                   "] stages: " + Arrays.toString(sparkJobStatus.getStageIds()));

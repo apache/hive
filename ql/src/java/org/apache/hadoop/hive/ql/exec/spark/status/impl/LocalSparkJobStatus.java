@@ -17,11 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark.status.impl;
 
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
@@ -149,6 +151,20 @@ public class LocalSparkJobStatus implements SparkJobStatus {
     }
 
     return  sparkStatisticsBuilder.build();
+  }
+
+  @Override
+  public String getWebUIURL() {
+    try {
+      if (sparkContext.sc().uiWebUrl().isDefined()) {
+        return SparkUtilities.reverseDNSLookupURL(sparkContext.sc().uiWebUrl().get());
+      } else {
+        return "UNDEFINED";
+      }
+    } catch (Exception e) {
+      LOG.warn("Failed to get web UI URL.", e);
+    }
+    return "UNKNOWN";
   }
 
   @Override

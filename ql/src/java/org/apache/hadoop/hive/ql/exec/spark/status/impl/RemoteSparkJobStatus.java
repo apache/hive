@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.spark.status.impl;
 
+import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -38,6 +39,8 @@ import org.apache.spark.SparkStageInfo;
 import org.apache.spark.api.java.JavaFutureAction;
 
 import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,6 +138,20 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
     }
 
     return sparkStatisticsBuilder.build();
+  }
+
+  @Override
+  public String getWebUIURL() {
+    Future<String> getWebUIURL = sparkClient.run(new GetWebUIURLJob());
+    try {
+      return getWebUIURL.get(sparkClientTimeoutInSeconds, TimeUnit.SECONDS);
+    } catch (Exception e) {
+      LOG.warn("Failed to get web UI URL.", e);
+      if (Thread.interrupted()) {
+        error = e;
+      }
+      return "UNKNOWN";
+    }
   }
 
   @Override
@@ -285,6 +302,20 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
     @Override
     public String call(JobContext jc) throws Exception {
       return jc.sc().sc().applicationId();
+    }
+  }
+
+  private static class GetWebUIURLJob implements Job<String> {
+
+    public GetWebUIURLJob() {
+    }
+
+    @Override
+    public String call(JobContext jc) throws Exception {
+      if (jc.sc().sc().uiWebUrl().isDefined()) {
+        return SparkUtilities.reverseDNSLookupURL(jc.sc().sc().uiWebUrl().get());
+      }
+      return "UNDEFINED";
     }
   }
 }
