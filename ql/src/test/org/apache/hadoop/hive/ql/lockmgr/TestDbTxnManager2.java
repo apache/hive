@@ -21,7 +21,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.LockState;
+import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.txn.AcidWriteSetService;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -29,11 +36,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.LockState;
-import org.apache.hadoop.hive.metastore.api.LockType;
-import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
-import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
-import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
@@ -1022,6 +1024,12 @@ public class TestDbTxnManager2 {
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB2", null, locks);
     //update stmt has p=blah, thus nothing is actually update and we generate empty dyn part list
     Assert.assertEquals(0, TxnDbUtil.countQueryAgent(conf, "select count(*) from WRITE_SET"));
+
+    AllocateTableWriteIdsResponse writeIds
+            = txnHandler.allocateTableWriteIds(new AllocateTableWriteIdsRequest(Collections.singletonList(txnMgr2.getCurrentTxnId()),
+            "default", "tab2"));
+    Assert.assertEquals(txnMgr2.getCurrentTxnId(), writeIds.getTxnToWriteIds().get(0).getTxnId());
+
     AddDynamicPartitions adp = new AddDynamicPartitions(txnMgr2.getCurrentTxnId(),
       "default", "tab2", Collections.EMPTY_LIST);
     adp.setOperationType(DataOperationType.UPDATE);
@@ -1039,6 +1047,11 @@ public class TestDbTxnManager2 {
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB2", null, locks);//since TAB2 is empty
     //update stmt has p=blah, thus nothing is actually update and we generate empty dyn part list
     Assert.assertEquals(0, TxnDbUtil.countQueryAgent(conf, "select count(*) from WRITE_SET"));
+
+    writeIds = txnHandler.allocateTableWriteIds(new AllocateTableWriteIdsRequest(Collections.singletonList(txnMgr2.getCurrentTxnId()),
+            "default", "tab2"));
+    Assert.assertEquals(txnMgr2.getCurrentTxnId(), writeIds.getTxnToWriteIds().get(0).getTxnId());
+
     adp = new AddDynamicPartitions(txnMgr2.getCurrentTxnId(),
       "default", "tab2", Collections.singletonList("p=two"));
     adp.setOperationType(DataOperationType.UPDATE);
@@ -1054,6 +1067,11 @@ public class TestDbTxnManager2 {
     Assert.assertEquals(1, TxnDbUtil.countQueryAgent(conf, "select count(*) from WRITE_SET"));
     checkCmdOnDriver(driver.compileAndRespond("update TAB2 set b = 17 where a = 1"));//no rows match
     txnMgr.acquireLocks(driver.getPlan(), ctx, "Long Running");
+
+    writeIds = txnHandler.allocateTableWriteIds(new AllocateTableWriteIdsRequest(Collections.singletonList(txnMgr.getCurrentTxnId()),
+            "default", "tab2"));
+    Assert.assertEquals(txnMgr.getCurrentTxnId(), writeIds.getTxnToWriteIds().get(0).getTxnId());
+
     //so generate empty Dyn Part call
     adp = new AddDynamicPartitions(txnMgr.getCurrentTxnId(),
       "default", "tab2", Collections.EMPTY_LIST);
@@ -1094,6 +1112,10 @@ public class TestDbTxnManager2 {
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB_PART", "p=blah", locks);
     checkLock(LockType.SHARED_WRITE, LockState.WAITING, "default", "TAB_PART", "p=blah", locks);
     txnMgr.rollbackTxn();
+
+    AllocateTableWriteIdsResponse writeIds
+            = txnHandler.allocateTableWriteIds(new AllocateTableWriteIdsRequest(Collections.singletonList(txnId), "default", "TAB_PART"));
+    Assert.assertEquals(txnId, writeIds.getTxnToWriteIds().get(0).getTxnId());
 
     AddDynamicPartitions adp = new AddDynamicPartitions(txnId, "default", "TAB_PART",
       Arrays.asList("p=blah"));

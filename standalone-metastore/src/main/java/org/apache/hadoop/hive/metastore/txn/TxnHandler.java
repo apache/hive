@@ -1363,14 +1363,20 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             String tblName = lc.getTablename();
             String partName = lc.getPartitionname();
             Long writeId = null;
-            s = "select t2w_writeid from TXN_TO_WRITE_ID where"
-                    + " t2w_database = " + quoteString(dbName.toLowerCase())
-                    + " and t2w_table = " + quoteString(tblName.toLowerCase())
-                    + " and t2w_txnid = " + txnid;
-            LOG.debug("Going to execute query <" + s + ">");
-            rs = stmt.executeQuery(s);
-            if (rs.next()) {
-              writeId = rs.getLong(1);
+            if (tblName != null) {
+              // It is assumed the caller have already allocated write id for adding/updating data to
+              // the acid tables. However, DDL operatons won't allocate write id and hence this query
+              // may return empty result sets.
+              // Get the write id allocated by this txn for the given table writes
+              s = "select t2w_writeid from TXN_TO_WRITE_ID where"
+                      + " t2w_database = " + quoteString(dbName.toLowerCase())
+                      + " and t2w_table = " + quoteString(tblName.toLowerCase())
+                      + " and t2w_txnid = " + txnid;
+              LOG.debug("Going to execute query <" + s + ">");
+              rs = stmt.executeQuery(s);
+              if (rs.next()) {
+                writeId = rs.getLong(1);
+              }
             }
             rows.add(txnid + ", '" + dbName + "', " +
                     (tblName == null ? "null" : "'" + tblName + "'") + ", " +
@@ -2079,6 +2085,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           ot = OpertaionType.fromDataOperationType(rqst.getOperationType());
         }
 
+        // It is assumed the caller have already allocated write id for adding data to the dynamic partitions.
         // Get the write id allocated by this txn for the given table writes
         String s = "select t2w_writeid from TXN_TO_WRITE_ID where"
                 + " t2w_database = " + quoteString(rqst.getDbname().toLowerCase())

@@ -21,6 +21,8 @@ import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -71,6 +73,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -149,6 +152,12 @@ public class TestTxnHandler {
     txnHandler.abortTxn(new AbortTxnRequest(1));
     List<String> parts = new ArrayList<String>();
     parts.add("p=1");
+
+    AllocateTableWriteIdsResponse writeIds
+            = txnHandler.allocateTableWriteIds(new AllocateTableWriteIdsRequest(Collections.singletonList(3L), "default", "T"));
+    assertEquals(3, writeIds.getTxnToWriteIds().get(0).getTxnId());
+    assertEquals(1, writeIds.getTxnToWriteIds().get(0).getWriteId());
+
     AddDynamicPartitions adp = new AddDynamicPartitions(3, "default", "T", parts);
     adp.setOperationType(DataOperationType.INSERT);
     txnHandler.addDynamicPartitions(adp);
