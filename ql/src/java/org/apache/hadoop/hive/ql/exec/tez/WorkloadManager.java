@@ -241,6 +241,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   }
 
   public void start() throws Exception {
+    initTriggers();
     tezAmPool.start();
     if (expirationTracker != null) {
       expirationTracker.start();
@@ -249,13 +250,17 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       amComm.start();
     }
     allocationManager.start();
+  }
 
-    final long triggerValidationIntervalMs = HiveConf.getTimeVar(conf,
-      HiveConf.ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL, TimeUnit.MILLISECONDS);
-    TriggerActionHandler<?> triggerActionHandler = new KillMoveTriggerActionHandler(this);
-    triggerValidatorRunnable = new PerPoolTriggerValidatorRunnable(perPoolProviders, triggerActionHandler,
-      triggerValidationIntervalMs);
-    startTriggerValidator(triggerValidationIntervalMs);
+  private void initTriggers() {
+    if (triggerValidatorRunnable == null) {
+      final long triggerValidationIntervalMs = HiveConf.getTimeVar(conf,
+        HiveConf.ConfVars.HIVE_TRIGGER_VALIDATION_INTERVAL, TimeUnit.MILLISECONDS);
+      TriggerActionHandler<?> triggerActionHandler = new KillMoveTriggerActionHandler(this);
+      triggerValidatorRunnable = new PerPoolTriggerValidatorRunnable(perPoolProviders, triggerActionHandler,
+        triggerValidationIntervalMs);
+      startTriggerValidator(triggerValidationIntervalMs);
+    }
   }
 
   public void stop() throws Exception {

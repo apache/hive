@@ -179,7 +179,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     }
   }
 
-  public void initTriggers(final HiveConf conf) throws HiveException {
+  public void initTriggers(final HiveConf conf) {
     if (triggerValidatorRunnable == null) {
       final long triggerValidationIntervalMs = HiveConf.getTimeVar(conf, ConfVars
         .HIVE_TRIGGER_VALIDATION_INTERVAL, TimeUnit.MILLISECONDS);
