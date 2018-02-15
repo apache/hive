@@ -82,10 +82,10 @@ public final class SparkClientFactory {
    * @param hiveConf Configuration for Hive, contains hive.* properties.
    */
   public static SparkClient createClient(Map<String, String> sparkConf, HiveConf hiveConf,
-                                         String sessionId, PrintStream consoleStream)
+                                         String sessionId)
           throws IOException, SparkException {
     Preconditions.checkState(server != null, "initialize() not called.");
-    return new SparkClientImpl(server, sparkConf, hiveConf, sessionId, consoleStream);
+    return new SparkClientImpl(server, sparkConf, hiveConf, sessionId);
   }
 
 }

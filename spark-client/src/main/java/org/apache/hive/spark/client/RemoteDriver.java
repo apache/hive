@@ -171,14 +171,6 @@ public class RemoteDriver {
       throw e;
     }
 
-    if (jc.sc().sc().uiWebUrl().isDefined()) {
-      // Run a reverse DNS lookup on the URL
-      URI uri = URI.create(jc.sc().sc().uiWebUrl().get());
-      InetAddress address = InetAddress.getByName(uri.getHost());
-      this.protocol.sendUIWebURL(uri.getScheme() + "://" + address.getCanonicalHostName() + ":" +
-              uri.getPort());
-    }
-
     synchronized (jcLock) {
       for (Iterator<JobWrapper<?>> it = jobQueue.iterator(); it.hasNext();) {
         it.next().submit();
@@ -278,11 +270,6 @@ public class RemoteDriver {
     void sendMetrics(String jobId, int sparkJobId, int stageId, long taskId, Metrics metrics) {
       LOG.debug("Send task({}/{}/{}/{}) metric to Client.", jobId, sparkJobId, stageId, taskId);
       clientRpc.call(new JobMetrics(jobId, sparkJobId, stageId, taskId, metrics));
-    }
-
-    void sendUIWebURL(String UIWebURL) {
-      LOG.debug("Send UIWebURL({}) to Client.", UIWebURL);
-      clientRpc.call(new SparkUIWebURL(UIWebURL));
     }
 
     private void handle(ChannelHandlerContext ctx, CancelJob msg) {
