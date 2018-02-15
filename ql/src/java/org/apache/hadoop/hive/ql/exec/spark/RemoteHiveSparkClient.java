@@ -101,8 +101,7 @@ public class RemoteHiveSparkClient implements HiveSparkClient {
   }
 
   private void createRemoteClient() throws Exception {
-    remoteClient = SparkClientFactory.createClient(conf, hiveConf, sessionId,
-            SessionState.LogHelper.getInfoStream());
+    remoteClient = SparkClientFactory.createClient(conf, hiveConf, sessionId);
 
     if (HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_PREWARM_ENABLED) &&
             (SparkClientUtilities.isYarnMaster(hiveConf.get("spark.master")) ||

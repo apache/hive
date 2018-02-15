@@ -303,8 +303,7 @@ public class TestSparkClient {
     SparkClient client = null;
     try {
       test.config(conf);
-      client = SparkClientFactory.createClient(conf, HIVECONF, UUID.randomUUID().toString(),
-              mock(PrintStream.class));
+      client = SparkClientFactory.createClient(conf, HIVECONF, UUID.randomUUID().toString());
       test.call(client);
     } finally {
       if (client != null) {

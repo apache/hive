@@ -43,6 +43,8 @@ public interface SparkJobStatus {
 
   SparkStatistics getSparkStatistics();
 
+  String getWebUIURL();
+
   void cleanup();
 
   Throwable getError();
