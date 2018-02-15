@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +85,12 @@ public class CustomPartitionEdge extends EdgeManagerPlugin {
   @Override
   public void routeDataMovementEventToDestination(DataMovementEvent event,
       int sourceTaskIndex, int sourceOutputIndex, Map<Integer, List<Integer>> mapDestTaskIndices) {
+    if (conf.getRoutingTable().get(sourceOutputIndex).size() == 0) {
+      // No task for given input, return empty list with -1 as index
+      mapDestTaskIndices.put(-1, new ArrayList<>());
+      return;
+    }
+    // Normal case.
     List<Integer> outputIndices = Collections.singletonList(sourceTaskIndex);
     for (Integer destIndex : conf.getRoutingTable().get(sourceOutputIndex)) {
       mapDestTaskIndices.put(destIndex, outputIndices);
