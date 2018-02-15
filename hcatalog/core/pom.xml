@@ -235,7 +235,17 @@
       <version>${pig.version}</version>
       <classifier>h2</classifier>
       <scope>test</scope>
-    </dependency>
+         <exclusions>
+          <exclusion>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jetty-util</artifactId>
+          </exclusion>
+        <exclusion>
+          <groupId>org.mortbay.jetty</groupId>
+          <artifactId>jetty</artifactId>
+        </exclusion>
+        </exclusions>
+   </dependency>
   </dependencies>
 
   <build>
