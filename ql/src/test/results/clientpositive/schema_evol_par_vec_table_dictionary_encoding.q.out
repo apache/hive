@@ -1,0 +1,522 @@
+PREHOOK: query: drop table test_alter
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table test_alter
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table test_alter2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table test_alter2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table test_alter3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table test_alter3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table test_alter (id string) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_alter
+POSTHOOK: query: create table test_alter (id string) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_alter
+PREHOOK: query: insert into test_alter values ('1'), ('2'), ('3')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_alter
+POSTHOOK: query: insert into test_alter values ('1'), ('2'), ('3')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_alter
+POSTHOOK: Lineage: test_alter.id SCRIPT []
+PREHOOK: query: select * from test_alter
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_alter
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_alter
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_alter
+#### A masked pattern was here ####
+1
+2
+3
+PREHOOK: query: alter table test_alter add columns (newCol string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@test_alter
+PREHOOK: Output: default@test_alter
+POSTHOOK: query: alter table test_alter add columns (newCol string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@test_alter
+POSTHOOK: Output: default@test_alter
+PREHOOK: query: select * from test_alter
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_alter
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_alter
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_alter
+#### A masked pattern was here ####
+1	NULL
+2	NULL
+3	NULL
+PREHOOK: query: insert into test_alter values ('4', '100')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_alter
+POSTHOOK: query: insert into test_alter values ('4', '100')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_alter
+POSTHOOK: Lineage: test_alter.id SCRIPT []
+POSTHOOK: Lineage: test_alter.newcol SCRIPT []
+PREHOOK: query: select * from test_alter
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_alter
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_alter
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_alter
+#### A masked pattern was here ####
+1	NULL
+2	NULL
+3	NULL
+4	100
+PREHOOK: query: alter table test_alter replace columns (id string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@test_alter
+PREHOOK: Output: default@test_alter
+POSTHOOK: query: alter table test_alter replace columns (id string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@test_alter
+POSTHOOK: Output: default@test_alter
+PREHOOK: query: select * from test_alter
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_alter
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_alter
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_alter
+#### A masked pattern was here ####
+1
+2
+3
+4
+PREHOOK: query: alter table test_alter replace columns (id string, id2 string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@test_alter
+PREHOOK: Output: default@test_alter
+POSTHOOK: query: alter table test_alter replace columns (id string, id2 string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@test_alter
+POSTHOOK: Output: default@test_alter
+PREHOOK: query: select * from test_alter
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_alter
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_alter
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_alter
+#### A masked pattern was here ####
+1	NULL
+2	NULL
+3	NULL
+4	NULL
+PREHOOK: query: insert into test_alter values ('5', '100')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_alter
+POSTHOOK: query: insert into test_alter values ('5', '100')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_alter
+POSTHOOK: Lineage: test_alter.id SCRIPT []
+POSTHOOK: Lineage: test_alter.id2 SCRIPT []
+PREHOOK: query: select * from test_alter
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_alter
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_alter
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_alter
+#### A masked pattern was here ####
+5	100
+1	NULL
+2	NULL
+3	NULL
+4	NULL
+PREHOOK: query: alter table test_alter replace columns (id string, id2 string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@test_alter
+PREHOOK: Output: default@test_alter
+POSTHOOK: query: alter table test_alter replace columns (id string, id2 string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@test_alter
+POSTHOOK: Output: default@test_alter
+PREHOOK: query: select * from test_alter
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_alter
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_alter
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_alter
+#### A masked pattern was here ####
+5	100
+1	NULL
+2	NULL
+3	NULL
+4	NULL
+PREHOOK: query: alter table test_alter replace columns (id char(10), id2 string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@test_alter
+PREHOOK: Output: default@test_alter
+POSTHOOK: query: alter table test_alter replace columns (id char(10), id2 string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@test_alter
+POSTHOOK: Output: default@test_alter
+PREHOOK: query: select * from test_alter
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_alter
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_alter
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_alter
+#### A masked pattern was here ####
+5         	100
+1         	NULL
+2         	NULL
+3         	NULL
+4         	NULL
+PREHOOK: query: alter table test_alter replace columns (id string, id2 string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@test_alter
+PREHOOK: Output: default@test_alter
+POSTHOOK: query: alter table test_alter replace columns (id string, id2 string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@test_alter
+POSTHOOK: Output: default@test_alter
+PREHOOK: query: alter table test_alter replace columns (id varchar(10), id2 string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@test_alter
+PREHOOK: Output: default@test_alter
+POSTHOOK: query: alter table test_alter replace columns (id varchar(10), id2 string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@test_alter
+POSTHOOK: Output: default@test_alter
+PREHOOK: query: select * from test_alter
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_alter
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_alter
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_alter
+#### A masked pattern was here ####
+5	100
+1	NULL
+2	NULL
+3	NULL
+4	NULL
+PREHOOK: query: alter table test_alter replace columns (id string, id2 string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@test_alter
+PREHOOK: Output: default@test_alter
+POSTHOOK: query: alter table test_alter replace columns (id string, id2 string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@test_alter
+POSTHOOK: Output: default@test_alter
+PREHOOK: query: alter table test_alter replace columns (idv varchar(10), id2 string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@test_alter
+PREHOOK: Output: default@test_alter
+POSTHOOK: query: alter table test_alter replace columns (idv varchar(10), id2 string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@test_alter
+POSTHOOK: Output: default@test_alter
+PREHOOK: query: select * from test_alter
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_alter
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_alter
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_alter
+#### A masked pattern was here ####
+NULL	100
+NULL	NULL
+NULL	NULL
+NULL	NULL
+NULL	NULL
+PREHOOK: query: create table test_alter2 (id int) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_alter2
+POSTHOOK: query: create table test_alter2 (id int) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_alter2
+PREHOOK: query: insert into test_alter2 values (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_alter2
+POSTHOOK: query: insert into test_alter2 values (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_alter2
+POSTHOOK: Lineage: test_alter2.id SCRIPT []
+PREHOOK: query: alter table test_alter2 replace columns (id bigint)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@test_alter2
+PREHOOK: Output: default@test_alter2
+POSTHOOK: query: alter table test_alter2 replace columns (id bigint)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@test_alter2
+POSTHOOK: Output: default@test_alter2
+PREHOOK: query: select * from test_alter2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_alter2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_alter2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_alter2
+#### A masked pattern was here ####
+1
+PREHOOK: query: drop table test_alter2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_alter2
+PREHOOK: Output: default@test_alter2
+POSTHOOK: query: drop table test_alter2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_alter2
+POSTHOOK: Output: default@test_alter2
+PREHOOK: query: create table test_alter2 (id float) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_alter2
+POSTHOOK: query: create table test_alter2 (id float) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_alter2
+PREHOOK: query: insert into test_alter2 values (1.5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_alter2
+POSTHOOK: query: insert into test_alter2 values (1.5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_alter2
+POSTHOOK: Lineage: test_alter2.id SCRIPT []
+PREHOOK: query: alter table test_alter2 replace columns (id double)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@test_alter2
+PREHOOK: Output: default@test_alter2
+POSTHOOK: query: alter table test_alter2 replace columns (id double)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@test_alter2
+POSTHOOK: Output: default@test_alter2
+PREHOOK: query: select * from test_alter2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_alter2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_alter2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_alter2
+#### A masked pattern was here ####
+1.5
+PREHOOK: query: drop table test_alter2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_alter2
+PREHOOK: Output: default@test_alter2
+POSTHOOK: query: drop table test_alter2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_alter2
+POSTHOOK: Output: default@test_alter2
+PREHOOK: query: create table test_alter2 (ts timestamp) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_alter2
+POSTHOOK: query: create table test_alter2 (ts timestamp) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_alter2
+PREHOOK: query: insert into test_alter2 values ('2018-01-01 13:14:15.123456'), ('2018-01-02 14:15:16.123456'), ('2018-01-03 16:17:18.123456')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_alter2
+POSTHOOK: query: insert into test_alter2 values ('2018-01-01 13:14:15.123456'), ('2018-01-02 14:15:16.123456'), ('2018-01-03 16:17:18.123456')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_alter2
+POSTHOOK: Lineage: test_alter2.ts SCRIPT []
+PREHOOK: query: select * from test_alter2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_alter2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_alter2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_alter2
+#### A masked pattern was here ####
+2018-01-01 13:14:15.123456
+2018-01-02 14:15:16.123456
+2018-01-03 16:17:18.123456
+PREHOOK: query: alter table test_alter2 replace columns (ts string)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@test_alter2
+PREHOOK: Output: default@test_alter2
+POSTHOOK: query: alter table test_alter2 replace columns (ts string)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@test_alter2
+POSTHOOK: Output: default@test_alter2
+PREHOOK: query: select * from test_alter2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_alter2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_alter2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_alter2
+#### A masked pattern was here ####
+2018-01-01 13:14:15.123456
+2018-01-02 14:15:16.123456
+2018-01-03 16:17:18.123456
+PREHOOK: query: drop table test_alter2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_alter2
+PREHOOK: Output: default@test_alter2
+POSTHOOK: query: drop table test_alter2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_alter2
+POSTHOOK: Output: default@test_alter2
+PREHOOK: query: create table test_alter2 (ts timestamp) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_alter2
+POSTHOOK: query: create table test_alter2 (ts timestamp) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_alter2
+PREHOOK: query: insert into test_alter2 values ('2018-01-01 13:14:15.123456'), ('2018-01-02 14:15:16.123456'), ('2018-01-03 16:17:18.123456')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_alter2
+POSTHOOK: query: insert into test_alter2 values ('2018-01-01 13:14:15.123456'), ('2018-01-02 14:15:16.123456'), ('2018-01-03 16:17:18.123456')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_alter2
+POSTHOOK: Lineage: test_alter2.ts SCRIPT []
+PREHOOK: query: select * from test_alter2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_alter2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_alter2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_alter2
+#### A masked pattern was here ####
+2018-01-01 13:14:15.123456
+2018-01-02 14:15:16.123456
+2018-01-03 16:17:18.123456
+PREHOOK: query: alter table test_alter2 replace columns (ts varchar(19))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@test_alter2
+PREHOOK: Output: default@test_alter2
+POSTHOOK: query: alter table test_alter2 replace columns (ts varchar(19))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@test_alter2
+POSTHOOK: Output: default@test_alter2
+PREHOOK: query: select * from test_alter2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_alter2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_alter2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_alter2
+#### A masked pattern was here ####
+2018-01-01 13:14:15
+2018-01-02 14:15:16
+2018-01-03 16:17:18
+PREHOOK: query: drop table test_alter2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_alter2
+PREHOOK: Output: default@test_alter2
+POSTHOOK: query: drop table test_alter2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_alter2
+POSTHOOK: Output: default@test_alter2
+PREHOOK: query: create table test_alter2 (ts timestamp) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_alter2
+POSTHOOK: query: create table test_alter2 (ts timestamp) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_alter2
+PREHOOK: query: insert into test_alter2 values ('2018-01-01 13:14:15.123456'), ('2018-01-02 14:15:16.123456'), ('2018-01-03 16:17:18.123456')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_alter2
+POSTHOOK: query: insert into test_alter2 values ('2018-01-01 13:14:15.123456'), ('2018-01-02 14:15:16.123456'), ('2018-01-03 16:17:18.123456')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_alter2
+POSTHOOK: Lineage: test_alter2.ts SCRIPT []
+PREHOOK: query: select * from test_alter2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_alter2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_alter2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_alter2
+#### A masked pattern was here ####
+2018-01-01 13:14:15.123456
+2018-01-02 14:15:16.123456
+2018-01-03 16:17:18.123456
+PREHOOK: query: alter table test_alter2 replace columns (ts char(25))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@test_alter2
+PREHOOK: Output: default@test_alter2
+POSTHOOK: query: alter table test_alter2 replace columns (ts char(25))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@test_alter2
+POSTHOOK: Output: default@test_alter2
+PREHOOK: query: select * from test_alter2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_alter2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_alter2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_alter2
+#### A masked pattern was here ####
+2018-01-01 13:14:15.12345
+2018-01-02 14:15:16.12345
+2018-01-03 16:17:18.12345
+PREHOOK: query: create table test_alter3 (id1 tinyint, id2 smallint, id3 int, id4 bigint) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_alter3
+POSTHOOK: query: create table test_alter3 (id1 tinyint, id2 smallint, id3 int, id4 bigint) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_alter3
+PREHOOK: query: insert into test_alter3 values (10, 20, 30, 40)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_alter3
+POSTHOOK: query: insert into test_alter3 values (10, 20, 30, 40)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_alter3
+POSTHOOK: Lineage: test_alter3.id1 SCRIPT []
+POSTHOOK: Lineage: test_alter3.id2 SCRIPT []
+POSTHOOK: Lineage: test_alter3.id3 SCRIPT []
+POSTHOOK: Lineage: test_alter3.id4 SCRIPT []
+PREHOOK: query: alter table test_alter3 replace columns (id1 smallint, id2 int, id3 bigint, id4 decimal(10,4))
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@test_alter3
+PREHOOK: Output: default@test_alter3
+POSTHOOK: query: alter table test_alter3 replace columns (id1 smallint, id2 int, id3 bigint, id4 decimal(10,4))
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@test_alter3
+POSTHOOK: Output: default@test_alter3
+PREHOOK: query: select id1, id2, id3 from test_alter3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_alter3
+#### A masked pattern was here ####
+POSTHOOK: query: select id1, id2, id3 from test_alter3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_alter3
+#### A masked pattern was here ####
+10	20	30
