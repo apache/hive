@@ -14703,21 +14703,21 @@ class TableMeta:
 class Materialization:
   """
   Attributes:
-   - materializationTable
    - tablesUsed
+   - validTxnList
    - invalidationTime
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.STRUCT, 'materializationTable', (Table, Table.thrift_spec), None, ), # 1
-    (2, TType.SET, 'tablesUsed', (TType.STRING,None), None, ), # 2
+    (1, TType.SET, 'tablesUsed', (TType.STRING,None), None, ), # 1
+    (2, TType.STRING, 'validTxnList', None, None, ), # 2
     (3, TType.I64, 'invalidationTime', None, None, ), # 3
   )
 
-  def __init__(self, materializationTable=None, tablesUsed=None, invalidationTime=None,):
-    self.materializationTable = materializationTable
+  def __init__(self, tablesUsed=None, validTxnList=None, invalidationTime=None,):
     self.tablesUsed = tablesUsed
+    self.validTxnList = validTxnList
     self.invalidationTime = invalidationTime
 
   def read(self, iprot):
@@ -14730,12 +14730,6 @@ class Materialization:
       if ftype == TType.STOP:
         break
       if fid == 1:
-        if ftype == TType.STRUCT:
-          self.materializationTable = Table()
-          self.materializationTable.read(iprot)
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
         if ftype == TType.SET:
           self.tablesUsed = set()
           (_etype660, _size657) = iprot.readSetBegin()
@@ -14743,6 +14737,11 @@ class Materialization:
             _elem662 = iprot.readString()
             self.tablesUsed.add(_elem662)
           iprot.readSetEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.validTxnList = iprot.readString()
         else:
           iprot.skip(ftype)
       elif fid == 3:
@@ -14760,16 +14759,16 @@ class Materialization:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('Materialization')
-    if self.materializationTable is not None:
-      oprot.writeFieldBegin('materializationTable', TType.STRUCT, 1)
-      self.materializationTable.write(oprot)
-      oprot.writeFieldEnd()
     if self.tablesUsed is not None:
-      oprot.writeFieldBegin('tablesUsed', TType.SET, 2)
+      oprot.writeFieldBegin('tablesUsed', TType.SET, 1)
       oprot.writeSetBegin(TType.STRING, len(self.tablesUsed))
       for iter663 in self.tablesUsed:
         oprot.writeString(iter663)
       oprot.writeSetEnd()
+      oprot.writeFieldEnd()
+    if self.validTxnList is not None:
+      oprot.writeFieldBegin('validTxnList', TType.STRING, 2)
+      oprot.writeString(self.validTxnList)
       oprot.writeFieldEnd()
     if self.invalidationTime is not None:
       oprot.writeFieldBegin('invalidationTime', TType.I64, 3)
@@ -14779,8 +14778,6 @@ class Materialization:
     oprot.writeStructEnd()
 
   def validate(self):
-    if self.materializationTable is None:
-      raise TProtocol.TProtocolException(message='Required field materializationTable is unset!')
     if self.tablesUsed is None:
       raise TProtocol.TProtocolException(message='Required field tablesUsed is unset!')
     if self.invalidationTime is None:
@@ -14790,8 +14787,8 @@ class Materialization:
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.materializationTable)
     value = (value * 31) ^ hash(self.tablesUsed)
+    value = (value * 31) ^ hash(self.validTxnList)
     value = (value * 31) ^ hash(self.invalidationTime)
     return value
 

@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -448,6 +449,12 @@ public interface IMetaStoreClient {
    */
   Map<String, Materialization> getMaterializationsInvalidationInfo(String dbName, List<String> viewNames)
       throws MetaException, InvalidOperationException, UnknownDBException, TException;
+
+  /**
+   * Updates the creation metadata for the materialized view.
+   */
+  void updateCreationMetadata(String dbName, String tableName, CreationMetadata cm)
+      throws MetaException, TException;
 
   /**
    * @param tableName

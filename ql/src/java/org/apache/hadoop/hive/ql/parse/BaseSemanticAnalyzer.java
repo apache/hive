@@ -1185,9 +1185,7 @@ public abstract class BaseSemanticAnalyzer {
           || ast.getToken().getType() == HiveParser.TOK_TABLE_PARTITION
           || ast.getToken().getType() == HiveParser.TOK_TABTYPE
           || ast.getToken().getType() == HiveParser.TOK_CREATETABLE
-          || ast.getToken().getType() == HiveParser.TOK_CREATE_MATERIALIZED_VIEW
-          || (ast.getToken().getType() == HiveParser.TOK_ALTER_MATERIALIZED_VIEW &&
-                ast.getChild(1).getType() == HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD));
+          || ast.getToken().getType() == HiveParser.TOK_CREATE_MATERIALIZED_VIEW);
       int childIndex = 0;
       numDynParts = 0;
 

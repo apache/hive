@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 
 import java.lang.annotation.ElementType;
@@ -171,6 +172,9 @@ public interface RawStore extends Configurable {
 
   void alterTable(String dbname, String name, Table newTable)
       throws InvalidObjectException, MetaException;
+
+  void updateCreationMetadata(String dbname, String tablename, CreationMetadata cm)
+      throws MetaException;
 
   List<String> getTables(String dbName, String pattern)
       throws MetaException;

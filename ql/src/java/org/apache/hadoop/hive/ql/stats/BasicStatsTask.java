@@ -252,8 +252,6 @@ public class BasicStatsTask implements Serializable, IStatsProcessor {
         if (res == null) {
           return 0;
         }
-        // Stats task should not set creation signature
-        res.getTTable().unsetCreationMetadata();
         db.alterTable(tableFullName, res, environmentContext);
 
         if (conf.getBoolVar(ConfVars.TEZ_EXEC_SUMMARY)) {

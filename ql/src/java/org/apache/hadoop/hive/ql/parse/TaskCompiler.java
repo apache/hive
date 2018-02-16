@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hive.ql.exec.DDLTask;
+import org.apache.hadoop.hive.ql.exec.MaterializedViewDesc;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -322,9 +324,7 @@ public abstract class TaskCompiler {
     if (pCtx.getQueryProperties().isCTAS() && !pCtx.getCreateTable().isMaterialization()) {
       // generate a DDL task and make it a dependent task of the leaf
       CreateTableDesc crtTblDesc = pCtx.getCreateTable();
-
       crtTblDesc.validate(conf);
-
       Task<? extends Serializable> crtTblTask = TaskFactory.get(new DDLWork(
           inputs, outputs, crtTblDesc), conf);
       patchUpAfterCTASorMaterializedView(rootTasks, outputs, crtTblTask);
@@ -334,6 +334,16 @@ public abstract class TaskCompiler {
       Task<? extends Serializable> crtViewTask = TaskFactory.get(new DDLWork(
           inputs, outputs, viewDesc), conf);
       patchUpAfterCTASorMaterializedView(rootTasks, outputs, crtViewTask);
+    } else if (pCtx.getMaterializedViewUpdateDesc() != null) {
+      // If there is a materialized view update desc, we create introduce it at the end
+      // of the tree.
+      MaterializedViewDesc materializedViewDesc = pCtx.getMaterializedViewUpdateDesc();
+      Set<Task<? extends Serializable>> leafTasks = new LinkedHashSet<Task<? extends Serializable>>();
+      getLeafTasks(rootTasks, leafTasks);
+      Task<? extends Serializable> materializedViewTask = TaskFactory.get(materializedViewDesc, conf);
+      for (Task<? extends Serializable> task : leafTasks) {
+        task.addDependentTask(materializedViewTask);
+      }
     }
 
     if (globalLimitCtx.isEnable() && pCtx.getFetchTask() != null) {
@@ -464,6 +474,7 @@ public abstract class TaskCompiler {
     HashSet<Task<? extends Serializable>> leaves = new LinkedHashSet<>();
     getLeafTasks(rootTasks, leaves);
     assert (leaves.size() > 0);
+    Task<? extends Serializable> targetTask = createTask;
     for (Task<? extends Serializable> task : leaves) {
       if (task instanceof StatsTask) {
         // StatsTask require table to already exist
@@ -474,9 +485,35 @@ public abstract class TaskCompiler {
           parentOfCrtTblTask.removeDependentTask(task);
         }
         createTask.addDependentTask(task);
+        targetTask = task;
       } else {
         task.addDependentTask(createTask);
       }
+    }
+
+    // Add task to insert / delete materialized view from registry if needed
+    if (createTask instanceof DDLTask) {
+      DDLTask ddlTask = (DDLTask) createTask;
+      DDLWork work = ddlTask.getWork();
+      String tableName = null;
+      boolean retrieveAndInclude = false;
+      boolean disableRewrite = false;
+      if (work.getCreateViewDesc() != null && work.getCreateViewDesc().isMaterialized()) {
+        tableName = work.getCreateViewDesc().getViewName();
+        retrieveAndInclude = work.getCreateViewDesc().isRewriteEnabled();
+      } else if (work.getAlterMaterializedViewDesc() != null) {
+        tableName = work.getAlterMaterializedViewDesc().getMaterializedViewName();
+        if (work.getAlterMaterializedViewDesc().isRewriteEnable()) {
+          retrieveAndInclude = true;
+        } else {
+          disableRewrite = true;
+        }
+      } else {
+        return;
+      }
+      targetTask.addDependentTask(
+          TaskFactory.get(
+              new MaterializedViewDesc(tableName, retrieveAndInclude, disableRewrite, false), conf));
     }
   }
 
@@ -588,14 +625,16 @@ public abstract class TaskCompiler {
     ParseContext clone = new ParseContext(queryState,
         pCtx.getOpToPartPruner(), pCtx.getOpToPartList(), pCtx.getTopOps(),
         pCtx.getJoinOps(), pCtx.getSmbMapJoinOps(),
-        pCtx.getLoadTableWork(), pCtx.getLoadFileWork(), pCtx.getColumnStatsAutoGatherContexts(), pCtx.getContext(),
+        pCtx.getLoadTableWork(), pCtx.getLoadFileWork(),
+        pCtx.getColumnStatsAutoGatherContexts(), pCtx.getContext(),
         pCtx.getIdToTableNameMap(), pCtx.getDestTableId(), pCtx.getUCtx(),
         pCtx.getListMapJoinOpsNoReducer(),
         pCtx.getPrunedPartitions(), pCtx.getTabNameToTabObject(), pCtx.getOpToSamplePruner(), pCtx.getGlobalLimitCtx(),
         pCtx.getNameToSplitSample(), pCtx.getSemanticInputs(), rootTasks,
         pCtx.getOpToPartToSkewedPruner(), pCtx.getViewAliasToInput(),
         pCtx.getReduceSinkOperatorsAddedByEnforceBucketingSorting(),
-        pCtx.getAnalyzeRewrite(), pCtx.getCreateTable(), pCtx.getCreateViewDesc(),
+        pCtx.getAnalyzeRewrite(), pCtx.getCreateTable(),
+        pCtx.getCreateViewDesc(), pCtx.getMaterializedViewUpdateDesc(),
         pCtx.getQueryProperties(), pCtx.getViewProjectToTableSchema(),
         pCtx.getAcidSinks());
     clone.setFetchTask(pCtx.getFetchTask());

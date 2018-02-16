@@ -20852,13 +20852,13 @@ class Materialization {
   static $_TSPEC;
 
   /**
-   * @var \metastore\Table
-   */
-  public $materializationTable = null;
-  /**
    * @var string[]
    */
   public $tablesUsed = null;
+  /**
+   * @var string
+   */
+  public $validTxnList = null;
   /**
    * @var int
    */
@@ -20868,17 +20868,16 @@ class Materialization {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         1 => array(
-          'var' => 'materializationTable',
-          'type' => TType::STRUCT,
-          'class' => '\metastore\Table',
-          ),
-        2 => array(
           'var' => 'tablesUsed',
           'type' => TType::SET,
           'etype' => TType::STRING,
           'elem' => array(
             'type' => TType::STRING,
             ),
+          ),
+        2 => array(
+          'var' => 'validTxnList',
+          'type' => TType::STRING,
           ),
         3 => array(
           'var' => 'invalidationTime',
@@ -20887,11 +20886,11 @@ class Materialization {
         );
     }
     if (is_array($vals)) {
-      if (isset($vals['materializationTable'])) {
-        $this->materializationTable = $vals['materializationTable'];
-      }
       if (isset($vals['tablesUsed'])) {
         $this->tablesUsed = $vals['tablesUsed'];
+      }
+      if (isset($vals['validTxnList'])) {
+        $this->validTxnList = $vals['validTxnList'];
       }
       if (isset($vals['invalidationTime'])) {
         $this->invalidationTime = $vals['invalidationTime'];
@@ -20919,14 +20918,6 @@ class Materialization {
       switch ($fid)
       {
         case 1:
-          if ($ftype == TType::STRUCT) {
-            $this->materializationTable = new \metastore\Table();
-            $xfer += $this->materializationTable->read($input);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 2:
           if ($ftype == TType::SET) {
             $this->tablesUsed = array();
             $_size660 = 0;
@@ -20943,6 +20934,13 @@ class Materialization {
               }
             }
             $xfer += $input->readSetEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->validTxnList);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -20967,19 +20965,11 @@ class Materialization {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('Materialization');
-    if ($this->materializationTable !== null) {
-      if (!is_object($this->materializationTable)) {
-        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-      }
-      $xfer += $output->writeFieldBegin('materializationTable', TType::STRUCT, 1);
-      $xfer += $this->materializationTable->write($output);
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->tablesUsed !== null) {
       if (!is_array($this->tablesUsed)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('tablesUsed', TType::SET, 2);
+      $xfer += $output->writeFieldBegin('tablesUsed', TType::SET, 1);
       {
         $output->writeSetBegin(TType::STRING, count($this->tablesUsed));
         {
@@ -20994,6 +20984,11 @@ class Materialization {
         }
         $output->writeSetEnd();
       }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->validTxnList !== null) {
+      $xfer += $output->writeFieldBegin('validTxnList', TType::STRING, 2);
+      $xfer += $output->writeString($this->validTxnList);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->invalidationTime !== null) {

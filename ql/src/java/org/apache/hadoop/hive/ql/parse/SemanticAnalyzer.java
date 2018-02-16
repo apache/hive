@@ -43,6 +43,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import com.google.common.collect.ImmutableSet;
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.TokenRewriteStream;
@@ -63,12 +64,14 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -98,6 +101,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
+import org.apache.hadoop.hive.ql.exec.MaterializedViewDesc;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RecordReader;
@@ -308,6 +312,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   Map<String, PrunedPartitionList> prunedPartitions;
   protected List<FieldSchema> resultSchema;
   protected CreateViewDesc createVwDesc;
+  protected MaterializedViewDesc materializedViewUpdateDesc;
   protected ArrayList<String> viewsExpanded;
   protected ASTNode viewSelect;
   protected final UnparseTranslator unparseTranslator;
@@ -329,6 +334,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   // flag for no scan during analyze ... compute statistics
   protected boolean noscan;
+
+  // whether this is a mv rebuild rewritten expression
+  protected boolean rewrittenRebuild = false;
 
   protected volatile boolean disableJoinMerge = false;
   protected final boolean defaultJoinMerge;
@@ -453,6 +461,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     nameToSplitSample.clear();
     resultSchema = null;
     createVwDesc = null;
+    materializedViewUpdateDesc = null;
     viewsExpanded = null;
     viewSelect = null;
     ctesExpanded = null;
@@ -490,11 +499,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return new ParseContext(queryState, opToPartPruner, opToPartList, topOps,
         new HashSet<JoinOperator>(joinContext.keySet()),
         new HashSet<SMBMapJoinOperator>(smbMapJoinContext.keySet()),
-        loadTableWork, loadFileWork, columnStatsAutoGatherContexts, ctx, idToTableNameMap, destTableId, uCtx,
+        loadTableWork, loadFileWork, columnStatsAutoGatherContexts,
+        ctx, idToTableNameMap, destTableId, uCtx,
         listMapJoinOpsNoReducer, prunedPartitions, tabNameToTabObject,
         opToSamplePruner, globalLimitCtx, nameToSplitSample, inputs, rootTasks,
         opToPartToSkewedPruner, viewAliasToInput, reduceSinkOperatorsAddedByEnforceBucketingSorting,
-        analyzeRewrite, tableDesc, createVwDesc, queryProperties, viewProjectToTableSchema, acidFileSinks);
+        analyzeRewrite, tableDesc, createVwDesc, materializedViewUpdateDesc,
+        queryProperties, viewProjectToTableSchema, acidFileSinks);
   }
 
   public CompilationOpContext getOpContext() {
@@ -1984,7 +1995,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       switch (ast.getToken().getType()) {
       case HiveParser.TOK_TAB: {
         TableSpec ts = new TableSpec(db, conf, ast);
-        if (ts.tableHandle.isView() || ts.tableHandle.isMaterializedView()) {
+        if (ts.tableHandle.isView() ||
+            (!rewrittenRebuild && ts.tableHandle.isMaterializedView())) {
           throw new SemanticException(ErrorMsg.DML_AGAINST_VIEW.getMsg());
         }
 
@@ -6899,6 +6911,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         createInsertDesc(dest_tab, overwrite);
       }
 
+      if (dest_tab.isMaterializedView()) {
+        materializedViewUpdateDesc = new MaterializedViewDesc(
+            dest_tab.getFullyQualifiedName(), false, false, true);
+      }
+
       WriteEntity output = generateTableWriteEntity(
           dest, dest_tab, partSpec, ltd, dpCtx, isNonNativeTable);
       ctx.getLoadTableOutputMap().put(ltd, output);
@@ -7464,7 +7481,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     return dpCtx;
   }
-
 
   private void createInsertDesc(Table table, boolean overwrite) {
     Task<? extends Serializable>[] tasks = new Task[this.rootTasks.size()];
@@ -11207,7 +11223,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private Table getTableObjectByName(String tableName, boolean throwException) throws HiveException {
+  protected Table getTableObjectByName(String tableName, boolean throwException) throws HiveException {
     if (!tabNameToTabObject.containsKey(tableName)) {
       Table table = db.getTable(tableName, throwException);
       if (table != null) {
@@ -11475,8 +11491,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // 3. analyze create view command
     if (ast.getToken().getType() == HiveParser.TOK_CREATEVIEW ||
         ast.getToken().getType() == HiveParser.TOK_CREATE_MATERIALIZED_VIEW ||
-        (ast.getToken().getType() == HiveParser.TOK_ALTER_MATERIALIZED_VIEW &&
-            ast.getChild(1).getType() == HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD) ||
         (ast.getToken().getType() == HiveParser.TOK_ALTERVIEW &&
             ast.getChild(1).getType() == HiveParser.TOK_QUERY)) {
       child = analyzeCreateView(ast, qb, plannerCtx);
@@ -11702,7 +11716,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         listMapJoinOpsNoReducer, prunedPartitions, tabNameToTabObject, opToSamplePruner,
         globalLimitCtx, nameToSplitSample, inputs, rootTasks, opToPartToSkewedPruner,
         viewAliasToInput, reduceSinkOperatorsAddedByEnforceBucketingSorting,
-        analyzeRewrite, tableDesc, createVwDesc, queryProperties, viewProjectToTableSchema, acidFileSinks);
+        analyzeRewrite, tableDesc, createVwDesc, materializedViewUpdateDesc,
+        queryProperties, viewProjectToTableSchema, acidFileSinks);
 
     // Set the semijoin hints in parse context
     pCtx.setSemiJoinHints(parseSemiJoinHint(getQB().getParseInfo().getHintList()));
@@ -12771,10 +12786,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_ORREPLACE:
         orReplace = true;
         break;
-      case HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD:
-        isMaterialized = true;
-        isRebuild = true;
-        break;
       case HiveParser.TOK_QUERY:
         // For CBO
         if (plannerCtx != null) {
@@ -12849,27 +12860,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       queryState.setCommandType(HiveOperation.CREATEVIEW);
     }
     qb.setViewDesc(createVwDesc);
-
-    if (isRebuild) {
-      // We need to go lookup the table and get the select statement and then parse it.
-      try {
-        Table tab = getTableObjectByName(dbDotTable, true);
-        // We need to use the expanded text for the materialized view, as it will contain
-        // the qualified table aliases, etc.
-        String viewText = tab.getViewExpandedText();
-        if (viewText.trim().isEmpty()) {
-          throw new SemanticException(ErrorMsg.MATERIALIZED_VIEW_DEF_EMPTY);
-        }
-        Context ctx = new Context(queryState.getConf());
-        selectStmt = ParseUtils.parse(viewText, ctx);
-        // For CBO
-        if (plannerCtx != null) {
-          plannerCtx.setViewToken(selectStmt);
-        }
-      } catch (Exception e) {
-        throw new SemanticException(e);
-      }
-    }
 
     return selectStmt;
   }

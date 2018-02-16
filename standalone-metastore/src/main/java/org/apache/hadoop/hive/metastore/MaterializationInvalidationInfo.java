@@ -35,8 +35,9 @@ public class MaterializationInvalidationInfo extends Materialization {
 
   private AtomicLong invalidationTime;
 
-  public MaterializationInvalidationInfo(Table materializationTable, Set<String> tablesUsed) {
-    super(materializationTable, tablesUsed, 0);
+  public MaterializationInvalidationInfo(Set<String> tablesUsed, String validTxnList) {
+    super(tablesUsed, 0);
+    this.setValidTxnList(validTxnList);
     this.invalidationTime = new AtomicLong(0);
   }
 
