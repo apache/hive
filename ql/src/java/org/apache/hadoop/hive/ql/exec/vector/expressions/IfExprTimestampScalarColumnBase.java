@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -69,8 +70,10 @@ public abstract class IfExprTimestampScalarColumnBase extends VectorExpression {
     TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] outputIsNull = outputColVector.isNull;
-    outputColVector.noNulls = arg3ColVector.noNulls; // nulls can only come from arg3 column vector
-    outputColVector.isRepeating = false; // may override later
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
     int n = batch.size;
     long[] vector1 = arg1ColVector.vector;
 
@@ -80,7 +83,7 @@ public abstract class IfExprTimestampScalarColumnBase extends VectorExpression {
     }
 
     if (arg1ColVector.isRepeating) {
-      if (vector1[0] == 1) {
+      if ((arg1ColVector.noNulls || !arg1ColVector.isNull[0]) && vector1[0] == 1) {
         outputColVector.fill(arg2Scalar);
       } else {
         arg3ColVector.copySelected(batch.selectedInUse, sel, n, outputColVector);
@@ -96,16 +99,44 @@ public abstract class IfExprTimestampScalarColumnBase extends VectorExpression {
 
     if (arg1ColVector.noNulls) {
       if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
-          int i = sel[j];
-          outputColVector.set(i, vector1[i] == 1 ? arg2Scalar : arg3ColVector.asScratchTimestamp(i));
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != n; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           outputColVector.set(
+               i, vector1[i] == 1 ? arg2Scalar : arg3ColVector.asScratchTimestamp(i));
+         }
+        } else {
+          for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            outputColVector.set(
+                i, vector1[i] == 1 ? arg2Scalar : arg3ColVector.asScratchTimestamp(i));
+          }
         }
       } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
         for(int i = 0; i != n; i++) {
-          outputColVector.set(i, vector1[i] == 1 ? arg2Scalar : arg3ColVector.asScratchTimestamp(i));
+          outputColVector.set(
+              i, vector1[i] == 1 ? arg2Scalar : arg3ColVector.asScratchTimestamp(i));
         }
       }
     } else /* there are nulls */ {
+
+      /*
+       * Do careful maintenance of NULLs.
+       */
+      outputColVector.noNulls = false;
+
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];

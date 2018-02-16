@@ -33,9 +33,15 @@ create temporary table HIVE_14349 (a string) stored as orc;
 
 insert into HIVE_14349 values('XYZa'), ('badXYZa');
 
+explain vectorization expression
+select * from HIVE_14349 where a LIKE 'XYZ%a%';
+
 select * from HIVE_14349 where a LIKE 'XYZ%a%';
 
 insert into HIVE_14349 values ('XYZab'), ('XYZabBAD'), ('badXYZab'), ('badXYZabc');
+
+explain vectorization expression
+select * from HIVE_14349 where a LIKE 'XYZ%a_';
 
 select * from HIVE_14349 where a LIKE 'XYZ%a_';
 

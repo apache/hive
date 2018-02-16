@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
 
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
@@ -75,6 +76,12 @@ public class <ClassName> extends VectorExpression {
    */
   public void evaluate(VectorizedRowBatch batch) {
 
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
@@ -88,52 +95,91 @@ public class <ClassName> extends VectorExpression {
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector2.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
-    outputColVector.noNulls = inputColVector2.noNulls;
-    outputColVector.isRepeating = inputColVector2.isRepeating;
-    int n = batch.size;
 
-    // return immediately if batch is empty
-    if (n == 0) {
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
+    if (inputColVector2.isRepeating) {
+      if (inputColVector2.noNulls || !inputIsNull[0]) {
+        outputIsNull[0] = false;
+        dtm.<OperatorMethod>(
+            value, inputColVector2.asScratch<CamelOperandType2>(0), outputColVector.getScratch<CamelReturnType>());
+        outputColVector.setFromScratch<CamelReturnType>(0);
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+      }
+      outputColVector.isRepeating = true;
+      NullUtil.setNullOutputEntriesColScalar(outputColVector, batch.selectedInUse, sel, n);
       return;
     }
 
-    if (inputColVector2.isRepeating) {
-      dtm.<OperatorMethod>(
-          value, inputColVector2.asScratch<CamelOperandType2>(0), outputColVector.getScratch<CamelReturnType>());
-      outputColVector.setFromScratch<CamelReturnType>(0);
-      // Even if there are no nulls, we always copy over entry 0. Simplifies code.
-      outputIsNull[0] = inputIsNull[0];
-    } else if (inputColVector2.noNulls) {
+    if (inputColVector2.noNulls) {
       if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
-          int i = sel[j];
-          dtm.<OperatorMethod>(
-              value, inputColVector2.asScratch<CamelOperandType2>(i), outputColVector.getScratch<CamelReturnType>());
-          outputColVector.setFromScratch<CamelReturnType>(i);
-        }
+
+         // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+         if (!outputColVector.noNulls) {
+           for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            outputIsNull[i] = false;
+            dtm.<OperatorMethod>(
+                value, inputColVector2.asScratch<CamelOperandType2>(i), outputColVector.getScratch<CamelReturnType>());
+            outputColVector.setFromScratch<CamelReturnType>(i);
+          }
+         } else {
+           for(int j = 0; j != n; j++) {
+             final int i = sel[j];
+             dtm.<OperatorMethod>(
+                 value, inputColVector2.asScratch<CamelOperandType2>(i), outputColVector.getScratch<CamelReturnType>());
+             outputColVector.setFromScratch<CamelReturnType>(i);
+           }
+         }
       } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
         for(int i = 0; i != n; i++) {
           dtm.<OperatorMethod>(
               value, inputColVector2.asScratch<CamelOperandType2>(i), outputColVector.getScratch<CamelReturnType>());
           outputColVector.setFromScratch<CamelReturnType>(i);
         }
       }
-    } else {                         /* there are nulls */
+    } else /* there are NULLs in the inputColVector */ {
+
+      /*
+       * Do careful maintenance of the outputColVector.noNulls flag.
+       */
+
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          dtm.<OperatorMethod>(
-              value, inputColVector2.asScratch<CamelOperandType2>(i), outputColVector.getScratch<CamelReturnType>());
-          outputColVector.setFromScratch<CamelReturnType>(i);
-          outputIsNull[i] = inputIsNull[i];
+          if (!inputIsNull[i]) {
+            outputIsNull[i] = false;
+            dtm.<OperatorMethod>(
+                value, inputColVector2.asScratch<CamelOperandType2>(i), outputColVector.getScratch<CamelReturnType>());
+            outputColVector.setFromScratch<CamelReturnType>(i);
+          } else {
+            outputIsNull[i] = true;
+            outputColVector.noNulls = false;
+          }
         }
       } else {
         for(int i = 0; i != n; i++) {
-          dtm.<OperatorMethod>(
-              value, inputColVector2.asScratch<CamelOperandType2>(i), outputColVector.getScratch<CamelReturnType>());
-          outputColVector.setFromScratch<CamelReturnType>(i);
+          if (!inputIsNull[i]) {
+            outputIsNull[i] = false;
+            dtm.<OperatorMethod>(
+                value, inputColVector2.asScratch<CamelOperandType2>(i), outputColVector.getScratch<CamelReturnType>());
+            outputColVector.setFromScratch<CamelReturnType>(i);
+          } else {
+            outputIsNull[i] = true;
+            outputColVector.noNulls = false;
+          }
         }
-        System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }
     }
 

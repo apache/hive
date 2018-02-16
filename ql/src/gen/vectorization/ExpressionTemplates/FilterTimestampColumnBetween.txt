@@ -59,25 +59,22 @@ public class <ClassName> extends VectorExpression {
   @Override
   public void evaluate(VectorizedRowBatch batch) {
 
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
 
     TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[colNum];
     int[] sel = batch.selected;
-    boolean[] nullPos = inputColVector.isNull;
-    int n = batch.size;
-
-    // return immediately if batch is empty
-    if (n == 0) {
-      return;
-    }
+    boolean[] inputIsNull = inputColVector.isNull;
 
     if (inputColVector.noNulls) {
       if (inputColVector.isRepeating) {
-
-        // All must be selected otherwise size would be zero.
-        // Repeating property will not change.
         if (<OptionalNot>(inputColVector.compareTo(0, leftValue) < 0 || inputColVector.compareTo(0, rightValue) > 0)) {
 
           // Entire batch is filtered out.
@@ -106,10 +103,7 @@ public class <ClassName> extends VectorExpression {
       }
     } else {
       if (inputColVector.isRepeating) {
-
-        // All must be selected otherwise size would be zero.
-        // Repeating property will not change.
-        if (!nullPos[0]) {
+        if (!inputIsNull[0]) {
           if (<OptionalNot>(inputColVector.compareTo(0, leftValue) < 0 || inputColVector.compareTo(0, rightValue) > 0)) {
 
             // Entire batch is filtered out.
@@ -122,7 +116,7 @@ public class <ClassName> extends VectorExpression {
         int newSize = 0;
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
             if (<OptionalNot>(inputColVector.compareTo(leftValue, i) <= 0 && inputColVector.compareTo(i, rightValue) <= 0)) {
              sel[newSize++] = i;
             }
@@ -134,7 +128,7 @@ public class <ClassName> extends VectorExpression {
       } else {
         int newSize = 0;
         for(int i = 0; i != n; i++) {
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
             if (<OptionalNot>(inputColVector.compareTo(leftValue, i) <= 0 && inputColVector.compareTo(i, rightValue) <= 0)) {
               sel[newSize++] = i;
             }

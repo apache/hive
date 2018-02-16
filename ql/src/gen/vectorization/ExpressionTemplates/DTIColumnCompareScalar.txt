@@ -21,9 +21,11 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
+import java.sql.Date;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 
 /**
- * Generated from template DTIColumnCompareScalar.txt, which covers comparison 
+ * Generated from template DTIColumnCompareScalar.txt, which covers comparison
  * expressions between a datetime/interval column and a scalar of the same type. The boolean output
  * is stored in a separate boolean column.
  */
@@ -37,6 +39,11 @@ public class <ClassName> extends <BaseClassName> {
 
   public <ClassName>() {
     super();
+  }
+
+  @Override
+  public String vectorExpressionParameters() {
+    <VectorExpressionParametersBody>
   }
 
   @Override

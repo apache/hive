@@ -15,10 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.AbstractFilterStringColLikeStringScalar.Checker;
@@ -70,42 +71,50 @@ public class SelectStringColLikeStringScalar extends VectorExpression {
 
     LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
     long[] outputVector = outV.vector;
+    boolean[] inputIsNull = inputColVector.isNull;
+    boolean[] outputIsNull = outV.isNull;
 
     // return immediately if batch is empty
     if (n == 0) {
       return;
     }
 
-    outV.noNulls = inputColVector.noNulls;
-    outV.isRepeating = inputColVector.isRepeating;
+    // We do not need to do a column reset since we are carefully changing the output.
+    outV.isRepeating = false;
+
+    if (inputColVector.isRepeating) {
+      if (inputColVector.noNulls || !inputIsNull[0]) {
+        // Set isNull before call in case it changes it mind.
+        outputIsNull[0] = false;
+        outputVector[0] = (checker.check(vector[0], start[0], length[0]) ? 1 : 0);
+      } else {
+        outputIsNull[0] = true;
+        outV.noNulls = false;
+      }
+      outV.isRepeating = true;
+      return;
+    }
 
     if (inputColVector.noNulls) {
-      if (inputColVector.isRepeating) {
-        outputVector[0] = (checker.check(vector[0], start[0], length[0]) ? 1 : 0);
-        outV.isNull[0] = false;
-      } else if (batch.selectedInUse) {
+      if (batch.selectedInUse) {
         for (int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = (checker.check(vector[i], start[i], length[i]) ? 1 : 0);
           outV.isNull[i] = false;
+          outputVector[i] = (checker.check(vector[i], start[i], length[i]) ? 1 : 0);
         }
       } else {
+        Arrays.fill(outV.isNull, 0, n, false);
         for (int i = 0; i != n; i++) {
           outputVector[i] = (checker.check(vector[i], start[i], length[i]) ? 1 : 0);
-          outV.isNull[i] = false;
         }
       }
-    } else {
-      if (inputColVector.isRepeating) {
-        //All must be selected otherwise size would be zero. Repeating property will not change.
-        if (!nullPos[0]) {
-          outputVector[0] = (checker.check(vector[0], start[0], length[0]) ? 1 : 0);
-          outV.isNull[0] = false;
-        } else {
-          outputVector[0] = LongColumnVector.NULL_VALUE;
-          outV.isNull[0] = true;
-        }
-      } else if (batch.selectedInUse) {
+    } else /* there are nulls in the inputColVector */ {
+
+      /*
+       * Do careful maintenance of the outputColVector.noNulls flag.
+       */
+
+      if (batch.selectedInUse) {
         for (int j = 0; j != n; j++) {
           int i = sel[j];
           if (!nullPos[i]) {
@@ -114,6 +123,7 @@ public class SelectStringColLikeStringScalar extends VectorExpression {
           } else {
             outputVector[i] = LongColumnVector.NULL_VALUE;
             outV.isNull[i] = true;
+            outV.noNulls = false;
           }
         }
       } else {
@@ -124,11 +134,12 @@ public class SelectStringColLikeStringScalar extends VectorExpression {
           } else {
             outputVector[i] = LongColumnVector.NULL_VALUE;
             outV.isNull[i] = true;
+            outV.noNulls = false;
           }
         }
       }
     }
-	}
+  }
 
   private Checker borrowChecker() {
     FilterStringColLikeStringScalar fil = new FilterStringColLikeStringScalar();

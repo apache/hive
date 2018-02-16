@@ -1,12 +1,29 @@
-PREHOOK: query: CREATE TABLE decimal_test STORED AS ORC AS SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc
-PREHOOK: type: CREATETABLE_AS_SELECT
-PREHOOK: Input: default@alltypesorc
+PREHOOK: query: CREATE TABLE decimal_test (cdouble double,cdecimal1 DECIMAL(20,10), cdecimal2 DECIMAL(23,14)) STORED AS ORC
+PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@decimal_test
-POSTHOOK: query: CREATE TABLE decimal_test STORED AS ORC AS SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc
-POSTHOOK: type: CREATETABLE_AS_SELECT
-POSTHOOK: Input: default@alltypesorc
+POSTHOOK: query: CREATE TABLE decimal_test (cdouble double,cdecimal1 DECIMAL(20,10), cdecimal2 DECIMAL(23,14)) STORED AS ORC
+POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
+POSTHOOK: Output: default@decimal_test
+PREHOOK: query: insert into decimal_test values (NULL, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@decimal_test
+POSTHOOK: query: insert into decimal_test values (NULL, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@decimal_test
+POSTHOOK: Lineage: decimal_test.cdecimal1 EXPRESSION []
+POSTHOOK: Lineage: decimal_test.cdecimal2 EXPRESSION []
+POSTHOOK: Lineage: decimal_test.cdouble EXPRESSION []
+PREHOOK: query: INSERT INTO TABLE decimal_test SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@decimal_test
+POSTHOOK: query: INSERT INTO TABLE decimal_test SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(20,10)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(23,14)) AS cdecimal2 FROM alltypesorc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@decimal_test
 POSTHOOK: Lineage: decimal_test.cdecimal1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
 POSTHOOK: Lineage: decimal_test.cdecimal2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
@@ -35,7 +52,7 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: decimal_test
-            Statistics: Num rows: 12288 Data size: 2128368 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 12289 Data size: 2128368 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
                 vectorizationSchemaColumns: [0:cdouble:double, 1:cdecimal1:decimal(20,10), 2:cdecimal2:decimal(23,14), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -45,7 +62,7 @@ STAGE PLANS:
                   native: true
                   predicateExpression: FilterExprAndExpr(children: FilterDecimalColGreaterDecimalScalar(col 1:decimal(20,10), val 0), FilterDecimalColLessDecimalScalar(col 1:decimal(20,10), val 12345.5678), FilterDecimalColNotEqualDecimalScalar(col 2:decimal(23,14), val 0), FilterDecimalColGreaterDecimalScalar(col 2:decimal(23,14), val 1000), SelectColumnIsNotNull(col 0:double))
               predicate: ((cdecimal1 < 12345.5678) and (cdecimal1 > 0) and (cdecimal2 <> 0) and (cdecimal2 > 1000) and cdouble is not null) (type: boolean)
-              Statistics: Num rows: 455 Data size: 78809 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 455 Data size: 78802 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: (cdecimal1 + cdecimal2) (type: decimal(25,14)), (cdecimal1 - (2 * cdecimal2)) (type: decimal(26,14)), ((cdecimal1 + 2.34) / cdecimal2) (type: decimal(38,13)), (cdecimal1 * (cdecimal2 / 3.4)) (type: decimal(38,17)), (cdecimal1 % 10) (type: decimal(12,10)), UDFToInteger(cdecimal1) (type: int), UDFToShort(cdecimal2) (type: smallint), UDFToByte(cdecimal2) (type: tinyint), UDFToLong(cdecimal1) (type: bigint), UDFToBoolean(cdecimal1) (type: boolean), UDFToDouble(cdecimal2) (type: double), UDFToFloat(cdecimal1) (type: float), UDFToString(cdecimal2) (type: string), CAST( cdecimal1 AS TIMESTAMP) (type: timestamp)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
@@ -54,7 +71,7 @@ STAGE PLANS:
                     native: true
                     projectedOutputColumnNums: [4, 6, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
                     selectExpressions: DecimalColAddDecimalColumn(col 1:decimal(20,10), col 2:decimal(23,14)) -> 4:decimal(25,14), DecimalColSubtractDecimalColumn(col 1:decimal(20,10), col 5:decimal(25,14))(children: DecimalScalarMultiplyDecimalColumn(val 2, col 2:decimal(23,14)) -> 5:decimal(25,14)) -> 6:decimal(26,14), DecimalColDivideDecimalColumn(col 7:decimal(21,10), col 2:decimal(23,14))(children: DecimalColAddDecimalScalar(col 1:decimal(20,10), val 2.34) -> 7:decimal(21,10)) -> 8:decimal(38,13), DecimalColMultiplyDecimalColumn(col 1:decimal(20,10), col 9:decimal(27,17))(children: DecimalColDivideDecimalScalar(col 2:decimal(23,14), val 3.4) -> 9:decimal(27,17)) -> 10:decimal(38,17), DecimalColModuloDecimalScalar(col 1:decimal(20,10), val 10) -> 11:decimal(12,10), CastDecimalToLong(col 1:decimal(20,10)) -> 12:int, CastDecimalToLong(col 2:decimal(23,14)) -> 13:smallint, CastDecimalToLong(col 2:decimal(23,14)) -> 14:tinyint, CastDecimalToLong(col 1:decimal(20,10)) -> 15:bigint, CastDecimalToBoolean(col 1:decimal(20,10)) -> 16:boolean, CastDecimalToDouble(col 2:decimal(23,14)) -> 17:double, CastDecimalToDouble(col 1:decimal(20,10)) -> 18:float, CastDecimalToString(col 2:decimal(23,14)) -> 19:string, CastDecimalToTimestamp(col 1:decimal(20,10)) -> 20:timestamp
-                Statistics: Num rows: 455 Data size: 78809 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 455 Data size: 78802 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: decimal(25,14)), _col1 (type: decimal(26,14)), _col2 (type: decimal(38,13)), _col3 (type: decimal(38,17)), _col4 (type: decimal(12,10)), _col5 (type: int), _col6 (type: smallint), _col7 (type: tinyint), _col8 (type: bigint), _col9 (type: boolean), _col10 (type: double), _col11 (type: float), _col12 (type: string), _col13 (type: timestamp)
                   sort order: ++++++++++++++
@@ -63,7 +80,7 @@ STAGE PLANS:
                       native: false
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                  Statistics: Num rows: 455 Data size: 78809 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 455 Data size: 78802 Basic stats: COMPLETE Column stats: NONE
                   TopN Hash Memory Usage: 0.1
       Execution mode: vectorized
       Map Vectorization:
@@ -89,7 +106,7 @@ STAGE PLANS:
         Select Operator
           expressions: KEY.reducesinkkey0 (type: decimal(25,14)), KEY.reducesinkkey1 (type: decimal(26,14)), KEY.reducesinkkey2 (type: decimal(38,13)), KEY.reducesinkkey3 (type: decimal(38,17)), KEY.reducesinkkey4 (type: decimal(12,10)), KEY.reducesinkkey5 (type: int), KEY.reducesinkkey6 (type: smallint), KEY.reducesinkkey7 (type: tinyint), KEY.reducesinkkey8 (type: bigint), KEY.reducesinkkey9 (type: boolean), KEY.reducesinkkey10 (type: double), KEY.reducesinkkey11 (type: float), KEY.reducesinkkey12 (type: string), KEY.reducesinkkey13 (type: timestamp)
           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
-          Statistics: Num rows: 455 Data size: 78809 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 455 Data size: 78802 Basic stats: COMPLETE Column stats: NONE
           Limit
             Number of rows: 10
             Statistics: Num rows: 10 Data size: 1730 Basic stats: COMPLETE Column stats: NONE
@@ -129,6 +146,19 @@ POSTHOOK: Input: default@decimal_test
 1895.51268191268460	-1203.53347193346920	0.8371969190171	262050.87567567649292835	2.4972972973	862	1033	NULL	862	true	1033.0153846153846	862.4973	1033.0153846153846	1969-12-31 16:14:22.497297297
 1909.95218295221550	-1212.70166320163100	0.8371797936946	266058.54729730725574014	9.0675675676	869	1040	NULL	869	true	1040.8846153846155	869.06757	1040.8846153846155	1969-12-31 16:14:29.067567567
 1913.89022869026920	-1215.20207900203840	0.8371751679996	267156.82702703945592392	0.8594594595	870	1043	NULL	870	true	1043.0307692307692	870.85944	1043.0307692307692	1969-12-31 16:14:30.859459459
+PREHOOK: query: SELECT SUM(HASH(*))
+FROM (SELECT cdecimal1 + cdecimal2 as c1, cdecimal1 - (2*cdecimal2) as c2, ((cdecimal1+2.34)/cdecimal2) as c3, (cdecimal1 * (cdecimal2/3.4)) as c4, cdecimal1 % 10 as c5, CAST(cdecimal1 AS INT) as c6, CAST(cdecimal2 AS SMALLINT) as c7, CAST(cdecimal2 AS TINYINT) as c8, CAST(cdecimal1 AS BIGINT) as c9, CAST (cdecimal1 AS BOOLEAN) as c10, CAST(cdecimal2 AS DOUBLE) as c11, CAST(cdecimal1 AS FLOAT) as c12, CAST(cdecimal2 AS STRING) as c13, CAST(cdecimal1 AS TIMESTAMP) as c14 FROM decimal_test WHERE cdecimal1 > 0 AND cdecimal1 < 12345.5678 AND cdecimal2 != 0 AND cdecimal2 > 1000 AND cdouble IS NOT NULL
+ORDER BY c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14) q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_test
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(*))
+FROM (SELECT cdecimal1 + cdecimal2 as c1, cdecimal1 - (2*cdecimal2) as c2, ((cdecimal1+2.34)/cdecimal2) as c3, (cdecimal1 * (cdecimal2/3.4)) as c4, cdecimal1 % 10 as c5, CAST(cdecimal1 AS INT) as c6, CAST(cdecimal2 AS SMALLINT) as c7, CAST(cdecimal2 AS TINYINT) as c8, CAST(cdecimal1 AS BIGINT) as c9, CAST (cdecimal1 AS BOOLEAN) as c10, CAST(cdecimal2 AS DOUBLE) as c11, CAST(cdecimal1 AS FLOAT) as c12, CAST(cdecimal2 AS STRING) as c13, CAST(cdecimal1 AS TIMESTAMP) as c14 FROM decimal_test WHERE cdecimal1 > 0 AND cdecimal1 < 12345.5678 AND cdecimal2 != 0 AND cdecimal2 > 1000 AND cdouble IS NOT NULL
+ORDER BY c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14) q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_test
+#### A masked pattern was here ####
+-1300490595129
 PREHOOK: query: CREATE TABLE decimal_test_small STORED AS ORC AS SELECT cdouble, CAST (((cdouble*22.1)/37) AS DECIMAL(10,3)) AS cdecimal1, CAST (((cdouble*9.3)/13) AS DECIMAL(7,2)) AS cdecimal2 FROM alltypesorc
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@alltypesorc
@@ -260,3 +290,16 @@ POSTHOOK: Input: default@decimal_test_small
 1895.517	-1203.543	0.83719289075	262051.956361764	2.497	862	1033	NULL	862	true	1033.02	862.497	1033.02	1969-12-31 16:14:22.497
 1909.948	-1212.692	0.83718392130	266057.499543968	9.068	869	1040	NULL	869	true	1040.88	869.068	1040.88	1969-12-31 16:14:29.068
 1913.889	-1215.201	0.83717534491	267156.488691411	0.859	870	1043	NULL	870	true	1043.03	870.859	1043.03	1969-12-31 16:14:30.859
+PREHOOK: query: SELECT SUM(HASH(*))
+FROM (SELECT cdecimal1 + cdecimal2 as c1, cdecimal1 - (2*cdecimal2) as c2, ((cdecimal1+2.34)/cdecimal2) as c3, (cdecimal1 * (cdecimal2/3.4)) as c4, cdecimal1 % 10 as c5, CAST(cdecimal1 AS INT) as c6, CAST(cdecimal2 AS SMALLINT) as c7, CAST(cdecimal2 AS TINYINT) as c8, CAST(cdecimal1 AS BIGINT) as c9, CAST (cdecimal1 AS BOOLEAN) as c10, CAST(cdecimal2 AS DOUBLE) as c11, CAST(cdecimal1 AS FLOAT) as c12, CAST(cdecimal2 AS STRING) as c13, CAST(cdecimal1 AS TIMESTAMP) as c14 FROM decimal_test_small WHERE cdecimal1 > 0 AND cdecimal1 < 12345.5678 AND cdecimal2 != 0 AND cdecimal2 > 1000 AND cdouble IS NOT NULL
+ORDER BY c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14) q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_test_small
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(*))
+FROM (SELECT cdecimal1 + cdecimal2 as c1, cdecimal1 - (2*cdecimal2) as c2, ((cdecimal1+2.34)/cdecimal2) as c3, (cdecimal1 * (cdecimal2/3.4)) as c4, cdecimal1 % 10 as c5, CAST(cdecimal1 AS INT) as c6, CAST(cdecimal2 AS SMALLINT) as c7, CAST(cdecimal2 AS TINYINT) as c8, CAST(cdecimal1 AS BIGINT) as c9, CAST (cdecimal1 AS BOOLEAN) as c10, CAST(cdecimal2 AS DOUBLE) as c11, CAST(cdecimal1 AS FLOAT) as c12, CAST(cdecimal2 AS STRING) as c13, CAST(cdecimal1 AS TIMESTAMP) as c14 FROM decimal_test_small WHERE cdecimal1 > 0 AND cdecimal1 < 12345.5678 AND cdecimal2 != 0 AND cdecimal2 > 1000 AND cdouble IS NOT NULL
+ORDER BY c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14) q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_test_small
+#### A masked pattern was here ####
+774841630076

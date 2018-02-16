@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
@@ -65,6 +67,12 @@ public class <ClassName> extends VectorExpression {
    */
   public void evaluate(VectorizedRowBatch batch) {
 
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
@@ -74,56 +82,80 @@ public class <ClassName> extends VectorExpression {
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
-    outputColVector.noNulls = inputColVector.noNulls;
-    outputColVector.isRepeating = inputColVector.isRepeating;
-    int n = batch.size;
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
     <OperandType2>[] vector = inputColVector.vector;
     <ReturnType>[] outputVector = outputColVector.vector;
 
-    // return immediately if batch is empty
-    if (n == 0) {
-      return;
-    }
-
     boolean hasDivBy0 = false;
     if (inputColVector.isRepeating) {
-      <OperandType2> denom = vector[0];
-      outputVector[0] = value <OperatorSymbol> denom;
-      hasDivBy0 = hasDivBy0 || (denom == 0);
-
-      // Even if there are no nulls, we always copy over entry 0. Simplifies code.
-      outputIsNull[0] = inputIsNull[0];
+     if (inputColVector.noNulls || !inputIsNull[0]) {
+       outputIsNull[0] = false;
+       <OperandType2> denom = vector[0];
+       outputVector[0] = value <OperatorSymbol> denom;
+       hasDivBy0 = hasDivBy0 || (denom == 0);
+     } else {
+       outputIsNull[0] = true;
+       outputColVector.noNulls = false;
+     }
+     outputColVector.isRepeating = true;
     } else if (inputColVector.noNulls) {
       if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
-          int i = sel[j];
-          <OperandType2> denom = vector[i];
-          outputVector[i] = value <OperatorSymbol> denom;
-          hasDivBy0 = hasDivBy0 || (denom == 0);
-        }
+
+         // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+         if (!outputColVector.noNulls) {
+           for(int j = 0; j != n; j++) {
+             final int i = sel[j];
+             outputIsNull[i] = false;
+             <OperandType2> denom = vector[i];
+             outputVector[i] = value <OperatorSymbol> denom;
+             hasDivBy0 = hasDivBy0 || (denom == 0);
+          }
+         } else {
+           for(int j = 0; j != n; j++) {
+             final int i = sel[j];
+             <OperandType2> denom = vector[i];
+             outputVector[i] = value <OperatorSymbol> denom;
+             hasDivBy0 = hasDivBy0 || (denom == 0);
+           }
+         }
       } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
         for(int i = 0; i != n; i++) {
           <OperandType2> denom = vector[i];
           outputVector[i] = value <OperatorSymbol> denom;
           hasDivBy0 = hasDivBy0 || (denom == 0);
         }
       }
-    } else {                         /* there are nulls */
+    } else /* there are NULLs in the inputColVector */ {
+
+      // Carefully handle NULLs...
+      outputColVector.noNulls = false;
+
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
+          outputIsNull[i] = inputIsNull[i];
           <OperandType2> denom = vector[i];
           outputVector[i] = value <OperatorSymbol> denom;
           hasDivBy0 = hasDivBy0 || (denom == 0);
-          outputIsNull[i] = inputIsNull[i];
         }
       } else {
+        System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
         for(int i = 0; i != n; i++) {
           <OperandType2> denom = vector[i];
           outputVector[i] = value <OperatorSymbol> denom;
           hasDivBy0 = hasDivBy0 || (denom == 0);
         }
-        System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }
     }
 

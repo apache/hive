@@ -66,7 +66,8 @@ public class VectorPTFEvaluatorLongLastValue extends VectorPTFEvaluatorBase {
     }
     LongColumnVector longColVector = ((LongColumnVector) batch.cols[inputColumnNum]);
     if (longColVector.isRepeating) {
-      if (longColVector.noNulls) {
+
+      if (longColVector.noNulls || !longColVector.isNull[0]) {
         lastValue = longColVector.vector[0];
         isGroupResultNull = false;
       } else {

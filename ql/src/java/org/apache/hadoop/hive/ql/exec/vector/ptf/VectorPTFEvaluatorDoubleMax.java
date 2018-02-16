@@ -60,7 +60,8 @@ public class VectorPTFEvaluatorDoubleMax extends VectorPTFEvaluatorBase {
     }
     DoubleColumnVector doubleColVector = ((DoubleColumnVector) batch.cols[inputColumnNum]);
     if (doubleColVector.isRepeating) {
-      if (doubleColVector.noNulls) {
+
+      if (doubleColVector.noNulls || !doubleColVector.isNull[0]) {
         if (isGroupResultNull) {
           max = doubleColVector.vector[0];
           isGroupResultNull = false;

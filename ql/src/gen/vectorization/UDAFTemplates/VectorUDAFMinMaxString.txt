@@ -278,7 +278,7 @@ public class <ClassName> extends VectorAggregateExpression {
         Aggregation myagg = (Aggregation)agg;
 
         if (inputColumn.isRepeating) {
-          if (inputColumn.noNulls) {
+          if (inputColumn.noNulls || !inputColumn.isNull[0]) {
             myagg.checkValue(inputColumn.vector[0],
               inputColumn.start[0],
               inputColumn.length[0]);

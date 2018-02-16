@@ -318,7 +318,7 @@ public class <ClassName> extends VectorAggregateExpression {
         HiveDecimalWritable[] vector = inputVector.vector;
 
         if (inputVector.isRepeating) {
-          if (inputVector.noNulls &&
+          if ((inputVector.noNulls || !inputVector.isNull[0]) &&
             (myagg.isNull || (myagg.value.compareTo(vector[0]) <OperatorSymbol> 0))) {
             myagg.isNull = false;
             myagg.value.set(vector[0]);

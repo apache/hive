@@ -6105,6 +6105,152 @@ Manufacturer#5	almond antique medium spring khaki	1611.66	3	2	2	1789.69	1611.66	
 Manufacturer#5	almond antique sky peru orange	1788.73	4	4	3	1789.69	1788.73	4	4
 Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	5	5	4	1789.69	1018.1	5	5
 Manufacturer#5	almond azure blanched chiffon midnight	1464.48	6	6	5	1789.69	1464.48	6	6
+PREHOOK: query: explain vectorization detail
+select p_mfgr, p_retailprice,
+rank() over(partition by p_mfgr) as r
+from vector_ptf_part_simple_orc
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select p_mfgr, p_retailprice,
+rank() over(partition by p_mfgr) as r
+from vector_ptf_part_simple_orc
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_ptf_part_simple_orc
+                  Statistics: Num rows: 40 Data size: 4216 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Reduce Output Operator
+                    key expressions: p_mfgr (type: string)
+                    sort order: +
+                    Map-reduce partition columns: p_mfgr (type: string)
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkStringOperator
+                        keyColumnNums: [0]
+                        native: true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumnNums: [2]
+                    Statistics: Num rows: 40 Data size: 4216 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: p_retailprice (type: double)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    includeColumns: [0, 2]
+                    dataColumns: p_mfgr:string, p_name:string, p_retailprice:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    dataColumns: KEY.reducesinkkey0:string, VALUE._col1:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col1 (type: double)
+                outputColumnNames: _col0, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1]
+                Statistics: Num rows: 40 Data size: 14936 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: string, _col2: double
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col0 ASC NULLS FIRST
+                        partition by: _col0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: rank_window_0
+                              arguments: _col0
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank]
+                      functionInputExpressions: [col 0:string]
+                      functionNames: [rank]
+                      keyInputColumns: [0]
+                      native: true
+                      nonKeyInputColumns: [1]
+                      orderExpressions: [col 0:string]
+                      outputColumns: [2, 0, 1]
+                      outputTypes: [int, string, double]
+                      streamingColumns: [2]
+                  Statistics: Num rows: 40 Data size: 14936 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), _col2 (type: double), rank_window_0 (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2]
+                    Statistics: Num rows: 40 Data size: 4344 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 40 Data size: 4344 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr) as r
 from vector_ptf_part_simple_orc
@@ -6158,6 +6304,154 @@ Manufacturer#3	1922.98	1
 Manufacturer#3	1190.27	1
 Manufacturer#3	NULL	1
 Manufacturer#3	99.68	1
+PREHOOK: query: explain vectorization detail
+select p_mfgr, p_retailprice,
+rank() over(partition by p_mfgr order by p_name) as r
+from vector_ptf_part_simple_orc
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select p_mfgr, p_retailprice,
+rank() over(partition by p_mfgr order by p_name) as r
+from vector_ptf_part_simple_orc
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_ptf_part_simple_orc
+                  Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Reduce Output Operator
+                    key expressions: p_mfgr (type: string), p_name (type: string)
+                    sort order: ++
+                    Map-reduce partition columns: p_mfgr (type: string)
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkObjectHashOperator
+                        keyColumnNums: [0, 1]
+                        native: true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        partitionColumnNums: [0]
+                        valueColumnNums: [2]
+                    Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: p_retailprice (type: double)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    includeColumns: [0, 1, 2]
+                    dataColumns: p_mfgr:string, p_name:string, p_retailprice:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col0:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string), VALUE._col0 (type: double)
+                outputColumnNames: _col0, _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1, 2]
+                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: string, _col1: string, _col2: double
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1 ASC NULLS FIRST
+                        partition by: _col0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: rank_window_0
+                              arguments: _col1
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank]
+                      functionInputExpressions: [col 1:string]
+                      functionNames: [rank]
+                      keyInputColumns: [0, 1]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 1:string]
+                      outputColumns: [3, 0, 1, 2]
+                      outputTypes: [int, string, string, double]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: [3]
+                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), _col2 (type: double), rank_window_0 (type: int)
+                    outputColumnNames: _col0, _col1, _col2
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 2, 3]
+                    Statistics: Num rows: 40 Data size: 4344 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 40 Data size: 4344 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr order by p_name) as r
 from vector_ptf_part_simple_orc
@@ -6211,6 +6505,155 @@ Manufacturer#5	1611.66	2
 Manufacturer#5	1788.73	4
 Manufacturer#5	1018.1	5
 Manufacturer#5	1464.48	6
+PREHOOK: query: explain vectorization detail
+select p_mfgr, p_name, p_retailprice,
+rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end order by p_name) as r
+from vector_ptf_part_simple_orc
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select p_mfgr, p_name, p_retailprice,
+rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end order by p_name) as r
+from vector_ptf_part_simple_orc
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_ptf_part_simple_orc
+                  Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Reduce Output Operator
+                    key expressions: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (2000-01-01 00:00:00.0) ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp), p_name (type: string)
+                    sort order: +++
+                    Map-reduce partition columns: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (2000-01-01 00:00:00.0) ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkObjectHashOperator
+                        keyColumnNums: [0, 6, 1]
+                        keyExpressions: IfExprColumnNull(col 4:boolean, col 5:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 4:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00.0) -> 5:timestamp) -> 6:timestamp
+                        native: true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        partitionColumnNums: [0, 9]
+                        valueColumnNums: [2]
+                    Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: p_retailprice (type: double)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    includeColumns: [0, 1, 2]
+                    dataColumns: p_mfgr:string, p_name:string, p_retailprice:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, timestamp, timestamp, bigint, timestamp, timestamp]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aaa
+                reduceColumnSortOrder: +++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:timestamp, KEY.reducesinkkey2:string, VALUE._col0:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, timestamp, timestamp]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey2 (type: string), VALUE._col0 (type: double)
+                outputColumnNames: _col0, _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 2, 3]
+                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: string, _col1: string, _col2: double
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col1 ASC NULLS FIRST
+                        partition by: _col0, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (2000-01-01 00:00:00.0) ELSE (CAST( null AS TIMESTAMP)) END
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: rank_window_0
+                              arguments: _col1
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank]
+                      functionInputExpressions: [col 2:string]
+                      functionNames: [rank]
+                      keyInputColumns: [0, 2]
+                      native: true
+                      nonKeyInputColumns: [3]
+                      orderExpressions: [col 2:string]
+                      outputColumns: [4, 0, 2, 3]
+                      outputTypes: [int, string, string, double]
+                      partitionExpressions: [col 0:string, IfExprColumnNull(col 5:boolean, col 6:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 5:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00.0) -> 6:timestamp) -> 7:timestamp]
+                      streamingColumns: [4]
+                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), rank_window_0 (type: int)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 2, 3, 4]
+                    Statistics: Num rows: 40 Data size: 9224 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 40 Data size: 9224 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end order by p_name) as r
 from vector_ptf_part_simple_orc
@@ -6264,6 +6707,122 @@ Manufacturer#5	almond antique medium spring khaki	1611.66	2
 Manufacturer#5	almond antique sky peru orange	1788.73	4
 Manufacturer#5	almond aquamarine dodger light gainsboro	1018.1	5
 Manufacturer#5	almond azure blanched chiffon midnight	1464.48	6
+PREHOOK: query: explain vectorization detail
+select p_mfgr, p_name, p_retailprice,
+rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end) as r
+from vector_ptf_part_simple_orc
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select p_mfgr, p_name, p_retailprice,
+rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end) as r
+from vector_ptf_part_simple_orc
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: vector_ptf_part_simple_orc
+                  Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Reduce Output Operator
+                    key expressions: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (2000-01-01 00:00:00.0) ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
+                    sort order: ++
+                    Map-reduce partition columns: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (2000-01-01 00:00:00.0) ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
+                    Reduce Sink Vectorization:
+                        className: VectorReduceSinkMultiKeyOperator
+                        keyColumnNums: [0, 6]
+                        keyExpressions: IfExprColumnNull(col 4:boolean, col 5:timestamp, null)(children: StringGroupColEqualStringScalar(col 0:string, val Manufacturer#2) -> 4:boolean, ConstantVectorExpression(val 2000-01-01 00:00:00.0) -> 5:timestamp) -> 6:timestamp
+                        native: true
+                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        valueColumnNums: [1, 2]
+                    Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: p_name (type: string), p_retailprice (type: double)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    includeColumns: [0, 1, 2]
+                    dataColumns: p_mfgr:string, p_name:string, p_retailprice:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, timestamp, timestamp]
+        Reducer 2 
+            Execution mode: llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                notVectorizedReason: PTF operator: More than 1 argument expression of aggregation function rank
+                vectorized: false
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: string), VALUE._col0 (type: string), VALUE._col1 (type: double)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: string, _col1: string, _col2: double
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col0 ASC NULLS FIRST, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (2000-01-01 00:00:00.0) ELSE (CAST( null AS TIMESTAMP)) END ASC NULLS FIRST
+                        partition by: _col0, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (2000-01-01 00:00:00.0) ELSE (CAST( null AS TIMESTAMP)) END
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: rank_window_0
+                              arguments: _col0, CASE WHEN ((_col0 = 'Manufacturer#2')) THEN (2000-01-01 00:00:00.0) ELSE (CAST( null AS TIMESTAMP)) END
+                              name: rank
+                              window function: GenericUDAFRankEvaluator
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                              isPivotResult: true
+                  Statistics: Num rows: 40 Data size: 19816 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string), _col2 (type: double), rank_window_0 (type: int)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 40 Data size: 9224 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 40 Data size: 9224 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end) as r
 from vector_ptf_part_simple_orc

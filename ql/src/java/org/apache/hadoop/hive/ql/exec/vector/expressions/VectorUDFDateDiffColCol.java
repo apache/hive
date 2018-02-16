@@ -89,6 +89,9 @@ public class VectorUDFDateDiffColCol extends VectorExpression {
       return;
     }
 
+    /*
+     * Propagate null values for a two-input operator and set isRepeating and noNulls appropriately.
+     */
     NullUtil.propagateNullsColCol(inputColVector1, inputColVector2, outV, batch.selected, batch.size, batch.selectedInUse);
 
     LongColumnVector convertedVector1 = toDateArray(batch, inputTypeInfos[0], inputColVector1, dateVector1);

@@ -54,52 +54,88 @@ public class DoubleColumnVector extends ColumnVector {
 
   // Copy the current object contents into the output. Only copy selected entries,
   // as indicated by selectedInUse and the sel array.
+  @Override
   public void copySelected(
-      boolean selectedInUse, int[] sel, int size, DoubleColumnVector output) {
+      boolean selectedInUse, int[] sel, int size, ColumnVector outputColVector) {
 
-    // Output has nulls if and only if input has nulls.
-    output.noNulls = noNulls;
+    DoubleColumnVector output = (DoubleColumnVector) outputColVector;
+    boolean[] outputIsNull = output.isNull;
+
+    // We do not need to do a column reset since we are carefully changing the output.
     output.isRepeating = false;
 
     // Handle repeating case
     if (isRepeating) {
-      output.vector[0] = vector[0];
-      output.isNull[0] = isNull[0];
+      if (noNulls || !isNull[0]) {
+        outputIsNull[0] = false;
+        output.vector[0] = vector[0];
+      } else {
+        outputIsNull[0] = true;
+        output.noNulls = false;
+      }
       output.isRepeating = true;
       return;
     }
 
     // Handle normal case
 
-    // Copy data values over
-    if (selectedInUse) {
-      for (int j = 0; j < size; j++) {
-        int i = sel[j];
-        output.vector[i] = vector[i];
-      }
-    }
-    else {
-      System.arraycopy(vector, 0, output.vector, 0, size);
-    }
+    if (noNulls) {
+      if (selectedInUse) {
 
-    // Copy nulls over if needed
-    if (!noNulls) {
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != size; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           output.vector[i] = vector[i];
+         }
+        } else {
+          for(int j = 0; j != size; j++) {
+            final int i = sel[j];
+            output.vector[i] = vector[i];
+          }
+        }
+      } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
+        System.arraycopy(vector, 0, output.vector, 0, size);
+      }
+    } else /* there are nulls in our column */ {
+
+      // Carefully handle NULLs...
+
+      /*
+       * For better performance on LONG/DOUBLE we don't want the conditional
+       * statements inside the for loop.
+       */
+      output.noNulls = false;
+
       if (selectedInUse) {
         for (int j = 0; j < size; j++) {
           int i = sel[j];
           output.isNull[i] = isNull[i];
+          output.vector[i] = vector[i];
         }
-      }
-      else {
+      } else {
         System.arraycopy(isNull, 0, output.isNull, 0, size);
+        for (int i = 0; i < size; i++) {
+          output.vector[i] = vector[i];
+        }
       }
     }
   }
 
   // Fill the column vector with the provided value
   public void fill(double value) {
-    noNulls = true;
     isRepeating = true;
+    isNull[0] = false;
     vector[0] = value;
   }
 
@@ -132,17 +168,54 @@ public class DoubleColumnVector extends ColumnVector {
     flattenNoNulls(selectedInUse, sel, size);
   }
 
+  /**
+   * Set the element in this column vector from the given input vector.
+   *
+   * The inputElementNum will be adjusted to 0 if the input column has isRepeating set.
+   *
+   * On the other hand, the outElementNum must have been adjusted to 0 in ADVANCE when the output
+   * has isRepeating set.
+   *
+   * IMPORTANT: if the output entry is marked as NULL, this method will do NOTHING.  This
+   * supports the caller to do output NULL processing in advance that may cause the output results
+   * operation to be ignored.  Thus, make sure the output isNull entry is set in ADVANCE.
+   *
+   * The inputColVector noNulls and isNull entry will be examined.  The output will only
+   * be set if the input is NOT NULL.  I.e. noNulls || !isNull[inputElementNum] where
+   * inputElementNum may have been adjusted to 0 for isRepeating.
+   *
+   * If the input entry is NULL or out-of-range, the output will be marked as NULL.
+   * I.e. set output noNull = false and isNull[outElementNum] = true.  An example of out-of-range
+   * is the DecimalColumnVector which can find the input decimal does not fit in the output
+   * precision/scale.
+   *
+   * (Since we return immediately if the output entry is NULL, we have no need and do not mark
+   * the output entry to NOT NULL).
+   *
+   */
   @Override
-  public void setElement(int outElementNum, int inputElementNum, ColumnVector inputVector) {
-    if (inputVector.isRepeating) {
+  public void setElement(int outputElementNum, int inputElementNum, ColumnVector inputColVector) {
+
+    // Invariants.
+    if (isRepeating && outputElementNum != 0) {
+      throw new RuntimeException("Output column number expected to be 0 when isRepeating");
+    }
+    if (inputColVector.isRepeating) {
       inputElementNum = 0;
     }
-    if (inputVector.noNulls || !inputVector.isNull[inputElementNum]) {
-      isNull[outElementNum] = false;
-      vector[outElementNum] =
-          ((DoubleColumnVector) inputVector).vector[inputElementNum];
+
+    // Do NOTHING if output is NULL.
+    if (!noNulls && isNull[outputElementNum]) {
+      return;
+    }
+
+    if (inputColVector.noNulls || !inputColVector.isNull[inputElementNum]) {
+      vector[outputElementNum] =
+          ((DoubleColumnVector) inputColVector).vector[inputElementNum];
     } else {
-      isNull[outElementNum] = true;
+
+      // Only mark output NULL when input is NULL.
+      isNull[outputElementNum] = true;
       noNulls = false;
     }
   }

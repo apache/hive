@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
 import java.util.Calendar;
 
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -82,53 +83,85 @@ public abstract class VectorUDFTimestampFieldDate extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     ColumnVector inputColVec = batch.cols[this.colNum];
 
     /* every line below this is identical for evaluateLong & evaluateString */
     final int n = inputColVec.isRepeating ? 1 : batch.size;
     int[] sel = batch.selected;
     final boolean selectedInUse = (inputColVec.isRepeating == false) && batch.selectedInUse;
+    boolean[] outputIsNull = outputColVector.isNull;
 
     if(batch.size == 0) {
       /* n != batch.size when isRepeating */
       return;
     }
 
-    /* true for all algebraic UDFs with no state */
-    outV.isRepeating = inputColVec.isRepeating;
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
 
     LongColumnVector longColVector = (LongColumnVector) inputColVec;
 
+    if (inputColVec.isRepeating) {
+      if (inputColVec.noNulls || !inputColVec.isNull[0]) {
+        outputColVector.isNull[0] = false;
+        outputColVector.vector[0] = getDateField(longColVector.vector[0]);
+      } else {
+        outputColVector.isNull[0] = true;
+        outputColVector.noNulls = false;
+      }
+      outputColVector.isRepeating = true;
+      return;
+    }
+
     if (inputColVec.noNulls) {
-      outV.noNulls = true;
-      if (selectedInUse) {
-        for(int j=0; j < n; j++) {
-          int i = sel[j];
-          outV.vector[i] = getDateField(longColVector.vector[i]);
+      if (batch.selectedInUse) {
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != n; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           outputColVector.vector[i] = getDateField(longColVector.vector[i]);
+         }
+        } else {
+          for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            outputColVector.vector[i] = getDateField(longColVector.vector[i]);
+          }
         }
       } else {
-        for(int i = 0; i < n; i++) {
-          outV.vector[i] = getDateField(longColVector.vector[i]);
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
+        for(int i = 0; i != n; i++) {
+          outputColVector.vector[i] = getDateField(longColVector.vector[i]);
         }
       }
-    } else {
-      // Handle case with nulls. Don't do function if the value is null, to save time,
-      // because calling the function can be expensive.
-      outV.noNulls = false;
+    } else /* there are nulls in the inputColVector */ {
+
+      // Carefully handle NULLs...
+      outputColVector.noNulls = false;
+
       if (selectedInUse) {
         for(int j=0; j < n; j++) {
           int i = sel[j];
-          outV.isNull[i] = inputColVec.isNull[i];
+          outputColVector.isNull[i] = inputColVec.isNull[i];
           if (!inputColVec.isNull[i]) {
-            outV.vector[i] = getDateField(longColVector.vector[i]);
+            outputColVector.vector[i] = getDateField(longColVector.vector[i]);
           }
         }
       } else {
         for(int i = 0; i < n; i++) {
-          outV.isNull[i] = inputColVec.isNull[i];
+          outputColVector.isNull[i] = inputColVec.isNull[i];
           if (!inputColVec.isNull[i]) {
-            outV.vector[i] = getDateField(longColVector.vector[i]);
+            outputColVector.vector[i] = getDateField(longColVector.vector[i]);
           }
         }
       }

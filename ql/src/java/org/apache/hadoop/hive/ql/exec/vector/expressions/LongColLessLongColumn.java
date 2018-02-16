@@ -66,12 +66,9 @@ public class LongColLessLongColumn extends VectorExpression {
       return;
     }
 
-    outputColVector.isRepeating =
-        inputColVector1.isRepeating && inputColVector2.isRepeating
-            || inputColVector1.isRepeating && !inputColVector1.noNulls && inputColVector1.isNull[0]
-            || inputColVector2.isRepeating && !inputColVector2.noNulls && inputColVector2.isNull[0];
-
-    // Handle nulls first
+    /*
+     * Propagate null values for a two-input operator and set isRepeating and noNulls appropriately.
+     */
     NullUtil.propagateNullsColCol(
         inputColVector1, inputColVector2, outputColVector, sel, n, batch.selectedInUse);
 

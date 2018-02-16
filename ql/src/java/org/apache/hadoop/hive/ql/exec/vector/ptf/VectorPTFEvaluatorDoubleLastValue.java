@@ -66,7 +66,8 @@ public class VectorPTFEvaluatorDoubleLastValue extends VectorPTFEvaluatorBase {
     }
     DoubleColumnVector doubleColVector = ((DoubleColumnVector) batch.cols[inputColumnNum]);
     if (doubleColVector.isRepeating) {
-      if (doubleColVector.noNulls) {
+
+      if (doubleColVector.noNulls || !doubleColVector.isNull[0]) {
         lastValue = doubleColVector.vector[0];
         isGroupResultNull = false;
       } else {

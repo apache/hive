@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hive.common.util.DateParser;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 /**
  * Casts a string vector to a date vector.
@@ -62,7 +63,10 @@ public class CastStringToDate extends VectorExpression {
     BytesColumnVector inV = (BytesColumnVector) batch.cols[inputColumn];
     int[] sel = batch.selected;
     int n = batch.size;
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
+
+    boolean[] inputIsNull = inV.isNull;
+    boolean[] outputIsNull = outputColVector.isNull;
 
     if (n == 0) {
 
@@ -70,65 +74,94 @@ public class CastStringToDate extends VectorExpression {
       return;
     }
 
-    if (inV.noNulls) {
-      outV.noNulls = true;
-      if (inV.isRepeating) {
-        outV.isRepeating = true;
-        evaluate(outV, inV, 0);
-      } else if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
-          int i = sel[j];
-          evaluate(outV, inV, i);
-        }
-        outV.isRepeating = false;
-      } else {
-        for(int i = 0; i != n; i++) {
-          evaluate(outV, inV, i);
-        }
-        outV.isRepeating = false;
-      }
-    } else {
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
 
-      // Handle case with nulls. Don't do function if the value is null,
-      // because the data may be undefined for a null value.
-      outV.noNulls = false;
-      if (inV.isRepeating) {
-        outV.isRepeating = true;
-        outV.isNull[0] = inV.isNull[0];
-        if (!inV.isNull[0]) {
-          evaluate(outV, inV, 0);
+    if (inV.isRepeating) {
+      if (inV.noNulls || !inputIsNull[0]) {
+        // Set isNull before call in case it changes it mind.
+        outputIsNull[0] = false;
+        evaluate(outputColVector, inV, 0);
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+      }
+      outputColVector.isRepeating = true;
+      return;
+    }
+
+    if (inV.noNulls) {
+      if (batch.selectedInUse) {
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != n; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           evaluate(outputColVector, inV, i);
+         }
+        } else {
+          for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            evaluate(outputColVector, inV, i);
+          }
         }
-      } else if (batch.selectedInUse) {
+      } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
+        for(int i = 0; i != n; i++) {
+          evaluate(outputColVector, inV, i);
+        }
+      }
+    } else /* there are NULLs in the inputColVector */ {
+
+      // Carefully handle NULLs...
+      outputColVector.noNulls = false;
+
+      if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outV.isNull[i] = inV.isNull[i];
-          if (!inV.isNull[i]) {
-            evaluate(outV, inV, i);
+          if (!inputIsNull[i]) {
+            // Set isNull before call in case it changes it mind.
+            outputColVector.isNull[i] = false;
+            evaluate(outputColVector, inV, i);
+          } else {
+            outputColVector.isNull[i] = true;
+            outputColVector.noNulls = false;
           }
         }
-        outV.isRepeating = false;
       } else {
-        System.arraycopy(inV.isNull, 0, outV.isNull, 0, n);
         for(int i = 0; i != n; i++) {
-          if (!inV.isNull[i]) {
-            evaluate(outV, inV, i);
+          if (!inputIsNull[i]) {
+            // Set isNull before call in case it changes it mind.
+            outputColVector.isNull[i] = false;
+            evaluate(outputColVector, inV, i);
+          } else {
+            outputColVector.isNull[i] = true;
+            outputColVector.noNulls = false;
           }
         }
-        outV.isRepeating = false;
       }
     }
   }
 
-  private void evaluate(LongColumnVector outV, BytesColumnVector inV, int i) {
+  private void evaluate(LongColumnVector outputColVector, BytesColumnVector inV, int i) {
     String dateString = new String(inV.vector[i], inV.start[i], inV.length[i], StandardCharsets.UTF_8);
     if (dateParser.parseDate(dateString, sqlDate)) {
-      outV.vector[i] = DateWritable.dateToDays(sqlDate);
+      outputColVector.vector[i] = DateWritable.dateToDays(sqlDate);
       return;
     }
 
-    outV.vector[i] = 1;
-    outV.isNull[i] = true;
-    outV.noNulls = false;
+    outputColVector.vector[i] = 1;
+    outputColVector.isNull[i] = true;
+    outputColVector.noNulls = false;
   }
 
   @Override

@@ -80,14 +80,17 @@ public class TestStructColumnVector {
       input1.vector[i] = i + 1;
       input2.vector[i] = i + 2;
     }
+    output.isNull[3] = false;
     output.setElement(3, 6, input);
     StringBuilder buf = new StringBuilder();
     output.stringifyValue(buf, 3);
     assertEquals("null", buf.toString());
+    output.isNull[3] = false;
     output.setElement(3, 5, input);
     buf = new StringBuilder();
     output.stringifyValue(buf, 3);
     assertEquals("[1, null]", buf.toString());
+    output.isNull[3] = false;
     output.setElement(3, 4, input);
     buf = new StringBuilder();
     output.stringifyValue(buf, 3);

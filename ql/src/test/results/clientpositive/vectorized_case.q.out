@@ -1,4 +1,4 @@
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain vectorization detail
 select 
   csmallint,
   case 
@@ -16,7 +16,7 @@ where csmallint = 418
 or csmallint = 12205
 or csmallint = 10583
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain vectorization detail
 select 
   csmallint,
   case 
@@ -51,6 +51,7 @@ STAGE PLANS:
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
+                vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
@@ -87,6 +88,12 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 12
+              includeColumns: [1]
+              dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [bigint, bigint, string, string, string]
 
   Stage: Stage-0
     Fetch Operator
@@ -136,7 +143,7 @@ POSTHOOK: Input: default@alltypesorc
 10583	c	c
 418	a	a
 12205	b	b
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain vectorization detail
 select 
   csmallint,
   case 
@@ -154,7 +161,7 @@ where csmallint = 418
 or csmallint = 12205
 or csmallint = 10583
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain vectorization detail
 select 
   csmallint,
   case 
@@ -189,6 +196,7 @@ STAGE PLANS:
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
+                vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
@@ -225,6 +233,12 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 12
+              includeColumns: [1]
+              dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [bigint, bigint, string, string, string, bigint, string, string]
 
   Stage: Stage-0
     Fetch Operator
@@ -232,13 +246,13 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain vectorization detail
 select
   sum(case when cint % 2 = 0 then 1 else 0 end) as ceven,
   sum(case when cint % 2 = 1 then 1 else 0 end) as codd
 from alltypesorc
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain vectorization detail
 select
   sum(case when cint % 2 = 0 then 1 else 0 end) as ceven,
   sum(case when cint % 2 = 1 then 1 else 0 end) as codd
@@ -261,6 +275,7 @@ STAGE PLANS:
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
+                vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: CASE WHEN (((cint % 2) = 0)) THEN (1) ELSE (0) END (type: int), CASE WHEN (((cint % 2) = 1)) THEN (1) ELSE (0) END (type: int)
               outputColumnNames: _col0, _col1
@@ -301,6 +316,12 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 12
+              includeColumns: [2]
+              dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [bigint, bigint, bigint]
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -339,14 +360,14 @@ from alltypesorc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-5110	4607
-PREHOOK: query: explain vectorization expression
+4086	3583
+PREHOOK: query: explain vectorization detail
 select
   sum(case when cint % 2 = 0 then cint else 0 end) as ceven,
   sum(case when cint % 2 = 1 then cint else 0 end) as codd
 from alltypesorc
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain vectorization detail
 select
   sum(case when cint % 2 = 0 then cint else 0 end) as ceven,
   sum(case when cint % 2 = 1 then cint else 0 end) as codd
@@ -369,6 +390,7 @@ STAGE PLANS:
             Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
+                vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: CASE WHEN (((cint % 2) = 0)) THEN (cint) ELSE (0) END (type: int), CASE WHEN (((cint % 2) = 1)) THEN (cint) ELSE (0) END (type: int)
               outputColumnNames: _col0, _col1
@@ -409,6 +431,12 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 12
+              includeColumns: [2]
+              dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [bigint, bigint, bigint]
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
@@ -466,10 +494,10 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_1
 POSTHOOK: Lineage: test_1.attr SCRIPT []
 POSTHOOK: Lineage: test_1.member SCRIPT []
-PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -489,6 +517,7 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
+                vectorizationSchemaColumns: [0:member:decimal(10,0), 1:attr:decimal(10,0), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: CASE WHEN ((member = 1)) THEN ((attr + 1)) ELSE ((attr + 2)) END (type: decimal(11,0))
               outputColumnNames: _col0
@@ -518,6 +547,12 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: true
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 2
+              includeColumns: [0, 1]
+              dataColumns: member:decimal(10,0), attr:decimal(10,0)
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [bigint, decimal(11,0), decimal(11,0), decimal(11,0)]
 
   Stage: Stage-0
     Fetch Operator
@@ -536,10 +571,10 @@ POSTHOOK: Input: default@test_1
 3
 4
 4
-PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -559,6 +594,7 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
+                vectorizationSchemaColumns: [0:member:decimal(10,0), 1:attr:decimal(10,0), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: CASE WHEN ((member = 1)) THEN (1) ELSE ((attr + 2)) END (type: decimal(11,0))
               outputColumnNames: _col0
@@ -588,6 +624,12 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: true
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 2
+              includeColumns: [0, 1]
+              dataColumns: member:decimal(10,0), attr:decimal(10,0)
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [bigint, decimal(11,0), decimal(11,0)]
 
   Stage: Stage-0
     Fetch Operator
@@ -606,10 +648,10 @@ POSTHOOK: Input: default@test_1
 3
 4
 1
-PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -629,6 +671,7 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
+                vectorizationSchemaColumns: [0:member:decimal(10,0), 1:attr:decimal(10,0), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: CASE WHEN ((member = 1)) THEN ((attr + 1)) ELSE (2) END (type: decimal(11,0))
               outputColumnNames: _col0
@@ -658,6 +701,12 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: true
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 2
+              includeColumns: [0, 1]
+              dataColumns: member:decimal(10,0), attr:decimal(10,0)
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [bigint, decimal(11,0), decimal(11,0)]
 
   Stage: Stage-0
     Fetch Operator
@@ -694,10 +743,10 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_2
 POSTHOOK: Lineage: test_2.attr SCRIPT []
 POSTHOOK: Lineage: test_2.member SCRIPT []
-PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -717,6 +766,7 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
+                vectorizationSchemaColumns: [0:member:bigint, 1:attr:bigint, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: CASE WHEN ((member = 1)) THEN ((attr + 1)) ELSE ((attr + 2)) END (type: bigint)
               outputColumnNames: _col0
@@ -746,6 +796,12 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 2
+              includeColumns: [0, 1]
+              dataColumns: member:bigint, attr:bigint
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [bigint, bigint, bigint, bigint]
 
   Stage: Stage-0
     Fetch Operator
@@ -764,10 +820,10 @@ POSTHOOK: Input: default@test_2
 3
 4
 4
-PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -787,6 +843,7 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
+                vectorizationSchemaColumns: [0:member:bigint, 1:attr:bigint, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: CASE WHEN ((member = 1)) THEN (null) ELSE ((attr + 2)) END (type: bigint)
               outputColumnNames: _col0
@@ -816,6 +873,12 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 2
+              includeColumns: [0, 1]
+              dataColumns: member:bigint, attr:bigint
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [bigint, bigint, bigint]
 
   Stage: Stage-0
     Fetch Operator
@@ -834,10 +897,10 @@ POSTHOOK: Input: default@test_2
 3
 4
 NULL
-PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -857,6 +920,7 @@ STAGE PLANS:
             Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
+                vectorizationSchemaColumns: [0:member:bigint, 1:attr:bigint, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: CASE WHEN ((member = 1)) THEN ((attr + 1)) ELSE (null) END (type: bigint)
               outputColumnNames: _col0
@@ -886,6 +950,12 @@ STAGE PLANS:
           allNative: false
           usesVectorUDFAdaptor: false
           vectorized: true
+          rowBatchContext:
+              dataColumnCount: 2
+              includeColumns: [0, 1]
+              dataColumns: member:bigint, attr:bigint
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [bigint, bigint, bigint]
 
   Stage: Stage-0
     Fetch Operator
@@ -904,3 +974,227 @@ POSTHOOK: Input: default@test_2
 NULL
 NULL
 4
+PREHOOK: query: select count(*), sum(a.ceven)
+from (
+select
+  case when cint % 2 = 0 then 1 else 0 end as ceven
+from alltypesorc) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*), sum(a.ceven)
+from (
+select
+  case when cint % 2 = 0 then 1 else 0 end as ceven
+from alltypesorc) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+12288	4086
+PREHOOK: query: select count(*)
+from (
+select
+  (case when cint % 2 = 0 then 1 else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then 1 else 0 end) = 0) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*)
+from (
+select
+  (case when cint % 2 = 0 then 1 else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then 1 else 0 end) = 0) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+8202
+PREHOOK: query: select count(*)
+from (
+select
+  (case when cint % 2 = 0 then 1 else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then 1 else 0 end) = 0 AND cint is NOT NULL) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*)
+from (
+select
+  (case when cint % 2 = 0 then 1 else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then 1 else 0 end) = 0 AND cint is NOT NULL) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+5087
+PREHOOK: query: select count(*)
+from (
+select
+  (case when cint % 2 = 0 then 1 else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then 1 else 0 end) = 1) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*)
+from (
+select
+  (case when cint % 2 = 0 then 1 else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then 1 else 0 end) = 1) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+4086
+PREHOOK: query: select count(*)
+from (
+select
+  (case when cint % 2 = 0 then 1 else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then 1 else 0 end) = 1 AND cint is NOT NULL) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*)
+from (
+select
+  (case when cint % 2 = 0 then 1 else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then 1 else 0 end) = 1 AND cint is NOT NULL) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+4086
+PREHOOK: query: select count(*)
+from (
+select
+  (case when cint % 2 = 0 then 1 else 0 end) as ceven
+from alltypesorc
+where cint is null) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*)
+from (
+select
+  (case when cint % 2 = 0 then 1 else 0 end) as ceven
+from alltypesorc
+where cint is null) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+3115
+PREHOOK: query: select count(*), sum(a.ceven)
+from (
+select
+  case when cint % 2 = 0 then cint else 0 end as ceven
+from alltypesorc) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*), sum(a.ceven)
+from (
+select
+  case when cint % 2 = 0 then cint else 0 end as ceven
+from alltypesorc) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+12288	248718130534
+PREHOOK: query: select count(*)
+from (
+select
+  (case when cint % 2 = 0 then cint else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then cint else 0 end) = 0) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*)
+from (
+select
+  (case when cint % 2 = 0 then cint else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then cint else 0 end) = 0) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+8202
+PREHOOK: query: select count(*)
+from (
+select
+  (case when cint % 2 = 0 then cint else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then cint else 0 end) = 0 AND cint is NOT NULL) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*)
+from (
+select
+  (case when cint % 2 = 0 then cint else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then cint else 0 end) = 0 AND cint is NOT NULL) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+5087
+PREHOOK: query: select count(*)
+from (
+select
+  (case when cint % 2 = 0 then cint else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then cint else 0 end) = cint) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*)
+from (
+select
+  (case when cint % 2 = 0 then cint else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then cint else 0 end) = cint) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+4086
+PREHOOK: query: select count(*)
+from (
+select
+  (case when cint % 2 = 0 then cint else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then cint else 0 end) = cint AND cint is NOT NULL) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*)
+from (
+select
+  (case when cint % 2 = 0 then cint else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then cint else 0 end) = cint AND cint is NOT NULL) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+4086
+PREHOOK: query: select count(*)
+from (
+select
+  (case when cint % 2 = 0 then cint else 0 end) as ceven
+from alltypesorc
+where cint is null) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*)
+from (
+select
+  (case when cint % 2 = 0 then cint else 0 end) as ceven
+from alltypesorc
+where cint is null) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+3115

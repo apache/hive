@@ -59,7 +59,6 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
-    outputColVector.noNulls = inputColVector.noNulls;
     int n = batch.size;
     HiveDecimalWritable[] vector = inputColVector.vector;
 
@@ -68,32 +67,57 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
       return;
     }
 
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
     if (inputColVector.isRepeating) {
-
-      // All must be selected otherwise size would be zero
-      // Repeating property will not change.
-      outputIsNull[0] = inputIsNull[0];
-      round(0, vector[0], decimalPlaces, outputColVector);
+      if (inputColVector.noNulls || !inputIsNull[0]) {
+        // Set isNull before call in case it changes it mind.
+        outputIsNull[0] = false;
+        round(0, vector[0], decimalPlaces, outputColVector);
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+      }
       outputColVector.isRepeating = true;
-    } else if (inputColVector.noNulls) {
-      if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
-          int i = sel[j];
+      return;
+    }
 
-          // Set isNull because decimal operation can yield a null.
-          outputIsNull[i] = false;
-          round(i, vector[i], decimalPlaces, outputColVector);
+    if (inputColVector.noNulls) {
+      if (batch.selectedInUse) {
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != n; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           round(i, vector[i], decimalPlaces, outputColVector);
+         }
+        } else {
+          for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            round(i, vector[i], decimalPlaces, outputColVector);
+          }
         }
       } else {
+        if (!outputColVector.noNulls) {
 
-        // Set isNull because decimal operation can yield a null.
-        Arrays.fill(outputIsNull, 0, n, false);
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
         for(int i = 0; i != n; i++) {
           round(i, vector[i], decimalPlaces, outputColVector);
         }
       }
-      outputColVector.isRepeating = false;
-    } else /* there are nulls */ {
+    } else /* there are nulls in the inputColVector */ {
+
+      // Carefully handle NULLs...
+      outputColVector.noNulls = false;
+
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
@@ -106,7 +130,6 @@ public class FuncRoundWithNumDigitsDecimalToDecimal extends VectorExpression {
           round(i, vector[i], decimalPlaces, outputColVector);
         }
       }
-      outputColVector.isRepeating = false;
     }
   }
 

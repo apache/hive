@@ -72,7 +72,7 @@ public class VectorPTFEvaluatorDecimalAvg extends VectorPTFEvaluatorBase {
     DecimalColumnVector decimalColVector = ((DecimalColumnVector) batch.cols[inputColumnNum]);
     if (decimalColVector.isRepeating) {
 
-      if (decimalColVector.noNulls) {
+      if (decimalColVector.noNulls || !decimalColVector.isNull[0]) {
 
         // We have a repeated value.  The sum increases by value * batch.size.
         temp.setFromLong(batch.size);

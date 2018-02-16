@@ -341,8 +341,7 @@ public class TestVectorArithmeticExpressions {
     lcv1.noNulls = true;
     lcv0.isRepeating = false;
     lcv1.isRepeating = false;
-    lcv2.noNulls = false;         // set output noNulls to true to make sure it gets over-written
-    lcv2.isRepeating = true;      // similarly with isRepeating
+    lcv2.reset();
     expr.evaluate(vrg);
     assertTrue(lcv2.noNulls);
     assertFalse(lcv2.isRepeating);

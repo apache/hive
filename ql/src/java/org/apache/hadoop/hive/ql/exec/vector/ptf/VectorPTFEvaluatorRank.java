@@ -50,9 +50,12 @@ public class VectorPTFEvaluatorRank extends VectorPTFEvaluatorBase {
   public void evaluateGroupBatch(VectorizedRowBatch batch, boolean isLastGroupBatch) {
     evaluateInputExpr(batch);
 
+    /*
+     * Do careful maintenance of the outputColVector.noNulls flag.
+     */
+
     LongColumnVector longColVector = (LongColumnVector) batch.cols[outputColumnNum];
     longColVector.isRepeating = true;
-    longColVector.noNulls = true;
     longColVector.isNull[0] = false;
     longColVector.vector[0] = rank;
     groupCount += batch.size;

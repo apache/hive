@@ -333,7 +333,7 @@ public class VectorUDAFSumDecimal64 extends VectorAggregateExpression {
     long[] vector = inputVector.vector;
 
     if (inputVector.isRepeating) {
-      if (inputVector.noNulls) {
+      if (inputVector.noNulls || !inputVector.isNull[0]) {
       if (myagg.isNull) {
         myagg.isNull = false;
         myagg.sum = 0;

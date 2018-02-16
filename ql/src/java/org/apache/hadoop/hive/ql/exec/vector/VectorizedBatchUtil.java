@@ -97,19 +97,6 @@ public class VectorizedBatchUtil {
   }
 
   /**
-   * Iterates thru all the column vectors and sets noNull to
-   * specified value.
-   *
-   * @param batch
-   *          Batch on which noNull is set
-   */
-  public static void setNoNullFields(VectorizedRowBatch batch) {
-    for (int i = 0; i < batch.numCols; i++) {
-      batch.cols[i].noNulls = true;
-    }
-  }
-
-  /**
    * Iterates thru all the column vectors and sets repeating to
    * specified column.
    *

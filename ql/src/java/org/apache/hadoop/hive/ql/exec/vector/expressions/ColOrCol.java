@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -69,104 +71,120 @@ public class ColOrCol extends VectorExpression {
       return;
     }
 
+    boolean[] outputIsNull = outV.isNull;
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    outV.isRepeating = false;
+
     long vector1Value = vector1[0];
     long vector2Value = vector2[0];
     if (inputColVector1.noNulls && inputColVector2.noNulls) {
       if ((inputColVector1.isRepeating) && (inputColVector2.isRepeating)) {
+
         // All must be selected otherwise size would be zero
         // Repeating property will not change.
         outV.isRepeating = true;
+        outputIsNull[0] = false;
         outputVector[0] = vector1[0] | vector2[0];
       } else if (inputColVector1.isRepeating && !inputColVector2.isRepeating) {
         if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
+            outputIsNull[i] = false;
             outputVector[i] = vector1Value | vector2[i];
           }
         } else {
+          Arrays.fill(outputIsNull, 0, n, false);
           for (int i = 0; i != n; i++) {
             outputVector[i] = vector1Value | vector2[i];
           }
         }
-        outV.isRepeating = false;
       } else if (!inputColVector1.isRepeating && inputColVector2.isRepeating) {
         if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
+            outputIsNull[i] = false;
             outputVector[i] = vector1[i] | vector2Value;
           }
         } else {
+          Arrays.fill(outputIsNull, 0, n, false);
           for (int i = 0; i != n; i++) {
             outputVector[i] = vector1[i] | vector2Value;
           }
         }
-        outV.isRepeating = false;
       } else /* neither side is repeating */{
         if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
+            outputIsNull[i] = false;
             outputVector[i] = vector1[i] | vector2[i];
           }
         } else {
+          Arrays.fill(outputIsNull, 0, n, false);
           for (int i = 0; i != n; i++) {
             outputVector[i] = vector1[i] | vector2[i];
           }
         }
-        outV.isRepeating = false;
       }
-      outV.noNulls = true;
-    } else if (inputColVector1.noNulls && !inputColVector2.noNulls) {
+      return;
+    }
+
+    // Carefully handle NULLs...
+
+    /*
+     * For better performance on LONG/DOUBLE we don't want the conditional
+     * statements inside the for loop.
+     */
+    outV.noNulls = false;
+
+    if (inputColVector1.noNulls && !inputColVector2.noNulls) {
       // only input 2 side has nulls
       if ((inputColVector1.isRepeating) && (inputColVector2.isRepeating)) {
         // All must be selected otherwise size would be zero
         // Repeating property will not change.
         outV.isRepeating = true;
         outputVector[0] = vector1[0] | vector2[0];
-        outV.isNull[0] = (vector1[0] == 0) && inputColVector2.isNull[0];
+        outputIsNull[0] = (vector1[0] == 0) && inputColVector2.isNull[0];
       } else if (inputColVector1.isRepeating && !inputColVector2.isRepeating) {
         if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
             outputVector[i] = vector1Value | vector2[i];
-            outV.isNull[i] = (vector1Value == 0) && inputColVector2.isNull[i];
+            outputIsNull[i] = (vector1Value == 0) && inputColVector2.isNull[i];
           }
         } else {
           for (int i = 0; i != n; i++) {
             outputVector[i] = vector1Value | vector2[i];
-            outV.isNull[i] = (vector1Value == 0) && inputColVector2.isNull[i];
+            outputIsNull[i] = (vector1Value == 0) && inputColVector2.isNull[i];
           }
         }
-        outV.isRepeating = false;
       } else if (!inputColVector1.isRepeating && inputColVector2.isRepeating) {
         if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
             outputVector[i] = vector1[i] | vector2Value;
-            outV.isNull[i] = (vector1[i] == 0) && inputColVector2.isNull[0];
+            outputIsNull[i] = (vector1[i] == 0) && inputColVector2.isNull[0];
           }
         } else {
           for (int i = 0; i != n; i++) {
             outputVector[i] = vector1[i] | vector2Value;
-            outV.isNull[i] = (vector1[i] == 0) && inputColVector2.isNull[0];
+            outputIsNull[i] = (vector1[i] == 0) && inputColVector2.isNull[0];
           }
         }
-        outV.isRepeating = false;
       } else /* neither side is repeating */{
         if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
             outputVector[i] = vector1[i] | vector2[i];
-            outV.isNull[i] = (vector1[i] == 0) && inputColVector2.isNull[i];
+            outputIsNull[i] = (vector1[i] == 0) && inputColVector2.isNull[i];
           }
         } else {
           for (int i = 0; i != n; i++) {
             outputVector[i] = vector1[i] | vector2[i];
-            outV.isNull[i] = (vector1[i] == 0) && inputColVector2.isNull[i];
+            outputIsNull[i] = (vector1[i] == 0) && inputColVector2.isNull[i];
           }
         }
-        outV.isRepeating = false;
       }
-      outV.noNulls = false;
     } else if (!inputColVector1.noNulls && inputColVector2.noNulls) {
       // only input 1 side has nulls
       if ((inputColVector1.isRepeating) && (inputColVector2.isRepeating)) {
@@ -174,51 +192,47 @@ public class ColOrCol extends VectorExpression {
         // Repeating property will not change.
         outV.isRepeating = true;
         outputVector[0] = vector1[0] | vector2[0];
-        outV.isNull[0] = inputColVector1.isNull[0] && (vector2[0] == 0);
+        outputIsNull[0] = inputColVector1.isNull[0] && (vector2[0] == 0);
       } else if (inputColVector1.isRepeating && !inputColVector2.isRepeating) {
         if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
             outputVector[i] = vector1Value | vector2[i];
-            outV.isNull[i] = inputColVector1.isNull[0] && (vector2[i] == 0);
+            outputIsNull[i] = inputColVector1.isNull[0] && (vector2[i] == 0);
           }
         } else {
           for (int i = 0; i != n; i++) {
             outputVector[i] = vector1Value | vector2[i];
-            outV.isNull[i] = inputColVector1.isNull[0] && (vector2[i] == 0);
+            outputIsNull[i] = inputColVector1.isNull[0] && (vector2[i] == 0);
           }
         }
-        outV.isRepeating = false;
       } else if (!inputColVector1.isRepeating && inputColVector2.isRepeating) {
         if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
             outputVector[i] = vector1[i] | vector2Value;
-            outV.isNull[i] = inputColVector1.isNull[i] && (vector2Value == 0);
+            outputIsNull[i] = inputColVector1.isNull[i] && (vector2Value == 0);
           }
         } else {
           for (int i = 0; i != n; i++) {
             outputVector[i] = vector1[i] | vector2Value;
-            outV.isNull[i] = inputColVector1.isNull[i] && (vector2Value == 0);
+            outputIsNull[i] = inputColVector1.isNull[i] && (vector2Value == 0);
           }
         }
-        outV.isRepeating = false;
       } else /* neither side is repeating */{
         if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
             outputVector[i] = vector1[i] | vector2[i];
-            outV.isNull[i] = inputColVector1.isNull[i] && (vector2[i] == 0);
+            outputIsNull[i] = inputColVector1.isNull[i] && (vector2[i] == 0);
           }
         } else {
           for (int i = 0; i != n; i++) {
             outputVector[i] = vector1[i] | vector2[i];
-            outV.isNull[i] = inputColVector1.isNull[i] && (vector2[i] == 0);
+            outputIsNull[i] = inputColVector1.isNull[i] && (vector2[i] == 0);
           }
         }
-        outV.isRepeating = false;
       }
-      outV.noNulls = false;
     } else /* !inputColVector1.noNulls && !inputColVector2.noNulls */{
       // either input 1 or input 2 may have nulls
       if ((inputColVector1.isRepeating) && (inputColVector2.isRepeating)) {
@@ -226,7 +240,7 @@ public class ColOrCol extends VectorExpression {
         // Repeating property will not change.
         outV.isRepeating = true;
         outputVector[0] = vector1[0] | vector2[0];
-        outV.isNull[0] = ((vector1[0] == 0) && inputColVector2.isNull[0])
+        outputIsNull[0] = ((vector1[0] == 0) && inputColVector2.isNull[0])
             || (inputColVector1.isNull[0] && (vector2[0] == 0))
             || (inputColVector1.isNull[0] && inputColVector2.isNull[0]);
       } else if (inputColVector1.isRepeating && !inputColVector2.isRepeating) {
@@ -234,57 +248,53 @@ public class ColOrCol extends VectorExpression {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
             outputVector[i] = vector1Value | vector2[i];
-            outV.isNull[i] = ((vector1[0] == 0) && inputColVector2.isNull[i])
+            outputIsNull[i] = ((vector1[0] == 0) && inputColVector2.isNull[i])
                 || (inputColVector1.isNull[0] && (vector2[i] == 0))
                 || (inputColVector1.isNull[0] && inputColVector2.isNull[i]);
           }
         } else {
           for (int i = 0; i != n; i++) {
             outputVector[i] = vector1Value | vector2[i];
-            outV.isNull[i] = ((vector1[0] == 0) && inputColVector2.isNull[i])
+            outputIsNull[i] = ((vector1[0] == 0) && inputColVector2.isNull[i])
                 || (inputColVector1.isNull[0] && (vector2[i] == 0))
                 || (inputColVector1.isNull[0] && inputColVector2.isNull[i]);
           }
         }
-        outV.isRepeating = false;
       } else if (!inputColVector1.isRepeating && inputColVector2.isRepeating) {
         if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
             outputVector[i] = vector1[i] | vector2Value;
-            outV.isNull[i] = ((vector1[i] == 0) && inputColVector2.isNull[0])
+            outputIsNull[i] = ((vector1[i] == 0) && inputColVector2.isNull[0])
                 || (inputColVector1.isNull[i] && (vector2[0] == 0))
                 || (inputColVector1.isNull[i] && inputColVector2.isNull[0]);
           }
         } else {
           for (int i = 0; i != n; i++) {
             outputVector[i] = vector1[i] | vector2Value;
-            outV.isNull[i] = ((vector1[i] == 0) && inputColVector2.isNull[0])
+            outputIsNull[i] = ((vector1[i] == 0) && inputColVector2.isNull[0])
                 || (inputColVector1.isNull[i] && (vector2[0] == 0))
                 || (inputColVector1.isNull[i] && inputColVector2.isNull[0]);
           }
         }
-        outV.isRepeating = false;
       } else /* neither side is repeating */{
         if (batch.selectedInUse) {
           for (int j = 0; j != n; j++) {
             int i = sel[j];
             outputVector[i] = vector1[i] | vector2[i];
-            outV.isNull[i] = ((vector1[i] == 0) && inputColVector2.isNull[i])
+            outputIsNull[i] = ((vector1[i] == 0) && inputColVector2.isNull[i])
                 || (inputColVector1.isNull[i] && (vector2[i] == 0))
                 || (inputColVector1.isNull[i] && inputColVector2.isNull[i]);
           }
         } else {
           for (int i = 0; i != n; i++) {
             outputVector[i] = vector1[i] | vector2[i];
-            outV.isNull[i] = ((vector1[i] == 0) && inputColVector2.isNull[i])
+            outputIsNull[i] = ((vector1[i] == 0) && inputColVector2.isNull[i])
                 || (inputColVector1.isNull[i] && (vector2[i] == 0))
                 || (inputColVector1.isNull[i] && inputColVector2.isNull[i]);
           }
         }
-        outV.isRepeating = false;
       }
-      outV.noNulls = false;
     }
   }
 

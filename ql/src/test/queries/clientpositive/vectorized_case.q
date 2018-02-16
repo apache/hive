@@ -1,8 +1,8 @@
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;
-set hive.vectorized.execution.enabled = true
-;
-explain vectorization expression
+set hive.vectorized.execution.enabled = true;
+
+explain vectorization detail
 select 
   csmallint,
   case 
@@ -37,7 +37,7 @@ where csmallint = 418
 or csmallint = 12205
 or csmallint = 10583
 ;
-explain vectorization expression
+explain vectorization detail
 select 
   csmallint,
   case 
@@ -55,7 +55,7 @@ where csmallint = 418
 or csmallint = 12205
 or csmallint = 10583
 ;
-explain vectorization expression
+explain vectorization detail
 select
   sum(case when cint % 2 = 0 then 1 else 0 end) as ceven,
   sum(case when cint % 2 = 1 then 1 else 0 end) as codd
@@ -64,7 +64,7 @@ select
   sum(case when cint % 2 = 0 then 1 else 0 end) as ceven,
   sum(case when cint % 2 = 1 then 1 else 0 end) as codd
 from alltypesorc;
-explain vectorization expression
+explain vectorization detail
 select
   sum(case when cint % 2 = 0 then cint else 0 end) as ceven,
   sum(case when cint % 2 = 1 then cint else 0 end) as codd
@@ -79,19 +79,19 @@ CREATE TABLE test_1 (member DECIMAL , attr DECIMAL) STORED AS ORC;
 
 INSERT INTO test_1 VALUES (3.0,1.0),(2.0,2.0),(1.0,3.0);
 --for length=3
-EXPLAIN VECTORIZATION EXPRESSION
+EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1;
 
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1;
 
 --for length=2 and the expr2 is null
-EXPLAIN VECTORIZATION EXPRESSION
+EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1;
 
 SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1;
 
 --for length=2 and the expr3 is null
-EXPLAIN VECTORIZATION EXPRESSION
+EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1;
 
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1;
@@ -102,19 +102,105 @@ CREATE TABLE test_2 (member BIGINT, attr BIGINT) STORED AS ORC;
 INSERT INTO test_2 VALUES (3,1),(2,2),(1,3);
 
 --for length=3
-EXPLAIN VECTORIZATION EXPRESSION
+EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2;
 
 SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2;
 
---for length=2 and the expression2 is null
-EXPLAIN VECTORIZATION EXPRESSION
+--for length=2 and the detail2 is null
+EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2;
 
 SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2;
 
---for length=2 and the expression3 is null
-EXPLAIN VECTORIZATION EXPRESSION
+--for length=2 and the detail3 is null
+EXPLAIN VECTORIZATION DETAIL
 SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2;
 
 SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2;
+
+
+select count(*), sum(a.ceven)
+from (
+select
+  case when cint % 2 = 0 then 1 else 0 end as ceven
+from alltypesorc) a;
+
+select count(*)
+from (
+select
+  (case when cint % 2 = 0 then 1 else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then 1 else 0 end) = 0) a;
+
+select count(*)
+from (
+select
+  (case when cint % 2 = 0 then 1 else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then 1 else 0 end) = 0 AND cint is NOT NULL) a;
+
+select count(*)
+from (
+select
+  (case when cint % 2 = 0 then 1 else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then 1 else 0 end) = 1) a;
+
+select count(*)
+from (
+select
+  (case when cint % 2 = 0 then 1 else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then 1 else 0 end) = 1 AND cint is NOT NULL) a;
+
+select count(*)
+from (
+select
+  (case when cint % 2 = 0 then 1 else 0 end) as ceven
+from alltypesorc
+where cint is null) a;
+
+
+select count(*), sum(a.ceven)
+from (
+select
+  case when cint % 2 = 0 then cint else 0 end as ceven
+from alltypesorc) a;
+
+select count(*)
+from (
+select
+  (case when cint % 2 = 0 then cint else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then cint else 0 end) = 0) a;
+
+select count(*)
+from (
+select
+  (case when cint % 2 = 0 then cint else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then cint else 0 end) = 0 AND cint is NOT NULL) a;
+
+select count(*)
+from (
+select
+  (case when cint % 2 = 0 then cint else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then cint else 0 end) = cint) a;
+
+select count(*)
+from (
+select
+  (case when cint % 2 = 0 then cint else 0 end) as ceven
+from alltypesorc
+where (case when cint % 2 = 0 then cint else 0 end) = cint AND cint is NOT NULL) a;
+
+select count(*)
+from (
+select
+  (case when cint % 2 = 0 then cint else 0 end) as ceven
+from alltypesorc
+where cint is null) a;
+
+

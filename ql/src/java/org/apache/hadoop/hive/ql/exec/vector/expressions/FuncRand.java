@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
 import java.util.Random;
 
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
@@ -55,8 +56,12 @@ public class FuncRand extends VectorExpression {
     int[] sel = batch.selected;
     int n = batch.size;
     double[] outputVector = outputColVector.vector;
-    outputColVector.noNulls = true;
     outputColVector.isRepeating = false;
+    boolean[] outputIsNull = outputColVector.isNull;
+
+    /*
+     * Do careful maintenance of the outputColVector.noNulls flag.
+     */
 
     // return immediately if batch is empty
     if (n == 0) {
@@ -64,11 +69,30 @@ public class FuncRand extends VectorExpression {
     }
 
     if (batch.selectedInUse) {
-      for(int j = 0; j != n; j++) {
-        int i = sel[j];
-        outputVector[i] = random.nextDouble();
+
+      // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+      if (!outputColVector.noNulls) {
+        for(int j = 0; j != n; j++) {
+         final int i = sel[j];
+         // Set isNull before call in case it changes it mind.
+         outputIsNull[i] = false;
+         outputVector[i] = random.nextDouble();
+       }
+      } else {
+        for(int j = 0; j != n; j++) {
+          final int i = sel[j];
+          outputVector[i] = random.nextDouble();
+        }
       }
     } else {
+      if (!outputColVector.noNulls) {
+
+        // Assume it is almost always a performance win to fill all of isNull so we can
+        // safely reset noNulls.
+        Arrays.fill(outputIsNull, false);
+        outputColVector.noNulls = true;
+      }
       for(int i = 0; i != n; i++) {
         outputVector[i] = random.nextDouble();
       }

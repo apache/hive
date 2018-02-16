@@ -140,7 +140,9 @@ public class VectorUDFAdaptor extends VectorExpression {
       return;
     }
 
-    batch.cols[outputColumnNum].noNulls = true;
+    /*
+     * Do careful maintenance of the outputColVector.noNulls flag.
+     */
 
     /* If all input columns are repeating, just evaluate function
      * for row 0 in the batch and set output repeating.

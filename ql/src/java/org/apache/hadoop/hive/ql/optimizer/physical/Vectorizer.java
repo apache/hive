@@ -1702,7 +1702,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     private boolean validateAndVectorizeMapOperators(MapWork mapWork, TableScanOperator tableScanOperator,
         boolean isTezOrSpark, VectorTaskColumnInfo vectorTaskColumnInfo) throws SemanticException {
 
-      LOG.info("Validating and vectorizing MapWork...");
+      LOG.info("Validating and vectorizing MapWork... (vectorizedVertexNum " + vectorizedVertexNum + ")");
 
       // Set "global" member indicating where to store "not vectorized" information if necessary.
       currentBaseWork = mapWork;
@@ -1906,7 +1906,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         VectorTaskColumnInfo vectorTaskColumnInfo)
             throws SemanticException {
 
-      LOG.info("Validating and vectorizing ReduceWork...");
+      LOG.info("Validating and vectorizing ReduceWork... (vectorizedVertexNum " + vectorizedVertexNum + ")");
 
       Operator<? extends OperatorDesc> newVectorReducer;
       try {
@@ -4102,9 +4102,6 @@ public class Vectorizer implements PhysicalPlanResolver {
     for (int i = 0; i < size; i++) {
       ExprNodeDesc expr = colList.get(i);
       VectorExpression ve = vContext.getVectorExpression(expr);
-      if (ve.getOutputColumnNum() == -1) {
-        fake++;
-      }
       projectedOutputColumns[i] = ve.getOutputColumnNum();
       if (ve instanceof IdentityExpression) {
         // Suppress useless evaluation.

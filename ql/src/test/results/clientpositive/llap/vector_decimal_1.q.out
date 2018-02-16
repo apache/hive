@@ -32,6 +32,17 @@ POSTHOOK: Output: default@decimal_1
 POSTHOOK: Lineage: decimal_1.t EXPRESSION []
 POSTHOOK: Lineage: decimal_1.u EXPRESSION []
 POSTHOOK: Lineage: decimal_1.v EXPRESSION []
+PREHOOK: query: insert into decimal_1 values (NULL, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@decimal_1
+POSTHOOK: query: insert into decimal_1 values (NULL, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@decimal_1
+POSTHOOK: Lineage: decimal_1.t EXPRESSION []
+POSTHOOK: Lineage: decimal_1.u EXPRESSION []
+POSTHOOK: Lineage: decimal_1.v EXPRESSION []
 PREHOOK: query: explain vectorization detail
 select cast(t as boolean) from decimal_1 order by t
 PREHOOK: type: QUERY
@@ -58,7 +69,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_1
-                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -70,7 +81,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: CastDecimalToBoolean(col 0:decimal(4,2)) -> 4:boolean
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: boolean)
                       sort order: +
@@ -80,7 +91,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -121,13 +132,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -147,6 +158,7 @@ POSTHOOK: query: select cast(t as boolean) from decimal_1 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
+NULL
 true
 PREHOOK: query: explain vectorization detail
 select cast(t as tinyint) from decimal_1 order by t
@@ -174,7 +186,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_1
-                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -186,7 +198,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: CastDecimalToLong(col 0:decimal(4,2)) -> 4:tinyint
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: tinyint)
                       sort order: +
@@ -196,7 +208,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -237,13 +249,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -263,6 +275,7 @@ POSTHOOK: query: select cast(t as tinyint) from decimal_1 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
+NULL
 17
 PREHOOK: query: explain vectorization detail
 select cast(t as smallint) from decimal_1 order by t
@@ -290,7 +303,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_1
-                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -302,7 +315,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: CastDecimalToLong(col 0:decimal(4,2)) -> 4:smallint
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: smallint)
                       sort order: +
@@ -312,7 +325,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -353,13 +366,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -379,6 +392,7 @@ POSTHOOK: query: select cast(t as smallint) from decimal_1 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
+NULL
 17
 PREHOOK: query: explain vectorization detail
 select cast(t as int) from decimal_1 order by t
@@ -406,7 +420,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_1
-                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -418,7 +432,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: CastDecimalToLong(col 0:decimal(4,2)) -> 4:int
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       sort order: +
@@ -428,7 +442,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -469,13 +483,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -495,6 +509,7 @@ POSTHOOK: query: select cast(t as int) from decimal_1 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
+NULL
 17
 PREHOOK: query: explain vectorization detail
 select cast(t as bigint) from decimal_1 order by t
@@ -522,7 +537,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_1
-                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -534,7 +549,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: CastDecimalToLong(col 0:decimal(4,2)) -> 4:bigint
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: bigint)
                       sort order: +
@@ -544,7 +559,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -585,13 +600,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -611,6 +626,7 @@ POSTHOOK: query: select cast(t as bigint) from decimal_1 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
+NULL
 17
 PREHOOK: query: explain vectorization detail
 select cast(t as float) from decimal_1 order by t
@@ -638,7 +654,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_1
-                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -650,7 +666,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: CastDecimalToDouble(col 0:decimal(4,2)) -> 4:float
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: float)
                       sort order: +
@@ -660,7 +676,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -701,13 +717,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -727,6 +743,7 @@ POSTHOOK: query: select cast(t as float) from decimal_1 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
+NULL
 17.29
 PREHOOK: query: explain vectorization detail
 select cast(t as double) from decimal_1 order by t
@@ -754,7 +771,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_1
-                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -766,7 +783,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: CastDecimalToDouble(col 0:decimal(4,2)) -> 4:double
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: double)
                       sort order: +
@@ -776,7 +793,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -817,13 +834,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -843,6 +860,7 @@ POSTHOOK: query: select cast(t as double) from decimal_1 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
+NULL
 17.29
 PREHOOK: query: explain vectorization detail
 select cast(t as string) from decimal_1 order by t
@@ -870,7 +888,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_1
-                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -882,7 +900,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: CastDecimalToString(col 0:decimal(4,2)) -> 4:string
-                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string)
                       sort order: +
@@ -892,7 +910,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -933,13 +951,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -959,6 +977,7 @@ POSTHOOK: query: select cast(t as string) from decimal_1 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
+NULL
 17.29
 PREHOOK: query: explain vectorization detail
 select cast(t as timestamp) from decimal_1 order by t
@@ -986,7 +1005,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_1
-                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -998,7 +1017,7 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: CastDecimalToTimestamp(col 0:decimal(4,2)) -> 4:timestamp
-                    Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: timestamp)
                       sort order: +
@@ -1008,7 +1027,7 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           valueColumnNums: []
-                      Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1049,13 +1068,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1075,6 +1094,7 @@ POSTHOOK: query: select cast(t as timestamp) from decimal_1 order by t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1
 #### A masked pattern was here ####
+NULL
 1969-12-31 16:00:17.29
 PREHOOK: query: drop table decimal_1
 PREHOOK: type: DROPTABLE

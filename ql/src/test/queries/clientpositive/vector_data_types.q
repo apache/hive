@@ -37,6 +37,9 @@ STORED AS ORC;
 
 INSERT INTO TABLE over1korc SELECT * FROM over1k;
 
+-- Add a single NULL row that will come from ORC as isRepeated.
+insert into over1korc values (NULL, NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL);
+
 SET hive.vectorized.execution.enabled=false;
 
 EXPLAIN VECTORIZATION EXPRESSION SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20;
@@ -51,6 +54,10 @@ SET hive.vectorized.execution.enabled=true;
 EXPLAIN VECTORIZATION EXPRESSION select t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20;
 
 SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20;
+
+EXPLAIN VECTORIZATION EXPRESSION 
+SELECT SUM(HASH(*))
+FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i) as q;
 
 SELECT SUM(HASH(*))
 FROM (SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i) as q;

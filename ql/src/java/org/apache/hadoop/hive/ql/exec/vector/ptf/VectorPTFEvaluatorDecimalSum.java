@@ -66,7 +66,7 @@ public class VectorPTFEvaluatorDecimalSum extends VectorPTFEvaluatorBase {
     DecimalColumnVector decimalColVector = ((DecimalColumnVector) batch.cols[inputColumnNum]);
     if (decimalColVector.isRepeating) {
 
-      if (decimalColVector.noNulls) {
+      if (decimalColVector.noNulls || !decimalColVector.isNull[0]) {
         temp.setFromLong(batch.size);
         if (isGroupResultNull) {
 

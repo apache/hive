@@ -70,7 +70,8 @@ public class VectorPTFEvaluatorDecimalFirstValue extends VectorPTFEvaluatorBase 
       }
       DecimalColumnVector decimalColVector = ((DecimalColumnVector) batch.cols[inputColumnNum]);
       if (decimalColVector.isRepeating) {
-        if (decimalColVector.noNulls) {
+
+        if (decimalColVector.noNulls || !decimalColVector.isNull[0]) {
           firstValue.set(decimalColVector.vector[0]);
           isGroupResultNull = false;
         }
@@ -86,6 +87,10 @@ public class VectorPTFEvaluatorDecimalFirstValue extends VectorPTFEvaluatorBase 
       haveFirstValue = true;
     }
 
+    /*
+     * Do careful maintenance of the outputColVector.noNulls flag.
+     */
+
     // First value is repeated for all batches.
     DecimalColumnVector outputColVector = (DecimalColumnVector) batch.cols[outputColumnNum];
     outputColVector.isRepeating = true;
@@ -93,7 +98,6 @@ public class VectorPTFEvaluatorDecimalFirstValue extends VectorPTFEvaluatorBase 
       outputColVector.noNulls = false;
       outputColVector.isNull[0] = true;
     } else {
-      outputColVector.noNulls = true;
       outputColVector.isNull[0] = false;
       outputColVector.vector[0].set(firstValue);
     }

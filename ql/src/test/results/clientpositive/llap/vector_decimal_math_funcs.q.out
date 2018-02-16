@@ -12,6 +12,18 @@ POSTHOOK: Lineage: decimal_test.cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSc
 POSTHOOK: Lineage: decimal_test.cdecimal1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
 POSTHOOK: Lineage: decimal_test.cdecimal2 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
 POSTHOOK: Lineage: decimal_test.cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:null), ]
+PREHOOK: query: insert into decimal_test values (NULL, NULL, NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@decimal_test
+POSTHOOK: query: insert into decimal_test values (NULL, NULL, NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@decimal_test
+POSTHOOK: Lineage: decimal_test.cbigint EXPRESSION []
+POSTHOOK: Lineage: decimal_test.cdecimal1 EXPRESSION []
+POSTHOOK: Lineage: decimal_test.cdecimal2 EXPRESSION []
+POSTHOOK: Lineage: decimal_test.cdouble EXPRESSION []
 PREHOOK: query: explain vectorization detail
 select
    cdecimal1
@@ -103,7 +115,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_test
-                  Statistics: Num rows: 12288 Data size: 1401000 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12289 Data size: 1401120 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:cbigint:bigint, 1:cdouble:double, 2:cdecimal1:decimal(20,10), 3:cdecimal2:decimal(23,14), 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
