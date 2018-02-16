@@ -61,6 +61,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  GetTableResult get_table_req(GetTableRequest req)')
   print('  GetTablesResult get_table_objects_by_name_req(GetTablesRequest req)')
   print('   get_materialization_invalidation_info(string dbname,  tbl_names)')
+  print('  void update_creation_metadata(string dbname, string tbl_name, CreationMetadata creation_metadata)')
   print('   get_table_names_by_filter(string dbname, string filter, i16 max_tables)')
   print('  void alter_table(string dbname, string tbl_name, Table new_tbl)')
   print('  void alter_table_with_environment_context(string dbname, string tbl_name, Table new_tbl, EnvironmentContext environment_context)')
@@ -495,6 +496,12 @@ elif cmd == 'get_materialization_invalidation_info':
     print('get_materialization_invalidation_info requires 2 args')
     sys.exit(1)
   pp.pprint(client.get_materialization_invalidation_info(args[0],eval(args[1]),))
+
+elif cmd == 'update_creation_metadata':
+  if len(args) != 3:
+    print('update_creation_metadata requires 3 args')
+    sys.exit(1)
+  pp.pprint(client.update_creation_metadata(args[0],args[1],eval(args[2]),))
 
 elif cmd == 'get_table_names_by_filter':
   if len(args) != 3:

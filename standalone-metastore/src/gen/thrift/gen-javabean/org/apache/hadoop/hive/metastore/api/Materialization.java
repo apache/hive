@@ -38,8 +38,8 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class Materialization implements org.apache.thrift.TBase<Materialization, Materialization._Fields>, java.io.Serializable, Cloneable, Comparable<Materialization> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Materialization");
 
-  private static final org.apache.thrift.protocol.TField MATERIALIZATION_TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("materializationTable", org.apache.thrift.protocol.TType.STRUCT, (short)1);
-  private static final org.apache.thrift.protocol.TField TABLES_USED_FIELD_DESC = new org.apache.thrift.protocol.TField("tablesUsed", org.apache.thrift.protocol.TType.SET, (short)2);
+  private static final org.apache.thrift.protocol.TField TABLES_USED_FIELD_DESC = new org.apache.thrift.protocol.TField("tablesUsed", org.apache.thrift.protocol.TType.SET, (short)1);
+  private static final org.apache.thrift.protocol.TField VALID_TXN_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validTxnList", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField INVALIDATION_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("invalidationTime", org.apache.thrift.protocol.TType.I64, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
@@ -48,14 +48,14 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new MaterializationTupleSchemeFactory());
   }
 
-  private Table materializationTable; // required
   private Set<String> tablesUsed; // required
+  private String validTxnList; // optional
   private long invalidationTime; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    MATERIALIZATION_TABLE((short)1, "materializationTable"),
-    TABLES_USED((short)2, "tablesUsed"),
+    TABLES_USED((short)1, "tablesUsed"),
+    VALID_TXN_LIST((short)2, "validTxnList"),
     INVALIDATION_TIME((short)3, "invalidationTime");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -71,10 +71,10 @@ import org.slf4j.LoggerFactory;
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // MATERIALIZATION_TABLE
-          return MATERIALIZATION_TABLE;
-        case 2: // TABLES_USED
+        case 1: // TABLES_USED
           return TABLES_USED;
+        case 2: // VALID_TXN_LIST
+          return VALID_TXN_LIST;
         case 3: // INVALIDATION_TIME
           return INVALIDATION_TIME;
         default:
@@ -119,14 +119,15 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __INVALIDATIONTIME_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.VALID_TXN_LIST};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.MATERIALIZATION_TABLE, new org.apache.thrift.meta_data.FieldMetaData("materializationTable", org.apache.thrift.TFieldRequirementType.REQUIRED, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Table.class)));
     tmpMap.put(_Fields.TABLES_USED, new org.apache.thrift.meta_data.FieldMetaData("tablesUsed", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.VALID_TXN_LIST, new org.apache.thrift.meta_data.FieldMetaData("validTxnList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.INVALIDATION_TIME, new org.apache.thrift.meta_data.FieldMetaData("invalidationTime", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -137,12 +138,10 @@ import org.slf4j.LoggerFactory;
   }
 
   public Materialization(
-    Table materializationTable,
     Set<String> tablesUsed,
     long invalidationTime)
   {
     this();
-    this.materializationTable = materializationTable;
     this.tablesUsed = tablesUsed;
     this.invalidationTime = invalidationTime;
     setInvalidationTimeIsSet(true);
@@ -153,12 +152,12 @@ import org.slf4j.LoggerFactory;
    */
   public Materialization(Materialization other) {
     __isset_bitfield = other.__isset_bitfield;
-    if (other.isSetMaterializationTable()) {
-      this.materializationTable = new Table(other.materializationTable);
-    }
     if (other.isSetTablesUsed()) {
       Set<String> __this__tablesUsed = new HashSet<String>(other.tablesUsed);
       this.tablesUsed = __this__tablesUsed;
+    }
+    if (other.isSetValidTxnList()) {
+      this.validTxnList = other.validTxnList;
     }
     this.invalidationTime = other.invalidationTime;
   }
@@ -169,33 +168,10 @@ import org.slf4j.LoggerFactory;
 
   @Override
   public void clear() {
-    this.materializationTable = null;
     this.tablesUsed = null;
+    this.validTxnList = null;
     setInvalidationTimeIsSet(false);
     this.invalidationTime = 0;
-  }
-
-  public Table getMaterializationTable() {
-    return this.materializationTable;
-  }
-
-  public void setMaterializationTable(Table materializationTable) {
-    this.materializationTable = materializationTable;
-  }
-
-  public void unsetMaterializationTable() {
-    this.materializationTable = null;
-  }
-
-  /** Returns true if field materializationTable is set (has been assigned a value) and false otherwise */
-  public boolean isSetMaterializationTable() {
-    return this.materializationTable != null;
-  }
-
-  public void setMaterializationTableIsSet(boolean value) {
-    if (!value) {
-      this.materializationTable = null;
-    }
   }
 
   public int getTablesUsedSize() {
@@ -236,6 +212,29 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getValidTxnList() {
+    return this.validTxnList;
+  }
+
+  public void setValidTxnList(String validTxnList) {
+    this.validTxnList = validTxnList;
+  }
+
+  public void unsetValidTxnList() {
+    this.validTxnList = null;
+  }
+
+  /** Returns true if field validTxnList is set (has been assigned a value) and false otherwise */
+  public boolean isSetValidTxnList() {
+    return this.validTxnList != null;
+  }
+
+  public void setValidTxnListIsSet(boolean value) {
+    if (!value) {
+      this.validTxnList = null;
+    }
+  }
+
   public long getInvalidationTime() {
     return this.invalidationTime;
   }
@@ -260,19 +259,19 @@ import org.slf4j.LoggerFactory;
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case MATERIALIZATION_TABLE:
-      if (value == null) {
-        unsetMaterializationTable();
-      } else {
-        setMaterializationTable((Table)value);
-      }
-      break;
-
     case TABLES_USED:
       if (value == null) {
         unsetTablesUsed();
       } else {
         setTablesUsed((Set<String>)value);
+      }
+      break;
+
+    case VALID_TXN_LIST:
+      if (value == null) {
+        unsetValidTxnList();
+      } else {
+        setValidTxnList((String)value);
       }
       break;
 
@@ -289,11 +288,11 @@ import org.slf4j.LoggerFactory;
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case MATERIALIZATION_TABLE:
-      return getMaterializationTable();
-
     case TABLES_USED:
       return getTablesUsed();
+
+    case VALID_TXN_LIST:
+      return getValidTxnList();
 
     case INVALIDATION_TIME:
       return getInvalidationTime();
@@ -309,10 +308,10 @@ import org.slf4j.LoggerFactory;
     }
 
     switch (field) {
-    case MATERIALIZATION_TABLE:
-      return isSetMaterializationTable();
     case TABLES_USED:
       return isSetTablesUsed();
+    case VALID_TXN_LIST:
+      return isSetValidTxnList();
     case INVALIDATION_TIME:
       return isSetInvalidationTime();
     }
@@ -332,21 +331,21 @@ import org.slf4j.LoggerFactory;
     if (that == null)
       return false;
 
-    boolean this_present_materializationTable = true && this.isSetMaterializationTable();
-    boolean that_present_materializationTable = true && that.isSetMaterializationTable();
-    if (this_present_materializationTable || that_present_materializationTable) {
-      if (!(this_present_materializationTable && that_present_materializationTable))
-        return false;
-      if (!this.materializationTable.equals(that.materializationTable))
-        return false;
-    }
-
     boolean this_present_tablesUsed = true && this.isSetTablesUsed();
     boolean that_present_tablesUsed = true && that.isSetTablesUsed();
     if (this_present_tablesUsed || that_present_tablesUsed) {
       if (!(this_present_tablesUsed && that_present_tablesUsed))
         return false;
       if (!this.tablesUsed.equals(that.tablesUsed))
+        return false;
+    }
+
+    boolean this_present_validTxnList = true && this.isSetValidTxnList();
+    boolean that_present_validTxnList = true && that.isSetValidTxnList();
+    if (this_present_validTxnList || that_present_validTxnList) {
+      if (!(this_present_validTxnList && that_present_validTxnList))
+        return false;
+      if (!this.validTxnList.equals(that.validTxnList))
         return false;
     }
 
@@ -366,15 +365,15 @@ import org.slf4j.LoggerFactory;
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
 
-    boolean present_materializationTable = true && (isSetMaterializationTable());
-    list.add(present_materializationTable);
-    if (present_materializationTable)
-      list.add(materializationTable);
-
     boolean present_tablesUsed = true && (isSetTablesUsed());
     list.add(present_tablesUsed);
     if (present_tablesUsed)
       list.add(tablesUsed);
+
+    boolean present_validTxnList = true && (isSetValidTxnList());
+    list.add(present_validTxnList);
+    if (present_validTxnList)
+      list.add(validTxnList);
 
     boolean present_invalidationTime = true;
     list.add(present_invalidationTime);
@@ -392,22 +391,22 @@ import org.slf4j.LoggerFactory;
 
     int lastComparison = 0;
 
-    lastComparison = Boolean.valueOf(isSetMaterializationTable()).compareTo(other.isSetMaterializationTable());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetMaterializationTable()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.materializationTable, other.materializationTable);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = Boolean.valueOf(isSetTablesUsed()).compareTo(other.isSetTablesUsed());
     if (lastComparison != 0) {
       return lastComparison;
     }
     if (isSetTablesUsed()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tablesUsed, other.tablesUsed);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetValidTxnList()).compareTo(other.isSetValidTxnList());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetValidTxnList()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.validTxnList, other.validTxnList);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -442,14 +441,6 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("Materialization(");
     boolean first = true;
 
-    sb.append("materializationTable:");
-    if (this.materializationTable == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.materializationTable);
-    }
-    first = false;
-    if (!first) sb.append(", ");
     sb.append("tablesUsed:");
     if (this.tablesUsed == null) {
       sb.append("null");
@@ -457,6 +448,16 @@ import org.slf4j.LoggerFactory;
       sb.append(this.tablesUsed);
     }
     first = false;
+    if (isSetValidTxnList()) {
+      if (!first) sb.append(", ");
+      sb.append("validTxnList:");
+      if (this.validTxnList == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.validTxnList);
+      }
+      first = false;
+    }
     if (!first) sb.append(", ");
     sb.append("invalidationTime:");
     sb.append(this.invalidationTime);
@@ -467,10 +468,6 @@ import org.slf4j.LoggerFactory;
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetMaterializationTable()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'materializationTable' is unset! Struct:" + toString());
-    }
-
     if (!isSetTablesUsed()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'tablesUsed' is unset! Struct:" + toString());
     }
@@ -480,9 +477,6 @@ import org.slf4j.LoggerFactory;
     }
 
     // check for sub-struct validity
-    if (materializationTable != null) {
-      materializationTable.validate();
-    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -521,16 +515,7 @@ import org.slf4j.LoggerFactory;
           break;
         }
         switch (schemeField.id) {
-          case 1: // MATERIALIZATION_TABLE
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.materializationTable = new Table();
-              struct.materializationTable.read(iprot);
-              struct.setMaterializationTableIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
-          case 2: // TABLES_USED
+          case 1: // TABLES_USED
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
                 org.apache.thrift.protocol.TSet _set746 = iprot.readSetBegin();
@@ -544,6 +529,14 @@ import org.slf4j.LoggerFactory;
                 iprot.readSetEnd();
               }
               struct.setTablesUsedIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 2: // VALID_TXN_LIST
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.validTxnList = iprot.readString();
+              struct.setValidTxnListIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -569,11 +562,6 @@ import org.slf4j.LoggerFactory;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.materializationTable != null) {
-        oprot.writeFieldBegin(MATERIALIZATION_TABLE_FIELD_DESC);
-        struct.materializationTable.write(oprot);
-        oprot.writeFieldEnd();
-      }
       if (struct.tablesUsed != null) {
         oprot.writeFieldBegin(TABLES_USED_FIELD_DESC);
         {
@@ -585,6 +573,13 @@ import org.slf4j.LoggerFactory;
           oprot.writeSetEnd();
         }
         oprot.writeFieldEnd();
+      }
+      if (struct.validTxnList != null) {
+        if (struct.isSetValidTxnList()) {
+          oprot.writeFieldBegin(VALID_TXN_LIST_FIELD_DESC);
+          oprot.writeString(struct.validTxnList);
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldBegin(INVALIDATION_TIME_FIELD_DESC);
       oprot.writeI64(struct.invalidationTime);
@@ -606,7 +601,6 @@ import org.slf4j.LoggerFactory;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, Materialization struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
-      struct.materializationTable.write(oprot);
       {
         oprot.writeI32(struct.tablesUsed.size());
         for (String _iter750 : struct.tablesUsed)
@@ -615,14 +609,19 @@ import org.slf4j.LoggerFactory;
         }
       }
       oprot.writeI64(struct.invalidationTime);
+      BitSet optionals = new BitSet();
+      if (struct.isSetValidTxnList()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetValidTxnList()) {
+        oprot.writeString(struct.validTxnList);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Materialization struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      struct.materializationTable = new Table();
-      struct.materializationTable.read(iprot);
-      struct.setMaterializationTableIsSet(true);
       {
         org.apache.thrift.protocol.TSet _set751 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
         struct.tablesUsed = new HashSet<String>(2*_set751.size);
@@ -636,6 +635,11 @@ import org.slf4j.LoggerFactory;
       struct.setTablesUsedIsSet(true);
       struct.invalidationTime = iprot.readI64();
       struct.setInvalidationTimeIsSet(true);
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.validTxnList = iprot.readString();
+        struct.setValidTxnListIsSet(true);
+      }
     }
   }
 

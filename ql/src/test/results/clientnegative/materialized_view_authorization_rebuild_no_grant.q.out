@@ -33,10 +33,4 @@ POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@amvrng_table
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@amvrng_mat_view
-PREHOOK: query: revoke grant option for select on table amvrng_table from user user2
-PREHOOK: type: REVOKE_PRIVILEGE
-PREHOOK: Output: default@amvrng_table
-POSTHOOK: query: revoke grant option for select on table amvrng_table from user user2
-POSTHOOK: type: REVOKE_PRIVILEGE
-POSTHOOK: Output: default@amvrng_table
-FAILED: HiveAccessControlException Permission denied: Principal [name=user2, type=USER] does not have following privileges for operation CREATE_MATERIALIZED_VIEW [[SELECT with grant] on Object [type=TABLE_OR_VIEW, name=default.amvrng_table]]
+FAILED: HiveAccessControlException Permission denied: Principal [name=user1, type=USER] does not have following privileges for operation QUERY [[INSERT, DELETE] on Object [type=TABLE_OR_VIEW, name=default.amvrng_mat_view, action=INSERT_OVERWRITE]]

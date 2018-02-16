@@ -1455,6 +1455,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   /** {@inheritDoc} */
   @Override
+  public void updateCreationMetadata(String dbName, String tableName, CreationMetadata cm)
+      throws MetaException, InvalidOperationException, UnknownDBException, TException {
+    client.update_creation_metadata(dbName, tableName, cm);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public List<String> listTableNamesByFilter(String dbName, String filter, short maxTables)
       throws MetaException, TException, InvalidOperationException, UnknownDBException {
     return filterHook.filterTableNames(dbName,

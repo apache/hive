@@ -4923,39 +4923,30 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         throw new HiveException(ErrorMsg.TABLE_ALREADY_EXISTS.getMsg(crtView.getViewName()));
       }
 
-      if (crtView.isMaterialized()) {
-        // We need to update the status of the creation signature
-        CreationMetadata cm =
-            new CreationMetadata(oldview.getDbName(), oldview.getTableName(),
-                ImmutableSet.copyOf(crtView.getTablesUsed()));
-        cm.setValidTxnList(conf.get(ValidTxnList.VALID_TXNS_KEY));
-        oldview.getTTable().setCreationMetadata(cm);
-        db.alterTable(crtView.getViewName(), oldview, null);
-        // This is a replace/rebuild, so we need an exclusive lock
-        addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_EXCLUSIVE));
-      } else {
-        // replace existing view
-        // remove the existing partition columns from the field schema
-        oldview.setViewOriginalText(crtView.getViewOriginalText());
-        oldview.setViewExpandedText(crtView.getViewExpandedText());
-        oldview.setFields(crtView.getSchema());
-        if (crtView.getComment() != null) {
-          oldview.setProperty("comment", crtView.getComment());
-        }
-        if (crtView.getTblProps() != null) {
-          oldview.getTTable().getParameters().putAll(crtView.getTblProps());
-        }
-        oldview.setPartCols(crtView.getPartCols());
-        if (crtView.getInputFormat() != null) {
-          oldview.setInputFormatClass(crtView.getInputFormat());
-        }
-        if (crtView.getOutputFormat() != null) {
-          oldview.setOutputFormatClass(crtView.getOutputFormat());
-        }
-        oldview.checkValidity(null);
-        db.alterTable(crtView.getViewName(), oldview, null);
-        addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_NO_LOCK));
+      // It should not be a materialized view
+      assert !crtView.isMaterialized();
+
+      // replace existing view
+      // remove the existing partition columns from the field schema
+      oldview.setViewOriginalText(crtView.getViewOriginalText());
+      oldview.setViewExpandedText(crtView.getViewExpandedText());
+      oldview.setFields(crtView.getSchema());
+      if (crtView.getComment() != null) {
+        oldview.setProperty("comment", crtView.getComment());
       }
+      if (crtView.getTblProps() != null) {
+        oldview.getTTable().getParameters().putAll(crtView.getTblProps());
+      }
+      oldview.setPartCols(crtView.getPartCols());
+      if (crtView.getInputFormat() != null) {
+        oldview.setInputFormatClass(crtView.getInputFormat());
+      }
+      if (crtView.getOutputFormat() != null) {
+        oldview.setOutputFormatClass(crtView.getOutputFormat());
+      }
+      oldview.checkValidity(null);
+      db.alterTable(crtView.getViewName(), oldview, null);
+      addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_NO_LOCK));
     } else {
       // We create new view
       Table tbl = crtView.toTable(conf);
@@ -4977,8 +4968,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
- private int truncateTable(Hive db, TruncateTableDesc truncateTableDesc) throws HiveException {
-
+  private int truncateTable(Hive db, TruncateTableDesc truncateTableDesc) throws HiveException {
     if (truncateTableDesc.getColumnIndexes() != null) {
       ColumnTruncateWork truncateWork = new ColumnTruncateWork(
           truncateTableDesc.getColumnIndexes(), truncateTableDesc.getInputDir(),

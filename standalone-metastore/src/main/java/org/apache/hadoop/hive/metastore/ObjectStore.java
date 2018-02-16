@@ -1152,7 +1152,8 @@ public class ObjectStore implements RawStore, Configurable {
         if (MetaStoreUtils.isMaterializedViewTable(tbl)) {
           // Add to the invalidation cache
           MaterializationsInvalidationCache.get().createMaterializedView(
-              tbl, tbl.getCreationMetadata().getTablesUsed());
+              tbl.getDbName(), tbl.getTableName(), tbl.getCreationMetadata().getTablesUsed(),
+              tbl.getCreationMetadata().getValidTxnList());
         }
       }
     }
@@ -3738,28 +3739,38 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setViewOriginalText(newt.getViewOriginalText());
       oldt.setViewExpandedText(newt.getViewExpandedText());
       oldt.setRewriteEnabled(newt.isRewriteEnabled());
-      registerCreationSignature = newTable.getCreationMetadata() != null;
-      if (registerCreationSignature) {
-        // Update creation metadata
-        MCreationMetadata newMcm = convertToMCreationMetadata(
-            newTable.getCreationMetadata());
-        MCreationMetadata mcm = getCreationMetadata(dbname, name);
-        mcm.setTables(newMcm.getTables());
-        mcm.setTxnList(newMcm.getTxnList());
-      }
 
       // commit the changes
       success = commitTransaction();
     } finally {
       if (!success) {
         rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public void updateCreationMetadata(String dbname, String tablename, CreationMetadata cm)
+      throws MetaException {
+    boolean success = false;
+    try {
+      openTransaction();
+      dbname = normalizeIdentifier(dbname);
+      tablename = normalizeIdentifier(tablename);
+      // Update creation metadata
+      MCreationMetadata newMcm = convertToMCreationMetadata(cm);
+      MCreationMetadata mcm = getCreationMetadata(dbname, tablename);
+      mcm.setTables(newMcm.getTables());
+      mcm.setTxnList(newMcm.getTxnList());
+      // commit the changes
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
       } else {
-        if (MetaStoreUtils.isMaterializedViewTable(newTable) &&
-            registerCreationSignature) {
-          // Add to the invalidation cache if the creation signature has changed
-          MaterializationsInvalidationCache.get().alterMaterializedView(
-              newTable, newTable.getCreationMetadata().getTablesUsed());
-        }
+        // Add to the invalidation cache if the creation signature has changed
+        MaterializationsInvalidationCache.get().alterMaterializedView(
+            dbname, tablename, cm.getTablesUsed(), cm.getValidTxnList());
       }
     }
   }
