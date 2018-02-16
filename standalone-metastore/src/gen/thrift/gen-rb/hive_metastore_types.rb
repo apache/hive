@@ -3316,20 +3316,19 @@ end
 
 class Materialization
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  MATERIALIZATIONTABLE = 1
-  TABLESUSED = 2
+  TABLESUSED = 1
+  VALIDTXNLIST = 2
   INVALIDATIONTIME = 3
 
   FIELDS = {
-    MATERIALIZATIONTABLE => {:type => ::Thrift::Types::STRUCT, :name => 'materializationTable', :class => ::Table},
     TABLESUSED => {:type => ::Thrift::Types::SET, :name => 'tablesUsed', :element => {:type => ::Thrift::Types::STRING}},
+    VALIDTXNLIST => {:type => ::Thrift::Types::STRING, :name => 'validTxnList', :optional => true},
     INVALIDATIONTIME => {:type => ::Thrift::Types::I64, :name => 'invalidationTime'}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field materializationTable is unset!') unless @materializationTable
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tablesUsed is unset!') unless @tablesUsed
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field invalidationTime is unset!') unless @invalidationTime
   end

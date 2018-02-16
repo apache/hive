@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -245,6 +246,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   public List<Partition> getPartitions(String dbName, String tableName, int max)
       throws MetaException, NoSuchObjectException {
     return objectStore.getPartitions(dbName, tableName, max);
+  }
+
+  @Override
+  public void updateCreationMetadata(String dbname, String tablename, CreationMetadata cm)
+      throws MetaException {
+    objectStore.updateCreationMetadata(dbname, tablename, cm);
   }
 
   @Override

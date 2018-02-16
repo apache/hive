@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 
 import java.nio.ByteBuffer;
@@ -238,6 +239,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public void alterTable(String dbName, String name, Table newTable)
       throws InvalidObjectException, MetaException {
     objectStore.alterTable(dbName, name, newTable);
+  }
+
+  @Override
+  public void updateCreationMetadata(String dbname, String tablename, CreationMetadata cm)
+      throws MetaException {
+    objectStore.updateCreationMetadata(dbname, tablename, cm);
   }
 
   @Override

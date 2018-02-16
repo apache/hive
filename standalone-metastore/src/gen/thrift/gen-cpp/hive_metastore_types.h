@@ -8707,31 +8707,39 @@ inline std::ostream& operator<<(std::ostream& out, const TableMeta& obj)
   return out;
 }
 
+typedef struct _Materialization__isset {
+  _Materialization__isset() : validTxnList(false) {}
+  bool validTxnList :1;
+} _Materialization__isset;
 
 class Materialization {
  public:
 
   Materialization(const Materialization&);
   Materialization& operator=(const Materialization&);
-  Materialization() : invalidationTime(0) {
+  Materialization() : validTxnList(), invalidationTime(0) {
   }
 
   virtual ~Materialization() throw();
-  Table materializationTable;
   std::set<std::string>  tablesUsed;
+  std::string validTxnList;
   int64_t invalidationTime;
 
-  void __set_materializationTable(const Table& val);
+  _Materialization__isset __isset;
 
   void __set_tablesUsed(const std::set<std::string> & val);
+
+  void __set_validTxnList(const std::string& val);
 
   void __set_invalidationTime(const int64_t val);
 
   bool operator == (const Materialization & rhs) const
   {
-    if (!(materializationTable == rhs.materializationTable))
-      return false;
     if (!(tablesUsed == rhs.tablesUsed))
+      return false;
+    if (__isset.validTxnList != rhs.__isset.validTxnList)
+      return false;
+    else if (__isset.validTxnList && !(validTxnList == rhs.validTxnList))
       return false;
     if (!(invalidationTime == rhs.invalidationTime))
       return false;

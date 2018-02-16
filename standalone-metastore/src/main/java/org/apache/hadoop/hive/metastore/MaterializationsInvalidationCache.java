@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -115,7 +114,8 @@ public final class MaterializationsInvalidationCache {
       try {
         for (String dbName : store.getAllDatabases()) {
           for (Table mv : store.getTableObjectsByName(dbName, store.getTables(dbName, null, TableType.MATERIALIZED_VIEW))) {
-            addMaterializedView(mv, ImmutableSet.copyOf(mv.getCreationMetadata().getTablesUsed()), OpType.LOAD);
+            addMaterializedView(mv.getDbName(), mv.getTableName(), ImmutableSet.copyOf(mv.getCreationMetadata().getTablesUsed()),
+                mv.getCreationMetadata().getValidTxnList(), OpType.LOAD);
           }
         }
         LOG.info("Initialized materializations invalidation cache");
@@ -128,52 +128,60 @@ public final class MaterializationsInvalidationCache {
   /**
    * Adds a newly created materialized view to the cache.
    *
-   * @param materializedViewTable the materialized view
+   * @param dbName
+   * @param tableName
    * @param tablesUsed tables used by the materialized view
+   * @param validTxnList
    */
-  public void createMaterializedView(Table materializedViewTable, Set<String> tablesUsed) {
-    addMaterializedView(materializedViewTable, tablesUsed, OpType.CREATE);
+  public void createMaterializedView(String dbName, String tableName, Set<String> tablesUsed,
+      String validTxnList) {
+    addMaterializedView(dbName, tableName, tablesUsed, validTxnList, OpType.CREATE);
   }
 
   /**
    * Method to call when materialized view is modified.
    *
-   * @param materializedViewTable the materialized view
+   * @param dbName
+   * @param tableName
    * @param tablesUsed tables used by the materialized view
+   * @param validTxnList
    */
-  public void alterMaterializedView(Table materializedViewTable, Set<String> tablesUsed) {
-    addMaterializedView(materializedViewTable, tablesUsed, OpType.ALTER);
+  public void alterMaterializedView(String dbName, String tableName, Set<String> tablesUsed,
+      String validTxnList) {
+    addMaterializedView(dbName, tableName, tablesUsed, validTxnList, OpType.ALTER);
   }
 
   /**
    * Adds the materialized view to the cache.
    *
-   * @param materializedViewTable the materialized view
+   * @param dbName
+   * @param tableName
    * @param tablesUsed tables used by the materialized view
+   * @param validTxnList
+   * @param opType
    */
-  private void addMaterializedView(Table materializedViewTable, Set<String> tablesUsed, OpType opType) {
+  private void addMaterializedView(String dbName, String tableName, Set<String> tablesUsed,
+      String validTxnList, OpType opType) {
     // We are going to create the map for each view in the given database
     ConcurrentMap<String, MaterializationInvalidationInfo> cq =
         new ConcurrentHashMap<String, MaterializationInvalidationInfo>();
     final ConcurrentMap<String, MaterializationInvalidationInfo> prevCq = materializations.putIfAbsent(
-        materializedViewTable.getDbName(), cq);
+        dbName, cq);
     if (prevCq != null) {
       cq = prevCq;
     }
     // Start the process to add materialization to the cache
     // Before loading the materialization in the cache, we need to update some
     // important information in the registry to account for rewriting invalidation
-    String txnListString = materializedViewTable.getCreationMetadata().getValidTxnList();
-    if (txnListString == null) {
+    if (validTxnList == null) {
       // This can happen when the materialized view was created on non-transactional tables
       return;
     }
     if (opType == OpType.CREATE || opType == OpType.ALTER) {
       // You store the materialized view
-      cq.put(materializedViewTable.getTableName(),
-          new MaterializationInvalidationInfo(materializedViewTable, tablesUsed));
+      cq.put(tableName, new MaterializationInvalidationInfo(tablesUsed, validTxnList));
     } else {
-      ValidTxnList txnList = new ValidReadTxnList(txnListString);
+      ValidTxnList txnList = new ValidReadTxnList(validTxnList);
       for (String qNameTableUsed : tablesUsed) {
         // First we insert a new tree set to keep table modifications, unless it already exists
         ConcurrentSkipListMap<Long, Long> modificationsTree =
@@ -197,19 +205,17 @@ public final class MaterializationsInvalidationCache {
             continue;
           }
         } catch (MetaException ex) {
-          LOG.debug("Materialized view " +
-                  Warehouse.getQualifiedName(materializedViewTable.getDbName(), materializedViewTable.getTableName()) +
+          LOG.debug("Materialized view " + Warehouse.getQualifiedName(dbName, tableName) +
                   " ignored; error loading view into invalidation cache", ex);
           return;
         }
       }
       // For LOAD, you only add it if it does exist as you might be loading an outdated MV
-      cq.putIfAbsent(materializedViewTable.getTableName(),
-          new MaterializationInvalidationInfo(materializedViewTable, tablesUsed));
+      cq.putIfAbsent(tableName, new MaterializationInvalidationInfo(tablesUsed, validTxnList));
     }
     if (LOG.isDebugEnabled()) {
       LOG.debug("Cached materialized view for rewriting in invalidation cache: " +
-          Warehouse.getQualifiedName(materializedViewTable.getDbName(), materializedViewTable.getTableName()));
+          Warehouse.getQualifiedName(dbName, tableName));
     }
   }
 
@@ -236,12 +242,9 @@ public final class MaterializationsInvalidationCache {
   /**
    * Removes the materialized view from the cache.
    *
-   * @param materializedViewTable the materialized view to remove
+   * @param dbName
+   * @param tableName
    */
-  public void dropMaterializedView(Table materializedViewTable) {
-    dropMaterializedView(materializedViewTable.getDbName(), materializedViewTable.getTableName());
-  }
-
   public void dropMaterializedView(String dbName, String tableName) {
     materializations.get(dbName).remove(tableName);
   }
@@ -292,7 +295,7 @@ public final class MaterializationsInvalidationCache {
   }
 
   private long getInvalidationTime(MaterializationInvalidationInfo materialization) {
-    String txnListString = materialization.getMaterializationTable().getCreationMetadata().getValidTxnList();
+    String txnListString = materialization.getValidTxnList();
     if (txnListString == null) {
       // This can happen when the materialization was created on non-transactional tables
       return Long.MIN_VALUE;

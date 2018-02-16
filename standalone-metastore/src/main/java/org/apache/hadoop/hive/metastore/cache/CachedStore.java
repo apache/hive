@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.cache;
 
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 
 import java.nio.ByteBuffer;
@@ -1172,6 +1173,12 @@ public class CachedStore implements RawStore, Configurable {
         partitionAggrColStatsCacheLock.readLock().unlock();
       }
     }
+  }
+
+  @Override
+  public void updateCreationMetadata(String dbname, String tablename, CreationMetadata cm)
+      throws MetaException {
+    rawStore.updateCreationMetadata(dbname, tablename, cm);
   }
 
   @Override

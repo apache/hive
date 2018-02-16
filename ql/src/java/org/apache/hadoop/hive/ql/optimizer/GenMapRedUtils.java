@@ -1509,22 +1509,12 @@ public final class GenMapRedUtils {
           table = null;
         }
       } else if (mvWork.getLoadFileWork().getCreateViewDesc() != null) {
-        if (mvWork.getLoadFileWork().getCreateViewDesc().isReplace()) {
-          // ALTER MV ... REBUILD
-          String tableName = mvWork.getLoadFileWork().getCreateViewDesc().getViewName();
-          try {
-            table = Hive.get().getTable(tableName);
-          } catch (HiveException e) {
-            throw new RuntimeException("unexpected; MV should be present already..: " + tableName, e);
-          }
-        } else {
-          // CREATE MATERIALIZED VIEW ...
-          try {
-            table = mvWork.getLoadFileWork().getCreateViewDesc().toTable(hconf);
-          } catch (HiveException e) {
-            LOG.debug("can't pre-create table for MV", e);
-            table = null;
-          }
+        // CREATE MATERIALIZED VIEW ...
+        try {
+          table = mvWork.getLoadFileWork().getCreateViewDesc().toTable(hconf);
+        } catch (HiveException e) {
+          LOG.debug("can't pre-create table for MV", e);
+          table = null;
         }
       } else {
         throw new RuntimeException("unexpected; this should be a CTAS or a CREATE/REBUILD MV - however no desc present");

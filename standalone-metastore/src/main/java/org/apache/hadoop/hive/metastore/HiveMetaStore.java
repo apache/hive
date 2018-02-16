@@ -2518,6 +2518,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return MaterializationsInvalidationCache.get().getMaterializationInvalidationInfo(dbName, tableNames);
     }
 
+    @Override
+    public void update_creation_metadata(final String dbName, final String tableName, CreationMetadata cm) throws MetaException {
+      getMS().updateCreationMetadata(dbName, tableName, cm);
+    }
+
     private void assertClientHasCapability(ClientCapabilities client,
         ClientCapability value, String what, String call) throws MetaException {
       if (!doesClientHaveCapability(client, value)) {

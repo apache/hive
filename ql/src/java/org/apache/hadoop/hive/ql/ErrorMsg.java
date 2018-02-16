@@ -455,6 +455,7 @@ public enum ErrorMsg {
       "Alter table with non-partitioned table does not support cascade"),
   HIVE_GROUPING_SETS_SIZE_LIMIT(10411,
     "Grouping sets size cannot be greater than 64"),
+  REBUILD_NO_MATERIALIZED_VIEW(10412, "Rebuild command only valid for materialized views"),
 
   //========================== 20000 range starts here ========================//
 

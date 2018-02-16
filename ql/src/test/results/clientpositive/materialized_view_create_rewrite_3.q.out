@@ -92,6 +92,7 @@ STAGE DEPENDENCIES:
   Stage-0 depends on stages: Stage-2
   Stage-5 depends on stages: Stage-0
   Stage-3 depends on stages: Stage-5
+  Stage-6 depends on stages: Stage-3
 
 STAGE PLANS:
   Stage: Stage-1
@@ -197,6 +198,9 @@ STAGE PLANS:
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
+
+  Stage: Stage-6
+    Materialized View Work
 
 PREHOOK: query: CREATE MATERIALIZED VIEW cmv_mat_view ENABLE REWRITE AS
   SELECT cmv_basetable.a, cmv_basetable_2.c
@@ -433,16 +437,17 @@ POSTHOOK: Input: default@cmv_basetable_2
 3
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view REBUILD
-PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW cmv_mat_view REBUILD
-POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
   Stage-0 depends on stages: Stage-2
-  Stage-5 depends on stages: Stage-0
-  Stage-3 depends on stages: Stage-5
+  Stage-3 depends on stages: Stage-0, Stage-4
+  Stage-6 depends on stages: Stage-3
+  Stage-4 depends on stages: Stage-2
 
 STAGE PLANS:
   Stage: Stage-1
@@ -523,36 +528,77 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                 serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                 name: default.cmv_mat_view
+          Select Operator
+            expressions: _col0 (type: int), _col1 (type: decimal(10,2))
+            outputColumnNames: a, c
+            Statistics: Num rows: 2 Data size: 530 Basic stats: COMPLETE Column stats: NONE
+            Group By Operator
+              aggregations: compute_stats(a, 'hll'), compute_stats(c, 'hll')
+              mode: hash
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 1 Data size: 1056 Basic stats: COMPLETE Column stats: NONE
+              File Output Operator
+                compressed: false
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-0
     Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
-
-  Stage: Stage-5
-      Create View Operator:
-        Create View
-          columns: a int, c decimal(10,2)
-          name: default.cmv_mat_view
+      tables:
           replace: true
+          table:
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.cmv_mat_view
 
   Stage: Stage-3
     Stats Work
       Basic Stats Work:
+      Column Stats Desc:
+          Columns: a, c
+          Column Types: int, decimal(10,2)
+          Table: default.cmv_mat_view
+
+  Stage: Stage-6
+    Materialized View Work
+
+  Stage: Stage-4
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 1 Data size: 1056 Basic stats: COMPLETE Column stats: NONE
+              value expressions: _col0 (type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:binary>), _col1 (type: struct<columntype:string,min:decimal(10,2),max:decimal(10,2),countnulls:bigint,bitvector:binary>)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: compute_stats(VALUE._col0), compute_stats(VALUE._col1)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 1088 Basic stats: COMPLETE Column stats: NONE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 1088 Basic stats: COMPLETE Column stats: NONE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view REBUILD
-PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable
 PREHOOK: Input: default@cmv_basetable_2
-PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view
 POSTHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view REBUILD
-POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
-POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view
+POSTHOOK: Lineage: cmv_mat_view.a SIMPLE [(cmv_basetable)cmv_basetable.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view.c SIMPLE [(cmv_basetable_2)cmv_basetable_2.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable.a
 FROM cmv_basetable join cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)
@@ -750,17 +796,17 @@ POSTHOOK: Input: default@cmv_basetable_2
 #### A masked pattern was here ####
 1
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view REBUILD
-PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable
 PREHOOK: Input: default@cmv_basetable_2
-PREHOOK: Output: database:default
 PREHOOK: Output: default@cmv_mat_view
 POSTHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view REBUILD
-POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable
 POSTHOOK: Input: default@cmv_basetable_2
-POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_mat_view
+POSTHOOK: Lineage: cmv_mat_view.a SIMPLE [(cmv_basetable)cmv_basetable.FieldSchema(name:a, type:int, comment:null), ]
+POSTHOOK: Lineage: cmv_mat_view.c SIMPLE [(cmv_basetable_2)cmv_basetable_2.FieldSchema(name:c, type:decimal(10,2), comment:null), ]
 PREHOOK: query: EXPLAIN
 SELECT cmv_basetable.a
 FROM cmv_basetable join cmv_basetable_2 ON (cmv_basetable.a = cmv_basetable_2.a)

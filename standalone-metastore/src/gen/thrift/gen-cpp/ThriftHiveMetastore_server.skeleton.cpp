@@ -207,6 +207,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_materialization_invalidation_info\n");
   }
 
+  void update_creation_metadata(const std::string& dbname, const std::string& tbl_name, const CreationMetadata& creation_metadata) {
+    // Your implementation goes here
+    printf("update_creation_metadata\n");
+  }
+
   void get_table_names_by_filter(std::vector<std::string> & _return, const std::string& dbname, const std::string& filter, const int16_t max_tables) {
     // Your implementation goes here
     printf("get_table_names_by_filter\n");
