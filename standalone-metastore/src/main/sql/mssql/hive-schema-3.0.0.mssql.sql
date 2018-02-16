@@ -1199,12 +1199,12 @@ CREATE TABLE "SCHEMA_VERSION" (
 );
 
 CREATE TABLE REPL_TXN_MAP (
-  REPL_POLICY nvarchar(128) NOT NULL,
-  SRC_TXN_ID bigint NOT NULL,
-  TARGET_TXN_ID bigint NOT NULL
+  TM_REPL_POLICY nvarchar(128) NOT NULL,
+  TM_SRC_TXN_ID bigint NOT NULL,
+  TM_TARGET_TXN_ID bigint NOT NULL
 );
 
-ALTER TABLE REPL_TXN_MAP ADD CONSTRAINT TXN_MAP_PK PRIMARY KEY (REPL_POLICY, SRC_TXN_ID);
+ALTER TABLE REPL_TXN_MAP ADD CONSTRAINT REPL_TXN_MAP_PK PRIMARY KEY (TM_REPL_POLICY, TM_SRC_TXN_ID);
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script

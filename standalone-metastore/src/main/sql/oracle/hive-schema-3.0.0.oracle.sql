@@ -1106,10 +1106,10 @@ CREATE TABLE "SCHEMA_VERSION" (
 );
 
 CREATE TABLE REPL_TXN_MAP (
-  REPL_POLICY varchar(128) NOT NULL,
-  SRC_TXN_ID number(19) NOT NULL,
-  TARGET_TXN_ID number(19) NOT NULL,
-  PRIMARY KEY (REPL_POLICY, SRC_TXN_ID)
+  TM_REPL_POLICY varchar(128) NOT NULL,
+  TM_SRC_TXN_ID number(19) NOT NULL,
+  TM_TARGET_TXN_ID number(19) NOT NULL,
+  PRIMARY KEY (TM_REPL_POLICY, TM_SRC_TXN_ID)
 );
 
 -- -----------------------------------------------------------------

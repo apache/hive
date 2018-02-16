@@ -16478,8 +16478,6 @@ AbortTxnRequest& AbortTxnRequest::operator=(const AbortTxnRequest& other632) {
 =======
 AbortTxnRequest::AbortTxnRequest(const AbortTxnRequest& other611) {
   txnid = other611.txnid;
-<<<<<<< HEAD
-<<<<<<< HEAD
   replPolicy = other611.replPolicy;
   __isset = other611.__isset;
 }
@@ -16487,6 +16485,7 @@ AbortTxnRequest& AbortTxnRequest::operator=(const AbortTxnRequest& other612) {
   txnid = other612.txnid;
   replPolicy = other612.replPolicy;
   __isset = other612.__isset;
+<<<<<<< HEAD
 =======
 }
 AbortTxnRequest& AbortTxnRequest::operator=(const AbortTxnRequest& other612) {
@@ -16502,9 +16501,20 @@ AbortTxnRequest& AbortTxnRequest::operator=(const AbortTxnRequest& other612) {
   __isset = other612.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void AbortTxnRequest::printTo(std::ostream& out) const {
@@ -16751,7 +16761,6 @@ uint32_t CommitTxnRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
-<<<<<<< HEAD
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -17048,6 +17057,7 @@ uint32_t GetValidWriteIdsRequest::read(::apache::thrift::protocol::TProtocol* ip
           {
             this->fullTableNames.clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size666;
             ::apache::thrift::protocol::TType _etype669;
             xfer += iprot->readListBegin(_etype669, _size666);
@@ -17057,6 +17067,8 @@ uint32_t GetValidWriteIdsRequest::read(::apache::thrift::protocol::TProtocol* ip
             {
               xfer += iprot->readString(this->fullTableNames[_i670]);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size648;
             ::apache::thrift::protocol::TType _etype651;
@@ -17067,6 +17079,8 @@ uint32_t GetValidWriteIdsRequest::read(::apache::thrift::protocol::TProtocol* ip
             {
               xfer += iprot->readString(this->fullTableNames[_i652]);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size628;
             ::apache::thrift::protocol::TType _etype631;
@@ -17077,6 +17091,8 @@ uint32_t GetValidWriteIdsRequest::read(::apache::thrift::protocol::TProtocol* ip
             {
               xfer += iprot->readString(this->fullTableNames[_i632]);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size647;
             ::apache::thrift::protocol::TType _etype650;
             xfer += iprot->readListBegin(_etype650, _size647);
@@ -17085,9 +17101,28 @@ uint32_t GetValidWriteIdsRequest::read(::apache::thrift::protocol::TProtocol* ip
             for (_i651 = 0; _i651 < _size647; ++_i651)
             {
               xfer += iprot->readString(this->fullTableNames[_i651]);
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+            uint32_t _size627;
+            ::apache::thrift::protocol::TType _etype630;
+            xfer += iprot->readListBegin(_etype630, _size627);
+            this->fullTableNames.resize(_size627);
+            uint32_t _i631;
+            for (_i631 = 0; _i631 < _size627; ++_i631)
+            {
+              xfer += iprot->readString(this->fullTableNames[_i631]);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -17129,30 +17164,52 @@ uint32_t GetValidWriteIdsRequest::write(::apache::thrift::protocol::TProtocol* o
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->fullTableNames.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter671;
     for (_iter671 = this->fullTableNames.begin(); _iter671 != this->fullTableNames.end(); ++_iter671)
     {
       xfer += oprot->writeString((*_iter671));
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter653;
     for (_iter653 = this->fullTableNames.begin(); _iter653 != this->fullTableNames.end(); ++_iter653)
     {
       xfer += oprot->writeString((*_iter653));
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter633;
     for (_iter633 = this->fullTableNames.begin(); _iter633 != this->fullTableNames.end(); ++_iter633)
     {
       xfer += oprot->writeString((*_iter633));
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::vector<std::string> ::const_iterator _iter652;
     for (_iter652 = this->fullTableNames.begin(); _iter652 != this->fullTableNames.end(); ++_iter652)
     {
       xfer += oprot->writeString((*_iter652));
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+    std::vector<std::string> ::const_iterator _iter632;
+    for (_iter632 = this->fullTableNames.begin(); _iter632 != this->fullTableNames.end(); ++_iter632)
+    {
+      xfer += oprot->writeString((*_iter632));
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeListEnd();
   }
@@ -17174,6 +17231,7 @@ void swap(GetValidWriteIdsRequest &a, GetValidWriteIdsRequest &b) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 GetValidWriteIdsRequest::GetValidWriteIdsRequest(const GetValidWriteIdsRequest& other672) {
   fullTableNames = other672.fullTableNames;
   validTxnList = other672.validTxnList;
@@ -17182,6 +17240,8 @@ GetValidWriteIdsRequest& GetValidWriteIdsRequest::operator=(const GetValidWriteI
   fullTableNames = other673.fullTableNames;
   validTxnList = other673.validTxnList;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetValidWriteIdsRequest::GetValidWriteIdsRequest(const GetValidWriteIdsRequest& other654) {
   fullTableNames = other654.fullTableNames;
@@ -17191,6 +17251,8 @@ GetValidWriteIdsRequest& GetValidWriteIdsRequest::operator=(const GetValidWriteI
   fullTableNames = other655.fullTableNames;
   validTxnList = other655.validTxnList;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetValidWriteIdsRequest::GetValidWriteIdsRequest(const GetValidWriteIdsRequest& other634) {
   fullTableNames = other634.fullTableNames;
@@ -17200,6 +17262,8 @@ GetValidWriteIdsRequest& GetValidWriteIdsRequest::operator=(const GetValidWriteI
   fullTableNames = other635.fullTableNames;
   validTxnList = other635.validTxnList;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 GetValidWriteIdsRequest::GetValidWriteIdsRequest(const GetValidWriteIdsRequest& other653) {
   fullTableNames = other653.fullTableNames;
   validTxnList = other653.validTxnList;
@@ -17207,9 +17271,27 @@ GetValidWriteIdsRequest::GetValidWriteIdsRequest(const GetValidWriteIdsRequest& 
 GetValidWriteIdsRequest& GetValidWriteIdsRequest::operator=(const GetValidWriteIdsRequest& other654) {
   fullTableNames = other654.fullTableNames;
   validTxnList = other654.validTxnList;
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+GetValidWriteIdsRequest::GetValidWriteIdsRequest(const GetValidWriteIdsRequest& other633) {
+  fullTableNames = other633.fullTableNames;
+  validTxnList = other633.validTxnList;
+}
+GetValidWriteIdsRequest& GetValidWriteIdsRequest::operator=(const GetValidWriteIdsRequest& other634) {
+  fullTableNames = other634.fullTableNames;
+  validTxnList = other634.validTxnList;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void GetValidWriteIdsRequest::printTo(std::ostream& out) const {
@@ -17292,6 +17374,7 @@ uint32_t TableValidWriteIds::read(::apache::thrift::protocol::TProtocol* iprot) 
           {
             this->invalidWriteIds.clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size674;
             ::apache::thrift::protocol::TType _etype677;
             xfer += iprot->readListBegin(_etype677, _size674);
@@ -17301,6 +17384,8 @@ uint32_t TableValidWriteIds::read(::apache::thrift::protocol::TProtocol* iprot) 
             {
               xfer += iprot->readI64(this->invalidWriteIds[_i678]);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size656;
             ::apache::thrift::protocol::TType _etype659;
@@ -17311,6 +17396,8 @@ uint32_t TableValidWriteIds::read(::apache::thrift::protocol::TProtocol* iprot) 
             {
               xfer += iprot->readI64(this->invalidWriteIds[_i660]);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size636;
             ::apache::thrift::protocol::TType _etype639;
@@ -17321,6 +17408,8 @@ uint32_t TableValidWriteIds::read(::apache::thrift::protocol::TProtocol* iprot) 
             {
               xfer += iprot->readI64(this->invalidWriteIds[_i640]);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size655;
             ::apache::thrift::protocol::TType _etype658;
             xfer += iprot->readListBegin(_etype658, _size655);
@@ -17329,9 +17418,28 @@ uint32_t TableValidWriteIds::read(::apache::thrift::protocol::TProtocol* iprot) 
             for (_i659 = 0; _i659 < _size655; ++_i659)
             {
               xfer += iprot->readI64(this->invalidWriteIds[_i659]);
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+            uint32_t _size635;
+            ::apache::thrift::protocol::TType _etype638;
+            xfer += iprot->readListBegin(_etype638, _size635);
+            this->invalidWriteIds.resize(_size635);
+            uint32_t _i639;
+            for (_i639 = 0; _i639 < _size635; ++_i639)
+            {
+              xfer += iprot->readI64(this->invalidWriteIds[_i639]);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -17393,30 +17501,52 @@ uint32_t TableValidWriteIds::write(::apache::thrift::protocol::TProtocol* oprot)
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->invalidWriteIds.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter679;
     for (_iter679 = this->invalidWriteIds.begin(); _iter679 != this->invalidWriteIds.end(); ++_iter679)
     {
       xfer += oprot->writeI64((*_iter679));
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter661;
     for (_iter661 = this->invalidWriteIds.begin(); _iter661 != this->invalidWriteIds.end(); ++_iter661)
     {
       xfer += oprot->writeI64((*_iter661));
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter641;
     for (_iter641 = this->invalidWriteIds.begin(); _iter641 != this->invalidWriteIds.end(); ++_iter641)
     {
       xfer += oprot->writeI64((*_iter641));
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::vector<int64_t> ::const_iterator _iter660;
     for (_iter660 = this->invalidWriteIds.begin(); _iter660 != this->invalidWriteIds.end(); ++_iter660)
     {
       xfer += oprot->writeI64((*_iter660));
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+    std::vector<int64_t> ::const_iterator _iter640;
+    for (_iter640 = this->invalidWriteIds.begin(); _iter640 != this->invalidWriteIds.end(); ++_iter640)
+    {
+      xfer += oprot->writeI64((*_iter640));
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeListEnd();
   }
@@ -17447,6 +17577,7 @@ void swap(TableValidWriteIds &a, TableValidWriteIds &b) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 TableValidWriteIds::TableValidWriteIds(const TableValidWriteIds& other680) {
   fullTableName = other680.fullTableName;
   writeIdHighWaterMark = other680.writeIdHighWaterMark;
@@ -17463,9 +17594,13 @@ TableValidWriteIds& TableValidWriteIds::operator=(const TableValidWriteIds& othe
   abortedBits = other681.abortedBits;
   __isset = other681.__isset;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 TableValidWriteIds::TableValidWriteIds(const TableValidWriteIds& other662) {
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 TableValidWriteIds::TableValidWriteIds(const TableValidWriteIds& other642) {
   fullTableName = other642.fullTableName;
@@ -17483,6 +17618,8 @@ TableValidWriteIds& TableValidWriteIds::operator=(const TableValidWriteIds& othe
   abortedBits = other643.abortedBits;
   __isset = other643.__isset;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 TableValidWriteIds::TableValidWriteIds(const TableValidWriteIds& other661) {
   fullTableName = other661.fullTableName;
   writeIdHighWaterMark = other661.writeIdHighWaterMark;
@@ -17500,6 +17637,7 @@ TableValidWriteIds& TableValidWriteIds::operator=(const TableValidWriteIds& othe
   abortedBits = other662.abortedBits;
   __isset = other662.__isset;
 <<<<<<< HEAD
+<<<<<<< HEAD
 }
 TableValidWriteIds& TableValidWriteIds::operator=(const TableValidWriteIds& other663) {
   fullTableName = other663.fullTableName;
@@ -17510,8 +17648,32 @@ TableValidWriteIds& TableValidWriteIds::operator=(const TableValidWriteIds& othe
   __isset = other663.__isset;
 =======
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+TableValidWriteIds::TableValidWriteIds(const TableValidWriteIds& other641) {
+  fullTableName = other641.fullTableName;
+  writeIdHighWaterMark = other641.writeIdHighWaterMark;
+  invalidWriteIds = other641.invalidWriteIds;
+  minOpenWriteId = other641.minOpenWriteId;
+  abortedBits = other641.abortedBits;
+  __isset = other641.__isset;
+}
+TableValidWriteIds& TableValidWriteIds::operator=(const TableValidWriteIds& other642) {
+  fullTableName = other642.fullTableName;
+  writeIdHighWaterMark = other642.writeIdHighWaterMark;
+  invalidWriteIds = other642.invalidWriteIds;
+  minOpenWriteId = other642.minOpenWriteId;
+  abortedBits = other642.abortedBits;
+  __isset = other642.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void TableValidWriteIds::printTo(std::ostream& out) const {
@@ -17561,6 +17723,7 @@ uint32_t GetValidWriteIdsResponse::read(::apache::thrift::protocol::TProtocol* i
           {
             this->tblValidWriteIds.clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size682;
             ::apache::thrift::protocol::TType _etype685;
             xfer += iprot->readListBegin(_etype685, _size682);
@@ -17570,6 +17733,8 @@ uint32_t GetValidWriteIdsResponse::read(::apache::thrift::protocol::TProtocol* i
             {
               xfer += this->tblValidWriteIds[_i686].read(iprot);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size664;
             ::apache::thrift::protocol::TType _etype667;
@@ -17580,6 +17745,8 @@ uint32_t GetValidWriteIdsResponse::read(::apache::thrift::protocol::TProtocol* i
             {
               xfer += this->tblValidWriteIds[_i668].read(iprot);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size644;
             ::apache::thrift::protocol::TType _etype647;
@@ -17590,6 +17757,8 @@ uint32_t GetValidWriteIdsResponse::read(::apache::thrift::protocol::TProtocol* i
             {
               xfer += this->tblValidWriteIds[_i648].read(iprot);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size663;
             ::apache::thrift::protocol::TType _etype666;
             xfer += iprot->readListBegin(_etype666, _size663);
@@ -17598,9 +17767,28 @@ uint32_t GetValidWriteIdsResponse::read(::apache::thrift::protocol::TProtocol* i
             for (_i667 = 0; _i667 < _size663; ++_i667)
             {
               xfer += this->tblValidWriteIds[_i667].read(iprot);
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+            uint32_t _size643;
+            ::apache::thrift::protocol::TType _etype646;
+            xfer += iprot->readListBegin(_etype646, _size643);
+            this->tblValidWriteIds.resize(_size643);
+            uint32_t _i647;
+            for (_i647 = 0; _i647 < _size643; ++_i647)
+            {
+              xfer += this->tblValidWriteIds[_i647].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -17632,30 +17820,52 @@ uint32_t GetValidWriteIdsResponse::write(::apache::thrift::protocol::TProtocol* 
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->tblValidWriteIds.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<TableValidWriteIds> ::const_iterator _iter687;
     for (_iter687 = this->tblValidWriteIds.begin(); _iter687 != this->tblValidWriteIds.end(); ++_iter687)
     {
       xfer += (*_iter687).write(oprot);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<TableValidWriteIds> ::const_iterator _iter669;
     for (_iter669 = this->tblValidWriteIds.begin(); _iter669 != this->tblValidWriteIds.end(); ++_iter669)
     {
       xfer += (*_iter669).write(oprot);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<TableValidWriteIds> ::const_iterator _iter649;
     for (_iter649 = this->tblValidWriteIds.begin(); _iter649 != this->tblValidWriteIds.end(); ++_iter649)
     {
       xfer += (*_iter649).write(oprot);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::vector<TableValidWriteIds> ::const_iterator _iter668;
     for (_iter668 = this->tblValidWriteIds.begin(); _iter668 != this->tblValidWriteIds.end(); ++_iter668)
     {
       xfer += (*_iter668).write(oprot);
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+    std::vector<TableValidWriteIds> ::const_iterator _iter648;
+    for (_iter648 = this->tblValidWriteIds.begin(); _iter648 != this->tblValidWriteIds.end(); ++_iter648)
+    {
+      xfer += (*_iter648).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeListEnd();
   }
@@ -17672,12 +17882,15 @@ void swap(GetValidWriteIdsResponse &a, GetValidWriteIdsResponse &b) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 GetValidWriteIdsResponse::GetValidWriteIdsResponse(const GetValidWriteIdsResponse& other688) {
   tblValidWriteIds = other688.tblValidWriteIds;
 }
 GetValidWriteIdsResponse& GetValidWriteIdsResponse::operator=(const GetValidWriteIdsResponse& other689) {
   tblValidWriteIds = other689.tblValidWriteIds;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetValidWriteIdsResponse::GetValidWriteIdsResponse(const GetValidWriteIdsResponse& other670) {
   tblValidWriteIds = other670.tblValidWriteIds;
@@ -17685,6 +17898,8 @@ GetValidWriteIdsResponse::GetValidWriteIdsResponse(const GetValidWriteIdsRespons
 GetValidWriteIdsResponse& GetValidWriteIdsResponse::operator=(const GetValidWriteIdsResponse& other671) {
   tblValidWriteIds = other671.tblValidWriteIds;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetValidWriteIdsResponse::GetValidWriteIdsResponse(const GetValidWriteIdsResponse& other650) {
   tblValidWriteIds = other650.tblValidWriteIds;
@@ -17692,14 +17907,32 @@ GetValidWriteIdsResponse::GetValidWriteIdsResponse(const GetValidWriteIdsRespons
 GetValidWriteIdsResponse& GetValidWriteIdsResponse::operator=(const GetValidWriteIdsResponse& other651) {
   tblValidWriteIds = other651.tblValidWriteIds;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 GetValidWriteIdsResponse::GetValidWriteIdsResponse(const GetValidWriteIdsResponse& other669) {
   tblValidWriteIds = other669.tblValidWriteIds;
 }
 GetValidWriteIdsResponse& GetValidWriteIdsResponse::operator=(const GetValidWriteIdsResponse& other670) {
   tblValidWriteIds = other670.tblValidWriteIds;
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+GetValidWriteIdsResponse::GetValidWriteIdsResponse(const GetValidWriteIdsResponse& other649) {
+  tblValidWriteIds = other649.tblValidWriteIds;
+}
+GetValidWriteIdsResponse& GetValidWriteIdsResponse::operator=(const GetValidWriteIdsResponse& other650) {
+  tblValidWriteIds = other650.tblValidWriteIds;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void GetValidWriteIdsResponse::printTo(std::ostream& out) const {
@@ -17755,6 +17988,7 @@ uint32_t AllocateTableWriteIdsRequest::read(::apache::thrift::protocol::TProtoco
           {
             this->txnIds.clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size690;
             ::apache::thrift::protocol::TType _etype693;
             xfer += iprot->readListBegin(_etype693, _size690);
@@ -17764,6 +17998,8 @@ uint32_t AllocateTableWriteIdsRequest::read(::apache::thrift::protocol::TProtoco
             {
               xfer += iprot->readI64(this->txnIds[_i694]);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size672;
             ::apache::thrift::protocol::TType _etype675;
@@ -17774,6 +18010,8 @@ uint32_t AllocateTableWriteIdsRequest::read(::apache::thrift::protocol::TProtoco
             {
               xfer += iprot->readI64(this->txnIds[_i676]);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size652;
             ::apache::thrift::protocol::TType _etype655;
@@ -17784,6 +18022,8 @@ uint32_t AllocateTableWriteIdsRequest::read(::apache::thrift::protocol::TProtoco
             {
               xfer += iprot->readI64(this->txnIds[_i656]);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size671;
             ::apache::thrift::protocol::TType _etype674;
             xfer += iprot->readListBegin(_etype674, _size671);
@@ -17792,9 +18032,28 @@ uint32_t AllocateTableWriteIdsRequest::read(::apache::thrift::protocol::TProtoco
             for (_i675 = 0; _i675 < _size671; ++_i675)
             {
               xfer += iprot->readI64(this->txnIds[_i675]);
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+            uint32_t _size651;
+            ::apache::thrift::protocol::TType _etype654;
+            xfer += iprot->readListBegin(_etype654, _size651);
+            this->txnIds.resize(_size651);
+            uint32_t _i655;
+            for (_i655 = 0; _i655 < _size651; ++_i655)
+            {
+              xfer += iprot->readI64(this->txnIds[_i655]);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -17846,30 +18105,52 @@ uint32_t AllocateTableWriteIdsRequest::write(::apache::thrift::protocol::TProtoc
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->txnIds.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter695;
     for (_iter695 = this->txnIds.begin(); _iter695 != this->txnIds.end(); ++_iter695)
     {
       xfer += oprot->writeI64((*_iter695));
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter677;
     for (_iter677 = this->txnIds.begin(); _iter677 != this->txnIds.end(); ++_iter677)
     {
       xfer += oprot->writeI64((*_iter677));
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter657;
     for (_iter657 = this->txnIds.begin(); _iter657 != this->txnIds.end(); ++_iter657)
     {
       xfer += oprot->writeI64((*_iter657));
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::vector<int64_t> ::const_iterator _iter676;
     for (_iter676 = this->txnIds.begin(); _iter676 != this->txnIds.end(); ++_iter676)
     {
       xfer += oprot->writeI64((*_iter676));
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+    std::vector<int64_t> ::const_iterator _iter656;
+    for (_iter656 = this->txnIds.begin(); _iter656 != this->txnIds.end(); ++_iter656)
+    {
+      xfer += oprot->writeI64((*_iter656));
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeListEnd();
   }
@@ -17896,6 +18177,7 @@ void swap(AllocateTableWriteIdsRequest &a, AllocateTableWriteIdsRequest &b) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 AllocateTableWriteIdsRequest::AllocateTableWriteIdsRequest(const AllocateTableWriteIdsRequest& other696) {
   txnIds = other696.txnIds;
   dbName = other696.dbName;
@@ -17906,6 +18188,8 @@ AllocateTableWriteIdsRequest& AllocateTableWriteIdsRequest::operator=(const Allo
   dbName = other697.dbName;
   tableName = other697.tableName;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 AllocateTableWriteIdsRequest::AllocateTableWriteIdsRequest(const AllocateTableWriteIdsRequest& other678) {
   txnIds = other678.txnIds;
@@ -17917,6 +18201,8 @@ AllocateTableWriteIdsRequest& AllocateTableWriteIdsRequest::operator=(const Allo
   dbName = other679.dbName;
   tableName = other679.tableName;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 AllocateTableWriteIdsRequest::AllocateTableWriteIdsRequest(const AllocateTableWriteIdsRequest& other658) {
   txnIds = other658.txnIds;
@@ -17928,6 +18214,8 @@ AllocateTableWriteIdsRequest& AllocateTableWriteIdsRequest::operator=(const Allo
   dbName = other659.dbName;
   tableName = other659.tableName;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 AllocateTableWriteIdsRequest::AllocateTableWriteIdsRequest(const AllocateTableWriteIdsRequest& other677) {
   txnIds = other677.txnIds;
   dbName = other677.dbName;
@@ -17937,9 +18225,29 @@ AllocateTableWriteIdsRequest& AllocateTableWriteIdsRequest::operator=(const Allo
   txnIds = other678.txnIds;
   dbName = other678.dbName;
   tableName = other678.tableName;
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+AllocateTableWriteIdsRequest::AllocateTableWriteIdsRequest(const AllocateTableWriteIdsRequest& other657) {
+  txnIds = other657.txnIds;
+  dbName = other657.dbName;
+  tableName = other657.tableName;
+}
+AllocateTableWriteIdsRequest& AllocateTableWriteIdsRequest::operator=(const AllocateTableWriteIdsRequest& other658) {
+  txnIds = other658.txnIds;
+  dbName = other658.dbName;
+  tableName = other658.tableName;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void AllocateTableWriteIdsRequest::printTo(std::ostream& out) const {
@@ -18044,6 +18352,7 @@ void swap(TxnToWriteId &a, TxnToWriteId &b) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 TxnToWriteId::TxnToWriteId(const TxnToWriteId& other698) {
   txnId = other698.txnId;
   writeId = other698.writeId;
@@ -18052,6 +18361,8 @@ TxnToWriteId& TxnToWriteId::operator=(const TxnToWriteId& other699) {
   txnId = other699.txnId;
   writeId = other699.writeId;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 TxnToWriteId::TxnToWriteId(const TxnToWriteId& other680) {
   txnId = other680.txnId;
@@ -18061,6 +18372,8 @@ TxnToWriteId& TxnToWriteId::operator=(const TxnToWriteId& other681) {
   txnId = other681.txnId;
   writeId = other681.writeId;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 TxnToWriteId::TxnToWriteId(const TxnToWriteId& other660) {
   txnId = other660.txnId;
@@ -18070,6 +18383,8 @@ TxnToWriteId& TxnToWriteId::operator=(const TxnToWriteId& other661) {
   txnId = other661.txnId;
   writeId = other661.writeId;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 TxnToWriteId::TxnToWriteId(const TxnToWriteId& other679) {
   txnId = other679.txnId;
   writeId = other679.writeId;
@@ -18077,9 +18392,27 @@ TxnToWriteId::TxnToWriteId(const TxnToWriteId& other679) {
 TxnToWriteId& TxnToWriteId::operator=(const TxnToWriteId& other680) {
   txnId = other680.txnId;
   writeId = other680.writeId;
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+TxnToWriteId::TxnToWriteId(const TxnToWriteId& other659) {
+  txnId = other659.txnId;
+  writeId = other659.writeId;
+}
+TxnToWriteId& TxnToWriteId::operator=(const TxnToWriteId& other660) {
+  txnId = other660.txnId;
+  writeId = other660.writeId;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void TxnToWriteId::printTo(std::ostream& out) const {
@@ -18126,6 +18459,7 @@ uint32_t AllocateTableWriteIdsResponse::read(::apache::thrift::protocol::TProtoc
           {
             this->txnToWriteIds.clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size700;
             ::apache::thrift::protocol::TType _etype703;
             xfer += iprot->readListBegin(_etype703, _size700);
@@ -18135,6 +18469,8 @@ uint32_t AllocateTableWriteIdsResponse::read(::apache::thrift::protocol::TProtoc
             {
               xfer += this->txnToWriteIds[_i704].read(iprot);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size682;
             ::apache::thrift::protocol::TType _etype685;
@@ -18145,6 +18481,8 @@ uint32_t AllocateTableWriteIdsResponse::read(::apache::thrift::protocol::TProtoc
             {
               xfer += this->txnToWriteIds[_i686].read(iprot);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size662;
             ::apache::thrift::protocol::TType _etype665;
@@ -18155,6 +18493,8 @@ uint32_t AllocateTableWriteIdsResponse::read(::apache::thrift::protocol::TProtoc
             {
               xfer += this->txnToWriteIds[_i666].read(iprot);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size681;
             ::apache::thrift::protocol::TType _etype684;
             xfer += iprot->readListBegin(_etype684, _size681);
@@ -18163,9 +18503,28 @@ uint32_t AllocateTableWriteIdsResponse::read(::apache::thrift::protocol::TProtoc
             for (_i685 = 0; _i685 < _size681; ++_i685)
             {
               xfer += this->txnToWriteIds[_i685].read(iprot);
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+            uint32_t _size661;
+            ::apache::thrift::protocol::TType _etype664;
+            xfer += iprot->readListBegin(_etype664, _size661);
+            this->txnToWriteIds.resize(_size661);
+            uint32_t _i665;
+            for (_i665 = 0; _i665 < _size661; ++_i665)
+            {
+              xfer += this->txnToWriteIds[_i665].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -18174,8 +18533,6 @@ uint32_t AllocateTableWriteIdsResponse::read(::apache::thrift::protocol::TProtoc
           xfer += iprot->skip(ftype);
         }
         break;
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -18199,40 +18556,57 @@ uint32_t AllocateTableWriteIdsResponse::write(::apache::thrift::protocol::TProto
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->txnToWriteIds.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<TxnToWriteId> ::const_iterator _iter705;
     for (_iter705 = this->txnToWriteIds.begin(); _iter705 != this->txnToWriteIds.end(); ++_iter705)
     {
       xfer += (*_iter705).write(oprot);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<TxnToWriteId> ::const_iterator _iter687;
     for (_iter687 = this->txnToWriteIds.begin(); _iter687 != this->txnToWriteIds.end(); ++_iter687)
     {
       xfer += (*_iter687).write(oprot);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<TxnToWriteId> ::const_iterator _iter667;
     for (_iter667 = this->txnToWriteIds.begin(); _iter667 != this->txnToWriteIds.end(); ++_iter667)
     {
       xfer += (*_iter667).write(oprot);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::vector<TxnToWriteId> ::const_iterator _iter686;
     for (_iter686 = this->txnToWriteIds.begin(); _iter686 != this->txnToWriteIds.end(); ++_iter686)
     {
       xfer += (*_iter686).write(oprot);
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+    std::vector<TxnToWriteId> ::const_iterator _iter666;
+    for (_iter666 = this->txnToWriteIds.begin(); _iter666 != this->txnToWriteIds.end(); ++_iter666)
+    {
+      xfer += (*_iter666).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeListEnd();
   }
   xfer += oprot->writeFieldEnd();
 
-  if (this->__isset.replPolicy) {
-    xfer += oprot->writeFieldBegin("replPolicy", ::apache::thrift::protocol::T_STRING, 2);
-    xfer += oprot->writeString(this->replPolicy);
-    xfer += oprot->writeFieldEnd();
-  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -18240,15 +18614,10 @@ uint32_t AllocateTableWriteIdsResponse::write(::apache::thrift::protocol::TProto
 
 void swap(AllocateTableWriteIdsResponse &a, AllocateTableWriteIdsResponse &b) {
   using ::std::swap;
-<<<<<<< HEAD
   swap(a.txnToWriteIds, b.txnToWriteIds);
-=======
-  swap(a.txnid, b.txnid);
-  swap(a.replPolicy, b.replPolicy);
-  swap(a.__isset, b.__isset);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 AllocateTableWriteIdsResponse::AllocateTableWriteIdsResponse(const AllocateTableWriteIdsResponse& other706) {
@@ -18259,6 +18628,8 @@ AllocateTableWriteIdsResponse& AllocateTableWriteIdsResponse::operator=(const Al
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 AllocateTableWriteIdsResponse::AllocateTableWriteIdsResponse(const AllocateTableWriteIdsResponse& other688) {
   txnToWriteIds = other688.txnToWriteIds;
@@ -18268,6 +18639,8 @@ AllocateTableWriteIdsResponse& AllocateTableWriteIdsResponse::operator=(const Al
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 AllocateTableWriteIdsResponse::AllocateTableWriteIdsResponse(const AllocateTableWriteIdsResponse& other668) {
   txnToWriteIds = other668.txnToWriteIds;
@@ -18277,6 +18650,8 @@ AllocateTableWriteIdsResponse& AllocateTableWriteIdsResponse::operator=(const Al
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 AllocateTableWriteIdsResponse::AllocateTableWriteIdsResponse(const AllocateTableWriteIdsResponse& other687) {
   txnToWriteIds = other687.txnToWriteIds;
 }
@@ -18306,6 +18681,7 @@ CommitTxnRequest::CommitTxnRequest(const CommitTxnRequest& other621) {
   txnid = other621.txnid;
   replPolicy = other621.replPolicy;
   __isset = other621.__isset;
+<<<<<<< HEAD
 }
 CommitTxnRequest& CommitTxnRequest::operator=(const CommitTxnRequest& other622) {
   txnid = other622.txnid;
@@ -18492,20 +18868,42 @@ uint32_t GetTargetTxnIdResponse::write(::apache::thrift::protocol::TProtocol* op
 void swap(GetTargetTxnIdResponse &a, GetTargetTxnIdResponse &b) {
   using ::std::swap;
   swap(a.txnid, b.txnid);
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 }
-
-GetTargetTxnIdResponse::GetTargetTxnIdResponse(const GetTargetTxnIdResponse& other625) {
-  txnid = other625.txnid;
+CommitTxnRequest& CommitTxnRequest::operator=(const CommitTxnRequest& other622) {
+  txnid = other622.txnid;
+<<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
+=======
+>>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
+=======
+  replPolicy = other622.replPolicy;
+  __isset = other622.__isset;
+>>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+>>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
+>>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
+>>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+AllocateTableWriteIdsResponse::AllocateTableWriteIdsResponse(const AllocateTableWriteIdsResponse& other667) {
+  txnToWriteIds = other667.txnToWriteIds;
 }
-GetTargetTxnIdResponse& GetTargetTxnIdResponse::operator=(const GetTargetTxnIdResponse& other626) {
-  txnid = other626.txnid;
+AllocateTableWriteIdsResponse& AllocateTableWriteIdsResponse::operator=(const AllocateTableWriteIdsResponse& other668) {
+  txnToWriteIds = other668.txnToWriteIds;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
-void GetTargetTxnIdResponse::printTo(std::ostream& out) const {
+void AllocateTableWriteIdsResponse::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
-  out << "GetTargetTxnIdResponse(";
-  out << "txnid=" << to_string(txnid);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+  out << "AllocateTableWriteIdsResponse(";
+  out << "txnToWriteIds=" << to_string(txnToWriteIds);
   out << ")";
 }
 
@@ -18579,12 +18977,15 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_I32) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast708;
           xfer += iprot->readI32(ecast708);
           this->type = (LockType::type)ecast708;
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast690;
           xfer += iprot->readI32(ecast690);
@@ -18592,6 +18993,8 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast670;
           xfer += iprot->readI32(ecast670);
@@ -18608,6 +19011,8 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           int32_t ecast689;
           xfer += iprot->readI32(ecast689);
           this->type = (LockType::type)ecast689;
@@ -18640,9 +19045,23 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
           this->type = (LockType::type)ecast627;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+          int32_t ecast669;
+          xfer += iprot->readI32(ecast669);
+          this->type = (LockType::type)ecast669;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           isset_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -18652,12 +19071,15 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_I32) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast709;
           xfer += iprot->readI32(ecast709);
           this->level = (LockLevel::type)ecast709;
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast691;
           xfer += iprot->readI32(ecast691);
@@ -18665,6 +19087,8 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast671;
           xfer += iprot->readI32(ecast671);
@@ -18681,6 +19105,8 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           int32_t ecast690;
           xfer += iprot->readI32(ecast690);
           this->level = (LockLevel::type)ecast690;
@@ -18713,9 +19139,23 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
           this->level = (LockLevel::type)ecast628;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+          int32_t ecast670;
+          xfer += iprot->readI32(ecast670);
+          this->level = (LockLevel::type)ecast670;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           isset_level = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -18749,12 +19189,15 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_I32) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast710;
           xfer += iprot->readI32(ecast710);
           this->operationType = (DataOperationType::type)ecast710;
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast692;
           xfer += iprot->readI32(ecast692);
@@ -18762,6 +19205,8 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast672;
           xfer += iprot->readI32(ecast672);
@@ -18778,6 +19223,8 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           int32_t ecast691;
           xfer += iprot->readI32(ecast691);
           this->operationType = (DataOperationType::type)ecast691;
@@ -18810,9 +19257,23 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
           this->operationType = (DataOperationType::type)ecast629;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+          int32_t ecast671;
+          xfer += iprot->readI32(ecast671);
+          this->operationType = (DataOperationType::type)ecast671;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           this->__isset.operationType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -18914,6 +19375,7 @@ void swap(LockComponent &a, LockComponent &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 LockComponent::LockComponent(const LockComponent& other711) {
   type = other711.type;
   level = other711.level;
@@ -18938,11 +19400,15 @@ LockComponent& LockComponent::operator=(const LockComponent& other712) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 LockComponent::LockComponent(const LockComponent& other693) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 LockComponent::LockComponent(const LockComponent& other673) {
   type = other673.type;
@@ -18968,6 +19434,8 @@ LockComponent& LockComponent::operator=(const LockComponent& other674) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 LockComponent::LockComponent(const LockComponent& other692) {
   type = other692.type;
   level = other692.level;
@@ -19098,9 +19566,41 @@ LockComponent& LockComponent::operator=(const LockComponent& other631) {
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+LockComponent::LockComponent(const LockComponent& other672) {
+  type = other672.type;
+  level = other672.level;
+  dbname = other672.dbname;
+  tablename = other672.tablename;
+  partitionname = other672.partitionname;
+  operationType = other672.operationType;
+  isAcid = other672.isAcid;
+  isDynamicPartitionWrite = other672.isDynamicPartitionWrite;
+  __isset = other672.__isset;
+}
+LockComponent& LockComponent::operator=(const LockComponent& other673) {
+  type = other673.type;
+  level = other673.level;
+  dbname = other673.dbname;
+  tablename = other673.tablename;
+  partitionname = other673.partitionname;
+  operationType = other673.operationType;
+  isAcid = other673.isAcid;
+  isDynamicPartitionWrite = other673.isDynamicPartitionWrite;
+  __isset = other673.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void LockComponent::printTo(std::ostream& out) const {
@@ -19174,6 +19674,7 @@ uint32_t LockRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
             this->component.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size713;
             ::apache::thrift::protocol::TType _etype716;
             xfer += iprot->readListBegin(_etype716, _size713);
@@ -19185,6 +19686,8 @@ uint32_t LockRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size695;
             ::apache::thrift::protocol::TType _etype698;
@@ -19197,6 +19700,8 @@ uint32_t LockRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size675;
             ::apache::thrift::protocol::TType _etype678;
@@ -19209,6 +19714,8 @@ uint32_t LockRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size694;
             ::apache::thrift::protocol::TType _etype697;
             xfer += iprot->readListBegin(_etype697, _size694);
@@ -19274,9 +19781,28 @@ uint32_t LockRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
               xfer += this->component[_i636].read(iprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size674;
+            ::apache::thrift::protocol::TType _etype677;
+            xfer += iprot->readListBegin(_etype677, _size674);
+            this->component.resize(_size674);
+            uint32_t _i678;
+            for (_i678 = 0; _i678 < _size674; ++_i678)
+            {
+              xfer += this->component[_i678].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -19345,6 +19871,7 @@ uint32_t LockRequest::write(::apache::thrift::protocol::TProtocol* oprot) const 
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->component.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<LockComponent> ::const_iterator _iter718;
     for (_iter718 = this->component.begin(); _iter718 != this->component.end(); ++_iter718)
     {
@@ -19352,6 +19879,8 @@ uint32_t LockRequest::write(::apache::thrift::protocol::TProtocol* oprot) const 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<LockComponent> ::const_iterator _iter700;
     for (_iter700 = this->component.begin(); _iter700 != this->component.end(); ++_iter700)
@@ -19360,6 +19889,8 @@ uint32_t LockRequest::write(::apache::thrift::protocol::TProtocol* oprot) const 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<LockComponent> ::const_iterator _iter680;
     for (_iter680 = this->component.begin(); _iter680 != this->component.end(); ++_iter680)
@@ -19368,6 +19899,8 @@ uint32_t LockRequest::write(::apache::thrift::protocol::TProtocol* oprot) const 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::vector<LockComponent> ::const_iterator _iter699;
     for (_iter699 = this->component.begin(); _iter699 != this->component.end(); ++_iter699)
     {
@@ -19415,9 +19948,24 @@ uint32_t LockRequest::write(::apache::thrift::protocol::TProtocol* oprot) const 
       xfer += (*_iter637).write(oprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+    std::vector<LockComponent> ::const_iterator _iter679;
+    for (_iter679 = this->component.begin(); _iter679 != this->component.end(); ++_iter679)
+    {
+      xfer += (*_iter679).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeListEnd();
   }
@@ -19458,6 +20006,7 @@ void swap(LockRequest &a, LockRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 LockRequest::LockRequest(const LockRequest& other719) {
   component = other719.component;
   txnid = other719.txnid;
@@ -19476,11 +20025,15 @@ LockRequest& LockRequest::operator=(const LockRequest& other720) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 LockRequest::LockRequest(const LockRequest& other701) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 LockRequest::LockRequest(const LockRequest& other681) {
   component = other681.component;
@@ -19500,6 +20053,8 @@ LockRequest& LockRequest::operator=(const LockRequest& other682) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 LockRequest::LockRequest(const LockRequest& other700) {
   component = other700.component;
   txnid = other700.txnid;
@@ -19600,8 +20155,31 @@ LockRequest& LockRequest::operator=(const LockRequest& other639) {
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+LockRequest::LockRequest(const LockRequest& other680) {
+  component = other680.component;
+  txnid = other680.txnid;
+  user = other680.user;
+  hostname = other680.hostname;
+  agentInfo = other680.agentInfo;
+  __isset = other680.__isset;
+}
+LockRequest& LockRequest::operator=(const LockRequest& other681) {
+  component = other681.component;
+  txnid = other681.txnid;
+  user = other681.user;
+  hostname = other681.hostname;
+  agentInfo = other681.agentInfo;
+  __isset = other681.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void LockRequest::printTo(std::ostream& out) const {
@@ -19663,12 +20241,15 @@ uint32_t LockResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_I32) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast721;
           xfer += iprot->readI32(ecast721);
           this->state = (LockState::type)ecast721;
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast703;
           xfer += iprot->readI32(ecast703);
@@ -19676,6 +20257,8 @@ uint32_t LockResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast683;
           xfer += iprot->readI32(ecast683);
@@ -19692,6 +20275,8 @@ uint32_t LockResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           int32_t ecast702;
           xfer += iprot->readI32(ecast702);
           this->state = (LockState::type)ecast702;
@@ -19724,9 +20309,23 @@ uint32_t LockResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
           this->state = (LockState::type)ecast640;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+          int32_t ecast682;
+          xfer += iprot->readI32(ecast682);
+          this->state = (LockState::type)ecast682;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           isset_state = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -19774,6 +20373,7 @@ void swap(LockResponse &a, LockResponse &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 LockResponse::LockResponse(const LockResponse& other722) {
   lockid = other722.lockid;
   state = other722.state;
@@ -19784,6 +20384,8 @@ LockResponse& LockResponse::operator=(const LockResponse& other723) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 LockResponse::LockResponse(const LockResponse& other704) {
   lockid = other704.lockid;
@@ -19795,6 +20397,8 @@ LockResponse& LockResponse::operator=(const LockResponse& other705) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 LockResponse::LockResponse(const LockResponse& other684) {
   lockid = other684.lockid;
@@ -19806,6 +20410,8 @@ LockResponse& LockResponse::operator=(const LockResponse& other685) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 LockResponse::LockResponse(const LockResponse& other703) {
   lockid = other703.lockid;
   state = other703.state;
@@ -19871,9 +20477,27 @@ LockResponse& LockResponse::operator=(const LockResponse& other642) {
   state = other642.state;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+LockResponse::LockResponse(const LockResponse& other683) {
+  lockid = other683.lockid;
+  state = other683.state;
+}
+LockResponse& LockResponse::operator=(const LockResponse& other684) {
+  lockid = other684.lockid;
+  state = other684.state;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void LockResponse::printTo(std::ostream& out) const {
@@ -19997,6 +20621,7 @@ void swap(CheckLockRequest &a, CheckLockRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 CheckLockRequest::CheckLockRequest(const CheckLockRequest& other724) {
   lockid = other724.lockid;
   txnid = other724.txnid;
@@ -20011,6 +20636,8 @@ CheckLockRequest& CheckLockRequest::operator=(const CheckLockRequest& other725) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 CheckLockRequest::CheckLockRequest(const CheckLockRequest& other706) {
   lockid = other706.lockid;
@@ -20026,6 +20653,8 @@ CheckLockRequest& CheckLockRequest::operator=(const CheckLockRequest& other707) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 CheckLockRequest::CheckLockRequest(const CheckLockRequest& other686) {
   lockid = other686.lockid;
@@ -20041,6 +20670,8 @@ CheckLockRequest& CheckLockRequest::operator=(const CheckLockRequest& other687) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 CheckLockRequest::CheckLockRequest(const CheckLockRequest& other705) {
   lockid = other705.lockid;
   txnid = other705.txnid;
@@ -20126,9 +20757,31 @@ CheckLockRequest& CheckLockRequest::operator=(const CheckLockRequest& other644) 
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+CheckLockRequest::CheckLockRequest(const CheckLockRequest& other685) {
+  lockid = other685.lockid;
+  txnid = other685.txnid;
+  elapsed_ms = other685.elapsed_ms;
+  __isset = other685.__isset;
+}
+CheckLockRequest& CheckLockRequest::operator=(const CheckLockRequest& other686) {
+  lockid = other686.lockid;
+  txnid = other686.txnid;
+  elapsed_ms = other686.elapsed_ms;
+  __isset = other686.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void CheckLockRequest::printTo(std::ostream& out) const {
@@ -20214,6 +20867,7 @@ void swap(UnlockRequest &a, UnlockRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 UnlockRequest::UnlockRequest(const UnlockRequest& other726) {
   lockid = other726.lockid;
 }
@@ -20222,6 +20876,8 @@ UnlockRequest& UnlockRequest::operator=(const UnlockRequest& other727) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 UnlockRequest::UnlockRequest(const UnlockRequest& other708) {
   lockid = other708.lockid;
@@ -20231,6 +20887,8 @@ UnlockRequest& UnlockRequest::operator=(const UnlockRequest& other709) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 UnlockRequest::UnlockRequest(const UnlockRequest& other688) {
   lockid = other688.lockid;
@@ -20240,6 +20898,8 @@ UnlockRequest& UnlockRequest::operator=(const UnlockRequest& other689) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 UnlockRequest::UnlockRequest(const UnlockRequest& other707) {
   lockid = other707.lockid;
 }
@@ -20293,9 +20953,25 @@ UnlockRequest& UnlockRequest::operator=(const UnlockRequest& other646) {
   lockid = other646.lockid;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+UnlockRequest::UnlockRequest(const UnlockRequest& other687) {
+  lockid = other687.lockid;
+}
+UnlockRequest& UnlockRequest::operator=(const UnlockRequest& other688) {
+  lockid = other688.lockid;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void UnlockRequest::printTo(std::ostream& out) const {
@@ -20436,6 +21112,7 @@ void swap(ShowLocksRequest &a, ShowLocksRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 ShowLocksRequest::ShowLocksRequest(const ShowLocksRequest& other728) {
   dbname = other728.dbname;
   tablename = other728.tablename;
@@ -20452,6 +21129,8 @@ ShowLocksRequest& ShowLocksRequest::operator=(const ShowLocksRequest& other729) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 ShowLocksRequest::ShowLocksRequest(const ShowLocksRequest& other710) {
   dbname = other710.dbname;
@@ -20469,6 +21148,8 @@ ShowLocksRequest& ShowLocksRequest::operator=(const ShowLocksRequest& other711) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 ShowLocksRequest::ShowLocksRequest(const ShowLocksRequest& other690) {
   dbname = other690.dbname;
@@ -20486,6 +21167,8 @@ ShowLocksRequest& ShowLocksRequest::operator=(const ShowLocksRequest& other691) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 ShowLocksRequest::ShowLocksRequest(const ShowLocksRequest& other709) {
   dbname = other709.dbname;
   tablename = other709.tablename;
@@ -20574,9 +21257,33 @@ ShowLocksRequest& ShowLocksRequest::operator=(const ShowLocksRequest& other648) 
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+ShowLocksRequest::ShowLocksRequest(const ShowLocksRequest& other689) {
+  dbname = other689.dbname;
+  tablename = other689.tablename;
+  partname = other689.partname;
+  isExtended = other689.isExtended;
+  __isset = other689.__isset;
+}
+ShowLocksRequest& ShowLocksRequest::operator=(const ShowLocksRequest& other690) {
+  dbname = other690.dbname;
+  tablename = other690.tablename;
+  partname = other690.partname;
+  isExtended = other690.isExtended;
+  __isset = other690.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void ShowLocksRequest::printTo(std::ostream& out) const {
@@ -20731,12 +21438,15 @@ uint32_t ShowLocksResponseElement::read(::apache::thrift::protocol::TProtocol* i
         if (ftype == ::apache::thrift::protocol::T_I32) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast730;
           xfer += iprot->readI32(ecast730);
           this->state = (LockState::type)ecast730;
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast712;
           xfer += iprot->readI32(ecast712);
@@ -20744,6 +21454,8 @@ uint32_t ShowLocksResponseElement::read(::apache::thrift::protocol::TProtocol* i
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast692;
           xfer += iprot->readI32(ecast692);
@@ -20760,6 +21472,8 @@ uint32_t ShowLocksResponseElement::read(::apache::thrift::protocol::TProtocol* i
 =======
 =======
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           int32_t ecast711;
           xfer += iprot->readI32(ecast711);
           this->state = (LockState::type)ecast711;
@@ -20792,9 +21506,23 @@ uint32_t ShowLocksResponseElement::read(::apache::thrift::protocol::TProtocol* i
           this->state = (LockState::type)ecast649;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+          int32_t ecast691;
+          xfer += iprot->readI32(ecast691);
+          this->state = (LockState::type)ecast691;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           isset_state = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -20804,12 +21532,15 @@ uint32_t ShowLocksResponseElement::read(::apache::thrift::protocol::TProtocol* i
         if (ftype == ::apache::thrift::protocol::T_I32) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast731;
           xfer += iprot->readI32(ecast731);
           this->type = (LockType::type)ecast731;
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast713;
           xfer += iprot->readI32(ecast713);
@@ -20817,6 +21548,8 @@ uint32_t ShowLocksResponseElement::read(::apache::thrift::protocol::TProtocol* i
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast693;
           xfer += iprot->readI32(ecast693);
@@ -20833,6 +21566,8 @@ uint32_t ShowLocksResponseElement::read(::apache::thrift::protocol::TProtocol* i
 =======
 =======
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           int32_t ecast712;
           xfer += iprot->readI32(ecast712);
           this->type = (LockType::type)ecast712;
@@ -20865,9 +21600,23 @@ uint32_t ShowLocksResponseElement::read(::apache::thrift::protocol::TProtocol* i
           this->type = (LockType::type)ecast650;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+          int32_t ecast692;
+          xfer += iprot->readI32(ecast692);
+          this->type = (LockType::type)ecast692;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           isset_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -21085,6 +21834,7 @@ void swap(ShowLocksResponseElement &a, ShowLocksResponseElement &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 ShowLocksResponseElement::ShowLocksResponseElement(const ShowLocksResponseElement& other732) {
   lockid = other732.lockid;
   dbname = other732.dbname;
@@ -21125,11 +21875,15 @@ ShowLocksResponseElement& ShowLocksResponseElement::operator=(const ShowLocksRes
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 ShowLocksResponseElement::ShowLocksResponseElement(const ShowLocksResponseElement& other714) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 ShowLocksResponseElement::ShowLocksResponseElement(const ShowLocksResponseElement& other694) {
   lockid = other694.lockid;
@@ -21171,6 +21925,8 @@ ShowLocksResponseElement& ShowLocksResponseElement::operator=(const ShowLocksRes
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 ShowLocksResponseElement::ShowLocksResponseElement(const ShowLocksResponseElement& other713) {
   lockid = other713.lockid;
   dbname = other713.dbname;
@@ -21370,8 +22126,53 @@ ShowLocksResponseElement& ShowLocksResponseElement::operator=(const ShowLocksRes
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+ShowLocksResponseElement::ShowLocksResponseElement(const ShowLocksResponseElement& other693) {
+  lockid = other693.lockid;
+  dbname = other693.dbname;
+  tablename = other693.tablename;
+  partname = other693.partname;
+  state = other693.state;
+  type = other693.type;
+  txnid = other693.txnid;
+  lastheartbeat = other693.lastheartbeat;
+  acquiredat = other693.acquiredat;
+  user = other693.user;
+  hostname = other693.hostname;
+  heartbeatCount = other693.heartbeatCount;
+  agentInfo = other693.agentInfo;
+  blockedByExtId = other693.blockedByExtId;
+  blockedByIntId = other693.blockedByIntId;
+  lockIdInternal = other693.lockIdInternal;
+  __isset = other693.__isset;
+}
+ShowLocksResponseElement& ShowLocksResponseElement::operator=(const ShowLocksResponseElement& other694) {
+  lockid = other694.lockid;
+  dbname = other694.dbname;
+  tablename = other694.tablename;
+  partname = other694.partname;
+  state = other694.state;
+  type = other694.type;
+  txnid = other694.txnid;
+  lastheartbeat = other694.lastheartbeat;
+  acquiredat = other694.acquiredat;
+  user = other694.user;
+  hostname = other694.hostname;
+  heartbeatCount = other694.heartbeatCount;
+  agentInfo = other694.agentInfo;
+  blockedByExtId = other694.blockedByExtId;
+  blockedByIntId = other694.blockedByIntId;
+  lockIdInternal = other694.lockIdInternal;
+  __isset = other694.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void ShowLocksResponseElement::printTo(std::ostream& out) const {
@@ -21432,6 +22233,7 @@ uint32_t ShowLocksResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
             this->locks.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size734;
             ::apache::thrift::protocol::TType _etype737;
             xfer += iprot->readListBegin(_etype737, _size734);
@@ -21443,6 +22245,8 @@ uint32_t ShowLocksResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size716;
             ::apache::thrift::protocol::TType _etype719;
@@ -21455,6 +22259,8 @@ uint32_t ShowLocksResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size696;
             ::apache::thrift::protocol::TType _etype699;
@@ -21467,6 +22273,8 @@ uint32_t ShowLocksResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size715;
             ::apache::thrift::protocol::TType _etype718;
             xfer += iprot->readListBegin(_etype718, _size715);
@@ -21533,9 +22341,28 @@ uint32_t ShowLocksResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
               xfer += this->locks[_i657].read(iprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size695;
+            ::apache::thrift::protocol::TType _etype698;
+            xfer += iprot->readListBegin(_etype698, _size695);
+            this->locks.resize(_size695);
+            uint32_t _i699;
+            for (_i699 = 0; _i699 < _size695; ++_i699)
+            {
+              xfer += this->locks[_i699].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -21566,6 +22393,7 @@ uint32_t ShowLocksResponse::write(::apache::thrift::protocol::TProtocol* oprot) 
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->locks.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<ShowLocksResponseElement> ::const_iterator _iter739;
     for (_iter739 = this->locks.begin(); _iter739 != this->locks.end(); ++_iter739)
     {
@@ -21573,6 +22401,8 @@ uint32_t ShowLocksResponse::write(::apache::thrift::protocol::TProtocol* oprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<ShowLocksResponseElement> ::const_iterator _iter721;
     for (_iter721 = this->locks.begin(); _iter721 != this->locks.end(); ++_iter721)
@@ -21581,6 +22411,8 @@ uint32_t ShowLocksResponse::write(::apache::thrift::protocol::TProtocol* oprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<ShowLocksResponseElement> ::const_iterator _iter701;
     for (_iter701 = this->locks.begin(); _iter701 != this->locks.end(); ++_iter701)
@@ -21589,6 +22421,8 @@ uint32_t ShowLocksResponse::write(::apache::thrift::protocol::TProtocol* oprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::vector<ShowLocksResponseElement> ::const_iterator _iter720;
     for (_iter720 = this->locks.begin(); _iter720 != this->locks.end(); ++_iter720)
     {
@@ -21635,9 +22469,24 @@ uint32_t ShowLocksResponse::write(::apache::thrift::protocol::TProtocol* oprot) 
       xfer += (*_iter658).write(oprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+    std::vector<ShowLocksResponseElement> ::const_iterator _iter700;
+    for (_iter700 = this->locks.begin(); _iter700 != this->locks.end(); ++_iter700)
+    {
+      xfer += (*_iter700).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeListEnd();
   }
@@ -21656,6 +22505,7 @@ void swap(ShowLocksResponse &a, ShowLocksResponse &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 ShowLocksResponse::ShowLocksResponse(const ShowLocksResponse& other740) {
   locks = other740.locks;
   __isset = other740.__isset;
@@ -21666,6 +22516,8 @@ ShowLocksResponse& ShowLocksResponse::operator=(const ShowLocksResponse& other74
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 ShowLocksResponse::ShowLocksResponse(const ShowLocksResponse& other722) {
   locks = other722.locks;
@@ -21677,6 +22529,8 @@ ShowLocksResponse& ShowLocksResponse::operator=(const ShowLocksResponse& other72
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 ShowLocksResponse::ShowLocksResponse(const ShowLocksResponse& other702) {
   locks = other702.locks;
@@ -21688,6 +22542,8 @@ ShowLocksResponse& ShowLocksResponse::operator=(const ShowLocksResponse& other70
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 ShowLocksResponse::ShowLocksResponse(const ShowLocksResponse& other721) {
   locks = other721.locks;
   __isset = other721.__isset;
@@ -21749,9 +22605,27 @@ ShowLocksResponse& ShowLocksResponse::operator=(const ShowLocksResponse& other66
   __isset = other660.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+ShowLocksResponse::ShowLocksResponse(const ShowLocksResponse& other701) {
+  locks = other701.locks;
+  __isset = other701.__isset;
+}
+ShowLocksResponse& ShowLocksResponse::operator=(const ShowLocksResponse& other702) {
+  locks = other702.locks;
+  __isset = other702.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void ShowLocksResponse::printTo(std::ostream& out) const {
@@ -21854,6 +22728,7 @@ void swap(HeartbeatRequest &a, HeartbeatRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 HeartbeatRequest::HeartbeatRequest(const HeartbeatRequest& other742) {
   lockid = other742.lockid;
   txnid = other742.txnid;
@@ -21866,6 +22741,8 @@ HeartbeatRequest& HeartbeatRequest::operator=(const HeartbeatRequest& other743) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 HeartbeatRequest::HeartbeatRequest(const HeartbeatRequest& other724) {
   lockid = other724.lockid;
@@ -21879,6 +22756,8 @@ HeartbeatRequest& HeartbeatRequest::operator=(const HeartbeatRequest& other725) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 HeartbeatRequest::HeartbeatRequest(const HeartbeatRequest& other704) {
   lockid = other704.lockid;
@@ -21892,6 +22771,8 @@ HeartbeatRequest& HeartbeatRequest::operator=(const HeartbeatRequest& other705) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 HeartbeatRequest::HeartbeatRequest(const HeartbeatRequest& other723) {
   lockid = other723.lockid;
   txnid = other723.txnid;
@@ -21962,9 +22843,29 @@ HeartbeatRequest& HeartbeatRequest::operator=(const HeartbeatRequest& other662) 
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+HeartbeatRequest::HeartbeatRequest(const HeartbeatRequest& other703) {
+  lockid = other703.lockid;
+  txnid = other703.txnid;
+  __isset = other703.__isset;
+}
+HeartbeatRequest& HeartbeatRequest::operator=(const HeartbeatRequest& other704) {
+  lockid = other704.lockid;
+  txnid = other704.txnid;
+  __isset = other704.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void HeartbeatRequest::printTo(std::ostream& out) const {
@@ -22069,6 +22970,7 @@ void swap(HeartbeatTxnRangeRequest &a, HeartbeatTxnRangeRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 HeartbeatTxnRangeRequest::HeartbeatTxnRangeRequest(const HeartbeatTxnRangeRequest& other744) {
   min = other744.min;
   max = other744.max;
@@ -22079,6 +22981,8 @@ HeartbeatTxnRangeRequest& HeartbeatTxnRangeRequest::operator=(const HeartbeatTxn
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 HeartbeatTxnRangeRequest::HeartbeatTxnRangeRequest(const HeartbeatTxnRangeRequest& other726) {
   min = other726.min;
@@ -22090,6 +22994,8 @@ HeartbeatTxnRangeRequest& HeartbeatTxnRangeRequest::operator=(const HeartbeatTxn
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 HeartbeatTxnRangeRequest::HeartbeatTxnRangeRequest(const HeartbeatTxnRangeRequest& other706) {
   min = other706.min;
@@ -22101,6 +23007,8 @@ HeartbeatTxnRangeRequest& HeartbeatTxnRangeRequest::operator=(const HeartbeatTxn
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 HeartbeatTxnRangeRequest::HeartbeatTxnRangeRequest(const HeartbeatTxnRangeRequest& other725) {
   min = other725.min;
   max = other725.max;
@@ -22162,9 +23070,27 @@ HeartbeatTxnRangeRequest& HeartbeatTxnRangeRequest::operator=(const HeartbeatTxn
   max = other664.max;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+HeartbeatTxnRangeRequest::HeartbeatTxnRangeRequest(const HeartbeatTxnRangeRequest& other705) {
+  min = other705.min;
+  max = other705.max;
+}
+HeartbeatTxnRangeRequest& HeartbeatTxnRangeRequest::operator=(const HeartbeatTxnRangeRequest& other706) {
+  min = other706.min;
+  max = other706.max;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void HeartbeatTxnRangeRequest::printTo(std::ostream& out) const {
@@ -22217,6 +23143,7 @@ uint32_t HeartbeatTxnRangeResponse::read(::apache::thrift::protocol::TProtocol* 
             this->aborted.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size746;
             ::apache::thrift::protocol::TType _etype749;
             xfer += iprot->readSetBegin(_etype749, _size746);
@@ -22229,6 +23156,8 @@ uint32_t HeartbeatTxnRangeResponse::read(::apache::thrift::protocol::TProtocol* 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size728;
             ::apache::thrift::protocol::TType _etype731;
@@ -22242,6 +23171,8 @@ uint32_t HeartbeatTxnRangeResponse::read(::apache::thrift::protocol::TProtocol* 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size708;
             ::apache::thrift::protocol::TType _etype711;
@@ -22255,6 +23186,8 @@ uint32_t HeartbeatTxnRangeResponse::read(::apache::thrift::protocol::TProtocol* 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size727;
             ::apache::thrift::protocol::TType _etype730;
             xfer += iprot->readSetBegin(_etype730, _size727);
@@ -22328,9 +23261,29 @@ uint32_t HeartbeatTxnRangeResponse::read(::apache::thrift::protocol::TProtocol* 
               this->aborted.insert(_elem670);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size707;
+            ::apache::thrift::protocol::TType _etype710;
+            xfer += iprot->readSetBegin(_etype710, _size707);
+            uint32_t _i711;
+            for (_i711 = 0; _i711 < _size707; ++_i711)
+            {
+              int64_t _elem712;
+              xfer += iprot->readI64(_elem712);
+              this->aborted.insert(_elem712);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readSetEnd();
           }
@@ -22345,6 +23298,7 @@ uint32_t HeartbeatTxnRangeResponse::read(::apache::thrift::protocol::TProtocol* 
             this->nosuch.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size752;
             ::apache::thrift::protocol::TType _etype755;
             xfer += iprot->readSetBegin(_etype755, _size752);
@@ -22357,6 +23311,8 @@ uint32_t HeartbeatTxnRangeResponse::read(::apache::thrift::protocol::TProtocol* 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size734;
             ::apache::thrift::protocol::TType _etype737;
@@ -22370,6 +23326,8 @@ uint32_t HeartbeatTxnRangeResponse::read(::apache::thrift::protocol::TProtocol* 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size714;
             ::apache::thrift::protocol::TType _etype717;
@@ -22383,6 +23341,8 @@ uint32_t HeartbeatTxnRangeResponse::read(::apache::thrift::protocol::TProtocol* 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size733;
             ::apache::thrift::protocol::TType _etype736;
             xfer += iprot->readSetBegin(_etype736, _size733);
@@ -22458,9 +23418,29 @@ uint32_t HeartbeatTxnRangeResponse::read(::apache::thrift::protocol::TProtocol* 
               this->nosuch.insert(_elem676);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size713;
+            ::apache::thrift::protocol::TType _etype716;
+            xfer += iprot->readSetBegin(_etype716, _size713);
+            uint32_t _i717;
+            for (_i717 = 0; _i717 < _size713; ++_i717)
+            {
+              int64_t _elem718;
+              xfer += iprot->readI64(_elem718);
+              this->nosuch.insert(_elem718);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readSetEnd();
           }
@@ -22495,6 +23475,7 @@ uint32_t HeartbeatTxnRangeResponse::write(::apache::thrift::protocol::TProtocol*
     xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->aborted.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::set<int64_t> ::const_iterator _iter758;
     for (_iter758 = this->aborted.begin(); _iter758 != this->aborted.end(); ++_iter758)
     {
@@ -22502,6 +23483,8 @@ uint32_t HeartbeatTxnRangeResponse::write(::apache::thrift::protocol::TProtocol*
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::set<int64_t> ::const_iterator _iter740;
     for (_iter740 = this->aborted.begin(); _iter740 != this->aborted.end(); ++_iter740)
@@ -22510,6 +23493,8 @@ uint32_t HeartbeatTxnRangeResponse::write(::apache::thrift::protocol::TProtocol*
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::set<int64_t> ::const_iterator _iter720;
     for (_iter720 = this->aborted.begin(); _iter720 != this->aborted.end(); ++_iter720)
@@ -22518,6 +23503,8 @@ uint32_t HeartbeatTxnRangeResponse::write(::apache::thrift::protocol::TProtocol*
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::set<int64_t> ::const_iterator _iter739;
     for (_iter739 = this->aborted.begin(); _iter739 != this->aborted.end(); ++_iter739)
     {
@@ -22565,9 +23552,24 @@ uint32_t HeartbeatTxnRangeResponse::write(::apache::thrift::protocol::TProtocol*
       xfer += oprot->writeI64((*_iter677));
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+    std::set<int64_t> ::const_iterator _iter719;
+    for (_iter719 = this->aborted.begin(); _iter719 != this->aborted.end(); ++_iter719)
+    {
+      xfer += oprot->writeI64((*_iter719));
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeSetEnd();
   }
@@ -22578,6 +23580,7 @@ uint32_t HeartbeatTxnRangeResponse::write(::apache::thrift::protocol::TProtocol*
     xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->nosuch.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::set<int64_t> ::const_iterator _iter759;
     for (_iter759 = this->nosuch.begin(); _iter759 != this->nosuch.end(); ++_iter759)
     {
@@ -22585,6 +23588,8 @@ uint32_t HeartbeatTxnRangeResponse::write(::apache::thrift::protocol::TProtocol*
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::set<int64_t> ::const_iterator _iter741;
     for (_iter741 = this->nosuch.begin(); _iter741 != this->nosuch.end(); ++_iter741)
@@ -22593,6 +23598,8 @@ uint32_t HeartbeatTxnRangeResponse::write(::apache::thrift::protocol::TProtocol*
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::set<int64_t> ::const_iterator _iter721;
     for (_iter721 = this->nosuch.begin(); _iter721 != this->nosuch.end(); ++_iter721)
@@ -22601,6 +23608,8 @@ uint32_t HeartbeatTxnRangeResponse::write(::apache::thrift::protocol::TProtocol*
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::set<int64_t> ::const_iterator _iter740;
     for (_iter740 = this->nosuch.begin(); _iter740 != this->nosuch.end(); ++_iter740)
     {
@@ -22648,9 +23657,24 @@ uint32_t HeartbeatTxnRangeResponse::write(::apache::thrift::protocol::TProtocol*
       xfer += oprot->writeI64((*_iter678));
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+    std::set<int64_t> ::const_iterator _iter720;
+    for (_iter720 = this->nosuch.begin(); _iter720 != this->nosuch.end(); ++_iter720)
+    {
+      xfer += oprot->writeI64((*_iter720));
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeSetEnd();
   }
@@ -22669,6 +23693,7 @@ void swap(HeartbeatTxnRangeResponse &a, HeartbeatTxnRangeResponse &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 HeartbeatTxnRangeResponse::HeartbeatTxnRangeResponse(const HeartbeatTxnRangeResponse& other760) {
   aborted = other760.aborted;
   nosuch = other760.nosuch;
@@ -22679,6 +23704,8 @@ HeartbeatTxnRangeResponse& HeartbeatTxnRangeResponse::operator=(const HeartbeatT
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 HeartbeatTxnRangeResponse::HeartbeatTxnRangeResponse(const HeartbeatTxnRangeResponse& other742) {
   aborted = other742.aborted;
@@ -22690,6 +23717,8 @@ HeartbeatTxnRangeResponse& HeartbeatTxnRangeResponse::operator=(const HeartbeatT
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 HeartbeatTxnRangeResponse::HeartbeatTxnRangeResponse(const HeartbeatTxnRangeResponse& other722) {
   aborted = other722.aborted;
@@ -22701,6 +23730,8 @@ HeartbeatTxnRangeResponse& HeartbeatTxnRangeResponse::operator=(const HeartbeatT
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 HeartbeatTxnRangeResponse::HeartbeatTxnRangeResponse(const HeartbeatTxnRangeResponse& other741) {
   aborted = other741.aborted;
   nosuch = other741.nosuch;
@@ -22762,9 +23793,27 @@ HeartbeatTxnRangeResponse& HeartbeatTxnRangeResponse::operator=(const HeartbeatT
   nosuch = other680.nosuch;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+HeartbeatTxnRangeResponse::HeartbeatTxnRangeResponse(const HeartbeatTxnRangeResponse& other721) {
+  aborted = other721.aborted;
+  nosuch = other721.nosuch;
+}
+HeartbeatTxnRangeResponse& HeartbeatTxnRangeResponse::operator=(const HeartbeatTxnRangeResponse& other722) {
+  aborted = other722.aborted;
+  nosuch = other722.nosuch;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void HeartbeatTxnRangeResponse::printTo(std::ostream& out) const {
@@ -22859,12 +23908,15 @@ uint32_t CompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_I32) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast762;
           xfer += iprot->readI32(ecast762);
           this->type = (CompactionType::type)ecast762;
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast744;
           xfer += iprot->readI32(ecast744);
@@ -22872,6 +23924,8 @@ uint32_t CompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast724;
           xfer += iprot->readI32(ecast724);
@@ -22888,6 +23942,8 @@ uint32_t CompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           int32_t ecast743;
           xfer += iprot->readI32(ecast743);
           this->type = (CompactionType::type)ecast743;
@@ -22920,9 +23976,23 @@ uint32_t CompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           this->type = (CompactionType::type)ecast681;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+          int32_t ecast723;
+          xfer += iprot->readI32(ecast723);
+          this->type = (CompactionType::type)ecast723;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           isset_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -22942,6 +24012,7 @@ uint32_t CompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
             this->properties.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size763;
             ::apache::thrift::protocol::TType _ktype764;
             ::apache::thrift::protocol::TType _vtype765;
@@ -22956,6 +24027,8 @@ uint32_t CompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size745;
             ::apache::thrift::protocol::TType _ktype746;
@@ -22971,6 +24044,8 @@ uint32_t CompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size725;
             ::apache::thrift::protocol::TType _ktype726;
@@ -22986,6 +24061,8 @@ uint32_t CompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size744;
             ::apache::thrift::protocol::TType _ktype745;
             ::apache::thrift::protocol::TType _vtype746;
@@ -23066,9 +24143,31 @@ uint32_t CompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size724;
+            ::apache::thrift::protocol::TType _ktype725;
+            ::apache::thrift::protocol::TType _vtype726;
+            xfer += iprot->readMapBegin(_ktype725, _vtype726, _size724);
+            uint32_t _i728;
+            for (_i728 = 0; _i728 < _size724; ++_i728)
+            {
+              std::string _key729;
+              xfer += iprot->readString(_key729);
+              std::string& _val730 = this->properties[_key729];
+              xfer += iprot->readString(_val730);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readMapEnd();
           }
@@ -23128,6 +24227,7 @@ uint32_t CompactionRequest::write(::apache::thrift::protocol::TProtocol* oprot) 
       xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->properties.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       std::map<std::string, std::string> ::const_iterator _iter770;
       for (_iter770 = this->properties.begin(); _iter770 != this->properties.end(); ++_iter770)
       {
@@ -23136,6 +24236,8 @@ uint32_t CompactionRequest::write(::apache::thrift::protocol::TProtocol* oprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::map<std::string, std::string> ::const_iterator _iter752;
       for (_iter752 = this->properties.begin(); _iter752 != this->properties.end(); ++_iter752)
@@ -23145,6 +24247,8 @@ uint32_t CompactionRequest::write(::apache::thrift::protocol::TProtocol* oprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::map<std::string, std::string> ::const_iterator _iter732;
       for (_iter732 = this->properties.begin(); _iter732 != this->properties.end(); ++_iter732)
@@ -23154,6 +24258,8 @@ uint32_t CompactionRequest::write(::apache::thrift::protocol::TProtocol* oprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       std::map<std::string, std::string> ::const_iterator _iter751;
       for (_iter751 = this->properties.begin(); _iter751 != this->properties.end(); ++_iter751)
       {
@@ -23205,9 +24311,25 @@ uint32_t CompactionRequest::write(::apache::thrift::protocol::TProtocol* oprot) 
         xfer += oprot->writeString(_iter689->second);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+      std::map<std::string, std::string> ::const_iterator _iter731;
+      for (_iter731 = this->properties.begin(); _iter731 != this->properties.end(); ++_iter731)
+      {
+        xfer += oprot->writeString(_iter731->first);
+        xfer += oprot->writeString(_iter731->second);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       }
       xfer += oprot->writeMapEnd();
     }
@@ -23231,6 +24353,7 @@ void swap(CompactionRequest &a, CompactionRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 CompactionRequest::CompactionRequest(const CompactionRequest& other771) {
   dbname = other771.dbname;
   tablename = other771.tablename;
@@ -23251,11 +24374,15 @@ CompactionRequest& CompactionRequest::operator=(const CompactionRequest& other77
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 CompactionRequest::CompactionRequest(const CompactionRequest& other753) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 CompactionRequest::CompactionRequest(const CompactionRequest& other733) {
   dbname = other733.dbname;
@@ -23277,6 +24404,8 @@ CompactionRequest& CompactionRequest::operator=(const CompactionRequest& other73
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 CompactionRequest::CompactionRequest(const CompactionRequest& other752) {
   dbname = other752.dbname;
   tablename = other752.tablename;
@@ -23386,8 +24515,33 @@ CompactionRequest& CompactionRequest::operator=(const CompactionRequest& other69
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+CompactionRequest::CompactionRequest(const CompactionRequest& other732) {
+  dbname = other732.dbname;
+  tablename = other732.tablename;
+  partitionname = other732.partitionname;
+  type = other732.type;
+  runas = other732.runas;
+  properties = other732.properties;
+  __isset = other732.__isset;
+}
+CompactionRequest& CompactionRequest::operator=(const CompactionRequest& other733) {
+  dbname = other733.dbname;
+  tablename = other733.tablename;
+  partitionname = other733.partitionname;
+  type = other733.type;
+  runas = other733.runas;
+  properties = other733.properties;
+  __isset = other733.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void CompactionRequest::printTo(std::ostream& out) const {
@@ -23516,6 +24670,7 @@ void swap(CompactionResponse &a, CompactionResponse &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 CompactionResponse::CompactionResponse(const CompactionResponse& other773) {
   id = other773.id;
   state = other773.state;
@@ -23528,6 +24683,8 @@ CompactionResponse& CompactionResponse::operator=(const CompactionResponse& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 CompactionResponse::CompactionResponse(const CompactionResponse& other755) {
   id = other755.id;
@@ -23541,6 +24698,8 @@ CompactionResponse& CompactionResponse::operator=(const CompactionResponse& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 CompactionResponse::CompactionResponse(const CompactionResponse& other735) {
   id = other735.id;
@@ -23554,6 +24713,8 @@ CompactionResponse& CompactionResponse::operator=(const CompactionResponse& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 CompactionResponse::CompactionResponse(const CompactionResponse& other754) {
   id = other754.id;
   state = other754.state;
@@ -23629,9 +24790,29 @@ CompactionResponse& CompactionResponse::operator=(const CompactionResponse& othe
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+CompactionResponse::CompactionResponse(const CompactionResponse& other734) {
+  id = other734.id;
+  state = other734.state;
+  accepted = other734.accepted;
+}
+CompactionResponse& CompactionResponse::operator=(const CompactionResponse& other735) {
+  id = other735.id;
+  state = other735.state;
+  accepted = other735.accepted;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void CompactionResponse::printTo(std::ostream& out) const {
@@ -23694,6 +24875,7 @@ void swap(ShowCompactRequest &a, ShowCompactRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 ShowCompactRequest::ShowCompactRequest(const ShowCompactRequest& other775) {
   (void) other775;
 }
@@ -23702,6 +24884,8 @@ ShowCompactRequest& ShowCompactRequest::operator=(const ShowCompactRequest& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 ShowCompactRequest::ShowCompactRequest(const ShowCompactRequest& other757) {
   (void) other757;
@@ -23711,6 +24895,8 @@ ShowCompactRequest& ShowCompactRequest::operator=(const ShowCompactRequest& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 ShowCompactRequest::ShowCompactRequest(const ShowCompactRequest& other737) {
   (void) other737;
@@ -23720,6 +24906,8 @@ ShowCompactRequest& ShowCompactRequest::operator=(const ShowCompactRequest& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 ShowCompactRequest::ShowCompactRequest(const ShowCompactRequest& other756) {
   (void) other756;
 }
@@ -23771,9 +24959,25 @@ ShowCompactRequest& ShowCompactRequest::operator=(const ShowCompactRequest& othe
   (void) other695;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+ShowCompactRequest::ShowCompactRequest(const ShowCompactRequest& other736) {
+  (void) other736;
+}
+ShowCompactRequest& ShowCompactRequest::operator=(const ShowCompactRequest& other737) {
+  (void) other737;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void ShowCompactRequest::printTo(std::ostream& out) const {
@@ -23901,12 +25105,15 @@ uint32_t ShowCompactResponseElement::read(::apache::thrift::protocol::TProtocol*
         if (ftype == ::apache::thrift::protocol::T_I32) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast777;
           xfer += iprot->readI32(ecast777);
           this->type = (CompactionType::type)ecast777;
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast759;
           xfer += iprot->readI32(ecast759);
@@ -23914,6 +25121,8 @@ uint32_t ShowCompactResponseElement::read(::apache::thrift::protocol::TProtocol*
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast739;
           xfer += iprot->readI32(ecast739);
@@ -23930,6 +25139,8 @@ uint32_t ShowCompactResponseElement::read(::apache::thrift::protocol::TProtocol*
 =======
 =======
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           int32_t ecast758;
           xfer += iprot->readI32(ecast758);
           this->type = (CompactionType::type)ecast758;
@@ -23962,9 +25173,23 @@ uint32_t ShowCompactResponseElement::read(::apache::thrift::protocol::TProtocol*
           this->type = (CompactionType::type)ecast696;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+          int32_t ecast738;
+          xfer += iprot->readI32(ecast738);
+          this->type = (CompactionType::type)ecast738;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           isset_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -24153,6 +25378,7 @@ void swap(ShowCompactResponseElement &a, ShowCompactResponseElement &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponseElement& other778) {
   dbname = other778.dbname;
   tablename = other778.tablename;
@@ -24187,11 +25413,15 @@ ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowComp
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponseElement& other760) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponseElement& other740) {
   dbname = other740.dbname;
@@ -24227,6 +25457,8 @@ ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowComp
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponseElement& other759) {
   dbname = other759.dbname;
   tablename = other759.tablename;
@@ -24399,8 +25631,47 @@ ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowComp
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponseElement& other739) {
+  dbname = other739.dbname;
+  tablename = other739.tablename;
+  partitionname = other739.partitionname;
+  type = other739.type;
+  state = other739.state;
+  workerid = other739.workerid;
+  start = other739.start;
+  runAs = other739.runAs;
+  hightestTxnId = other739.hightestTxnId;
+  metaInfo = other739.metaInfo;
+  endTime = other739.endTime;
+  hadoopJobId = other739.hadoopJobId;
+  id = other739.id;
+  __isset = other739.__isset;
+}
+ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowCompactResponseElement& other740) {
+  dbname = other740.dbname;
+  tablename = other740.tablename;
+  partitionname = other740.partitionname;
+  type = other740.type;
+  state = other740.state;
+  workerid = other740.workerid;
+  start = other740.start;
+  runAs = other740.runAs;
+  hightestTxnId = other740.hightestTxnId;
+  metaInfo = other740.metaInfo;
+  endTime = other740.endTime;
+  hadoopJobId = other740.hadoopJobId;
+  id = other740.id;
+  __isset = other740.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void ShowCompactResponseElement::printTo(std::ostream& out) const {
@@ -24459,6 +25730,7 @@ uint32_t ShowCompactResponse::read(::apache::thrift::protocol::TProtocol* iprot)
             this->compacts.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size780;
             ::apache::thrift::protocol::TType _etype783;
             xfer += iprot->readListBegin(_etype783, _size780);
@@ -24470,6 +25742,8 @@ uint32_t ShowCompactResponse::read(::apache::thrift::protocol::TProtocol* iprot)
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size762;
             ::apache::thrift::protocol::TType _etype765;
@@ -24482,6 +25756,8 @@ uint32_t ShowCompactResponse::read(::apache::thrift::protocol::TProtocol* iprot)
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size742;
             ::apache::thrift::protocol::TType _etype745;
@@ -24494,6 +25770,8 @@ uint32_t ShowCompactResponse::read(::apache::thrift::protocol::TProtocol* iprot)
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size761;
             ::apache::thrift::protocol::TType _etype764;
             xfer += iprot->readListBegin(_etype764, _size761);
@@ -24560,9 +25838,28 @@ uint32_t ShowCompactResponse::read(::apache::thrift::protocol::TProtocol* iprot)
               xfer += this->compacts[_i703].read(iprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size741;
+            ::apache::thrift::protocol::TType _etype744;
+            xfer += iprot->readListBegin(_etype744, _size741);
+            this->compacts.resize(_size741);
+            uint32_t _i745;
+            for (_i745 = 0; _i745 < _size741; ++_i745)
+            {
+              xfer += this->compacts[_i745].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -24595,6 +25892,7 @@ uint32_t ShowCompactResponse::write(::apache::thrift::protocol::TProtocol* oprot
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->compacts.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<ShowCompactResponseElement> ::const_iterator _iter785;
     for (_iter785 = this->compacts.begin(); _iter785 != this->compacts.end(); ++_iter785)
     {
@@ -24602,6 +25900,8 @@ uint32_t ShowCompactResponse::write(::apache::thrift::protocol::TProtocol* oprot
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<ShowCompactResponseElement> ::const_iterator _iter767;
     for (_iter767 = this->compacts.begin(); _iter767 != this->compacts.end(); ++_iter767)
@@ -24610,6 +25910,8 @@ uint32_t ShowCompactResponse::write(::apache::thrift::protocol::TProtocol* oprot
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<ShowCompactResponseElement> ::const_iterator _iter747;
     for (_iter747 = this->compacts.begin(); _iter747 != this->compacts.end(); ++_iter747)
@@ -24618,6 +25920,8 @@ uint32_t ShowCompactResponse::write(::apache::thrift::protocol::TProtocol* oprot
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::vector<ShowCompactResponseElement> ::const_iterator _iter766;
     for (_iter766 = this->compacts.begin(); _iter766 != this->compacts.end(); ++_iter766)
     {
@@ -24664,9 +25968,24 @@ uint32_t ShowCompactResponse::write(::apache::thrift::protocol::TProtocol* oprot
       xfer += (*_iter704).write(oprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+    std::vector<ShowCompactResponseElement> ::const_iterator _iter746;
+    for (_iter746 = this->compacts.begin(); _iter746 != this->compacts.end(); ++_iter746)
+    {
+      xfer += (*_iter746).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeListEnd();
   }
@@ -24684,6 +26003,7 @@ void swap(ShowCompactResponse &a, ShowCompactResponse &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 ShowCompactResponse::ShowCompactResponse(const ShowCompactResponse& other786) {
   compacts = other786.compacts;
 }
@@ -24692,6 +26012,8 @@ ShowCompactResponse& ShowCompactResponse::operator=(const ShowCompactResponse& o
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 ShowCompactResponse::ShowCompactResponse(const ShowCompactResponse& other768) {
   compacts = other768.compacts;
@@ -24701,6 +26023,8 @@ ShowCompactResponse& ShowCompactResponse::operator=(const ShowCompactResponse& o
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 ShowCompactResponse::ShowCompactResponse(const ShowCompactResponse& other748) {
   compacts = other748.compacts;
@@ -24710,6 +26034,8 @@ ShowCompactResponse& ShowCompactResponse::operator=(const ShowCompactResponse& o
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 ShowCompactResponse::ShowCompactResponse(const ShowCompactResponse& other767) {
   compacts = other767.compacts;
 }
@@ -24761,9 +26087,25 @@ ShowCompactResponse& ShowCompactResponse::operator=(const ShowCompactResponse& o
   compacts = other706.compacts;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+ShowCompactResponse::ShowCompactResponse(const ShowCompactResponse& other747) {
+  compacts = other747.compacts;
+}
+ShowCompactResponse& ShowCompactResponse::operator=(const ShowCompactResponse& other748) {
+  compacts = other748.compacts;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void ShowCompactResponse::printTo(std::ostream& out) const {
@@ -24867,6 +26209,7 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
             this->partitionnames.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size788;
             ::apache::thrift::protocol::TType _etype791;
             xfer += iprot->readListBegin(_etype791, _size788);
@@ -24878,6 +26221,8 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size770;
             ::apache::thrift::protocol::TType _etype773;
@@ -24890,6 +26235,8 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size750;
             ::apache::thrift::protocol::TType _etype753;
@@ -24902,6 +26249,8 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size769;
             ::apache::thrift::protocol::TType _etype772;
             xfer += iprot->readListBegin(_etype772, _size769);
@@ -24968,9 +26317,28 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
               xfer += iprot->readString(this->partitionnames[_i711]);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size749;
+            ::apache::thrift::protocol::TType _etype752;
+            xfer += iprot->readListBegin(_etype752, _size749);
+            this->partitionnames.resize(_size749);
+            uint32_t _i753;
+            for (_i753 = 0; _i753 < _size749; ++_i753)
+            {
+              xfer += iprot->readString(this->partitionnames[_i753]);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -24983,12 +26351,15 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
         if (ftype == ::apache::thrift::protocol::T_I32) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast793;
           xfer += iprot->readI32(ecast793);
           this->operationType = (DataOperationType::type)ecast793;
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast775;
           xfer += iprot->readI32(ecast775);
@@ -24996,6 +26367,8 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast755;
           xfer += iprot->readI32(ecast755);
@@ -25012,6 +26385,8 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
 =======
 =======
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           int32_t ecast774;
           xfer += iprot->readI32(ecast774);
           this->operationType = (DataOperationType::type)ecast774;
@@ -25044,9 +26419,23 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
           this->operationType = (DataOperationType::type)ecast712;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+          int32_t ecast754;
+          xfer += iprot->readI32(ecast754);
+          this->operationType = (DataOperationType::type)ecast754;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           this->__isset.operationType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -25100,6 +26489,7 @@ uint32_t AddDynamicPartitions::write(::apache::thrift::protocol::TProtocol* opro
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->partitionnames.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter794;
     for (_iter794 = this->partitionnames.begin(); _iter794 != this->partitionnames.end(); ++_iter794)
     {
@@ -25107,6 +26497,8 @@ uint32_t AddDynamicPartitions::write(::apache::thrift::protocol::TProtocol* opro
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter776;
     for (_iter776 = this->partitionnames.begin(); _iter776 != this->partitionnames.end(); ++_iter776)
@@ -25115,6 +26507,8 @@ uint32_t AddDynamicPartitions::write(::apache::thrift::protocol::TProtocol* opro
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter756;
     for (_iter756 = this->partitionnames.begin(); _iter756 != this->partitionnames.end(); ++_iter756)
@@ -25123,6 +26517,8 @@ uint32_t AddDynamicPartitions::write(::apache::thrift::protocol::TProtocol* opro
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::vector<std::string> ::const_iterator _iter775;
     for (_iter775 = this->partitionnames.begin(); _iter775 != this->partitionnames.end(); ++_iter775)
     {
@@ -25170,9 +26566,24 @@ uint32_t AddDynamicPartitions::write(::apache::thrift::protocol::TProtocol* opro
       xfer += oprot->writeString((*_iter713));
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+    std::vector<std::string> ::const_iterator _iter755;
+    for (_iter755 = this->partitionnames.begin(); _iter755 != this->partitionnames.end(); ++_iter755)
+    {
+      xfer += oprot->writeString((*_iter755));
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeListEnd();
   }
@@ -25201,6 +26612,7 @@ void swap(AddDynamicPartitions &a, AddDynamicPartitions &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 AddDynamicPartitions::AddDynamicPartitions(const AddDynamicPartitions& other795) {
   txnid = other795.txnid;
   writeid = other795.writeid;
@@ -25221,11 +26633,15 @@ AddDynamicPartitions& AddDynamicPartitions::operator=(const AddDynamicPartitions
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 AddDynamicPartitions::AddDynamicPartitions(const AddDynamicPartitions& other777) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 AddDynamicPartitions::AddDynamicPartitions(const AddDynamicPartitions& other757) {
   txnid = other757.txnid;
@@ -25247,6 +26663,8 @@ AddDynamicPartitions& AddDynamicPartitions::operator=(const AddDynamicPartitions
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 AddDynamicPartitions::AddDynamicPartitions(const AddDynamicPartitions& other776) {
   txnid = other776.txnid;
   writeid = other776.writeid;
@@ -25352,8 +26770,33 @@ AddDynamicPartitions& AddDynamicPartitions::operator=(const AddDynamicPartitions
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+AddDynamicPartitions::AddDynamicPartitions(const AddDynamicPartitions& other756) {
+  txnid = other756.txnid;
+  writeid = other756.writeid;
+  dbname = other756.dbname;
+  tablename = other756.tablename;
+  partitionnames = other756.partitionnames;
+  operationType = other756.operationType;
+  __isset = other756.__isset;
+}
+AddDynamicPartitions& AddDynamicPartitions::operator=(const AddDynamicPartitions& other757) {
+  txnid = other757.txnid;
+  writeid = other757.writeid;
+  dbname = other757.dbname;
+  tablename = other757.tablename;
+  partitionnames = other757.partitionnames;
+  operationType = other757.operationType;
+  __isset = other757.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void AddDynamicPartitions::printTo(std::ostream& out) const {
@@ -25538,6 +26981,7 @@ void swap(BasicTxnInfo &a, BasicTxnInfo &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 BasicTxnInfo::BasicTxnInfo(const BasicTxnInfo& other797) {
   isnull = other797.isnull;
   time = other797.time;
@@ -25558,11 +27002,15 @@ BasicTxnInfo& BasicTxnInfo::operator=(const BasicTxnInfo& other798) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 BasicTxnInfo::BasicTxnInfo(const BasicTxnInfo& other779) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 BasicTxnInfo::BasicTxnInfo(const BasicTxnInfo& other759) {
   isnull = other759.isnull;
@@ -25584,6 +27032,8 @@ BasicTxnInfo& BasicTxnInfo::operator=(const BasicTxnInfo& other760) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 BasicTxnInfo::BasicTxnInfo(const BasicTxnInfo& other778) {
   isnull = other778.isnull;
   time = other778.time;
@@ -25693,8 +27143,33 @@ BasicTxnInfo& BasicTxnInfo::operator=(const BasicTxnInfo& other717) {
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+BasicTxnInfo::BasicTxnInfo(const BasicTxnInfo& other758) {
+  isnull = other758.isnull;
+  time = other758.time;
+  txnid = other758.txnid;
+  dbname = other758.dbname;
+  tablename = other758.tablename;
+  partitionname = other758.partitionname;
+  __isset = other758.__isset;
+}
+BasicTxnInfo& BasicTxnInfo::operator=(const BasicTxnInfo& other759) {
+  isnull = other759.isnull;
+  time = other759.time;
+  txnid = other759.txnid;
+  dbname = other759.dbname;
+  tablename = other759.tablename;
+  partitionname = other759.partitionname;
+  __isset = other759.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void BasicTxnInfo::printTo(std::ostream& out) const {
@@ -25790,6 +27265,7 @@ uint32_t CreationMetadata::read(::apache::thrift::protocol::TProtocol* iprot) {
             this->tablesUsed.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size799;
             ::apache::thrift::protocol::TType _etype802;
             xfer += iprot->readSetBegin(_etype802, _size799);
@@ -25802,6 +27278,8 @@ uint32_t CreationMetadata::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size781;
             ::apache::thrift::protocol::TType _etype784;
@@ -25815,6 +27293,8 @@ uint32_t CreationMetadata::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size761;
             ::apache::thrift::protocol::TType _etype764;
@@ -25828,6 +27308,8 @@ uint32_t CreationMetadata::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size780;
             ::apache::thrift::protocol::TType _etype783;
             xfer += iprot->readSetBegin(_etype783, _size780);
@@ -25899,9 +27381,29 @@ uint32_t CreationMetadata::read(::apache::thrift::protocol::TProtocol* iprot) {
               this->tablesUsed.insert(_elem723);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size760;
+            ::apache::thrift::protocol::TType _etype763;
+            xfer += iprot->readSetBegin(_etype763, _size760);
+            uint32_t _i764;
+            for (_i764 = 0; _i764 < _size760; ++_i764)
+            {
+              std::string _elem765;
+              xfer += iprot->readString(_elem765);
+              this->tablesUsed.insert(_elem765);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readSetEnd();
           }
@@ -25960,6 +27462,7 @@ uint32_t CreationMetadata::write(::apache::thrift::protocol::TProtocol* oprot) c
     xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->tablesUsed.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::set<std::string> ::const_iterator _iter805;
     for (_iter805 = this->tablesUsed.begin(); _iter805 != this->tablesUsed.end(); ++_iter805)
     {
@@ -25967,6 +27470,8 @@ uint32_t CreationMetadata::write(::apache::thrift::protocol::TProtocol* oprot) c
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::set<std::string> ::const_iterator _iter787;
     for (_iter787 = this->tablesUsed.begin(); _iter787 != this->tablesUsed.end(); ++_iter787)
@@ -25975,6 +27480,8 @@ uint32_t CreationMetadata::write(::apache::thrift::protocol::TProtocol* oprot) c
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::set<std::string> ::const_iterator _iter767;
     for (_iter767 = this->tablesUsed.begin(); _iter767 != this->tablesUsed.end(); ++_iter767)
@@ -25983,6 +27490,8 @@ uint32_t CreationMetadata::write(::apache::thrift::protocol::TProtocol* oprot) c
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::set<std::string> ::const_iterator _iter786;
     for (_iter786 = this->tablesUsed.begin(); _iter786 != this->tablesUsed.end(); ++_iter786)
     {
@@ -26029,9 +27538,24 @@ uint32_t CreationMetadata::write(::apache::thrift::protocol::TProtocol* oprot) c
       xfer += oprot->writeString((*_iter724));
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+    std::set<std::string> ::const_iterator _iter766;
+    for (_iter766 = this->tablesUsed.begin(); _iter766 != this->tablesUsed.end(); ++_iter766)
+    {
+      xfer += oprot->writeString((*_iter766));
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeSetEnd();
   }
@@ -26059,6 +27583,7 @@ void swap(CreationMetadata &a, CreationMetadata &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 CreationMetadata::CreationMetadata(const CreationMetadata& other806) {
   catName = other806.catName;
   dbName = other806.dbName;
@@ -26077,6 +27602,8 @@ CreationMetadata& CreationMetadata::operator=(const CreationMetadata& other807) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 CreationMetadata::CreationMetadata(const CreationMetadata& other788) {
   dbName = other788.dbName;
@@ -26094,6 +27621,8 @@ CreationMetadata& CreationMetadata::operator=(const CreationMetadata& other789) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 CreationMetadata::CreationMetadata(const CreationMetadata& other768) {
   dbName = other768.dbName;
@@ -26111,6 +27640,8 @@ CreationMetadata& CreationMetadata::operator=(const CreationMetadata& other769) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 CreationMetadata::CreationMetadata(const CreationMetadata& other787) {
   dbName = other787.dbName;
   tblName = other787.tblName;
@@ -26199,9 +27730,33 @@ CreationMetadata& CreationMetadata::operator=(const CreationMetadata& other726) 
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+CreationMetadata::CreationMetadata(const CreationMetadata& other767) {
+  dbName = other767.dbName;
+  tblName = other767.tblName;
+  tablesUsed = other767.tablesUsed;
+  validTxnList = other767.validTxnList;
+  __isset = other767.__isset;
+}
+CreationMetadata& CreationMetadata::operator=(const CreationMetadata& other768) {
+  dbName = other768.dbName;
+  tblName = other768.tblName;
+  tablesUsed = other768.tablesUsed;
+  validTxnList = other768.validTxnList;
+  __isset = other768.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void CreationMetadata::printTo(std::ostream& out) const {
@@ -26309,6 +27864,7 @@ void swap(NotificationEventRequest &a, NotificationEventRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 NotificationEventRequest::NotificationEventRequest(const NotificationEventRequest& other808) {
   lastEvent = other808.lastEvent;
   maxEvents = other808.maxEvents;
@@ -26321,6 +27877,8 @@ NotificationEventRequest& NotificationEventRequest::operator=(const Notification
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 NotificationEventRequest::NotificationEventRequest(const NotificationEventRequest& other790) {
   lastEvent = other790.lastEvent;
@@ -26334,6 +27892,8 @@ NotificationEventRequest& NotificationEventRequest::operator=(const Notification
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 NotificationEventRequest::NotificationEventRequest(const NotificationEventRequest& other770) {
   lastEvent = other770.lastEvent;
@@ -26347,6 +27907,8 @@ NotificationEventRequest& NotificationEventRequest::operator=(const Notification
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 NotificationEventRequest::NotificationEventRequest(const NotificationEventRequest& other789) {
   lastEvent = other789.lastEvent;
   maxEvents = other789.maxEvents;
@@ -26417,9 +27979,29 @@ NotificationEventRequest& NotificationEventRequest::operator=(const Notification
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+NotificationEventRequest::NotificationEventRequest(const NotificationEventRequest& other769) {
+  lastEvent = other769.lastEvent;
+  maxEvents = other769.maxEvents;
+  __isset = other769.__isset;
+}
+NotificationEventRequest& NotificationEventRequest::operator=(const NotificationEventRequest& other770) {
+  lastEvent = other770.lastEvent;
+  maxEvents = other770.maxEvents;
+  __isset = other770.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void NotificationEventRequest::printTo(std::ostream& out) const {
@@ -26641,6 +28223,7 @@ void swap(NotificationEvent &a, NotificationEvent &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 NotificationEvent::NotificationEvent(const NotificationEvent& other810) {
   eventId = other810.eventId;
   eventTime = other810.eventTime;
@@ -26665,11 +28248,15 @@ NotificationEvent& NotificationEvent::operator=(const NotificationEvent& other81
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 NotificationEvent::NotificationEvent(const NotificationEvent& other792) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 NotificationEvent::NotificationEvent(const NotificationEvent& other772) {
   eventId = other772.eventId;
@@ -26693,6 +28280,8 @@ NotificationEvent& NotificationEvent::operator=(const NotificationEvent& other77
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 NotificationEvent::NotificationEvent(const NotificationEvent& other791) {
   eventId = other791.eventId;
   eventTime = other791.eventTime;
@@ -26811,8 +28400,35 @@ NotificationEvent& NotificationEvent::operator=(const NotificationEvent& other73
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+NotificationEvent::NotificationEvent(const NotificationEvent& other771) {
+  eventId = other771.eventId;
+  eventTime = other771.eventTime;
+  eventType = other771.eventType;
+  dbName = other771.dbName;
+  tableName = other771.tableName;
+  message = other771.message;
+  messageFormat = other771.messageFormat;
+  __isset = other771.__isset;
+}
+NotificationEvent& NotificationEvent::operator=(const NotificationEvent& other772) {
+  eventId = other772.eventId;
+  eventTime = other772.eventTime;
+  eventType = other772.eventType;
+  dbName = other772.dbName;
+  tableName = other772.tableName;
+  message = other772.message;
+  messageFormat = other772.messageFormat;
+  __isset = other772.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void NotificationEvent::printTo(std::ostream& out) const {
@@ -26866,6 +28482,7 @@ uint32_t NotificationEventResponse::read(::apache::thrift::protocol::TProtocol* 
             this->events.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size812;
             ::apache::thrift::protocol::TType _etype815;
             xfer += iprot->readListBegin(_etype815, _size812);
@@ -26877,6 +28494,8 @@ uint32_t NotificationEventResponse::read(::apache::thrift::protocol::TProtocol* 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size794;
             ::apache::thrift::protocol::TType _etype797;
@@ -26889,6 +28508,8 @@ uint32_t NotificationEventResponse::read(::apache::thrift::protocol::TProtocol* 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size774;
             ::apache::thrift::protocol::TType _etype777;
@@ -26901,6 +28522,8 @@ uint32_t NotificationEventResponse::read(::apache::thrift::protocol::TProtocol* 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size793;
             ::apache::thrift::protocol::TType _etype796;
             xfer += iprot->readListBegin(_etype796, _size793);
@@ -26966,9 +28589,28 @@ uint32_t NotificationEventResponse::read(::apache::thrift::protocol::TProtocol* 
               xfer += this->events[_i735].read(iprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size773;
+            ::apache::thrift::protocol::TType _etype776;
+            xfer += iprot->readListBegin(_etype776, _size773);
+            this->events.resize(_size773);
+            uint32_t _i777;
+            for (_i777 = 0; _i777 < _size773; ++_i777)
+            {
+              xfer += this->events[_i777].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -27001,6 +28643,7 @@ uint32_t NotificationEventResponse::write(::apache::thrift::protocol::TProtocol*
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->events.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<NotificationEvent> ::const_iterator _iter817;
     for (_iter817 = this->events.begin(); _iter817 != this->events.end(); ++_iter817)
     {
@@ -27008,6 +28651,8 @@ uint32_t NotificationEventResponse::write(::apache::thrift::protocol::TProtocol*
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<NotificationEvent> ::const_iterator _iter799;
     for (_iter799 = this->events.begin(); _iter799 != this->events.end(); ++_iter799)
@@ -27016,6 +28661,8 @@ uint32_t NotificationEventResponse::write(::apache::thrift::protocol::TProtocol*
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<NotificationEvent> ::const_iterator _iter779;
     for (_iter779 = this->events.begin(); _iter779 != this->events.end(); ++_iter779)
@@ -27024,6 +28671,8 @@ uint32_t NotificationEventResponse::write(::apache::thrift::protocol::TProtocol*
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::vector<NotificationEvent> ::const_iterator _iter798;
     for (_iter798 = this->events.begin(); _iter798 != this->events.end(); ++_iter798)
     {
@@ -27071,9 +28720,24 @@ uint32_t NotificationEventResponse::write(::apache::thrift::protocol::TProtocol*
       xfer += (*_iter736).write(oprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+    std::vector<NotificationEvent> ::const_iterator _iter778;
+    for (_iter778 = this->events.begin(); _iter778 != this->events.end(); ++_iter778)
+    {
+      xfer += (*_iter778).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeListEnd();
   }
@@ -27091,6 +28755,7 @@ void swap(NotificationEventResponse &a, NotificationEventResponse &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 NotificationEventResponse::NotificationEventResponse(const NotificationEventResponse& other818) {
   events = other818.events;
 }
@@ -27099,6 +28764,8 @@ NotificationEventResponse& NotificationEventResponse::operator=(const Notificati
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 NotificationEventResponse::NotificationEventResponse(const NotificationEventResponse& other800) {
   events = other800.events;
@@ -27108,6 +28775,8 @@ NotificationEventResponse& NotificationEventResponse::operator=(const Notificati
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 NotificationEventResponse::NotificationEventResponse(const NotificationEventResponse& other780) {
   events = other780.events;
@@ -27117,6 +28786,8 @@ NotificationEventResponse& NotificationEventResponse::operator=(const Notificati
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 NotificationEventResponse::NotificationEventResponse(const NotificationEventResponse& other799) {
   events = other799.events;
 }
@@ -27170,9 +28841,25 @@ NotificationEventResponse& NotificationEventResponse::operator=(const Notificati
   events = other738.events;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+NotificationEventResponse::NotificationEventResponse(const NotificationEventResponse& other779) {
+  events = other779.events;
+}
+NotificationEventResponse& NotificationEventResponse::operator=(const NotificationEventResponse& other780) {
+  events = other780.events;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void NotificationEventResponse::printTo(std::ostream& out) const {
@@ -27256,6 +28943,7 @@ void swap(CurrentNotificationEventId &a, CurrentNotificationEventId &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 CurrentNotificationEventId::CurrentNotificationEventId(const CurrentNotificationEventId& other820) {
   eventId = other820.eventId;
 }
@@ -27264,6 +28952,8 @@ CurrentNotificationEventId& CurrentNotificationEventId::operator=(const CurrentN
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 CurrentNotificationEventId::CurrentNotificationEventId(const CurrentNotificationEventId& other802) {
   eventId = other802.eventId;
@@ -27273,6 +28963,8 @@ CurrentNotificationEventId& CurrentNotificationEventId::operator=(const CurrentN
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 CurrentNotificationEventId::CurrentNotificationEventId(const CurrentNotificationEventId& other782) {
   eventId = other782.eventId;
@@ -27282,6 +28974,8 @@ CurrentNotificationEventId& CurrentNotificationEventId::operator=(const CurrentN
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 CurrentNotificationEventId::CurrentNotificationEventId(const CurrentNotificationEventId& other801) {
   eventId = other801.eventId;
 }
@@ -27335,9 +29029,25 @@ CurrentNotificationEventId& CurrentNotificationEventId::operator=(const CurrentN
   eventId = other740.eventId;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+CurrentNotificationEventId::CurrentNotificationEventId(const CurrentNotificationEventId& other781) {
+  eventId = other781.eventId;
+}
+CurrentNotificationEventId& CurrentNotificationEventId::operator=(const CurrentNotificationEventId& other782) {
+  eventId = other782.eventId;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void CurrentNotificationEventId::printTo(std::ostream& out) const {
@@ -27461,6 +29171,7 @@ void swap(NotificationEventsCountRequest &a, NotificationEventsCountRequest &b) 
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 NotificationEventsCountRequest::NotificationEventsCountRequest(const NotificationEventsCountRequest& other822) {
   fromEventId = other822.fromEventId;
   dbName = other822.dbName;
@@ -27475,6 +29186,8 @@ NotificationEventsCountRequest& NotificationEventsCountRequest::operator=(const 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 NotificationEventsCountRequest::NotificationEventsCountRequest(const NotificationEventsCountRequest& other804) {
   fromEventId = other804.fromEventId;
@@ -27486,6 +29199,8 @@ NotificationEventsCountRequest& NotificationEventsCountRequest::operator=(const 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 NotificationEventsCountRequest::NotificationEventsCountRequest(const NotificationEventsCountRequest& other784) {
   fromEventId = other784.fromEventId;
@@ -27497,6 +29212,8 @@ NotificationEventsCountRequest& NotificationEventsCountRequest::operator=(const 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 NotificationEventsCountRequest::NotificationEventsCountRequest(const NotificationEventsCountRequest& other803) {
   fromEventId = other803.fromEventId;
   dbName = other803.dbName;
@@ -27558,9 +29275,27 @@ NotificationEventsCountRequest& NotificationEventsCountRequest::operator=(const 
   dbName = other742.dbName;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+NotificationEventsCountRequest::NotificationEventsCountRequest(const NotificationEventsCountRequest& other783) {
+  fromEventId = other783.fromEventId;
+  dbName = other783.dbName;
+}
+NotificationEventsCountRequest& NotificationEventsCountRequest::operator=(const NotificationEventsCountRequest& other784) {
+  fromEventId = other784.fromEventId;
+  dbName = other784.dbName;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void NotificationEventsCountRequest::printTo(std::ostream& out) const {
@@ -27646,6 +29381,7 @@ void swap(NotificationEventsCountResponse &a, NotificationEventsCountResponse &b
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 NotificationEventsCountResponse::NotificationEventsCountResponse(const NotificationEventsCountResponse& other824) {
   eventsCount = other824.eventsCount;
 }
@@ -27654,6 +29390,8 @@ NotificationEventsCountResponse& NotificationEventsCountResponse::operator=(cons
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 NotificationEventsCountResponse::NotificationEventsCountResponse(const NotificationEventsCountResponse& other806) {
   eventsCount = other806.eventsCount;
@@ -27663,6 +29401,8 @@ NotificationEventsCountResponse& NotificationEventsCountResponse::operator=(cons
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 NotificationEventsCountResponse::NotificationEventsCountResponse(const NotificationEventsCountResponse& other786) {
   eventsCount = other786.eventsCount;
@@ -27672,6 +29412,8 @@ NotificationEventsCountResponse& NotificationEventsCountResponse::operator=(cons
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 NotificationEventsCountResponse::NotificationEventsCountResponse(const NotificationEventsCountResponse& other805) {
   eventsCount = other805.eventsCount;
 }
@@ -27723,9 +29465,25 @@ NotificationEventsCountResponse& NotificationEventsCountResponse::operator=(cons
   eventsCount = other744.eventsCount;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+NotificationEventsCountResponse::NotificationEventsCountResponse(const NotificationEventsCountResponse& other785) {
+  eventsCount = other785.eventsCount;
+}
+NotificationEventsCountResponse& NotificationEventsCountResponse::operator=(const NotificationEventsCountResponse& other786) {
+  eventsCount = other786.eventsCount;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void NotificationEventsCountResponse::printTo(std::ostream& out) const {
@@ -27790,6 +29548,7 @@ uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* ipr
             this->filesAdded.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size826;
             ::apache::thrift::protocol::TType _etype829;
             xfer += iprot->readListBegin(_etype829, _size826);
@@ -27801,6 +29560,8 @@ uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* ipr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size808;
             ::apache::thrift::protocol::TType _etype811;
@@ -27813,6 +29574,8 @@ uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* ipr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size788;
             ::apache::thrift::protocol::TType _etype791;
@@ -27825,6 +29588,8 @@ uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* ipr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size807;
             ::apache::thrift::protocol::TType _etype810;
             xfer += iprot->readListBegin(_etype810, _size807);
@@ -27891,9 +29656,28 @@ uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* ipr
               xfer += iprot->readString(this->filesAdded[_i749]);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size787;
+            ::apache::thrift::protocol::TType _etype790;
+            xfer += iprot->readListBegin(_etype790, _size787);
+            this->filesAdded.resize(_size787);
+            uint32_t _i791;
+            for (_i791 = 0; _i791 < _size787; ++_i791)
+            {
+              xfer += iprot->readString(this->filesAdded[_i791]);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -27908,6 +29692,7 @@ uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* ipr
             this->filesAddedChecksum.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size831;
             ::apache::thrift::protocol::TType _etype834;
             xfer += iprot->readListBegin(_etype834, _size831);
@@ -27919,6 +29704,8 @@ uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* ipr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size813;
             ::apache::thrift::protocol::TType _etype816;
@@ -27931,6 +29718,8 @@ uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* ipr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size793;
             ::apache::thrift::protocol::TType _etype796;
@@ -27943,6 +29732,8 @@ uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* ipr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size812;
             ::apache::thrift::protocol::TType _etype815;
             xfer += iprot->readListBegin(_etype815, _size812);
@@ -28009,9 +29800,28 @@ uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* ipr
               xfer += iprot->readString(this->filesAddedChecksum[_i754]);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size792;
+            ::apache::thrift::protocol::TType _etype795;
+            xfer += iprot->readListBegin(_etype795, _size792);
+            this->filesAddedChecksum.resize(_size792);
+            uint32_t _i796;
+            for (_i796 = 0; _i796 < _size792; ++_i796)
+            {
+              xfer += iprot->readString(this->filesAddedChecksum[_i796]);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -28049,6 +29859,7 @@ uint32_t InsertEventRequestData::write(::apache::thrift::protocol::TProtocol* op
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->filesAdded.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter836;
     for (_iter836 = this->filesAdded.begin(); _iter836 != this->filesAdded.end(); ++_iter836)
     {
@@ -28056,6 +29867,8 @@ uint32_t InsertEventRequestData::write(::apache::thrift::protocol::TProtocol* op
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter818;
     for (_iter818 = this->filesAdded.begin(); _iter818 != this->filesAdded.end(); ++_iter818)
@@ -28064,6 +29877,8 @@ uint32_t InsertEventRequestData::write(::apache::thrift::protocol::TProtocol* op
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter798;
     for (_iter798 = this->filesAdded.begin(); _iter798 != this->filesAdded.end(); ++_iter798)
@@ -28072,6 +29887,8 @@ uint32_t InsertEventRequestData::write(::apache::thrift::protocol::TProtocol* op
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::vector<std::string> ::const_iterator _iter817;
     for (_iter817 = this->filesAdded.begin(); _iter817 != this->filesAdded.end(); ++_iter817)
     {
@@ -28118,9 +29935,24 @@ uint32_t InsertEventRequestData::write(::apache::thrift::protocol::TProtocol* op
       xfer += oprot->writeString((*_iter755));
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+    std::vector<std::string> ::const_iterator _iter797;
+    for (_iter797 = this->filesAdded.begin(); _iter797 != this->filesAdded.end(); ++_iter797)
+    {
+      xfer += oprot->writeString((*_iter797));
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeListEnd();
   }
@@ -28132,6 +29964,7 @@ uint32_t InsertEventRequestData::write(::apache::thrift::protocol::TProtocol* op
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->filesAddedChecksum.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter837;
       for (_iter837 = this->filesAddedChecksum.begin(); _iter837 != this->filesAddedChecksum.end(); ++_iter837)
       {
@@ -28139,6 +29972,8 @@ uint32_t InsertEventRequestData::write(::apache::thrift::protocol::TProtocol* op
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter819;
       for (_iter819 = this->filesAddedChecksum.begin(); _iter819 != this->filesAddedChecksum.end(); ++_iter819)
@@ -28147,6 +29982,8 @@ uint32_t InsertEventRequestData::write(::apache::thrift::protocol::TProtocol* op
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter799;
       for (_iter799 = this->filesAddedChecksum.begin(); _iter799 != this->filesAddedChecksum.end(); ++_iter799)
@@ -28155,6 +29992,8 @@ uint32_t InsertEventRequestData::write(::apache::thrift::protocol::TProtocol* op
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       std::vector<std::string> ::const_iterator _iter818;
       for (_iter818 = this->filesAddedChecksum.begin(); _iter818 != this->filesAddedChecksum.end(); ++_iter818)
       {
@@ -28202,9 +30041,24 @@ uint32_t InsertEventRequestData::write(::apache::thrift::protocol::TProtocol* op
         xfer += oprot->writeString((*_iter756));
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+      std::vector<std::string> ::const_iterator _iter798;
+      for (_iter798 = this->filesAddedChecksum.begin(); _iter798 != this->filesAddedChecksum.end(); ++_iter798)
+      {
+        xfer += oprot->writeString((*_iter798));
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       }
       xfer += oprot->writeListEnd();
     }
@@ -28225,6 +30079,7 @@ void swap(InsertEventRequestData &a, InsertEventRequestData &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 InsertEventRequestData::InsertEventRequestData(const InsertEventRequestData& other838) {
   replace = other838.replace;
   filesAdded = other838.filesAdded;
@@ -28239,6 +30094,8 @@ InsertEventRequestData& InsertEventRequestData::operator=(const InsertEventReque
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 InsertEventRequestData::InsertEventRequestData(const InsertEventRequestData& other820) {
   replace = other820.replace;
@@ -28254,6 +30111,8 @@ InsertEventRequestData& InsertEventRequestData::operator=(const InsertEventReque
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 InsertEventRequestData::InsertEventRequestData(const InsertEventRequestData& other800) {
   replace = other800.replace;
@@ -28269,6 +30128,8 @@ InsertEventRequestData& InsertEventRequestData::operator=(const InsertEventReque
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 InsertEventRequestData::InsertEventRequestData(const InsertEventRequestData& other819) {
   replace = other819.replace;
   filesAdded = other819.filesAdded;
@@ -28354,9 +30215,31 @@ InsertEventRequestData& InsertEventRequestData::operator=(const InsertEventReque
   __isset = other758.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+InsertEventRequestData::InsertEventRequestData(const InsertEventRequestData& other799) {
+  replace = other799.replace;
+  filesAdded = other799.filesAdded;
+  filesAddedChecksum = other799.filesAddedChecksum;
+  __isset = other799.__isset;
+}
+InsertEventRequestData& InsertEventRequestData::operator=(const InsertEventRequestData& other800) {
+  replace = other800.replace;
+  filesAdded = other800.filesAdded;
+  filesAddedChecksum = other800.filesAddedChecksum;
+  __isset = other800.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void InsertEventRequestData::printTo(std::ostream& out) const {
@@ -28440,6 +30323,7 @@ void swap(FireEventRequestData &a, FireEventRequestData &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 FireEventRequestData::FireEventRequestData(const FireEventRequestData& other840) {
   insertData = other840.insertData;
   __isset = other840.__isset;
@@ -28450,6 +30334,8 @@ FireEventRequestData& FireEventRequestData::operator=(const FireEventRequestData
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 FireEventRequestData::FireEventRequestData(const FireEventRequestData& other822) {
   insertData = other822.insertData;
@@ -28461,6 +30347,8 @@ FireEventRequestData& FireEventRequestData::operator=(const FireEventRequestData
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 FireEventRequestData::FireEventRequestData(const FireEventRequestData& other802) {
   insertData = other802.insertData;
@@ -28472,6 +30360,8 @@ FireEventRequestData& FireEventRequestData::operator=(const FireEventRequestData
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 FireEventRequestData::FireEventRequestData(const FireEventRequestData& other821) {
   insertData = other821.insertData;
   __isset = other821.__isset;
@@ -28533,9 +30423,27 @@ FireEventRequestData& FireEventRequestData::operator=(const FireEventRequestData
   __isset = other760.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+FireEventRequestData::FireEventRequestData(const FireEventRequestData& other801) {
+  insertData = other801.insertData;
+  __isset = other801.__isset;
+}
+FireEventRequestData& FireEventRequestData::operator=(const FireEventRequestData& other802) {
+  insertData = other802.insertData;
+  __isset = other802.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void FireEventRequestData::printTo(std::ostream& out) const {
@@ -28639,6 +30547,7 @@ uint32_t FireEventRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
             this->partitionVals.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size842;
             ::apache::thrift::protocol::TType _etype845;
             xfer += iprot->readListBegin(_etype845, _size842);
@@ -28650,6 +30559,8 @@ uint32_t FireEventRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size824;
             ::apache::thrift::protocol::TType _etype827;
@@ -28662,6 +30573,8 @@ uint32_t FireEventRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size804;
             ::apache::thrift::protocol::TType _etype807;
@@ -28674,6 +30587,8 @@ uint32_t FireEventRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size823;
             ::apache::thrift::protocol::TType _etype826;
             xfer += iprot->readListBegin(_etype826, _size823);
@@ -28742,9 +30657,28 @@ uint32_t FireEventRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
               xfer += iprot->readString(this->partitionVals[_i765]);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size803;
+            ::apache::thrift::protocol::TType _etype806;
+            xfer += iprot->readListBegin(_etype806, _size803);
+            this->partitionVals.resize(_size803);
+            uint32_t _i807;
+            for (_i807 = 0; _i807 < _size803; ++_i807)
+            {
+              xfer += iprot->readString(this->partitionVals[_i807]);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -28806,6 +30740,7 @@ uint32_t FireEventRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->partitionVals.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter847;
       for (_iter847 = this->partitionVals.begin(); _iter847 != this->partitionVals.end(); ++_iter847)
       {
@@ -28813,6 +30748,8 @@ uint32_t FireEventRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter829;
       for (_iter829 = this->partitionVals.begin(); _iter829 != this->partitionVals.end(); ++_iter829)
@@ -28821,6 +30758,8 @@ uint32_t FireEventRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter809;
       for (_iter809 = this->partitionVals.begin(); _iter809 != this->partitionVals.end(); ++_iter809)
@@ -28829,6 +30768,8 @@ uint32_t FireEventRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       std::vector<std::string> ::const_iterator _iter828;
       for (_iter828 = this->partitionVals.begin(); _iter828 != this->partitionVals.end(); ++_iter828)
       {
@@ -28876,9 +30817,24 @@ uint32_t FireEventRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
         xfer += oprot->writeString((*_iter766));
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+      std::vector<std::string> ::const_iterator _iter808;
+      for (_iter808 = this->partitionVals.begin(); _iter808 != this->partitionVals.end(); ++_iter808)
+      {
+        xfer += oprot->writeString((*_iter808));
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       }
       xfer += oprot->writeListEnd();
     }
@@ -28907,6 +30863,7 @@ void swap(FireEventRequest &a, FireEventRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 FireEventRequest::FireEventRequest(const FireEventRequest& other848) {
   successful = other848.successful;
   data = other848.data;
@@ -28927,11 +30884,15 @@ FireEventRequest& FireEventRequest::operator=(const FireEventRequest& other849) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 FireEventRequest::FireEventRequest(const FireEventRequest& other830) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 FireEventRequest::FireEventRequest(const FireEventRequest& other810) {
   successful = other810.successful;
@@ -28951,6 +30912,8 @@ FireEventRequest& FireEventRequest::operator=(const FireEventRequest& other811) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 FireEventRequest::FireEventRequest(const FireEventRequest& other829) {
   successful = other829.successful;
   data = other829.data;
@@ -29051,8 +31014,31 @@ FireEventRequest& FireEventRequest::operator=(const FireEventRequest& other768) 
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+FireEventRequest::FireEventRequest(const FireEventRequest& other809) {
+  successful = other809.successful;
+  data = other809.data;
+  dbName = other809.dbName;
+  tableName = other809.tableName;
+  partitionVals = other809.partitionVals;
+  __isset = other809.__isset;
+}
+FireEventRequest& FireEventRequest::operator=(const FireEventRequest& other810) {
+  successful = other810.successful;
+  data = other810.data;
+  dbName = other810.dbName;
+  tableName = other810.tableName;
+  partitionVals = other810.partitionVals;
+  __isset = other810.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void FireEventRequest::printTo(std::ostream& out) const {
@@ -29118,6 +31104,7 @@ void swap(FireEventResponse &a, FireEventResponse &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 FireEventResponse::FireEventResponse(const FireEventResponse& other850) {
   (void) other850;
 }
@@ -29126,6 +31113,8 @@ FireEventResponse& FireEventResponse::operator=(const FireEventResponse& other85
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 FireEventResponse::FireEventResponse(const FireEventResponse& other832) {
   (void) other832;
@@ -29135,6 +31124,8 @@ FireEventResponse& FireEventResponse::operator=(const FireEventResponse& other83
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 FireEventResponse::FireEventResponse(const FireEventResponse& other812) {
   (void) other812;
@@ -29144,6 +31135,8 @@ FireEventResponse& FireEventResponse::operator=(const FireEventResponse& other81
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 FireEventResponse::FireEventResponse(const FireEventResponse& other831) {
   (void) other831;
 }
@@ -29195,9 +31188,25 @@ FireEventResponse& FireEventResponse::operator=(const FireEventResponse& other77
   (void) other770;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+FireEventResponse::FireEventResponse(const FireEventResponse& other811) {
+  (void) other811;
+}
+FireEventResponse& FireEventResponse::operator=(const FireEventResponse& other812) {
+  (void) other812;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void FireEventResponse::printTo(std::ostream& out) const {
@@ -29299,6 +31308,7 @@ void swap(MetadataPpdResult &a, MetadataPpdResult &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 MetadataPpdResult::MetadataPpdResult(const MetadataPpdResult& other852) {
   metadata = other852.metadata;
   includeBitset = other852.includeBitset;
@@ -29311,6 +31321,8 @@ MetadataPpdResult& MetadataPpdResult::operator=(const MetadataPpdResult& other85
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 MetadataPpdResult::MetadataPpdResult(const MetadataPpdResult& other834) {
   metadata = other834.metadata;
@@ -29324,6 +31336,8 @@ MetadataPpdResult& MetadataPpdResult::operator=(const MetadataPpdResult& other83
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 MetadataPpdResult::MetadataPpdResult(const MetadataPpdResult& other814) {
   metadata = other814.metadata;
@@ -29337,6 +31351,8 @@ MetadataPpdResult& MetadataPpdResult::operator=(const MetadataPpdResult& other81
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 MetadataPpdResult::MetadataPpdResult(const MetadataPpdResult& other833) {
   metadata = other833.metadata;
   includeBitset = other833.includeBitset;
@@ -29412,7 +31428,21 @@ MetadataPpdResult& MetadataPpdResult::operator=(const MetadataPpdResult& other76
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+MetadataPpdResult::MetadataPpdResult(const MetadataPpdResult& other813) {
+  metadata = other813.metadata;
+  includeBitset = other813.includeBitset;
+  __isset = other813.__isset;
+}
+MetadataPpdResult& MetadataPpdResult::operator=(const MetadataPpdResult& other814) {
+  metadata = other814.metadata;
+  includeBitset = other814.includeBitset;
+  __isset = other814.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void MetadataPpdResult::printTo(std::ostream& out) const {
@@ -29465,6 +31495,7 @@ uint32_t GetFileMetadataByExprResult::read(::apache::thrift::protocol::TProtocol
             this->metadata.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size854;
             ::apache::thrift::protocol::TType _ktype855;
             ::apache::thrift::protocol::TType _vtype856;
@@ -29479,6 +31510,8 @@ uint32_t GetFileMetadataByExprResult::read(::apache::thrift::protocol::TProtocol
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size836;
             ::apache::thrift::protocol::TType _ktype837;
@@ -29494,6 +31527,8 @@ uint32_t GetFileMetadataByExprResult::read(::apache::thrift::protocol::TProtocol
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size816;
             ::apache::thrift::protocol::TType _ktype817;
@@ -29509,6 +31544,8 @@ uint32_t GetFileMetadataByExprResult::read(::apache::thrift::protocol::TProtocol
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size835;
             ::apache::thrift::protocol::TType _ktype836;
             ::apache::thrift::protocol::TType _vtype837;
@@ -29592,9 +31629,31 @@ uint32_t GetFileMetadataByExprResult::read(::apache::thrift::protocol::TProtocol
               xfer += _val779.read(iprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size815;
+            ::apache::thrift::protocol::TType _ktype816;
+            ::apache::thrift::protocol::TType _vtype817;
+            xfer += iprot->readMapBegin(_ktype816, _vtype817, _size815);
+            uint32_t _i819;
+            for (_i819 = 0; _i819 < _size815; ++_i819)
+            {
+              int64_t _key820;
+              xfer += iprot->readI64(_key820);
+              MetadataPpdResult& _val821 = this->metadata[_key820];
+              xfer += _val821.read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readMapEnd();
           }
@@ -29637,6 +31696,7 @@ uint32_t GetFileMetadataByExprResult::write(::apache::thrift::protocol::TProtoco
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_I64, ::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->metadata.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::map<int64_t, MetadataPpdResult> ::const_iterator _iter861;
     for (_iter861 = this->metadata.begin(); _iter861 != this->metadata.end(); ++_iter861)
     {
@@ -29645,6 +31705,8 @@ uint32_t GetFileMetadataByExprResult::write(::apache::thrift::protocol::TProtoco
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::map<int64_t, MetadataPpdResult> ::const_iterator _iter843;
     for (_iter843 = this->metadata.begin(); _iter843 != this->metadata.end(); ++_iter843)
@@ -29654,6 +31716,8 @@ uint32_t GetFileMetadataByExprResult::write(::apache::thrift::protocol::TProtoco
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::map<int64_t, MetadataPpdResult> ::const_iterator _iter823;
     for (_iter823 = this->metadata.begin(); _iter823 != this->metadata.end(); ++_iter823)
@@ -29663,6 +31727,8 @@ uint32_t GetFileMetadataByExprResult::write(::apache::thrift::protocol::TProtoco
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::map<int64_t, MetadataPpdResult> ::const_iterator _iter842;
     for (_iter842 = this->metadata.begin(); _iter842 != this->metadata.end(); ++_iter842)
     {
@@ -29714,9 +31780,25 @@ uint32_t GetFileMetadataByExprResult::write(::apache::thrift::protocol::TProtoco
       xfer += _iter780->second.write(oprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+    std::map<int64_t, MetadataPpdResult> ::const_iterator _iter822;
+    for (_iter822 = this->metadata.begin(); _iter822 != this->metadata.end(); ++_iter822)
+    {
+      xfer += oprot->writeI64(_iter822->first);
+      xfer += _iter822->second.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeMapEnd();
   }
@@ -29739,6 +31821,7 @@ void swap(GetFileMetadataByExprResult &a, GetFileMetadataByExprResult &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 GetFileMetadataByExprResult::GetFileMetadataByExprResult(const GetFileMetadataByExprResult& other862) {
   metadata = other862.metadata;
   isSupported = other862.isSupported;
@@ -29749,6 +31832,8 @@ GetFileMetadataByExprResult& GetFileMetadataByExprResult::operator=(const GetFil
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetFileMetadataByExprResult::GetFileMetadataByExprResult(const GetFileMetadataByExprResult& other844) {
   metadata = other844.metadata;
@@ -29760,6 +31845,8 @@ GetFileMetadataByExprResult& GetFileMetadataByExprResult::operator=(const GetFil
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetFileMetadataByExprResult::GetFileMetadataByExprResult(const GetFileMetadataByExprResult& other824) {
   metadata = other824.metadata;
@@ -29771,6 +31858,8 @@ GetFileMetadataByExprResult& GetFileMetadataByExprResult::operator=(const GetFil
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 GetFileMetadataByExprResult::GetFileMetadataByExprResult(const GetFileMetadataByExprResult& other843) {
   metadata = other843.metadata;
   isSupported = other843.isSupported;
@@ -29832,9 +31921,27 @@ GetFileMetadataByExprResult& GetFileMetadataByExprResult::operator=(const GetFil
   isSupported = other782.isSupported;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+GetFileMetadataByExprResult::GetFileMetadataByExprResult(const GetFileMetadataByExprResult& other823) {
+  metadata = other823.metadata;
+  isSupported = other823.isSupported;
+}
+GetFileMetadataByExprResult& GetFileMetadataByExprResult::operator=(const GetFileMetadataByExprResult& other824) {
+  metadata = other824.metadata;
+  isSupported = other824.isSupported;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void GetFileMetadataByExprResult::printTo(std::ostream& out) const {
@@ -29897,6 +32004,7 @@ uint32_t GetFileMetadataByExprRequest::read(::apache::thrift::protocol::TProtoco
             this->fileIds.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size864;
             ::apache::thrift::protocol::TType _etype867;
             xfer += iprot->readListBegin(_etype867, _size864);
@@ -29908,6 +32016,8 @@ uint32_t GetFileMetadataByExprRequest::read(::apache::thrift::protocol::TProtoco
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size846;
             ::apache::thrift::protocol::TType _etype849;
@@ -29920,6 +32030,8 @@ uint32_t GetFileMetadataByExprRequest::read(::apache::thrift::protocol::TProtoco
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size826;
             ::apache::thrift::protocol::TType _etype829;
@@ -29932,6 +32044,8 @@ uint32_t GetFileMetadataByExprRequest::read(::apache::thrift::protocol::TProtoco
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size845;
             ::apache::thrift::protocol::TType _etype848;
             xfer += iprot->readListBegin(_etype848, _size845);
@@ -29998,9 +32112,28 @@ uint32_t GetFileMetadataByExprRequest::read(::apache::thrift::protocol::TProtoco
               xfer += iprot->readI64(this->fileIds[_i787]);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size825;
+            ::apache::thrift::protocol::TType _etype828;
+            xfer += iprot->readListBegin(_etype828, _size825);
+            this->fileIds.resize(_size825);
+            uint32_t _i829;
+            for (_i829 = 0; _i829 < _size825; ++_i829)
+            {
+              xfer += iprot->readI64(this->fileIds[_i829]);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -30029,12 +32162,15 @@ uint32_t GetFileMetadataByExprRequest::read(::apache::thrift::protocol::TProtoco
         if (ftype == ::apache::thrift::protocol::T_I32) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast869;
           xfer += iprot->readI32(ecast869);
           this->type = (FileMetadataExprType::type)ecast869;
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast851;
           xfer += iprot->readI32(ecast851);
@@ -30042,6 +32178,8 @@ uint32_t GetFileMetadataByExprRequest::read(::apache::thrift::protocol::TProtoco
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast831;
           xfer += iprot->readI32(ecast831);
@@ -30058,6 +32196,8 @@ uint32_t GetFileMetadataByExprRequest::read(::apache::thrift::protocol::TProtoco
 =======
 =======
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           int32_t ecast850;
           xfer += iprot->readI32(ecast850);
           this->type = (FileMetadataExprType::type)ecast850;
@@ -30090,9 +32230,23 @@ uint32_t GetFileMetadataByExprRequest::read(::apache::thrift::protocol::TProtoco
           this->type = (FileMetadataExprType::type)ecast788;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+          int32_t ecast830;
+          xfer += iprot->readI32(ecast830);
+          this->type = (FileMetadataExprType::type)ecast830;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           this->__isset.type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -30124,6 +32278,7 @@ uint32_t GetFileMetadataByExprRequest::write(::apache::thrift::protocol::TProtoc
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->fileIds.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter870;
     for (_iter870 = this->fileIds.begin(); _iter870 != this->fileIds.end(); ++_iter870)
     {
@@ -30131,6 +32286,8 @@ uint32_t GetFileMetadataByExprRequest::write(::apache::thrift::protocol::TProtoc
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter852;
     for (_iter852 = this->fileIds.begin(); _iter852 != this->fileIds.end(); ++_iter852)
@@ -30139,6 +32296,8 @@ uint32_t GetFileMetadataByExprRequest::write(::apache::thrift::protocol::TProtoc
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter832;
     for (_iter832 = this->fileIds.begin(); _iter832 != this->fileIds.end(); ++_iter832)
@@ -30147,6 +32306,8 @@ uint32_t GetFileMetadataByExprRequest::write(::apache::thrift::protocol::TProtoc
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::vector<int64_t> ::const_iterator _iter851;
     for (_iter851 = this->fileIds.begin(); _iter851 != this->fileIds.end(); ++_iter851)
     {
@@ -30193,9 +32354,24 @@ uint32_t GetFileMetadataByExprRequest::write(::apache::thrift::protocol::TProtoc
       xfer += oprot->writeI64((*_iter789));
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+    std::vector<int64_t> ::const_iterator _iter831;
+    for (_iter831 = this->fileIds.begin(); _iter831 != this->fileIds.end(); ++_iter831)
+    {
+      xfer += oprot->writeI64((*_iter831));
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeListEnd();
   }
@@ -30231,6 +32407,7 @@ void swap(GetFileMetadataByExprRequest &a, GetFileMetadataByExprRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 GetFileMetadataByExprRequest::GetFileMetadataByExprRequest(const GetFileMetadataByExprRequest& other871) {
   fileIds = other871.fileIds;
   expr = other871.expr;
@@ -30247,6 +32424,8 @@ GetFileMetadataByExprRequest& GetFileMetadataByExprRequest::operator=(const GetF
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetFileMetadataByExprRequest::GetFileMetadataByExprRequest(const GetFileMetadataByExprRequest& other853) {
   fileIds = other853.fileIds;
@@ -30264,6 +32443,8 @@ GetFileMetadataByExprRequest& GetFileMetadataByExprRequest::operator=(const GetF
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetFileMetadataByExprRequest::GetFileMetadataByExprRequest(const GetFileMetadataByExprRequest& other833) {
   fileIds = other833.fileIds;
@@ -30281,6 +32462,8 @@ GetFileMetadataByExprRequest& GetFileMetadataByExprRequest::operator=(const GetF
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 GetFileMetadataByExprRequest::GetFileMetadataByExprRequest(const GetFileMetadataByExprRequest& other852) {
   fileIds = other852.fileIds;
   expr = other852.expr;
@@ -30369,9 +32552,33 @@ GetFileMetadataByExprRequest& GetFileMetadataByExprRequest::operator=(const GetF
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+GetFileMetadataByExprRequest::GetFileMetadataByExprRequest(const GetFileMetadataByExprRequest& other832) {
+  fileIds = other832.fileIds;
+  expr = other832.expr;
+  doGetFooters = other832.doGetFooters;
+  type = other832.type;
+  __isset = other832.__isset;
+}
+GetFileMetadataByExprRequest& GetFileMetadataByExprRequest::operator=(const GetFileMetadataByExprRequest& other833) {
+  fileIds = other833.fileIds;
+  expr = other833.expr;
+  doGetFooters = other833.doGetFooters;
+  type = other833.type;
+  __isset = other833.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void GetFileMetadataByExprRequest::printTo(std::ostream& out) const {
@@ -30426,6 +32633,7 @@ uint32_t GetFileMetadataResult::read(::apache::thrift::protocol::TProtocol* ipro
             this->metadata.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size873;
             ::apache::thrift::protocol::TType _ktype874;
             ::apache::thrift::protocol::TType _vtype875;
@@ -30440,6 +32648,8 @@ uint32_t GetFileMetadataResult::read(::apache::thrift::protocol::TProtocol* ipro
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size855;
             ::apache::thrift::protocol::TType _ktype856;
@@ -30455,6 +32665,8 @@ uint32_t GetFileMetadataResult::read(::apache::thrift::protocol::TProtocol* ipro
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size835;
             ::apache::thrift::protocol::TType _ktype836;
@@ -30470,6 +32682,8 @@ uint32_t GetFileMetadataResult::read(::apache::thrift::protocol::TProtocol* ipro
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size854;
             ::apache::thrift::protocol::TType _ktype855;
             ::apache::thrift::protocol::TType _vtype856;
@@ -30550,9 +32764,31 @@ uint32_t GetFileMetadataResult::read(::apache::thrift::protocol::TProtocol* ipro
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size834;
+            ::apache::thrift::protocol::TType _ktype835;
+            ::apache::thrift::protocol::TType _vtype836;
+            xfer += iprot->readMapBegin(_ktype835, _vtype836, _size834);
+            uint32_t _i838;
+            for (_i838 = 0; _i838 < _size834; ++_i838)
+            {
+              int64_t _key839;
+              xfer += iprot->readI64(_key839);
+              std::string& _val840 = this->metadata[_key839];
+              xfer += iprot->readBinary(_val840);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readMapEnd();
           }
@@ -30595,6 +32831,7 @@ uint32_t GetFileMetadataResult::write(::apache::thrift::protocol::TProtocol* opr
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_I64, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->metadata.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::map<int64_t, std::string> ::const_iterator _iter880;
     for (_iter880 = this->metadata.begin(); _iter880 != this->metadata.end(); ++_iter880)
     {
@@ -30603,6 +32840,8 @@ uint32_t GetFileMetadataResult::write(::apache::thrift::protocol::TProtocol* opr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::map<int64_t, std::string> ::const_iterator _iter862;
     for (_iter862 = this->metadata.begin(); _iter862 != this->metadata.end(); ++_iter862)
@@ -30612,6 +32851,8 @@ uint32_t GetFileMetadataResult::write(::apache::thrift::protocol::TProtocol* opr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::map<int64_t, std::string> ::const_iterator _iter842;
     for (_iter842 = this->metadata.begin(); _iter842 != this->metadata.end(); ++_iter842)
@@ -30621,6 +32862,8 @@ uint32_t GetFileMetadataResult::write(::apache::thrift::protocol::TProtocol* opr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::map<int64_t, std::string> ::const_iterator _iter861;
     for (_iter861 = this->metadata.begin(); _iter861 != this->metadata.end(); ++_iter861)
     {
@@ -30672,9 +32915,25 @@ uint32_t GetFileMetadataResult::write(::apache::thrift::protocol::TProtocol* opr
       xfer += oprot->writeBinary(_iter799->second);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+    std::map<int64_t, std::string> ::const_iterator _iter841;
+    for (_iter841 = this->metadata.begin(); _iter841 != this->metadata.end(); ++_iter841)
+    {
+      xfer += oprot->writeI64(_iter841->first);
+      xfer += oprot->writeBinary(_iter841->second);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeMapEnd();
   }
@@ -30697,6 +32956,7 @@ void swap(GetFileMetadataResult &a, GetFileMetadataResult &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 GetFileMetadataResult::GetFileMetadataResult(const GetFileMetadataResult& other881) {
   metadata = other881.metadata;
   isSupported = other881.isSupported;
@@ -30707,6 +32967,8 @@ GetFileMetadataResult& GetFileMetadataResult::operator=(const GetFileMetadataRes
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetFileMetadataResult::GetFileMetadataResult(const GetFileMetadataResult& other863) {
   metadata = other863.metadata;
@@ -30718,6 +32980,8 @@ GetFileMetadataResult& GetFileMetadataResult::operator=(const GetFileMetadataRes
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetFileMetadataResult::GetFileMetadataResult(const GetFileMetadataResult& other843) {
   metadata = other843.metadata;
@@ -30729,6 +32993,8 @@ GetFileMetadataResult& GetFileMetadataResult::operator=(const GetFileMetadataRes
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 GetFileMetadataResult::GetFileMetadataResult(const GetFileMetadataResult& other862) {
   metadata = other862.metadata;
   isSupported = other862.isSupported;
@@ -30790,9 +33056,27 @@ GetFileMetadataResult& GetFileMetadataResult::operator=(const GetFileMetadataRes
   isSupported = other801.isSupported;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+GetFileMetadataResult::GetFileMetadataResult(const GetFileMetadataResult& other842) {
+  metadata = other842.metadata;
+  isSupported = other842.isSupported;
+}
+GetFileMetadataResult& GetFileMetadataResult::operator=(const GetFileMetadataResult& other843) {
+  metadata = other843.metadata;
+  isSupported = other843.isSupported;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void GetFileMetadataResult::printTo(std::ostream& out) const {
@@ -30840,6 +33124,7 @@ uint32_t GetFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
             this->fileIds.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size883;
             ::apache::thrift::protocol::TType _etype886;
             xfer += iprot->readListBegin(_etype886, _size883);
@@ -30851,6 +33136,8 @@ uint32_t GetFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size865;
             ::apache::thrift::protocol::TType _etype868;
@@ -30863,6 +33150,8 @@ uint32_t GetFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size845;
             ::apache::thrift::protocol::TType _etype848;
@@ -30875,6 +33164,8 @@ uint32_t GetFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size864;
             ::apache::thrift::protocol::TType _etype867;
             xfer += iprot->readListBegin(_etype867, _size864);
@@ -30940,9 +33231,28 @@ uint32_t GetFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
               xfer += iprot->readI64(this->fileIds[_i806]);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size844;
+            ::apache::thrift::protocol::TType _etype847;
+            xfer += iprot->readListBegin(_etype847, _size844);
+            this->fileIds.resize(_size844);
+            uint32_t _i848;
+            for (_i848 = 0; _i848 < _size844; ++_i848)
+            {
+              xfer += iprot->readI64(this->fileIds[_i848]);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -30975,6 +33285,7 @@ uint32_t GetFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->fileIds.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter888;
     for (_iter888 = this->fileIds.begin(); _iter888 != this->fileIds.end(); ++_iter888)
     {
@@ -30982,6 +33293,8 @@ uint32_t GetFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter870;
     for (_iter870 = this->fileIds.begin(); _iter870 != this->fileIds.end(); ++_iter870)
@@ -30990,6 +33303,8 @@ uint32_t GetFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter850;
     for (_iter850 = this->fileIds.begin(); _iter850 != this->fileIds.end(); ++_iter850)
@@ -30998,6 +33313,8 @@ uint32_t GetFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::vector<int64_t> ::const_iterator _iter869;
     for (_iter869 = this->fileIds.begin(); _iter869 != this->fileIds.end(); ++_iter869)
     {
@@ -31045,9 +33362,24 @@ uint32_t GetFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
       xfer += oprot->writeI64((*_iter807));
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+    std::vector<int64_t> ::const_iterator _iter849;
+    for (_iter849 = this->fileIds.begin(); _iter849 != this->fileIds.end(); ++_iter849)
+    {
+      xfer += oprot->writeI64((*_iter849));
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeListEnd();
   }
@@ -31065,6 +33397,7 @@ void swap(GetFileMetadataRequest &a, GetFileMetadataRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 GetFileMetadataRequest::GetFileMetadataRequest(const GetFileMetadataRequest& other889) {
   fileIds = other889.fileIds;
 }
@@ -31073,6 +33406,8 @@ GetFileMetadataRequest& GetFileMetadataRequest::operator=(const GetFileMetadataR
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetFileMetadataRequest::GetFileMetadataRequest(const GetFileMetadataRequest& other871) {
   fileIds = other871.fileIds;
@@ -31082,6 +33417,8 @@ GetFileMetadataRequest& GetFileMetadataRequest::operator=(const GetFileMetadataR
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetFileMetadataRequest::GetFileMetadataRequest(const GetFileMetadataRequest& other851) {
   fileIds = other851.fileIds;
@@ -31091,6 +33428,8 @@ GetFileMetadataRequest& GetFileMetadataRequest::operator=(const GetFileMetadataR
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 GetFileMetadataRequest::GetFileMetadataRequest(const GetFileMetadataRequest& other870) {
   fileIds = other870.fileIds;
 }
@@ -31144,9 +33483,25 @@ GetFileMetadataRequest& GetFileMetadataRequest::operator=(const GetFileMetadataR
   fileIds = other809.fileIds;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+GetFileMetadataRequest::GetFileMetadataRequest(const GetFileMetadataRequest& other850) {
+  fileIds = other850.fileIds;
+}
+GetFileMetadataRequest& GetFileMetadataRequest::operator=(const GetFileMetadataRequest& other851) {
+  fileIds = other851.fileIds;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void GetFileMetadataRequest::printTo(std::ostream& out) const {
@@ -31207,6 +33562,7 @@ void swap(PutFileMetadataResult &a, PutFileMetadataResult &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 PutFileMetadataResult::PutFileMetadataResult(const PutFileMetadataResult& other891) {
   (void) other891;
 }
@@ -31215,6 +33571,8 @@ PutFileMetadataResult& PutFileMetadataResult::operator=(const PutFileMetadataRes
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 PutFileMetadataResult::PutFileMetadataResult(const PutFileMetadataResult& other873) {
   (void) other873;
@@ -31224,6 +33582,8 @@ PutFileMetadataResult& PutFileMetadataResult::operator=(const PutFileMetadataRes
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 PutFileMetadataResult::PutFileMetadataResult(const PutFileMetadataResult& other853) {
   (void) other853;
@@ -31233,6 +33593,8 @@ PutFileMetadataResult& PutFileMetadataResult::operator=(const PutFileMetadataRes
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 PutFileMetadataResult::PutFileMetadataResult(const PutFileMetadataResult& other872) {
   (void) other872;
 }
@@ -31286,9 +33648,25 @@ PutFileMetadataResult& PutFileMetadataResult::operator=(const PutFileMetadataRes
   (void) other811;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+PutFileMetadataResult::PutFileMetadataResult(const PutFileMetadataResult& other852) {
+  (void) other852;
+}
+PutFileMetadataResult& PutFileMetadataResult::operator=(const PutFileMetadataResult& other853) {
+  (void) other853;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void PutFileMetadataResult::printTo(std::ostream& out) const {
@@ -31344,6 +33722,7 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
             this->fileIds.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size893;
             ::apache::thrift::protocol::TType _etype896;
             xfer += iprot->readListBegin(_etype896, _size893);
@@ -31355,6 +33734,8 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size875;
             ::apache::thrift::protocol::TType _etype878;
@@ -31367,6 +33748,8 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size855;
             ::apache::thrift::protocol::TType _etype858;
@@ -31379,6 +33762,8 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size874;
             ::apache::thrift::protocol::TType _etype877;
             xfer += iprot->readListBegin(_etype877, _size874);
@@ -31447,9 +33832,28 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
               xfer += iprot->readI64(this->fileIds[_i816]);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size854;
+            ::apache::thrift::protocol::TType _etype857;
+            xfer += iprot->readListBegin(_etype857, _size854);
+            this->fileIds.resize(_size854);
+            uint32_t _i858;
+            for (_i858 = 0; _i858 < _size854; ++_i858)
+            {
+              xfer += iprot->readI64(this->fileIds[_i858]);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -31464,6 +33868,7 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
             this->metadata.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size898;
             ::apache::thrift::protocol::TType _etype901;
             xfer += iprot->readListBegin(_etype901, _size898);
@@ -31475,6 +33880,8 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size880;
             ::apache::thrift::protocol::TType _etype883;
@@ -31487,6 +33894,8 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size860;
             ::apache::thrift::protocol::TType _etype863;
@@ -31499,6 +33908,8 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size879;
             ::apache::thrift::protocol::TType _etype882;
             xfer += iprot->readListBegin(_etype882, _size879);
@@ -31565,9 +33976,28 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
               xfer += iprot->readBinary(this->metadata[_i821]);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size859;
+            ::apache::thrift::protocol::TType _etype862;
+            xfer += iprot->readListBegin(_etype862, _size859);
+            this->metadata.resize(_size859);
+            uint32_t _i863;
+            for (_i863 = 0; _i863 < _size859; ++_i863)
+            {
+              xfer += iprot->readBinary(this->metadata[_i863]);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -31580,12 +34010,15 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_I32) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast903;
           xfer += iprot->readI32(ecast903);
           this->type = (FileMetadataExprType::type)ecast903;
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast885;
           xfer += iprot->readI32(ecast885);
@@ -31593,6 +34026,8 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast865;
           xfer += iprot->readI32(ecast865);
@@ -31609,6 +34044,8 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
 =======
 =======
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           int32_t ecast884;
           xfer += iprot->readI32(ecast884);
           this->type = (FileMetadataExprType::type)ecast884;
@@ -31641,9 +34078,23 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
           this->type = (FileMetadataExprType::type)ecast822;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+          int32_t ecast864;
+          xfer += iprot->readI32(ecast864);
+          this->type = (FileMetadataExprType::type)ecast864;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           this->__isset.type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -31675,6 +34126,7 @@ uint32_t PutFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->fileIds.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter904;
     for (_iter904 = this->fileIds.begin(); _iter904 != this->fileIds.end(); ++_iter904)
     {
@@ -31682,6 +34134,8 @@ uint32_t PutFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter886;
     for (_iter886 = this->fileIds.begin(); _iter886 != this->fileIds.end(); ++_iter886)
@@ -31690,6 +34144,8 @@ uint32_t PutFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter866;
     for (_iter866 = this->fileIds.begin(); _iter866 != this->fileIds.end(); ++_iter866)
@@ -31698,6 +34154,8 @@ uint32_t PutFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::vector<int64_t> ::const_iterator _iter885;
     for (_iter885 = this->fileIds.begin(); _iter885 != this->fileIds.end(); ++_iter885)
     {
@@ -31744,9 +34202,24 @@ uint32_t PutFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
       xfer += oprot->writeI64((*_iter823));
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+    std::vector<int64_t> ::const_iterator _iter865;
+    for (_iter865 = this->fileIds.begin(); _iter865 != this->fileIds.end(); ++_iter865)
+    {
+      xfer += oprot->writeI64((*_iter865));
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeListEnd();
   }
@@ -31757,6 +34230,7 @@ uint32_t PutFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->metadata.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter905;
     for (_iter905 = this->metadata.begin(); _iter905 != this->metadata.end(); ++_iter905)
     {
@@ -31764,6 +34238,8 @@ uint32_t PutFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter887;
     for (_iter887 = this->metadata.begin(); _iter887 != this->metadata.end(); ++_iter887)
@@ -31772,6 +34248,8 @@ uint32_t PutFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter867;
     for (_iter867 = this->metadata.begin(); _iter867 != this->metadata.end(); ++_iter867)
@@ -31780,6 +34258,8 @@ uint32_t PutFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::vector<std::string> ::const_iterator _iter886;
     for (_iter886 = this->metadata.begin(); _iter886 != this->metadata.end(); ++_iter886)
     {
@@ -31826,9 +34306,24 @@ uint32_t PutFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
       xfer += oprot->writeBinary((*_iter824));
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+    std::vector<std::string> ::const_iterator _iter866;
+    for (_iter866 = this->metadata.begin(); _iter866 != this->metadata.end(); ++_iter866)
+    {
+      xfer += oprot->writeBinary((*_iter866));
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeListEnd();
   }
@@ -31854,6 +34349,7 @@ void swap(PutFileMetadataRequest &a, PutFileMetadataRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 PutFileMetadataRequest::PutFileMetadataRequest(const PutFileMetadataRequest& other906) {
   fileIds = other906.fileIds;
   metadata = other906.metadata;
@@ -31868,6 +34364,8 @@ PutFileMetadataRequest& PutFileMetadataRequest::operator=(const PutFileMetadataR
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 PutFileMetadataRequest::PutFileMetadataRequest(const PutFileMetadataRequest& other888) {
   fileIds = other888.fileIds;
@@ -31883,6 +34381,8 @@ PutFileMetadataRequest& PutFileMetadataRequest::operator=(const PutFileMetadataR
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 PutFileMetadataRequest::PutFileMetadataRequest(const PutFileMetadataRequest& other868) {
   fileIds = other868.fileIds;
@@ -31898,6 +34398,8 @@ PutFileMetadataRequest& PutFileMetadataRequest::operator=(const PutFileMetadataR
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 PutFileMetadataRequest::PutFileMetadataRequest(const PutFileMetadataRequest& other887) {
   fileIds = other887.fileIds;
   metadata = other887.metadata;
@@ -31983,9 +34485,31 @@ PutFileMetadataRequest& PutFileMetadataRequest::operator=(const PutFileMetadataR
   __isset = other826.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+PutFileMetadataRequest::PutFileMetadataRequest(const PutFileMetadataRequest& other867) {
+  fileIds = other867.fileIds;
+  metadata = other867.metadata;
+  type = other867.type;
+  __isset = other867.__isset;
+}
+PutFileMetadataRequest& PutFileMetadataRequest::operator=(const PutFileMetadataRequest& other868) {
+  fileIds = other868.fileIds;
+  metadata = other868.metadata;
+  type = other868.type;
+  __isset = other868.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void PutFileMetadataRequest::printTo(std::ostream& out) const {
@@ -32048,6 +34572,7 @@ void swap(ClearFileMetadataResult &a, ClearFileMetadataResult &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 ClearFileMetadataResult::ClearFileMetadataResult(const ClearFileMetadataResult& other908) {
   (void) other908;
 }
@@ -32056,6 +34581,8 @@ ClearFileMetadataResult& ClearFileMetadataResult::operator=(const ClearFileMetad
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 ClearFileMetadataResult::ClearFileMetadataResult(const ClearFileMetadataResult& other890) {
   (void) other890;
@@ -32065,6 +34592,8 @@ ClearFileMetadataResult& ClearFileMetadataResult::operator=(const ClearFileMetad
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 ClearFileMetadataResult::ClearFileMetadataResult(const ClearFileMetadataResult& other870) {
   (void) other870;
@@ -32074,6 +34603,8 @@ ClearFileMetadataResult& ClearFileMetadataResult::operator=(const ClearFileMetad
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 ClearFileMetadataResult::ClearFileMetadataResult(const ClearFileMetadataResult& other889) {
   (void) other889;
 }
@@ -32125,9 +34656,25 @@ ClearFileMetadataResult& ClearFileMetadataResult::operator=(const ClearFileMetad
   (void) other828;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+ClearFileMetadataResult::ClearFileMetadataResult(const ClearFileMetadataResult& other869) {
+  (void) other869;
+}
+ClearFileMetadataResult& ClearFileMetadataResult::operator=(const ClearFileMetadataResult& other870) {
+  (void) other870;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void ClearFileMetadataResult::printTo(std::ostream& out) const {
@@ -32173,6 +34720,7 @@ uint32_t ClearFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* i
             this->fileIds.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size910;
             ::apache::thrift::protocol::TType _etype913;
             xfer += iprot->readListBegin(_etype913, _size910);
@@ -32184,6 +34732,8 @@ uint32_t ClearFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* i
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size892;
             ::apache::thrift::protocol::TType _etype895;
@@ -32196,6 +34746,8 @@ uint32_t ClearFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* i
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size872;
             ::apache::thrift::protocol::TType _etype875;
@@ -32208,6 +34760,8 @@ uint32_t ClearFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* i
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size891;
             ::apache::thrift::protocol::TType _etype894;
             xfer += iprot->readListBegin(_etype894, _size891);
@@ -32274,9 +34828,28 @@ uint32_t ClearFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* i
               xfer += iprot->readI64(this->fileIds[_i833]);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size871;
+            ::apache::thrift::protocol::TType _etype874;
+            xfer += iprot->readListBegin(_etype874, _size871);
+            this->fileIds.resize(_size871);
+            uint32_t _i875;
+            for (_i875 = 0; _i875 < _size871; ++_i875)
+            {
+              xfer += iprot->readI64(this->fileIds[_i875]);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -32309,6 +34882,7 @@ uint32_t ClearFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* 
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->fileIds.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter915;
     for (_iter915 = this->fileIds.begin(); _iter915 != this->fileIds.end(); ++_iter915)
     {
@@ -32316,6 +34890,8 @@ uint32_t ClearFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter897;
     for (_iter897 = this->fileIds.begin(); _iter897 != this->fileIds.end(); ++_iter897)
@@ -32324,6 +34900,8 @@ uint32_t ClearFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter877;
     for (_iter877 = this->fileIds.begin(); _iter877 != this->fileIds.end(); ++_iter877)
@@ -32332,6 +34910,8 @@ uint32_t ClearFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::vector<int64_t> ::const_iterator _iter896;
     for (_iter896 = this->fileIds.begin(); _iter896 != this->fileIds.end(); ++_iter896)
     {
@@ -32378,9 +34958,24 @@ uint32_t ClearFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* 
       xfer += oprot->writeI64((*_iter834));
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+    std::vector<int64_t> ::const_iterator _iter876;
+    for (_iter876 = this->fileIds.begin(); _iter876 != this->fileIds.end(); ++_iter876)
+    {
+      xfer += oprot->writeI64((*_iter876));
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeListEnd();
   }
@@ -32398,6 +34993,7 @@ void swap(ClearFileMetadataRequest &a, ClearFileMetadataRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 ClearFileMetadataRequest::ClearFileMetadataRequest(const ClearFileMetadataRequest& other916) {
   fileIds = other916.fileIds;
 }
@@ -32406,6 +35002,8 @@ ClearFileMetadataRequest& ClearFileMetadataRequest::operator=(const ClearFileMet
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 ClearFileMetadataRequest::ClearFileMetadataRequest(const ClearFileMetadataRequest& other898) {
   fileIds = other898.fileIds;
@@ -32415,6 +35013,8 @@ ClearFileMetadataRequest& ClearFileMetadataRequest::operator=(const ClearFileMet
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 ClearFileMetadataRequest::ClearFileMetadataRequest(const ClearFileMetadataRequest& other878) {
   fileIds = other878.fileIds;
@@ -32424,6 +35024,8 @@ ClearFileMetadataRequest& ClearFileMetadataRequest::operator=(const ClearFileMet
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 ClearFileMetadataRequest::ClearFileMetadataRequest(const ClearFileMetadataRequest& other897) {
   fileIds = other897.fileIds;
 }
@@ -32477,9 +35079,25 @@ ClearFileMetadataRequest& ClearFileMetadataRequest::operator=(const ClearFileMet
   fileIds = other836.fileIds;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+ClearFileMetadataRequest::ClearFileMetadataRequest(const ClearFileMetadataRequest& other877) {
+  fileIds = other877.fileIds;
+}
+ClearFileMetadataRequest& ClearFileMetadataRequest::operator=(const ClearFileMetadataRequest& other878) {
+  fileIds = other878.fileIds;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void ClearFileMetadataRequest::printTo(std::ostream& out) const {
@@ -32563,6 +35181,7 @@ void swap(CacheFileMetadataResult &a, CacheFileMetadataResult &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 CacheFileMetadataResult::CacheFileMetadataResult(const CacheFileMetadataResult& other918) {
   isSupported = other918.isSupported;
 }
@@ -32571,6 +35190,8 @@ CacheFileMetadataResult& CacheFileMetadataResult::operator=(const CacheFileMetad
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 CacheFileMetadataResult::CacheFileMetadataResult(const CacheFileMetadataResult& other900) {
   isSupported = other900.isSupported;
@@ -32580,6 +35201,8 @@ CacheFileMetadataResult& CacheFileMetadataResult::operator=(const CacheFileMetad
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 CacheFileMetadataResult::CacheFileMetadataResult(const CacheFileMetadataResult& other880) {
   isSupported = other880.isSupported;
@@ -32589,6 +35212,8 @@ CacheFileMetadataResult& CacheFileMetadataResult::operator=(const CacheFileMetad
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 CacheFileMetadataResult::CacheFileMetadataResult(const CacheFileMetadataResult& other899) {
   isSupported = other899.isSupported;
 }
@@ -32640,9 +35265,25 @@ CacheFileMetadataResult& CacheFileMetadataResult::operator=(const CacheFileMetad
   isSupported = other838.isSupported;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+CacheFileMetadataResult::CacheFileMetadataResult(const CacheFileMetadataResult& other879) {
+  isSupported = other879.isSupported;
+}
+CacheFileMetadataResult& CacheFileMetadataResult::operator=(const CacheFileMetadataResult& other880) {
+  isSupported = other880.isSupported;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void CacheFileMetadataResult::printTo(std::ostream& out) const {
@@ -32785,6 +35426,7 @@ void swap(CacheFileMetadataRequest &a, CacheFileMetadataRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 CacheFileMetadataRequest::CacheFileMetadataRequest(const CacheFileMetadataRequest& other920) {
   dbName = other920.dbName;
   tblName = other920.tblName;
@@ -32801,6 +35443,8 @@ CacheFileMetadataRequest& CacheFileMetadataRequest::operator=(const CacheFileMet
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 CacheFileMetadataRequest::CacheFileMetadataRequest(const CacheFileMetadataRequest& other902) {
   dbName = other902.dbName;
@@ -32818,6 +35462,8 @@ CacheFileMetadataRequest& CacheFileMetadataRequest::operator=(const CacheFileMet
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 CacheFileMetadataRequest::CacheFileMetadataRequest(const CacheFileMetadataRequest& other882) {
   dbName = other882.dbName;
@@ -32835,6 +35481,8 @@ CacheFileMetadataRequest& CacheFileMetadataRequest::operator=(const CacheFileMet
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 CacheFileMetadataRequest::CacheFileMetadataRequest(const CacheFileMetadataRequest& other901) {
   dbName = other901.dbName;
   tblName = other901.tblName;
@@ -32923,9 +35571,33 @@ CacheFileMetadataRequest& CacheFileMetadataRequest::operator=(const CacheFileMet
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+CacheFileMetadataRequest::CacheFileMetadataRequest(const CacheFileMetadataRequest& other881) {
+  dbName = other881.dbName;
+  tblName = other881.tblName;
+  partName = other881.partName;
+  isAllParts = other881.isAllParts;
+  __isset = other881.__isset;
+}
+CacheFileMetadataRequest& CacheFileMetadataRequest::operator=(const CacheFileMetadataRequest& other882) {
+  dbName = other882.dbName;
+  tblName = other882.tblName;
+  partName = other882.partName;
+  isAllParts = other882.isAllParts;
+  __isset = other882.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void CacheFileMetadataRequest::printTo(std::ostream& out) const {
@@ -32975,6 +35647,7 @@ uint32_t GetAllFunctionsResponse::read(::apache::thrift::protocol::TProtocol* ip
             this->functions.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size922;
             ::apache::thrift::protocol::TType _etype925;
             xfer += iprot->readListBegin(_etype925, _size922);
@@ -32986,6 +35659,8 @@ uint32_t GetAllFunctionsResponse::read(::apache::thrift::protocol::TProtocol* ip
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size904;
             ::apache::thrift::protocol::TType _etype907;
@@ -32998,6 +35673,8 @@ uint32_t GetAllFunctionsResponse::read(::apache::thrift::protocol::TProtocol* ip
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size884;
             ::apache::thrift::protocol::TType _etype887;
@@ -33010,6 +35687,8 @@ uint32_t GetAllFunctionsResponse::read(::apache::thrift::protocol::TProtocol* ip
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size903;
             ::apache::thrift::protocol::TType _etype906;
             xfer += iprot->readListBegin(_etype906, _size903);
@@ -33076,9 +35755,28 @@ uint32_t GetAllFunctionsResponse::read(::apache::thrift::protocol::TProtocol* ip
               xfer += this->functions[_i845].read(iprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size883;
+            ::apache::thrift::protocol::TType _etype886;
+            xfer += iprot->readListBegin(_etype886, _size883);
+            this->functions.resize(_size883);
+            uint32_t _i887;
+            for (_i887 = 0; _i887 < _size883; ++_i887)
+            {
+              xfer += this->functions[_i887].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -33110,6 +35808,7 @@ uint32_t GetAllFunctionsResponse::write(::apache::thrift::protocol::TProtocol* o
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->functions.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       std::vector<Function> ::const_iterator _iter927;
       for (_iter927 = this->functions.begin(); _iter927 != this->functions.end(); ++_iter927)
       {
@@ -33117,6 +35816,8 @@ uint32_t GetAllFunctionsResponse::write(::apache::thrift::protocol::TProtocol* o
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<Function> ::const_iterator _iter909;
       for (_iter909 = this->functions.begin(); _iter909 != this->functions.end(); ++_iter909)
@@ -33125,6 +35826,8 @@ uint32_t GetAllFunctionsResponse::write(::apache::thrift::protocol::TProtocol* o
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<Function> ::const_iterator _iter889;
       for (_iter889 = this->functions.begin(); _iter889 != this->functions.end(); ++_iter889)
@@ -33133,6 +35836,8 @@ uint32_t GetAllFunctionsResponse::write(::apache::thrift::protocol::TProtocol* o
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       std::vector<Function> ::const_iterator _iter908;
       for (_iter908 = this->functions.begin(); _iter908 != this->functions.end(); ++_iter908)
       {
@@ -33179,9 +35884,24 @@ uint32_t GetAllFunctionsResponse::write(::apache::thrift::protocol::TProtocol* o
         xfer += (*_iter846).write(oprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+      std::vector<Function> ::const_iterator _iter888;
+      for (_iter888 = this->functions.begin(); _iter888 != this->functions.end(); ++_iter888)
+      {
+        xfer += (*_iter888).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       }
       xfer += oprot->writeListEnd();
     }
@@ -33200,6 +35920,7 @@ void swap(GetAllFunctionsResponse &a, GetAllFunctionsResponse &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 GetAllFunctionsResponse::GetAllFunctionsResponse(const GetAllFunctionsResponse& other928) {
   functions = other928.functions;
   __isset = other928.__isset;
@@ -33210,6 +35931,8 @@ GetAllFunctionsResponse& GetAllFunctionsResponse::operator=(const GetAllFunction
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetAllFunctionsResponse::GetAllFunctionsResponse(const GetAllFunctionsResponse& other910) {
   functions = other910.functions;
@@ -33221,6 +35944,8 @@ GetAllFunctionsResponse& GetAllFunctionsResponse::operator=(const GetAllFunction
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetAllFunctionsResponse::GetAllFunctionsResponse(const GetAllFunctionsResponse& other890) {
   functions = other890.functions;
@@ -33232,6 +35957,8 @@ GetAllFunctionsResponse& GetAllFunctionsResponse::operator=(const GetAllFunction
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 GetAllFunctionsResponse::GetAllFunctionsResponse(const GetAllFunctionsResponse& other909) {
   functions = other909.functions;
   __isset = other909.__isset;
@@ -33297,9 +36024,27 @@ GetAllFunctionsResponse& GetAllFunctionsResponse::operator=(const GetAllFunction
   __isset = other848.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+GetAllFunctionsResponse::GetAllFunctionsResponse(const GetAllFunctionsResponse& other889) {
+  functions = other889.functions;
+  __isset = other889.__isset;
+}
+GetAllFunctionsResponse& GetAllFunctionsResponse::operator=(const GetAllFunctionsResponse& other890) {
+  functions = other890.functions;
+  __isset = other890.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void GetAllFunctionsResponse::printTo(std::ostream& out) const {
@@ -33346,6 +36091,7 @@ uint32_t ClientCapabilities::read(::apache::thrift::protocol::TProtocol* iprot) 
             this->values.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size930;
             ::apache::thrift::protocol::TType _etype933;
             xfer += iprot->readListBegin(_etype933, _size930);
@@ -33359,6 +36105,8 @@ uint32_t ClientCapabilities::read(::apache::thrift::protocol::TProtocol* iprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size912;
             ::apache::thrift::protocol::TType _etype915;
@@ -33373,6 +36121,8 @@ uint32_t ClientCapabilities::read(::apache::thrift::protocol::TProtocol* iprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size892;
             ::apache::thrift::protocol::TType _etype895;
@@ -33387,6 +36137,8 @@ uint32_t ClientCapabilities::read(::apache::thrift::protocol::TProtocol* iprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size911;
             ::apache::thrift::protocol::TType _etype914;
             xfer += iprot->readListBegin(_etype914, _size911);
@@ -33463,9 +36215,30 @@ uint32_t ClientCapabilities::read(::apache::thrift::protocol::TProtocol* iprot) 
               this->values[_i853] = (ClientCapability::type)ecast854;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size891;
+            ::apache::thrift::protocol::TType _etype894;
+            xfer += iprot->readListBegin(_etype894, _size891);
+            this->values.resize(_size891);
+            uint32_t _i895;
+            for (_i895 = 0; _i895 < _size891; ++_i895)
+            {
+              int32_t ecast896;
+              xfer += iprot->readI32(ecast896);
+              this->values[_i895] = (ClientCapability::type)ecast896;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -33498,6 +36271,7 @@ uint32_t ClientCapabilities::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I32, static_cast<uint32_t>(this->values.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<ClientCapability::type> ::const_iterator _iter936;
     for (_iter936 = this->values.begin(); _iter936 != this->values.end(); ++_iter936)
     {
@@ -33505,6 +36279,8 @@ uint32_t ClientCapabilities::write(::apache::thrift::protocol::TProtocol* oprot)
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<ClientCapability::type> ::const_iterator _iter918;
     for (_iter918 = this->values.begin(); _iter918 != this->values.end(); ++_iter918)
@@ -33513,6 +36289,8 @@ uint32_t ClientCapabilities::write(::apache::thrift::protocol::TProtocol* oprot)
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<ClientCapability::type> ::const_iterator _iter898;
     for (_iter898 = this->values.begin(); _iter898 != this->values.end(); ++_iter898)
@@ -33521,6 +36299,8 @@ uint32_t ClientCapabilities::write(::apache::thrift::protocol::TProtocol* oprot)
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::vector<ClientCapability::type> ::const_iterator _iter917;
     for (_iter917 = this->values.begin(); _iter917 != this->values.end(); ++_iter917)
     {
@@ -33567,9 +36347,24 @@ uint32_t ClientCapabilities::write(::apache::thrift::protocol::TProtocol* oprot)
       xfer += oprot->writeI32((int32_t)(*_iter855));
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+    std::vector<ClientCapability::type> ::const_iterator _iter897;
+    for (_iter897 = this->values.begin(); _iter897 != this->values.end(); ++_iter897)
+    {
+      xfer += oprot->writeI32((int32_t)(*_iter897));
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeListEnd();
   }
@@ -33587,6 +36382,7 @@ void swap(ClientCapabilities &a, ClientCapabilities &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 ClientCapabilities::ClientCapabilities(const ClientCapabilities& other937) {
   values = other937.values;
 }
@@ -33595,6 +36391,8 @@ ClientCapabilities& ClientCapabilities::operator=(const ClientCapabilities& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 ClientCapabilities::ClientCapabilities(const ClientCapabilities& other919) {
   values = other919.values;
@@ -33604,6 +36402,8 @@ ClientCapabilities& ClientCapabilities::operator=(const ClientCapabilities& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 ClientCapabilities::ClientCapabilities(const ClientCapabilities& other899) {
   values = other899.values;
@@ -33613,6 +36413,8 @@ ClientCapabilities& ClientCapabilities::operator=(const ClientCapabilities& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 ClientCapabilities::ClientCapabilities(const ClientCapabilities& other918) {
   values = other918.values;
 }
@@ -33664,9 +36466,25 @@ ClientCapabilities& ClientCapabilities::operator=(const ClientCapabilities& othe
   values = other857.values;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+ClientCapabilities::ClientCapabilities(const ClientCapabilities& other898) {
+  values = other898.values;
+}
+ClientCapabilities& ClientCapabilities::operator=(const ClientCapabilities& other899) {
+  values = other899.values;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void ClientCapabilities::printTo(std::ostream& out) const {
@@ -33809,6 +36627,7 @@ void swap(GetTableRequest &a, GetTableRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 GetTableRequest::GetTableRequest(const GetTableRequest& other939) {
   dbName = other939.dbName;
   tblName = other939.tblName;
@@ -33825,6 +36644,8 @@ GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other940) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetTableRequest::GetTableRequest(const GetTableRequest& other921) {
   dbName = other921.dbName;
@@ -33840,6 +36661,8 @@ GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other922) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetTableRequest::GetTableRequest(const GetTableRequest& other901) {
   dbName = other901.dbName;
@@ -33855,6 +36678,8 @@ GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other902) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 GetTableRequest::GetTableRequest(const GetTableRequest& other920) {
   dbName = other920.dbName;
   tblName = other920.tblName;
@@ -33942,9 +36767,31 @@ GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other859) {
   __isset = other859.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+GetTableRequest::GetTableRequest(const GetTableRequest& other900) {
+  dbName = other900.dbName;
+  tblName = other900.tblName;
+  capabilities = other900.capabilities;
+  __isset = other900.__isset;
+}
+GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other901) {
+  dbName = other901.dbName;
+  tblName = other901.tblName;
+  capabilities = other901.capabilities;
+  __isset = other901.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void GetTableRequest::printTo(std::ostream& out) const {
@@ -34031,6 +36878,7 @@ void swap(GetTableResult &a, GetTableResult &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 GetTableResult::GetTableResult(const GetTableResult& other941) {
   table = other941.table;
 }
@@ -34039,6 +36887,8 @@ GetTableResult& GetTableResult::operator=(const GetTableResult& other942) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetTableResult::GetTableResult(const GetTableResult& other923) {
   table = other923.table;
@@ -34048,6 +36898,8 @@ GetTableResult& GetTableResult::operator=(const GetTableResult& other924) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetTableResult::GetTableResult(const GetTableResult& other903) {
   table = other903.table;
@@ -34057,6 +36909,8 @@ GetTableResult& GetTableResult::operator=(const GetTableResult& other904) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 GetTableResult::GetTableResult(const GetTableResult& other922) {
   table = other922.table;
 }
@@ -34110,9 +36964,25 @@ GetTableResult& GetTableResult::operator=(const GetTableResult& other861) {
   table = other861.table;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+GetTableResult::GetTableResult(const GetTableResult& other902) {
+  table = other902.table;
+}
+GetTableResult& GetTableResult::operator=(const GetTableResult& other903) {
+  table = other903.table;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void GetTableResult::printTo(std::ostream& out) const {
@@ -34182,6 +37052,7 @@ uint32_t GetTablesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
             this->tblNames.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size943;
             ::apache::thrift::protocol::TType _etype946;
             xfer += iprot->readListBegin(_etype946, _size943);
@@ -34193,6 +37064,8 @@ uint32_t GetTablesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size925;
             ::apache::thrift::protocol::TType _etype928;
@@ -34205,6 +37078,8 @@ uint32_t GetTablesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size905;
             ::apache::thrift::protocol::TType _etype908;
@@ -34217,6 +37092,8 @@ uint32_t GetTablesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size924;
             ::apache::thrift::protocol::TType _etype927;
             xfer += iprot->readListBegin(_etype927, _size924);
@@ -34282,9 +37159,28 @@ uint32_t GetTablesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
               xfer += iprot->readString(this->tblNames[_i866]);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size904;
+            ::apache::thrift::protocol::TType _etype907;
+            xfer += iprot->readListBegin(_etype907, _size904);
+            this->tblNames.resize(_size904);
+            uint32_t _i908;
+            for (_i908 = 0; _i908 < _size904; ++_i908)
+            {
+              xfer += iprot->readString(this->tblNames[_i908]);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -34338,6 +37234,7 @@ uint32_t GetTablesRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->tblNames.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter948;
       for (_iter948 = this->tblNames.begin(); _iter948 != this->tblNames.end(); ++_iter948)
       {
@@ -34345,6 +37242,8 @@ uint32_t GetTablesRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter930;
       for (_iter930 = this->tblNames.begin(); _iter930 != this->tblNames.end(); ++_iter930)
@@ -34353,6 +37252,8 @@ uint32_t GetTablesRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter910;
       for (_iter910 = this->tblNames.begin(); _iter910 != this->tblNames.end(); ++_iter910)
@@ -34361,6 +37262,8 @@ uint32_t GetTablesRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       std::vector<std::string> ::const_iterator _iter929;
       for (_iter929 = this->tblNames.begin(); _iter929 != this->tblNames.end(); ++_iter929)
       {
@@ -34408,9 +37311,24 @@ uint32_t GetTablesRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
         xfer += oprot->writeString((*_iter867));
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+      std::vector<std::string> ::const_iterator _iter909;
+      for (_iter909 = this->tblNames.begin(); _iter909 != this->tblNames.end(); ++_iter909)
+      {
+        xfer += oprot->writeString((*_iter909));
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       }
       xfer += oprot->writeListEnd();
     }
@@ -34442,6 +37360,7 @@ void swap(GetTablesRequest &a, GetTablesRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 GetTablesRequest::GetTablesRequest(const GetTablesRequest& other949) {
   dbName = other949.dbName;
   tblNames = other949.tblNames;
@@ -34458,6 +37377,8 @@ GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other950) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetTablesRequest::GetTablesRequest(const GetTablesRequest& other931) {
   dbName = other931.dbName;
@@ -34473,6 +37394,8 @@ GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other932) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetTablesRequest::GetTablesRequest(const GetTablesRequest& other911) {
   dbName = other911.dbName;
@@ -34488,6 +37411,8 @@ GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other912) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 GetTablesRequest::GetTablesRequest(const GetTablesRequest& other930) {
   dbName = other930.dbName;
   tblNames = other930.tblNames;
@@ -34567,9 +37492,31 @@ GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other869) 
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+GetTablesRequest::GetTablesRequest(const GetTablesRequest& other910) {
+  dbName = other910.dbName;
+  tblNames = other910.tblNames;
+  capabilities = other910.capabilities;
+  __isset = other910.__isset;
+}
+GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other911) {
+  dbName = other911.dbName;
+  tblNames = other911.tblNames;
+  capabilities = other911.capabilities;
+  __isset = other911.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void GetTablesRequest::printTo(std::ostream& out) const {
@@ -34619,6 +37566,7 @@ uint32_t GetTablesResult::read(::apache::thrift::protocol::TProtocol* iprot) {
             this->tables.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size951;
             ::apache::thrift::protocol::TType _etype954;
             xfer += iprot->readListBegin(_etype954, _size951);
@@ -34630,6 +37578,8 @@ uint32_t GetTablesResult::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size933;
             ::apache::thrift::protocol::TType _etype936;
@@ -34642,6 +37592,8 @@ uint32_t GetTablesResult::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size913;
             ::apache::thrift::protocol::TType _etype916;
@@ -34654,6 +37606,8 @@ uint32_t GetTablesResult::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size932;
             ::apache::thrift::protocol::TType _etype935;
             xfer += iprot->readListBegin(_etype935, _size932);
@@ -34720,9 +37674,28 @@ uint32_t GetTablesResult::read(::apache::thrift::protocol::TProtocol* iprot) {
               xfer += this->tables[_i874].read(iprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size912;
+            ::apache::thrift::protocol::TType _etype915;
+            xfer += iprot->readListBegin(_etype915, _size912);
+            this->tables.resize(_size912);
+            uint32_t _i916;
+            for (_i916 = 0; _i916 < _size912; ++_i916)
+            {
+              xfer += this->tables[_i916].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -34755,6 +37728,7 @@ uint32_t GetTablesResult::write(::apache::thrift::protocol::TProtocol* oprot) co
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->tables.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<Table> ::const_iterator _iter956;
     for (_iter956 = this->tables.begin(); _iter956 != this->tables.end(); ++_iter956)
     {
@@ -34762,6 +37736,8 @@ uint32_t GetTablesResult::write(::apache::thrift::protocol::TProtocol* oprot) co
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<Table> ::const_iterator _iter938;
     for (_iter938 = this->tables.begin(); _iter938 != this->tables.end(); ++_iter938)
@@ -34770,6 +37746,8 @@ uint32_t GetTablesResult::write(::apache::thrift::protocol::TProtocol* oprot) co
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<Table> ::const_iterator _iter918;
     for (_iter918 = this->tables.begin(); _iter918 != this->tables.end(); ++_iter918)
@@ -34778,6 +37756,8 @@ uint32_t GetTablesResult::write(::apache::thrift::protocol::TProtocol* oprot) co
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::vector<Table> ::const_iterator _iter937;
     for (_iter937 = this->tables.begin(); _iter937 != this->tables.end(); ++_iter937)
     {
@@ -34824,9 +37804,24 @@ uint32_t GetTablesResult::write(::apache::thrift::protocol::TProtocol* oprot) co
       xfer += (*_iter875).write(oprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+    std::vector<Table> ::const_iterator _iter917;
+    for (_iter917 = this->tables.begin(); _iter917 != this->tables.end(); ++_iter917)
+    {
+      xfer += (*_iter917).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeListEnd();
   }
@@ -34844,6 +37839,7 @@ void swap(GetTablesResult &a, GetTablesResult &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 GetTablesResult::GetTablesResult(const GetTablesResult& other957) {
   tables = other957.tables;
 }
@@ -34852,6 +37848,8 @@ GetTablesResult& GetTablesResult::operator=(const GetTablesResult& other958) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetTablesResult::GetTablesResult(const GetTablesResult& other939) {
   tables = other939.tables;
@@ -34861,6 +37859,8 @@ GetTablesResult& GetTablesResult::operator=(const GetTablesResult& other940) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 GetTablesResult::GetTablesResult(const GetTablesResult& other919) {
   tables = other919.tables;
@@ -34870,6 +37870,8 @@ GetTablesResult& GetTablesResult::operator=(const GetTablesResult& other920) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 GetTablesResult::GetTablesResult(const GetTablesResult& other938) {
   tables = other938.tables;
 }
@@ -34921,9 +37923,25 @@ GetTablesResult& GetTablesResult::operator=(const GetTablesResult& other877) {
   tables = other877.tables;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+GetTablesResult::GetTablesResult(const GetTablesResult& other918) {
+  tables = other918.tables;
+}
+GetTablesResult& GetTablesResult::operator=(const GetTablesResult& other919) {
+  tables = other919.tables;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void GetTablesResult::printTo(std::ostream& out) const {
@@ -35027,6 +38045,7 @@ void swap(CmRecycleRequest &a, CmRecycleRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 CmRecycleRequest::CmRecycleRequest(const CmRecycleRequest& other959) {
   dataPath = other959.dataPath;
   purge = other959.purge;
@@ -35037,6 +38056,8 @@ CmRecycleRequest& CmRecycleRequest::operator=(const CmRecycleRequest& other960) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 CmRecycleRequest::CmRecycleRequest(const CmRecycleRequest& other941) {
   dataPath = other941.dataPath;
@@ -35048,6 +38069,8 @@ CmRecycleRequest& CmRecycleRequest::operator=(const CmRecycleRequest& other942) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 CmRecycleRequest::CmRecycleRequest(const CmRecycleRequest& other921) {
   dataPath = other921.dataPath;
@@ -35059,6 +38082,8 @@ CmRecycleRequest& CmRecycleRequest::operator=(const CmRecycleRequest& other922) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 CmRecycleRequest::CmRecycleRequest(const CmRecycleRequest& other940) {
   dataPath = other940.dataPath;
   purge = other940.purge;
@@ -35120,9 +38145,27 @@ CmRecycleRequest& CmRecycleRequest::operator=(const CmRecycleRequest& other879) 
   purge = other879.purge;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+CmRecycleRequest::CmRecycleRequest(const CmRecycleRequest& other920) {
+  dataPath = other920.dataPath;
+  purge = other920.purge;
+}
+CmRecycleRequest& CmRecycleRequest::operator=(const CmRecycleRequest& other921) {
+  dataPath = other921.dataPath;
+  purge = other921.purge;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void CmRecycleRequest::printTo(std::ostream& out) const {
@@ -35198,6 +38241,7 @@ CmRecycleResponse& CmRecycleResponse::operator=(const CmRecycleResponse& other94
 =======
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 CmRecycleResponse::CmRecycleResponse(const CmRecycleResponse& other923) {
   (void) other923;
 }
@@ -35206,6 +38250,8 @@ CmRecycleResponse& CmRecycleResponse::operator=(const CmRecycleResponse& other92
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 CmRecycleResponse::CmRecycleResponse(const CmRecycleResponse& other942) {
   (void) other942;
 }
@@ -35259,9 +38305,25 @@ CmRecycleResponse& CmRecycleResponse::operator=(const CmRecycleResponse& other88
   (void) other881;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+CmRecycleResponse::CmRecycleResponse(const CmRecycleResponse& other922) {
+  (void) other922;
+}
+CmRecycleResponse& CmRecycleResponse::operator=(const CmRecycleResponse& other923) {
+  (void) other923;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void CmRecycleResponse::printTo(std::ostream& out) const {
@@ -35423,6 +38485,7 @@ void swap(TableMeta &a, TableMeta &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 TableMeta::TableMeta(const TableMeta& other963) {
   dbName = other963.dbName;
   tableName = other963.tableName;
@@ -35441,6 +38504,8 @@ TableMeta& TableMeta::operator=(const TableMeta& other964) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 TableMeta::TableMeta(const TableMeta& other945) {
   dbName = other945.dbName;
@@ -35458,6 +38523,8 @@ TableMeta& TableMeta::operator=(const TableMeta& other946) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 TableMeta::TableMeta(const TableMeta& other925) {
   dbName = other925.dbName;
@@ -35475,6 +38542,8 @@ TableMeta& TableMeta::operator=(const TableMeta& other926) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 TableMeta::TableMeta(const TableMeta& other944) {
   dbName = other944.dbName;
   tableName = other944.tableName;
@@ -35571,9 +38640,33 @@ TableMeta& TableMeta::operator=(const TableMeta& other883) {
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+TableMeta::TableMeta(const TableMeta& other924) {
+  dbName = other924.dbName;
+  tableName = other924.tableName;
+  tableType = other924.tableType;
+  comments = other924.comments;
+  __isset = other924.__isset;
+}
+TableMeta& TableMeta::operator=(const TableMeta& other925) {
+  dbName = other925.dbName;
+  tableName = other925.tableName;
+  tableType = other925.tableType;
+  comments = other925.comments;
+  __isset = other925.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void TableMeta::printTo(std::ostream& out) const {
@@ -35634,6 +38727,7 @@ uint32_t Materialization::read(::apache::thrift::protocol::TProtocol* iprot) {
             this->tablesUsed.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size965;
             ::apache::thrift::protocol::TType _etype968;
             xfer += iprot->readSetBegin(_etype968, _size965);
@@ -35646,6 +38740,8 @@ uint32_t Materialization::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size947;
             ::apache::thrift::protocol::TType _etype950;
@@ -35659,6 +38755,8 @@ uint32_t Materialization::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size927;
             ::apache::thrift::protocol::TType _etype930;
@@ -35672,6 +38770,8 @@ uint32_t Materialization::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size946;
             ::apache::thrift::protocol::TType _etype949;
             xfer += iprot->readSetBegin(_etype949, _size946);
@@ -35743,9 +38843,29 @@ uint32_t Materialization::read(::apache::thrift::protocol::TProtocol* iprot) {
               this->tablesUsed.insert(_elem889);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size926;
+            ::apache::thrift::protocol::TType _etype929;
+            xfer += iprot->readSetBegin(_etype929, _size926);
+            uint32_t _i930;
+            for (_i930 = 0; _i930 < _size926; ++_i930)
+            {
+              std::string _elem931;
+              xfer += iprot->readString(_elem931);
+              this->tablesUsed.insert(_elem931);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readSetEnd();
           }
@@ -35796,6 +38916,7 @@ uint32_t Materialization::write(::apache::thrift::protocol::TProtocol* oprot) co
     xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->tablesUsed.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::set<std::string> ::const_iterator _iter971;
     for (_iter971 = this->tablesUsed.begin(); _iter971 != this->tablesUsed.end(); ++_iter971)
     {
@@ -35803,6 +38924,8 @@ uint32_t Materialization::write(::apache::thrift::protocol::TProtocol* oprot) co
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::set<std::string> ::const_iterator _iter953;
     for (_iter953 = this->tablesUsed.begin(); _iter953 != this->tablesUsed.end(); ++_iter953)
@@ -35811,6 +38934,8 @@ uint32_t Materialization::write(::apache::thrift::protocol::TProtocol* oprot) co
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::set<std::string> ::const_iterator _iter933;
     for (_iter933 = this->tablesUsed.begin(); _iter933 != this->tablesUsed.end(); ++_iter933)
@@ -35819,6 +38944,8 @@ uint32_t Materialization::write(::apache::thrift::protocol::TProtocol* oprot) co
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::set<std::string> ::const_iterator _iter952;
     for (_iter952 = this->tablesUsed.begin(); _iter952 != this->tablesUsed.end(); ++_iter952)
     {
@@ -35866,9 +38993,24 @@ uint32_t Materialization::write(::apache::thrift::protocol::TProtocol* oprot) co
       xfer += oprot->writeString((*_iter890));
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+    std::set<std::string> ::const_iterator _iter932;
+    for (_iter932 = this->tablesUsed.begin(); _iter932 != this->tablesUsed.end(); ++_iter932)
+    {
+      xfer += oprot->writeString((*_iter932));
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeSetEnd();
   }
@@ -35898,6 +39040,7 @@ void swap(Materialization &a, Materialization &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 Materialization::Materialization(const Materialization& other972) {
   tablesUsed = other972.tablesUsed;
   validTxnList = other972.validTxnList;
@@ -35912,6 +39055,8 @@ Materialization& Materialization::operator=(const Materialization& other973) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 Materialization::Materialization(const Materialization& other954) {
   tablesUsed = other954.tablesUsed;
@@ -35927,6 +39072,8 @@ Materialization& Materialization::operator=(const Materialization& other955) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 Materialization::Materialization(const Materialization& other934) {
   tablesUsed = other934.tablesUsed;
@@ -35942,6 +39089,8 @@ Materialization& Materialization::operator=(const Materialization& other935) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 Materialization::Materialization(const Materialization& other953) {
   tablesUsed = other953.tablesUsed;
   validTxnList = other953.validTxnList;
@@ -36016,9 +39165,31 @@ Materialization& Materialization::operator=(const Materialization& other892) {
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+Materialization::Materialization(const Materialization& other933) {
+  tablesUsed = other933.tablesUsed;
+  validTxnList = other933.validTxnList;
+  invalidationTime = other933.invalidationTime;
+  __isset = other933.__isset;
+}
+Materialization& Materialization::operator=(const Materialization& other934) {
+  tablesUsed = other934.tablesUsed;
+  validTxnList = other934.validTxnList;
+  invalidationTime = other934.invalidationTime;
+  __isset = other934.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void Materialization::printTo(std::ostream& out) const {
@@ -36088,12 +39259,15 @@ uint32_t WMResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_I32) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast974;
           xfer += iprot->readI32(ecast974);
           this->status = (WMResourcePlanStatus::type)ecast974;
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast956;
           xfer += iprot->readI32(ecast956);
@@ -36101,6 +39275,8 @@ uint32_t WMResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast936;
           xfer += iprot->readI32(ecast936);
@@ -36117,6 +39293,8 @@ uint32_t WMResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
 =======
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           int32_t ecast955;
           xfer += iprot->readI32(ecast955);
           this->status = (WMResourcePlanStatus::type)ecast955;
@@ -36149,9 +39327,23 @@ uint32_t WMResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) {
           this->status = (WMResourcePlanStatus::type)ecast893;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+          int32_t ecast935;
+          xfer += iprot->readI32(ecast935);
+          this->status = (WMResourcePlanStatus::type)ecast935;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           this->__isset.status = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -36227,6 +39419,7 @@ void swap(WMResourcePlan &a, WMResourcePlan &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMResourcePlan::WMResourcePlan(const WMResourcePlan& other975) {
   name = other975.name;
   status = other975.status;
@@ -36243,6 +39436,8 @@ WMResourcePlan& WMResourcePlan::operator=(const WMResourcePlan& other976) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMResourcePlan::WMResourcePlan(const WMResourcePlan& other957) {
   name = other957.name;
@@ -36260,6 +39455,8 @@ WMResourcePlan& WMResourcePlan::operator=(const WMResourcePlan& other958) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMResourcePlan::WMResourcePlan(const WMResourcePlan& other937) {
   name = other937.name;
@@ -36277,6 +39474,8 @@ WMResourcePlan& WMResourcePlan::operator=(const WMResourcePlan& other938) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMResourcePlan::WMResourcePlan(const WMResourcePlan& other956) {
   name = other956.name;
   status = other956.status;
@@ -36372,9 +39571,33 @@ WMResourcePlan& WMResourcePlan::operator=(const WMResourcePlan& other895) {
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMResourcePlan::WMResourcePlan(const WMResourcePlan& other936) {
+  name = other936.name;
+  status = other936.status;
+  queryParallelism = other936.queryParallelism;
+  defaultPoolPath = other936.defaultPoolPath;
+  __isset = other936.__isset;
+}
+WMResourcePlan& WMResourcePlan::operator=(const WMResourcePlan& other937) {
+  name = other937.name;
+  status = other937.status;
+  queryParallelism = other937.queryParallelism;
+  defaultPoolPath = other937.defaultPoolPath;
+  __isset = other937.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMResourcePlan::printTo(std::ostream& out) const {
@@ -36455,12 +39678,15 @@ uint32_t WMNullableResourcePlan::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_I32) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast977;
           xfer += iprot->readI32(ecast977);
           this->status = (WMResourcePlanStatus::type)ecast977;
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast959;
           xfer += iprot->readI32(ecast959);
@@ -36468,6 +39694,8 @@ uint32_t WMNullableResourcePlan::read(::apache::thrift::protocol::TProtocol* ipr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           int32_t ecast939;
           xfer += iprot->readI32(ecast939);
@@ -36484,6 +39712,8 @@ uint32_t WMNullableResourcePlan::read(::apache::thrift::protocol::TProtocol* ipr
 =======
 =======
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           int32_t ecast958;
           xfer += iprot->readI32(ecast958);
           this->status = (WMResourcePlanStatus::type)ecast958;
@@ -36516,9 +39746,23 @@ uint32_t WMNullableResourcePlan::read(::apache::thrift::protocol::TProtocol* ipr
           this->status = (WMResourcePlanStatus::type)ecast896;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+          int32_t ecast938;
+          xfer += iprot->readI32(ecast938);
+          this->status = (WMResourcePlanStatus::type)ecast938;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           this->__isset.status = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -36621,6 +39865,7 @@ void swap(WMNullableResourcePlan &a, WMNullableResourcePlan &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMNullableResourcePlan::WMNullableResourcePlan(const WMNullableResourcePlan& other978) {
   name = other978.name;
   status = other978.status;
@@ -36641,11 +39886,15 @@ WMNullableResourcePlan& WMNullableResourcePlan::operator=(const WMNullableResour
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMNullableResourcePlan::WMNullableResourcePlan(const WMNullableResourcePlan& other960) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMNullableResourcePlan::WMNullableResourcePlan(const WMNullableResourcePlan& other940) {
   name = other940.name;
@@ -36667,6 +39916,8 @@ WMNullableResourcePlan& WMNullableResourcePlan::operator=(const WMNullableResour
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMNullableResourcePlan::WMNullableResourcePlan(const WMNullableResourcePlan& other959) {
   name = other959.name;
   status = other959.status;
@@ -36785,8 +40036,33 @@ WMNullableResourcePlan& WMNullableResourcePlan::operator=(const WMNullableResour
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+WMNullableResourcePlan::WMNullableResourcePlan(const WMNullableResourcePlan& other939) {
+  name = other939.name;
+  status = other939.status;
+  queryParallelism = other939.queryParallelism;
+  isSetQueryParallelism = other939.isSetQueryParallelism;
+  defaultPoolPath = other939.defaultPoolPath;
+  isSetDefaultPoolPath = other939.isSetDefaultPoolPath;
+  __isset = other939.__isset;
+}
+WMNullableResourcePlan& WMNullableResourcePlan::operator=(const WMNullableResourcePlan& other940) {
+  name = other940.name;
+  status = other940.status;
+  queryParallelism = other940.queryParallelism;
+  isSetQueryParallelism = other940.isSetQueryParallelism;
+  defaultPoolPath = other940.defaultPoolPath;
+  isSetDefaultPoolPath = other940.isSetDefaultPoolPath;
+  __isset = other940.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMNullableResourcePlan::printTo(std::ostream& out) const {
@@ -36953,6 +40229,7 @@ void swap(WMPool &a, WMPool &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMPool::WMPool(const WMPool& other980) {
   resourcePlanName = other980.resourcePlanName;
   poolPath = other980.poolPath;
@@ -36971,11 +40248,15 @@ WMPool& WMPool::operator=(const WMPool& other981) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMPool::WMPool(const WMPool& other962) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMPool::WMPool(const WMPool& other942) {
   resourcePlanName = other942.resourcePlanName;
@@ -36995,6 +40276,8 @@ WMPool& WMPool::operator=(const WMPool& other943) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMPool::WMPool(const WMPool& other961) {
   resourcePlanName = other961.resourcePlanName;
   poolPath = other961.poolPath;
@@ -37103,8 +40386,31 @@ WMPool& WMPool::operator=(const WMPool& other900) {
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+WMPool::WMPool(const WMPool& other941) {
+  resourcePlanName = other941.resourcePlanName;
+  poolPath = other941.poolPath;
+  allocFraction = other941.allocFraction;
+  queryParallelism = other941.queryParallelism;
+  schedulingPolicy = other941.schedulingPolicy;
+  __isset = other941.__isset;
+}
+WMPool& WMPool::operator=(const WMPool& other942) {
+  resourcePlanName = other942.resourcePlanName;
+  poolPath = other942.poolPath;
+  allocFraction = other942.allocFraction;
+  queryParallelism = other942.queryParallelism;
+  schedulingPolicy = other942.schedulingPolicy;
+  __isset = other942.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMPool::printTo(std::ostream& out) const {
@@ -37289,6 +40595,7 @@ void swap(WMNullablePool &a, WMNullablePool &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMNullablePool::WMNullablePool(const WMNullablePool& other982) {
   resourcePlanName = other982.resourcePlanName;
   poolPath = other982.poolPath;
@@ -37309,11 +40616,15 @@ WMNullablePool& WMNullablePool::operator=(const WMNullablePool& other983) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMNullablePool::WMNullablePool(const WMNullablePool& other964) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMNullablePool::WMNullablePool(const WMNullablePool& other944) {
   resourcePlanName = other944.resourcePlanName;
@@ -37335,6 +40646,8 @@ WMNullablePool& WMNullablePool::operator=(const WMNullablePool& other945) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMNullablePool::WMNullablePool(const WMNullablePool& other963) {
   resourcePlanName = other963.resourcePlanName;
   poolPath = other963.poolPath;
@@ -37453,8 +40766,33 @@ WMNullablePool& WMNullablePool::operator=(const WMNullablePool& other902) {
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+WMNullablePool::WMNullablePool(const WMNullablePool& other943) {
+  resourcePlanName = other943.resourcePlanName;
+  poolPath = other943.poolPath;
+  allocFraction = other943.allocFraction;
+  queryParallelism = other943.queryParallelism;
+  schedulingPolicy = other943.schedulingPolicy;
+  isSetSchedulingPolicy = other943.isSetSchedulingPolicy;
+  __isset = other943.__isset;
+}
+WMNullablePool& WMNullablePool::operator=(const WMNullablePool& other944) {
+  resourcePlanName = other944.resourcePlanName;
+  poolPath = other944.poolPath;
+  allocFraction = other944.allocFraction;
+  queryParallelism = other944.queryParallelism;
+  schedulingPolicy = other944.schedulingPolicy;
+  isSetSchedulingPolicy = other944.isSetSchedulingPolicy;
+  __isset = other944.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMNullablePool::printTo(std::ostream& out) const {
@@ -37621,6 +40959,7 @@ void swap(WMTrigger &a, WMTrigger &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMTrigger::WMTrigger(const WMTrigger& other984) {
   resourcePlanName = other984.resourcePlanName;
   triggerName = other984.triggerName;
@@ -37639,11 +40978,15 @@ WMTrigger& WMTrigger::operator=(const WMTrigger& other985) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMTrigger::WMTrigger(const WMTrigger& other966) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMTrigger::WMTrigger(const WMTrigger& other946) {
   resourcePlanName = other946.resourcePlanName;
@@ -37663,6 +41006,8 @@ WMTrigger& WMTrigger::operator=(const WMTrigger& other947) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMTrigger::WMTrigger(const WMTrigger& other965) {
   resourcePlanName = other965.resourcePlanName;
   triggerName = other965.triggerName;
@@ -37765,8 +41110,31 @@ WMTrigger& WMTrigger::operator=(const WMTrigger& other904) {
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+WMTrigger::WMTrigger(const WMTrigger& other945) {
+  resourcePlanName = other945.resourcePlanName;
+  triggerName = other945.triggerName;
+  triggerExpression = other945.triggerExpression;
+  actionExpression = other945.actionExpression;
+  isInUnmanaged = other945.isInUnmanaged;
+  __isset = other945.__isset;
+}
+WMTrigger& WMTrigger::operator=(const WMTrigger& other946) {
+  resourcePlanName = other946.resourcePlanName;
+  triggerName = other946.triggerName;
+  triggerExpression = other946.triggerExpression;
+  actionExpression = other946.actionExpression;
+  isInUnmanaged = other946.isInUnmanaged;
+  __isset = other946.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMTrigger::printTo(std::ostream& out) const {
@@ -37933,6 +41301,7 @@ void swap(WMMapping &a, WMMapping &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMMapping::WMMapping(const WMMapping& other986) {
   resourcePlanName = other986.resourcePlanName;
   entityType = other986.entityType;
@@ -37951,11 +41320,15 @@ WMMapping& WMMapping::operator=(const WMMapping& other987) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMMapping::WMMapping(const WMMapping& other968) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMMapping::WMMapping(const WMMapping& other948) {
   resourcePlanName = other948.resourcePlanName;
@@ -37975,6 +41348,8 @@ WMMapping& WMMapping::operator=(const WMMapping& other949) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMMapping::WMMapping(const WMMapping& other967) {
   resourcePlanName = other967.resourcePlanName;
   entityType = other967.entityType;
@@ -38075,8 +41450,31 @@ WMMapping& WMMapping::operator=(const WMMapping& other906) {
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+WMMapping::WMMapping(const WMMapping& other947) {
+  resourcePlanName = other947.resourcePlanName;
+  entityType = other947.entityType;
+  entityName = other947.entityName;
+  poolPath = other947.poolPath;
+  ordering = other947.ordering;
+  __isset = other947.__isset;
+}
+WMMapping& WMMapping::operator=(const WMMapping& other948) {
+  resourcePlanName = other948.resourcePlanName;
+  entityType = other948.entityType;
+  entityName = other948.entityName;
+  poolPath = other948.poolPath;
+  ordering = other948.ordering;
+  __isset = other948.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMMapping::printTo(std::ostream& out) const {
@@ -38184,6 +41582,7 @@ void swap(WMPoolTrigger &a, WMPoolTrigger &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMPoolTrigger::WMPoolTrigger(const WMPoolTrigger& other988) {
   pool = other988.pool;
   trigger = other988.trigger;
@@ -38194,6 +41593,8 @@ WMPoolTrigger& WMPoolTrigger::operator=(const WMPoolTrigger& other989) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMPoolTrigger::WMPoolTrigger(const WMPoolTrigger& other970) {
   pool = other970.pool;
@@ -38205,6 +41606,8 @@ WMPoolTrigger& WMPoolTrigger::operator=(const WMPoolTrigger& other971) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMPoolTrigger::WMPoolTrigger(const WMPoolTrigger& other950) {
   pool = other950.pool;
@@ -38216,6 +41619,8 @@ WMPoolTrigger& WMPoolTrigger::operator=(const WMPoolTrigger& other951) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMPoolTrigger::WMPoolTrigger(const WMPoolTrigger& other969) {
   pool = other969.pool;
   trigger = other969.trigger;
@@ -38277,9 +41682,27 @@ WMPoolTrigger& WMPoolTrigger::operator=(const WMPoolTrigger& other908) {
   trigger = other908.trigger;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMPoolTrigger::WMPoolTrigger(const WMPoolTrigger& other949) {
+  pool = other949.pool;
+  trigger = other949.trigger;
+}
+WMPoolTrigger& WMPoolTrigger::operator=(const WMPoolTrigger& other950) {
+  pool = other950.pool;
+  trigger = other950.trigger;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMPoolTrigger::printTo(std::ostream& out) const {
@@ -38355,6 +41778,7 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
             this->pools.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size990;
             ::apache::thrift::protocol::TType _etype993;
             xfer += iprot->readListBegin(_etype993, _size990);
@@ -38366,6 +41790,8 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size972;
             ::apache::thrift::protocol::TType _etype975;
@@ -38378,6 +41804,8 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size952;
             ::apache::thrift::protocol::TType _etype955;
@@ -38390,6 +41818,8 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size971;
             ::apache::thrift::protocol::TType _etype974;
             xfer += iprot->readListBegin(_etype974, _size971);
@@ -38455,9 +41885,28 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
               xfer += this->pools[_i913].read(iprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size951;
+            ::apache::thrift::protocol::TType _etype954;
+            xfer += iprot->readListBegin(_etype954, _size951);
+            this->pools.resize(_size951);
+            uint32_t _i955;
+            for (_i955 = 0; _i955 < _size951; ++_i955)
+            {
+              xfer += this->pools[_i955].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -38472,6 +41921,7 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
             this->mappings.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size995;
             ::apache::thrift::protocol::TType _etype998;
             xfer += iprot->readListBegin(_etype998, _size995);
@@ -38483,6 +41933,8 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size977;
             ::apache::thrift::protocol::TType _etype980;
@@ -38495,6 +41947,8 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size957;
             ::apache::thrift::protocol::TType _etype960;
@@ -38507,6 +41961,8 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size976;
             ::apache::thrift::protocol::TType _etype979;
             xfer += iprot->readListBegin(_etype979, _size976);
@@ -38572,9 +42028,28 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
               xfer += this->mappings[_i918].read(iprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size956;
+            ::apache::thrift::protocol::TType _etype959;
+            xfer += iprot->readListBegin(_etype959, _size956);
+            this->mappings.resize(_size956);
+            uint32_t _i960;
+            for (_i960 = 0; _i960 < _size956; ++_i960)
+            {
+              xfer += this->mappings[_i960].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -38589,6 +42064,7 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
             this->triggers.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1000;
             ::apache::thrift::protocol::TType _etype1003;
             xfer += iprot->readListBegin(_etype1003, _size1000);
@@ -38600,6 +42076,8 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size982;
             ::apache::thrift::protocol::TType _etype985;
@@ -38612,6 +42090,8 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size962;
             ::apache::thrift::protocol::TType _etype965;
@@ -38624,6 +42104,8 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size981;
             ::apache::thrift::protocol::TType _etype984;
             xfer += iprot->readListBegin(_etype984, _size981);
@@ -38690,9 +42172,28 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
               xfer += this->triggers[_i923].read(iprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size961;
+            ::apache::thrift::protocol::TType _etype964;
+            xfer += iprot->readListBegin(_etype964, _size961);
+            this->triggers.resize(_size961);
+            uint32_t _i965;
+            for (_i965 = 0; _i965 < _size961; ++_i965)
+            {
+              xfer += this->triggers[_i965].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -38707,6 +42208,7 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
             this->poolTriggers.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1005;
             ::apache::thrift::protocol::TType _etype1008;
             xfer += iprot->readListBegin(_etype1008, _size1005);
@@ -38718,6 +42220,8 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size987;
             ::apache::thrift::protocol::TType _etype990;
@@ -38730,6 +42234,8 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size967;
             ::apache::thrift::protocol::TType _etype970;
@@ -38742,6 +42248,8 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size986;
             ::apache::thrift::protocol::TType _etype989;
             xfer += iprot->readListBegin(_etype989, _size986);
@@ -38810,9 +42318,28 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
               xfer += this->poolTriggers[_i928].read(iprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size966;
+            ::apache::thrift::protocol::TType _etype969;
+            xfer += iprot->readListBegin(_etype969, _size966);
+            this->poolTriggers.resize(_size966);
+            uint32_t _i970;
+            for (_i970 = 0; _i970 < _size966; ++_i970)
+            {
+              xfer += this->poolTriggers[_i970].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -38851,6 +42378,7 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->pools.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<WMPool> ::const_iterator _iter1010;
     for (_iter1010 = this->pools.begin(); _iter1010 != this->pools.end(); ++_iter1010)
     {
@@ -38858,6 +42386,8 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<WMPool> ::const_iterator _iter992;
     for (_iter992 = this->pools.begin(); _iter992 != this->pools.end(); ++_iter992)
@@ -38866,6 +42396,8 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
     std::vector<WMPool> ::const_iterator _iter972;
     for (_iter972 = this->pools.begin(); _iter972 != this->pools.end(); ++_iter972)
@@ -38874,6 +42406,8 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     std::vector<WMPool> ::const_iterator _iter991;
     for (_iter991 = this->pools.begin(); _iter991 != this->pools.end(); ++_iter991)
     {
@@ -38921,9 +42455,24 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
       xfer += (*_iter929).write(oprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+    std::vector<WMPool> ::const_iterator _iter971;
+    for (_iter971 = this->pools.begin(); _iter971 != this->pools.end(); ++_iter971)
+    {
+      xfer += (*_iter971).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
     }
     xfer += oprot->writeListEnd();
   }
@@ -38935,6 +42484,7 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->mappings.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       std::vector<WMMapping> ::const_iterator _iter1011;
       for (_iter1011 = this->mappings.begin(); _iter1011 != this->mappings.end(); ++_iter1011)
       {
@@ -38942,6 +42492,8 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<WMMapping> ::const_iterator _iter993;
       for (_iter993 = this->mappings.begin(); _iter993 != this->mappings.end(); ++_iter993)
@@ -38950,6 +42502,8 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<WMMapping> ::const_iterator _iter973;
       for (_iter973 = this->mappings.begin(); _iter973 != this->mappings.end(); ++_iter973)
@@ -38958,6 +42512,8 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       std::vector<WMMapping> ::const_iterator _iter992;
       for (_iter992 = this->mappings.begin(); _iter992 != this->mappings.end(); ++_iter992)
       {
@@ -39005,9 +42561,24 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
         xfer += (*_iter930).write(oprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+      std::vector<WMMapping> ::const_iterator _iter972;
+      for (_iter972 = this->mappings.begin(); _iter972 != this->mappings.end(); ++_iter972)
+      {
+        xfer += (*_iter972).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       }
       xfer += oprot->writeListEnd();
     }
@@ -39019,6 +42590,7 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->triggers.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       std::vector<WMTrigger> ::const_iterator _iter1012;
       for (_iter1012 = this->triggers.begin(); _iter1012 != this->triggers.end(); ++_iter1012)
       {
@@ -39028,6 +42600,8 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
       std::vector<WMTrigger> ::const_iterator _iter994;
       for (_iter994 = this->triggers.begin(); _iter994 != this->triggers.end(); ++_iter994)
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<WMTrigger> ::const_iterator _iter994;
       for (_iter994 = this->triggers.begin(); _iter994 != this->triggers.end(); ++_iter994)
@@ -39036,6 +42610,8 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<WMTrigger> ::const_iterator _iter974;
       for (_iter974 = this->triggers.begin(); _iter974 != this->triggers.end(); ++_iter974)
@@ -39044,6 +42620,8 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       std::vector<WMTrigger> ::const_iterator _iter993;
       for (_iter993 = this->triggers.begin(); _iter993 != this->triggers.end(); ++_iter993)
       {
@@ -39095,9 +42673,24 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
         xfer += (*_iter931).write(oprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+      std::vector<WMTrigger> ::const_iterator _iter973;
+      for (_iter973 = this->triggers.begin(); _iter973 != this->triggers.end(); ++_iter973)
+      {
+        xfer += (*_iter973).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       }
       xfer += oprot->writeListEnd();
     }
@@ -39109,6 +42702,7 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->poolTriggers.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       std::vector<WMPoolTrigger> ::const_iterator _iter1013;
       for (_iter1013 = this->poolTriggers.begin(); _iter1013 != this->poolTriggers.end(); ++_iter1013)
       {
@@ -39116,6 +42710,8 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<WMPoolTrigger> ::const_iterator _iter995;
       for (_iter995 = this->poolTriggers.begin(); _iter995 != this->poolTriggers.end(); ++_iter995)
@@ -39124,6 +42720,8 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<WMPoolTrigger> ::const_iterator _iter975;
       for (_iter975 = this->poolTriggers.begin(); _iter975 != this->poolTriggers.end(); ++_iter975)
@@ -39132,6 +42730,8 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       std::vector<WMPoolTrigger> ::const_iterator _iter994;
       for (_iter994 = this->poolTriggers.begin(); _iter994 != this->poolTriggers.end(); ++_iter994)
       {
@@ -39179,9 +42779,24 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
         xfer += (*_iter932).write(oprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+      std::vector<WMPoolTrigger> ::const_iterator _iter974;
+      for (_iter974 = this->poolTriggers.begin(); _iter974 != this->poolTriggers.end(); ++_iter974)
+      {
+        xfer += (*_iter974).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       }
       xfer += oprot->writeListEnd();
     }
@@ -39204,6 +42819,7 @@ void swap(WMFullResourcePlan &a, WMFullResourcePlan &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMFullResourcePlan::WMFullResourcePlan(const WMFullResourcePlan& other1014) {
   plan = other1014.plan;
   pools = other1014.pools;
@@ -39222,11 +42838,15 @@ WMFullResourcePlan& WMFullResourcePlan::operator=(const WMFullResourcePlan& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMFullResourcePlan::WMFullResourcePlan(const WMFullResourcePlan& other996) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMFullResourcePlan::WMFullResourcePlan(const WMFullResourcePlan& other976) {
   plan = other976.plan;
@@ -39246,6 +42866,8 @@ WMFullResourcePlan& WMFullResourcePlan::operator=(const WMFullResourcePlan& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMFullResourcePlan::WMFullResourcePlan(const WMFullResourcePlan& other995) {
   plan = other995.plan;
   pools = other995.pools;
@@ -39346,8 +42968,31 @@ WMFullResourcePlan& WMFullResourcePlan::operator=(const WMFullResourcePlan& othe
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+WMFullResourcePlan::WMFullResourcePlan(const WMFullResourcePlan& other975) {
+  plan = other975.plan;
+  pools = other975.pools;
+  mappings = other975.mappings;
+  triggers = other975.triggers;
+  poolTriggers = other975.poolTriggers;
+  __isset = other975.__isset;
+}
+WMFullResourcePlan& WMFullResourcePlan::operator=(const WMFullResourcePlan& other976) {
+  plan = other976.plan;
+  pools = other976.pools;
+  mappings = other976.mappings;
+  triggers = other976.triggers;
+  poolTriggers = other976.poolTriggers;
+  __isset = other976.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMFullResourcePlan::printTo(std::ostream& out) const {
@@ -39454,6 +43099,7 @@ void swap(WMCreateResourcePlanRequest &a, WMCreateResourcePlanRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMCreateResourcePlanRequest::WMCreateResourcePlanRequest(const WMCreateResourcePlanRequest& other1016) {
   resourcePlan = other1016.resourcePlan;
   copyFrom = other1016.copyFrom;
@@ -39466,6 +43112,8 @@ WMCreateResourcePlanRequest& WMCreateResourcePlanRequest::operator=(const WMCrea
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMCreateResourcePlanRequest::WMCreateResourcePlanRequest(const WMCreateResourcePlanRequest& other998) {
   resourcePlan = other998.resourcePlan;
@@ -39479,6 +43127,8 @@ WMCreateResourcePlanRequest& WMCreateResourcePlanRequest::operator=(const WMCrea
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMCreateResourcePlanRequest::WMCreateResourcePlanRequest(const WMCreateResourcePlanRequest& other978) {
   resourcePlan = other978.resourcePlan;
@@ -39492,6 +43142,8 @@ WMCreateResourcePlanRequest& WMCreateResourcePlanRequest::operator=(const WMCrea
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMCreateResourcePlanRequest::WMCreateResourcePlanRequest(const WMCreateResourcePlanRequest& other997) {
   resourcePlan = other997.resourcePlan;
   copyFrom = other997.copyFrom;
@@ -39567,9 +43219,29 @@ WMCreateResourcePlanRequest& WMCreateResourcePlanRequest::operator=(const WMCrea
   __isset = other936.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMCreateResourcePlanRequest::WMCreateResourcePlanRequest(const WMCreateResourcePlanRequest& other977) {
+  resourcePlan = other977.resourcePlan;
+  copyFrom = other977.copyFrom;
+  __isset = other977.__isset;
+}
+WMCreateResourcePlanRequest& WMCreateResourcePlanRequest::operator=(const WMCreateResourcePlanRequest& other978) {
+  resourcePlan = other978.resourcePlan;
+  copyFrom = other978.copyFrom;
+  __isset = other978.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMCreateResourcePlanRequest::printTo(std::ostream& out) const {
@@ -39631,6 +43303,7 @@ void swap(WMCreateResourcePlanResponse &a, WMCreateResourcePlanResponse &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMCreateResourcePlanResponse::WMCreateResourcePlanResponse(const WMCreateResourcePlanResponse& other1018) {
   (void) other1018;
 }
@@ -39639,6 +43312,8 @@ WMCreateResourcePlanResponse& WMCreateResourcePlanResponse::operator=(const WMCr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMCreateResourcePlanResponse::WMCreateResourcePlanResponse(const WMCreateResourcePlanResponse& other1000) {
   (void) other1000;
@@ -39648,6 +43323,8 @@ WMCreateResourcePlanResponse& WMCreateResourcePlanResponse::operator=(const WMCr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMCreateResourcePlanResponse::WMCreateResourcePlanResponse(const WMCreateResourcePlanResponse& other980) {
   (void) other980;
@@ -39657,6 +43334,8 @@ WMCreateResourcePlanResponse& WMCreateResourcePlanResponse::operator=(const WMCr
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMCreateResourcePlanResponse::WMCreateResourcePlanResponse(const WMCreateResourcePlanResponse& other999) {
   (void) other999;
 }
@@ -39710,9 +43389,25 @@ WMCreateResourcePlanResponse& WMCreateResourcePlanResponse::operator=(const WMCr
   (void) other938;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMCreateResourcePlanResponse::WMCreateResourcePlanResponse(const WMCreateResourcePlanResponse& other979) {
+  (void) other979;
+}
+WMCreateResourcePlanResponse& WMCreateResourcePlanResponse::operator=(const WMCreateResourcePlanResponse& other980) {
+  (void) other980;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMCreateResourcePlanResponse::printTo(std::ostream& out) const {
@@ -39772,6 +43467,7 @@ void swap(WMGetActiveResourcePlanRequest &a, WMGetActiveResourcePlanRequest &b) 
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMGetActiveResourcePlanRequest::WMGetActiveResourcePlanRequest(const WMGetActiveResourcePlanRequest& other1020) {
   (void) other1020;
 }
@@ -39780,6 +43476,8 @@ WMGetActiveResourcePlanRequest& WMGetActiveResourcePlanRequest::operator=(const 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMGetActiveResourcePlanRequest::WMGetActiveResourcePlanRequest(const WMGetActiveResourcePlanRequest& other1002) {
   (void) other1002;
@@ -39789,6 +43487,8 @@ WMGetActiveResourcePlanRequest& WMGetActiveResourcePlanRequest::operator=(const 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMGetActiveResourcePlanRequest::WMGetActiveResourcePlanRequest(const WMGetActiveResourcePlanRequest& other982) {
   (void) other982;
@@ -39798,6 +43498,8 @@ WMGetActiveResourcePlanRequest& WMGetActiveResourcePlanRequest::operator=(const 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMGetActiveResourcePlanRequest::WMGetActiveResourcePlanRequest(const WMGetActiveResourcePlanRequest& other1001) {
   (void) other1001;
 }
@@ -39851,9 +43553,25 @@ WMGetActiveResourcePlanRequest& WMGetActiveResourcePlanRequest::operator=(const 
   (void) other940;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMGetActiveResourcePlanRequest::WMGetActiveResourcePlanRequest(const WMGetActiveResourcePlanRequest& other981) {
+  (void) other981;
+}
+WMGetActiveResourcePlanRequest& WMGetActiveResourcePlanRequest::operator=(const WMGetActiveResourcePlanRequest& other982) {
+  (void) other982;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMGetActiveResourcePlanRequest::printTo(std::ostream& out) const {
@@ -39936,6 +43654,7 @@ void swap(WMGetActiveResourcePlanResponse &a, WMGetActiveResourcePlanResponse &b
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMGetActiveResourcePlanResponse::WMGetActiveResourcePlanResponse(const WMGetActiveResourcePlanResponse& other1022) {
   resourcePlan = other1022.resourcePlan;
   __isset = other1022.__isset;
@@ -39946,6 +43665,8 @@ WMGetActiveResourcePlanResponse& WMGetActiveResourcePlanResponse::operator=(cons
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMGetActiveResourcePlanResponse::WMGetActiveResourcePlanResponse(const WMGetActiveResourcePlanResponse& other1004) {
   resourcePlan = other1004.resourcePlan;
@@ -39957,6 +43678,8 @@ WMGetActiveResourcePlanResponse& WMGetActiveResourcePlanResponse::operator=(cons
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMGetActiveResourcePlanResponse::WMGetActiveResourcePlanResponse(const WMGetActiveResourcePlanResponse& other984) {
   resourcePlan = other984.resourcePlan;
@@ -39968,6 +43691,8 @@ WMGetActiveResourcePlanResponse& WMGetActiveResourcePlanResponse::operator=(cons
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMGetActiveResourcePlanResponse::WMGetActiveResourcePlanResponse(const WMGetActiveResourcePlanResponse& other1003) {
   resourcePlan = other1003.resourcePlan;
   __isset = other1003.__isset;
@@ -40033,9 +43758,27 @@ WMGetActiveResourcePlanResponse& WMGetActiveResourcePlanResponse::operator=(cons
   __isset = other942.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMGetActiveResourcePlanResponse::WMGetActiveResourcePlanResponse(const WMGetActiveResourcePlanResponse& other983) {
+  resourcePlan = other983.resourcePlan;
+  __isset = other983.__isset;
+}
+WMGetActiveResourcePlanResponse& WMGetActiveResourcePlanResponse::operator=(const WMGetActiveResourcePlanResponse& other984) {
+  resourcePlan = other984.resourcePlan;
+  __isset = other984.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMGetActiveResourcePlanResponse::printTo(std::ostream& out) const {
@@ -40119,6 +43862,7 @@ void swap(WMGetResourcePlanRequest &a, WMGetResourcePlanRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMGetResourcePlanRequest::WMGetResourcePlanRequest(const WMGetResourcePlanRequest& other1024) {
   resourcePlanName = other1024.resourcePlanName;
   __isset = other1024.__isset;
@@ -40129,6 +43873,8 @@ WMGetResourcePlanRequest& WMGetResourcePlanRequest::operator=(const WMGetResourc
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMGetResourcePlanRequest::WMGetResourcePlanRequest(const WMGetResourcePlanRequest& other1006) {
   resourcePlanName = other1006.resourcePlanName;
@@ -40140,6 +43886,8 @@ WMGetResourcePlanRequest& WMGetResourcePlanRequest::operator=(const WMGetResourc
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMGetResourcePlanRequest::WMGetResourcePlanRequest(const WMGetResourcePlanRequest& other986) {
   resourcePlanName = other986.resourcePlanName;
@@ -40151,6 +43899,8 @@ WMGetResourcePlanRequest& WMGetResourcePlanRequest::operator=(const WMGetResourc
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMGetResourcePlanRequest::WMGetResourcePlanRequest(const WMGetResourcePlanRequest& other1005) {
   resourcePlanName = other1005.resourcePlanName;
   __isset = other1005.__isset;
@@ -40212,9 +43962,27 @@ WMGetResourcePlanRequest& WMGetResourcePlanRequest::operator=(const WMGetResourc
   __isset = other944.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMGetResourcePlanRequest::WMGetResourcePlanRequest(const WMGetResourcePlanRequest& other985) {
+  resourcePlanName = other985.resourcePlanName;
+  __isset = other985.__isset;
+}
+WMGetResourcePlanRequest& WMGetResourcePlanRequest::operator=(const WMGetResourcePlanRequest& other986) {
+  resourcePlanName = other986.resourcePlanName;
+  __isset = other986.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMGetResourcePlanRequest::printTo(std::ostream& out) const {
@@ -40298,6 +44066,7 @@ void swap(WMGetResourcePlanResponse &a, WMGetResourcePlanResponse &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMGetResourcePlanResponse::WMGetResourcePlanResponse(const WMGetResourcePlanResponse& other1026) {
   resourcePlan = other1026.resourcePlan;
   __isset = other1026.__isset;
@@ -40308,6 +44077,8 @@ WMGetResourcePlanResponse& WMGetResourcePlanResponse::operator=(const WMGetResou
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMGetResourcePlanResponse::WMGetResourcePlanResponse(const WMGetResourcePlanResponse& other1008) {
   resourcePlan = other1008.resourcePlan;
@@ -40319,6 +44090,8 @@ WMGetResourcePlanResponse& WMGetResourcePlanResponse::operator=(const WMGetResou
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMGetResourcePlanResponse::WMGetResourcePlanResponse(const WMGetResourcePlanResponse& other988) {
   resourcePlan = other988.resourcePlan;
@@ -40330,6 +44103,8 @@ WMGetResourcePlanResponse& WMGetResourcePlanResponse::operator=(const WMGetResou
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMGetResourcePlanResponse::WMGetResourcePlanResponse(const WMGetResourcePlanResponse& other1007) {
   resourcePlan = other1007.resourcePlan;
   __isset = other1007.__isset;
@@ -40395,9 +44170,27 @@ WMGetResourcePlanResponse& WMGetResourcePlanResponse::operator=(const WMGetResou
   __isset = other946.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMGetResourcePlanResponse::WMGetResourcePlanResponse(const WMGetResourcePlanResponse& other987) {
+  resourcePlan = other987.resourcePlan;
+  __isset = other987.__isset;
+}
+WMGetResourcePlanResponse& WMGetResourcePlanResponse::operator=(const WMGetResourcePlanResponse& other988) {
+  resourcePlan = other988.resourcePlan;
+  __isset = other988.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMGetResourcePlanResponse::printTo(std::ostream& out) const {
@@ -40458,6 +44251,7 @@ void swap(WMGetAllResourcePlanRequest &a, WMGetAllResourcePlanRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMGetAllResourcePlanRequest::WMGetAllResourcePlanRequest(const WMGetAllResourcePlanRequest& other1028) {
   (void) other1028;
 }
@@ -40466,6 +44260,8 @@ WMGetAllResourcePlanRequest& WMGetAllResourcePlanRequest::operator=(const WMGetA
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMGetAllResourcePlanRequest::WMGetAllResourcePlanRequest(const WMGetAllResourcePlanRequest& other1010) {
   (void) other1010;
@@ -40475,6 +44271,8 @@ WMGetAllResourcePlanRequest& WMGetAllResourcePlanRequest::operator=(const WMGetA
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMGetAllResourcePlanRequest::WMGetAllResourcePlanRequest(const WMGetAllResourcePlanRequest& other990) {
   (void) other990;
@@ -40484,6 +44282,8 @@ WMGetAllResourcePlanRequest& WMGetAllResourcePlanRequest::operator=(const WMGetA
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMGetAllResourcePlanRequest::WMGetAllResourcePlanRequest(const WMGetAllResourcePlanRequest& other1009) {
   (void) other1009;
 }
@@ -40541,9 +44341,25 @@ WMGetAllResourcePlanRequest& WMGetAllResourcePlanRequest::operator=(const WMGetA
   (void) other948;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMGetAllResourcePlanRequest::WMGetAllResourcePlanRequest(const WMGetAllResourcePlanRequest& other989) {
+  (void) other989;
+}
+WMGetAllResourcePlanRequest& WMGetAllResourcePlanRequest::operator=(const WMGetAllResourcePlanRequest& other990) {
+  (void) other990;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMGetAllResourcePlanRequest::printTo(std::ostream& out) const {
@@ -40589,6 +44405,7 @@ uint32_t WMGetAllResourcePlanResponse::read(::apache::thrift::protocol::TProtoco
             this->resourcePlans.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1030;
             ::apache::thrift::protocol::TType _etype1033;
             xfer += iprot->readListBegin(_etype1033, _size1030);
@@ -40600,6 +44417,8 @@ uint32_t WMGetAllResourcePlanResponse::read(::apache::thrift::protocol::TProtoco
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size1012;
             ::apache::thrift::protocol::TType _etype1015;
@@ -40612,6 +44431,8 @@ uint32_t WMGetAllResourcePlanResponse::read(::apache::thrift::protocol::TProtoco
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size992;
             ::apache::thrift::protocol::TType _etype995;
@@ -40624,6 +44445,8 @@ uint32_t WMGetAllResourcePlanResponse::read(::apache::thrift::protocol::TProtoco
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size1011;
             ::apache::thrift::protocol::TType _etype1014;
             xfer += iprot->readListBegin(_etype1014, _size1011);
@@ -40689,9 +44512,28 @@ uint32_t WMGetAllResourcePlanResponse::read(::apache::thrift::protocol::TProtoco
               xfer += this->resourcePlans[_i953].read(iprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size991;
+            ::apache::thrift::protocol::TType _etype994;
+            xfer += iprot->readListBegin(_etype994, _size991);
+            this->resourcePlans.resize(_size991);
+            uint32_t _i995;
+            for (_i995 = 0; _i995 < _size991; ++_i995)
+            {
+              xfer += this->resourcePlans[_i995].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -40723,6 +44565,7 @@ uint32_t WMGetAllResourcePlanResponse::write(::apache::thrift::protocol::TProtoc
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->resourcePlans.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       std::vector<WMResourcePlan> ::const_iterator _iter1035;
       for (_iter1035 = this->resourcePlans.begin(); _iter1035 != this->resourcePlans.end(); ++_iter1035)
       {
@@ -40730,6 +44573,8 @@ uint32_t WMGetAllResourcePlanResponse::write(::apache::thrift::protocol::TProtoc
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<WMResourcePlan> ::const_iterator _iter1017;
       for (_iter1017 = this->resourcePlans.begin(); _iter1017 != this->resourcePlans.end(); ++_iter1017)
@@ -40738,6 +44583,8 @@ uint32_t WMGetAllResourcePlanResponse::write(::apache::thrift::protocol::TProtoc
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<WMResourcePlan> ::const_iterator _iter997;
       for (_iter997 = this->resourcePlans.begin(); _iter997 != this->resourcePlans.end(); ++_iter997)
@@ -40746,6 +44593,8 @@ uint32_t WMGetAllResourcePlanResponse::write(::apache::thrift::protocol::TProtoc
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       std::vector<WMResourcePlan> ::const_iterator _iter1016;
       for (_iter1016 = this->resourcePlans.begin(); _iter1016 != this->resourcePlans.end(); ++_iter1016)
       {
@@ -40793,9 +44642,24 @@ uint32_t WMGetAllResourcePlanResponse::write(::apache::thrift::protocol::TProtoc
         xfer += (*_iter954).write(oprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+      std::vector<WMResourcePlan> ::const_iterator _iter996;
+      for (_iter996 = this->resourcePlans.begin(); _iter996 != this->resourcePlans.end(); ++_iter996)
+      {
+        xfer += (*_iter996).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       }
       xfer += oprot->writeListEnd();
     }
@@ -40814,6 +44678,7 @@ void swap(WMGetAllResourcePlanResponse &a, WMGetAllResourcePlanResponse &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMGetAllResourcePlanResponse::WMGetAllResourcePlanResponse(const WMGetAllResourcePlanResponse& other1036) {
   resourcePlans = other1036.resourcePlans;
   __isset = other1036.__isset;
@@ -40824,6 +44689,8 @@ WMGetAllResourcePlanResponse& WMGetAllResourcePlanResponse::operator=(const WMGe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMGetAllResourcePlanResponse::WMGetAllResourcePlanResponse(const WMGetAllResourcePlanResponse& other1018) {
   resourcePlans = other1018.resourcePlans;
@@ -40835,6 +44702,8 @@ WMGetAllResourcePlanResponse& WMGetAllResourcePlanResponse::operator=(const WMGe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMGetAllResourcePlanResponse::WMGetAllResourcePlanResponse(const WMGetAllResourcePlanResponse& other998) {
   resourcePlans = other998.resourcePlans;
@@ -40846,6 +44715,8 @@ WMGetAllResourcePlanResponse& WMGetAllResourcePlanResponse::operator=(const WMGe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMGetAllResourcePlanResponse::WMGetAllResourcePlanResponse(const WMGetAllResourcePlanResponse& other1017) {
   resourcePlans = other1017.resourcePlans;
   __isset = other1017.__isset;
@@ -40911,9 +44782,27 @@ WMGetAllResourcePlanResponse& WMGetAllResourcePlanResponse::operator=(const WMGe
   __isset = other956.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMGetAllResourcePlanResponse::WMGetAllResourcePlanResponse(const WMGetAllResourcePlanResponse& other997) {
+  resourcePlans = other997.resourcePlans;
+  __isset = other997.__isset;
+}
+WMGetAllResourcePlanResponse& WMGetAllResourcePlanResponse::operator=(const WMGetAllResourcePlanResponse& other998) {
+  resourcePlans = other998.resourcePlans;
+  __isset = other998.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMGetAllResourcePlanResponse::printTo(std::ostream& out) const {
@@ -41073,6 +44962,7 @@ void swap(WMAlterResourcePlanRequest &a, WMAlterResourcePlanRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMAlterResourcePlanRequest::WMAlterResourcePlanRequest(const WMAlterResourcePlanRequest& other1038) {
   resourcePlanName = other1038.resourcePlanName;
   resourcePlan = other1038.resourcePlan;
@@ -41091,11 +44981,15 @@ WMAlterResourcePlanRequest& WMAlterResourcePlanRequest::operator=(const WMAlterR
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMAlterResourcePlanRequest::WMAlterResourcePlanRequest(const WMAlterResourcePlanRequest& other1020) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMAlterResourcePlanRequest::WMAlterResourcePlanRequest(const WMAlterResourcePlanRequest& other1000) {
   resourcePlanName = other1000.resourcePlanName;
@@ -41115,6 +45009,8 @@ WMAlterResourcePlanRequest& WMAlterResourcePlanRequest::operator=(const WMAlterR
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMAlterResourcePlanRequest::WMAlterResourcePlanRequest(const WMAlterResourcePlanRequest& other1019) {
   resourcePlanName = other1019.resourcePlanName;
   resourcePlan = other1019.resourcePlan;
@@ -41215,8 +45111,31 @@ WMAlterResourcePlanRequest& WMAlterResourcePlanRequest::operator=(const WMAlterR
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+WMAlterResourcePlanRequest::WMAlterResourcePlanRequest(const WMAlterResourcePlanRequest& other999) {
+  resourcePlanName = other999.resourcePlanName;
+  resourcePlan = other999.resourcePlan;
+  isEnableAndActivate = other999.isEnableAndActivate;
+  isForceDeactivate = other999.isForceDeactivate;
+  isReplace = other999.isReplace;
+  __isset = other999.__isset;
+}
+WMAlterResourcePlanRequest& WMAlterResourcePlanRequest::operator=(const WMAlterResourcePlanRequest& other1000) {
+  resourcePlanName = other1000.resourcePlanName;
+  resourcePlan = other1000.resourcePlan;
+  isEnableAndActivate = other1000.isEnableAndActivate;
+  isForceDeactivate = other1000.isForceDeactivate;
+  isReplace = other1000.isReplace;
+  __isset = other1000.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMAlterResourcePlanRequest::printTo(std::ostream& out) const {
@@ -41304,6 +45223,7 @@ void swap(WMAlterResourcePlanResponse &a, WMAlterResourcePlanResponse &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMAlterResourcePlanResponse::WMAlterResourcePlanResponse(const WMAlterResourcePlanResponse& other1040) {
   fullResourcePlan = other1040.fullResourcePlan;
   __isset = other1040.__isset;
@@ -41314,6 +45234,8 @@ WMAlterResourcePlanResponse& WMAlterResourcePlanResponse::operator=(const WMAlte
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMAlterResourcePlanResponse::WMAlterResourcePlanResponse(const WMAlterResourcePlanResponse& other1022) {
   fullResourcePlan = other1022.fullResourcePlan;
@@ -41325,6 +45247,8 @@ WMAlterResourcePlanResponse& WMAlterResourcePlanResponse::operator=(const WMAlte
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMAlterResourcePlanResponse::WMAlterResourcePlanResponse(const WMAlterResourcePlanResponse& other1002) {
   fullResourcePlan = other1002.fullResourcePlan;
@@ -41336,6 +45260,8 @@ WMAlterResourcePlanResponse& WMAlterResourcePlanResponse::operator=(const WMAlte
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMAlterResourcePlanResponse::WMAlterResourcePlanResponse(const WMAlterResourcePlanResponse& other1021) {
   fullResourcePlan = other1021.fullResourcePlan;
   __isset = other1021.__isset;
@@ -41401,9 +45327,27 @@ WMAlterResourcePlanResponse& WMAlterResourcePlanResponse::operator=(const WMAlte
   __isset = other960.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMAlterResourcePlanResponse::WMAlterResourcePlanResponse(const WMAlterResourcePlanResponse& other1001) {
+  fullResourcePlan = other1001.fullResourcePlan;
+  __isset = other1001.__isset;
+}
+WMAlterResourcePlanResponse& WMAlterResourcePlanResponse::operator=(const WMAlterResourcePlanResponse& other1002) {
+  fullResourcePlan = other1002.fullResourcePlan;
+  __isset = other1002.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMAlterResourcePlanResponse::printTo(std::ostream& out) const {
@@ -41487,6 +45431,7 @@ void swap(WMValidateResourcePlanRequest &a, WMValidateResourcePlanRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMValidateResourcePlanRequest::WMValidateResourcePlanRequest(const WMValidateResourcePlanRequest& other1042) {
   resourcePlanName = other1042.resourcePlanName;
   __isset = other1042.__isset;
@@ -41497,6 +45442,8 @@ WMValidateResourcePlanRequest& WMValidateResourcePlanRequest::operator=(const WM
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMValidateResourcePlanRequest::WMValidateResourcePlanRequest(const WMValidateResourcePlanRequest& other1024) {
   resourcePlanName = other1024.resourcePlanName;
@@ -41508,6 +45455,8 @@ WMValidateResourcePlanRequest& WMValidateResourcePlanRequest::operator=(const WM
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMValidateResourcePlanRequest::WMValidateResourcePlanRequest(const WMValidateResourcePlanRequest& other1004) {
   resourcePlanName = other1004.resourcePlanName;
@@ -41519,6 +45468,8 @@ WMValidateResourcePlanRequest& WMValidateResourcePlanRequest::operator=(const WM
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMValidateResourcePlanRequest::WMValidateResourcePlanRequest(const WMValidateResourcePlanRequest& other1023) {
   resourcePlanName = other1023.resourcePlanName;
   __isset = other1023.__isset;
@@ -41580,9 +45531,27 @@ WMValidateResourcePlanRequest& WMValidateResourcePlanRequest::operator=(const WM
   __isset = other962.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMValidateResourcePlanRequest::WMValidateResourcePlanRequest(const WMValidateResourcePlanRequest& other1003) {
+  resourcePlanName = other1003.resourcePlanName;
+  __isset = other1003.__isset;
+}
+WMValidateResourcePlanRequest& WMValidateResourcePlanRequest::operator=(const WMValidateResourcePlanRequest& other1004) {
+  resourcePlanName = other1004.resourcePlanName;
+  __isset = other1004.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMValidateResourcePlanRequest::printTo(std::ostream& out) const {
@@ -41634,6 +45603,7 @@ uint32_t WMValidateResourcePlanResponse::read(::apache::thrift::protocol::TProto
             this->errors.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1044;
             ::apache::thrift::protocol::TType _etype1047;
             xfer += iprot->readListBegin(_etype1047, _size1044);
@@ -41645,6 +45615,8 @@ uint32_t WMValidateResourcePlanResponse::read(::apache::thrift::protocol::TProto
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size1026;
             ::apache::thrift::protocol::TType _etype1029;
@@ -41657,6 +45629,8 @@ uint32_t WMValidateResourcePlanResponse::read(::apache::thrift::protocol::TProto
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size1006;
             ::apache::thrift::protocol::TType _etype1009;
@@ -41669,6 +45643,8 @@ uint32_t WMValidateResourcePlanResponse::read(::apache::thrift::protocol::TProto
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size1025;
             ::apache::thrift::protocol::TType _etype1028;
             xfer += iprot->readListBegin(_etype1028, _size1025);
@@ -41734,9 +45710,28 @@ uint32_t WMValidateResourcePlanResponse::read(::apache::thrift::protocol::TProto
               xfer += iprot->readString(this->errors[_i967]);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size1005;
+            ::apache::thrift::protocol::TType _etype1008;
+            xfer += iprot->readListBegin(_etype1008, _size1005);
+            this->errors.resize(_size1005);
+            uint32_t _i1009;
+            for (_i1009 = 0; _i1009 < _size1005; ++_i1009)
+            {
+              xfer += iprot->readString(this->errors[_i1009]);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -41751,6 +45746,7 @@ uint32_t WMValidateResourcePlanResponse::read(::apache::thrift::protocol::TProto
             this->warnings.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1049;
             ::apache::thrift::protocol::TType _etype1052;
             xfer += iprot->readListBegin(_etype1052, _size1049);
@@ -41762,6 +45758,8 @@ uint32_t WMValidateResourcePlanResponse::read(::apache::thrift::protocol::TProto
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size1031;
             ::apache::thrift::protocol::TType _etype1034;
@@ -41774,6 +45772,8 @@ uint32_t WMValidateResourcePlanResponse::read(::apache::thrift::protocol::TProto
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size1011;
             ::apache::thrift::protocol::TType _etype1014;
@@ -41786,6 +45786,8 @@ uint32_t WMValidateResourcePlanResponse::read(::apache::thrift::protocol::TProto
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size1030;
             ::apache::thrift::protocol::TType _etype1033;
             xfer += iprot->readListBegin(_etype1033, _size1030);
@@ -41857,9 +45859,28 @@ uint32_t WMValidateResourcePlanResponse::read(::apache::thrift::protocol::TProto
               xfer += iprot->readString(this->warnings[_i972]);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size1010;
+            ::apache::thrift::protocol::TType _etype1013;
+            xfer += iprot->readListBegin(_etype1013, _size1010);
+            this->warnings.resize(_size1010);
+            uint32_t _i1014;
+            for (_i1014 = 0; _i1014 < _size1010; ++_i1014)
+            {
+              xfer += iprot->readString(this->warnings[_i1014]);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -41891,6 +45912,7 @@ uint32_t WMValidateResourcePlanResponse::write(::apache::thrift::protocol::TProt
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->errors.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter1054;
       for (_iter1054 = this->errors.begin(); _iter1054 != this->errors.end(); ++_iter1054)
       {
@@ -41898,6 +45920,8 @@ uint32_t WMValidateResourcePlanResponse::write(::apache::thrift::protocol::TProt
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter1036;
       for (_iter1036 = this->errors.begin(); _iter1036 != this->errors.end(); ++_iter1036)
@@ -41906,6 +45930,8 @@ uint32_t WMValidateResourcePlanResponse::write(::apache::thrift::protocol::TProt
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter1016;
       for (_iter1016 = this->errors.begin(); _iter1016 != this->errors.end(); ++_iter1016)
@@ -41914,6 +45940,8 @@ uint32_t WMValidateResourcePlanResponse::write(::apache::thrift::protocol::TProt
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       std::vector<std::string> ::const_iterator _iter1035;
       for (_iter1035 = this->errors.begin(); _iter1035 != this->errors.end(); ++_iter1035)
       {
@@ -41961,9 +45989,24 @@ uint32_t WMValidateResourcePlanResponse::write(::apache::thrift::protocol::TProt
         xfer += oprot->writeString((*_iter973));
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+      std::vector<std::string> ::const_iterator _iter1015;
+      for (_iter1015 = this->errors.begin(); _iter1015 != this->errors.end(); ++_iter1015)
+      {
+        xfer += oprot->writeString((*_iter1015));
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       }
       xfer += oprot->writeListEnd();
     }
@@ -41975,6 +46018,7 @@ uint32_t WMValidateResourcePlanResponse::write(::apache::thrift::protocol::TProt
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->warnings.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter1055;
       for (_iter1055 = this->warnings.begin(); _iter1055 != this->warnings.end(); ++_iter1055)
       {
@@ -41982,6 +46026,8 @@ uint32_t WMValidateResourcePlanResponse::write(::apache::thrift::protocol::TProt
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter1037;
       for (_iter1037 = this->warnings.begin(); _iter1037 != this->warnings.end(); ++_iter1037)
@@ -41990,6 +46036,8 @@ uint32_t WMValidateResourcePlanResponse::write(::apache::thrift::protocol::TProt
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter1017;
       for (_iter1017 = this->warnings.begin(); _iter1017 != this->warnings.end(); ++_iter1017)
@@ -41998,6 +46046,8 @@ uint32_t WMValidateResourcePlanResponse::write(::apache::thrift::protocol::TProt
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       std::vector<std::string> ::const_iterator _iter1036;
       for (_iter1036 = this->warnings.begin(); _iter1036 != this->warnings.end(); ++_iter1036)
       {
@@ -42045,9 +46095,24 @@ uint32_t WMValidateResourcePlanResponse::write(::apache::thrift::protocol::TProt
         xfer += oprot->writeString((*_iter974));
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+      std::vector<std::string> ::const_iterator _iter1016;
+      for (_iter1016 = this->warnings.begin(); _iter1016 != this->warnings.end(); ++_iter1016)
+      {
+        xfer += oprot->writeString((*_iter1016));
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       }
       xfer += oprot->writeListEnd();
     }
@@ -42067,6 +46132,7 @@ void swap(WMValidateResourcePlanResponse &a, WMValidateResourcePlanResponse &b) 
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMValidateResourcePlanResponse::WMValidateResourcePlanResponse(const WMValidateResourcePlanResponse& other1056) {
   errors = other1056.errors;
   warnings = other1056.warnings;
@@ -42079,6 +46145,8 @@ WMValidateResourcePlanResponse& WMValidateResourcePlanResponse::operator=(const 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMValidateResourcePlanResponse::WMValidateResourcePlanResponse(const WMValidateResourcePlanResponse& other1038) {
   errors = other1038.errors;
@@ -42092,6 +46160,8 @@ WMValidateResourcePlanResponse& WMValidateResourcePlanResponse::operator=(const 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMValidateResourcePlanResponse::WMValidateResourcePlanResponse(const WMValidateResourcePlanResponse& other1018) {
   errors = other1018.errors;
@@ -42105,6 +46175,8 @@ WMValidateResourcePlanResponse& WMValidateResourcePlanResponse::operator=(const 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMValidateResourcePlanResponse::WMValidateResourcePlanResponse(const WMValidateResourcePlanResponse& other1037) {
   errors = other1037.errors;
   warnings = other1037.warnings;
@@ -42185,9 +46257,29 @@ WMValidateResourcePlanResponse& WMValidateResourcePlanResponse::operator=(const 
   __isset = other976.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMValidateResourcePlanResponse::WMValidateResourcePlanResponse(const WMValidateResourcePlanResponse& other1017) {
+  errors = other1017.errors;
+  warnings = other1017.warnings;
+  __isset = other1017.__isset;
+}
+WMValidateResourcePlanResponse& WMValidateResourcePlanResponse::operator=(const WMValidateResourcePlanResponse& other1018) {
+  errors = other1018.errors;
+  warnings = other1018.warnings;
+  __isset = other1018.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMValidateResourcePlanResponse::printTo(std::ostream& out) const {
@@ -42272,6 +46364,7 @@ void swap(WMDropResourcePlanRequest &a, WMDropResourcePlanRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMDropResourcePlanRequest::WMDropResourcePlanRequest(const WMDropResourcePlanRequest& other1058) {
   resourcePlanName = other1058.resourcePlanName;
   __isset = other1058.__isset;
@@ -42282,6 +46375,8 @@ WMDropResourcePlanRequest& WMDropResourcePlanRequest::operator=(const WMDropReso
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMDropResourcePlanRequest::WMDropResourcePlanRequest(const WMDropResourcePlanRequest& other1040) {
   resourcePlanName = other1040.resourcePlanName;
@@ -42293,6 +46388,8 @@ WMDropResourcePlanRequest& WMDropResourcePlanRequest::operator=(const WMDropReso
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMDropResourcePlanRequest::WMDropResourcePlanRequest(const WMDropResourcePlanRequest& other1020) {
   resourcePlanName = other1020.resourcePlanName;
@@ -42304,6 +46401,8 @@ WMDropResourcePlanRequest& WMDropResourcePlanRequest::operator=(const WMDropReso
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMDropResourcePlanRequest::WMDropResourcePlanRequest(const WMDropResourcePlanRequest& other1039) {
   resourcePlanName = other1039.resourcePlanName;
   __isset = other1039.__isset;
@@ -42365,9 +46464,27 @@ WMDropResourcePlanRequest& WMDropResourcePlanRequest::operator=(const WMDropReso
   __isset = other978.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMDropResourcePlanRequest::WMDropResourcePlanRequest(const WMDropResourcePlanRequest& other1019) {
+  resourcePlanName = other1019.resourcePlanName;
+  __isset = other1019.__isset;
+}
+WMDropResourcePlanRequest& WMDropResourcePlanRequest::operator=(const WMDropResourcePlanRequest& other1020) {
+  resourcePlanName = other1020.resourcePlanName;
+  __isset = other1020.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMDropResourcePlanRequest::printTo(std::ostream& out) const {
@@ -42442,6 +46559,7 @@ WMDropResourcePlanResponse& WMDropResourcePlanResponse::operator=(const WMDropRe
 =======
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMDropResourcePlanResponse::WMDropResourcePlanResponse(const WMDropResourcePlanResponse& other1022) {
   (void) other1022;
 }
@@ -42450,6 +46568,8 @@ WMDropResourcePlanResponse& WMDropResourcePlanResponse::operator=(const WMDropRe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMDropResourcePlanResponse::WMDropResourcePlanResponse(const WMDropResourcePlanResponse& other1041) {
   (void) other1041;
 }
@@ -42501,9 +46621,25 @@ WMDropResourcePlanResponse& WMDropResourcePlanResponse::operator=(const WMDropRe
   (void) other980;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMDropResourcePlanResponse::WMDropResourcePlanResponse(const WMDropResourcePlanResponse& other1021) {
+  (void) other1021;
+}
+WMDropResourcePlanResponse& WMDropResourcePlanResponse::operator=(const WMDropResourcePlanResponse& other1022) {
+  (void) other1022;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMDropResourcePlanResponse::printTo(std::ostream& out) const {
@@ -42586,6 +46722,7 @@ void swap(WMCreateTriggerRequest &a, WMCreateTriggerRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMCreateTriggerRequest::WMCreateTriggerRequest(const WMCreateTriggerRequest& other1062) {
   trigger = other1062.trigger;
   __isset = other1062.__isset;
@@ -42596,6 +46733,8 @@ WMCreateTriggerRequest& WMCreateTriggerRequest::operator=(const WMCreateTriggerR
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMCreateTriggerRequest::WMCreateTriggerRequest(const WMCreateTriggerRequest& other1044) {
   trigger = other1044.trigger;
@@ -42607,6 +46746,8 @@ WMCreateTriggerRequest& WMCreateTriggerRequest::operator=(const WMCreateTriggerR
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMCreateTriggerRequest::WMCreateTriggerRequest(const WMCreateTriggerRequest& other1024) {
   trigger = other1024.trigger;
@@ -42618,6 +46759,8 @@ WMCreateTriggerRequest& WMCreateTriggerRequest::operator=(const WMCreateTriggerR
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMCreateTriggerRequest::WMCreateTriggerRequest(const WMCreateTriggerRequest& other1043) {
   trigger = other1043.trigger;
   __isset = other1043.__isset;
@@ -42683,9 +46826,27 @@ WMCreateTriggerRequest& WMCreateTriggerRequest::operator=(const WMCreateTriggerR
   __isset = other982.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMCreateTriggerRequest::WMCreateTriggerRequest(const WMCreateTriggerRequest& other1023) {
+  trigger = other1023.trigger;
+  __isset = other1023.__isset;
+}
+WMCreateTriggerRequest& WMCreateTriggerRequest::operator=(const WMCreateTriggerRequest& other1024) {
+  trigger = other1024.trigger;
+  __isset = other1024.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMCreateTriggerRequest::printTo(std::ostream& out) const {
@@ -42746,6 +46907,7 @@ void swap(WMCreateTriggerResponse &a, WMCreateTriggerResponse &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMCreateTriggerResponse::WMCreateTriggerResponse(const WMCreateTriggerResponse& other1064) {
   (void) other1064;
 }
@@ -42754,6 +46916,8 @@ WMCreateTriggerResponse& WMCreateTriggerResponse::operator=(const WMCreateTrigge
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMCreateTriggerResponse::WMCreateTriggerResponse(const WMCreateTriggerResponse& other1046) {
   (void) other1046;
@@ -42763,6 +46927,8 @@ WMCreateTriggerResponse& WMCreateTriggerResponse::operator=(const WMCreateTrigge
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMCreateTriggerResponse::WMCreateTriggerResponse(const WMCreateTriggerResponse& other1026) {
   (void) other1026;
@@ -42772,6 +46938,8 @@ WMCreateTriggerResponse& WMCreateTriggerResponse::operator=(const WMCreateTrigge
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMCreateTriggerResponse::WMCreateTriggerResponse(const WMCreateTriggerResponse& other1045) {
   (void) other1045;
 }
@@ -42823,9 +46991,25 @@ WMCreateTriggerResponse& WMCreateTriggerResponse::operator=(const WMCreateTrigge
   (void) other984;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMCreateTriggerResponse::WMCreateTriggerResponse(const WMCreateTriggerResponse& other1025) {
+  (void) other1025;
+}
+WMCreateTriggerResponse& WMCreateTriggerResponse::operator=(const WMCreateTriggerResponse& other1026) {
+  (void) other1026;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMCreateTriggerResponse::printTo(std::ostream& out) const {
@@ -42908,6 +47092,7 @@ void swap(WMAlterTriggerRequest &a, WMAlterTriggerRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMAlterTriggerRequest::WMAlterTriggerRequest(const WMAlterTriggerRequest& other1066) {
   trigger = other1066.trigger;
   __isset = other1066.__isset;
@@ -42918,6 +47103,8 @@ WMAlterTriggerRequest& WMAlterTriggerRequest::operator=(const WMAlterTriggerRequ
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMAlterTriggerRequest::WMAlterTriggerRequest(const WMAlterTriggerRequest& other1048) {
   trigger = other1048.trigger;
@@ -42929,6 +47116,8 @@ WMAlterTriggerRequest& WMAlterTriggerRequest::operator=(const WMAlterTriggerRequ
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMAlterTriggerRequest::WMAlterTriggerRequest(const WMAlterTriggerRequest& other1028) {
   trigger = other1028.trigger;
@@ -42940,6 +47129,8 @@ WMAlterTriggerRequest& WMAlterTriggerRequest::operator=(const WMAlterTriggerRequ
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMAlterTriggerRequest::WMAlterTriggerRequest(const WMAlterTriggerRequest& other1047) {
   trigger = other1047.trigger;
   __isset = other1047.__isset;
@@ -43005,9 +47196,27 @@ WMAlterTriggerRequest& WMAlterTriggerRequest::operator=(const WMAlterTriggerRequ
   __isset = other986.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMAlterTriggerRequest::WMAlterTriggerRequest(const WMAlterTriggerRequest& other1027) {
+  trigger = other1027.trigger;
+  __isset = other1027.__isset;
+}
+WMAlterTriggerRequest& WMAlterTriggerRequest::operator=(const WMAlterTriggerRequest& other1028) {
+  trigger = other1028.trigger;
+  __isset = other1028.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMAlterTriggerRequest::printTo(std::ostream& out) const {
@@ -43068,6 +47277,7 @@ void swap(WMAlterTriggerResponse &a, WMAlterTriggerResponse &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMAlterTriggerResponse::WMAlterTriggerResponse(const WMAlterTriggerResponse& other1068) {
   (void) other1068;
 }
@@ -43076,6 +47286,8 @@ WMAlterTriggerResponse& WMAlterTriggerResponse::operator=(const WMAlterTriggerRe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMAlterTriggerResponse::WMAlterTriggerResponse(const WMAlterTriggerResponse& other1050) {
   (void) other1050;
@@ -43085,6 +47297,8 @@ WMAlterTriggerResponse& WMAlterTriggerResponse::operator=(const WMAlterTriggerRe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMAlterTriggerResponse::WMAlterTriggerResponse(const WMAlterTriggerResponse& other1030) {
   (void) other1030;
@@ -43094,6 +47308,8 @@ WMAlterTriggerResponse& WMAlterTriggerResponse::operator=(const WMAlterTriggerRe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMAlterTriggerResponse::WMAlterTriggerResponse(const WMAlterTriggerResponse& other1049) {
   (void) other1049;
 }
@@ -43151,9 +47367,25 @@ WMAlterTriggerResponse& WMAlterTriggerResponse::operator=(const WMAlterTriggerRe
   (void) other988;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMAlterTriggerResponse::WMAlterTriggerResponse(const WMAlterTriggerResponse& other1029) {
+  (void) other1029;
+}
+WMAlterTriggerResponse& WMAlterTriggerResponse::operator=(const WMAlterTriggerResponse& other1030) {
+  (void) other1030;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMAlterTriggerResponse::printTo(std::ostream& out) const {
@@ -43255,6 +47487,7 @@ void swap(WMDropTriggerRequest &a, WMDropTriggerRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMDropTriggerRequest::WMDropTriggerRequest(const WMDropTriggerRequest& other1070) {
   resourcePlanName = other1070.resourcePlanName;
   triggerName = other1070.triggerName;
@@ -43267,6 +47500,8 @@ WMDropTriggerRequest& WMDropTriggerRequest::operator=(const WMDropTriggerRequest
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMDropTriggerRequest::WMDropTriggerRequest(const WMDropTriggerRequest& other1052) {
   resourcePlanName = other1052.resourcePlanName;
@@ -43280,6 +47515,8 @@ WMDropTriggerRequest& WMDropTriggerRequest::operator=(const WMDropTriggerRequest
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMDropTriggerRequest::WMDropTriggerRequest(const WMDropTriggerRequest& other1032) {
   resourcePlanName = other1032.resourcePlanName;
@@ -43293,6 +47530,8 @@ WMDropTriggerRequest& WMDropTriggerRequest::operator=(const WMDropTriggerRequest
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMDropTriggerRequest::WMDropTriggerRequest(const WMDropTriggerRequest& other1051) {
   resourcePlanName = other1051.resourcePlanName;
   triggerName = other1051.triggerName;
@@ -43368,9 +47607,29 @@ WMDropTriggerRequest& WMDropTriggerRequest::operator=(const WMDropTriggerRequest
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMDropTriggerRequest::WMDropTriggerRequest(const WMDropTriggerRequest& other1031) {
+  resourcePlanName = other1031.resourcePlanName;
+  triggerName = other1031.triggerName;
+  __isset = other1031.__isset;
+}
+WMDropTriggerRequest& WMDropTriggerRequest::operator=(const WMDropTriggerRequest& other1032) {
+  resourcePlanName = other1032.resourcePlanName;
+  triggerName = other1032.triggerName;
+  __isset = other1032.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMDropTriggerRequest::printTo(std::ostream& out) const {
@@ -43432,6 +47691,7 @@ void swap(WMDropTriggerResponse &a, WMDropTriggerResponse &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMDropTriggerResponse::WMDropTriggerResponse(const WMDropTriggerResponse& other1072) {
   (void) other1072;
 }
@@ -43440,6 +47700,8 @@ WMDropTriggerResponse& WMDropTriggerResponse::operator=(const WMDropTriggerRespo
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMDropTriggerResponse::WMDropTriggerResponse(const WMDropTriggerResponse& other1054) {
   (void) other1054;
@@ -43449,6 +47711,8 @@ WMDropTriggerResponse& WMDropTriggerResponse::operator=(const WMDropTriggerRespo
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMDropTriggerResponse::WMDropTriggerResponse(const WMDropTriggerResponse& other1034) {
   (void) other1034;
@@ -43458,6 +47722,8 @@ WMDropTriggerResponse& WMDropTriggerResponse::operator=(const WMDropTriggerRespo
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMDropTriggerResponse::WMDropTriggerResponse(const WMDropTriggerResponse& other1053) {
   (void) other1053;
 }
@@ -43509,9 +47775,25 @@ WMDropTriggerResponse& WMDropTriggerResponse::operator=(const WMDropTriggerRespo
   (void) other992;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMDropTriggerResponse::WMDropTriggerResponse(const WMDropTriggerResponse& other1033) {
+  (void) other1033;
+}
+WMDropTriggerResponse& WMDropTriggerResponse::operator=(const WMDropTriggerResponse& other1034) {
+  (void) other1034;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMDropTriggerResponse::printTo(std::ostream& out) const {
@@ -43594,6 +47876,7 @@ void swap(WMGetTriggersForResourePlanRequest &a, WMGetTriggersForResourePlanRequ
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMGetTriggersForResourePlanRequest::WMGetTriggersForResourePlanRequest(const WMGetTriggersForResourePlanRequest& other1074) {
   resourcePlanName = other1074.resourcePlanName;
   __isset = other1074.__isset;
@@ -43604,6 +47887,8 @@ WMGetTriggersForResourePlanRequest& WMGetTriggersForResourePlanRequest::operator
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMGetTriggersForResourePlanRequest::WMGetTriggersForResourePlanRequest(const WMGetTriggersForResourePlanRequest& other1056) {
   resourcePlanName = other1056.resourcePlanName;
@@ -43615,6 +47900,8 @@ WMGetTriggersForResourePlanRequest& WMGetTriggersForResourePlanRequest::operator
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMGetTriggersForResourePlanRequest::WMGetTriggersForResourePlanRequest(const WMGetTriggersForResourePlanRequest& other1036) {
   resourcePlanName = other1036.resourcePlanName;
@@ -43626,6 +47913,8 @@ WMGetTriggersForResourePlanRequest& WMGetTriggersForResourePlanRequest::operator
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMGetTriggersForResourePlanRequest::WMGetTriggersForResourePlanRequest(const WMGetTriggersForResourePlanRequest& other1055) {
   resourcePlanName = other1055.resourcePlanName;
   __isset = other1055.__isset;
@@ -43691,9 +47980,27 @@ WMGetTriggersForResourePlanRequest& WMGetTriggersForResourePlanRequest::operator
   __isset = other994.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMGetTriggersForResourePlanRequest::WMGetTriggersForResourePlanRequest(const WMGetTriggersForResourePlanRequest& other1035) {
+  resourcePlanName = other1035.resourcePlanName;
+  __isset = other1035.__isset;
+}
+WMGetTriggersForResourePlanRequest& WMGetTriggersForResourePlanRequest::operator=(const WMGetTriggersForResourePlanRequest& other1036) {
+  resourcePlanName = other1036.resourcePlanName;
+  __isset = other1036.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMGetTriggersForResourePlanRequest::printTo(std::ostream& out) const {
@@ -43740,6 +48047,7 @@ uint32_t WMGetTriggersForResourePlanResponse::read(::apache::thrift::protocol::T
             this->triggers.clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1076;
             ::apache::thrift::protocol::TType _etype1079;
             xfer += iprot->readListBegin(_etype1079, _size1076);
@@ -43751,6 +48059,8 @@ uint32_t WMGetTriggersForResourePlanResponse::read(::apache::thrift::protocol::T
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size1058;
             ::apache::thrift::protocol::TType _etype1061;
@@ -43763,6 +48073,8 @@ uint32_t WMGetTriggersForResourePlanResponse::read(::apache::thrift::protocol::T
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             uint32_t _size1038;
             ::apache::thrift::protocol::TType _etype1041;
@@ -43775,6 +48087,8 @@ uint32_t WMGetTriggersForResourePlanResponse::read(::apache::thrift::protocol::T
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             uint32_t _size1057;
             ::apache::thrift::protocol::TType _etype1060;
             xfer += iprot->readListBegin(_etype1060, _size1057);
@@ -43843,9 +48157,28 @@ uint32_t WMGetTriggersForResourePlanResponse::read(::apache::thrift::protocol::T
               xfer += this->triggers[_i999].read(iprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+            uint32_t _size1037;
+            ::apache::thrift::protocol::TType _etype1040;
+            xfer += iprot->readListBegin(_etype1040, _size1037);
+            this->triggers.resize(_size1037);
+            uint32_t _i1041;
+            for (_i1041 = 0; _i1041 < _size1037; ++_i1041)
+            {
+              xfer += this->triggers[_i1041].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             xfer += iprot->readListEnd();
           }
@@ -43877,6 +48210,7 @@ uint32_t WMGetTriggersForResourePlanResponse::write(::apache::thrift::protocol::
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->triggers.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       std::vector<WMTrigger> ::const_iterator _iter1081;
       for (_iter1081 = this->triggers.begin(); _iter1081 != this->triggers.end(); ++_iter1081)
       {
@@ -43884,6 +48218,8 @@ uint32_t WMGetTriggersForResourePlanResponse::write(::apache::thrift::protocol::
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<WMTrigger> ::const_iterator _iter1063;
       for (_iter1063 = this->triggers.begin(); _iter1063 != this->triggers.end(); ++_iter1063)
@@ -43892,6 +48228,8 @@ uint32_t WMGetTriggersForResourePlanResponse::write(::apache::thrift::protocol::
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
       std::vector<WMTrigger> ::const_iterator _iter1043;
       for (_iter1043 = this->triggers.begin(); _iter1043 != this->triggers.end(); ++_iter1043)
@@ -43900,6 +48238,8 @@ uint32_t WMGetTriggersForResourePlanResponse::write(::apache::thrift::protocol::
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       std::vector<WMTrigger> ::const_iterator _iter1062;
       for (_iter1062 = this->triggers.begin(); _iter1062 != this->triggers.end(); ++_iter1062)
       {
@@ -43948,9 +48288,24 @@ uint32_t WMGetTriggersForResourePlanResponse::write(::apache::thrift::protocol::
         xfer += (*_iter1000).write(oprot);
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+      std::vector<WMTrigger> ::const_iterator _iter1042;
+      for (_iter1042 = this->triggers.begin(); _iter1042 != this->triggers.end(); ++_iter1042)
+      {
+        xfer += (*_iter1042).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       }
       xfer += oprot->writeListEnd();
     }
@@ -43969,6 +48324,7 @@ void swap(WMGetTriggersForResourePlanResponse &a, WMGetTriggersForResourePlanRes
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMGetTriggersForResourePlanResponse::WMGetTriggersForResourePlanResponse(const WMGetTriggersForResourePlanResponse& other1082) {
   triggers = other1082.triggers;
   __isset = other1082.__isset;
@@ -43979,6 +48335,8 @@ WMGetTriggersForResourePlanResponse& WMGetTriggersForResourePlanResponse::operat
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMGetTriggersForResourePlanResponse::WMGetTriggersForResourePlanResponse(const WMGetTriggersForResourePlanResponse& other1064) {
   triggers = other1064.triggers;
@@ -43990,6 +48348,8 @@ WMGetTriggersForResourePlanResponse& WMGetTriggersForResourePlanResponse::operat
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMGetTriggersForResourePlanResponse::WMGetTriggersForResourePlanResponse(const WMGetTriggersForResourePlanResponse& other1044) {
   triggers = other1044.triggers;
@@ -44001,6 +48361,8 @@ WMGetTriggersForResourePlanResponse& WMGetTriggersForResourePlanResponse::operat
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMGetTriggersForResourePlanResponse::WMGetTriggersForResourePlanResponse(const WMGetTriggersForResourePlanResponse& other1063) {
   triggers = other1063.triggers;
   __isset = other1063.__isset;
@@ -44066,9 +48428,27 @@ WMGetTriggersForResourePlanResponse& WMGetTriggersForResourePlanResponse::operat
   __isset = other1002.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMGetTriggersForResourePlanResponse::WMGetTriggersForResourePlanResponse(const WMGetTriggersForResourePlanResponse& other1043) {
+  triggers = other1043.triggers;
+  __isset = other1043.__isset;
+}
+WMGetTriggersForResourePlanResponse& WMGetTriggersForResourePlanResponse::operator=(const WMGetTriggersForResourePlanResponse& other1044) {
+  triggers = other1044.triggers;
+  __isset = other1044.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMGetTriggersForResourePlanResponse::printTo(std::ostream& out) const {
@@ -44152,6 +48532,7 @@ void swap(WMCreatePoolRequest &a, WMCreatePoolRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMCreatePoolRequest::WMCreatePoolRequest(const WMCreatePoolRequest& other1084) {
   pool = other1084.pool;
   __isset = other1084.__isset;
@@ -44162,6 +48543,8 @@ WMCreatePoolRequest& WMCreatePoolRequest::operator=(const WMCreatePoolRequest& o
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMCreatePoolRequest::WMCreatePoolRequest(const WMCreatePoolRequest& other1066) {
   pool = other1066.pool;
@@ -44173,6 +48556,8 @@ WMCreatePoolRequest& WMCreatePoolRequest::operator=(const WMCreatePoolRequest& o
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMCreatePoolRequest::WMCreatePoolRequest(const WMCreatePoolRequest& other1046) {
   pool = other1046.pool;
@@ -44184,6 +48569,8 @@ WMCreatePoolRequest& WMCreatePoolRequest::operator=(const WMCreatePoolRequest& o
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMCreatePoolRequest::WMCreatePoolRequest(const WMCreatePoolRequest& other1065) {
   pool = other1065.pool;
   __isset = other1065.__isset;
@@ -44249,9 +48636,27 @@ WMCreatePoolRequest& WMCreatePoolRequest::operator=(const WMCreatePoolRequest& o
   __isset = other1004.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMCreatePoolRequest::WMCreatePoolRequest(const WMCreatePoolRequest& other1045) {
+  pool = other1045.pool;
+  __isset = other1045.__isset;
+}
+WMCreatePoolRequest& WMCreatePoolRequest::operator=(const WMCreatePoolRequest& other1046) {
+  pool = other1046.pool;
+  __isset = other1046.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMCreatePoolRequest::printTo(std::ostream& out) const {
@@ -44312,6 +48717,7 @@ void swap(WMCreatePoolResponse &a, WMCreatePoolResponse &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMCreatePoolResponse::WMCreatePoolResponse(const WMCreatePoolResponse& other1086) {
   (void) other1086;
 }
@@ -44320,6 +48726,8 @@ WMCreatePoolResponse& WMCreatePoolResponse::operator=(const WMCreatePoolResponse
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMCreatePoolResponse::WMCreatePoolResponse(const WMCreatePoolResponse& other1068) {
   (void) other1068;
@@ -44329,6 +48737,8 @@ WMCreatePoolResponse& WMCreatePoolResponse::operator=(const WMCreatePoolResponse
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMCreatePoolResponse::WMCreatePoolResponse(const WMCreatePoolResponse& other1048) {
   (void) other1048;
@@ -44338,6 +48748,8 @@ WMCreatePoolResponse& WMCreatePoolResponse::operator=(const WMCreatePoolResponse
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMCreatePoolResponse::WMCreatePoolResponse(const WMCreatePoolResponse& other1067) {
   (void) other1067;
 }
@@ -44391,9 +48803,25 @@ WMCreatePoolResponse& WMCreatePoolResponse::operator=(const WMCreatePoolResponse
   (void) other1006;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMCreatePoolResponse::WMCreatePoolResponse(const WMCreatePoolResponse& other1047) {
+  (void) other1047;
+}
+WMCreatePoolResponse& WMCreatePoolResponse::operator=(const WMCreatePoolResponse& other1048) {
+  (void) other1048;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMCreatePoolResponse::printTo(std::ostream& out) const {
@@ -44495,6 +48923,7 @@ void swap(WMAlterPoolRequest &a, WMAlterPoolRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMAlterPoolRequest::WMAlterPoolRequest(const WMAlterPoolRequest& other1088) {
   pool = other1088.pool;
   poolPath = other1088.poolPath;
@@ -44507,6 +48936,8 @@ WMAlterPoolRequest& WMAlterPoolRequest::operator=(const WMAlterPoolRequest& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMAlterPoolRequest::WMAlterPoolRequest(const WMAlterPoolRequest& other1070) {
   pool = other1070.pool;
@@ -44520,6 +48951,8 @@ WMAlterPoolRequest& WMAlterPoolRequest::operator=(const WMAlterPoolRequest& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMAlterPoolRequest::WMAlterPoolRequest(const WMAlterPoolRequest& other1050) {
   pool = other1050.pool;
@@ -44533,6 +48966,8 @@ WMAlterPoolRequest& WMAlterPoolRequest::operator=(const WMAlterPoolRequest& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMAlterPoolRequest::WMAlterPoolRequest(const WMAlterPoolRequest& other1069) {
   pool = other1069.pool;
   poolPath = other1069.poolPath;
@@ -44608,9 +49043,29 @@ WMAlterPoolRequest& WMAlterPoolRequest::operator=(const WMAlterPoolRequest& othe
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMAlterPoolRequest::WMAlterPoolRequest(const WMAlterPoolRequest& other1049) {
+  pool = other1049.pool;
+  poolPath = other1049.poolPath;
+  __isset = other1049.__isset;
+}
+WMAlterPoolRequest& WMAlterPoolRequest::operator=(const WMAlterPoolRequest& other1050) {
+  pool = other1050.pool;
+  poolPath = other1050.poolPath;
+  __isset = other1050.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMAlterPoolRequest::printTo(std::ostream& out) const {
@@ -44672,6 +49127,7 @@ void swap(WMAlterPoolResponse &a, WMAlterPoolResponse &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMAlterPoolResponse::WMAlterPoolResponse(const WMAlterPoolResponse& other1090) {
   (void) other1090;
 }
@@ -44680,6 +49136,8 @@ WMAlterPoolResponse& WMAlterPoolResponse::operator=(const WMAlterPoolResponse& o
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMAlterPoolResponse::WMAlterPoolResponse(const WMAlterPoolResponse& other1072) {
   (void) other1072;
@@ -44689,6 +49147,8 @@ WMAlterPoolResponse& WMAlterPoolResponse::operator=(const WMAlterPoolResponse& o
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMAlterPoolResponse::WMAlterPoolResponse(const WMAlterPoolResponse& other1052) {
   (void) other1052;
@@ -44698,6 +49158,8 @@ WMAlterPoolResponse& WMAlterPoolResponse::operator=(const WMAlterPoolResponse& o
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMAlterPoolResponse::WMAlterPoolResponse(const WMAlterPoolResponse& other1071) {
   (void) other1071;
 }
@@ -44751,9 +49213,25 @@ WMAlterPoolResponse& WMAlterPoolResponse::operator=(const WMAlterPoolResponse& o
   (void) other1010;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMAlterPoolResponse::WMAlterPoolResponse(const WMAlterPoolResponse& other1051) {
+  (void) other1051;
+}
+WMAlterPoolResponse& WMAlterPoolResponse::operator=(const WMAlterPoolResponse& other1052) {
+  (void) other1052;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMAlterPoolResponse::printTo(std::ostream& out) const {
@@ -44855,6 +49333,7 @@ void swap(WMDropPoolRequest &a, WMDropPoolRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMDropPoolRequest::WMDropPoolRequest(const WMDropPoolRequest& other1092) {
   resourcePlanName = other1092.resourcePlanName;
   poolPath = other1092.poolPath;
@@ -44867,6 +49346,8 @@ WMDropPoolRequest& WMDropPoolRequest::operator=(const WMDropPoolRequest& other10
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMDropPoolRequest::WMDropPoolRequest(const WMDropPoolRequest& other1074) {
   resourcePlanName = other1074.resourcePlanName;
@@ -44880,6 +49361,8 @@ WMDropPoolRequest& WMDropPoolRequest::operator=(const WMDropPoolRequest& other10
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMDropPoolRequest::WMDropPoolRequest(const WMDropPoolRequest& other1054) {
   resourcePlanName = other1054.resourcePlanName;
@@ -44893,6 +49376,8 @@ WMDropPoolRequest& WMDropPoolRequest::operator=(const WMDropPoolRequest& other10
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMDropPoolRequest::WMDropPoolRequest(const WMDropPoolRequest& other1073) {
   resourcePlanName = other1073.resourcePlanName;
   poolPath = other1073.poolPath;
@@ -44963,9 +49448,29 @@ WMDropPoolRequest& WMDropPoolRequest::operator=(const WMDropPoolRequest& other10
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMDropPoolRequest::WMDropPoolRequest(const WMDropPoolRequest& other1053) {
+  resourcePlanName = other1053.resourcePlanName;
+  poolPath = other1053.poolPath;
+  __isset = other1053.__isset;
+}
+WMDropPoolRequest& WMDropPoolRequest::operator=(const WMDropPoolRequest& other1054) {
+  resourcePlanName = other1054.resourcePlanName;
+  poolPath = other1054.poolPath;
+  __isset = other1054.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMDropPoolRequest::printTo(std::ostream& out) const {
@@ -45027,6 +49532,7 @@ void swap(WMDropPoolResponse &a, WMDropPoolResponse &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMDropPoolResponse::WMDropPoolResponse(const WMDropPoolResponse& other1094) {
   (void) other1094;
 }
@@ -45035,6 +49541,8 @@ WMDropPoolResponse& WMDropPoolResponse::operator=(const WMDropPoolResponse& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMDropPoolResponse::WMDropPoolResponse(const WMDropPoolResponse& other1076) {
   (void) other1076;
@@ -45044,6 +49552,8 @@ WMDropPoolResponse& WMDropPoolResponse::operator=(const WMDropPoolResponse& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMDropPoolResponse::WMDropPoolResponse(const WMDropPoolResponse& other1056) {
   (void) other1056;
@@ -45053,6 +49563,8 @@ WMDropPoolResponse& WMDropPoolResponse::operator=(const WMDropPoolResponse& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMDropPoolResponse::WMDropPoolResponse(const WMDropPoolResponse& other1075) {
   (void) other1075;
 }
@@ -45104,9 +49616,25 @@ WMDropPoolResponse& WMDropPoolResponse::operator=(const WMDropPoolResponse& othe
   (void) other1014;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMDropPoolResponse::WMDropPoolResponse(const WMDropPoolResponse& other1055) {
+  (void) other1055;
+}
+WMDropPoolResponse& WMDropPoolResponse::operator=(const WMDropPoolResponse& other1056) {
+  (void) other1056;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMDropPoolResponse::printTo(std::ostream& out) const {
@@ -45208,6 +49736,7 @@ void swap(WMCreateOrUpdateMappingRequest &a, WMCreateOrUpdateMappingRequest &b) 
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMCreateOrUpdateMappingRequest::WMCreateOrUpdateMappingRequest(const WMCreateOrUpdateMappingRequest& other1096) {
   mapping = other1096.mapping;
   update = other1096.update;
@@ -45220,6 +49749,8 @@ WMCreateOrUpdateMappingRequest& WMCreateOrUpdateMappingRequest::operator=(const 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMCreateOrUpdateMappingRequest::WMCreateOrUpdateMappingRequest(const WMCreateOrUpdateMappingRequest& other1078) {
   mapping = other1078.mapping;
@@ -45233,6 +49764,8 @@ WMCreateOrUpdateMappingRequest& WMCreateOrUpdateMappingRequest::operator=(const 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMCreateOrUpdateMappingRequest::WMCreateOrUpdateMappingRequest(const WMCreateOrUpdateMappingRequest& other1058) {
   mapping = other1058.mapping;
@@ -45246,6 +49779,8 @@ WMCreateOrUpdateMappingRequest& WMCreateOrUpdateMappingRequest::operator=(const 
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMCreateOrUpdateMappingRequest::WMCreateOrUpdateMappingRequest(const WMCreateOrUpdateMappingRequest& other1077) {
   mapping = other1077.mapping;
   update = other1077.update;
@@ -45316,9 +49851,29 @@ WMCreateOrUpdateMappingRequest& WMCreateOrUpdateMappingRequest::operator=(const 
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMCreateOrUpdateMappingRequest::WMCreateOrUpdateMappingRequest(const WMCreateOrUpdateMappingRequest& other1057) {
+  mapping = other1057.mapping;
+  update = other1057.update;
+  __isset = other1057.__isset;
+}
+WMCreateOrUpdateMappingRequest& WMCreateOrUpdateMappingRequest::operator=(const WMCreateOrUpdateMappingRequest& other1058) {
+  mapping = other1058.mapping;
+  update = other1058.update;
+  __isset = other1058.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMCreateOrUpdateMappingRequest::printTo(std::ostream& out) const {
@@ -45380,6 +49935,7 @@ void swap(WMCreateOrUpdateMappingResponse &a, WMCreateOrUpdateMappingResponse &b
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMCreateOrUpdateMappingResponse::WMCreateOrUpdateMappingResponse(const WMCreateOrUpdateMappingResponse& other1098) {
   (void) other1098;
 }
@@ -45388,6 +49944,8 @@ WMCreateOrUpdateMappingResponse& WMCreateOrUpdateMappingResponse::operator=(cons
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMCreateOrUpdateMappingResponse::WMCreateOrUpdateMappingResponse(const WMCreateOrUpdateMappingResponse& other1080) {
   (void) other1080;
@@ -45397,6 +49955,8 @@ WMCreateOrUpdateMappingResponse& WMCreateOrUpdateMappingResponse::operator=(cons
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMCreateOrUpdateMappingResponse::WMCreateOrUpdateMappingResponse(const WMCreateOrUpdateMappingResponse& other1060) {
   (void) other1060;
@@ -45406,6 +49966,8 @@ WMCreateOrUpdateMappingResponse& WMCreateOrUpdateMappingResponse::operator=(cons
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMCreateOrUpdateMappingResponse::WMCreateOrUpdateMappingResponse(const WMCreateOrUpdateMappingResponse& other1079) {
   (void) other1079;
 }
@@ -45459,9 +50021,25 @@ WMCreateOrUpdateMappingResponse& WMCreateOrUpdateMappingResponse::operator=(cons
   (void) other1018;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMCreateOrUpdateMappingResponse::WMCreateOrUpdateMappingResponse(const WMCreateOrUpdateMappingResponse& other1059) {
+  (void) other1059;
+}
+WMCreateOrUpdateMappingResponse& WMCreateOrUpdateMappingResponse::operator=(const WMCreateOrUpdateMappingResponse& other1060) {
+  (void) other1060;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMCreateOrUpdateMappingResponse::printTo(std::ostream& out) const {
@@ -45544,6 +50122,7 @@ void swap(WMDropMappingRequest &a, WMDropMappingRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMDropMappingRequest::WMDropMappingRequest(const WMDropMappingRequest& other1100) {
   mapping = other1100.mapping;
   __isset = other1100.__isset;
@@ -45554,6 +50133,8 @@ WMDropMappingRequest& WMDropMappingRequest::operator=(const WMDropMappingRequest
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMDropMappingRequest::WMDropMappingRequest(const WMDropMappingRequest& other1082) {
   mapping = other1082.mapping;
@@ -45565,6 +50146,8 @@ WMDropMappingRequest& WMDropMappingRequest::operator=(const WMDropMappingRequest
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMDropMappingRequest::WMDropMappingRequest(const WMDropMappingRequest& other1062) {
   mapping = other1062.mapping;
@@ -45576,6 +50159,8 @@ WMDropMappingRequest& WMDropMappingRequest::operator=(const WMDropMappingRequest
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMDropMappingRequest::WMDropMappingRequest(const WMDropMappingRequest& other1081) {
   mapping = other1081.mapping;
   __isset = other1081.__isset;
@@ -45641,9 +50226,27 @@ WMDropMappingRequest& WMDropMappingRequest::operator=(const WMDropMappingRequest
   __isset = other1020.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMDropMappingRequest::WMDropMappingRequest(const WMDropMappingRequest& other1061) {
+  mapping = other1061.mapping;
+  __isset = other1061.__isset;
+}
+WMDropMappingRequest& WMDropMappingRequest::operator=(const WMDropMappingRequest& other1062) {
+  mapping = other1062.mapping;
+  __isset = other1062.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMDropMappingRequest::printTo(std::ostream& out) const {
@@ -45704,6 +50307,7 @@ void swap(WMDropMappingResponse &a, WMDropMappingResponse &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMDropMappingResponse::WMDropMappingResponse(const WMDropMappingResponse& other1102) {
   (void) other1102;
 }
@@ -45712,6 +50316,8 @@ WMDropMappingResponse& WMDropMappingResponse::operator=(const WMDropMappingRespo
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMDropMappingResponse::WMDropMappingResponse(const WMDropMappingResponse& other1084) {
   (void) other1084;
@@ -45723,6 +50329,8 @@ WMDropMappingResponse& WMDropMappingResponse::operator=(const WMDropMappingRespo
 WMDropMappingResponse::WMDropMappingResponse(const WMDropMappingResponse& other1064) {
   (void) other1064;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMDropMappingResponse::WMDropMappingResponse(const WMDropMappingResponse& other1064) {
   (void) other1064;
@@ -45732,6 +50340,8 @@ WMDropMappingResponse& WMDropMappingResponse::operator=(const WMDropMappingRespo
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMDropMappingResponse::WMDropMappingResponse(const WMDropMappingResponse& other1083) {
   (void) other1083;
 }
@@ -45789,9 +50399,25 @@ WMDropMappingResponse& WMDropMappingResponse::operator=(const WMDropMappingRespo
   (void) other1022;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMDropMappingResponse::WMDropMappingResponse(const WMDropMappingResponse& other1063) {
+  (void) other1063;
+}
+WMDropMappingResponse& WMDropMappingResponse::operator=(const WMDropMappingResponse& other1064) {
+  (void) other1064;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMDropMappingResponse::printTo(std::ostream& out) const {
@@ -45931,6 +50557,7 @@ void swap(WMCreateOrDropTriggerToPoolMappingRequest &a, WMCreateOrDropTriggerToP
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMCreateOrDropTriggerToPoolMappingRequest::WMCreateOrDropTriggerToPoolMappingRequest(const WMCreateOrDropTriggerToPoolMappingRequest& other1104) {
   resourcePlanName = other1104.resourcePlanName;
   triggerName = other1104.triggerName;
@@ -45947,6 +50574,8 @@ WMCreateOrDropTriggerToPoolMappingRequest& WMCreateOrDropTriggerToPoolMappingReq
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMCreateOrDropTriggerToPoolMappingRequest::WMCreateOrDropTriggerToPoolMappingRequest(const WMCreateOrDropTriggerToPoolMappingRequest& other1086) {
   resourcePlanName = other1086.resourcePlanName;
@@ -45964,6 +50593,8 @@ WMCreateOrDropTriggerToPoolMappingRequest& WMCreateOrDropTriggerToPoolMappingReq
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMCreateOrDropTriggerToPoolMappingRequest::WMCreateOrDropTriggerToPoolMappingRequest(const WMCreateOrDropTriggerToPoolMappingRequest& other1066) {
   resourcePlanName = other1066.resourcePlanName;
@@ -45981,6 +50612,8 @@ WMCreateOrDropTriggerToPoolMappingRequest& WMCreateOrDropTriggerToPoolMappingReq
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMCreateOrDropTriggerToPoolMappingRequest::WMCreateOrDropTriggerToPoolMappingRequest(const WMCreateOrDropTriggerToPoolMappingRequest& other1085) {
   resourcePlanName = other1085.resourcePlanName;
   triggerName = other1085.triggerName;
@@ -46069,9 +50702,33 @@ WMCreateOrDropTriggerToPoolMappingRequest& WMCreateOrDropTriggerToPoolMappingReq
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+WMCreateOrDropTriggerToPoolMappingRequest::WMCreateOrDropTriggerToPoolMappingRequest(const WMCreateOrDropTriggerToPoolMappingRequest& other1065) {
+  resourcePlanName = other1065.resourcePlanName;
+  triggerName = other1065.triggerName;
+  poolPath = other1065.poolPath;
+  drop = other1065.drop;
+  __isset = other1065.__isset;
+}
+WMCreateOrDropTriggerToPoolMappingRequest& WMCreateOrDropTriggerToPoolMappingRequest::operator=(const WMCreateOrDropTriggerToPoolMappingRequest& other1066) {
+  resourcePlanName = other1066.resourcePlanName;
+  triggerName = other1066.triggerName;
+  poolPath = other1066.poolPath;
+  drop = other1066.drop;
+  __isset = other1066.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void WMCreateOrDropTriggerToPoolMappingRequest::printTo(std::ostream& out) const {
@@ -46135,6 +50792,7 @@ void swap(WMCreateOrDropTriggerToPoolMappingResponse &a, WMCreateOrDropTriggerTo
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 WMCreateOrDropTriggerToPoolMappingResponse::WMCreateOrDropTriggerToPoolMappingResponse(const WMCreateOrDropTriggerToPoolMappingResponse& other1106) {
   (void) other1106;
 }
@@ -46143,6 +50801,8 @@ WMCreateOrDropTriggerToPoolMappingResponse& WMCreateOrDropTriggerToPoolMappingRe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMCreateOrDropTriggerToPoolMappingResponse::WMCreateOrDropTriggerToPoolMappingResponse(const WMCreateOrDropTriggerToPoolMappingResponse& other1088) {
   (void) other1088;
@@ -46152,6 +50812,8 @@ WMCreateOrDropTriggerToPoolMappingResponse& WMCreateOrDropTriggerToPoolMappingRe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 WMCreateOrDropTriggerToPoolMappingResponse::WMCreateOrDropTriggerToPoolMappingResponse(const WMCreateOrDropTriggerToPoolMappingResponse& other1068) {
   (void) other1068;
@@ -46161,6 +50823,8 @@ WMCreateOrDropTriggerToPoolMappingResponse& WMCreateOrDropTriggerToPoolMappingRe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 WMCreateOrDropTriggerToPoolMappingResponse::WMCreateOrDropTriggerToPoolMappingResponse(const WMCreateOrDropTriggerToPoolMappingResponse& other1087) {
   (void) other1087;
 }
@@ -46205,6 +50869,112 @@ WMCreateOrDropTriggerToPoolMappingResponse& WMCreateOrDropTriggerToPoolMappingRe
 WMCreateOrDropTriggerToPoolMappingResponse::WMCreateOrDropTriggerToPoolMappingResponse(const WMCreateOrDropTriggerToPoolMappingResponse& other1025) {
   (void) other1025;
 }
+WMCreateOrDropTriggerToPoolMappingResponse& WMCreateOrDropTriggerToPoolMappingResponse::operator=(const WMCreateOrDropTriggerToPoolMappingResponse& other1026) {
+  (void) other1026;
+>>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+>>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
+>>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
+>>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+WMCreateOrDropTriggerToPoolMappingResponse::WMCreateOrDropTriggerToPoolMappingResponse(const WMCreateOrDropTriggerToPoolMappingResponse& other1067) {
+  (void) other1067;
+}
+WMCreateOrDropTriggerToPoolMappingResponse& WMCreateOrDropTriggerToPoolMappingResponse::operator=(const WMCreateOrDropTriggerToPoolMappingResponse& other1068) {
+  (void) other1068;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+  return *this;
+}
+void WMCreateOrDropTriggerToPoolMappingResponse::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "WMCreateOrDropTriggerToPoolMappingResponse(";
+  out << ")";
+}
+
+
+ISchema::~ISchema() throw() {
+}
+
+
+void ISchema::__set_schemaType(const SchemaType::type val) {
+  this->schemaType = val;
+}
+
+void ISchema::__set_name(const std::string& val) {
+  this->name = val;
+}
+
+void ISchema::__set_dbName(const std::string& val) {
+  this->dbName = val;
+}
+
+void ISchema::__set_compatibility(const SchemaCompatibility::type val) {
+  this->compatibility = val;
+}
+
+<<<<<<< HEAD
+void ISchema::__set_validationLevel(const SchemaValidation::type val) {
+  this->validationLevel = val;
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+MetaException::MetaException(const MetaException& other1089) : TException() {
+  message = other1089.message;
+  __isset = other1089.__isset;
+}
+MetaException& MetaException::operator=(const MetaException& other1090) {
+  message = other1090.message;
+  __isset = other1090.__isset;
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+MetaException::MetaException(const MetaException& other1065) : TException() {
+  message = other1065.message;
+  __isset = other1065.__isset;
+}
+MetaException& MetaException::operator=(const MetaException& other1066) {
+  message = other1066.message;
+  __isset = other1066.__isset;
+=======
+MetaException::MetaException(const MetaException& other1023) : TException() {
+  message = other1023.message;
+  __isset = other1023.__isset;
+}
+MetaException& MetaException::operator=(const MetaException& other1024) {
+  message = other1024.message;
+  __isset = other1024.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
+=======
+MetaException::MetaException(const MetaException& other1027) : TException() {
+  message = other1027.message;
+  __isset = other1027.__isset;
+}
+MetaException& MetaException::operator=(const MetaException& other1028) {
+  message = other1028.message;
+  __isset = other1028.__isset;
+>>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+MetaException::MetaException(const MetaException& other1023) : TException() {
+  message = other1023.message;
+  __isset = other1023.__isset;
+}
+MetaException& MetaException::operator=(const MetaException& other1024) {
+  message = other1024.message;
+  __isset = other1024.__isset;
+>>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
+=======
+MetaException::MetaException(const MetaException& other1027) : TException() {
+  message = other1027.message;
+  __isset = other1027.__isset;
+}
+<<<<<<< HEAD
 <<<<<<< HEAD
 WMCreateOrDropTriggerToPoolMappingResponse& WMCreateOrDropTriggerToPoolMappingResponse::operator=(const WMCreateOrDropTriggerToPoolMappingResponse& other1088) {
   (void) other1088;
@@ -46219,12 +50989,30 @@ WMCreateOrDropTriggerToPoolMappingResponse& WMCreateOrDropTriggerToPoolMappingRe
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+MetaException& MetaException::operator=(const MetaException& other1028) {
+  message = other1028.message;
+  __isset = other1028.__isset;
+>>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+>>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+MetaException::MetaException(const MetaException& other1069) : TException() {
+  message = other1069.message;
+  __isset = other1069.__isset;
+}
+MetaException& MetaException::operator=(const MetaException& other1070) {
+  message = other1070.message;
+  __isset = other1070.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
-void WMCreateOrDropTriggerToPoolMappingResponse::printTo(std::ostream& out) const {
+void MetaException::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
-  out << "WMCreateOrDropTriggerToPoolMappingResponse(";
+  out << "MetaException(";
+  out << "message=" << to_string(message);
   out << ")";
+<<<<<<< HEAD
 }
 
 
@@ -46254,6 +51042,9 @@ void ISchema::__set_compatibility(const SchemaCompatibility::type val) {
 
 void ISchema::__set_validationLevel(const SchemaValidation::type val) {
   this->validationLevel = val;
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 }
 
 void ISchema::__set_canEvolve(const bool val) {
@@ -47869,6 +52660,7 @@ void swap(MetaException &a, MetaException &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 MetaException::MetaException(const MetaException& other1145) : TException() {
   message = other1145.message;
   __isset = other1145.__isset;
@@ -47879,6 +52671,8 @@ MetaException& MetaException::operator=(const MetaException& other1146) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 MetaException::MetaException(const MetaException& other1127) : TException() {
   message = other1127.message;
@@ -47890,6 +52684,8 @@ MetaException& MetaException::operator=(const MetaException& other1128) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 MetaException::MetaException(const MetaException& other1107) : TException() {
   message = other1107.message;
@@ -47901,6 +52697,8 @@ MetaException& MetaException::operator=(const MetaException& other1108) {
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 UnknownTableException::UnknownTableException(const UnknownTableException& other1091) : TException() {
   message = other1091.message;
   __isset = other1091.__isset;
@@ -47966,9 +52764,27 @@ UnknownTableException& UnknownTableException::operator=(const UnknownTableExcept
   __isset = other1030.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+UnknownTableException::UnknownTableException(const UnknownTableException& other1071) : TException() {
+  message = other1071.message;
+  __isset = other1071.__isset;
+}
+UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1072) {
+  message = other1072.message;
+  __isset = other1072.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void MetaException::printTo(std::ostream& out) const {
@@ -48061,6 +52877,7 @@ void swap(UnknownTableException &a, UnknownTableException &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 UnknownTableException::UnknownTableException(const UnknownTableException& other1147) : TException() {
   message = other1147.message;
   __isset = other1147.__isset;
@@ -48071,6 +52888,8 @@ UnknownTableException& UnknownTableException::operator=(const UnknownTableExcept
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 UnknownTableException::UnknownTableException(const UnknownTableException& other1129) : TException() {
   message = other1129.message;
@@ -48082,6 +52901,8 @@ UnknownTableException& UnknownTableException::operator=(const UnknownTableExcept
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 UnknownTableException::UnknownTableException(const UnknownTableException& other1109) : TException() {
   message = other1109.message;
@@ -48093,6 +52914,8 @@ UnknownTableException& UnknownTableException::operator=(const UnknownTableExcept
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 UnknownDBException::UnknownDBException(const UnknownDBException& other1093) : TException() {
   message = other1093.message;
   __isset = other1093.__isset;
@@ -48154,9 +52977,27 @@ UnknownDBException& UnknownDBException::operator=(const UnknownDBException& othe
   __isset = other1032.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+UnknownDBException::UnknownDBException(const UnknownDBException& other1073) : TException() {
+  message = other1073.message;
+  __isset = other1073.__isset;
+}
+UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1074) {
+  message = other1074.message;
+  __isset = other1074.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void UnknownTableException::printTo(std::ostream& out) const {
@@ -48249,6 +53090,7 @@ void swap(UnknownDBException &a, UnknownDBException &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 UnknownDBException::UnknownDBException(const UnknownDBException& other1149) : TException() {
   message = other1149.message;
   __isset = other1149.__isset;
@@ -48259,6 +53101,8 @@ UnknownDBException& UnknownDBException::operator=(const UnknownDBException& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 UnknownDBException::UnknownDBException(const UnknownDBException& other1131) : TException() {
   message = other1131.message;
@@ -48270,6 +53114,8 @@ UnknownDBException& UnknownDBException::operator=(const UnknownDBException& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 UnknownDBException::UnknownDBException(const UnknownDBException& other1111) : TException() {
   message = other1111.message;
@@ -48281,6 +53127,8 @@ UnknownDBException& UnknownDBException::operator=(const UnknownDBException& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1095) : TException() {
   message = other1095.message;
   __isset = other1095.__isset;
@@ -48346,9 +53194,27 @@ AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsExc
   __isset = other1034.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1075) : TException() {
+  message = other1075.message;
+  __isset = other1075.__isset;
+}
+AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1076) {
+  message = other1076.message;
+  __isset = other1076.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void UnknownDBException::printTo(std::ostream& out) const {
@@ -48441,6 +53307,7 @@ void swap(AlreadyExistsException &a, AlreadyExistsException &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1151) : TException() {
   message = other1151.message;
   __isset = other1151.__isset;
@@ -48451,6 +53318,8 @@ AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsExc
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1133) : TException() {
   message = other1133.message;
@@ -48462,6 +53331,8 @@ AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsExc
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1113) : TException() {
   message = other1113.message;
@@ -48473,6 +53344,8 @@ AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsExc
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1097) : TException() {
   message = other1097.message;
   __isset = other1097.__isset;
@@ -48538,9 +53411,27 @@ InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPar
   __isset = other1036.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1077) : TException() {
+  message = other1077.message;
+  __isset = other1077.__isset;
+}
+InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1078) {
+  message = other1078.message;
+  __isset = other1078.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void AlreadyExistsException::printTo(std::ostream& out) const {
@@ -48633,6 +53524,7 @@ void swap(InvalidPartitionException &a, InvalidPartitionException &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1153) : TException() {
   message = other1153.message;
   __isset = other1153.__isset;
@@ -48643,6 +53535,8 @@ InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPar
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1135) : TException() {
   message = other1135.message;
@@ -48654,6 +53548,8 @@ InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPar
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1115) : TException() {
   message = other1115.message;
@@ -48665,6 +53561,8 @@ InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPar
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1099) : TException() {
   message = other1099.message;
   __isset = other1099.__isset;
@@ -48730,9 +53628,27 @@ UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPar
   __isset = other1038.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1079) : TException() {
+  message = other1079.message;
+  __isset = other1079.__isset;
+}
+UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1080) {
+  message = other1080.message;
+  __isset = other1080.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void InvalidPartitionException::printTo(std::ostream& out) const {
@@ -48825,6 +53741,7 @@ void swap(UnknownPartitionException &a, UnknownPartitionException &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1155) : TException() {
   message = other1155.message;
   __isset = other1155.__isset;
@@ -48835,6 +53752,8 @@ UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPar
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1137) : TException() {
   message = other1137.message;
@@ -48846,6 +53765,8 @@ UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPar
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1117) : TException() {
   message = other1117.message;
@@ -48859,6 +53780,8 @@ UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPar
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1101) : TException() {
   message = other1101.message;
   __isset = other1101.__isset;
@@ -48929,9 +53852,27 @@ InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectExc
   __isset = other1040.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1081) : TException() {
+  message = other1081.message;
+  __isset = other1081.__isset;
+}
+InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1082) {
+  message = other1082.message;
+  __isset = other1082.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void UnknownPartitionException::printTo(std::ostream& out) const {
@@ -49024,6 +53965,7 @@ void swap(InvalidObjectException &a, InvalidObjectException &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1157) : TException() {
   message = other1157.message;
   __isset = other1157.__isset;
@@ -49034,6 +53976,8 @@ InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectExc
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1139) : TException() {
   message = other1139.message;
@@ -49045,6 +53989,8 @@ InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectExc
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1119) : TException() {
   message = other1119.message;
@@ -49056,6 +54002,8 @@ InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectExc
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1103) : TException() {
   message = other1103.message;
   __isset = other1103.__isset;
@@ -49123,9 +54071,27 @@ NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectExcept
   __isset = other1042.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1083) : TException() {
+  message = other1083.message;
+  __isset = other1083.__isset;
+}
+NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other1084) {
+  message = other1084.message;
+  __isset = other1084.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void InvalidObjectException::printTo(std::ostream& out) const {
@@ -49218,6 +54184,7 @@ void swap(NoSuchObjectException &a, NoSuchObjectException &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1159) : TException() {
   message = other1159.message;
   __isset = other1159.__isset;
@@ -49228,6 +54195,8 @@ NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectExcept
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1141) : TException() {
   message = other1141.message;
@@ -49239,6 +54208,8 @@ NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectExcept
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1121) : TException() {
   message = other1121.message;
@@ -49250,6 +54221,8 @@ NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectExcept
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 IndexAlreadyExistsException::IndexAlreadyExistsException(const IndexAlreadyExistsException& other1105) : TException() {
   message = other1105.message;
   __isset = other1105.__isset;
@@ -49315,9 +54288,27 @@ IndexAlreadyExistsException& IndexAlreadyExistsException::operator=(const IndexA
   __isset = other1044.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+IndexAlreadyExistsException::IndexAlreadyExistsException(const IndexAlreadyExistsException& other1085) : TException() {
+  message = other1085.message;
+  __isset = other1085.__isset;
+}
+IndexAlreadyExistsException& IndexAlreadyExistsException::operator=(const IndexAlreadyExistsException& other1086) {
+  message = other1086.message;
+  __isset = other1086.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void NoSuchObjectException::printTo(std::ostream& out) const {
@@ -49410,6 +54401,7 @@ void swap(InvalidOperationException &a, InvalidOperationException &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1161) : TException() {
   message = other1161.message;
   __isset = other1161.__isset;
@@ -49420,6 +54412,8 @@ InvalidOperationException& InvalidOperationException::operator=(const InvalidOpe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1143) : TException() {
   message = other1143.message;
@@ -49431,6 +54425,8 @@ InvalidOperationException& InvalidOperationException::operator=(const InvalidOpe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1123) : TException() {
   message = other1123.message;
@@ -49442,6 +54438,8 @@ InvalidOperationException& InvalidOperationException::operator=(const InvalidOpe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1107) : TException() {
   message = other1107.message;
   __isset = other1107.__isset;
@@ -49507,9 +54505,27 @@ InvalidOperationException& InvalidOperationException::operator=(const InvalidOpe
   __isset = other1046.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1087) : TException() {
+  message = other1087.message;
+  __isset = other1087.__isset;
+}
+InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other1088) {
+  message = other1088.message;
+  __isset = other1088.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void InvalidOperationException::printTo(std::ostream& out) const {
@@ -49602,6 +54618,7 @@ void swap(ConfigValSecurityException &a, ConfigValSecurityException &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1163) : TException() {
   message = other1163.message;
   __isset = other1163.__isset;
@@ -49612,6 +54629,8 @@ ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigVa
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1145) : TException() {
   message = other1145.message;
@@ -49623,6 +54642,8 @@ ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigVa
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1125) : TException() {
   message = other1125.message;
@@ -49634,6 +54655,8 @@ ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigVa
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1109) : TException() {
   message = other1109.message;
   __isset = other1109.__isset;
@@ -49699,9 +54722,27 @@ ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigVa
   __isset = other1048.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1089) : TException() {
+  message = other1089.message;
+  __isset = other1089.__isset;
+}
+ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other1090) {
+  message = other1090.message;
+  __isset = other1090.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void ConfigValSecurityException::printTo(std::ostream& out) const {
@@ -49794,6 +54835,7 @@ void swap(InvalidInputException &a, InvalidInputException &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 InvalidInputException::InvalidInputException(const InvalidInputException& other1165) : TException() {
   message = other1165.message;
   __isset = other1165.__isset;
@@ -49804,6 +54846,8 @@ InvalidInputException& InvalidInputException::operator=(const InvalidInputExcept
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 InvalidInputException::InvalidInputException(const InvalidInputException& other1147) : TException() {
   message = other1147.message;
@@ -49815,6 +54859,8 @@ InvalidInputException& InvalidInputException::operator=(const InvalidInputExcept
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 InvalidInputException::InvalidInputException(const InvalidInputException& other1127) : TException() {
   message = other1127.message;
@@ -49826,6 +54872,8 @@ InvalidInputException& InvalidInputException::operator=(const InvalidInputExcept
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 InvalidInputException::InvalidInputException(const InvalidInputException& other1111) : TException() {
   message = other1111.message;
   __isset = other1111.__isset;
@@ -49891,9 +54939,27 @@ InvalidInputException& InvalidInputException::operator=(const InvalidInputExcept
   __isset = other1050.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+InvalidInputException::InvalidInputException(const InvalidInputException& other1091) : TException() {
+  message = other1091.message;
+  __isset = other1091.__isset;
+}
+InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other1092) {
+  message = other1092.message;
+  __isset = other1092.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void InvalidInputException::printTo(std::ostream& out) const {
@@ -49986,6 +55052,7 @@ void swap(NoSuchTxnException &a, NoSuchTxnException &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1167) : TException() {
   message = other1167.message;
   __isset = other1167.__isset;
@@ -49996,6 +55063,8 @@ NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1149) : TException() {
   message = other1149.message;
@@ -50007,6 +55076,8 @@ NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1129) : TException() {
   message = other1129.message;
@@ -50018,6 +55089,8 @@ NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& othe
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1113) : TException() {
   message = other1113.message;
   __isset = other1113.__isset;
@@ -50083,9 +55156,27 @@ NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& othe
   __isset = other1052.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1093) : TException() {
+  message = other1093.message;
+  __isset = other1093.__isset;
+}
+NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other1094) {
+  message = other1094.message;
+  __isset = other1094.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void NoSuchTxnException::printTo(std::ostream& out) const {
@@ -50178,6 +55269,7 @@ void swap(TxnAbortedException &a, TxnAbortedException &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1169) : TException() {
   message = other1169.message;
   __isset = other1169.__isset;
@@ -50188,6 +55280,8 @@ TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& o
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1151) : TException() {
   message = other1151.message;
@@ -50199,6 +55293,8 @@ TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& o
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1131) : TException() {
   message = other1131.message;
@@ -50210,6 +55306,8 @@ TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& o
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1115) : TException() {
   message = other1115.message;
   __isset = other1115.__isset;
@@ -50271,9 +55369,27 @@ TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& o
   __isset = other1054.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1095) : TException() {
+  message = other1095.message;
+  __isset = other1095.__isset;
+}
+TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other1096) {
+  message = other1096.message;
+  __isset = other1096.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void TxnAbortedException::printTo(std::ostream& out) const {
@@ -50366,6 +55482,7 @@ void swap(TxnOpenException &a, TxnOpenException &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 TxnOpenException::TxnOpenException(const TxnOpenException& other1171) : TException() {
   message = other1171.message;
   __isset = other1171.__isset;
@@ -50376,6 +55493,8 @@ TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1172)
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 TxnOpenException::TxnOpenException(const TxnOpenException& other1153) : TException() {
   message = other1153.message;
@@ -50387,6 +55506,8 @@ TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1154)
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 TxnOpenException::TxnOpenException(const TxnOpenException& other1133) : TException() {
   message = other1133.message;
@@ -50398,6 +55519,8 @@ TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1134)
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 TxnOpenException::TxnOpenException(const TxnOpenException& other1117) : TException() {
   message = other1117.message;
   __isset = other1117.__isset;
@@ -50459,9 +55582,27 @@ TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1056)
   __isset = other1056.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+TxnOpenException::TxnOpenException(const TxnOpenException& other1097) : TException() {
+  message = other1097.message;
+  __isset = other1097.__isset;
+}
+TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1098) {
+  message = other1098.message;
+  __isset = other1098.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void TxnOpenException::printTo(std::ostream& out) const {
@@ -50554,6 +55695,7 @@ void swap(NoSuchLockException &a, NoSuchLockException &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1173) : TException() {
   message = other1173.message;
   __isset = other1173.__isset;
@@ -50564,6 +55706,8 @@ NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& o
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1155) : TException() {
   message = other1155.message;
@@ -50575,6 +55719,8 @@ NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& o
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
 NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1135) : TException() {
   message = other1135.message;
@@ -50586,6 +55732,8 @@ NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& o
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1119) : TException() {
   message = other1119.message;
   __isset = other1119.__isset;
@@ -50647,9 +55795,27 @@ NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& o
   __isset = other1058.__isset;
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+<<<<<<< HEAD
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
+=======
+=======
+=======
+=======
+NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1099) : TException() {
+  message = other1099.message;
+  __isset = other1099.__isset;
+}
+NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other1100) {
+  message = other1100.message;
+  __isset = other1100.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
   return *this;
 }
 void NoSuchLockException::printTo(std::ostream& out) const {

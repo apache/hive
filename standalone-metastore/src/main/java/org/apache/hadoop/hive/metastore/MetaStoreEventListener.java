@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
+import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 
 /**
  * This abstract class needs to be extended to  provide implementation of actions that needs
@@ -246,6 +247,15 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @throws MetaException
    */
   public void onCommitTxn(CommitTxnEvent commitTxnEvent) throws MetaException {
+  }
+
+  /**
+   * This will be called to abort a transaction.
+   * @param abortTxnEvent
+   * @throws MetaException
+   */
+  public void onAbortTxn(AbortTxnEvent abortTxnEvent) throws MetaException {
+
   }
 
   @Override

@@ -52,6 +52,7 @@ public class EventHandlerFactory {
     register(MessageFactory.DROP_DATABASE_EVENT, DropDatabaseHandler.class);
     register(MessageFactory.OPEN_TXN_EVENT, OpenTxnHandler.class);
     register(MessageFactory.COMMIT_TXN_EVENT, CommitTxnHandler.class);
+    register(MessageFactory.ABORT_TXN_EVENT, AbortTxnHandler.class);
   }
 
   static void register(String event, Class<? extends EventHandler> handlerClazz) {

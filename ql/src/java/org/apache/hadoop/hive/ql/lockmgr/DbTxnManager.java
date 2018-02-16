@@ -647,6 +647,21 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       tableWriteIds.clear();
     }
   }
+  @Override
+  public void replRollbackTxn(String replPolicy, long srcTxnId) throws LockException {
+    try {
+      getMS().rollbackTxn(srcTxnId, replPolicy);
+    } catch (NoSuchTxnException e) {
+      LOG.error("Metastore could not find " + JavaUtils.txnIdToString(srcTxnId));
+      throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(srcTxnId));
+    } catch (TxnAbortedException e) {
+      LockException le = new LockException(e, ErrorMsg.TXN_ABORTED, JavaUtils.txnIdToString(srcTxnId), e.getMessage());
+      LOG.error(le.getMessage());
+      throw le;
+    } catch (TException e) {
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+    }
+  }
 
   @Override
   public void rollbackTxn() throws LockException {

@@ -454,6 +454,7 @@ import org.slf4j.LoggerFactory;
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TSet _set642 = iprot.readSetBegin();
                 struct.aborted = new HashSet<Long>(2*_set642.size);
                 long _elem643;
@@ -462,6 +463,8 @@ import org.slf4j.LoggerFactory;
                   _elem643 = iprot.readI64();
                   struct.aborted.add(_elem643);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
                 org.apache.thrift.protocol.TSet _set634 = iprot.readSetBegin();
                 struct.aborted = new HashSet<Long>(2*_set634.size);
@@ -471,6 +474,8 @@ import org.slf4j.LoggerFactory;
                   _elem635 = iprot.readI64();
                   struct.aborted.add(_elem635);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
                 org.apache.thrift.protocol.TSet _set618 = iprot.readSetBegin();
                 struct.aborted = new HashSet<Long>(2*_set618.size);
@@ -480,6 +485,8 @@ import org.slf4j.LoggerFactory;
                   _elem619 = iprot.readI64();
                   struct.aborted.add(_elem619);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
                 org.apache.thrift.protocol.TSet _set636 = iprot.readSetBegin();
                 struct.aborted = new HashSet<Long>(2*_set636.size);
                 long _elem637;
@@ -487,9 +494,27 @@ import org.slf4j.LoggerFactory;
                 {
                   _elem637 = iprot.readI64();
                   struct.aborted.add(_elem637);
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+                org.apache.thrift.protocol.TSet _set620 = iprot.readSetBegin();
+                struct.aborted = new HashSet<Long>(2*_set620.size);
+                long _elem621;
+                for (int _i622 = 0; _i622 < _set620.size; ++_i622)
+                {
+                  _elem621 = iprot.readI64();
+                  struct.aborted.add(_elem621);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
                 }
                 iprot.readSetEnd();
               }
@@ -502,6 +527,7 @@ import org.slf4j.LoggerFactory;
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TSet _set645 = iprot.readSetBegin();
                 struct.nosuch = new HashSet<Long>(2*_set645.size);
                 long _elem646;
@@ -510,6 +536,8 @@ import org.slf4j.LoggerFactory;
                   _elem646 = iprot.readI64();
                   struct.nosuch.add(_elem646);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
                 org.apache.thrift.protocol.TSet _set637 = iprot.readSetBegin();
                 struct.nosuch = new HashSet<Long>(2*_set637.size);
@@ -519,6 +547,8 @@ import org.slf4j.LoggerFactory;
                   _elem638 = iprot.readI64();
                   struct.nosuch.add(_elem638);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
                 org.apache.thrift.protocol.TSet _set621 = iprot.readSetBegin();
                 struct.nosuch = new HashSet<Long>(2*_set621.size);
@@ -528,6 +558,8 @@ import org.slf4j.LoggerFactory;
                   _elem622 = iprot.readI64();
                   struct.nosuch.add(_elem622);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
                 org.apache.thrift.protocol.TSet _set639 = iprot.readSetBegin();
                 struct.nosuch = new HashSet<Long>(2*_set639.size);
                 long _elem640;
@@ -535,9 +567,27 @@ import org.slf4j.LoggerFactory;
                 {
                   _elem640 = iprot.readI64();
                   struct.nosuch.add(_elem640);
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+                org.apache.thrift.protocol.TSet _set623 = iprot.readSetBegin();
+                struct.nosuch = new HashSet<Long>(2*_set623.size);
+                long _elem624;
+                for (int _i625 = 0; _i625 < _set623.size; ++_i625)
+                {
+                  _elem624 = iprot.readI64();
+                  struct.nosuch.add(_elem624);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
                 }
                 iprot.readSetEnd();
               }
@@ -564,15 +614,20 @@ import org.slf4j.LoggerFactory;
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, struct.aborted.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
           for (long _iter648 : struct.aborted)
           {
             oprot.writeI64(_iter648);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           for (long _iter640 : struct.aborted)
           {
             oprot.writeI64(_iter640);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           for (long _iter624 : struct.aborted)
           {
@@ -582,8 +637,24 @@ import org.slf4j.LoggerFactory;
           {
             oprot.writeI64(_iter642);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+          for (long _iter642 : struct.aborted)
+          {
+            oprot.writeI64(_iter642);
+=======
+          for (long _iter626 : struct.aborted)
+          {
+            oprot.writeI64(_iter626);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           }
           oprot.writeSetEnd();
         }
@@ -594,15 +665,20 @@ import org.slf4j.LoggerFactory;
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, struct.nosuch.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
           for (long _iter649 : struct.nosuch)
           {
             oprot.writeI64(_iter649);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           for (long _iter641 : struct.nosuch)
           {
             oprot.writeI64(_iter641);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           for (long _iter625 : struct.nosuch)
           {
@@ -612,8 +688,24 @@ import org.slf4j.LoggerFactory;
           {
             oprot.writeI64(_iter643);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+          for (long _iter643 : struct.nosuch)
+          {
+            oprot.writeI64(_iter643);
+=======
+          for (long _iter627 : struct.nosuch)
+          {
+            oprot.writeI64(_iter627);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           }
           oprot.writeSetEnd();
         }
@@ -639,15 +731,20 @@ import org.slf4j.LoggerFactory;
       {
         oprot.writeI32(struct.aborted.size());
 <<<<<<< HEAD
+<<<<<<< HEAD
         for (long _iter650 : struct.aborted)
         {
           oprot.writeI64(_iter650);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
         for (long _iter642 : struct.aborted)
         {
           oprot.writeI64(_iter642);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
         for (long _iter626 : struct.aborted)
         {
@@ -657,22 +754,43 @@ import org.slf4j.LoggerFactory;
         {
           oprot.writeI64(_iter644);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+        for (long _iter644 : struct.aborted)
+        {
+          oprot.writeI64(_iter644);
+=======
+        for (long _iter628 : struct.aborted)
+        {
+          oprot.writeI64(_iter628);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
         }
       }
       {
         oprot.writeI32(struct.nosuch.size());
 <<<<<<< HEAD
+<<<<<<< HEAD
         for (long _iter651 : struct.nosuch)
         {
           oprot.writeI64(_iter651);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
         for (long _iter643 : struct.nosuch)
         {
           oprot.writeI64(_iter643);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
         for (long _iter627 : struct.nosuch)
         {
@@ -682,8 +800,24 @@ import org.slf4j.LoggerFactory;
         {
           oprot.writeI64(_iter645);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+        for (long _iter645 : struct.nosuch)
+        {
+          oprot.writeI64(_iter645);
+=======
+        for (long _iter629 : struct.nosuch)
+        {
+          oprot.writeI64(_iter629);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
         }
       }
     }
@@ -693,6 +827,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
 <<<<<<< HEAD
+<<<<<<< HEAD
         org.apache.thrift.protocol.TSet _set652 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
         struct.aborted = new HashSet<Long>(2*_set652.size);
         long _elem653;
@@ -701,6 +836,8 @@ import org.slf4j.LoggerFactory;
           _elem653 = iprot.readI64();
           struct.aborted.add(_elem653);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
         org.apache.thrift.protocol.TSet _set644 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
         struct.aborted = new HashSet<Long>(2*_set644.size);
@@ -710,6 +847,8 @@ import org.slf4j.LoggerFactory;
           _elem645 = iprot.readI64();
           struct.aborted.add(_elem645);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
         org.apache.thrift.protocol.TSet _set628 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
         struct.aborted = new HashSet<Long>(2*_set628.size);
@@ -719,6 +858,8 @@ import org.slf4j.LoggerFactory;
           _elem629 = iprot.readI64();
           struct.aborted.add(_elem629);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
         org.apache.thrift.protocol.TSet _set646 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
         struct.aborted = new HashSet<Long>(2*_set646.size);
         long _elem647;
@@ -726,13 +867,32 @@ import org.slf4j.LoggerFactory;
         {
           _elem647 = iprot.readI64();
           struct.aborted.add(_elem647);
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+        org.apache.thrift.protocol.TSet _set630 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.aborted = new HashSet<Long>(2*_set630.size);
+        long _elem631;
+        for (int _i632 = 0; _i632 < _set630.size; ++_i632)
+        {
+          _elem631 = iprot.readI64();
+          struct.aborted.add(_elem631);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
         }
       }
       struct.setAbortedIsSet(true);
       {
+<<<<<<< HEAD
 <<<<<<< HEAD
         org.apache.thrift.protocol.TSet _set655 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
         struct.nosuch = new HashSet<Long>(2*_set655.size);
@@ -742,6 +902,8 @@ import org.slf4j.LoggerFactory;
           _elem656 = iprot.readI64();
           struct.nosuch.add(_elem656);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
         org.apache.thrift.protocol.TSet _set647 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
         struct.nosuch = new HashSet<Long>(2*_set647.size);
@@ -751,6 +913,8 @@ import org.slf4j.LoggerFactory;
           _elem648 = iprot.readI64();
           struct.nosuch.add(_elem648);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
         org.apache.thrift.protocol.TSet _set631 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
         struct.nosuch = new HashSet<Long>(2*_set631.size);
@@ -760,6 +924,8 @@ import org.slf4j.LoggerFactory;
           _elem632 = iprot.readI64();
           struct.nosuch.add(_elem632);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
         org.apache.thrift.protocol.TSet _set649 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
         struct.nosuch = new HashSet<Long>(2*_set649.size);
         long _elem650;
@@ -767,9 +933,27 @@ import org.slf4j.LoggerFactory;
         {
           _elem650 = iprot.readI64();
           struct.nosuch.add(_elem650);
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+        org.apache.thrift.protocol.TSet _set633 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.nosuch = new HashSet<Long>(2*_set633.size);
+        long _elem634;
+        for (int _i635 = 0; _i635 < _set633.size; ++_i635)
+        {
+          _elem634 = iprot.readI64();
+          struct.nosuch.add(_elem634);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
         }
       }
       struct.setNosuchIsSet(true);

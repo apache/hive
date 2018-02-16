@@ -434,6 +434,7 @@ import org.slf4j.LoggerFactory;
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TMap _map742 = iprot.readMapBegin();
                 struct.metadata = new HashMap<Long,ByteBuffer>(2*_map742.size);
                 long _key743;
@@ -444,6 +445,8 @@ import org.slf4j.LoggerFactory;
                   _val744 = iprot.readBinary();
                   struct.metadata.put(_key743, _val744);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
                 org.apache.thrift.protocol.TMap _map734 = iprot.readMapBegin();
                 struct.metadata = new HashMap<Long,ByteBuffer>(2*_map734.size);
@@ -455,6 +458,8 @@ import org.slf4j.LoggerFactory;
                   _val736 = iprot.readBinary();
                   struct.metadata.put(_key735, _val736);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
                 org.apache.thrift.protocol.TMap _map718 = iprot.readMapBegin();
                 struct.metadata = new HashMap<Long,ByteBuffer>(2*_map718.size);
@@ -466,6 +471,8 @@ import org.slf4j.LoggerFactory;
                   _val720 = iprot.readBinary();
                   struct.metadata.put(_key719, _val720);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
                 org.apache.thrift.protocol.TMap _map736 = iprot.readMapBegin();
                 struct.metadata = new HashMap<Long,ByteBuffer>(2*_map736.size);
                 long _key737;
@@ -475,9 +482,29 @@ import org.slf4j.LoggerFactory;
                   _key737 = iprot.readI64();
                   _val738 = iprot.readBinary();
                   struct.metadata.put(_key737, _val738);
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+                org.apache.thrift.protocol.TMap _map720 = iprot.readMapBegin();
+                struct.metadata = new HashMap<Long,ByteBuffer>(2*_map720.size);
+                long _key721;
+                ByteBuffer _val722;
+                for (int _i723 = 0; _i723 < _map720.size; ++_i723)
+                {
+                  _key721 = iprot.readI64();
+                  _val722 = iprot.readBinary();
+                  struct.metadata.put(_key721, _val722);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
                 }
                 iprot.readMapEnd();
               }
@@ -512,30 +539,52 @@ import org.slf4j.LoggerFactory;
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRING, struct.metadata.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
           for (Map.Entry<Long, ByteBuffer> _iter746 : struct.metadata.entrySet())
           {
             oprot.writeI64(_iter746.getKey());
             oprot.writeBinary(_iter746.getValue());
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           for (Map.Entry<Long, ByteBuffer> _iter738 : struct.metadata.entrySet())
           {
             oprot.writeI64(_iter738.getKey());
             oprot.writeBinary(_iter738.getValue());
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           for (Map.Entry<Long, ByteBuffer> _iter722 : struct.metadata.entrySet())
           {
             oprot.writeI64(_iter722.getKey());
             oprot.writeBinary(_iter722.getValue());
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           for (Map.Entry<Long, ByteBuffer> _iter740 : struct.metadata.entrySet())
           {
             oprot.writeI64(_iter740.getKey());
             oprot.writeBinary(_iter740.getValue());
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+          for (Map.Entry<Long, ByteBuffer> _iter724 : struct.metadata.entrySet())
+          {
+            oprot.writeI64(_iter724.getKey());
+            oprot.writeBinary(_iter724.getValue());
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           }
           oprot.writeMapEnd();
         }
@@ -564,30 +613,52 @@ import org.slf4j.LoggerFactory;
       {
         oprot.writeI32(struct.metadata.size());
 <<<<<<< HEAD
+<<<<<<< HEAD
         for (Map.Entry<Long, ByteBuffer> _iter747 : struct.metadata.entrySet())
         {
           oprot.writeI64(_iter747.getKey());
           oprot.writeBinary(_iter747.getValue());
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
         for (Map.Entry<Long, ByteBuffer> _iter739 : struct.metadata.entrySet())
         {
           oprot.writeI64(_iter739.getKey());
           oprot.writeBinary(_iter739.getValue());
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
         for (Map.Entry<Long, ByteBuffer> _iter723 : struct.metadata.entrySet())
         {
           oprot.writeI64(_iter723.getKey());
           oprot.writeBinary(_iter723.getValue());
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
         for (Map.Entry<Long, ByteBuffer> _iter741 : struct.metadata.entrySet())
         {
           oprot.writeI64(_iter741.getKey());
           oprot.writeBinary(_iter741.getValue());
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+        for (Map.Entry<Long, ByteBuffer> _iter725 : struct.metadata.entrySet())
+        {
+          oprot.writeI64(_iter725.getKey());
+          oprot.writeBinary(_iter725.getValue());
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
         }
       }
       oprot.writeBool(struct.isSupported);
@@ -597,6 +668,7 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetFileMetadataResult struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
+<<<<<<< HEAD
 <<<<<<< HEAD
         org.apache.thrift.protocol.TMap _map748 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
         struct.metadata = new HashMap<Long,ByteBuffer>(2*_map748.size);
@@ -608,6 +680,8 @@ import org.slf4j.LoggerFactory;
           _val750 = iprot.readBinary();
           struct.metadata.put(_key749, _val750);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
         org.apache.thrift.protocol.TMap _map740 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
         struct.metadata = new HashMap<Long,ByteBuffer>(2*_map740.size);
@@ -619,6 +693,8 @@ import org.slf4j.LoggerFactory;
           _val742 = iprot.readBinary();
           struct.metadata.put(_key741, _val742);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
         org.apache.thrift.protocol.TMap _map724 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
         struct.metadata = new HashMap<Long,ByteBuffer>(2*_map724.size);
@@ -630,6 +706,8 @@ import org.slf4j.LoggerFactory;
           _val726 = iprot.readBinary();
           struct.metadata.put(_key725, _val726);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
         org.apache.thrift.protocol.TMap _map742 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
         struct.metadata = new HashMap<Long,ByteBuffer>(2*_map742.size);
         long _key743;
@@ -639,9 +717,29 @@ import org.slf4j.LoggerFactory;
           _key743 = iprot.readI64();
           _val744 = iprot.readBinary();
           struct.metadata.put(_key743, _val744);
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+        org.apache.thrift.protocol.TMap _map726 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.metadata = new HashMap<Long,ByteBuffer>(2*_map726.size);
+        long _key727;
+        ByteBuffer _val728;
+        for (int _i729 = 0; _i729 < _map726.size; ++_i729)
+        {
+          _key727 = iprot.readI64();
+          _val728 = iprot.readBinary();
+          struct.metadata.put(_key727, _val728);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
         }
       }
       struct.setMetadataIsSet(true);

@@ -2821,6 +2821,18 @@ public interface IMetaStoreClient {
   void rollbackTxn(long txnid) throws NoSuchTxnException, TException;
 
   /**
+   * Rollback a transaction.  This will also unlock any locks associated with
+   * this transaction.
+   * @param txnid id of transaction to be rolled back.
+   * @param replPolicy the replication policy to identify the source cluster
+   * @throws NoSuchTxnException if the requested transaction does not exist.
+   * Note that this can result from the transaction having timed out and been
+   * deleted.
+   * @throws TException
+   */
+  void rollbackTxn(long txnid, String replPolicy) throws NoSuchTxnException, TException;
+
+  /**
    * Commit a transaction.  This will also unlock any locks associated with
    * this transaction.
    * @param txnid id of transaction to be committed.

@@ -590,15 +590,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           List<String> selectRepl = new ArrayList<>();
 
           for (int i = 0; i < numTxns; i++) {
-            selectRepl.add("select target_txn_id from REPL_TXN_MAP where repl_policy = " + quoteString(
-                    rqst.getReplPolicy()) + "and src_txn_id = " + rqst.getReplSrcTxnId().get(i));
+            selectRepl.add("select TM_TARGET_TXN_ID from REPL_TXN_MAP where TM_REPL_POLICY = " + quoteString(
+                    rqst.getReplPolicy()) + "and TM_SRC_TXN_ID = " + rqst.getReplSrcTxnId().get(i));
             long txnId = i + first;
             rowsRepl.add(
                 quoteString(rqst.getReplPolicy()) + "," + rqst.getReplSrcTxnId().get(i) + "," + txnId);
           }
 
           List<String> queriesRepl = sqlGenerator.createInsertValuesStmt(
-              "REPL_TXN_MAP (repl_policy, src_txn_id, target_txn_id)", rowsRepl);
+              "REPL_TXN_MAP (TM_REPL_POLICY, tm_src_txn_id, TM_TARGET_TXN_ID)", rowsRepl);
 
           for (int i = 0; i < numTxns; i++) {
             rs = stmt.executeQuery(selectRepl.get(i));
@@ -630,15 +630,34 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   @Override
   @RetrySemantics.Idempotent
   public void abortTxn(AbortTxnRequest rqst) throws NoSuchTxnException, MetaException, TxnAbortedException {
-    long txnid = rqst.getTxnid();
+    long txnid;
+    long sourceTxnId = -1;
+    ResultSet rs;
     try {
       Connection dbConn = null;
       Statement stmt = null;
       try {
         lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+
+        if (rqst.isSetReplPolicy()) {
+          sourceTxnId = rqst.getTxnid();
+          String query = "select TM_TARGET_TXN_ID from REPL_TXN_MAP where TM_SRC_TXN_ID = " + sourceTxnId +
+              " and TM_REPL_POLICY = " + quoteString(rqst.getReplPolicy());
+          String s = sqlGenerator.addForUpdateClause(query);
+          LOG.debug("Going to execute query <" + s + ">");
+          rs = stmt.executeQuery(s);
+          if (!rs.next()) {
+            LOG.debug("Target txn for Transaction not present <" + quoteString(rqst.getReplPolicy()) +":" +sourceTxnId + ">");
+            return;
+          }
+          txnid = rs.getLong(1);
+        } else {
+          txnid = rqst.getTxnid();
+        }
+
         if (abortTxns(dbConn, Collections.singletonList(txnid), true) != 1) {
-          stmt = dbConn.createStatement();
           TxnStatus status = findTxnState(txnid,stmt);
           if(status == TxnStatus.ABORTED) {
             LOG.info("abortTxn(" + JavaUtils.txnIdToString(txnid) +
@@ -646,6 +665,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             return;
           }
           raiseTxnUnexpectedState(status, txnid);
+        }
+
+        if (rqst.isSetReplPolicy()) {
+          String s = "delete from REPL_TXN_MAP where TM_SRC_TXN_ID = " + sourceTxnId +
+              " and TM_REPL_POLICY = " + quoteString(rqst.getReplPolicy());
+          LOG.debug("Going to execute  <" + s + ">");
+          stmt.executeUpdate(s);
         }
 
         LOG.debug("Going to commit");
@@ -738,8 +764,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         if (rqst.isSetReplPolicy()) {
           sourceTxnId = rqst.getTxnid();
-          String query = "select TARGET_TXN_ID from TXN_MAP where SRC_TXN_ID = " + sourceTxnId +
-                  " and REPL_POLICY = " + quoteString(rqst.getReplPolicy());
+          String query = "select TM_TARGET_TXN_ID from REPL_TXN_MAP where TM_SRC_TXN_ID = " + sourceTxnId +
+                  " and TM_REPL_POLICY = " + quoteString(rqst.getReplPolicy());
           String s = sqlGenerator.addForUpdateClause(query);
           LOG.debug("Going to execute query <" + s + ">");
           rs = stmt.executeQuery(s);
@@ -903,8 +929,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         if (rqst.isSetReplPolicy()) {
-          s = "delete from TXN_MAP where SRC_TXN_ID = " + sourceTxnId +
-                  " and REPL_POLICY = " + quoteString(rqst.getReplPolicy());
+          s = "delete from REPL_TXN_MAP where TM_SRC_TXN_ID = " + sourceTxnId +
+                  " and TM_REPL_POLICY = " + quoteString(rqst.getReplPolicy());
           LOG.debug("Going to execute  <" + s + ">");
           stmt.executeUpdate(s);
         }

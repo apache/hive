@@ -813,8 +813,13 @@ import org.slf4j.LoggerFactory;
                 long _elem557;
                 for (int _i558 = 0; _i558 < _list556.size; ++_i558)
                 {
+<<<<<<< HEAD
                   _elem557 = iprot.readI64();
                   struct.replSrcTxnId.add(_elem557);
+=======
+                  _elem541 = iprot.readI64();
+                  struct.replSrcTxnId.add(_elem541);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
                 }
                 iprot.readListEnd();
               }
@@ -917,9 +922,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetReplSrcTxnId()) {
         {
           oprot.writeI32(struct.replSrcTxnId.size());
+<<<<<<< HEAD
           for (long _iter560 : struct.replSrcTxnId)
           {
             oprot.writeI64(_iter560);
+=======
+          for (long _iter544 : struct.replSrcTxnId)
+          {
+            oprot.writeI64(_iter544);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           }
         }
       }

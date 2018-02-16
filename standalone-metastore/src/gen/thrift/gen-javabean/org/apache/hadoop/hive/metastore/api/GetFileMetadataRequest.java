@@ -352,6 +352,7 @@ import org.slf4j.LoggerFactory;
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list752 = iprot.readListBegin();
                 struct.fileIds = new ArrayList<Long>(_list752.size);
                 long _elem753;
@@ -360,6 +361,8 @@ import org.slf4j.LoggerFactory;
                   _elem753 = iprot.readI64();
                   struct.fileIds.add(_elem753);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list744 = iprot.readListBegin();
                 struct.fileIds = new ArrayList<Long>(_list744.size);
@@ -369,6 +372,8 @@ import org.slf4j.LoggerFactory;
                   _elem745 = iprot.readI64();
                   struct.fileIds.add(_elem745);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list728 = iprot.readListBegin();
                 struct.fileIds = new ArrayList<Long>(_list728.size);
@@ -378,6 +383,8 @@ import org.slf4j.LoggerFactory;
                   _elem729 = iprot.readI64();
                   struct.fileIds.add(_elem729);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
                 org.apache.thrift.protocol.TList _list746 = iprot.readListBegin();
                 struct.fileIds = new ArrayList<Long>(_list746.size);
                 long _elem747;
@@ -385,9 +392,27 @@ import org.slf4j.LoggerFactory;
                 {
                   _elem747 = iprot.readI64();
                   struct.fileIds.add(_elem747);
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+                org.apache.thrift.protocol.TList _list730 = iprot.readListBegin();
+                struct.fileIds = new ArrayList<Long>(_list730.size);
+                long _elem731;
+                for (int _i732 = 0; _i732 < _list730.size; ++_i732)
+                {
+                  _elem731 = iprot.readI64();
+                  struct.fileIds.add(_elem731);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
                 }
                 iprot.readListEnd();
               }
@@ -414,15 +439,20 @@ import org.slf4j.LoggerFactory;
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.fileIds.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
           for (long _iter755 : struct.fileIds)
           {
             oprot.writeI64(_iter755);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           for (long _iter747 : struct.fileIds)
           {
             oprot.writeI64(_iter747);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           for (long _iter731 : struct.fileIds)
           {
@@ -432,8 +462,24 @@ import org.slf4j.LoggerFactory;
           {
             oprot.writeI64(_iter749);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+          for (long _iter749 : struct.fileIds)
+          {
+            oprot.writeI64(_iter749);
+=======
+          for (long _iter733 : struct.fileIds)
+          {
+            oprot.writeI64(_iter733);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           }
           oprot.writeListEnd();
         }
@@ -459,15 +505,20 @@ import org.slf4j.LoggerFactory;
       {
         oprot.writeI32(struct.fileIds.size());
 <<<<<<< HEAD
+<<<<<<< HEAD
         for (long _iter756 : struct.fileIds)
         {
           oprot.writeI64(_iter756);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
         for (long _iter748 : struct.fileIds)
         {
           oprot.writeI64(_iter748);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
         for (long _iter732 : struct.fileIds)
         {
@@ -477,8 +528,24 @@ import org.slf4j.LoggerFactory;
         {
           oprot.writeI64(_iter750);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+        for (long _iter750 : struct.fileIds)
+        {
+          oprot.writeI64(_iter750);
+=======
+        for (long _iter734 : struct.fileIds)
+        {
+          oprot.writeI64(_iter734);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
         }
       }
     }
@@ -488,6 +555,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
 <<<<<<< HEAD
+<<<<<<< HEAD
         org.apache.thrift.protocol.TList _list757 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
         struct.fileIds = new ArrayList<Long>(_list757.size);
         long _elem758;
@@ -496,6 +564,8 @@ import org.slf4j.LoggerFactory;
           _elem758 = iprot.readI64();
           struct.fileIds.add(_elem758);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
         org.apache.thrift.protocol.TList _list749 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
         struct.fileIds = new ArrayList<Long>(_list749.size);
@@ -505,6 +575,8 @@ import org.slf4j.LoggerFactory;
           _elem750 = iprot.readI64();
           struct.fileIds.add(_elem750);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
         org.apache.thrift.protocol.TList _list733 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
         struct.fileIds = new ArrayList<Long>(_list733.size);
@@ -514,6 +586,8 @@ import org.slf4j.LoggerFactory;
           _elem734 = iprot.readI64();
           struct.fileIds.add(_elem734);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
         org.apache.thrift.protocol.TList _list751 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
         struct.fileIds = new ArrayList<Long>(_list751.size);
         long _elem752;
@@ -521,9 +595,27 @@ import org.slf4j.LoggerFactory;
         {
           _elem752 = iprot.readI64();
           struct.fileIds.add(_elem752);
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+        org.apache.thrift.protocol.TList _list735 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.fileIds = new ArrayList<Long>(_list735.size);
+        long _elem736;
+        for (int _i737 = 0; _i737 < _list735.size; ++_i737)
+        {
+          _elem736 = iprot.readI64();
+          struct.fileIds.add(_elem736);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
         }
       }
       struct.setFileIdsIsSet(true);

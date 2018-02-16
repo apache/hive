@@ -83,6 +83,7 @@ import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
@@ -92,6 +93,7 @@ import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
@@ -108,9 +110,8 @@ import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
-import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
-import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
+import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.events.PreAddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreAlterISchemaEvent;
@@ -180,7 +181,6 @@ import org.apache.thrift.transport.TTransportFactory;
 import org.iq80.leveldb.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 import com.facebook.fb303.FacebookBase;
 import com.facebook.fb303.fb_status;
@@ -6967,6 +6967,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public void abort_txn(AbortTxnRequest rqst) throws TException {
       getTxnHandler().abortTxn(rqst);
+      MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+          EventType.ABORT_TXN,
+          new AbortTxnEvent(rqst.getTxnid(), true, this));
     }
 
     @Override

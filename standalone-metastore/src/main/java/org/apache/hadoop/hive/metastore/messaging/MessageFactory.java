@@ -70,6 +70,7 @@ public abstract class MessageFactory {
   public static final String DROP_CATALOG_EVENT = "DROP_CATALOG";
   public static final String OPEN_TXN_EVENT = "OPEN_TXN";
   public static final String COMMIT_TXN_EVENT = "COMMIT_TXN";
+  public static final String ABORT_TXN_EVENT = "ABORT_TXN";
 
   private static MessageFactory instance = null;
 
@@ -251,10 +252,17 @@ public abstract class MessageFactory {
    * Factory method for building commit txn message
    *
    * @param txnId Id of the transaction to be committed
-   * @return instance of OpenTxnMessage
+   * @return instance of CommitTxnMessage
    */
   public abstract CommitTxnMessage buildCommitTxnMessage(Long txnId);
 
+  /**
+   * Factory method for building abort txn message
+   *
+   * @param txnId Id of the transaction to be aborted
+   * @return instance of AbortTxnMessage
+   */
+  public abstract AbortTxnMessage buildAbortTxnMessage(Long txnId);
 
   /***
    * Factory method for building add primary key message

@@ -355,6 +355,7 @@ import org.slf4j.LoggerFactory;
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list792 = iprot.readListBegin();
                 struct.values = new ArrayList<ClientCapability>(_list792.size);
                 ClientCapability _elem793;
@@ -363,6 +364,8 @@ import org.slf4j.LoggerFactory;
                   _elem793 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
                   struct.values.add(_elem793);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list784 = iprot.readListBegin();
                 struct.values = new ArrayList<ClientCapability>(_list784.size);
@@ -372,6 +375,8 @@ import org.slf4j.LoggerFactory;
                   _elem785 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
                   struct.values.add(_elem785);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list768 = iprot.readListBegin();
                 struct.values = new ArrayList<ClientCapability>(_list768.size);
@@ -381,6 +386,8 @@ import org.slf4j.LoggerFactory;
                   _elem769 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
                   struct.values.add(_elem769);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
                 org.apache.thrift.protocol.TList _list786 = iprot.readListBegin();
                 struct.values = new ArrayList<ClientCapability>(_list786.size);
                 ClientCapability _elem787;
@@ -388,9 +395,27 @@ import org.slf4j.LoggerFactory;
                 {
                   _elem787 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
                   struct.values.add(_elem787);
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+                org.apache.thrift.protocol.TList _list770 = iprot.readListBegin();
+                struct.values = new ArrayList<ClientCapability>(_list770.size);
+                ClientCapability _elem771;
+                for (int _i772 = 0; _i772 < _list770.size; ++_i772)
+                {
+                  _elem771 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
+                  struct.values.add(_elem771);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
                 }
                 iprot.readListEnd();
               }
@@ -417,15 +442,20 @@ import org.slf4j.LoggerFactory;
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.values.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
           for (ClientCapability _iter795 : struct.values)
           {
             oprot.writeI32(_iter795.getValue());
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           for (ClientCapability _iter787 : struct.values)
           {
             oprot.writeI32(_iter787.getValue());
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           for (ClientCapability _iter771 : struct.values)
           {
@@ -435,8 +465,24 @@ import org.slf4j.LoggerFactory;
           {
             oprot.writeI32(_iter789.getValue());
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+          for (ClientCapability _iter789 : struct.values)
+          {
+            oprot.writeI32(_iter789.getValue());
+=======
+          for (ClientCapability _iter773 : struct.values)
+          {
+            oprot.writeI32(_iter773.getValue());
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           }
           oprot.writeListEnd();
         }
@@ -462,15 +508,20 @@ import org.slf4j.LoggerFactory;
       {
         oprot.writeI32(struct.values.size());
 <<<<<<< HEAD
+<<<<<<< HEAD
         for (ClientCapability _iter796 : struct.values)
         {
           oprot.writeI32(_iter796.getValue());
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
         for (ClientCapability _iter788 : struct.values)
         {
           oprot.writeI32(_iter788.getValue());
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
         for (ClientCapability _iter772 : struct.values)
         {
@@ -480,8 +531,24 @@ import org.slf4j.LoggerFactory;
         {
           oprot.writeI32(_iter790.getValue());
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+        for (ClientCapability _iter790 : struct.values)
+        {
+          oprot.writeI32(_iter790.getValue());
+=======
+        for (ClientCapability _iter774 : struct.values)
+        {
+          oprot.writeI32(_iter774.getValue());
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
         }
       }
     }
@@ -491,6 +558,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
 <<<<<<< HEAD
+<<<<<<< HEAD
         org.apache.thrift.protocol.TList _list797 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
         struct.values = new ArrayList<ClientCapability>(_list797.size);
         ClientCapability _elem798;
@@ -499,6 +567,8 @@ import org.slf4j.LoggerFactory;
           _elem798 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
           struct.values.add(_elem798);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
         org.apache.thrift.protocol.TList _list789 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
         struct.values = new ArrayList<ClientCapability>(_list789.size);
@@ -508,6 +578,8 @@ import org.slf4j.LoggerFactory;
           _elem790 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
           struct.values.add(_elem790);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
         org.apache.thrift.protocol.TList _list773 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
         struct.values = new ArrayList<ClientCapability>(_list773.size);
@@ -517,6 +589,8 @@ import org.slf4j.LoggerFactory;
           _elem774 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
           struct.values.add(_elem774);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
         org.apache.thrift.protocol.TList _list791 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
         struct.values = new ArrayList<ClientCapability>(_list791.size);
         ClientCapability _elem792;
@@ -524,9 +598,27 @@ import org.slf4j.LoggerFactory;
         {
           _elem792 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
           struct.values.add(_elem792);
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+        org.apache.thrift.protocol.TList _list775 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
+        struct.values = new ArrayList<ClientCapability>(_list775.size);
+        ClientCapability _elem776;
+        for (int _i777 = 0; _i777 < _list775.size; ++_i777)
+        {
+          _elem776 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
+          struct.values.add(_elem776);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
         }
       }
       struct.setValuesIsSet(true);

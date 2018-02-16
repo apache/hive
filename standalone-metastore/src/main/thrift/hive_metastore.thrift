@@ -905,8 +905,6 @@ struct TxnToWriteId {
 
 struct AllocateTableWriteIdsResponse {
     1: required list<TxnToWriteId> txnToWriteIds,
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 }
 
 struct LockComponent {

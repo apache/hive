@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
+import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 
 import java.util.List;
 import java.util.Map;
@@ -216,8 +217,16 @@ public class MetaStoreListenerNotifier {
           })
           .put(EventType.COMMIT_TXN, new EventNotifier() {
             @Override
-            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+            public void notify(MetaStoreEventListener listener, ListenerEvent event)
+                throws MetaException {
               listener.onCommitTxn((CommitTxnEvent) event);
+            }
+          })
+          .put(EventType.ABORT_TXN, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event)
+                throws MetaException {
+              listener.onAbortTxn((AbortTxnEvent) event);
             }
           })
           .build()

@@ -37,6 +37,7 @@ public class CommitTxnHandler extends AbstractMessageHandler {
         new ReplTxnWork(context.dbName, context.tableName, msg.getTxnId(),
                 ReplTxnWork.OperationType.REPL_COMMI_TXN), context.hiveConf
     );
+    updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, context.tableName, null);
     context.log.debug("Added Commit txn task : {}", commitTxnTask.getId());
     return Collections.singletonList(commitTxnTask);
   }

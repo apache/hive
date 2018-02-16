@@ -61,14 +61,21 @@ public interface HiveTxnManager {
   List<Long> replOpenTxn(String replPolicy, Iterator<Long> srcTxnIds, int numTxns)  throws LockException ;
 
   /**
-   * Commit a transaction in target cluster.
+   * Commit the transaction in target cluster.
    * @param replPolicy Replication policy to uniquely identify the source cluster.
    * @param srcTxnId The id of the transaction at the source cluster
-   * @return The new transaction id.
    * @throws LockException in case of failure to start the trasnaction.
    */
   void replCommitTxn(String replPolicy, long srcTxnId)  throws LockException ;
-  
+
+ /**
+   * Abort the transaction in target cluster.
+   * @param replPolicy Replication policy to uniquely identify the source cluster.
+   * @param srcTxnId The id of the transaction at the source cluster
+   * @throws LockException in case of failure to start the trasnaction.
+   */
+  void replRollbackTxn(String replPolicy, long srcTxnId)  throws LockException ;
+
   /**
    * Get the lock manager.  This must be used rather than instantiating an
    * instance of the lock manager directly as the transaction manager will

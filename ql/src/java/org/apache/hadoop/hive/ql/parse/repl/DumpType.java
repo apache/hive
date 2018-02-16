@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.parse.repl.load.message.TruncatePartitionHandle
 import org.apache.hadoop.hive.ql.parse.repl.load.message.TruncateTableHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.OpenTxnHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.CommitTxnHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.AbortTxnHandler;
 
 public enum DumpType {
 
@@ -197,7 +198,14 @@ public enum DumpType {
     public MessageHandler handler() {
       return new CommitTxnHandler();
     }
+  },
+  EVENT_ABORT_TXN("EVENT_ABORT_TXN") {
+    @Override
+    public MessageHandler handler() {
+      return new AbortTxnHandler();
+    }
   };
+
   String type = null;
   DumpType(String type) {
     this.type = type;

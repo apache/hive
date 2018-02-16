@@ -66,6 +66,10 @@ public abstract class MessageDeserializer {
       return getDropConstraintMessage(messageBody);
     case OPEN_TXN:
       return getOpenTxnMessage(messageBody);
+    case COMMIT_TXN:
+      return getCommitTxnMessage(messageBody);
+    case ABORT_TXN:
+      return getAbortTxnMessage(messageBody);
     default:
       throw new IllegalArgumentException("Unsupported event-type: " + eventTypeString);
     }
@@ -168,9 +172,14 @@ public abstract class MessageDeserializer {
   public abstract OpenTxnMessage getOpenTxnMessage(String messageBody);
 
   /**
-   * Method to de-serialize OpenTxnMessage instance.
+   * Method to de-serialize CommitTxnMessage instance.
    */
   public abstract CommitTxnMessage getCommitTxnMessage(String messageBody);
+
+  /**
+   * Method to de-serialize AbortTxnMessage instance.
+   */
+  public abstract AbortTxnMessage getAbortTxnMessage(String messageBody);
 
   // Protection against construction.
   protected MessageDeserializer() {}

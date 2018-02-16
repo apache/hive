@@ -27,7 +27,7 @@ import com.google.common.collect.Lists;
 import java.util.Iterator;
 import java.util.List;
 
-@Explain(displayName = "Open Transaction", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+@Explain(displayName = "Replication Transaction", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ReplTxnWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private String dbName;
@@ -35,15 +35,18 @@ public class ReplTxnWork implements Serializable {
   private List<Long> txnIds;
 
   public enum OperationType {
-    REPL_OPEN_TXN(1),
-    REPL_ABORT_TXN(2),
-    REPL_COMMI_TXN(3);
-    private int value;
-    private OperationType(int value) {
-      this.value = value;
+    REPL_OPEN_TXN("REPL_OPEN_TXN"),
+    REPL_ABORT_TXN("REPL_ABORT_TXN"),
+    REPL_COMMI_TXN("REPL_COMMI_TXN");
+
+    String type = null;
+    OperationType(String type) {
+      this.type = type;
     }
-    public int getValue() {
-      return value;
+
+    @Override
+    public String toString(){
+      return type;
     }
   }
 

@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
- * JSON implementation of InsertMessage
+ * JSON implementation of CommitTxnMessage
  */
 public class JSONCommitTxnMessage extends CommitTxnMessage {
 

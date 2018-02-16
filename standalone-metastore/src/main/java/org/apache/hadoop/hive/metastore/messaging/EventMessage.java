@@ -57,7 +57,8 @@ public abstract class EventMessage {
     CREATE_CATALOG(MessageFactory.CREATE_CATALOG_EVENT),
     DROP_CATALOG(MessageFactory.DROP_CATALOG_EVENT);
     OPEN_TXN(MessageFactory.OPEN_TXN_EVENT),
-    COMMIT_TXN(MessageFactory.COMMIT_TXN_EVENT);
+    COMMIT_TXN(MessageFactory.COMMIT_TXN_EVENT),
+    ABORT_TXN(MessageFactory.ABORT_TXN_EVENT);
 
     private String typeString;
 

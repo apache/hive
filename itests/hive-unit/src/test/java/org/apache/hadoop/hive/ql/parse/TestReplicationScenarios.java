@@ -3561,9 +3561,7 @@ public class TestReplicationScenarios {
     String dbName = createDB(name, driver);
     advanceDumpDir();
     Tuple bootstrap = bootstrapLoadAndVerify(dbName, "default1");
-    
     run("CREATE TABLE " + dbName + ".acid(a int) PARTITIONED BY (load_date date) CLUSTERED BY(a) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
-
     bootstrap = incrementalLoadAndVerify(dbName,bootstrap.lastReplId,"default1");
     run("REPL STATUS " + dbName + "_dupe", driverMirror);
     verifyResults(new String[] {bootstrap.lastReplId}, driverMirror);

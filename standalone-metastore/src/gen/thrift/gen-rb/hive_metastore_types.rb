@@ -2575,26 +2575,6 @@ end
 class GetTargetTxnIdRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TXNID = 1
-<<<<<<< HEAD
-=======
-
-  FIELDS = {
-    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnid is unset!') unless @txnid
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class GetTargetTxnIdResponse
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  TXNID = 1
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
 
   FIELDS = {
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'}

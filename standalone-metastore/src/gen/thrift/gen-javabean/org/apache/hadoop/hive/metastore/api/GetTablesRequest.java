@@ -607,6 +607,7 @@ import org.slf4j.LoggerFactory;
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list800 = iprot.readListBegin();
                 struct.tblNames = new ArrayList<String>(_list800.size);
                 String _elem801;
@@ -615,6 +616,8 @@ import org.slf4j.LoggerFactory;
                   _elem801 = iprot.readString();
                   struct.tblNames.add(_elem801);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list792 = iprot.readListBegin();
                 struct.tblNames = new ArrayList<String>(_list792.size);
@@ -624,6 +627,8 @@ import org.slf4j.LoggerFactory;
                   _elem793 = iprot.readString();
                   struct.tblNames.add(_elem793);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list776 = iprot.readListBegin();
                 struct.tblNames = new ArrayList<String>(_list776.size);
@@ -633,6 +638,8 @@ import org.slf4j.LoggerFactory;
                   _elem777 = iprot.readString();
                   struct.tblNames.add(_elem777);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
                 org.apache.thrift.protocol.TList _list794 = iprot.readListBegin();
                 struct.tblNames = new ArrayList<String>(_list794.size);
                 String _elem795;
@@ -640,9 +647,27 @@ import org.slf4j.LoggerFactory;
                 {
                   _elem795 = iprot.readString();
                   struct.tblNames.add(_elem795);
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+                org.apache.thrift.protocol.TList _list778 = iprot.readListBegin();
+                struct.tblNames = new ArrayList<String>(_list778.size);
+                String _elem779;
+                for (int _i780 = 0; _i780 < _list778.size; ++_i780)
+                {
+                  _elem779 = iprot.readString();
+                  struct.tblNames.add(_elem779);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
                 }
                 iprot.readListEnd();
               }
@@ -692,15 +717,20 @@ import org.slf4j.LoggerFactory;
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.tblNames.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
             for (String _iter803 : struct.tblNames)
             {
               oprot.writeString(_iter803);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             for (String _iter795 : struct.tblNames)
             {
               oprot.writeString(_iter795);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
             for (String _iter779 : struct.tblNames)
             {
@@ -710,8 +740,24 @@ import org.slf4j.LoggerFactory;
             {
               oprot.writeString(_iter797);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+            for (String _iter797 : struct.tblNames)
+            {
+              oprot.writeString(_iter797);
+=======
+            for (String _iter781 : struct.tblNames)
+            {
+              oprot.writeString(_iter781);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
             }
             oprot.writeListEnd();
           }
@@ -765,15 +811,20 @@ import org.slf4j.LoggerFactory;
         {
           oprot.writeI32(struct.tblNames.size());
 <<<<<<< HEAD
+<<<<<<< HEAD
           for (String _iter804 : struct.tblNames)
           {
             oprot.writeString(_iter804);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           for (String _iter796 : struct.tblNames)
           {
             oprot.writeString(_iter796);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           for (String _iter780 : struct.tblNames)
           {
@@ -783,8 +834,24 @@ import org.slf4j.LoggerFactory;
           {
             oprot.writeString(_iter798);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+          for (String _iter798 : struct.tblNames)
+          {
+            oprot.writeString(_iter798);
+=======
+          for (String _iter782 : struct.tblNames)
+          {
+            oprot.writeString(_iter782);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           }
         }
       }
@@ -805,6 +872,7 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(0)) {
         {
 <<<<<<< HEAD
+<<<<<<< HEAD
           org.apache.thrift.protocol.TList _list805 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
           struct.tblNames = new ArrayList<String>(_list805.size);
           String _elem806;
@@ -813,6 +881,8 @@ import org.slf4j.LoggerFactory;
             _elem806 = iprot.readString();
             struct.tblNames.add(_elem806);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           org.apache.thrift.protocol.TList _list797 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
           struct.tblNames = new ArrayList<String>(_list797.size);
@@ -822,6 +892,8 @@ import org.slf4j.LoggerFactory;
             _elem798 = iprot.readString();
             struct.tblNames.add(_elem798);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
           org.apache.thrift.protocol.TList _list781 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
           struct.tblNames = new ArrayList<String>(_list781.size);
@@ -831,6 +903,8 @@ import org.slf4j.LoggerFactory;
             _elem782 = iprot.readString();
             struct.tblNames.add(_elem782);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           org.apache.thrift.protocol.TList _list799 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
           struct.tblNames = new ArrayList<String>(_list799.size);
           String _elem800;
@@ -838,9 +912,27 @@ import org.slf4j.LoggerFactory;
           {
             _elem800 = iprot.readString();
             struct.tblNames.add(_elem800);
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+=======
+=======
+          org.apache.thrift.protocol.TList _list783 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.tblNames = new ArrayList<String>(_list783.size);
+          String _elem784;
+          for (int _i785 = 0; _i785 < _list783.size; ++_i785)
+          {
+            _elem784 = iprot.readString();
+            struct.tblNames.add(_elem784);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           }
         }
         struct.setTblNamesIsSet(true);
