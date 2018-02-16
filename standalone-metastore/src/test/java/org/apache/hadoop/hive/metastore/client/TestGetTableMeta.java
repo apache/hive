@@ -26,6 +26,7 @@ import java.util.Set;
 import com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -41,6 +42,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -52,6 +54,7 @@ import static org.junit.Assert.assertTrue;
  * API tests for HMS client's getTableMeta method.
  */
 @RunWith(Parameterized.class)
+@Category(MetastoreCheckinTest.class)
 public class TestGetTableMeta {
 
   // Needed until there is no junit release with @BeforeParam, @AfterParam (junit 4.13)

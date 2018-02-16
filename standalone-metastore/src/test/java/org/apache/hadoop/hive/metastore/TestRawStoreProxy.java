@@ -23,10 +23,13 @@ import static org.junit.Assert.fail;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+@Category(MetastoreCheckinTest.class)
 public class TestRawStoreProxy {
 
   static class TestStore extends ObjectStore {

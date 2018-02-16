@@ -25,13 +25,16 @@ import java.util.concurrent.TimeUnit;
 import javax.jdo.JDOException;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
+@Category(MetastoreCheckinTest.class)
 public class TestRetriesInRetryingHMSHandler {
 
   private static Configuration conf;

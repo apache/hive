@@ -20,8 +20,11 @@ package org.apache.hadoop.hive.common.ndv.hll;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog.EncodingType;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+@Category(MetastoreUnitTest.class)
 public class TestHyperLogLog {
   // 5% tolerance for estimated count
   private float longRangeTolerance = 5.0f;

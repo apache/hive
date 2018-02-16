@@ -49,12 +49,14 @@
     <test.forkcount>1</test.forkcount>
     <skipITests>true</skipITests>
     <itest.jdbc.jars>set-this-to-colon-separated-full-path-list-of-jars-to-run-integration-tests</itest.jdbc.jars>
+    <test.groups>org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest</test.groups>
 
     <!-- Plugin versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
     <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
     <checkstyle.conf.dir>${basedir}/checkstyle/</checkstyle.conf.dir>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
+    <maven.surefire.version>2.20.1</maven.surefire.version>
 
     <!-- Dependency versions -->
     <antlr.version>3.5.2</antlr.version>
@@ -420,6 +422,48 @@
         </plugins>
       </build>
     </profile>
+      <!--
+    <profile>
+      <id>checkin</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>${maven.surefire.version}</version>
+            <configuration>
+              <includes>
+                <include>**/Test*</include>
+              </includes>
+              <redirectTestOutputToFile>true</redirectTestOutputToFile>
+              <reuseForks>false</reuseForks>
+              <forkCount>${test.forkcount}</forkCount>
+              <argLine>-Xmx2048m</argLine>
+              <failIfNoTests>false</failIfNoTests>
+              <systemPropertyVariables>
+                <build.dir>${project.build.directory}</build.dir>
+                <datanucleus.schema.autoCreateAll>true</datanucleus.schema.autoCreateAll>
+                <derby.version>${derby.version}</derby.version>
+                <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
+                <log4j.debug>true</log4j.debug>
+                <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
+                <javax.jdo.option.ConnectionURL>jdbc:derby:memory:${test.tmp.dir}/junit_metastore_db;create=true</javax.jdo.option.ConnectionURL>
+                <metastore.schema.verification>false</metastore.schema.verification>
+                <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
+                <metastore.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</metastore.warehouse.dir>
+              </systemPropertyVariables>
+              <additionalClasspathElements>
+                <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
+              </additionalClasspathElements>
+            </configuration>
+
+          </plugin>
+
+
+        </plugins>
+      </build>
+    </profile>
+    -->
   </profiles>
 
   <build>
@@ -605,7 +649,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.16</version>
+        <version>${maven.surefire.version}</version>
         <configuration>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
@@ -627,6 +671,7 @@
           <additionalClasspathElements>
             <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
           </additionalClasspathElements>
+          <groups>${test.groups}</groups>
         </configuration>
       </plugin>
       <plugin>

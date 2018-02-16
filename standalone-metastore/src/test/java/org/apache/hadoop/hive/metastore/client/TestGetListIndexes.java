@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -38,6 +39,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -47,6 +49,7 @@ import com.google.common.collect.Lists;
  * Tests for getting and listing indexes.
  */
 @RunWith(Parameterized.class)
+@Category(MetastoreCheckinTest.class)
 public class TestGetListIndexes {
   // Needed until there is no junit release with @BeforeParam, @AfterParam (junit 4.13)
   // https://github.com/junit-team/junit4/commit/1bf8438b65858565dbb64736bfe13aae9cfc1b5a

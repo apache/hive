@@ -20,15 +20,18 @@ package org.apache.hadoop.hive.metastore.datasource;
 import com.jolbox.bonecp.BoneCPDataSource;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
 
+@Category(MetastoreUnitTest.class)
 public class TestDataSourceProviderFactory {
 
   private Configuration conf;

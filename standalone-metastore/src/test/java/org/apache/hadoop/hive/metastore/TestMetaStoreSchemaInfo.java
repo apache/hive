@@ -18,13 +18,16 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * Test MetaStoreSchemaInfo
  */
+@Category(MetastoreUnitTest.class)
 public class TestMetaStoreSchemaInfo {
 
   @Test

@@ -28,16 +28,19 @@ import java.util.concurrent.TimeUnit;
 import javax.jdo.JDOCanRetryException;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+@Category(MetastoreCheckinTest.class)
 public class TestObjectStoreInitRetry {
   private static final Logger LOG = LoggerFactory.getLogger(TestObjectStoreInitRetry.class);
 
