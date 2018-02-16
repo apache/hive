@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -72,6 +73,7 @@ import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -83,6 +85,7 @@ import static org.junit.Assert.assertTrue;
  * Mostly same tests as TestMetaStoreEventListener, but using old hive conf values instead of new
  * metastore conf values.
  */
+@Category(MetastoreUnitTest.class)
 public class TestMetaStoreEventListenerWithOldConf {
   private Configuration conf;
 

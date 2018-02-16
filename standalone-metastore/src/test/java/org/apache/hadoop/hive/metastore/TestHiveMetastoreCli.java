@@ -19,10 +19,13 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+@Category(MetastoreUnitTest.class)
 public class TestHiveMetastoreCli {
   private static final String[] CLI_ARGUMENTS = { "9999" };
 

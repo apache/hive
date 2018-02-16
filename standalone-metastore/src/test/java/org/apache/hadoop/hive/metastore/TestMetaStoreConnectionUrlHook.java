@@ -19,15 +19,18 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * TestMetaStoreConnectionUrlHook
  * Verifies that when an instance of an implementation of RawStore is initialized, the connection
  * URL has already been updated by any metastore connect URL hooks.
  */
+@Category(MetastoreUnitTest.class)
 public class TestMetaStoreConnectionUrlHook {
 
   @Test

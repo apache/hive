@@ -32,15 +32,18 @@ import java.util.Random;
 import java.util.Set;
 
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog.EncodingType;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(value = Parameterized.class)
+@Category(MetastoreUnitTest.class)
 public class TestHLLSerialization {
 
   private int size;

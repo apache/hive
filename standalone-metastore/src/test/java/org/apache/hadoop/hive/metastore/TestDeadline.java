@@ -18,15 +18,18 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Test the Deadline class used for long running requests.
  */
+@Category(MetastoreUnitTest.class)
 public class TestDeadline {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestDeadline.class);
