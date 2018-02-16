@@ -33,9 +33,9 @@ PREHOOK: Input: default@shcol_test
 POSTHOOK: query: SHOW COLUMNS from shcol_test
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: default@shcol_test
+ds                  
 key                 
 value               
-ds                  
 PREHOOK: query: CREATE DATABASE test_db
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:test_db
@@ -48,11 +48,11 @@ PREHOOK: Input: database:test_db
 POSTHOOK: query: USE test_db
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:test_db
-PREHOOK: query: CREATE TABLE foo(a INT)
+PREHOOK: query: CREATE TABLE foo(col1 INT, col2 INT, col3 INT, cola INT, colb INT, colc INT, a INT, b INT, c INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:test_db
 PREHOOK: Output: test_db@foo
-POSTHOOK: query: CREATE TABLE foo(a INT)
+POSTHOOK: query: CREATE TABLE foo(col1 INT, col2 INT, col3 INT, cola INT, colb INT, colc INT, a INT, b INT, c INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:test_db
 POSTHOOK: Output: test_db@foo
@@ -69,6 +69,14 @@ POSTHOOK: query: SHOW COLUMNS from foo
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: test_db@foo
 a                   
+b                   
+c                   
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
 PREHOOK: query: SHOW COLUMNS in foo
 PREHOOK: type: SHOWCOLUMNS
 PREHOOK: Input: test_db@foo
@@ -76,6 +84,70 @@ POSTHOOK: query: SHOW COLUMNS in foo
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: test_db@foo
 a                   
+b                   
+c                   
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW COLUMNS in foo 'col*'
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo
+POSTHOOK: query: SHOW COLUMNS in foo 'col*'
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW COLUMNS in foo "col*"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo
+POSTHOOK: query: SHOW COLUMNS in foo "col*"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW COLUMNS from foo 'col*'
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo
+POSTHOOK: query: SHOW COLUMNS from foo 'col*'
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW COLUMNS from foo "col*"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo
+POSTHOOK: query: SHOW COLUMNS from foo "col*"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW COLUMNS from foo "col1|cola"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo
+POSTHOOK: query: SHOW COLUMNS from foo "col1|cola"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo
+col1                
+cola                
 PREHOOK: query: CREATE DATABASE `database`
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:database
@@ -88,11 +160,11 @@ PREHOOK: Input: database:database
 POSTHOOK: query: USE `database`
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:database
-PREHOOK: query: CREATE TABLE foo(a INT)
+PREHOOK: query: CREATE TABLE foo(col1 INT, col2 INT, col3 INT, cola INT, colb INT, colc INT, a INT, b INT, c INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:database
 PREHOOK: Output: database@foo
-POSTHOOK: query: CREATE TABLE foo(a INT)
+POSTHOOK: query: CREATE TABLE foo(col1 INT, col2 INT, col3 INT, cola INT, colb INT, colc INT, a INT, b INT, c INT)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:database
 POSTHOOK: Output: database@foo
@@ -103,6 +175,44 @@ POSTHOOK: query: SHOW COLUMNS from foo
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: database@foo
 a                   
+b                   
+c                   
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW COLUMNS in foo "col*"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: database@foo
+POSTHOOK: query: SHOW COLUMNS in foo "col*"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: database@foo
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW COLUMNS in foo "nomatch*"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: database@foo
+POSTHOOK: query: SHOW COLUMNS in foo "nomatch*"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: database@foo
+PREHOOK: query: SHOW COLUMNS in foo "col+"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: database@foo
+POSTHOOK: query: SHOW COLUMNS in foo "col+"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: database@foo
+PREHOOK: query: SHOW COLUMNS in foo "nomatch"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: database@foo
+POSTHOOK: query: SHOW COLUMNS in foo "nomatch"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: database@foo
 PREHOOK: query: use default
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:default
@@ -116,6 +226,14 @@ POSTHOOK: query: SHOW COLUMNS from test_db.foo
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: test_db@foo
 a                   
+b                   
+c                   
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
 PREHOOK: query: SHOW COLUMNS from foo from test_db
 PREHOOK: type: SHOWCOLUMNS
 PREHOOK: Input: test_db@foo
@@ -123,3 +241,35 @@ POSTHOOK: query: SHOW COLUMNS from foo from test_db
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: test_db@foo
 a                   
+b                   
+c                   
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW COLUMNS from foo from test_db "col*"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo
+POSTHOOK: query: SHOW COLUMNS from foo from test_db "col*"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW COLUMNS from foo from test_db like 'col*'
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo
+POSTHOOK: query: SHOW COLUMNS from foo from test_db like 'col*'
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
