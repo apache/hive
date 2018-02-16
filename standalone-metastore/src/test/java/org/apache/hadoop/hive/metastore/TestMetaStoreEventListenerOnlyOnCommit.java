@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -39,10 +40,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
 
 /**
  * Ensure that the status of MetaStore events depend on the RawStore's commit status.
  */
+@Category(MetastoreUnitTest.class)
 public class TestMetaStoreEventListenerOnlyOnCommit {
 
   private Configuration conf;

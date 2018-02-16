@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
@@ -30,6 +31,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.List;
 
@@ -45,6 +47,7 @@ import java.util.List;
  * required the hive-exec jar, and hive-exec jar already depends on
  * hive-metastore jar, thus I can't make hive-metastore depend on hive-exec.
  */
+@Category(MetastoreUnitTest.class)
 public class TestHiveMetaStoreTxns {
 
   private final Configuration conf = MetastoreConf.newMetastoreConf();

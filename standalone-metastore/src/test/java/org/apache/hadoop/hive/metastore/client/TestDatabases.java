@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore.client;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
@@ -43,6 +44,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
@@ -57,6 +59,7 @@ import java.util.stream.Collectors;
  * Test class for IMetaStoreClient API. Testing the Database related functions.
  */
 @RunWith(Parameterized.class)
+@Category(MetastoreCheckinTest.class)
 public class TestDatabases {
   private static final Logger LOG = LoggerFactory.getLogger(TestDatabases.class);
   // Needed until there is no junit release with @BeforeParam, @AfterParam (junit 4.13)

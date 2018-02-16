@@ -19,17 +19,20 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * TestMetaStoreInitListener. Test case for
  * {@link org.apache.hadoop.hive.metastore.MetaStoreInitListener}
  */
+@Category(MetastoreCheckinTest.class)
 public class TestMetaStoreInitListener {
   private Configuration conf;
 

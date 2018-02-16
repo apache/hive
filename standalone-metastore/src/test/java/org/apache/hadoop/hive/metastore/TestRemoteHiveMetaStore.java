@@ -18,13 +18,16 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
 
 
+@Category(MetastoreCheckinTest.class)
 public class TestRemoteHiveMetaStore extends TestHiveMetaStore {
   private static boolean isServerStarted = false;
   protected static int port;

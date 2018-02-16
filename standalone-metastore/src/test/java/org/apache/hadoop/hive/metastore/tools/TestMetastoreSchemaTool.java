@@ -18,10 +18,12 @@
 package org.apache.hadoop.hive.metastore.tools;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.mockito.Mock;
 
 import java.io.File;
@@ -31,6 +33,7 @@ import java.util.Arrays;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+@Category(MetastoreUnitTest.class)
 public class TestMetastoreSchemaTool {
 
   private String scriptFile = System.getProperty("java.io.tmpdir") + File.separator + "someScript.sql";

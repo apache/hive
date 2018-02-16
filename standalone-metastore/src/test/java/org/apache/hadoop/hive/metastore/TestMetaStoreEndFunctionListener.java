@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -29,6 +30,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -38,6 +40,7 @@ import static org.junit.Assert.assertTrue;
  * TestMetaStoreEventListener. Test case for
  * {@link org.apache.hadoop.hive.metastore.MetaStoreEndFunctionListener}
  */
+@Category(MetastoreUnitTest.class)
 public class TestMetaStoreEndFunctionListener {
   private Configuration conf;
   private HiveMetaStoreClient msc;
