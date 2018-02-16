@@ -1,0 +1,2850 @@
+PREHOOK: query: DROP TABLE IF EXISTS e011_01
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS e011_01
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS e011_02
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS e011_02
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS e011_03
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS e011_03
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE e011_01 (
+  c1 decimal(15,2),
+  c2 decimal(15,2))
+  STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@e011_01
+POSTHOOK: query: CREATE TABLE e011_01 (
+  c1 decimal(15,2),
+  c2 decimal(15,2))
+  STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@e011_01
+PREHOOK: query: CREATE TABLE e011_02 (
+  c1 decimal(15,2),
+  c2 decimal(15,2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@e011_02
+POSTHOOK: query: CREATE TABLE e011_02 (
+  c1 decimal(15,2),
+  c2 decimal(15,2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@e011_02
+PREHOOK: query: CREATE TABLE e011_03 (
+  c1 decimal(15,2),
+  c2 decimal(15,2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@e011_03
+POSTHOOK: query: CREATE TABLE e011_03 (
+  c1 decimal(15,2),
+  c2 decimal(15,2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@e011_03
+PREHOOK: query: CREATE TABLE e011_01_small (
+  c1 decimal(7,2),
+  c2 decimal(7,2))
+  STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@e011_01_small
+POSTHOOK: query: CREATE TABLE e011_01_small (
+  c1 decimal(7,2),
+  c2 decimal(7,2))
+  STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@e011_01_small
+PREHOOK: query: CREATE TABLE e011_02_small (
+  c1 decimal(7,2),
+  c2 decimal(7,2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@e011_02_small
+POSTHOOK: query: CREATE TABLE e011_02_small (
+  c1 decimal(7,2),
+  c2 decimal(7,2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@e011_02_small
+PREHOOK: query: CREATE TABLE e011_03_small (
+  c1 decimal(7,2),
+  c2 decimal(7,2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@e011_03_small
+POSTHOOK: query: CREATE TABLE e011_03_small (
+  c1 decimal(7,2),
+  c2 decimal(7,2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@e011_03_small
+PREHOOK: query: LOAD DATA
+  LOCAL INPATH '../../data/files/e011_01.txt'
+  OVERWRITE
+  INTO TABLE e011_01
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@e011_01
+POSTHOOK: query: LOAD DATA
+  LOCAL INPATH '../../data/files/e011_01.txt'
+  OVERWRITE
+  INTO TABLE e011_01
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@e011_01
+PREHOOK: query: INSERT INTO TABLE e011_02
+  SELECT c1, c2
+  FROM e011_01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01
+PREHOOK: Output: default@e011_02
+POSTHOOK: query: INSERT INTO TABLE e011_02
+  SELECT c1, c2
+  FROM e011_01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01
+POSTHOOK: Output: default@e011_02
+POSTHOOK: Lineage: e011_02.c1 SIMPLE [(e011_01)e011_01.FieldSchema(name:c1, type:decimal(15,2), comment:null), ]
+POSTHOOK: Lineage: e011_02.c2 SIMPLE [(e011_01)e011_01.FieldSchema(name:c2, type:decimal(15,2), comment:null), ]
+c1	c2
+PREHOOK: query: INSERT INTO TABLE e011_03
+  SELECT c1, c2
+  FROM e011_01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01
+PREHOOK: Output: default@e011_03
+POSTHOOK: query: INSERT INTO TABLE e011_03
+  SELECT c1, c2
+  FROM e011_01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01
+POSTHOOK: Output: default@e011_03
+POSTHOOK: Lineage: e011_03.c1 SIMPLE [(e011_01)e011_01.FieldSchema(name:c1, type:decimal(15,2), comment:null), ]
+POSTHOOK: Lineage: e011_03.c2 SIMPLE [(e011_01)e011_01.FieldSchema(name:c2, type:decimal(15,2), comment:null), ]
+c1	c2
+PREHOOK: query: LOAD DATA
+  LOCAL INPATH '../../data/files/e011_01.txt'
+  OVERWRITE
+  INTO TABLE e011_01_small
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@e011_01_small
+POSTHOOK: query: LOAD DATA
+  LOCAL INPATH '../../data/files/e011_01.txt'
+  OVERWRITE
+  INTO TABLE e011_01_small
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@e011_01_small
+PREHOOK: query: INSERT INTO TABLE e011_02_small
+  SELECT c1, c2
+  FROM e011_01_small
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01_small
+PREHOOK: Output: default@e011_02_small
+POSTHOOK: query: INSERT INTO TABLE e011_02_small
+  SELECT c1, c2
+  FROM e011_01_small
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01_small
+POSTHOOK: Output: default@e011_02_small
+POSTHOOK: Lineage: e011_02_small.c1 SIMPLE [(e011_01_small)e011_01_small.FieldSchema(name:c1, type:decimal(7,2), comment:null), ]
+POSTHOOK: Lineage: e011_02_small.c2 SIMPLE [(e011_01_small)e011_01_small.FieldSchema(name:c2, type:decimal(7,2), comment:null), ]
+c1	c2
+PREHOOK: query: INSERT INTO TABLE e011_03_small
+  SELECT c1, c2
+  FROM e011_01_small
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01_small
+PREHOOK: Output: default@e011_03_small
+POSTHOOK: query: INSERT INTO TABLE e011_03_small
+  SELECT c1, c2
+  FROM e011_01_small
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01_small
+POSTHOOK: Output: default@e011_03_small
+POSTHOOK: Lineage: e011_03_small.c1 SIMPLE [(e011_01_small)e011_01_small.FieldSchema(name:c1, type:decimal(7,2), comment:null), ]
+POSTHOOK: Lineage: e011_03_small.c2 SIMPLE [(e011_01_small)e011_01_small.FieldSchema(name:c2, type:decimal(7,2), comment:null), ]
+c1	c2
+PREHOOK: query: ANALYZE TABLE e011_01 COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01
+PREHOOK: Output: default@e011_01
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE e011_01 COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01
+POSTHOOK: Output: default@e011_01
+#### A masked pattern was here ####
+_c0	_c1
+PREHOOK: query: ANALYZE TABLE e011_02 COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_02
+PREHOOK: Output: default@e011_02
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE e011_02 COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_02
+POSTHOOK: Output: default@e011_02
+#### A masked pattern was here ####
+_c0	_c1
+PREHOOK: query: ANALYZE TABLE e011_03 COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_03
+PREHOOK: Output: default@e011_03
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE e011_03 COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_03
+POSTHOOK: Output: default@e011_03
+#### A masked pattern was here ####
+_c0	_c1
+PREHOOK: query: ANALYZE TABLE e011_01_small COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01_small
+PREHOOK: Output: default@e011_01_small
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE e011_01_small COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01_small
+POSTHOOK: Output: default@e011_01_small
+#### A masked pattern was here ####
+_c0	_c1
+PREHOOK: query: ANALYZE TABLE e011_02_small COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_02_small
+PREHOOK: Output: default@e011_02_small
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE e011_02_small COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_02_small
+POSTHOOK: Output: default@e011_02_small
+#### A masked pattern was here ####
+_c0	_c1
+PREHOOK: query: ANALYZE TABLE e011_03_small COMPUTE STATISTICS FOR COLUMNS
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_03_small
+PREHOOK: Output: default@e011_03_small
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE e011_03_small COMPUTE STATISTICS FOR COLUMNS
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_03_small
+POSTHOOK: Output: default@e011_03_small
+#### A masked pattern was here ####
+_c0	_c1
+PREHOOK: query: explain vectorization detail
+select sum(sum(c1)) over() from e011_01
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select sum(sum(c1)) over() from e011_01
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: e011_01
+                  Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2), 1:c2:decimal(15,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: c1 (type: decimal(15,2))
+                    outputColumnNames: c1
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0]
+                    Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(c1)
+                      Group By Vectorization:
+                          aggregators: VectorUDAFSumDecimal(col 0:decimal(15,2)) -> decimal(25,2)
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkEmptyKeyOperator
+                            keyColumnNums: []
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: [0]
+                        Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: decimal(25,2))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0]
+                    dataColumns: c1:decimal(15,2), c2:decimal(15,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: VALUE._col0:decimal(25,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumDecimal(col 0:decimal(25,2)) -> decimal(25,2)
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: 0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: 0 (type: int)
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkLongOperator
+                      keyColumnNums: [1]
+                      keyExpressions: ConstantVectorExpression(val 0) -> 1:int
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      valueColumnNums: [0]
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: decimal(25,2))
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    dataColumns: KEY.reducesinkkey0:int, VALUE._col0:decimal(25,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [decimal(35,2), bigint]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: decimal(25,2))
+                outputColumnNames: _col0
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1]
+                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: decimal(25,2)
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: 0 ASC NULLS FIRST
+                        partition by: 0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: sum_window_0
+                              arguments: _col0
+                              name: sum
+                              window function: GenericUDAFSumHiveDecimal
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorDecimalSum]
+                      functionInputExpressions: [col 1:decimal(25,2)]
+                      functionNames: [sum]
+                      keyInputColumns: []
+                      native: true
+                      nonKeyInputColumns: [1]
+                      orderExpressions: [ConstantVectorExpression(val 0) -> 3:int]
+                      outputColumns: [2, 1]
+                      outputTypes: [decimal(35,2), decimal(25,2)]
+                      streamingColumns: []
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: sum_window_0 (type: decimal(35,2))
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [2]
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select sum(sum(c1)) over() from e011_01
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(sum(c1)) over() from e011_01
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01
+#### A masked pattern was here ####
+_c0
+16.00
+PREHOOK: query: explain vectorization detail
+select sum(sum(c1)) over(
+  partition by c2 order by c1)
+  from e011_01
+  group by e011_01.c1, e011_01.c2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select sum(sum(c1)) over(
+  partition by c2 order by c1)
+  from e011_01
+  group by e011_01.c1, e011_01.c2
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: e011_01
+                  Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2), 1:c2:decimal(15,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: c1 (type: decimal(15,2)), c2 (type: decimal(15,2))
+                    outputColumnNames: c1, c2
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1]
+                    Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(c1)
+                      Group By Vectorization:
+                          aggregators: VectorUDAFSumDecimal(col 0:decimal(15,2)) -> decimal(25,2)
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 0:decimal(15,2), col 1:decimal(15,2)
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
+                      keys: c1 (type: decimal(15,2)), c2 (type: decimal(15,2))
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumnNums: [0, 1]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: [2]
+                        Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: decimal(25,2))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: c1:decimal(15,2), c2:decimal(15,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY._col0:decimal(15,2), KEY._col1:decimal(15,2), VALUE._col0:decimal(25,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumDecimal(col 2:decimal(25,2)) -> decimal(25,2)
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:decimal(15,2), col 1:decimal(15,2)
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: [0]
+                keys: KEY._col0 (type: decimal(15,2)), KEY._col1 (type: decimal(15,2))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col1 (type: decimal(15,2)), _col0 (type: decimal(15,2))
+                  sort order: ++
+                  Map-reduce partition columns: _col1 (type: decimal(15,2))
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkObjectHashOperator
+                      keyColumnNums: [1, 0]
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      partitionColumnNums: [1]
+                      valueColumnNums: [2]
+                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col2 (type: decimal(25,2))
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:decimal(15,2), KEY.reducesinkkey1:decimal(15,2), VALUE._col0:decimal(25,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [decimal(35,2)]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: decimal(15,2)), KEY.reducesinkkey0 (type: decimal(15,2)), VALUE._col0 (type: decimal(25,2))
+                outputColumnNames: _col0, _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2]
+                Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: decimal(15,2), _col1: decimal(15,2), _col2: decimal(25,2)
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col0 ASC NULLS FIRST
+                        partition by: _col1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: sum_window_0
+                              arguments: _col2
+                              name: sum
+                              window function: GenericUDAFSumHiveDecimal
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorDecimalSum]
+                      functionInputExpressions: [col 2:decimal(25,2)]
+                      functionNames: [sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 1:decimal(15,2)]
+                      outputColumns: [3, 1, 0, 2]
+                      outputTypes: [decimal(35,2), decimal(15,2), decimal(15,2), decimal(25,2)]
+                      partitionExpressions: [col 0:decimal(15,2)]
+                      streamingColumns: []
+                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: sum_window_0 (type: decimal(35,2))
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [3]
+                    Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select sum(sum(c1)) over(
+  partition by c2 order by c1)
+  from e011_01
+  group by e011_01.c1, e011_01.c2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(sum(c1)) over(
+  partition by c2 order by c1)
+  from e011_01
+  group by e011_01.c1, e011_01.c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01
+#### A masked pattern was here ####
+_c0
+1.00
+3.00
+5.00
+7.00
+PREHOOK: query: explain vectorization detail
+select sum(sum(e011_01.c1)) over(
+  partition by e011_01.c2 order by e011_01.c1) 
+  from e011_01 
+  join e011_03 on e011_01.c1 = e011_03.c1
+  group by e011_01.c1, e011_01.c2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select sum(sum(e011_01.c1)) over(
+  partition by e011_01.c2 order by e011_01.c1) 
+  from e011_01 
+  join e011_03 on e011_01.c1 = e011_03.c1
+  group by e011_01.c1, e011_01.c2
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: e011_01
+                  Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2), 1:c2:decimal(15,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(15,2))
+                    predicate: c1 is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: c1 (type: decimal(15,2)), c2 (type: decimal(15,2))
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(15,2))
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: decimal(15,2))
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumnNums: [0]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: [1]
+                        Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: decimal(15,2))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: c1:decimal(15,2), c2:decimal(15,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: e011_03
+                  Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2), 1:c2:decimal(15,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(15,2))
+                    predicate: c1 is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: c1 (type: decimal(15,2))
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0]
+                      Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(15,2))
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: decimal(15,2))
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumnNums: [0]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: []
+                        Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0]
+                    dataColumns: c1:decimal(15,2), c2:decimal(15,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: decimal(15,2))
+                  1 _col0 (type: decimal(15,2))
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: sum(_col0)
+                  keys: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
+                    Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col2 (type: decimal(25,2))
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY._col0:decimal(15,2), KEY._col1:decimal(15,2), VALUE._col0:decimal(25,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumDecimal(col 2:decimal(25,2)) -> decimal(25,2)
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:decimal(15,2), col 1:decimal(15,2)
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: [0]
+                keys: KEY._col0 (type: decimal(15,2)), KEY._col1 (type: decimal(15,2))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col1 (type: decimal(15,2)), _col0 (type: decimal(15,2))
+                  sort order: ++
+                  Map-reduce partition columns: _col1 (type: decimal(15,2))
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkObjectHashOperator
+                      keyColumnNums: [1, 0]
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      partitionColumnNums: [1]
+                      valueColumnNums: [2]
+                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col2 (type: decimal(25,2))
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:decimal(15,2), KEY.reducesinkkey1:decimal(15,2), VALUE._col0:decimal(25,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [decimal(35,2)]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: decimal(15,2)), KEY.reducesinkkey0 (type: decimal(15,2)), VALUE._col0 (type: decimal(25,2))
+                outputColumnNames: _col0, _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2]
+                Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: decimal(15,2), _col1: decimal(15,2), _col2: decimal(25,2)
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col0 ASC NULLS FIRST
+                        partition by: _col1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: sum_window_0
+                              arguments: _col2
+                              name: sum
+                              window function: GenericUDAFSumHiveDecimal
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorDecimalSum]
+                      functionInputExpressions: [col 2:decimal(25,2)]
+                      functionNames: [sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 1:decimal(15,2)]
+                      outputColumns: [3, 1, 0, 2]
+                      outputTypes: [decimal(35,2), decimal(15,2), decimal(15,2), decimal(25,2)]
+                      partitionExpressions: [col 0:decimal(15,2)]
+                      streamingColumns: []
+                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: sum_window_0 (type: decimal(35,2))
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [3]
+                    Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select sum(sum(e011_01.c1)) over(
+  partition by e011_01.c2 order by e011_01.c1) 
+  from e011_01 
+  join e011_03 on e011_01.c1 = e011_03.c1
+  group by e011_01.c1, e011_01.c2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01
+PREHOOK: Input: default@e011_03
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(sum(e011_01.c1)) over(
+  partition by e011_01.c2 order by e011_01.c1) 
+  from e011_01 
+  join e011_03 on e011_01.c1 = e011_03.c1
+  group by e011_01.c1, e011_01.c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01
+POSTHOOK: Input: default@e011_03
+#### A masked pattern was here ####
+_c0
+1.00
+3.00
+5.00
+7.00
+PREHOOK: query: explain vectorization detail
+select sum(sum(e011_01.c1)) over(
+  partition by e011_03.c2 order by e011_03.c1)
+  from e011_01 
+  join e011_03 on e011_01.c1 = e011_03.c1
+  group by e011_03.c1, e011_03.c2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select sum(sum(e011_01.c1)) over(
+  partition by e011_03.c2 order by e011_03.c1)
+  from e011_01 
+  join e011_03 on e011_01.c1 = e011_03.c1
+  group by e011_03.c1, e011_03.c2
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: e011_03
+                  Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2), 1:c2:decimal(15,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(15,2))
+                    predicate: c1 is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: c1 (type: decimal(15,2)), c2 (type: decimal(15,2))
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(15,2))
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: decimal(15,2))
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumnNums: [0]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: [1]
+                        Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: decimal(15,2))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: c1:decimal(15,2), c2:decimal(15,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: e011_01
+                  Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2), 1:c2:decimal(15,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(15,2))
+                    predicate: c1 is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: c1 (type: decimal(15,2))
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0]
+                      Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(15,2))
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: decimal(15,2))
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumnNums: [0]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: []
+                        Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0]
+                    dataColumns: c1:decimal(15,2), c2:decimal(15,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: decimal(15,2))
+                  1 _col0 (type: decimal(15,2))
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 4 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: sum(_col2)
+                  keys: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
+                    Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col2 (type: decimal(25,2))
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY._col0:decimal(15,2), KEY._col1:decimal(15,2), VALUE._col0:decimal(25,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumDecimal(col 2:decimal(25,2)) -> decimal(25,2)
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:decimal(15,2), col 1:decimal(15,2)
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: [0]
+                keys: KEY._col0 (type: decimal(15,2)), KEY._col1 (type: decimal(15,2))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col1 (type: decimal(15,2)), _col0 (type: decimal(15,2))
+                  sort order: ++
+                  Map-reduce partition columns: _col1 (type: decimal(15,2))
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkObjectHashOperator
+                      keyColumnNums: [1, 0]
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      partitionColumnNums: [1]
+                      valueColumnNums: [2]
+                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col2 (type: decimal(25,2))
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:decimal(15,2), KEY.reducesinkkey1:decimal(15,2), VALUE._col0:decimal(25,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [decimal(35,2)]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: decimal(15,2)), KEY.reducesinkkey0 (type: decimal(15,2)), VALUE._col0 (type: decimal(25,2))
+                outputColumnNames: _col0, _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2]
+                Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: decimal(15,2), _col1: decimal(15,2), _col2: decimal(25,2)
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col0 ASC NULLS FIRST
+                        partition by: _col1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: sum_window_0
+                              arguments: _col2
+                              name: sum
+                              window function: GenericUDAFSumHiveDecimal
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorDecimalSum]
+                      functionInputExpressions: [col 2:decimal(25,2)]
+                      functionNames: [sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 1:decimal(15,2)]
+                      outputColumns: [3, 1, 0, 2]
+                      outputTypes: [decimal(35,2), decimal(15,2), decimal(15,2), decimal(25,2)]
+                      partitionExpressions: [col 0:decimal(15,2)]
+                      streamingColumns: []
+                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: sum_window_0 (type: decimal(35,2))
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [3]
+                    Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select sum(sum(e011_01.c1)) over(
+  partition by e011_03.c2 order by e011_03.c1)
+  from e011_01 
+  join e011_03 on e011_01.c1 = e011_03.c1
+  group by e011_03.c1, e011_03.c2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01
+PREHOOK: Input: default@e011_03
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(sum(e011_01.c1)) over(
+  partition by e011_03.c2 order by e011_03.c1)
+  from e011_01 
+  join e011_03 on e011_01.c1 = e011_03.c1
+  group by e011_03.c1, e011_03.c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01
+POSTHOOK: Input: default@e011_03
+#### A masked pattern was here ####
+_c0
+1.00
+3.00
+5.00
+7.00
+PREHOOK: query: explain vectorization detail
+select sum(corr(e011_01.c1, e011_03.c1))
+  over(partition by e011_01.c2 order by e011_03.c2)
+  from e011_01
+  join e011_03 on e011_01.c1 = e011_03.c1
+  group by e011_03.c2, e011_01.c2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select sum(corr(e011_01.c1, e011_03.c1))
+  over(partition by e011_01.c2 order by e011_03.c2)
+  from e011_01
+  join e011_03 on e011_01.c1 = e011_03.c1
+  group by e011_03.c2, e011_01.c2
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: e011_01
+                  Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2), 1:c2:decimal(15,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(15,2))
+                    predicate: c1 is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: c1 (type: decimal(15,2)), c2 (type: decimal(15,2))
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(15,2))
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: decimal(15,2))
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumnNums: [0]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: [1]
+                        Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: decimal(15,2))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: c1:decimal(15,2), c2:decimal(15,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: e011_03
+                  Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:c1:decimal(15,2), 1:c2:decimal(15,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(15,2))
+                    predicate: c1 is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: c1 (type: decimal(15,2)), c2 (type: decimal(15,2))
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(15,2))
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: decimal(15,2))
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumnNums: [0]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: [1]
+                        Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: decimal(15,2))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: c1:decimal(15,2), c2:decimal(15,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: decimal(15,2))
+                  1 _col0 (type: decimal(15,2))
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 4 Data size: 1792 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: corr(_col0, _col2)
+                  keys: _col1 (type: decimal(15,2)), _col3 (type: decimal(15,2))
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 2 Data size: 704 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: decimal(15,2)), _col1 (type: decimal(15,2))
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: decimal(15,2))
+                    Statistics: Num rows: 2 Data size: 704 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col2 (type: struct<count:bigint,xavg:double,yavg:double,xvar:double,yvar:double,covar:double>)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF corr not supported
+                vectorized: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: corr(VALUE._col0)
+                keys: KEY._col0 (type: decimal(15,2)), KEY._col1 (type: decimal(15,2))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 2 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: decimal(15,2)), _col0 (type: decimal(15,2)), _col2 (type: double)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 2 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
+                  PTF Operator
+                    Function definitions:
+                        Input definition
+                          input alias: ptf_0
+                          output shape: _col0: decimal(15,2), _col1: decimal(15,2), _col2: double
+                          type: WINDOWING
+                        Windowing table definition
+                          input alias: ptf_1
+                          name: windowingtablefunction
+                          order by: _col0 ASC NULLS FIRST
+                          partition by: _col1
+                          raw input shape:
+                          window functions:
+                              window function definition
+                                alias: sum_window_0
+                                arguments: _col2
+                                name: sum
+                                window function: GenericUDAFSumDouble
+                                window frame: RANGE PRECEDING(MAX)~CURRENT
+                    Statistics: Num rows: 2 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: sum_window_0 (type: double)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select sum(corr(e011_01.c1, e011_03.c1))
+  over(partition by e011_01.c2 order by e011_03.c2)
+  from e011_01
+  join e011_03 on e011_01.c1 = e011_03.c1
+  group by e011_03.c2, e011_01.c2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01
+PREHOOK: Input: default@e011_03
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(corr(e011_01.c1, e011_03.c1))
+  over(partition by e011_01.c2 order by e011_03.c2)
+  from e011_01
+  join e011_03 on e011_01.c1 = e011_03.c1
+  group by e011_03.c2, e011_01.c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01
+POSTHOOK: Input: default@e011_03
+#### A masked pattern was here ####
+sum_window_0
+NULL
+NULL
+NULL
+NULL
+PREHOOK: query: explain vectorization detail
+select sum(sum(c1)) over() from e011_01_small
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select sum(sum(c1)) over() from e011_01_small
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: e011_01_small
+                  Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2), 1:c2:decimal(7,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: c1 (type: decimal(7,2))
+                    outputColumnNames: c1
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0]
+                    Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(c1)
+                      Group By Vectorization:
+                          aggregators: VectorUDAFSumDecimal(col 0:decimal(7,2)) -> decimal(17,2)
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkEmptyKeyOperator
+                            keyColumnNums: []
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: [0]
+                        Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: decimal(17,2))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0]
+                    dataColumns: c1:decimal(7,2), c2:decimal(7,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 1
+                    dataColumns: VALUE._col0:decimal(17,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumDecimal(col 0:decimal(17,2)) -> decimal(17,2)
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0]
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: 0 (type: int)
+                  sort order: +
+                  Map-reduce partition columns: 0 (type: int)
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkLongOperator
+                      keyColumnNums: [1]
+                      keyExpressions: ConstantVectorExpression(val 0) -> 1:int
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      valueColumnNums: [0]
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: decimal(17,2))
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: a
+                reduceColumnSortOrder: +
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    dataColumns: KEY.reducesinkkey0:int, VALUE._col0:decimal(17,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [decimal(27,2), bigint]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: decimal(17,2))
+                outputColumnNames: _col0
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1]
+                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: decimal(17,2)
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: 0 ASC NULLS FIRST
+                        partition by: 0
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: sum_window_0
+                              arguments: _col0
+                              name: sum
+                              window function: GenericUDAFSumHiveDecimal
+                              window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorDecimalSum]
+                      functionInputExpressions: [col 1:decimal(17,2)]
+                      functionNames: [sum]
+                      keyInputColumns: []
+                      native: true
+                      nonKeyInputColumns: [1]
+                      orderExpressions: [ConstantVectorExpression(val 0) -> 3:int]
+                      outputColumns: [2, 1]
+                      outputTypes: [decimal(27,2), decimal(17,2)]
+                      streamingColumns: []
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: sum_window_0 (type: decimal(27,2))
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [2]
+                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select sum(sum(c1)) over() from e011_01_small
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01_small
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(sum(c1)) over() from e011_01_small
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01_small
+#### A masked pattern was here ####
+_c0
+16.00
+PREHOOK: query: explain vectorization detail
+select sum(sum(c1)) over(
+  partition by c2 order by c1)
+  from e011_01_small
+  group by e011_01_small.c1, e011_01_small.c2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select sum(sum(c1)) over(
+  partition by c2 order by c1)
+  from e011_01_small
+  group by e011_01_small.c1, e011_01_small.c2
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: e011_01_small
+                  Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2), 1:c2:decimal(7,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: c1 (type: decimal(7,2)), c2 (type: decimal(7,2))
+                    outputColumnNames: c1, c2
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1]
+                    Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(c1)
+                      Group By Vectorization:
+                          aggregators: VectorUDAFSumDecimal(col 0:decimal(7,2)) -> decimal(17,2)
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 0:decimal(7,2), col 1:decimal(7,2)
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: [0]
+                      keys: c1 (type: decimal(7,2)), c2 (type: decimal(7,2))
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(7,2)), _col1 (type: decimal(7,2))
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: decimal(7,2)), _col1 (type: decimal(7,2))
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumnNums: [0, 1]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: [2]
+                        Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col2 (type: decimal(17,2))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: c1:decimal(7,2), c2:decimal(7,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY._col0:decimal(7,2), KEY._col1:decimal(7,2), VALUE._col0:decimal(17,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumDecimal(col 2:decimal(17,2)) -> decimal(17,2)
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:decimal(7,2), col 1:decimal(7,2)
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: [0]
+                keys: KEY._col0 (type: decimal(7,2)), KEY._col1 (type: decimal(7,2))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col1 (type: decimal(7,2)), _col0 (type: decimal(7,2))
+                  sort order: ++
+                  Map-reduce partition columns: _col1 (type: decimal(7,2))
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkObjectHashOperator
+                      keyColumnNums: [1, 0]
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      partitionColumnNums: [1]
+                      valueColumnNums: [2]
+                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col2 (type: decimal(17,2))
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:decimal(7,2), KEY.reducesinkkey1:decimal(7,2), VALUE._col0:decimal(17,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [decimal(27,2)]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: decimal(7,2)), KEY.reducesinkkey0 (type: decimal(7,2)), VALUE._col0 (type: decimal(17,2))
+                outputColumnNames: _col0, _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2]
+                Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: decimal(7,2), _col1: decimal(7,2), _col2: decimal(17,2)
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col0 ASC NULLS FIRST
+                        partition by: _col1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: sum_window_0
+                              arguments: _col2
+                              name: sum
+                              window function: GenericUDAFSumHiveDecimal
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorDecimalSum]
+                      functionInputExpressions: [col 2:decimal(17,2)]
+                      functionNames: [sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 1:decimal(7,2)]
+                      outputColumns: [3, 1, 0, 2]
+                      outputTypes: [decimal(27,2), decimal(7,2), decimal(7,2), decimal(17,2)]
+                      partitionExpressions: [col 0:decimal(7,2)]
+                      streamingColumns: []
+                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: sum_window_0 (type: decimal(27,2))
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [3]
+                    Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select sum(sum(c1)) over(
+  partition by c2 order by c1)
+  from e011_01_small
+  group by e011_01_small.c1, e011_01_small.c2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01_small
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(sum(c1)) over(
+  partition by c2 order by c1)
+  from e011_01_small
+  group by e011_01_small.c1, e011_01_small.c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01_small
+#### A masked pattern was here ####
+_c0
+1.00
+3.00
+5.00
+7.00
+PREHOOK: query: explain vectorization detail
+select sum(sum(e011_01_small.c1)) over(
+  partition by e011_01_small.c2 order by e011_01_small.c1)
+  from e011_01_small 
+  join e011_03_small on e011_01_small.c1 = e011_03_small.c1
+  group by e011_01_small.c1, e011_01_small.c2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select sum(sum(e011_01_small.c1)) over(
+  partition by e011_01_small.c2 order by e011_01_small.c1)
+  from e011_01_small 
+  join e011_03_small on e011_01_small.c1 = e011_03_small.c1
+  group by e011_01_small.c1, e011_01_small.c2
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: e011_01_small
+                  Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2), 1:c2:decimal(7,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(7,2))
+                    predicate: c1 is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: c1 (type: decimal(7,2)), c2 (type: decimal(7,2))
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(7,2))
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: decimal(7,2))
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumnNums: [0]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: [1]
+                        Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: decimal(7,2))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: c1:decimal(7,2), c2:decimal(7,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: e011_03_small
+                  Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2), 1:c2:decimal(7,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(7,2))
+                    predicate: c1 is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: c1 (type: decimal(7,2))
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0]
+                      Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(7,2))
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: decimal(7,2))
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumnNums: [0]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: []
+                        Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0]
+                    dataColumns: c1:decimal(7,2), c2:decimal(7,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: decimal(7,2))
+                  1 _col0 (type: decimal(7,2))
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: sum(_col0)
+                  keys: _col0 (type: decimal(7,2)), _col1 (type: decimal(7,2))
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: decimal(7,2)), _col1 (type: decimal(7,2))
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: decimal(7,2)), _col1 (type: decimal(7,2))
+                    Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col2 (type: decimal(17,2))
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY._col0:decimal(7,2), KEY._col1:decimal(7,2), VALUE._col0:decimal(17,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumDecimal(col 2:decimal(17,2)) -> decimal(17,2)
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:decimal(7,2), col 1:decimal(7,2)
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: [0]
+                keys: KEY._col0 (type: decimal(7,2)), KEY._col1 (type: decimal(7,2))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col1 (type: decimal(7,2)), _col0 (type: decimal(7,2))
+                  sort order: ++
+                  Map-reduce partition columns: _col1 (type: decimal(7,2))
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkObjectHashOperator
+                      keyColumnNums: [1, 0]
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      partitionColumnNums: [1]
+                      valueColumnNums: [2]
+                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col2 (type: decimal(17,2))
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:decimal(7,2), KEY.reducesinkkey1:decimal(7,2), VALUE._col0:decimal(17,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [decimal(27,2)]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: decimal(7,2)), KEY.reducesinkkey0 (type: decimal(7,2)), VALUE._col0 (type: decimal(17,2))
+                outputColumnNames: _col0, _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2]
+                Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: decimal(7,2), _col1: decimal(7,2), _col2: decimal(17,2)
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col0 ASC NULLS FIRST
+                        partition by: _col1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: sum_window_0
+                              arguments: _col2
+                              name: sum
+                              window function: GenericUDAFSumHiveDecimal
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorDecimalSum]
+                      functionInputExpressions: [col 2:decimal(17,2)]
+                      functionNames: [sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 1:decimal(7,2)]
+                      outputColumns: [3, 1, 0, 2]
+                      outputTypes: [decimal(27,2), decimal(7,2), decimal(7,2), decimal(17,2)]
+                      partitionExpressions: [col 0:decimal(7,2)]
+                      streamingColumns: []
+                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: sum_window_0 (type: decimal(27,2))
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [3]
+                    Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select sum(sum(e011_01_small.c1)) over(
+  partition by e011_01_small.c2 order by e011_01_small.c1)
+  from e011_01_small
+  join e011_03_small on e011_01_small.c1 = e011_03_small.c1
+  group by e011_01_small.c1, e011_01_small.c2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01_small
+PREHOOK: Input: default@e011_03_small
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(sum(e011_01_small.c1)) over(
+  partition by e011_01_small.c2 order by e011_01_small.c1)
+  from e011_01_small
+  join e011_03_small on e011_01_small.c1 = e011_03_small.c1
+  group by e011_01_small.c1, e011_01_small.c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01_small
+POSTHOOK: Input: default@e011_03_small
+#### A masked pattern was here ####
+_c0
+1.00
+3.00
+5.00
+7.00
+PREHOOK: query: explain vectorization detail
+select sum(sum(e011_01_small.c1)) over(
+  partition by e011_03_small.c2 order by e011_03_small.c1)
+  from e011_01_small
+  join e011_03_small on e011_01_small.c1 = e011_03_small.c1
+  group by e011_03_small.c1, e011_03_small.c2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select sum(sum(e011_01_small.c1)) over(
+  partition by e011_03_small.c2 order by e011_03_small.c1)
+  from e011_01_small
+  join e011_03_small on e011_01_small.c1 = e011_03_small.c1
+  group by e011_03_small.c1, e011_03_small.c2
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: e011_03_small
+                  Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2), 1:c2:decimal(7,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(7,2))
+                    predicate: c1 is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: c1 (type: decimal(7,2)), c2 (type: decimal(7,2))
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(7,2))
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: decimal(7,2))
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumnNums: [0]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: [1]
+                        Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: decimal(7,2))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: c1:decimal(7,2), c2:decimal(7,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: e011_01_small
+                  Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2), 1:c2:decimal(7,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(7,2))
+                    predicate: c1 is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: c1 (type: decimal(7,2))
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0]
+                      Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(7,2))
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: decimal(7,2))
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumnNums: [0]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: []
+                        Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0]
+                    dataColumns: c1:decimal(7,2), c2:decimal(7,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: decimal(7,2))
+                  1 _col0 (type: decimal(7,2))
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 4 Data size: 1344 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: sum(_col2)
+                  keys: _col0 (type: decimal(7,2)), _col1 (type: decimal(7,2))
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: decimal(7,2)), _col1 (type: decimal(7,2))
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: decimal(7,2)), _col1 (type: decimal(7,2))
+                    Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col2 (type: decimal(17,2))
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY._col0:decimal(7,2), KEY._col1:decimal(7,2), VALUE._col0:decimal(17,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumDecimal(col 2:decimal(17,2)) -> decimal(17,2)
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:decimal(7,2), col 1:decimal(7,2)
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: [0]
+                keys: KEY._col0 (type: decimal(7,2)), KEY._col1 (type: decimal(7,2))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col1 (type: decimal(7,2)), _col0 (type: decimal(7,2))
+                  sort order: ++
+                  Map-reduce partition columns: _col1 (type: decimal(7,2))
+                  Reduce Sink Vectorization:
+                      className: VectorReduceSinkObjectHashOperator
+                      keyColumnNums: [1, 0]
+                      native: true
+                      nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      partitionColumnNums: [1]
+                      valueColumnNums: [2]
+                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col2 (type: decimal(17,2))
+        Reducer 4 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                reduceColumnNullOrder: aa
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    dataColumns: KEY.reducesinkkey0:decimal(7,2), KEY.reducesinkkey1:decimal(7,2), VALUE._col0:decimal(17,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [decimal(27,2)]
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey1 (type: decimal(7,2)), KEY.reducesinkkey0 (type: decimal(7,2)), VALUE._col0 (type: decimal(17,2))
+                outputColumnNames: _col0, _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2]
+                Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                PTF Operator
+                  Function definitions:
+                      Input definition
+                        input alias: ptf_0
+                        output shape: _col0: decimal(7,2), _col1: decimal(7,2), _col2: decimal(17,2)
+                        type: WINDOWING
+                      Windowing table definition
+                        input alias: ptf_1
+                        name: windowingtablefunction
+                        order by: _col0 ASC NULLS FIRST
+                        partition by: _col1
+                        raw input shape:
+                        window functions:
+                            window function definition
+                              alias: sum_window_0
+                              arguments: _col2
+                              name: sum
+                              window function: GenericUDAFSumHiveDecimal
+                              window frame: RANGE PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorDecimalSum]
+                      functionInputExpressions: [col 2:decimal(17,2)]
+                      functionNames: [sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2]
+                      orderExpressions: [col 1:decimal(7,2)]
+                      outputColumns: [3, 1, 0, 2]
+                      outputTypes: [decimal(27,2), decimal(7,2), decimal(7,2), decimal(17,2)]
+                      partitionExpressions: [col 0:decimal(7,2)]
+                      streamingColumns: []
+                  Statistics: Num rows: 2 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: sum_window_0 (type: decimal(27,2))
+                    outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [3]
+                    Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select sum(sum(e011_01_small.c1)) over(
+  partition by e011_03_small.c2 order by e011_03_small.c1)
+  from e011_01_small
+  join e011_03_small on e011_01_small.c1 = e011_03_small.c1
+  group by e011_03_small.c1, e011_03_small.c2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01_small
+PREHOOK: Input: default@e011_03_small
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(sum(e011_01_small.c1)) over(
+  partition by e011_03_small.c2 order by e011_03_small.c1)
+  from e011_01_small
+  join e011_03_small on e011_01_small.c1 = e011_03_small.c1
+  group by e011_03_small.c1, e011_03_small.c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01_small
+POSTHOOK: Input: default@e011_03_small
+#### A masked pattern was here ####
+_c0
+1.00
+3.00
+5.00
+7.00
+PREHOOK: query: explain vectorization detail
+select sum(corr(e011_01_small.c1, e011_03_small.c1))
+  over(partition by e011_01_small.c2 order by e011_03_small.c2)
+  from e011_01_small
+  join e011_03_small on e011_01_small.c1 = e011_03_small.c1
+  group by e011_03_small.c2, e011_01_small.c2
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select sum(corr(e011_01_small.c1, e011_03_small.c1))
+  over(partition by e011_01_small.c2 order by e011_03_small.c2)
+  from e011_01_small
+  join e011_03_small on e011_01_small.c1 = e011_03_small.c1
+  group by e011_03_small.c2, e011_01_small.c2
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: e011_01_small
+                  Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2), 1:c2:decimal(7,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(7,2))
+                    predicate: c1 is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: c1 (type: decimal(7,2)), c2 (type: decimal(7,2))
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(7,2))
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: decimal(7,2))
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumnNums: [0]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: [1]
+                        Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: decimal(7,2))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: c1:decimal(7,2), c2:decimal(7,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: e011_03_small
+                  Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:c1:decimal(7,2), 1:c2:decimal(7,2), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: SelectColumnIsNotNull(col 0:decimal(7,2))
+                    predicate: c1 is not null (type: boolean)
+                    Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: c1 (type: decimal(7,2)), c2 (type: decimal(7,2))
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 1]
+                      Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(7,2))
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: decimal(7,2))
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkMultiKeyOperator
+                            keyColumnNums: [0]
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                            valueColumnNums: [1]
+                        Statistics: Num rows: 4 Data size: 896 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: decimal(7,2))
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 2
+                    includeColumns: [0, 1]
+                    dataColumns: c1:decimal(7,2), c2:decimal(7,2)
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: decimal(7,2))
+                  1 _col0 (type: decimal(7,2))
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 4 Data size: 1792 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: corr(_col0, _col2)
+                  keys: _col1 (type: decimal(7,2)), _col3 (type: decimal(7,2))
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 2 Data size: 704 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: decimal(7,2)), _col1 (type: decimal(7,2))
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: decimal(7,2))
+                    Statistics: Num rows: 2 Data size: 704 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col2 (type: struct<count:bigint,xavg:double,yavg:double,xvar:double,yvar:double,covar:double>)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF corr not supported
+                vectorized: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: corr(VALUE._col0)
+                keys: KEY._col0 (type: decimal(7,2)), KEY._col1 (type: decimal(7,2))
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 2 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col1 (type: decimal(7,2)), _col0 (type: decimal(7,2)), _col2 (type: double)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 2 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
+                  PTF Operator
+                    Function definitions:
+                        Input definition
+                          input alias: ptf_0
+                          output shape: _col0: decimal(7,2), _col1: decimal(7,2), _col2: double
+                          type: WINDOWING
+                        Windowing table definition
+                          input alias: ptf_1
+                          name: windowingtablefunction
+                          order by: _col0 ASC NULLS FIRST
+                          partition by: _col1
+                          raw input shape:
+                          window functions:
+                              window function definition
+                                alias: sum_window_0
+                                arguments: _col2
+                                name: sum
+                                window function: GenericUDAFSumDouble
+                                window frame: RANGE PRECEDING(MAX)~CURRENT
+                    Statistics: Num rows: 2 Data size: 464 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: sum_window_0 (type: double)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select sum(corr(e011_01_small.c1, e011_03_small.c1))
+  over(partition by e011_01_small.c2 order by e011_03_small.c2)
+  from e011_01_small
+  join e011_03_small on e011_01_small.c1 = e011_03_small.c1
+  group by e011_03_small.c2, e011_01_small.c2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@e011_01_small
+PREHOOK: Input: default@e011_03_small
+#### A masked pattern was here ####
+POSTHOOK: query: select sum(corr(e011_01_small.c1, e011_03_small.c1))
+  over(partition by e011_01_small.c2 order by e011_03_small.c2)
+  from e011_01_small
+  join e011_03_small on e011_01_small.c1 = e011_03_small.c1
+  group by e011_03_small.c2, e011_01_small.c2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@e011_01_small
+POSTHOOK: Input: default@e011_03_small
+#### A masked pattern was here ####
+sum_window_0
+NULL
+NULL
+NULL
+NULL

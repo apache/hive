@@ -12,6 +12,9 @@ create table char_2 (
 
 insert overwrite table char_2 select * from src;
 
+-- Add a single NULL row that will come from ORC as isRepeated.
+insert into char_2 values (NULL, NULL);
+
 select value, sum(cast(key as int)), count(*) numrows
 from src
 group by value

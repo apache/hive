@@ -158,9 +158,44 @@ public class OrcEncodedDataConsumer
                 VectorizedRowBatch.DEFAULT_SIZE);
           }
           trace.logTreeReaderNextVector(idx);
+
+          /*
+           * Currently, ORC's TreeReaderFactory class does this:
+           *
+           *     public void nextBatch(VectorizedRowBatch batch,
+           *              int batchSize) throws IOException {
+           *       batch.cols[0].reset();
+           *       batch.cols[0].ensureSize(batchSize, false);
+           *       nextVector(batch.cols[0], null, batchSize);
+           *     }
+           *
+           * CONCERN:
+           *     For better performance, we'd like to *not* do a ColumnVector.reset()
+           *     which zeroes out isNull.  Why?  Because there are common cases where
+           *     ORC will *immediately* copy its null flags into the isNull array.  This is a
+           *     waste.
+           *
+           *     For correctness now we must do it for now.
+           *
+           *     The best solution is for ORC to manage the noNulls and isNull array itself
+           *     because it knows what NULLs the next set of rows contains.
+           *
+           *     Its management of the fields of ColumnVector is a little different than what we
+           *     must do for vector expressions.  For those, we must maintain the invariant that if
+           *     noNulls is true there are no NULLs in any part of the isNull array.  This is
+           *     because the next vector expression relies on the invariant.
+           *
+           *     Given that ORC (or any other producer) is providing *read-only* batches to the
+           *     consumer, what is important is that the isNull array through batch.size has
+           *     integrity with the noNulls flag.  So, if ORC is giving us 100 rows (for example)
+           *     and none of them are NULL, it can safely set or make sure the first 100 isNull
+           *     entries are false and safely set noNulls to true.  Any other NULLs (true entries)
+           *     in isNull are irrelevant because ORC owns the batch.  It just need to make sure
+           *     it doesn't get confused.
+           *
+           */
           ColumnVector cv = cvb.cols[idx];
-          cv.noNulls = true;
-          cv.reset(); // Reset to work around some poor assumptions in ORC.
+          cv.reset();
           cv.ensureSize(batchSize, false);
           reader.nextVector(cv, null, batchSize);
         }

@@ -359,7 +359,7 @@ public class <ClassName> extends VectorAggregateExpression {
         HiveDecimalWritable[] vector = inputVector.vector;
 
         if (inputVector.isRepeating) {
-          if (inputVector.noNulls) {
+          if (inputVector.noNulls || !inputVector.isNull[0]) {
             if (myagg.isNull) {
               myagg.isNull = false;
               myagg.sum.setFromLong(0L);
@@ -519,9 +519,12 @@ public class <ClassName> extends VectorAggregateExpression {
 
 #IF PARTIAL1
     ColumnVector[] fields = outputColVector.fields;
+    fields[AVERAGE_COUNT_FIELD_INDEX].isNull[batchIndex] = false;
     ((LongColumnVector) fields[AVERAGE_COUNT_FIELD_INDEX]).vector[batchIndex] = myagg.count;
+    fields[AVERAGE_SUM_FIELD_INDEX].isNull[batchIndex] = false;
     ((DecimalColumnVector) fields[AVERAGE_SUM_FIELD_INDEX]).vector[batchIndex].set(myagg.sum);
 
+    // NULL out useless source field.
     ColumnVector sourceColVector = (ColumnVector) fields[AVERAGE_SOURCE_FIELD_INDEX];
     sourceColVector.isRepeating = true;
     sourceColVector.noNulls = false;

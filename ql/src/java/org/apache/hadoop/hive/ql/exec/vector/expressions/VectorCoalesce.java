@@ -35,6 +35,10 @@ public class VectorCoalesce extends VectorExpression {
 
   private final int[] inputColumns;
 
+  // The unassigned batchIndex for the rows that have not received a non-NULL value yet.
+  // A temporary work array.
+  private transient int[] unassignedBatchIndices;
+
   public VectorCoalesce(int [] inputColumns, int outputColumnNum) {
     super(outputColumnNum);
     this.inputColumns = inputColumns;
@@ -57,65 +61,173 @@ public class VectorCoalesce extends VectorExpression {
 
     int[] sel = batch.selected;
     int n = batch.size;
-    ColumnVector outputVector = batch.cols[outputColumnNum];
+    ColumnVector outputColVector = batch.cols[outputColumnNum];
+    boolean[] outputIsNull = outputColVector.isNull;
     if (n <= 0) {
       // Nothing to do
       return;
     }
 
-    outputVector.init();
+    if (unassignedBatchIndices == null || n > unassignedBatchIndices.length) {
 
-    boolean noNulls = false;
+      // (Re)allocate larger to be a multiple of 1024 (DEFAULT_SIZE).
+      final int roundUpSize =
+          ((n + VectorizedRowBatch.DEFAULT_SIZE - 1) / VectorizedRowBatch.DEFAULT_SIZE)
+              * VectorizedRowBatch.DEFAULT_SIZE;
+      unassignedBatchIndices = new int[roundUpSize];
+    }
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
+    // CONSIDER: Should be do this for all vector expressions that can
+    //           work on BytesColumnVector output columns???
+    outputColVector.init();
+
+    final int columnCount = inputColumns.length;
+
+    /*
+     * Process the input columns to find a non-NULL value for each row.
+     *
+     * We track the unassigned batchIndex of the rows that have not received
+     * a non-NULL value yet.  Similar to a selected array.
+     */
+    boolean isAllUnassigned = true;
+    int unassignedColumnCount = 0;
 
     for (int k = 0; k < inputColumns.length; k++) {
       ColumnVector cv = batch.cols[inputColumns[k]];
-      // non-nulls in any column qualifies coalesce having no nulls
-      // common case: last column is a constant & non-null
-      noNulls = noNulls || cv.noNulls;
+      if (cv.isRepeating) {
+
+        if (cv.noNulls || !cv.isNull[0]) {
+
+          /*
+           * With a repeating value we can finish all remaining rows.
+           */
+          if (isAllUnassigned) {
+
+            // No other columns provided non-NULL values.  We can return repeated output.
+            outputIsNull[0] = false;
+            outputColVector.setElement(0, 0, cv);
+            outputColVector.isRepeating = true;
+            return;
+          } else {
+
+            // Some rows have already been assigned values. Assign the remaining.
+            // We cannot use copySelected method here.
+            for (int i = 0; i < unassignedColumnCount; i++) {
+              final int batchIndex = unassignedBatchIndices[i];
+              outputIsNull[batchIndex] = false;
+
+              // Our input is repeating (i.e. inputColNumber = 0).
+              outputColVector.setElement(batchIndex, 0, cv);
+            }
+            return;
+          }
+        } else {
+
+          // Repeated NULLs -- skip this input column.
+        }
+      } else {
+
+        /*
+         * Non-repeating input column. Use any non-NULL values for unassigned rows.
+         */
+        if (isAllUnassigned) {
+
+          /*
+           * No other columns provided non-NULL values.  We *may* be able to finish all rows
+           * with this input column...
+           */
+          if (cv.noNulls){
+
+            // Since no NULLs, we can provide values for all rows.
+            if (batch.selectedInUse) {
+              for (int i = 0; i < n; i++) {
+                final int batchIndex = sel[i];
+                outputIsNull[batchIndex] = false;
+                outputColVector.setElement(batchIndex, batchIndex, cv);
+              }
+            } else {
+              Arrays.fill(outputIsNull, 0, n, false);
+              for (int batchIndex = 0; batchIndex < n; batchIndex++) {
+                outputColVector.setElement(batchIndex, batchIndex, cv);
+              }
+            }
+            return;
+          } else {
+
+            // We might not be able to assign all rows because of input NULLs.  Start tracking any
+            // unassigned rows.
+            boolean[] inputIsNull = cv.isNull;
+            if (batch.selectedInUse) {
+              for (int i = 0; i < n; i++) {
+                final int batchIndex = sel[i];
+                if (!inputIsNull[batchIndex]) {
+                  outputIsNull[batchIndex] = false;
+                  outputColVector.setElement(batchIndex, batchIndex, cv);
+                } else {
+                  unassignedBatchIndices[unassignedColumnCount++] = batchIndex;
+                }
+              }
+            } else {
+              for (int batchIndex = 0; batchIndex < n; batchIndex++) {
+                if (!inputIsNull[batchIndex]) {
+                  outputIsNull[batchIndex] = false;
+                  outputColVector.setElement(batchIndex, batchIndex, cv);
+                } else {
+                  unassignedBatchIndices[unassignedColumnCount++] = batchIndex;
+                }
+              }
+            }
+            if (unassignedColumnCount == 0) {
+              return;
+            }
+            isAllUnassigned = false;
+          }
+        } else {
+
+          /*
+           * We previously assigned *some* rows with non-NULL values. The batch indices of
+           * the unassigned row were tracked.
+           */
+          if (cv.noNulls) {
+
+            // Assign all remaining rows.
+            for (int i = 0; i < unassignedColumnCount; i++) {
+              final int batchIndex = unassignedBatchIndices[i];
+              outputIsNull[batchIndex] = false;
+              outputColVector.setElement(batchIndex, batchIndex, cv);
+            }
+            return;
+          } else {
+
+            // Use any non-NULL values found; remember the remaining unassigned.
+            boolean[] inputIsNull = cv.isNull;
+            int newUnassignedColumnCount = 0;
+            for (int i = 0; i < unassignedColumnCount; i++) {
+              final int batchIndex = unassignedBatchIndices[i];
+              if (!inputIsNull[batchIndex]) {
+                outputIsNull[batchIndex] = false;
+                outputColVector.setElement(batchIndex, batchIndex, cv);
+              } else {
+                unassignedBatchIndices[newUnassignedColumnCount++] = batchIndex;
+              }
+            }
+            if (newUnassignedColumnCount == 0) {
+              return;
+            }
+            unassignedColumnCount = newUnassignedColumnCount;
+          }
+        }
+      }
     }
 
-    outputVector.noNulls = noNulls;
-    outputVector.isRepeating = false;
-
-    ColumnVector first = batch.cols[inputColumns[0]];
-
-    if (first.noNulls && first.isRepeating) {
-      outputVector.isRepeating = true;
-      outputVector.isNull[0] = false;
-      outputVector.setElement(0, 0, first);
-    } else if (batch.selectedInUse) {
-      for (int j = 0; j != n; j++) {
-        int i = sel[j];
-        outputVector.isNull[i] = true;
-        for (int k = 0; k < inputColumns.length; k++) {
-          ColumnVector cv = batch.cols[inputColumns[k]];
-          if ( (cv.isRepeating) && (cv.noNulls || !cv.isNull[0])) {
-            outputVector.isNull[i] = false;
-            outputVector.setElement(i, 0, cv);
-            break;
-          } else if ((!cv.isRepeating) && (cv.noNulls || !cv.isNull[i])) {
-            outputVector.isNull[i] = false;
-            outputVector.setElement(i, i, cv);
-            break;
-          }
-        }
-      }
-    } else {
-      for (int i = 0; i != n; i++) {
-        outputVector.isNull[i] = true;
-        for (int k = 0; k < inputColumns.length; k++) {
-          ColumnVector cv = batch.cols[inputColumns[k]];
-          if ((cv.isRepeating) && (cv.noNulls || !cv.isNull[0])) {
-            outputVector.isNull[i] = false;
-            outputVector.setElement(i, 0, cv);
-            break;
-          } else if ((!cv.isRepeating) && (cv.noNulls || !cv.isNull[i])) {
-            outputVector.isNull[i] = false;
-            outputVector.setElement(i, i, cv);
-            break;
-          }
-        }
-      }
+    // NULL out the remaining columns.
+    outputColVector.noNulls = false;
+    for (int i = 0; i < unassignedColumnCount; i++) {
+      final int batchIndex = unassignedBatchIndices[i];
+      outputIsNull[batchIndex] = true;
     }
   }
 

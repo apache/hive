@@ -53,6 +53,12 @@ public class <ClassName> extends VectorExpression {
   @Override
   public void evaluate(VectorizedRowBatch batch) {
 
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
@@ -62,14 +68,9 @@ public class <ClassName> extends VectorExpression {
     int[] sel = batch.selected;
     boolean[] nullPos1 = inputColVector1.isNull;
     boolean[] nullPos2 = inputColVector2.isNull;
-    int n = batch.size;
+
     HiveDecimalWritable[] vector1 = inputColVector1.vector;
     HiveDecimalWritable[] vector2 = inputColVector2.vector;
-
-    // return immediately if batch is empty
-    if (n == 0) {
-      return;
-    }
 
     // handle case where neither input has nulls
     if (inputColVector1.noNulls && inputColVector2.noNulls) {

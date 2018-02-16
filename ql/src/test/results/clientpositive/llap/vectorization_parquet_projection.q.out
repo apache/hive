@@ -1,0 +1,684 @@
+PREHOOK: query: DROP TABLE IF EXISTS parquet_types_staging
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS parquet_types_staging
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE parquet_types_staging (
+  cint int,
+  ctinyint tinyint,
+  csmallint smallint,
+  cfloat float,
+  cdouble double,
+  cstring1 string,
+  t timestamp,
+  cchar char(5),
+  cvarchar varchar(10),
+  cbinary string,
+  m1 map<string, varchar(3)>,
+  l1 array<int>,
+  st1 struct<c1:int, c2:char(1)>,
+  d date
+) ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+COLLECTION ITEMS TERMINATED BY ','
+MAP KEYS TERMINATED BY ':'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_types_staging
+POSTHOOK: query: CREATE TABLE parquet_types_staging (
+  cint int,
+  ctinyint tinyint,
+  csmallint smallint,
+  cfloat float,
+  cdouble double,
+  cstring1 string,
+  t timestamp,
+  cchar char(5),
+  cvarchar varchar(10),
+  cbinary string,
+  m1 map<string, varchar(3)>,
+  l1 array<int>,
+  st1 struct<c1:int, c2:char(1)>,
+  d date
+) ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '|'
+COLLECTION ITEMS TERMINATED BY ','
+MAP KEYS TERMINATED BY ':'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_types_staging
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_types.txt' OVERWRITE INTO TABLE parquet_types_staging
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@parquet_types_staging
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/parquet_types.txt' OVERWRITE INTO TABLE parquet_types_staging
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@parquet_types_staging
+PREHOOK: query: DROP TABLE IF EXISTS parquet_project_test
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS parquet_project_test
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE parquet_project_test(
+cint int,
+m1 map<string, string>
+) STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_project_test
+POSTHOOK: query: CREATE TABLE parquet_project_test(
+cint int,
+m1 map<string, string>
+) STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_project_test
+PREHOOK: query: insert into parquet_project_test
+select ctinyint, map("color","red") from parquet_types_staging
+where ctinyint = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_types_staging
+PREHOOK: Output: default@parquet_project_test
+POSTHOOK: query: insert into parquet_project_test
+select ctinyint, map("color","red") from parquet_types_staging
+where ctinyint = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_types_staging
+POSTHOOK: Output: default@parquet_project_test
+POSTHOOK: Lineage: parquet_project_test.cint EXPRESSION []
+POSTHOOK: Lineage: parquet_project_test.m1 EXPRESSION []
+PREHOOK: query: insert into parquet_project_test
+select ctinyint, map("color","green") from parquet_types_staging
+where ctinyint = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_types_staging
+PREHOOK: Output: default@parquet_project_test
+POSTHOOK: query: insert into parquet_project_test
+select ctinyint, map("color","green") from parquet_types_staging
+where ctinyint = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_types_staging
+POSTHOOK: Output: default@parquet_project_test
+POSTHOOK: Lineage: parquet_project_test.cint EXPRESSION []
+POSTHOOK: Lineage: parquet_project_test.m1 EXPRESSION []
+PREHOOK: query: insert into parquet_project_test
+select ctinyint, map("color","blue") from parquet_types_staging
+where ctinyint = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_types_staging
+PREHOOK: Output: default@parquet_project_test
+POSTHOOK: query: insert into parquet_project_test
+select ctinyint, map("color","blue") from parquet_types_staging
+where ctinyint = 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_types_staging
+POSTHOOK: Output: default@parquet_project_test
+POSTHOOK: Lineage: parquet_project_test.cint EXPRESSION []
+POSTHOOK: Lineage: parquet_project_test.m1 EXPRESSION []
+PREHOOK: query: explain vectorization select * from parquet_project_test
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization select * from parquet_project_test
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: parquet_project_test
+                  Statistics: Num rows: 22 Data size: 20328 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: cint (type: int), m1 (type: map<string,string>)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 22 Data size: 20328 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 22 Data size: 20328 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                notVectorizedReason: Select expression for SELECT operator: Vectorizing complex type MAP not enabled (map<string,string>) since hive.vectorized.complex.types.enabled IS false
+                vectorized: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select * from parquet_project_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_project_test
+#### A masked pattern was here ####
+POSTHOOK: query: select * from parquet_project_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_project_test
+#### A masked pattern was here ####
+1	{"color":"red"}
+1	{"color":"red"}
+1	{"color":"red"}
+1	{"color":"red"}
+1	{"color":"red"}
+1	{"color":"red"}
+1	{"color":"red"}
+1	{"color":"red"}
+2	{"color":"green"}
+2	{"color":"green"}
+2	{"color":"green"}
+2	{"color":"green"}
+2	{"color":"green"}
+2	{"color":"green"}
+2	{"color":"green"}
+3	{"color":"blue"}
+3	{"color":"blue"}
+3	{"color":"blue"}
+3	{"color":"blue"}
+3	{"color":"blue"}
+3	{"color":"blue"}
+3	{"color":"blue"}
+PREHOOK: query: explain vectorization select count(*) from parquet_project_test
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization select count(*) from parquet_project_test
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: parquet_project_test
+                  Statistics: Num rows: 22 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 22 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from parquet_project_test
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_project_test
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from parquet_project_test
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_project_test
+#### A masked pattern was here ####
+22
+PREHOOK: query: explain vectorization select cint, count(*) from parquet_project_test
+group by cint
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization select cint, count(*) from parquet_project_test
+group by cint
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: parquet_project_test
+                  Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: cint (type: int)
+                    outputColumnNames: cint
+                    Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count()
+                      keys: cint (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 22 Data size: 88 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 11 Data size: 44 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cint, count(*) from parquet_project_test
+group by cint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_project_test
+#### A masked pattern was here ####
+POSTHOOK: query: select cint, count(*) from parquet_project_test
+group by cint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_project_test
+#### A masked pattern was here ####
+1	8
+2	7
+3	7
+PREHOOK: query: explain vectorization select m1["color"], count(*) from parquet_project_test
+group by m1["color"]
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization select m1["color"], count(*) from parquet_project_test
+group by m1["color"]
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: parquet_project_test
+                  Statistics: Num rows: 22 Data size: 20240 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: m1['color'] (type: string)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 22 Data size: 20240 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      aggregations: count()
+                      keys: _col0 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 22 Data size: 20240 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 22 Data size: 20240 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                notVectorizedReason: Select expression for SELECT operator: Vectorizing complex type MAP not enabled (map<string,string>) since hive.vectorized.complex.types.enabled IS false
+                vectorized: false
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 11 Data size: 10120 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 11 Data size: 10120 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select m1["color"], count(*) from parquet_project_test
+group by m1["color"]
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_project_test
+#### A masked pattern was here ####
+POSTHOOK: query: select m1["color"], count(*) from parquet_project_test
+group by m1["color"]
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_project_test
+#### A masked pattern was here ####
+blue	7
+green	7
+red	8
+PREHOOK: query: create table if not exists parquet_nullsplit(key string, val string) partitioned by (len string)
+stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquet_nullsplit
+POSTHOOK: query: create table if not exists parquet_nullsplit(key string, val string) partitioned by (len string)
+stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquet_nullsplit
+PREHOOK: query: insert into table parquet_nullsplit partition(len='1')
+values ('one', 'red')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@parquet_nullsplit@len=1
+POSTHOOK: query: insert into table parquet_nullsplit partition(len='1')
+values ('one', 'red')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@parquet_nullsplit@len=1
+POSTHOOK: Lineage: parquet_nullsplit PARTITION(len=1).key SCRIPT []
+POSTHOOK: Lineage: parquet_nullsplit PARTITION(len=1).val SCRIPT []
+PREHOOK: query: explain vectorization select count(*) from parquet_nullsplit where len = '1'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization select count(*) from parquet_nullsplit where len = '1'
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: parquet_nullsplit
+                  Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from parquet_nullsplit where len = '1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_nullsplit
+PREHOOK: Input: default@parquet_nullsplit@len=1
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from parquet_nullsplit where len = '1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_nullsplit
+POSTHOOK: Input: default@parquet_nullsplit@len=1
+#### A masked pattern was here ####
+1
+PREHOOK: query: explain vectorization select count(*) from parquet_nullsplit where len = '99'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization select count(*) from parquet_nullsplit where len = '99'
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: parquet_nullsplit
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (len = '99') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: unknown
+            Map Vectorization:
+                enabled: true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from parquet_nullsplit where len = '99'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquet_nullsplit
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from parquet_nullsplit where len = '99'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquet_nullsplit
+#### A masked pattern was here ####
+0
+PREHOOK: query: drop table parquet_nullsplit
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet_nullsplit
+PREHOOK: Output: default@parquet_nullsplit
+POSTHOOK: query: drop table parquet_nullsplit
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet_nullsplit
+POSTHOOK: Output: default@parquet_nullsplit
+PREHOOK: query: drop table parquet_project_test
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet_project_test
+PREHOOK: Output: default@parquet_project_test
+POSTHOOK: query: drop table parquet_project_test
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet_project_test
+POSTHOOK: Output: default@parquet_project_test
+PREHOOK: query: drop table parquet_types_staging
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@parquet_types_staging
+PREHOOK: Output: default@parquet_types_staging
+POSTHOOK: query: drop table parquet_types_staging
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@parquet_types_staging
+POSTHOOK: Output: default@parquet_types_staging

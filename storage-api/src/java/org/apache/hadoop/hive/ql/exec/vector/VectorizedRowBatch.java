@@ -136,6 +136,50 @@ public class VectorizedRowBatch implements Writable {
     return o.toString();
   }
 
+  public String stringifyColumn(int columnNum) {
+    if (size == 0) {
+      return "";
+    }
+    StringBuilder b = new StringBuilder();
+    b.append("columnNum ");
+    b.append(columnNum);
+    b.append(", size ");
+    b.append(size);
+    b.append(", selectedInUse ");
+    b.append(selectedInUse);
+    ColumnVector colVector = cols[columnNum];
+    b.append(", noNulls ");
+    b.append(colVector.noNulls);
+    b.append(", isRepeating ");
+    b.append(colVector.isRepeating);
+    b.append('\n');
+
+    final boolean noNulls = colVector.noNulls;
+    final boolean[] isNull = colVector.isNull;
+    if (colVector.isRepeating) {
+      final boolean hasRepeatedValue = (noNulls || !isNull[0]);
+      for (int i = 0; i < size; i++) {
+        if (hasRepeatedValue) {
+          colVector.stringifyValue(b, 0);
+        } else {
+          b.append("NULL");
+        }
+        b.append('\n');
+      }
+    } else {
+      for (int i = 0; i < size; i++) {
+        final int batchIndex = (selectedInUse ? selected[i] : i);
+        if (noNulls || !isNull[batchIndex]) {
+          colVector.stringifyValue(b, batchIndex);
+        } else {
+          b.append("NULL");
+        }
+        b.append('\n');
+      }
+    }
+    return b.toString();
+  }
+
   @Override
   public String toString() {
     if (size == 0) {

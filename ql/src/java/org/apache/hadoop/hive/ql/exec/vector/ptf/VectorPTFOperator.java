@@ -434,6 +434,7 @@ public class VectorPTFOperator extends Operator<PTFDesc>
         return true;
       }
       if (isNull) {
+        // NULL does equal NULL here.
         continue;
       }
 

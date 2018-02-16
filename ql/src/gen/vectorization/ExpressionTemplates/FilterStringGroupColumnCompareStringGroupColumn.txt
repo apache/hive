@@ -52,6 +52,12 @@ public class <ClassName> extends VectorExpression {
   @Override
   public void evaluate(VectorizedRowBatch batch) {
 
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
@@ -61,36 +67,31 @@ public class <ClassName> extends VectorExpression {
     int[] sel = batch.selected;
     boolean[] nullPos1 = inputColVector1.isNull;
     boolean[] nullPos2 = inputColVector2.isNull;
-    int n = batch.size;
+
     byte[][] vector1 = inputColVector1.vector;
     byte[][] vector2 = inputColVector2.vector;
     int[] start1 = inputColVector1.start;
     int[] start2 = inputColVector2.start;
     int[] length1 = inputColVector1.length;
     int[] length2 = inputColVector2.length;
-    
-    // return immediately if batch is empty
-    if (n == 0) {
-      return;
-    }
-    
+
     // handle case where neither input has nulls
     if (inputColVector1.noNulls && inputColVector2.noNulls) {
       if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
-      
+
         /* Either all must remain selected or all will be eliminated.
          * Repeating property will not change.
          */
-        if (!(<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+        if (!(<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                  vector2[0], start2[0], length2[0])<OptionalCompare>)) {
           batch.size = 0;
-        }      
+        }
       } else if (inputColVector1.isRepeating) {
         if (batch.selectedInUse) {
           int newSize = 0;
           for(int j = 0; j != n; j++) {
             int i = sel[j];
-            if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+            if (<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                    vector2[i], start2[i], length2[i])<OptionalCompare>) {
               sel[newSize++] = i;
             }
@@ -99,7 +100,7 @@ public class <ClassName> extends VectorExpression {
         } else {
           int newSize = 0;
           for(int i = 0; i != n; i++) {
-            if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+            if (<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                    vector2[i], start2[i], length2[i])<OptionalCompare>) {
               sel[newSize++] = i;
             }
@@ -114,7 +115,7 @@ public class <ClassName> extends VectorExpression {
           int newSize = 0;
           for(int j = 0; j != n; j++) {
             int i = sel[j];
-            if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+            if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                    vector2[0], start2[0], length2[0])<OptionalCompare>) {
               sel[newSize++] = i;
             }
@@ -123,7 +124,7 @@ public class <ClassName> extends VectorExpression {
         } else {
           int newSize = 0;
           for(int i = 0; i != n; i++) {
-            if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+            if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                    vector2[0], start2[0], length2[0])<OptionalCompare>) {
               sel[newSize++] = i;
             }
@@ -137,7 +138,7 @@ public class <ClassName> extends VectorExpression {
         int newSize = 0;
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+          if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                  vector2[i], start2[i], length2[i])<OptionalCompare>) {
             sel[newSize++] = i;
           }
@@ -146,7 +147,7 @@ public class <ClassName> extends VectorExpression {
       } else {
         int newSize = 0;
         for(int i = 0; i != n; i++) {
-          if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+          if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                  vector2[i], start2[i], length2[i])<OptionalCompare>) {
             sel[newSize++] = i;
           }
@@ -173,7 +174,7 @@ public class <ClassName> extends VectorExpression {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
             if (!nullPos2[i]) {
-              if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+              if (<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                      vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 sel[newSize++] = i;
               }
@@ -184,7 +185,7 @@ public class <ClassName> extends VectorExpression {
           int newSize = 0;
           for(int i = 0; i != n; i++) {
             if (!nullPos2[i]) {
-              if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+              if (<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                      vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 sel[newSize++] = i;
               }
@@ -206,7 +207,7 @@ public class <ClassName> extends VectorExpression {
           int newSize = 0;
           for(int j = 0; j != n; j++) {
             int i = sel[j];
-            if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+            if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                    vector2[0], start2[0], length2[0])<OptionalCompare>) {
               sel[newSize++] = i;
             }
@@ -215,7 +216,7 @@ public class <ClassName> extends VectorExpression {
         } else {
           int newSize = 0;
           for(int i = 0; i != n; i++) {
-            if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+            if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                    vector2[0], start2[0], length2[0])<OptionalCompare>) {
               sel[newSize++] = i;
             }
@@ -231,7 +232,7 @@ public class <ClassName> extends VectorExpression {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
             if (!nullPos2[i]) {
-              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                      vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 sel[newSize++] = i;
               }
@@ -242,7 +243,7 @@ public class <ClassName> extends VectorExpression {
           int newSize = 0;
           for(int i = 0; i != n; i++) {
             if (!nullPos2[i]) {
-              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                      vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 sel[newSize++] = i;
               }
@@ -254,16 +255,16 @@ public class <ClassName> extends VectorExpression {
           }
         }      
       }
-      
+
     // handle case where only input 1 has nulls
     } else if (inputColVector2.noNulls) {
       if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
         if (nullPos1[0] ||
-            !(<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+            !(<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                vector2[0], start2[0], length2[0])<OptionalCompare>)) {
-          batch.size = 0; 
+          batch.size = 0;
           return;
-        } 
+        }
       } else if (inputColVector1.isRepeating) {
         if (nullPos1[0]) {
         
@@ -275,7 +276,7 @@ public class <ClassName> extends VectorExpression {
           int newSize = 0;
           for(int j = 0; j != n; j++) {
             int i = sel[j];
-            if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+            if (<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                    vector2[i], start2[i], length2[i])<OptionalCompare>) {
               sel[newSize++] = i;
             }
@@ -284,7 +285,7 @@ public class <ClassName> extends VectorExpression {
         } else {
           int newSize = 0;
           for(int i = 0; i != n; i++) {
-            if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+            if (<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                    vector2[i], start2[i], length2[i])<OptionalCompare>) {
               sel[newSize++] = i;
             }
@@ -300,7 +301,7 @@ public class <ClassName> extends VectorExpression {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
             if (!nullPos1[i]) {
-              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                      vector2[0], start2[0], length2[0])<OptionalCompare>) {
                 sel[newSize++] = i;
               }
@@ -311,7 +312,7 @@ public class <ClassName> extends VectorExpression {
           int newSize = 0;
           for(int i = 0; i != n; i++) {
             if (!nullPos1[i]) {
-              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                      vector2[0], start2[0], length2[0])<OptionalCompare>) {
                 sel[newSize++] = i;
               }
@@ -328,7 +329,7 @@ public class <ClassName> extends VectorExpression {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
             if (!nullPos1[i]) {
-              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                      vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 sel[newSize++] = i;
               }
@@ -339,7 +340,7 @@ public class <ClassName> extends VectorExpression {
           int newSize = 0;
           for(int i = 0; i != n; i++) {
             if (!nullPos1[i]) {
-              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                      vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 sel[newSize++] = i;
               }
@@ -349,17 +350,17 @@ public class <ClassName> extends VectorExpression {
             batch.size = newSize;
             batch.selectedInUse = true;
           }
-        }      
+        }
       }
-            
+
     // handle case where both inputs have nulls
     } else {
       if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
         if (nullPos1[0] || nullPos2[0] ||
-            !(<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+            !(<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                vector2[0], start2[0], length2[0])<OptionalCompare>)) {
-          batch.size = 0; 
-        } 
+          batch.size = 0;
+        }
       } else if (inputColVector1.isRepeating) {
          if (nullPos1[0]) {
            batch.size = 0;
@@ -370,7 +371,7 @@ public class <ClassName> extends VectorExpression {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
             if (!nullPos2[i]) {
-              if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+              if (<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                      vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 sel[newSize++] = i;
               }
@@ -381,7 +382,7 @@ public class <ClassName> extends VectorExpression {
           int newSize = 0;
           for(int i = 0; i != n; i++) {
             if (!nullPos2[i]) {
-              if (<CompareOrEqual>(vector1[0], start1[0], length1[0], 
+              if (<CompareOrEqual>(vector1[0], start1[0], length1[0],
                                      vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 sel[newSize++] = i;
               }
@@ -402,7 +403,7 @@ public class <ClassName> extends VectorExpression {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
             if (!nullPos1[i]) {
-              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                      vector2[0], start2[0], length2[0])<OptionalCompare>) {
                 sel[newSize++] = i;
               }
@@ -413,7 +414,7 @@ public class <ClassName> extends VectorExpression {
           int newSize = 0;
           for(int i = 0; i != n; i++) {
             if (!nullPos1[i]) {
-              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                      vector2[0], start2[0], length2[0])<OptionalCompare>) {
                 sel[newSize++] = i;
               }
@@ -430,7 +431,7 @@ public class <ClassName> extends VectorExpression {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
             if (!nullPos1[i] && !nullPos2[i]) {
-              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                      vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 sel[newSize++] = i;
               }
@@ -441,7 +442,7 @@ public class <ClassName> extends VectorExpression {
           int newSize = 0;
           for(int i = 0; i != n; i++) {
             if (!nullPos1[i] && !nullPos2[i]) {
-              if (<CompareOrEqual>(vector1[i], start1[i], length1[i], 
+              if (<CompareOrEqual>(vector1[i], start1[i], length1[i],
                                      vector2[i], start2[i], length2[i])<OptionalCompare>) {
                 sel[newSize++] = i;
               }

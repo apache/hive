@@ -53,7 +53,10 @@ public class ListIndexColScalar extends VectorExpression {
     ListColumnVector listV = (ListColumnVector) batch.cols[listColumnNum];
     ColumnVector childV = listV.child;
 
-    outV.noNulls = true;
+    /*
+     * Do careful maintenance of the outputColVector.noNulls flag.
+     */
+
     if (listV.isRepeating) {
       if (listV.isNull[0]) {
         outV.isNull[0] = true;
@@ -63,8 +66,8 @@ public class ListIndexColScalar extends VectorExpression {
           outV.isNull[0] = true;
           outV.noNulls = false;
         } else {
-          outV.setElement(0, (int) (listV.offsets[0] + index), childV);
           outV.isNull[0] = false;
+          outV.setElement(0, (int) (listV.offsets[0] + index), childV);
         }
       }
       outV.isRepeating = true;
@@ -75,8 +78,8 @@ public class ListIndexColScalar extends VectorExpression {
           outV.isNull[j] = true;
           outV.noNulls = false;
         } else {
-          outV.setElement(j, (int) (listV.offsets[j] + index), childV);
           outV.isNull[j] = false;
+          outV.setElement(j, (int) (listV.offsets[j] + index), childV);
         }
       }
       outV.isRepeating = false;

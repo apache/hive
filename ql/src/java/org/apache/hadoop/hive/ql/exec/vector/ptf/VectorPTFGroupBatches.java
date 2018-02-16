@@ -178,6 +178,11 @@ public class VectorPTFGroupBatches {
   }
 
   private void fillGroupResults(VectorizedRowBatch batch) {
+
+    /*
+     * Do careful maintenance of the outputColVector.noNulls flag.
+     */
+
     for (VectorPTFEvaluatorBase evaluator : evaluators) {
       final int outputColumnNum = evaluator.getOutputColumnNum();
       if (evaluator.streamsResult()) {
@@ -190,7 +195,6 @@ public class VectorPTFGroupBatches {
       if (isGroupResultNull) {
         outputColVector.noNulls = false;
       } else {
-        outputColVector.noNulls = true;
         switch (evaluator.getResultColumnVectorType()) {
         case LONG:
           ((LongColumnVector) outputColVector).vector[0] = evaluator.getLongGroupResult();

@@ -19,13 +19,12 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
 /**
  * Compute IF(expr1, expr2, expr3) for 3 input column expressions.
@@ -70,8 +69,10 @@ public abstract class IfExprTimestampColumnScalarBase extends VectorExpression {
     TimestampColumnVector outputColVector = (TimestampColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] outputIsNull = outputColVector.isNull;
-    outputColVector.noNulls = arg2ColVector.noNulls; // nulls can only come from arg2
-    outputColVector.isRepeating = false; // may override later
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
     int n = batch.size;
     long[] vector1 = arg1ColVector.vector;
 
@@ -81,7 +82,7 @@ public abstract class IfExprTimestampColumnScalarBase extends VectorExpression {
     }
 
     if (arg1ColVector.isRepeating) {
-      if (vector1[0] == 1) {
+      if ((arg1ColVector.noNulls || !arg1ColVector.isNull[0]) && vector1[0] == 1) {
         arg2ColVector.copySelected(batch.selectedInUse, sel, n, outputColVector);
       } else {
         outputColVector.fill(arg3Scalar);
@@ -93,13 +94,19 @@ public abstract class IfExprTimestampColumnScalarBase extends VectorExpression {
     // reduce the number of code paths needed below.
     arg2ColVector.flatten(batch.selectedInUse, sel, n);
 
+    /*
+     * Since we always set a value, make sure all isNull entries are set to false.
+     */
+
     if (arg1ColVector.noNulls) {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
+          outputIsNull[i] = false;
           outputColVector.set(i, vector1[i] == 1 ? arg2ColVector.asScratchTimestamp(i) : arg3Scalar);
         }
       } else {
+        Arrays.fill(outputIsNull, 0, n, false);
         for(int i = 0; i != n; i++) {
           outputColVector.set(i, vector1[i] == 1 ? arg2ColVector.asScratchTimestamp(i) : arg3Scalar);
         }

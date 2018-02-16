@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -54,45 +56,61 @@ public class NotCol extends VectorExpression {
     long[] vector = inputColVector.vector;
     LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
     long[] outputVector = outV.vector;
+    boolean[] inputIsNull = inputColVector.isNull;
+    boolean[] outputIsNull = outV.isNull;
 
     if (n <= 0) {
       // Nothing to do, this is EOF
       return;
     }
 
-    if (inputColVector.noNulls) {
-      outV.noNulls = true;
-      if (inputColVector.isRepeating) {
-        outV.isRepeating = true;
+    // We do not need to do a column reset since we are carefully changing the output.
+    outV.isRepeating = false;
+
+    if (inputColVector.isRepeating) {
+      if (inputColVector.noNulls || !inputIsNull[0]) {
+        // Set isNull before call in case it changes it mind.
+        outputIsNull[0] = false;
         // 0 XOR 1 yields 1, 1 XOR 1 yields 0
         outputVector[0] = vector[0] ^ 1;
-      } else if (batch.selectedInUse) {
+      } else {
+        outputIsNull[0] = true;
+        outV.noNulls = false;
+      }
+      outV.isRepeating = true;
+      return;
+    }
+
+    if (inputColVector.noNulls) {
+      if (batch.selectedInUse) {
         for (int j = 0; j != n; j++) {
           int i = sel[j];
+          outV.isNull[i] = false;
           outputVector[i] = vector[i] ^ 1;
         }
-        outV.isRepeating = false;
       } else {
+        Arrays.fill(outV.isNull, 0, n, false);
         for (int i = 0; i != n; i++) {
           outputVector[i] = vector[i] ^ 1;
         }
-        outV.isRepeating = false;
       }
-    } else {
+    } else /* there are nulls in the inputColVector */ {
+
+      // Carefully handle NULLs...
+
+      /*
+       * For better performance on LONG/DOUBLE we don't want the conditional
+       * statements inside the for loop.
+       */
       outV.noNulls = false;
-      if (inputColVector.isRepeating) {
-        outV.isRepeating = true;
-        outputVector[0] = vector[0] ^ 1;
-        outV.isNull[0] = inputColVector.isNull[0];
-      } else if (batch.selectedInUse) {
-        outV.isRepeating = false;
+
+      if (batch.selectedInUse) {
         for (int j = 0; j != n; j++) {
           int i = sel[j];
           outputVector[i] = vector[i] ^ 1;
           outV.isNull[i] = inputColVector.isNull[i];
         }
       } else {
-        outV.isRepeating = false;
         for (int i = 0; i != n; i++) {
           outputVector[i] = vector[i] ^ 1;
           outV.isNull[i] = inputColVector.isNull[i];

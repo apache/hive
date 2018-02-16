@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
@@ -26,8 +28,8 @@ public class LongScalarGreaterLongColumn extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  private int colNum;
-  private long value;
+  protected int colNum;
+  protected long value;
 
   public LongScalarGreaterLongColumn(long value, int colNum, int outputColumnNum) {
     super(outputColumnNum);
@@ -53,8 +55,8 @@ public class LongScalarGreaterLongColumn extends VectorExpression {
     LongColumnVector inputColVector = (LongColumnVector) batch.cols[colNum];
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
-    boolean[] nullPos = inputColVector.isNull;
-    boolean[] outNulls = outputColVector.isNull;
+    boolean[] inputIsNull = inputColVector.isNull;
+    boolean[] outputIsNull = outputColVector.isNull;
     int n = batch.size;
     long[] vector = inputColVector.vector;
     long[] outputVector = outputColVector.vector;
@@ -64,44 +66,72 @@ public class LongScalarGreaterLongColumn extends VectorExpression {
       return;
     }
 
+    // We do not need to do a column reset since we are carefully changing the output.
     outputColVector.isRepeating = false;
-    outputColVector.noNulls = inputColVector.noNulls;
-    if (inputColVector.noNulls) {
-      if (inputColVector.isRepeating) {
-        //All must be selected otherwise size would be zero
-        //Repeating property will not change.
+
+    if (inputColVector.isRepeating) {
+      if (inputColVector.noNulls || !inputIsNull[0]) {
+        outputIsNull[0] = false;
         outputVector[0] = value > vector[0] ? 1 : 0;
-        outputColVector.isRepeating = true;
-      } else if (batch.selectedInUse) {
-        for(int j=0; j != n; j++) {
-          int i = sel[j];
-          outputVector[i] = value > vector[i] ? 1 : 0;
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+      }
+      outputColVector.isRepeating = true;
+      return;
+    }
+
+    if (inputColVector.noNulls) {
+      if (batch.selectedInUse) {
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != n; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           // The SIMD optimized form of "a > b" is "(b - a) >>> 63"
+           outputVector[i] = (vector[i] - value) >>> 63;
+         }
+        } else {
+          for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            // The SIMD optimized form of "a > b" is "(b - a) >>> 63"
+            outputVector[i] = (vector[i] - value) >>> 63;
+          }
         }
       } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
         for(int i = 0; i != n; i++) {
           // The SIMD optimized form of "a > b" is "(b - a) >>> 63"
           outputVector[i] = (vector[i] - value) >>> 63;
         }
       }
-    } else {
-      if (inputColVector.isRepeating) {
-        //All must be selected otherwise size would be zero
-        //Repeating property will not change.
-        if (!nullPos[0]) {
-          outputVector[0] = value > vector[0] ? 1 : 0;
-          outNulls[0] = false;
-        } else {
-          outNulls[0] = true;
-        }
-        outputColVector.isRepeating = true;
-      } else if (batch.selectedInUse) {
+    } else /* there are nulls in the inputColVector */ {
+
+      // Carefully handle NULLs...
+
+      /*
+       * For better performance on LONG/DOUBLE we don't want the conditional
+       * statements inside the for loop.
+       */
+      outputColVector.noNulls = false;
+
+      if (batch.selectedInUse) {
         for(int j=0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = value > vector[i] ? 1 : 0;
-          outNulls[i] = nullPos[i];
+          outputIsNull[i] = inputIsNull[i];
+          outputVector[i] = (vector[i] - value) >>> 63;
         }
       } else {
-        System.arraycopy(nullPos, 0, outNulls, 0, n);
+        System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
         for(int i = 0; i != n; i++) {
           outputVector[i] = (vector[i] - value) >>> 63;
         }

@@ -56,6 +56,12 @@ public class <ClassName> extends VectorExpression {
   @Override
   public void evaluate(VectorizedRowBatch batch) {
 
+    // return immediately if batch is empty
+    int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
@@ -65,13 +71,8 @@ public class <ClassName> extends VectorExpression {
     int[] sel = batch.selected;
     boolean[] nullPos1 = inputColVector1.isNull;
     boolean[] nullPos2 = inputColVector2.isNull;
-    int n = batch.size;
-    <OperandType>[] vector1 = inputColVector1.vector;
 
-    // return immediately if batch is empty
-    if (n == 0) {
-      return;
-    }
+    <OperandType>[] vector1 = inputColVector1.vector;
 
     // filter rows with NULL on left input
     int newSize;
@@ -90,9 +91,6 @@ public class <ClassName> extends VectorExpression {
 
     // All rows with nulls have been filtered out, so just do normal filter for non-null case
     if (n != 0 && inputColVector1.isRepeating && inputColVector2.isRepeating) {
-
-      // All must be selected otherwise size would be zero
-      // Repeating property will not change.
       if (!(vector1[0] <OperatorSymbol> inputColVector2.<GetTimestampLongDoubleMethod>(0))) {
         batch.size = 0;
       }

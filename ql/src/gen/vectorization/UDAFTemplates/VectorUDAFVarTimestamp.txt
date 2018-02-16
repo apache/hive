@@ -290,7 +290,7 @@ public class <ClassName> extends VectorAggregateExpression {
       Aggregation myagg = (Aggregation)agg;
 
       if (inputColVector.isRepeating) {
-        if (inputColVector.noNulls) {
+        if (inputColVector.noNulls || !inputColVector.isNull[0]) {
           iterateRepeatingNoNulls(myagg, inputColVector.getDouble(0), batchSize);
         }
       }

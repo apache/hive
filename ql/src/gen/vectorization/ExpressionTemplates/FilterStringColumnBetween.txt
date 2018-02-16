@@ -56,27 +56,26 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
+
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
     BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[colNum];
     int[] sel = batch.selected;
-    boolean[] nullPos = inputColVector.isNull;
-    int n = batch.size;
+    boolean[] inputIsNull = inputColVector.isNull;
+
     byte[][] vector = inputColVector.vector;
     int[] length = inputColVector.length;
     int[] start = inputColVector.start;
-    
 
-    // return immediately if batch is empty
-    if (n == 0) {
-      return;
-    }
-    
     if (inputColVector.noNulls) {
       if (inputColVector.isRepeating) {
-      
-        // All must be selected otherwise size would be zero. Repeating property will not change.
         if (<OptionalNot>(StringExpr.compare(vector[0], start[0], length[0], left, 0, left.length) < 0
             || StringExpr.compare(right, 0, right.length, vector[0], start[0], length[0]) < 0)) {
 
@@ -108,9 +107,7 @@ public class <ClassName> extends VectorExpression {
       }
     } else {
       if (inputColVector.isRepeating) {
-      
-        // All must be selected otherwise size would be zero. Repeating property will not change.
-        if (!nullPos[0]) {
+        if (!inputIsNull[0]) {
           if (<OptionalNot>(StringExpr.compare(vector[0], start[0], length[0], left, 0, left.length) < 0
             || StringExpr.compare(right, 0, right.length, vector[0], start[0], length[0]) < 0)) {
 
@@ -124,20 +121,20 @@ public class <ClassName> extends VectorExpression {
         int newSize = 0;
         for(int j=0; j != n; j++) {
           int i = sel[j];
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
            if (<OptionalNot>(StringExpr.compare(left, 0, left.length, vector[i], start[i], length[i]) <= 0
               && StringExpr.compare(vector[i], start[i], length[i], right, 0, right.length) <= 0)) {
              sel[newSize++] = i;
            }
           }
         }
-        
+
         //Change the selected vector
         batch.size = newSize;
       } else {
         int newSize = 0;
         for(int i = 0; i != n; i++) {
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
             if (<OptionalNot>(StringExpr.compare(left, 0, left.length, vector[i], start[i], length[i]) <= 0
               && StringExpr.compare(vector[i], start[i], length[i], right, 0, right.length) <= 0)) {
               sel[newSize++] = i;

@@ -74,57 +74,82 @@ public class StringColumnInList extends VectorExpression implements IStringInExp
     BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputCol];
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
-    boolean[] nullPos = inputColVector.isNull;
+    boolean[] inputIsNull = inputColVector.isNull;
     int n = batch.size;
     byte[][] vector = inputColVector.vector;
     int[] start = inputColVector.start;
     int[] len = inputColVector.length;
     long[] outputVector = outputColVector.vector;
+    boolean[] outputIsNull = outputColVector.isNull;
 
     // return immediately if batch is empty
     if (n == 0) {
       return;
     }
 
-    outputColVector.isRepeating = inputColVector.isRepeating;
-    outputColVector.noNulls = inputColVector.noNulls;
-    if (inputColVector.noNulls) {
-      if (inputColVector.isRepeating) {
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
 
-        // All must be selected otherwise size would be zero
-        // Repeating property will not change.
+    if (inputColVector.isRepeating) {
+      if (inputColVector.noNulls || !inputIsNull[0]) {
+        // Set isNull before call in case it changes it mind.
+        outputIsNull[0] = false;
         outputVector[0] = inSet.lookup(vector[0], start[0], len[0]) ? 1 : 0;
-      } else if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
-          int i = sel[j];
-          outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+      }
+      outputColVector.isRepeating = true;
+      return;
+    }
+
+    if (inputColVector.noNulls) {
+      if (batch.selectedInUse) {
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != n; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
+         }
+        } else {
+          for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
+          }
         }
       } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
         for(int i = 0; i != n; i++) {
           outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
         }
       }
-    } else {
-      if (inputColVector.isRepeating) {
+    } else /* there are nulls in the inputColVector */ {
 
-        // All must be selected otherwise size would be zero
-        // Repeating property will not change.
-        if (!nullPos[0]) {
-          outputVector[0] = inSet.lookup(vector[0], start[0], len[0]) ? 1 : 0;
-        }
-        outputColVector.isNull[0] = nullPos[0];
-      } else if (batch.selectedInUse) {
+      // Carefully handle NULLs...
+      outputColVector.noNulls = false;
+
+      if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          if (!nullPos[i]) {
+          outputColVector.isNull[i] = inputIsNull[i];
+          if (!inputIsNull[i]) {
             outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
           }
-          outputColVector.isNull[i] = nullPos[i];
         }
       } else {
-        System.arraycopy(nullPos, 0, outputColVector.isNull, 0, n);
+        System.arraycopy(inputIsNull, 0, outputColVector.isNull, 0, n);
         for(int i = 0; i != n; i++) {
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
             outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
           }
         }

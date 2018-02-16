@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
@@ -52,34 +54,47 @@ public class IsNull extends VectorExpression {
 
     ColumnVector inputColVector = batch.cols[colNum];
     int[] sel = batch.selected;
-    boolean[] nullPos = inputColVector.isNull;
+    boolean[] inputIsNull = inputColVector.isNull;
     int n = batch.size;
-    long[] outputVector = ((LongColumnVector) batch.cols[outputColumnNum]).vector;
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
+    long[] outputVector = outputColVector.vector;
+    boolean[] outputIsNull = outputColVector.isNull;
+
     if (n <= 0) {
       // Nothing to do, this is EOF
       return;
     }
 
-    // output never has nulls for this operator
-    batch.cols[outputColumnNum].noNulls = true;
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
     if (inputColVector.noNulls) {
+      outputColVector.isRepeating = true;
+      outputIsNull[0] = false;
       outputVector[0] = 0;
-      batch.cols[outputColumnNum].isRepeating = true;
     } else if (inputColVector.isRepeating) {
-      outputVector[0] = nullPos[0] ? 1 : 0;
-      batch.cols[outputColumnNum].isRepeating = true;
+      outputColVector.isRepeating = true;
+      outputIsNull[0] = false;
+      outputVector[0] = inputIsNull[0] ? 1 : 0;
     } else {
+
+      /*
+       * Since we have a result for all rows, we don't need to do conditional NULL maintenance or
+       * turn off noNulls..
+       */
+
       if (batch.selectedInUse) {
         for (int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = nullPos[i] ? 1 : 0;
+          outputIsNull[i] = false;
+          outputVector[i] = inputIsNull[i] ? 1 : 0;
         }
       } else {
+        Arrays.fill(outputIsNull, 0, n, false);
         for (int i = 0; i != n; i++) {
-          outputVector[i] = nullPos[i] ? 1 : 0;
+          outputVector[i] = inputIsNull[i] ? 1 : 0;
         }
       }
-      batch.cols[outputColumnNum].isRepeating = false;
     }
   }
 

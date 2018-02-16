@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -54,6 +56,12 @@ public class <ClassName> extends VectorExpression {
   @Override
   public void evaluate(VectorizedRowBatch batch) {
 
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
@@ -61,61 +69,85 @@ public class <ClassName> extends VectorExpression {
     TimestampColumnVector inputColVector = (TimestampColumnVector) batch.cols[colNum];
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
-    boolean[] nullPos = inputColVector.isNull;
-    boolean[] outNulls = outputColVector.isNull;
-    int n = batch.size;
+    boolean[] inputIsNull = inputColVector.isNull;
+    boolean[] outputIsNull = outputColVector.isNull;
+
     long[] outputVector = outputColVector.vector;
 
-    // return immediately if batch is empty
-    if (n == 0) {
-      return;
-    }
-
+    // We do not need to do a column reset since we are carefully changing the output.
     outputColVector.isRepeating = false;
-    outputColVector.noNulls = inputColVector.noNulls;
+
+   if (inputColVector.isRepeating) {
+     if (inputColVector.noNulls || !inputIsNull[0]) {
+       outputIsNull[0] = false;
+       outputVector[0] = value <OperatorSymbol> inputColVector.<GetTimestampLongDoubleMethod>(0) ? 1 : 0;
+     } else {
+       outputIsNull[0] = true;
+       outputColVector.noNulls = false;
+     }
+     outputColVector.isRepeating = true;
+     return;
+   }
+
     if (inputColVector.noNulls) {
-      if (inputColVector.isRepeating) {
-        //All must be selected otherwise size would be zero
-        //Repeating property will not change.
-        outputVector[0] = value <OperatorSymbol> inputColVector.<GetTimestampLongDoubleMethod>(0) ? 1 : 0;
-        outputColVector.isRepeating = true;
-      } else if (batch.selectedInUse) {
-        for(int j=0; j != n; j++) {
-          int i = sel[j];
-          outputVector[i] = value <OperatorSymbol> inputColVector.<GetTimestampLongDoubleMethod>(i) ? 1 : 0;
-        }
+      if (batch.selectedInUse) {
+
+         // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+         if (!outputColVector.noNulls) {
+           for(int j = 0; j != n; j++) {
+             final int i = sel[j];
+             outputIsNull[i] = false;
+             outputVector[i] =
+                 value <OperatorSymbol> inputColVector.<GetTimestampLongDoubleMethod>(i) ? 1 : 0;
+           }
+         } else {
+           for(int j = 0; j != n; j++) {
+             final int i = sel[j];
+             outputVector[i] =
+                 value <OperatorSymbol> inputColVector.<GetTimestampLongDoubleMethod>(i) ? 1 : 0;
+           }
+         }
       } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
         for(int i = 0; i != n; i++) {
-          outputVector[i] = value <OperatorSymbol> inputColVector.<GetTimestampLongDoubleMethod>(i) ? 1 : 0;
+          outputVector[i] =
+              value <OperatorSymbol> inputColVector.<GetTimestampLongDoubleMethod>(i) ? 1 : 0;
         }
       }
-    } else {
-      if (inputColVector.isRepeating) {
-        //All must be selected otherwise size would be zero
-        //Repeating property will not change.
-        if (!nullPos[0]) {
-          outputVector[0] = value <OperatorSymbol> inputColVector.<GetTimestampLongDoubleMethod>(0) ? 1 : 0;
-          outNulls[0] = false;
-        } else {
-          outNulls[0] = true;
-        }
-        outputColVector.isRepeating = true;
-      } else if (batch.selectedInUse) {
+    } else /* there are NULLs in the inputColVector */ {
+
+      /*
+       * Do careful maintenance of the outputColVector.noNulls flag.
+       */
+
+      if (batch.selectedInUse) {
         for(int j=0; j != n; j++) {
           int i = sel[j];
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
+            outputIsNull[i] = false;
             outputVector[i] = value <OperatorSymbol> inputColVector.<GetTimestampLongDoubleMethod>(i) ? 1 : 0;
-            outNulls[i] = false;
           } else {
-            //comparison with null is null
-            outNulls[i] = true;
+            // Comparison with NULL is NULL.
+            outputIsNull[i] = true;
+            outputColVector.noNulls = false;
           }
         }
       } else {
-        System.arraycopy(nullPos, 0, outNulls, 0, n);
         for(int i = 0; i != n; i++) {
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
+            outputIsNull[i] = false;
             outputVector[i] = value <OperatorSymbol> inputColVector.<GetTimestampLongDoubleMethod>(i) ? 1 : 0;
+          } else {
+            // Comparison with NULL is NULL.
+            outputIsNull[i] = true;
+            outputColVector.noNulls = false;
           }
         }
       }

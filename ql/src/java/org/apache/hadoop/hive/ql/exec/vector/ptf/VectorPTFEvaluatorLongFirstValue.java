@@ -66,7 +66,8 @@ public class VectorPTFEvaluatorLongFirstValue extends VectorPTFEvaluatorBase {
       }
       LongColumnVector longColVector = ((LongColumnVector) batch.cols[inputColumnNum]);
       if (longColVector.isRepeating) {
-        if (longColVector.noNulls) {
+
+        if (longColVector.noNulls || !longColVector.isNull[0]) {
           firstValue = longColVector.vector[0];
           isGroupResultNull = false;
         }
@@ -82,6 +83,10 @@ public class VectorPTFEvaluatorLongFirstValue extends VectorPTFEvaluatorBase {
       haveFirstValue = true;
     }
 
+    /*
+     * Do careful maintenance of the outputColVector.noNulls flag.
+     */
+
     // First value is repeated for all batches.
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     outputColVector.isRepeating = true;
@@ -89,7 +94,6 @@ public class VectorPTFEvaluatorLongFirstValue extends VectorPTFEvaluatorBase {
       outputColVector.noNulls = false;
       outputColVector.isNull[0] = true;
     } else {
-      outputColVector.noNulls = true;
       outputColVector.isNull[0] = false;
       outputColVector.vector[0] = firstValue;
     }

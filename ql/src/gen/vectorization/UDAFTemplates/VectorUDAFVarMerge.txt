@@ -371,7 +371,7 @@ public class <ClassName> extends VectorAggregateExpression {
       Aggregation myagg = (Aggregation)agg;
 
       if (inputStructColVector.isRepeating) {
-        if (inputStructColVector.noNulls) {
+        if (inputStructColVector.noNulls || !inputStructColVector.isNull[0]) {
           final long count = countVector[0];
           final double sum = sumVector[0];
           final double variance = varianceVector[0];

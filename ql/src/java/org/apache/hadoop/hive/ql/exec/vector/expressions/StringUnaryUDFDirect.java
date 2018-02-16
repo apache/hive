@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -44,7 +46,7 @@ abstract public class StringUnaryUDFDirect extends VectorExpression {
     inputColumn = -1;
   }
 
-  abstract protected void func(BytesColumnVector outV, byte[][] vector, int[] start, int[] length, int i);
+  abstract protected void func(BytesColumnVector outputColVector, byte[][] vector, int[] start, int[] length, int i);
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
@@ -59,59 +61,82 @@ abstract public class StringUnaryUDFDirect extends VectorExpression {
     byte[][] vector = inputColVector.vector;
     int start[] = inputColVector.start;
     int length[] = inputColVector.length;
-    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumnNum];
-    outV.initBuffer();
+    BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumnNum];
+    boolean[] inputIsNull = inputColVector.isNull;
+    boolean[] outputIsNull = outputColVector.isNull;
+    outputColVector.initBuffer();
 
     if (n == 0) {
       //Nothing to do
       return;
     }
 
-    if (inputColVector.noNulls) {
-      outV.noNulls = true;
-      if (inputColVector.isRepeating) {
-        outV.isRepeating = true;
-        func(outV, vector, start, length, 0);
-      } else if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
-          int i = sel[j];
-          func(outV, vector, start, length, i);
-        }
-        outV.isRepeating = false;
-      } else {
-        for(int i = 0; i != n; i++) {
-          func(outV, vector, start, length, i);
-        }
-        outV.isRepeating = false;
-      }
-    } else {
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
 
-      // Handle case with nulls. Don't do function if the value is null,
-      // because the data may be undefined for a null value.
-      outV.noNulls = false;
-      if (inputColVector.isRepeating) {
-        outV.isRepeating = true;
-        outV.isNull[0] = inputColVector.isNull[0];
-        if (!inputColVector.isNull[0]) {
-          func(outV, vector, start, length, 0);
+    if (inputColVector.isRepeating) {
+      if (inputColVector.noNulls || !inputIsNull[0]) {
+        // Set isNull before call in case it changes it mind.
+        outputIsNull[0] = false;
+        func(outputColVector, vector, start, length, 0);
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+      }
+      outputColVector.isRepeating = true;
+      return;
+    }
+
+    if (inputColVector.noNulls) {
+      if (batch.selectedInUse) {
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != n; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           func(outputColVector, vector, start, length, i);
+         }
+        } else {
+          for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            func(outputColVector, vector, start, length, i);
+          }
         }
-      } else if (batch.selectedInUse) {
+      } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
+        for(int i = 0; i != n; i++) {
+          func(outputColVector, vector, start, length, i);
+        }
+      }
+    } else /* there are nulls in the inputColVector */ {
+
+      // Carefully handle NULLs...
+      outputColVector.noNulls = false;
+
+      if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outV.isNull[i] = inputColVector.isNull[i];
+          outputColVector.isNull[i] = inputColVector.isNull[i];
           if (!inputColVector.isNull[i]) {
-            func(outV, vector, start, length, i);
+            func(outputColVector, vector, start, length, i);
           }
         }
-        outV.isRepeating = false;
       } else {
-        System.arraycopy(inputColVector.isNull, 0, outV.isNull, 0, n);
+        System.arraycopy(inputColVector.isNull, 0, outputColVector.isNull, 0, n);
         for(int i = 0; i != n; i++) {
           if (!inputColVector.isNull[i]) {
-            func(outV, vector, start, length, i);
+            func(outputColVector, vector, start, length, i);
           }
         }
-        outV.isRepeating = false;
       }
     }
   }

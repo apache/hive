@@ -70,7 +70,8 @@ public class VectorPTFEvaluatorDecimalLastValue extends VectorPTFEvaluatorBase {
     }
     DecimalColumnVector decimalColVector = ((DecimalColumnVector) batch.cols[inputColumnNum]);
     if (decimalColVector.isRepeating) {
-      if (decimalColVector.noNulls) {
+
+      if (decimalColVector.noNulls || !decimalColVector.isNull[0]) {
         lastValue.set(decimalColVector.vector[0]);
         isGroupResultNull = false;
       } else {

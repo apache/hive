@@ -48,6 +48,16 @@ POSTHOOK: Input: default@decimal_udf2_txt
 POSTHOOK: Output: default@decimal_udf2
 POSTHOOK: Lineage: decimal_udf2.key SIMPLE [(decimal_udf2_txt)decimal_udf2_txt.FieldSchema(name:key, type:decimal(14,5), comment:null), ]
 POSTHOOK: Lineage: decimal_udf2.value SIMPLE [(decimal_udf2_txt)decimal_udf2_txt.FieldSchema(name:value, type:int, comment:null), ]
+PREHOOK: query: insert into DECIMAL_UDF2 values (NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@decimal_udf2
+POSTHOOK: query: insert into DECIMAL_UDF2 values (NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@decimal_udf2
+POSTHOOK: Lineage: decimal_udf2.key EXPRESSION []
+POSTHOOK: Lineage: decimal_udf2.value EXPRESSION []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
 FROM DECIMAL_UDF2 WHERE key = 10
@@ -73,7 +83,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf2
-                  Statistics: Num rows: 38 Data size: 4032 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4032 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(14,5), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -83,7 +93,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterDecimalColEqualDecimalScalar(col 0:decimal(14,5), val 10)
                     predicate: (key = 10) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: null (type: double), null (type: double), 1.4711276743037347 (type: double), -0.8390715290764524 (type: double), -0.5440211108893698 (type: double), 0.6483608274590866 (type: double), 0.17453292519943295 (type: double)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
@@ -92,13 +102,13 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumnNums: [3, 4, 5, 6, 7, 8, 9]
                           selectExpressions: ConstantVectorExpression(val null) -> 3:double, ConstantVectorExpression(val null) -> 4:double, ConstantVectorExpression(val 1.4711276743037347) -> 5:double, ConstantVectorExpression(val -0.8390715290764524) -> 6:double, ConstantVectorExpression(val -0.5440211108893698) -> 7:double, ConstantVectorExpression(val 0.6483608274590866) -> 8:double, ConstantVectorExpression(val 0.17453292519943295) -> 9:double
-                      Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -138,6 +148,19 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf2
 #### A masked pattern was here ####
 NULL	NULL	1.4711276743037347	-0.8390715290764524	-0.5440211108893698	0.6483608274590866	0.17453292519943295
+PREHOOK: query: SELECT SUM(HASH(*))
+FROM (SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
+FROM DECIMAL_UDF2) q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(*))
+FROM (SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
+FROM DECIMAL_UDF2) q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf2
+#### A masked pattern was here ####
+-3806952922
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT
   exp(key), ln(key),
@@ -169,7 +192,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf2
-                  Statistics: Num rows: 38 Data size: 4184 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4188 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(14,5), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -179,7 +202,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterDecimalColEqualDecimalScalar(col 0:decimal(14,5), val 10)
                     predicate: (key = 10) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: 22026.465794806718 (type: double), 2.302585092994046 (type: double), 2.302585092994046 (type: double), 1.0 (type: double), log(10, value) (type: double), log(value, 10) (type: double), 1.0 (type: double), 3.1622776601683795 (type: double)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
@@ -188,13 +211,13 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumnNums: [3, 4, 5, 6, 7, 8, 9, 10]
                           selectExpressions: ConstantVectorExpression(val 22026.465794806718) -> 3:double, ConstantVectorExpression(val 2.302585092994046) -> 4:double, ConstantVectorExpression(val 2.302585092994046) -> 5:double, ConstantVectorExpression(val 1.0) -> 6:double, FuncLogWithBaseLongToDouble(col 1:double) -> 7:double, VectorUDFAdaptor(log(value, 10)) -> 8:double, ConstantVectorExpression(val 1.0) -> 9:double, ConstantVectorExpression(val 3.1622776601683795) -> 10:double
-                      Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -240,6 +263,25 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf2
 #### A masked pattern was here ####
 22026.465794806718	2.302585092994046	2.302585092994046	1.0	1.0	1.0	1.0	3.1622776601683795
+PREHOOK: query: SELECT SUM(HASH(*))
+FROM (SELECT
+  exp(key), ln(key),
+  log(key), log(key, key), log(key, value), log(value, key),
+  log10(key), sqrt(key)
+FROM DECIMAL_UDF2) q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(*))
+FROM (SELECT
+  exp(key), ln(key),
+  log(key), log(key, key), log(key, value), log(value, key),
+  log10(key), sqrt(key)
+FROM DECIMAL_UDF2) q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf2
+#### A masked pattern was here ####
+1514360349
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
 FROM DECIMAL_UDF2_txt WHERE key = 10
@@ -331,6 +373,19 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf2_txt
 #### A masked pattern was here ####
 NULL	NULL	1.4711276743037347	-0.8390715290764524	-0.5440211108893698	0.6483608274590866	0.17453292519943295
+PREHOOK: query: SELECT SUM(HASH(*))
+FROM (SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
+FROM DECIMAL_UDF2_txt) q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf2_txt
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(*))
+FROM (SELECT acos(key), asin(key), atan(key), cos(key), sin(key), tan(key), radians(key)
+FROM DECIMAL_UDF2_txt) q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf2_txt
+#### A masked pattern was here ####
+-3806952922
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT
   exp(key), ln(key),
@@ -434,6 +489,25 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf2_txt
 #### A masked pattern was here ####
 22026.465794806718	2.302585092994046	2.302585092994046	1.0	1.0	1.0	1.0	3.1622776601683795
+PREHOOK: query: SELECT SUM(HASH(*))
+FROM (SELECT
+  exp(key), ln(key),
+  log(key), log(key, key), log(key, value), log(value, key),
+  log10(key), sqrt(key)
+FROM DECIMAL_UDF2_txt) q
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_udf2_txt
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(*))
+FROM (SELECT
+  exp(key), ln(key),
+  log(key), log(key, key), log(key, value), log(value, key),
+  log10(key), sqrt(key)
+FROM DECIMAL_UDF2_txt) q
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_udf2_txt
+#### A masked pattern was here ####
+1514360349
 PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF2_txt
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_udf2_txt

@@ -1,11 +1,14 @@
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
-SET hive.vectorized.execution.enabled=false;
+SET hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
 
 create table str_str_orc (str1 string, str2 string) stored as orc;
 
 insert into table str_str_orc values (null, "X"), ("0", "X"), ("1", "X"), (null, "y");
+
+-- Add a single NULL row that will come from ORC as isRepeated.
+insert into str_str_orc values (NULL, NULL);
 
 EXPLAIN VECTORIZATION EXPRESSION
 SELECT

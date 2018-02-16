@@ -188,7 +188,6 @@ public class TestVectorConditionalExpressions {
     assertEquals(2, r.vector[1]);
     assertEquals(-3, r.vector[2]);
     assertEquals(-4, r.vector[3]);
-    assertEquals(true, r.noNulls);
     assertEquals(false, r.isRepeating);
 
     // verify when first argument (boolean flags) is repeating
@@ -230,7 +229,6 @@ public class TestVectorConditionalExpressions {
     assertEquals(2, r.vector[1]);
     assertEquals(3, r.vector[2]);
     assertEquals(-4, r.vector[3]);
-    assertEquals(true, r.noNulls);
     assertEquals(false, r.isRepeating);
 
     // test when second argument has nulls
@@ -308,7 +306,6 @@ public class TestVectorConditionalExpressions {
     assertEquals(true, 2d == r.vector[1]);
     assertEquals(true, -3d == r.vector[2]);
     assertEquals(true, -4d == r.vector[3]);
-    assertEquals(true, r.noNulls);
     assertEquals(false, r.isRepeating);
   }
 
@@ -480,7 +477,6 @@ public class TestVectorConditionalExpressions {
     assertTrue(getString(r, 1).equals("scalar"));
     assertTrue(getString(r, 2).equals("arg2_2"));
     assertTrue(getString(r, 3).equals("arg2_3"));
-    assertTrue(r.noNulls);
 
     // test for null input strings
     batch = getBatch1Long3BytesVectors();
@@ -504,7 +500,6 @@ public class TestVectorConditionalExpressions {
     assertTrue(getString(r, 1).equals("arg3_1"));
     assertTrue(getString(r, 2).equals("scalar"));
     assertTrue(getString(r, 3).equals("scalar"));
-    assertTrue(r.noNulls);
 
     // test for null input strings
     batch = getBatch1Long3BytesVectors();

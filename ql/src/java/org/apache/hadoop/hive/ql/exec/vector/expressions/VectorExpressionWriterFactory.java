@@ -387,8 +387,35 @@ public final class VectorExpressionWriterFactory {
    * if the wrong vector column is used.
    */
   private static abstract class VectorExpressionWriterDecimal extends VectorExpressionWriterBase {
+
     @Override
     public Object writeValue(ColumnVector column, int row) throws HiveException {
+      if (column instanceof Decimal64ColumnVector) {
+        Decimal64ColumnVector d64cv = (Decimal64ColumnVector) column;
+        final long decimal64Long;
+        if (d64cv.noNulls && !d64cv.isRepeating) {
+          decimal64Long = d64cv.vector[row];
+        } else if (d64cv.noNulls && d64cv.isRepeating) {
+          decimal64Long = d64cv.vector[0];
+        } else if (!d64cv.noNulls && !d64cv.isRepeating && !d64cv.isNull[row]) {
+          decimal64Long = d64cv.vector[row];
+        } else if (!d64cv.noNulls && !d64cv.isRepeating && d64cv.isNull[row]) {
+          return null;
+        } else if (!d64cv.noNulls && d64cv.isRepeating && !d64cv.isNull[0]) {
+          decimal64Long = d64cv.vector[0];
+        } else if (!d64cv.noNulls && d64cv.isRepeating && d64cv.isNull[0]) {
+          return null;
+        } else {
+          throw new HiveException(
+              String.format(
+                  "Incorrect null/repeating: row:%d noNulls:%b isRepeating:%b isNull[row]:%b isNull[0]:%b",
+                  row, d64cv.noNulls, d64cv.isRepeating, d64cv.isNull[row], d64cv.isNull[0]));
+        }
+
+        HiveDecimalWritable scratchHiveDecimalWritable = d64cv.getScratchWritable();
+        scratchHiveDecimalWritable.deserialize64(decimal64Long, d64cv.scale);
+        return writeValue(scratchHiveDecimalWritable);
+      }
       DecimalColumnVector dcv = (DecimalColumnVector) column;
       if (dcv.noNulls && !dcv.isRepeating) {
         return writeValue(dcv.vector[row]);

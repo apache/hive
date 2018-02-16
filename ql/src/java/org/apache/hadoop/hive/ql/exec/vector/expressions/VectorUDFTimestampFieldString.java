@@ -106,11 +106,27 @@ public abstract class VectorUDFTimestampFieldString extends VectorExpression {
       return;
     }
 
-    // true for all algebraic UDFs with no state
-    outV.isRepeating = inputCol.isRepeating;
+    // We do not need to do a column reset since we are carefully changing the output.
+    outV.isRepeating = false;
+
+    if (inputCol.isRepeating) {
+      if (inputCol.noNulls || !inputCol.isNull[0]) {
+        try {
+          outV.isNull[0] = false;
+          outV.vector[0] = getField(inputCol.vector[0], inputCol.start[0], inputCol.length[0]);
+        } catch (ParseException e) {
+          outV.noNulls = false;
+          outV.isNull[0] = true;
+        }
+      } else {
+        outV.isNull[0] = true;
+        outV.noNulls = false;
+      }
+      outV.isRepeating = true;
+      return;
+    }
 
     if (inputCol.noNulls) {
-      outV.noNulls = true;
       if (selectedInUse) {
         for (int j = 0; j < n; j++) {
           int i = sel[j];
@@ -133,11 +149,11 @@ public abstract class VectorUDFTimestampFieldString extends VectorExpression {
           }
         }
       }
-    } else {
+    } else /* there are nulls in the inputColVector */ {
 
-      // Handle case with nulls. Don't do function if the value is null, to save time,
-      // because calling the function can be expensive.
+      // Carefully handle NULLs...
       outV.noNulls = false;
+
       if (selectedInUse) {
         for (int j = 0; j < n; j++) {
           int i = sel[j];

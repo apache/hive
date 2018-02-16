@@ -297,13 +297,13 @@ public class VectorUDAFSumTimestamp extends VectorAggregateExpression {
       Aggregation myagg = (Aggregation)agg;
 
       if (inputVector.isRepeating) {
-        if (inputVector.noNulls) {
-        if (myagg.isNull) {
-          myagg.isNull = false;
-          myagg.sum = 0;
+        if (inputVector.noNulls || !inputVector.isNull[0]) {
+          if (myagg.isNull) {
+            myagg.isNull = false;
+            myagg.sum = 0;
+          }
+          myagg.sum += inputVector.getDouble(0) * batchSize;
         }
-        myagg.sum += inputVector.getDouble(0) * batchSize;
-      }
         return;
       }
 

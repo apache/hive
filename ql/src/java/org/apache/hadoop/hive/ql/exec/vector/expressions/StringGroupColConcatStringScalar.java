@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
@@ -56,12 +57,14 @@ public class StringGroupColConcatStringScalar extends VectorExpression {
     }
 
     BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[colNum];
-    BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumnNum];
+    BytesColumnVector outputColVector = (BytesColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     int n = batch.size;
     byte[][] vector = inputColVector.vector;
     int[] start = inputColVector.start;
     int[] length = inputColVector.length;
+    boolean[] inputIsNull = inputColVector.isNull;
+    boolean[] outputIsNull = outputColVector.isNull;
 
     if (n == 0) {
 
@@ -70,55 +73,79 @@ public class StringGroupColConcatStringScalar extends VectorExpression {
     }
 
     // initialize output vector buffer to receive data
-    outV.initBuffer();
+    outputColVector.initBuffer();
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
+    if (inputColVector.isRepeating) {
+      if (inputColVector.noNulls || !inputIsNull[0]) {
+        // Set isNull before call in case it changes it mind.
+        outputIsNull[0] = false;
+        outputColVector.setConcat(0, vector[0], start[0], length[0], value, 0, value.length);
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+      }
+      outputColVector.isRepeating = true;
+      return;
+    }
 
     if (inputColVector.noNulls) {
-      outV.noNulls = true;
-      if (inputColVector.isRepeating) {
-        outV.isRepeating = true;
-        outV.setConcat(0, vector[0], start[0], length[0], value, 0, value.length);
-      } else if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
-          int i = sel[j];
-          outV.setConcat(i, vector[i], start[i], length[i], value, 0, value.length);
+      if (batch.selectedInUse) {
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != n; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           outputColVector.setConcat(i, vector[i], start[i], length[i], value, 0, value.length);
+         }
+        } else {
+          for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            outputColVector.setConcat(i, vector[i], start[i], length[i], value, 0, value.length);
+          }
         }
-        outV.isRepeating = false;
       } else {
-        for(int i = 0; i != n; i++) {
-          outV.setConcat(i, vector[i], start[i], length[i], value, 0, value.length);
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
         }
-        outV.isRepeating = false;
+        for(int i = 0; i != n; i++) {
+          outputColVector.setConcat(i, vector[i], start[i], length[i], value, 0, value.length);
+        }
       }
-    } else {
+    } else /* there are nulls in the inputColVector */ {
+
+      // Carefully handle NULLs...
 
       /*
        * Handle case with nulls. Don't do function if the value is null, to save time,
        * because calling the function can be expensive.
        */
-      outV.noNulls = false;
-      if (inputColVector.isRepeating) {
-        outV.isRepeating = true;
-        outV.isNull[0] = inputColVector.isNull[0];
-        if (!inputColVector.isNull[0]) {
-          outV.setConcat(0, vector[0], start[0], length[0], value, 0, value.length);
-        }
-      } else if (batch.selectedInUse) {
+      outputColVector.noNulls = false;
+
+      if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
+          outputColVector.isNull[i] = inputColVector.isNull[i];
           if (!inputColVector.isNull[i]) {
-            outV.setConcat(i, vector[i], start[i], length[i], value, 0, value.length);
+            outputColVector.setConcat(i, vector[i], start[i], length[i], value, 0, value.length);
           }
-          outV.isNull[i] = inputColVector.isNull[i];
         }
-        outV.isRepeating = false;
       } else {
         for(int i = 0; i != n; i++) {
+          outputColVector.isNull[i] = inputColVector.isNull[i];
           if (!inputColVector.isNull[i]) {
-            outV.setConcat(i, vector[i], start[i], length[i], value, 0, value.length);
+            outputColVector.setConcat(i, vector[i], start[i], length[i], value, 0, value.length);
           }
-          outV.isNull[i] = inputColVector.isNull[i];
         }
-        outV.isRepeating = false;
       }
     }
   }

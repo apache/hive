@@ -64,8 +64,10 @@ public class IfExprLongColumnLongColumn extends VectorExpression {
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     boolean[] outputIsNull = outputColVector.isNull;
-    outputColVector.noNulls = arg2ColVector.noNulls && arg3ColVector.noNulls;
-    outputColVector.isRepeating = false; // may override later
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
     int n = batch.size;
     long[] vector1 = arg1ColVector.vector;
     long[] vector2 = arg2ColVector.vector;
@@ -95,6 +97,9 @@ public class IfExprLongColumnLongColumn extends VectorExpression {
     // extend any repeating values and noNulls indicator in the inputs
     arg2ColVector.flatten(batch.selectedInUse, sel, n);
     arg3ColVector.flatten(batch.selectedInUse, sel, n);
+
+    // Carefully handle NULLs...
+    outputColVector.noNulls = false;
 
     if (arg1ColVector.noNulls) {
       if (batch.selectedInUse) {

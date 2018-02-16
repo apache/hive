@@ -66,17 +66,14 @@ public class LongColGreaterLongColumn extends VectorExpression {
       return;
     }
 
-    outputColVector.isRepeating =
-        inputColVector1.isRepeating && inputColVector2.isRepeating
-            || inputColVector1.isRepeating && !inputColVector1.noNulls && inputColVector1.isNull[0]
-            || inputColVector2.isRepeating && !inputColVector2.noNulls && inputColVector2.isNull[0];
-
-    // Handle nulls first  
+    /*
+     * Propagate null values for a two-input operator and set isRepeating and noNulls appropriately.
+     */
     NullUtil.propagateNullsColCol(
         inputColVector1, inputColVector2, outputColVector, sel, n, batch.selectedInUse);
-          
+
     /* Disregard nulls for processing. In other words,
-     * the arithmetic operation is performed even if one or 
+     * the arithmetic operation is performed even if one or
      * more inputs are null. This is to improve speed by avoiding
      * conditional checks in the inner loop.
      */
@@ -117,9 +114,9 @@ public class LongColGreaterLongColumn extends VectorExpression {
         }
       }
     }
-    
-    /* For the case when the output can have null values, follow 
-     * the convention that the data values must be 1 for long and 
+
+    /* For the case when the output can have null values, follow
+     * the convention that the data values must be 1 for long and
      * NaN for double. This is to prevent possible later zero-divide errors
      * in complex arithmetic expressions like col2 / (col1 - 1)
      * in the case when some col1 entries are null.

@@ -64,7 +64,8 @@ public class VectorPTFEvaluatorDecimalMax extends VectorPTFEvaluatorBase {
     }
     DecimalColumnVector decimalColVector = ((DecimalColumnVector) batch.cols[inputColumnNum]);
     if (decimalColVector.isRepeating) {
-      if (decimalColVector.noNulls) {
+
+      if (decimalColVector.noNulls || !decimalColVector.isNull[0]) {
         if (isGroupResultNull) {
           max.set(decimalColVector.vector[0]);
           isGroupResultNull = false;

@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.MathExpr;
 import org.apache.hadoop.hive.ql.exec.vector.*;
@@ -56,7 +58,6 @@ public class CastTimestampToBoolean extends VectorExpression {
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
-    outputColVector.noNulls = inputColVector.noNulls;
     int n = batch.size;
     long[] outputVector = outputColVector.vector;
 
@@ -65,39 +66,51 @@ public class CastTimestampToBoolean extends VectorExpression {
       return;
     }
 
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
     if (inputColVector.isRepeating) {
-      //All must be selected otherwise size would be zero
-      //Repeating property will not change.
-      outputVector[0] =  toBool(inputColVector, 0);
-      // Even if there are no nulls, we always copy over entry 0. Simplifies code.
-      outputIsNull[0] = inputIsNull[0];
+      if (inputColVector.noNulls || !inputIsNull[0]) {
+        outputIsNull[0] = false;
+        outputVector[0] = toBool(inputColVector, 0);
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+      }
       outputColVector.isRepeating = true;
-    } else if (inputColVector.noNulls) {
+      return;
+    }
+
+    if (inputColVector.noNulls) {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] =  toBool(inputColVector, i);
+          outputIsNull[i] = false;
+          outputVector[i] = toBool(inputColVector, i);
         }
       } else {
+        Arrays.fill(outputIsNull, 0, n, false);
         for(int i = 0; i != n; i++) {
           outputVector[i] =  toBool(inputColVector, i);
         }
       }
-      outputColVector.isRepeating = false;
-    } else /* there are nulls */ {
+    } else /* there are NULLs in the inputColVector */ {
+
+      // Carefully handle NULLs...
+      outputColVector.noNulls = false;
+
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] =  toBool(inputColVector, i);
           outputIsNull[i] = inputIsNull[i];
+          outputVector[i] =  toBool(inputColVector, i);
         }
       } else {
+        System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
         for(int i = 0; i != n; i++) {
           outputVector[i] =  toBool(inputColVector, i);
         }
-        System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }
-      outputColVector.isRepeating = false;
     }
   }
 

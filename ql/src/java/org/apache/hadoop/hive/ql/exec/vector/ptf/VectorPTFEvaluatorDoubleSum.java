@@ -61,7 +61,7 @@ public class VectorPTFEvaluatorDoubleSum extends VectorPTFEvaluatorBase {
     DoubleColumnVector doubleColVector = ((DoubleColumnVector) batch.cols[inputColumnNum]);
     if (doubleColVector.isRepeating) {
 
-      if (doubleColVector.noNulls) {
+      if (doubleColVector.noNulls || !doubleColVector.isNull[0]) {
         if (isGroupResultNull) {
 
           // First aggregation calculation for group.
