@@ -2556,17 +2556,45 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void analyzeShowColumns(ASTNode ast) throws SemanticException {
-    String tableName = getUnescapedName((ASTNode) ast.getChild(0));
-    if (ast.getChildCount() > 1) {
-      if (tableName.contains(".")) {
-        throw new SemanticException("Duplicates declaration for database name");
-      }
-      tableName = getUnescapedName((ASTNode) ast.getChild(1)) + "." + tableName;
+
+  // table name has to be present so min child 1 and max child 4
+    if (ast.getChildCount() > 4 || ast.getChildCount()<1) {
+      throw new SemanticException(ErrorMsg.INVALID_AST_TREE.getMsg(ast.toStringTree()));
     }
+
+    String tableName = getUnescapedName((ASTNode) ast.getChild(0));
+
+    ShowColumnsDesc showColumnsDesc = null;
+    String pattern = null;
+    switch(ast.getChildCount()) {
+      case 1: //  only tablename no pattern and db
+        showColumnsDesc = new ShowColumnsDesc(ctx.getResFile(), tableName);
+        break;
+      case 2: // tablename and pattern
+        pattern = unescapeSQLString(ast.getChild(1).getText());
+        showColumnsDesc = new ShowColumnsDesc(ctx.getResFile(), tableName, pattern);
+        break;
+      case 3: // specifies db
+        if (tableName.contains(".")) {
+          throw new SemanticException("Duplicates declaration for database name");
+        }
+        tableName = getUnescapedName((ASTNode) ast.getChild(2)) + "." + tableName;
+        showColumnsDesc = new ShowColumnsDesc(ctx.getResFile(), tableName);
+        break;
+      case 4: // specifies db and pattern
+        if (tableName.contains(".")) {
+          throw new SemanticException("Duplicates declaration for database name");
+        }
+        tableName = getUnescapedName((ASTNode) ast.getChild(2)) + "." + tableName;
+        pattern = unescapeSQLString(ast.getChild(3).getText());
+        showColumnsDesc = new ShowColumnsDesc(ctx.getResFile(), tableName, pattern);
+        break;
+      default:
+        break;
+    }
+
     Table tab = getTable(tableName);
     inputs.add(new ReadEntity(tab));
-
-    ShowColumnsDesc showColumnsDesc = new ShowColumnsDesc(ctx.getResFile(), tableName);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showColumnsDesc), conf));
     setFetchTask(createFetchTask(showColumnsDesc.getSchema()));

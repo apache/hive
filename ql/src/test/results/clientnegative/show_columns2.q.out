@@ -1,1 +1,27 @@
-FAILED: ParseException line 1:29 extraneous input 'foo' expecting EOF near '<EOF>'
+PREHOOK: query: CREATE DATABASE test_db
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:test_db
+POSTHOOK: query: CREATE DATABASE test_db
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:test_db
+PREHOOK: query: USE test_db
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:test_db
+POSTHOOK: query: USE test_db
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:test_db
+PREHOOK: query: CREATE TABLE foo(a INT)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:test_db
+PREHOOK: Output: test_db@foo
+POSTHOOK: query: CREATE TABLE foo(a INT)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:test_db
+POSTHOOK: Output: test_db@foo
+PREHOOK: query: use default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: use default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+FAILED: SemanticException Duplicates declaration for database name

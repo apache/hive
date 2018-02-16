@@ -48,6 +48,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.concurrent.ExecutionException;
 
 import com.google.common.collect.ImmutableSet;
@@ -2708,16 +2710,28 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
+  /**
+   * Write a list of the columns in the table to a file.
+   *
+   * @param db
+   *          The database in context.
+   * @param showCols
+   *        A ShowColumnsDesc for columns we're interested in.
+   * @return Returns 0 when execution succeeds.
+   * @throws HiveException
+   *        Throws this exception if an unexpected error occurs.
+   */
   public int showColumns(Hive db, ShowColumnsDesc showCols)
       throws HiveException {
 
     Table table = db.getTable(showCols.getTableName());
 
     // write the results in the file
-    DataOutputStream outStream = getOutputStream(showCols.getResFile());;
+    DataOutputStream outStream = getOutputStream(showCols.getResFile());
     try {
-      List<FieldSchema> cols = table.getCols();
-      cols.addAll(table.getPartCols());
+      List<FieldSchema> allCols = table.getCols();
+      allCols.addAll(table.getPartCols());
+      List<FieldSchema> cols = getColumnsByPattern(allCols,showCols.getPattern());
       // In case the query is served by HiveServer2, don't pad it with spaces,
       // as HiveServer2 output is consumed by JDBC/ODBC clients.
       boolean isOutputPadded = !SessionState.get().isHiveServerQuery();
@@ -2732,6 +2746,42 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       IOUtils.closeStream(outStream);
     }
     return 0;
+  }
+
+  /**
+   * Returns a sorted list of columns matching a column pattern.
+   *
+   * @param cols
+   *        Columns of a table.
+   * @param columnPattern
+   *        we want to find columns similar to a column pattern.
+   * @return sorted list of columns.
+   */
+  private List<FieldSchema> getColumnsByPattern(List<FieldSchema> cols, String columnPattern) {
+
+    if(columnPattern == null) {
+      columnPattern = "*";
+    }
+    columnPattern = columnPattern.toLowerCase();
+    columnPattern = columnPattern.replaceAll("\\*", ".*");
+    Pattern pattern = Pattern.compile(columnPattern);
+    Matcher matcher = pattern.matcher("");
+
+    SortedSet<FieldSchema> sortedCol = new TreeSet<>( new Comparator<FieldSchema>() {
+      @Override
+      public int compare(FieldSchema f1, FieldSchema f2) {
+        return f1.getName().compareTo(f2.getName());
+      }
+    });
+
+    for(FieldSchema column : cols)  {
+      matcher.reset(column.getName());
+      if(matcher.matches()) {
+        sortedCol.add(column);
+      }
+    }
+
+    return new ArrayList<FieldSchema>(sortedCol);
   }
 
   /**
