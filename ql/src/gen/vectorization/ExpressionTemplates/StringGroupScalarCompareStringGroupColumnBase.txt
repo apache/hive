@@ -18,6 +18,7 @@
  
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
+import java.util.Arrays;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
@@ -54,30 +55,35 @@ public abstract class <ClassName> extends VectorExpression {
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
+
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
     BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[colNum];
     LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
-    boolean[] nullPos = inputColVector.isNull;
-    boolean[] outNull = outputColVector.isNull;
-    int n = batch.size;
+    boolean[] inputIsNull = inputColVector.isNull;
+    boolean[] outputIsNull = outputColVector.isNull;
+
     byte[][] vector = inputColVector.vector;
     int[] length = inputColVector.length;
     int[] start = inputColVector.start;
-    long[] outVector = outputColVector.vector; 
+    long[] outVector = outputColVector.vector;
 
-    // return immediately if batch is empty
-    if (n == 0) {
-      return;
-    }
-   
+    // We do not need to do a column reset since we are carefully changing the output.
     outputColVector.isRepeating = false;
+
     if (inputColVector.noNulls) {
-      outputColVector.noNulls = true;
+
       if (inputColVector.isRepeating) {
-        outputColVector.isRepeating = true; 
+        outputColVector.isRepeating = true;
+        outputIsNull[0] = false;
         if (<CompareOrEqual>(value, 0, value.length, vector[0], start[0], length[0])<OptionalCompare>) {
           outVector[0] = 1;
         } else {
@@ -86,6 +92,7 @@ public abstract class <ClassName> extends VectorExpression {
       } else if (batch.selectedInUse) {
         for(int j=0; j != n; j++) {
           int i = sel[j];
+          outputIsNull[i] = false;
           if (<CompareOrEqual>(value, 0, value.length, vector[i], start[i], length[i])<OptionalCompare>) {
             outVector[i] = 1;
           } else {
@@ -93,6 +100,7 @@ public abstract class <ClassName> extends VectorExpression {
           }
         }
       } else {
+        Arrays.fill(outputIsNull, 0, n, false);
         for(int i = 0; i != n; i++) {
           if (<CompareOrEqual>(value, 0, value.length, vector[i], start[i], length[i])<OptionalCompare>) {
             outVector[i] = 1;
@@ -102,11 +110,14 @@ public abstract class <ClassName> extends VectorExpression {
         }
       }
     } else {
+
+      // Carefully handle NULLs...
       outputColVector.noNulls = false;
+
       if (inputColVector.isRepeating) {
         outputColVector.isRepeating = true;
-        outNull[0] = nullPos[0];
-        if (!nullPos[0]) {
+        outputIsNull[0] = inputIsNull[0];
+        if (!inputIsNull[0]) {
           if (<CompareOrEqual>(value, 0, value.length, vector[0], start[0], length[0])<OptionalCompare>) {
             outVector[0] = 1;
           } else {
@@ -116,8 +127,8 @@ public abstract class <ClassName> extends VectorExpression {
       } else if (batch.selectedInUse) {
         for(int j=0; j != n; j++) {
           int i = sel[j];
-          outNull[i] = nullPos[i];
-          if (!nullPos[i]) {
+          outputIsNull[i] = inputIsNull[i];
+          if (!inputIsNull[i]) {
             if (<CompareOrEqual>(value, 0, value.length, vector[i], start[i], length[i])<OptionalCompare>) {
               outVector[i] = 1;
             } else {
@@ -126,9 +137,9 @@ public abstract class <ClassName> extends VectorExpression {
           }
         }
       } else {
+        System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
         for(int i = 0; i != n; i++) {
-          outNull[i] = nullPos[i];
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
             if (<CompareOrEqual>(value, 0, value.length, vector[i], start[i], length[i])<OptionalCompare>) {
               outVector[i] = 1;
             } else {

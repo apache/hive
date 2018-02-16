@@ -55,21 +55,61 @@ public class UnionColumnVector extends ColumnVector {
     flattenNoNulls(selectedInUse, sel, size);
   }
 
+  /**
+   * Set the element in this column vector from the given input vector.
+   *
+   * The inputElementNum will be adjusted to 0 if the input column has isRepeating set.
+   *
+   * On the other hand, the outElementNum must have been adjusted to 0 in ADVANCE when the output
+   * has isRepeating set.
+   *
+   * IMPORTANT: if the output entry is marked as NULL, this method will do NOTHING.  This
+   * supports the caller to do output NULL processing in advance that may cause the output results
+   * operation to be ignored.  Thus, make sure the output isNull entry is set in ADVANCE.
+   *
+   * The inputColVector noNulls and isNull entry will be examined.  The output will only
+   * be set if the input is NOT NULL.  I.e. noNulls || !isNull[inputElementNum] where
+   * inputElementNum may have been adjusted to 0 for isRepeating.
+   *
+   * If the input entry is NULL or out-of-range, the output will be marked as NULL.
+   * I.e. set output noNull = false and isNull[outElementNum] = true.  An example of out-of-range
+   * is the DecimalColumnVector which can find the input decimal does not fit in the output
+   * precision/scale.
+   *
+   * (Since we return immediately if the output entry is NULL, we have no need and do not mark
+   * the output entry to NOT NULL).
+   *
+   */
   @Override
-  public void setElement(int outElementNum, int inputElementNum,
-                         ColumnVector inputVector) {
-    if (inputVector.isRepeating) {
+  public void setElement(int outputElementNum, int inputElementNum, ColumnVector inputColVector) {
+
+    // Invariants.
+    if (isRepeating && outputElementNum != 0) {
+      throw new RuntimeException("Output column number expected to be 0 when isRepeating");
+    }
+    if (inputColVector.isRepeating) {
       inputElementNum = 0;
     }
-    if (inputVector.noNulls || !inputVector.isNull[inputElementNum]) {
-      isNull[outElementNum] = false;
-      UnionColumnVector input = (UnionColumnVector) inputVector;
-      tags[outElementNum] = input.tags[inputElementNum];
-      fields[tags[outElementNum]].setElement(outElementNum, inputElementNum,
-          input.fields[tags[outElementNum]]);
+
+    // Do NOTHING if output is NULL.
+    if (!noNulls && isNull[outputElementNum]) {
+      return;
+    }
+
+    if (inputColVector.noNulls || !inputColVector.isNull[inputElementNum]) {
+      UnionColumnVector input = (UnionColumnVector) inputColVector;
+      final int tag = input.tags[inputElementNum];
+      tags[outputElementNum] = tag;
+      ColumnVector inputField = input.fields[tag];
+      ColumnVector outputField = fields[tag];
+      outputField.isNull[outputElementNum] = false;
+      outputField.setElement(
+          outputElementNum, inputElementNum, inputField);
     } else {
+
+      // Only mark output NULL when input is NULL.
+      isNull[outputElementNum] = true;
       noNulls = false;
-      isNull[outElementNum] = true;
     }
   }
 
@@ -141,5 +181,11 @@ public class UnionColumnVector extends ColumnVector {
   @Override
   public void shallowCopyTo(ColumnVector otherCv) {
     throw new UnsupportedOperationException(); // Implement if needed.
+  }
+
+  @Override
+  public void copySelected(boolean selectedInUse, int[] sel, int size,
+      ColumnVector outputColVector) {
+    throw new RuntimeException("Not supported");
   }
 }

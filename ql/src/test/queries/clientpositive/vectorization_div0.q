@@ -3,6 +3,8 @@ set hive.explain.user=false;
 SET hive.vectorized.execution.enabled = true;
 set hive.fetch.task.conversion=none;
 
+-- SORT_QUERY_RESULTS
+
 -- TODO: add more stuff here after HIVE-5918 is fixed, such as cbigint and constants
 explain vectorization expression
 select cint / 0, ctinyint / 0, cbigint / 0, cdouble / 0.0 from alltypesorc limit 100;

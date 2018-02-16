@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -52,9 +54,9 @@ public class CastDecimalToDecimal extends VectorExpression {
    * Convert input decimal value to a decimal with a possibly different precision and scale,
    * at position i in the respective vectors.
    */
-  protected void convert(DecimalColumnVector outV, DecimalColumnVector inV, int i) {
+  protected void convert(DecimalColumnVector outputColVector, DecimalColumnVector inputColVector, int i) {
     // The set routine enforces precision and scale.
-    outV.vector[i].set(inV.vector[i]);
+    outputColVector.vector[i].set(inputColVector.vector[i]);
   }
 
   /**
@@ -70,10 +72,12 @@ public class CastDecimalToDecimal extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    DecimalColumnVector inV = (DecimalColumnVector) batch.cols[inputColumn];
+    DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[inputColumn];
     int[] sel = batch.selected;
     int n = batch.size;
-    DecimalColumnVector outV = (DecimalColumnVector) batch.cols[outputColumnNum];
+    DecimalColumnVector outputColVector = (DecimalColumnVector) batch.cols[outputColumnNum];
+
+    boolean[] outputIsNull = outputColVector.isNull;
 
     if (n == 0) {
 
@@ -81,51 +85,82 @@ public class CastDecimalToDecimal extends VectorExpression {
       return;
     }
 
-    if (inV.noNulls) {
-      outV.noNulls = true;
-      if (inV.isRepeating) {
-        outV.isRepeating = true;
-        convert(outV, inV, 0);
-      } else if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
-          int i = sel[j];
-          convert(outV, inV, i);
-        }
-        outV.isRepeating = false;
-      } else {
-        for(int i = 0; i != n; i++) {
-          convert(outV, inV, i);
-        }
-        outV.isRepeating = false;
-      }
-    } else {
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
 
-      // Handle case with nulls. Don't do function if the value is null,
-      // because the data may be undefined for a null value.
-      outV.noNulls = false;
-      if (inV.isRepeating) {
-        outV.isRepeating = true;
-        outV.isNull[0] = inV.isNull[0];
-        if (!inV.isNull[0]) {
-          convert(outV, inV, 0);
+    if (inputColVector.isRepeating) {
+      outputColVector.isRepeating = true;
+      if (inputColVector.noNulls || !inputColVector.isNull[0]) {
+        // Set isNull before call in case it changes it mind.
+        outputColVector.isNull[0] = false;
+        convert(outputColVector, inputColVector, 0);
+      } else {
+        outputColVector.isNull[0] = true;
+        outputColVector.noNulls = false;
+      }
+      return;
+    }
+
+    if (inputColVector.noNulls) {
+
+      if (batch.selectedInUse) {
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != n; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           convert(outputColVector, inputColVector, i);
+         }
+        } else {
+          for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            convert(outputColVector, inputColVector, i);
+          }
         }
-      } else if (batch.selectedInUse) {
+      } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
+        for(int i = 0; i != n; i++) {
+          convert(outputColVector, inputColVector, i);
+        }
+      }
+    } else /* there are NULLs in the inputColVector */ {
+
+      /*
+       * Do careful maintenance of the outputColVector.noNulls flag.
+       */
+
+      if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outV.isNull[i] = inV.isNull[i];
-          if (!inV.isNull[i]) {
-            convert(outV, inV, i);
+          if (!inputColVector.isNull[i]) {
+            // Set isNull before call in case it changes it mind.
+            outputColVector.isNull[i] = false;
+            convert(outputColVector, inputColVector, i);
+          } else {
+            outputColVector.isNull[i] = true;
+            outputColVector.noNulls = false;
           }
         }
-        outV.isRepeating = false;
       } else {
-        System.arraycopy(inV.isNull, 0, outV.isNull, 0, n);
         for(int i = 0; i != n; i++) {
-          if (!inV.isNull[i]) {
-            convert(outV, inV, i);
+          if (!inputColVector.isNull[i]) {
+            // Set isNull before call in case it changes it mind.
+            outputColVector.isNull[i] = false;
+            convert(outputColVector, inputColVector, i);
+          } else {
+            outputColVector.isNull[i] = true;
+            outputColVector.noNulls = false;
           }
         }
-        outV.isRepeating = false;
       }
     }
   }

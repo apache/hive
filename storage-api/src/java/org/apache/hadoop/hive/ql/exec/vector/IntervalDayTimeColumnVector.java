@@ -195,13 +195,57 @@ public class IntervalDayTimeColumnVector extends ColumnVector {
         asScratchIntervalDayTime(elementNum2));
   }
 
+  /**
+   * Set the element in this column vector from the given input vector.
+   *
+   * The inputElementNum will be adjusted to 0 if the input column has isRepeating set.
+   *
+   * On the other hand, the outElementNum must have been adjusted to 0 in ADVANCE when the output
+   * has isRepeating set.
+   *
+   * IMPORTANT: if the output entry is marked as NULL, this method will do NOTHING.  This
+   * supports the caller to do output NULL processing in advance that may cause the output results
+   * operation to be ignored.  Thus, make sure the output isNull entry is set in ADVANCE.
+   *
+   * The inputColVector noNulls and isNull entry will be examined.  The output will only
+   * be set if the input is NOT NULL.  I.e. noNulls || !isNull[inputElementNum] where
+   * inputElementNum may have been adjusted to 0 for isRepeating.
+   *
+   * If the input entry is NULL or out-of-range, the output will be marked as NULL.
+   * I.e. set output noNull = false and isNull[outElementNum] = true.  An example of out-of-range
+   * is the DecimalColumnVector which can find the input decimal does not fit in the output
+   * precision/scale.
+   *
+   * (Since we return immediately if the output entry is NULL, we have no need and do not mark
+   * the output entry to NOT NULL).
+   *
+   */
   @Override
-  public void setElement(int outElementNum, int inputElementNum, ColumnVector inputVector) {
+  public void setElement(int outputElementNum, int inputElementNum, ColumnVector inputColVector) {
 
-    IntervalDayTimeColumnVector timestampColVector = (IntervalDayTimeColumnVector) inputVector;
+    // Invariants.
+    if (isRepeating && outputElementNum != 0) {
+      throw new RuntimeException("Output column number expected to be 0 when isRepeating");
+    }
+    if (inputColVector.isRepeating) {
+      inputElementNum = 0;
+    }
 
-    totalSeconds[outElementNum] = timestampColVector.totalSeconds[inputElementNum];
-    nanos[outElementNum] = timestampColVector.nanos[inputElementNum];
+    // Do NOTHING if output is NULL.
+    if (!noNulls && isNull[outputElementNum]) {
+      return;
+    }
+
+    if (inputColVector.noNulls || !inputColVector.isNull[inputElementNum]) {
+      IntervalDayTimeColumnVector timestampColVector = (IntervalDayTimeColumnVector) inputColVector;
+      totalSeconds[outputElementNum] = timestampColVector.totalSeconds[inputElementNum];
+      nanos[outputElementNum] = timestampColVector.nanos[inputElementNum];
+    } else {
+
+      // Only mark output NULL when input is NULL.
+      isNull[outputElementNum] = true;
+      noNulls = false;
+    }
   }
 
   // Simplify vector by brute-force flattening noNulls and isRepeating
@@ -229,8 +273,12 @@ public class IntervalDayTimeColumnVector extends ColumnVector {
   }
 
   /**
-   * Set a row from a HiveIntervalDayTime.
-   * We assume the entry has already been isRepeated adjusted.
+   * Set a field from a HiveIntervalDayTime.
+   *
+   * This is a FAST version that assumes the caller has checked to make sure the sourceBuf
+   * is not null and elementNum is correctly adjusted for isRepeating.  And, that the isNull entry
+   * has been set.  Only the output entry fields will be set by this method.
+   *
    * @param elementNum
    * @param intervalDayTime
    */
@@ -240,7 +288,12 @@ public class IntervalDayTimeColumnVector extends ColumnVector {
   }
 
   /**
-   * Set a row from the current value in the scratch interval day time.
+   * Set a field from the current value in the scratch interval day time.
+   *
+   * This is a FAST version that assumes the caller has checked to make sure the scratch interval
+   * day time is valid and elementNum is correctly adjusted for isRepeating.  And, that the isNull
+   * entry has been set.  Only the output entry fields will be set by this method.
+   *
    * @param elementNum
    */
   public void setFromScratchIntervalDayTime(int elementNum) {
@@ -260,47 +313,86 @@ public class IntervalDayTimeColumnVector extends ColumnVector {
 
   // Copy the current object contents into the output. Only copy selected entries,
   // as indicated by selectedInUse and the sel array.
+  @Override
   public void copySelected(
-      boolean selectedInUse, int[] sel, int size, IntervalDayTimeColumnVector output) {
+      boolean selectedInUse, int[] sel, int size, ColumnVector outputColVector) {
 
-    // Output has nulls if and only if input has nulls.
-    output.noNulls = noNulls;
+    IntervalDayTimeColumnVector output = (IntervalDayTimeColumnVector) outputColVector;
+    boolean[] outputIsNull = output.isNull;
+
+    // We do not need to do a column reset since we are carefully changing the output.
     output.isRepeating = false;
 
     // Handle repeating case
     if (isRepeating) {
-      output.totalSeconds[0] = totalSeconds[0];
-      output.nanos[0] = nanos[0];
-      output.isNull[0] = isNull[0];
+      if (noNulls || !isNull[0]) {
+        outputIsNull[0] = false;
+        output.totalSeconds[0] = totalSeconds[0];
+        output.nanos[0] = nanos[0];
+      } else {
+        outputIsNull[0] = true;
+        output.noNulls = false;
+      }
       output.isRepeating = true;
       return;
     }
 
     // Handle normal case
 
-    // Copy data values over
-    if (selectedInUse) {
-      for (int j = 0; j < size; j++) {
-        int i = sel[j];
-        output.totalSeconds[i] = totalSeconds[i];
-        output.nanos[i] = nanos[i];
-      }
-    }
-    else {
-      System.arraycopy(totalSeconds, 0, output.totalSeconds, 0, size);
-      System.arraycopy(nanos, 0, output.nanos, 0, size);
-    }
+    if (noNulls) {
+      if (selectedInUse) {
 
-    // Copy nulls over if needed
-    if (!noNulls) {
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != size; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           output.totalSeconds[i] = totalSeconds[i];
+           output.nanos[i] = nanos[i];
+         }
+        } else {
+          for(int j = 0; j != size; j++) {
+            final int i = sel[j];
+            output.totalSeconds[i] = totalSeconds[i];
+            output.nanos[i] = nanos[i];
+          }
+        }
+      } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
+        for(int i = 0; i != size; i++) {
+          output.totalSeconds[i] = totalSeconds[i];
+          output.nanos[i] = nanos[i];
+        }
+      }
+    } else /* there are nulls in our column */ {
+
+      // Carefully handle NULLs...
+
+      /*
+       * For better performance on LONG/DOUBLE we don't want the conditional
+       * statements inside the for loop.
+       */
+      output.noNulls = false;
+
       if (selectedInUse) {
         for (int j = 0; j < size; j++) {
           int i = sel[j];
           output.isNull[i] = isNull[i];
+          output.totalSeconds[i] = totalSeconds[i];
+          output.nanos[i] = nanos[i];
         }
-      }
-      else {
+      } else {
         System.arraycopy(isNull, 0, output.isNull, 0, size);
+        System.arraycopy(totalSeconds, 0, output.totalSeconds, 0, size);
+        System.arraycopy(nanos, 0, output.nanos, 0, size);
       }
     }
   }
@@ -310,8 +402,8 @@ public class IntervalDayTimeColumnVector extends ColumnVector {
    * @param intervalDayTime
    */
   public void fill(HiveIntervalDayTime intervalDayTime) {
-    noNulls = true;
     isRepeating = true;
+    isNull[0] = false;
     totalSeconds[0] = intervalDayTime.getTotalSeconds();
     nanos[0] = intervalDayTime.getNanos();
   }

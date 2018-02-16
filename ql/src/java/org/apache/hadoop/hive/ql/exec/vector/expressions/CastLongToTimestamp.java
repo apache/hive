@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -56,7 +58,6 @@ public class CastLongToTimestamp extends VectorExpression {
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
-    outputColVector.noNulls = inputColVector.noNulls;
     int n = batch.size;
     long[] vector = inputColVector.vector;
 
@@ -65,39 +66,79 @@ public class CastLongToTimestamp extends VectorExpression {
       return;
     }
 
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
     if (inputColVector.isRepeating) {
-      //All must be selected otherwise size would be zero
-      //Repeating property will not change.
-      setSeconds(outputColVector, vector, 0);
-      // Even if there are no nulls, we always copy over entry 0. Simplifies code.
-      outputIsNull[0] = inputIsNull[0];
+      if (inputColVector.noNulls || !inputIsNull[0]) {
+        // Set isNull before call in case it changes it mind.
+        outputIsNull[0] = false;
+        setSeconds(outputColVector, vector, 0);
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+      }
       outputColVector.isRepeating = true;
-    } else if (inputColVector.noNulls) {
+      return;
+    }
+
+    if (inputColVector.noNulls) {
       if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
-          int i = sel[j];
-          setSeconds(outputColVector, vector, i);
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != n; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           setSeconds(outputColVector, vector, i);
+         }
+        } else {
+          for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            setSeconds(outputColVector, vector, i);
+          }
         }
       } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
         for(int i = 0; i != n; i++) {
           setSeconds(outputColVector, vector, i);
         }
       }
-      outputColVector.isRepeating = false;
-    } else /* there are nulls */ {
+    } else /* there are NULLs in the inputColVector */ {
+
+      /*
+       * Do careful maintenance of the outputColVector.noNulls flag.
+       */
+
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          setSeconds(outputColVector, vector, i);
-          outputIsNull[i] = inputIsNull[i];
+          if (!inputIsNull[i]) {
+            // Set isNull before call in case it changes it mind.
+            outputIsNull[i] = false;
+            setSeconds(outputColVector, vector, i);
+          } else {
+            outputIsNull[i] = true;
+            outputColVector.noNulls = false;
+          }
         }
       } else {
-        for(int i = 0; i != n; i++) {
-          setSeconds(outputColVector, vector, i);
-        }
+        // Set isNull before call in case it changes it mind.
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
+        for(int i = 0; i != n; i++) {
+          if (!inputIsNull[i]) {
+            setSeconds(outputColVector, vector, i);
+          }
+        }
       }
-      outputColVector.isRepeating = false;
     }
   }
 

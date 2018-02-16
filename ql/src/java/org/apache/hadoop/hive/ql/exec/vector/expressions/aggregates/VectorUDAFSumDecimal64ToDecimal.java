@@ -358,13 +358,13 @@ public class VectorUDAFSumDecimal64ToDecimal extends VectorAggregateExpression {
     long[] vector = inputVector.vector;
 
     if (inputVector.isRepeating) {
-      if (inputVector.noNulls) {
-      if (myagg.isNull) {
-        myagg.isNull = false;
-        myagg.sum = 0;
+      if (inputVector.noNulls || !inputVector.isNull[0]) {
+        if (myagg.isNull) {
+          myagg.isNull = false;
+          myagg.sum = 0;
+        }
+        myagg.sumValueNoCheck(vector[0]*batchSize);
       }
-      myagg.sumValueNoCheck(vector[0]*batchSize);
-    }
       return;
     }
 

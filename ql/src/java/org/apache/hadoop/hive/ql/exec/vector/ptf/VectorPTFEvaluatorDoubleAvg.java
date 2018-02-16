@@ -66,7 +66,7 @@ public class VectorPTFEvaluatorDoubleAvg extends VectorPTFEvaluatorBase {
     DoubleColumnVector doubleColVector = ((DoubleColumnVector) batch.cols[inputColumnNum]);
     if (doubleColVector.isRepeating) {
 
-      if (doubleColVector.noNulls) {
+      if (doubleColVector.noNulls || !doubleColVector.isNull[0]) {
 
         // We have a repeated value.  The sum increases by value * batch.size.
         if (isGroupResultNull) {

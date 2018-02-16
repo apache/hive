@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
+import java.util.Arrays;
 import java.sql.Timestamp;
 
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
@@ -60,6 +61,12 @@ public class <ClassName> extends VectorExpression {
   @Override
   public void evaluate(VectorizedRowBatch batch) {
 
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
@@ -74,20 +81,12 @@ public class <ClassName> extends VectorExpression {
     <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumnNum];
 
     int[] sel = batch.selected;
-    int n = batch.size;
+
     long[] vector1 = inputColVector1.vector;
 
-    // return immediately if batch is empty
-    if (n == 0) {
-      return;
-    }
-
-    outputColVector.isRepeating =
-         inputColVector1.isRepeating && inputColVector2.isRepeating
-      || inputColVector1.isRepeating && !inputColVector1.noNulls && inputColVector1.isNull[0]
-      || inputColVector2.isRepeating && !inputColVector2.noNulls && inputColVector2.isNull[0];
-
-    // Handle nulls first
+    /*
+     * Propagate null values for a two-input operator and set isRepeating and noNulls appropriately.
+     */
     NullUtil.propagateNullsColCol(
       inputColVector1, inputColVector2, outputColVector, sel, n, batch.selectedInUse);
 

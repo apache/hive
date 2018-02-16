@@ -62,7 +62,7 @@ public class VectorPTFEvaluatorCount extends VectorPTFEvaluatorBase {
     }
     ColumnVector colVector = batch.cols[inputColumnNum];
     if (colVector.isRepeating) {
-      if (colVector.noNulls) {
+      if (colVector.noNulls || !colVector.isNull[0]) {
         count += size;
       }
     } else if (colVector.noNulls) {

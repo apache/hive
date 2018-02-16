@@ -157,6 +157,7 @@ public class TestListColumnVector {
     output.childCount = 30;
 
     // copy a null
+    output.isNull[3] = false;
     output.setElement(3, 6, input);
     assertEquals(30, output.childCount);
     StringBuilder buf = new StringBuilder();
@@ -164,6 +165,7 @@ public class TestListColumnVector {
     assertEquals("null", buf.toString());
 
     // copy a value
+    output.isNull[3] = false;
     output.setElement(3, 5, input);
     assertEquals(30, output.offsets[3]);
     assertEquals(2, output.lengths[3]);
@@ -173,6 +175,7 @@ public class TestListColumnVector {
     assertEquals("[50, 60]", buf.toString());
 
     // overwrite a value
+    output.isNull[3] = false;
     output.setElement(3, 4, input);
     assertEquals(34, output.childCount);
     assertEquals(34, output1.vector.length);

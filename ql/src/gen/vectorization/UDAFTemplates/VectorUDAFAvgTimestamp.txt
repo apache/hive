@@ -317,7 +317,7 @@ public class <ClassName> extends VectorAggregateExpression {
         Aggregation myagg = (Aggregation)agg;
 
         if (inputColVector.isRepeating) {
-          if (inputColVector.noNulls) {
+          if (inputColVector.noNulls || !inputColVector.isNull[0]) {
             if (myagg.isNull) {
               myagg.isNull = false;
               myagg.sum = 0;
@@ -493,9 +493,12 @@ public class <ClassName> extends VectorAggregateExpression {
 
 #IF PARTIAL1
     ColumnVector[] fields = outputColVector.fields;
+    fields[AVERAGE_COUNT_FIELD_INDEX].isNull[batchIndex] = false;
     ((LongColumnVector) fields[AVERAGE_COUNT_FIELD_INDEX]).vector[batchIndex] = myagg.count;
+    fields[AVERAGE_SUM_FIELD_INDEX].isNull[batchIndex] = false;
     ((DoubleColumnVector) fields[AVERAGE_SUM_FIELD_INDEX]).vector[batchIndex] = myagg.sum;
 
+    // NULL out useless source field.
     ColumnVector sourceColVector = (ColumnVector) fields[AVERAGE_SOURCE_FIELD_INDEX];
     sourceColVector.isRepeating = true;
     sourceColVector.noNulls = false;

@@ -307,7 +307,7 @@ public class <ClassName> extends VectorAggregateExpression {
         Aggregation myagg = (Aggregation)agg;
 
         if (inputColVector.isRepeating) {
-          if (inputColVector.noNulls &&
+          if ((inputColVector.noNulls || !inputColVector.isNull[0]) &&
             (myagg.isNull || (inputColVector.compareTo(myagg.value, 0) <OperatorSymbol> 0))) {
             myagg.isNull = false;
             inputColVector.intervalDayTimeUpdate(myagg.value, 0);

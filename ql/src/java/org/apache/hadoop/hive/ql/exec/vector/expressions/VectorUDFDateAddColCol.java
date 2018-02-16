@@ -91,7 +91,9 @@ public class VectorUDFDateAddColCol extends VectorExpression {
       return;
     }
 
-    // Handle null
+    /*
+     * Propagate null values for a two-input operator and set isRepeating and noNulls appropriately.
+     */
     NullUtil.propagateNullsColCol(inputColVector1, inputColVector2, outV, batch.selected, batch.size, batch.selectedInUse);
 
     switch (primitiveCategory) {

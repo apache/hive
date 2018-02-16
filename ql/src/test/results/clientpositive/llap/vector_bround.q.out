@@ -34,6 +34,16 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_vector_bround
 POSTHOOK: Lineage: test_vector_bround.v0 SCRIPT []
 POSTHOOK: Lineage: test_vector_bround.v1 SCRIPT []
+PREHOOK: query: insert into test_vector_bround values (NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_vector_bround
+POSTHOOK: query: insert into test_vector_bround values (NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_vector_bround
+POSTHOOK: Lineage: test_vector_bround.v0 EXPRESSION []
+POSTHOOK: Lineage: test_vector_bround.v1 EXPRESSION []
 PREHOOK: query: explain vectorization detail
 select bround(v0), bround(v1, 1) from test_vector_bround
 PREHOOK: type: QUERY
@@ -57,7 +67,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test_vector_bround
-                  Statistics: Num rows: 8 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 9 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:v0:double, 1:v1:double, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -69,13 +79,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3, 4]
                         selectExpressions: FuncBRoundDoubleToDouble(col 0:double) -> 3:double, BRoundWithNumDigitsDoubleToDouble(col 1, decimalPlaces 1) -> 4:double
-                    Statistics: Num rows: 8 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 9 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 8 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 9 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -120,3 +130,4 @@ POSTHOOK: Input: default@test_vector_bround
 3.0	1.3
 3.0	1.3
 4.0	1.4
+NULL	NULL

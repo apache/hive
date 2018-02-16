@@ -67,7 +67,6 @@ public class TestVectorLogicalExpressions {
     expr.evaluate(batch);
 
     // spot check
-    Assert.assertTrue(outCol.noNulls);
     Assert.assertEquals(0, outCol.vector[0]);
     Assert.assertEquals(1, outCol.vector[1]);
     Assert.assertEquals(1, outCol.vector[2]);
@@ -125,7 +124,6 @@ public class TestVectorLogicalExpressions {
     expr.evaluate(batch);
 
     // spot check
-    Assert.assertTrue(outCol.noNulls);
     Assert.assertEquals(0, outCol.vector[0]);
     Assert.assertEquals(0, outCol.vector[1]);
     Assert.assertEquals(0, outCol.vector[2]);
@@ -207,7 +205,6 @@ public class TestVectorLogicalExpressions {
     batch.cols[0].noNulls = true;
     expr.evaluate(batch);
     Assert.assertFalse(outCol.isRepeating);
-    Assert.assertTrue(outCol.noNulls);
     Assert.assertEquals(1, outCol.vector[0]);
     Assert.assertEquals(0, outCol.vector[2]);
 

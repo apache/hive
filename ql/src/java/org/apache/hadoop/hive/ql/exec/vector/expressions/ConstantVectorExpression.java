@@ -121,70 +121,84 @@ public class ConstantVectorExpression extends VectorExpression {
     isNullValue = isNull;
   }
 
+  /*
+   * In the following evaluate* methods, since we are supporting scratch column reuse, we must
+   * assume the column may have noNulls of false and some isNull entries true.
+   *
+   * So, do a proper assignments.
+   */
+
   private void evaluateLong(VectorizedRowBatch vrg) {
+
     LongColumnVector cv = (LongColumnVector) vrg.cols[outputColumnNum];
     cv.isRepeating = true;
-    cv.noNulls = !isNullValue;
     if (!isNullValue) {
+      cv.isNull[0] = false;
       cv.vector[0] = longValue;
     } else {
       cv.isNull[0] = true;
+      cv.noNulls = false;
     }
   }
 
   private void evaluateDouble(VectorizedRowBatch vrg) {
     DoubleColumnVector cv = (DoubleColumnVector) vrg.cols[outputColumnNum];
     cv.isRepeating = true;
-    cv.noNulls = !isNullValue;
     if (!isNullValue) {
+      cv.isNull[0] = false;
       cv.vector[0] = doubleValue;
     } else {
       cv.isNull[0] = true;
+      cv.noNulls = false;
     }
   }
 
   private void evaluateBytes(VectorizedRowBatch vrg) {
     BytesColumnVector cv = (BytesColumnVector) vrg.cols[outputColumnNum];
     cv.isRepeating = true;
-    cv.noNulls = !isNullValue;
     cv.initBuffer();
     if (!isNullValue) {
+      cv.isNull[0] = false;
       cv.setVal(0, bytesValue, 0, bytesValueLength);
     } else {
       cv.isNull[0] = true;
+      cv.noNulls = false;
     }
   }
 
   private void evaluateDecimal(VectorizedRowBatch vrg) {
     DecimalColumnVector dcv = (DecimalColumnVector) vrg.cols[outputColumnNum];
     dcv.isRepeating = true;
-    dcv.noNulls = !isNullValue;
     if (!isNullValue) {
-      dcv.vector[0].set(decimalValue);
+      dcv.isNull[0] = false;
+      dcv.set(0, decimalValue);
     } else {
       dcv.isNull[0] = true;
+      dcv.noNulls = false;
     }
   }
 
   private void evaluateTimestamp(VectorizedRowBatch vrg) {
-    TimestampColumnVector dcv = (TimestampColumnVector) vrg.cols[outputColumnNum];
-    dcv.isRepeating = true;
-    dcv.noNulls = !isNullValue;
+    TimestampColumnVector tcv = (TimestampColumnVector) vrg.cols[outputColumnNum];
+    tcv.isRepeating = true;
     if (!isNullValue) {
-      dcv.set(0, timestampValue);
+      tcv.isNull[0] = false;
+      tcv.set(0, timestampValue);
     } else {
-      dcv.isNull[0] = true;
+      tcv.isNull[0] = true;
+      tcv.noNulls = false;
     }
   }
 
   private void evaluateIntervalDayTime(VectorizedRowBatch vrg) {
     IntervalDayTimeColumnVector dcv = (IntervalDayTimeColumnVector) vrg.cols[outputColumnNum];
     dcv.isRepeating = true;
-    dcv.noNulls = !isNullValue;
     if (!isNullValue) {
+      dcv.isNull[0] = false;
       dcv.set(0, intervalDayTimeValue);
     } else {
       dcv.isNull[0] = true;
+      dcv.noNulls = false;
     }
   }
 

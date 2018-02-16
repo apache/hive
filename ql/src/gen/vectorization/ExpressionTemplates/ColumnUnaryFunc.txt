@@ -15,8 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
+
+import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.MathExpr;
@@ -44,6 +46,12 @@ public class <ClassName> extends VectorExpression {
   @Override
   public void evaluate(VectorizedRowBatch batch) {
 
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
     if (childExpressions != null) {
       this.evaluateChildren(batch);
     }
@@ -53,49 +61,77 @@ public class <ClassName> extends VectorExpression {
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
-    outputColVector.noNulls = inputColVector.noNulls;
-    int n = batch.size;
+
     <OperandType>[] vector = inputColVector.vector;
     <ReturnType>[] outputVector = outputColVector.vector;
-    
-    // return immediately if batch is empty
-    if (n == 0) {
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
+
+    if (inputColVector.isRepeating) {
+      if (inputColVector.noNulls || !inputIsNull[0]) {
+        outputIsNull[0] = false;
+        outputVector[0] = <ResultCast> <FuncName>(<OperandCast> vector[0]);
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+      }
+      outputColVector.isRepeating = true;
+      <Cleanup>
       return;
     }
 
-    if (inputColVector.isRepeating) {
-      //All must be selected otherwise size would be zero
-      //Repeating property will not change.
-      outputVector[0] = <ResultCast> <FuncName>(<OperandCast> vector[0]);
-      // Even if there are no nulls, we always copy over entry 0. Simplifies code.
-      outputIsNull[0] = inputIsNull[0]; 
-      outputColVector.isRepeating = true;
-    } else if (inputColVector.noNulls) {
+    if (inputColVector.noNulls) {
       if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
-          int i = sel[j];
-          outputVector[i] = <ResultCast> <FuncName>(<OperandCast> vector[i]);
-        }
+
+         // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+         if (!outputColVector.noNulls) {
+           for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            outputIsNull[i] = false;
+            outputVector[i] = <ResultCast> <FuncName>(<OperandCast> vector[i]);
+          }
+         } else {
+           for(int j = 0; j != n; j++) {
+             final int i = sel[j];
+             outputVector[i] = <ResultCast> <FuncName>(<OperandCast> vector[i]);
+           }
+         }
       } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
         for(int i = 0; i != n; i++) {
           outputVector[i] = <ResultCast> <FuncName>(<OperandCast> vector[i]);
         }
       }
-      outputColVector.isRepeating = false;
-    } else /* there are nulls */ {
+    } else /* there are NULLs in the inputColVector */ {
+
+      // Carefully handle NULLs...
+
+      /*
+       * For better performance on LONG/DOUBLE we don't want the conditional
+       * statements inside the for loop.
+       */
+      outputColVector.noNulls = false;
+
       if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
+        for(int j=0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = <ResultCast> <FuncName>(<OperandCast> vector[i]);
           outputIsNull[i] = inputIsNull[i];
-	    }
+          outputVector[i] = <ResultCast> <FuncName>(<OperandCast> vector[i]);
+        }
       } else {
+        System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
         for(int i = 0; i != n; i++) {
           outputVector[i] = <ResultCast> <FuncName>(<OperandCast> vector[i]);
         }
-        System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }
-      outputColVector.isRepeating = false;
     }
     <Cleanup>
   }

@@ -51,7 +51,6 @@ public class VectorPTFEvaluatorDenseRank extends VectorPTFEvaluatorBase {
 
     LongColumnVector longColVector = (LongColumnVector) batch.cols[outputColumnNum];
     longColVector.isRepeating = true;
-    longColVector.noNulls = true;
     longColVector.isNull[0] = false;
     longColVector.vector[0] = denseRank;
 

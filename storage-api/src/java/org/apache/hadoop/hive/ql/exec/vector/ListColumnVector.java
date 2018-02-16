@@ -49,28 +49,67 @@ public class ListColumnVector extends MultiValuedColumnVector {
     child.flatten(useSelected, selected, size);
   }
 
+  /**
+   * Set the element in this column vector from the given input vector.
+   *
+   * The inputElementNum will be adjusted to 0 if the input column has isRepeating set.
+   *
+   * On the other hand, the outElementNum must have been adjusted to 0 in ADVANCE when the output
+   * has isRepeating set.
+   *
+   * IMPORTANT: if the output entry is marked as NULL, this method will do NOTHING.  This
+   * supports the caller to do output NULL processing in advance that may cause the output results
+   * operation to be ignored.  Thus, make sure the output isNull entry is set in ADVANCE.
+   *
+   * The inputColVector noNulls and isNull entry will be examined.  The output will only
+   * be set if the input is NOT NULL.  I.e. noNulls || !isNull[inputElementNum] where
+   * inputElementNum may have been adjusted to 0 for isRepeating.
+   *
+   * If the input entry is NULL or out-of-range, the output will be marked as NULL.
+   * I.e. set output noNull = false and isNull[outElementNum] = true.  An example of out-of-range
+   * is the DecimalColumnVector which can find the input decimal does not fit in the output
+   * precision/scale.
+   *
+   * (Since we return immediately if the output entry is NULL, we have no need and do not mark
+   * the output entry to NOT NULL).
+   *
+   */
   @Override
-  public void setElement(int outElementNum, int inputElementNum,
-                         ColumnVector inputVector) {
-    ListColumnVector input = (ListColumnVector) inputVector;
-    if (input.isRepeating) {
+  public void setElement(int outputElementNum, int inputElementNum, ColumnVector inputColVector) {
+
+    // Invariants.
+    if (isRepeating && outputElementNum != 0) {
+      throw new RuntimeException("Output column number expected to be 0 when isRepeating");
+    }
+    if (inputColVector.isRepeating) {
       inputElementNum = 0;
     }
-    if (!input.noNulls && input.isNull[inputElementNum]) {
-      isNull[outElementNum] = true;
-      noNulls = false;
-    } else {
-      isNull[outElementNum] = false;
+
+    // Do NOTHING if output is NULL.
+    if (!noNulls && isNull[outputElementNum]) {
+      return;
+    }
+
+    // CONCERN: isRepeating
+    if (inputColVector.noNulls || !inputColVector.isNull[inputElementNum]) {
+      ListColumnVector input = (ListColumnVector) inputColVector;
       int offset = childCount;
       int length = (int) input.lengths[inputElementNum];
       int inputOffset = (int) input.offsets[inputElementNum];
-      offsets[outElementNum] = offset;
+      offsets[outputElementNum] = offset;
       childCount += length;
-      lengths[outElementNum] = length;
+      lengths[outputElementNum] = length;
       child.ensureSize(childCount, true);
       for (int i = 0; i < length; ++i) {
-        child.setElement(i + offset, inputOffset + i, input.child);
+        final int outputIndex = i + offset;
+        child.isNull[outputIndex] = false;
+        child.setElement(outputIndex, inputOffset + i, input.child);
       }
+    } else {
+
+      // Only mark output NULL when input is NULL.
+      isNull[outputElementNum] = true;
+      noNulls = false;
     }
   }
 
@@ -114,6 +153,12 @@ public class ListColumnVector extends MultiValuedColumnVector {
     if (!isRepeating || noNulls || !isNull[0]) {
       child.unFlatten();
     }
+  }
+
+  @Override
+  public void copySelected(boolean selectedInUse, int[] sel, int size,
+      ColumnVector outputColVector) {
+    throw new RuntimeException("Not supported");
   }
 
 }

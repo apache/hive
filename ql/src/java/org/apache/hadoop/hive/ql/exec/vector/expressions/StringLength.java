@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
@@ -53,66 +55,88 @@ public class StringLength extends VectorExpression {
     }
 
     BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[colNum];
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
     int[] sel = batch.selected;
     int n = batch.size;
     byte[][] vector = inputColVector.vector;
     int [] start = inputColVector.start;
     int [] length = inputColVector.length;
-    long[] resultLen = outV.vector;
+    long[] resultLen = outputColVector.vector;
+    boolean[] inputIsNull = inputColVector.isNull;
+    boolean[] outputIsNull = outputColVector.isNull;
 
     if (n == 0) {
       //Nothing to do
       return;
     }
 
-    if (inputColVector.noNulls) {
-      outV.noNulls = true;
-      if (inputColVector.isRepeating) {
-        outV.isRepeating = true;
-        resultLen[0] = utf8StringLength(vector[0], start[0], length[0]);
-      } else if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
-          int i = sel[j];
-          resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
-        }
-        outV.isRepeating = false;
-      } else {
-        for(int i = 0; i != n; i++) {
-          resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
-        }
-        outV.isRepeating = false;
-      }
-    } else {
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
 
-      /*
-       * Handle case with nulls. Don't do function if the value is null, to save time,
-       * because calling the function can be expensive.
-       */
-      outV.noNulls = false;
-      if (inputColVector.isRepeating) {
-        outV.isRepeating = true;
-        outV.isNull[0] = inputColVector.isNull[0];
-        if (!inputColVector.isNull[0]) {
-          resultLen[0] = utf8StringLength(vector[0], start[0], length[0]);
+    if (inputColVector.isRepeating) {
+      if (inputColVector.noNulls || !inputIsNull[0]) {
+        // Set isNull before call in case it changes it mind.
+        outputIsNull[0] = false;
+        resultLen[0] = utf8StringLength(vector[0], start[0], length[0]);
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+      }
+      outputColVector.isRepeating = true;
+      return;
+    }
+
+    if (inputColVector.noNulls) {
+      if (batch.selectedInUse) {
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != n; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
+         }
+        } else {
+          for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
+          }
         }
-      } else if (batch.selectedInUse) {
+      } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
+        for(int i = 0; i != n; i++) {
+          resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
+        }
+      }
+    } else /* there are nulls in the inputColVector */ {
+
+      // Carefully handle NULLs...
+      outputColVector.noNulls = false;
+
+      if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
+          outputColVector.isNull[i] = inputColVector.isNull[i];
           if (!inputColVector.isNull[i]) {
             resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
           }
-          outV.isNull[i] = inputColVector.isNull[i];
         }
-        outV.isRepeating = false;
+        outputColVector.isRepeating = false;
       } else {
         for(int i = 0; i != n; i++) {
+          outputColVector.isNull[i] = inputColVector.isNull[i];
           if (!inputColVector.isNull[i]) {
             resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
           }
-          outV.isNull[i] = inputColVector.isNull[i];
         }
-        outV.isRepeating = false;
       }
     }
   }

@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -70,11 +72,11 @@ public class CastStringToLong extends VectorExpression {
   /**
    * Convert input string to a long, at position i in the respective vectors.
    */
-  protected void func(LongColumnVector outV, BytesColumnVector inV, int batchIndex) {
+  protected void func(LongColumnVector outputColVector, BytesColumnVector inputColVector, int batchIndex) {
 
-    byte[] bytes = inV.vector[batchIndex];
-    final int start = inV.start[batchIndex];
-    final int length = inV.length[batchIndex];
+    byte[] bytes = inputColVector.vector[batchIndex];
+    final int start = inputColVector.start[batchIndex];
+    final int length = inputColVector.length[batchIndex];
     try {
 
       switch (integerPrimitiveCategory) {
@@ -90,8 +92,8 @@ public class CastStringToLong extends VectorExpression {
               booleanValue = true;
             } else {
               // No boolean value match for 4 char field.
-              outV.noNulls = false;
-              outV.isNull[batchIndex] = true;
+              outputColVector.noNulls = false;
+              outputColVector.isNull[batchIndex] = true;
               return;
             }
           } else if (length == 5) {
@@ -103,8 +105,8 @@ public class CastStringToLong extends VectorExpression {
               booleanValue = false;
             } else {
               // No boolean value match for 5 char field.
-              outV.noNulls = false;
-              outV.isNull[batchIndex] = true;
+              outputColVector.noNulls = false;
+              outputColVector.isNull[batchIndex] = true;
               return;
             }
           } else if (length == 1) {
@@ -115,50 +117,50 @@ public class CastStringToLong extends VectorExpression {
               booleanValue = false;
             } else {
               // No boolean value match for extended 1 char field.
-              outV.noNulls = false;
-              outV.isNull[batchIndex] = true;
+              outputColVector.noNulls = false;
+              outputColVector.isNull[batchIndex] = true;
               return;
             }
           } else {
             // No boolean value match for other lengths.
-            outV.noNulls = false;
-            outV.isNull[batchIndex] = true;
+            outputColVector.noNulls = false;
+            outputColVector.isNull[batchIndex] = true;
             return;
           }
-          outV.vector[batchIndex] = (booleanValue ? 1 : 0);
+          outputColVector.vector[batchIndex] = (booleanValue ? 1 : 0);
         }
         break;
       case BYTE:
         if (!LazyUtils.isNumberMaybe(bytes, start, length)) {
-          outV.noNulls = false;
-          outV.isNull[batchIndex] = true;
+          outputColVector.noNulls = false;
+          outputColVector.isNull[batchIndex] = true;
           return;
         }
-        outV.vector[batchIndex] = LazyByte.parseByte(bytes, start, length, 10);
+        outputColVector.vector[batchIndex] = LazyByte.parseByte(bytes, start, length, 10);
         break;
       case SHORT:
         if (!LazyUtils.isNumberMaybe(bytes, start, length)) {
-          outV.noNulls = false;
-          outV.isNull[batchIndex] = true;
+          outputColVector.noNulls = false;
+          outputColVector.isNull[batchIndex] = true;
           return;
         }
-        outV.vector[batchIndex] = LazyShort.parseShort(bytes, start, length, 10);
+        outputColVector.vector[batchIndex] = LazyShort.parseShort(bytes, start, length, 10);
         break;
       case INT:
         if (!LazyUtils.isNumberMaybe(bytes, start, length)) {
-          outV.noNulls = false;
-          outV.isNull[batchIndex] = true;
+          outputColVector.noNulls = false;
+          outputColVector.isNull[batchIndex] = true;
           return;
         }
-        outV.vector[batchIndex] = LazyInteger.parseInt(bytes, start, length, 10);
+        outputColVector.vector[batchIndex] = LazyInteger.parseInt(bytes, start, length, 10);
         break;
       case LONG:
         if (!LazyUtils.isNumberMaybe(bytes, start, length)) {
-          outV.noNulls = false;
-          outV.isNull[batchIndex] = true;
+          outputColVector.noNulls = false;
+          outputColVector.isNull[batchIndex] = true;
           return;
         }
-        outV.vector[batchIndex] = LazyLong.parseLong(bytes, start, length, 10);
+        outputColVector.vector[batchIndex] = LazyLong.parseLong(bytes, start, length, 10);
         break;
       default:
         throw new Error("Unexpected primitive category " + integerPrimitiveCategory);
@@ -166,8 +168,8 @@ public class CastStringToLong extends VectorExpression {
     } catch (Exception e) {
 
       // for any exception in conversion to integer, produce NULL
-      outV.noNulls = false;
-      outV.isNull[batchIndex] = true;
+      outputColVector.noNulls = false;
+      outputColVector.isNull[batchIndex] = true;
     }
   }
 
@@ -178,10 +180,13 @@ public class CastStringToLong extends VectorExpression {
       super.evaluateChildren(batch);
     }
 
-    BytesColumnVector inV = (BytesColumnVector) batch.cols[inputColumn];
+    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputColumn];
     int[] sel = batch.selected;
     int n = batch.size;
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumnNum];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumnNum];
+
+    boolean[] inputIsNull = inputColVector.isNull;
+    boolean[] outputIsNull = outputColVector.isNull;
 
     if (n == 0) {
 
@@ -189,51 +194,81 @@ public class CastStringToLong extends VectorExpression {
       return;
     }
 
-    if (inV.noNulls) {
-      outV.noNulls = true;
-      if (inV.isRepeating) {
-        outV.isRepeating = true;
-        func(outV, inV, 0);
-      } else if (batch.selectedInUse) {
-        for(int j = 0; j != n; j++) {
-          int i = sel[j];
-          func(outV, inV, i);
-        }
-        outV.isRepeating = false;
-      } else {
-        for(int i = 0; i != n; i++) {
-          func(outV, inV, i);
-        }
-        outV.isRepeating = false;
-      }
-    } else {
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
 
-      // Handle case with nulls. Don't do function if the value is null,
-      // because the data may be undefined for a null value.
-      outV.noNulls = false;
-      if (inV.isRepeating) {
-        outV.isRepeating = true;
-        outV.isNull[0] = inV.isNull[0];
-        if (!inV.isNull[0]) {
-          func(outV, inV, 0);
+    if (inputColVector.isRepeating) {
+      if (inputColVector.noNulls || !inputIsNull[0]) {
+        // Set isNull before call in case it changes it mind.
+        outputIsNull[0] = false;
+        func(outputColVector, inputColVector, 0);
+      } else {
+        outputIsNull[0] = true;
+        outputColVector.noNulls = false;
+      }
+      outputColVector.isRepeating = true;
+      return;
+    }
+
+    if (inputColVector.noNulls) {
+      if (batch.selectedInUse) {
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outputColVector.noNulls) {
+          for(int j = 0; j != n; j++) {
+           final int i = sel[j];
+           // Set isNull before call in case it changes it mind.
+           outputIsNull[i] = false;
+           func(outputColVector, inputColVector, i);
+         }
+        } else {
+          for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            func(outputColVector, inputColVector, i);
+          }
         }
-      } else if (batch.selectedInUse) {
+      } else {
+        if (!outputColVector.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outputColVector.noNulls = true;
+        }
+        for(int i = 0; i != n; i++) {
+          func(outputColVector, inputColVector, i);
+        }
+      }
+    } else  /* there are NULLs in the inputColVector */ {
+
+      /*
+       * Do careful maintenance of the outputColVector.noNulls flag.
+       */
+
+      if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outV.isNull[i] = inV.isNull[i];
-          if (!inV.isNull[i]) {
-            func(outV, inV, i);
+          if (!inputColVector.isNull[i]) {
+            // Set isNull before call in case it changes it mind.
+            outputColVector.isNull[i] = false;
+            func(outputColVector, inputColVector, i);
+          } else {
+            outputColVector.isNull[i] = true;
+            outputColVector.noNulls = false;
           }
         }
-        outV.isRepeating = false;
       } else {
-        System.arraycopy(inV.isNull, 0, outV.isNull, 0, n);
         for(int i = 0; i != n; i++) {
-          if (!inV.isNull[i]) {
-            func(outV, inV, i);
+          if (!inputColVector.isNull[i]) {
+            // Set isNull before call in case it changes it mind.
+            outputColVector.isNull[i] = false;
+            func(outputColVector, inputColVector, i);
+          } else {
+            outputColVector.isNull[i] = true;
+            outputColVector.noNulls = false;
           }
         }
-        outV.isRepeating = false;
       }
     }
   }

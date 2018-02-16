@@ -110,7 +110,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
         assignLongNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
       } else if (columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
         assignLongNoNullsNoRepeatingSelection(i, batch.size, columnVector, batch.selected);
-      } else if (columnVector.noNulls && columnVector.isRepeating) {
+      } else if ((columnVector.noNulls || !columnVector.isNull[0]) && columnVector.isRepeating) {
         assignLongNoNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
         assignLongNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
@@ -132,7 +132,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
         assignDoubleNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
       } else if (columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
         assignDoubleNoNullsNoRepeatingSelection(i, batch.size, columnVector, batch.selected);
-      } else if (columnVector.noNulls && columnVector.isRepeating) {
+      } else if ((columnVector.noNulls || !columnVector.isNull[0]) && columnVector.isRepeating) {
         assignDoubleNoNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
         assignDoubleNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
@@ -154,7 +154,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
         assignStringNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
       } else if (columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
         assignStringNoNullsNoRepeatingSelection(i, batch.size, columnVector, batch.selected);
-      } else if (columnVector.noNulls && columnVector.isRepeating) {
+      } else if ((columnVector.noNulls || !columnVector.isNull[0]) && columnVector.isRepeating) {
         assignStringNoNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
         assignStringNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
@@ -176,7 +176,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
         assignDecimalNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
       } else if (columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
         assignDecimalNoNullsNoRepeatingSelection(i, batch.size, columnVector, batch.selected);
-      } else if (columnVector.noNulls && columnVector.isRepeating) {
+      } else if ((columnVector.noNulls || !columnVector.isNull[0]) && columnVector.isRepeating) {
         assignDecimalNoNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
         assignDecimalNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
@@ -198,7 +198,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
         assignTimestampNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
       } else if (columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
         assignTimestampNoNullsNoRepeatingSelection(i, batch.size, columnVector, batch.selected);
-      } else if (columnVector.noNulls && columnVector.isRepeating) {
+      } else if ((columnVector.noNulls || !columnVector.isNull[0]) && columnVector.isRepeating) {
         assignTimestampNoNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
         assignTimestampNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
@@ -220,7 +220,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
         assignIntervalDayTimeNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
       } else if (columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
         assignIntervalDayTimeNoNullsNoRepeatingSelection(i, batch.size, columnVector, batch.selected);
-      } else if (columnVector.noNulls && columnVector.isRepeating) {
+      } else if ((columnVector.noNulls || !columnVector.isNull[0]) && columnVector.isRepeating) {
         assignIntervalDayTimeNoNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
         assignIntervalDayTimeNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
@@ -262,7 +262,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
         assignLongNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
       } else if (columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
         assignLongNoNullsNoRepeatingSelection(i, batch.size, columnVector, batch.selected);
-      } else if (columnVector.noNulls && columnVector.isRepeating) {
+      } else if ((columnVector.noNulls || !columnVector.isNull[0]) && columnVector.isRepeating) {
         assignLongNoNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
         assignLongNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
@@ -291,7 +291,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
         assignDoubleNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
       } else if (columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
         assignDoubleNoNullsNoRepeatingSelection(i, batch.size, columnVector, batch.selected);
-      } else if (columnVector.noNulls && columnVector.isRepeating) {
+      } else if ((columnVector.noNulls || !columnVector.isNull[0]) && columnVector.isRepeating) {
         assignDoubleNoNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
         assignDoubleNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
@@ -320,7 +320,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
         assignStringNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
       } else if (columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
         assignStringNoNullsNoRepeatingSelection(i, batch.size, columnVector, batch.selected);
-      } else if (columnVector.noNulls && columnVector.isRepeating) {
+      } else if ((columnVector.noNulls || !columnVector.isNull[0]) && columnVector.isRepeating) {
         assignStringNoNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
         assignStringNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
@@ -349,7 +349,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
         assignDecimalNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
       } else if (columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
         assignDecimalNoNullsNoRepeatingSelection(i, batch.size, columnVector, batch.selected);
-      } else if (columnVector.noNulls && columnVector.isRepeating) {
+      } else if ((columnVector.noNulls || !columnVector.isNull[0]) && columnVector.isRepeating) {
         assignDecimalNoNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
         assignDecimalNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
@@ -378,7 +378,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
         assignTimestampNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
       } else if (columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
         assignTimestampNoNullsNoRepeatingSelection(i, batch.size, columnVector, batch.selected);
-      } else if (columnVector.noNulls && columnVector.isRepeating) {
+      } else if ((columnVector.noNulls || !columnVector.isNull[0]) && columnVector.isRepeating) {
         assignTimestampNoNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
         assignTimestampNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);
@@ -407,7 +407,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
         assignIntervalDayTimeNoNullsNoRepeatingNoSelection(i, batch.size, columnVector);
       } else if (columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
         assignIntervalDayTimeNoNullsNoRepeatingSelection(i, batch.size, columnVector, batch.selected);
-      } else if (columnVector.noNulls && columnVector.isRepeating) {
+      } else if ((columnVector.noNulls || !columnVector.isNull[0]) && columnVector.isRepeating) {
         assignIntervalDayTimeNoNullsRepeating(i, batch.size, columnVector);
       } else if (!columnVector.noNulls && !columnVector.isRepeating && !batch.selectedInUse) {
         assignIntervalDayTimeNullsNoRepeatingNoSelection(keyIndex, i, batch.size, columnVector);

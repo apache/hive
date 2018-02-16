@@ -1,0 +1,330 @@
+PREHOOK: query: drop table varchar_udf_2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table varchar_udf_2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table varchar_udf_2 (c1 string, c2 string, c3 varchar(10), c4 varchar(20)) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@varchar_udf_2
+POSTHOOK: query: create table varchar_udf_2 (c1 string, c2 string, c3 varchar(10), c4 varchar(20)) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@varchar_udf_2
+PREHOOK: query: insert overwrite table varchar_udf_2
+  select key, value, key, value from src where key = '238' limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@varchar_udf_2
+POSTHOOK: query: insert overwrite table varchar_udf_2
+  select key, value, key, value from src where key = '238' limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@varchar_udf_2
+POSTHOOK: Lineage: varchar_udf_2.c1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_udf_2.c2 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_udf_2.c3 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_udf_2.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: explain vectorization expression
+select 
+  c1 LIKE '%38%',
+  c2 LIKE 'val_%',
+  c3 LIKE '%38',
+  c1 LIKE '%3x8%',
+  c2 LIKE 'xval_%',
+  c3 LIKE '%x38'
+from varchar_udf_2 limit 1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization expression
+select 
+  c1 LIKE '%38%',
+  c2 LIKE 'val_%',
+  c3 LIKE '%38',
+  c1 LIKE '%3x8%',
+  c2 LIKE 'xval_%',
+  c3 LIKE '%x38'
+from varchar_udf_2 limit 1
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: varchar_udf_2
+                  Statistics: Num rows: 1 Data size: 265 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                  Select Operator
+                    expressions: (c1 like '%38%') (type: boolean), (c2 like 'val_%') (type: boolean), (c3 like '%38') (type: boolean), (c1 like '%3x8%') (type: boolean), (c2 like 'xval_%') (type: boolean), (c3 like '%x38') (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [5, 6, 7, 8, 9, 10]
+                        selectExpressions: SelectStringColLikeStringScalar(col 0:string) -> 5:boolean, SelectStringColLikeStringScalar(col 1:string) -> 6:boolean, SelectStringColLikeStringScalar(col 2:varchar(10)) -> 7:boolean, SelectStringColLikeStringScalar(col 0:string) -> 8:boolean, SelectStringColLikeStringScalar(col 1:string) -> 9:boolean, SelectStringColLikeStringScalar(col 2:varchar(10)) -> 10:boolean
+                    Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    Limit
+                      Number of rows: 1
+                      Limit Vectorization:
+                          className: VectorLimitOperator
+                          native: true
+                      Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        File Sink Vectorization:
+                            className: VectorFileSinkOperator
+                            native: false
+                        Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select 
+  c1 LIKE '%38%',
+  c2 LIKE 'val_%',
+  c3 LIKE '%38',
+  c1 LIKE '%3x8%',
+  c2 LIKE 'xval_%',
+  c3 LIKE '%x38'
+from varchar_udf_2 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_udf_2
+#### A masked pattern was here ####
+POSTHOOK: query: select 
+  c1 LIKE '%38%',
+  c2 LIKE 'val_%',
+  c3 LIKE '%38',
+  c1 LIKE '%3x8%',
+  c2 LIKE 'xval_%',
+  c3 LIKE '%x38'
+from varchar_udf_2 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_udf_2
+#### A masked pattern was here ####
+true	true	true	false	false	false
+PREHOOK: query: drop table varchar_udf_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@varchar_udf_2
+PREHOOK: Output: default@varchar_udf_2
+POSTHOOK: query: drop table varchar_udf_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@varchar_udf_2
+POSTHOOK: Output: default@varchar_udf_2
+PREHOOK: query: create temporary table HIVE_14349 (a string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@HIVE_14349
+POSTHOOK: query: create temporary table HIVE_14349 (a string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@HIVE_14349
+PREHOOK: query: insert into HIVE_14349 values('XYZa'), ('badXYZa')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive_14349
+POSTHOOK: query: insert into HIVE_14349 values('XYZa'), ('badXYZa')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive_14349
+POSTHOOK: Lineage: hive_14349.a SCRIPT []
+PREHOOK: query: explain vectorization expression
+select * from HIVE_14349 where a LIKE 'XYZ%a%'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization expression
+select * from HIVE_14349 where a LIKE 'XYZ%a%'
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: hive_14349
+                  Statistics: Num rows: 2 Data size: 180 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterStringColLikeStringScalar(col 0:string, pattern XYZ%a%)
+                    predicate: (a like 'XYZ%a%') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: a (type: string)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0]
+                      Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        File Sink Vectorization:
+                            className: VectorFileSinkOperator
+                            native: false
+                        Statistics: Num rows: 1 Data size: 90 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select * from HIVE_14349 where a LIKE 'XYZ%a%'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_14349
+#### A masked pattern was here ####
+POSTHOOK: query: select * from HIVE_14349 where a LIKE 'XYZ%a%'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_14349
+#### A masked pattern was here ####
+XYZa
+PREHOOK: query: insert into HIVE_14349 values ('XYZab'), ('XYZabBAD'), ('badXYZab'), ('badXYZabc')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@hive_14349
+POSTHOOK: query: insert into HIVE_14349 values ('XYZab'), ('XYZabBAD'), ('badXYZab'), ('badXYZabc')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@hive_14349
+POSTHOOK: Lineage: hive_14349.a SCRIPT []
+PREHOOK: query: explain vectorization expression
+select * from HIVE_14349 where a LIKE 'XYZ%a_'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization expression
+select * from HIVE_14349 where a LIKE 'XYZ%a_'
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: hive_14349
+                  Statistics: Num rows: 6 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterStringColLikeStringScalar(col 0:string, pattern XYZ%a_)
+                    predicate: (a like 'XYZ%a_') (type: boolean)
+                    Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: a (type: string)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0]
+                      Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        compressed: false
+                        File Sink Vectorization:
+                            className: VectorFileSinkOperator
+                            native: false
+                        Statistics: Num rows: 3 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select * from HIVE_14349 where a LIKE 'XYZ%a_'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hive_14349
+#### A masked pattern was here ####
+POSTHOOK: query: select * from HIVE_14349 where a LIKE 'XYZ%a_'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hive_14349
+#### A masked pattern was here ####
+XYZab
+PREHOOK: query: drop table HIVE_14349
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hive_14349
+PREHOOK: Output: default@hive_14349
+POSTHOOK: query: drop table HIVE_14349
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hive_14349
+POSTHOOK: Output: default@hive_14349

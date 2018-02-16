@@ -48,6 +48,16 @@ POSTHOOK: Input: default@decimal_udf_txt
 POSTHOOK: Output: default@decimal_udf
 POSTHOOK: Lineage: decimal_udf.key SIMPLE [(decimal_udf_txt)decimal_udf_txt.FieldSchema(name:key, type:decimal(20,10), comment:null), ]
 POSTHOOK: Lineage: decimal_udf.value SIMPLE [(decimal_udf_txt)decimal_udf_txt.FieldSchema(name:value, type:int, comment:null), ]
+PREHOOK: query: insert into DECIMAL_UDF values (NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@decimal_udf
+POSTHOOK: query: insert into DECIMAL_UDF values (NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@decimal_udf
+POSTHOOK: Lineage: decimal_udf.key EXPRESSION []
+POSTHOOK: Lineage: decimal_udf.value EXPRESSION []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -71,7 +81,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -83,13 +93,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3]
                         selectExpressions: DecimalColAddDecimalColumn(col 0:decimal(20,10), col 0:decimal(20,10)) -> 3:decimal(21,10)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -126,44 +136,45 @@ POSTHOOK: query: SELECT key + key FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--8800.0000000000
-NULL
-0.0000000000
-0.0000000000
-200.0000000000
-20.0000000000
-2.0000000000
-0.2000000000
-0.0200000000
-400.0000000000
-40.0000000000
-4.0000000000
-0.0000000000
-0.4000000000
-0.0400000000
-0.6000000000
-0.6600000000
-0.6660000000
 -0.6000000000
 -0.6600000000
 -0.6660000000
-2.0000000000
-4.0000000000
-6.2800000000
 -2.2400000000
 -2.2400000000
 -2.2440000000
+-2469135780.2469135780
+-2510.9800000000
+-8800.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0200000000
+0.0400000000
+0.2000000000
+0.4000000000
+0.6000000000
+0.6600000000
+0.6660000000
+2.0000000000
+2.0000000000
+2.0000000000
 2.2400000000
 2.2440000000
+20.0000000000
+200.0000000000
+2469135780.2469135600
 248.0000000000
 250.4000000000
--2510.9800000000
+4.0000000000
+4.0000000000
+40.0000000000
+400.0000000000
 6.2800000000
 6.2800000000
 6.2800000000
-2.0000000000
--2469135780.2469135780
-2469135780.2469135600
+6.2800000000
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + value FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -187,7 +198,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -199,13 +210,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: DecimalColAddDecimalColumn(col 0:decimal(20,10), col 3:decimal(10,0))(children: CastLongToDecimal(col 1:int) -> 3:decimal(10,0)) -> 4:decimal(21,10)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -242,44 +253,45 @@ POSTHOOK: query: SELECT key + value FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-0.0000000000
-NULL
-0.0000000000
-0.0000000000
-200.0000000000
-20.0000000000
-2.0000000000
-0.1000000000
-0.0100000000
-400.0000000000
-40.0000000000
-4.0000000000
-0.0000000000
-0.2000000000
-0.0200000000
-0.3000000000
-0.3300000000
-0.3330000000
 -0.3000000000
 -0.3300000000
 -0.3330000000
-2.0000000000
-4.0000000000
-6.1400000000
--2.1200000000
--2.1200000000
 -12.1220000000
+-2.1200000000
+-2.1200000000
+-2469135780.1234567890
+-2510.4900000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0100000000
+0.0200000000
+0.1000000000
+0.2000000000
+0.3000000000
+0.3300000000
+0.3330000000
+2.0000000000
+2.0000000000
+2.0000000000
 2.1200000000
 2.1220000000
+20.0000000000
+200.0000000000
+2469135780.1234567800
 248.0000000000
 250.2000000000
--2510.4900000000
+4.0000000000
+4.0000000000
+40.0000000000
+400.0000000000
+6.1400000000
 6.1400000000
 6.1400000000
 7.1400000000
-2.0000000000
--2469135780.1234567890
-2469135780.1234567800
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + (value/2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -303,7 +315,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -315,13 +327,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: DoubleColAddDoubleColumn(col 3:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 4:double) -> 5:double) -> 4:double
-                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -358,44 +370,45 @@ POSTHOOK: query: SELECT key + (value/2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--2200.0
-NULL
-0.0
-0.0
-150.0
-15.0
-1.5
-0.1
-0.01
-300.0
-30.0
-3.0
-0.0
-0.2
-0.02
-0.3
-0.33
-0.333
 -0.3
 -0.33
 -0.333
-1.5
-3.0
-4.640000000000001
 -1.62
 -1.62
+-1.8518518351234567E9
+-1882.99
+-2200.0
 -6.622
+0.0
+0.0
+0.0
+0.01
+0.02
+0.1
+0.2
+0.3
+0.33
+0.333
+1.5
+1.5
+1.5
 1.62
 1.622
+1.8518518351234567E9
+15.0
+150.0
 186.0
 187.7
--1882.99
+3.0
+3.0
+30.0
+300.0
+4.640000000000001
 4.640000000000001
 4.640000000000001
 5.140000000000001
-1.5
--1.8518518351234567E9
-1.8518518351234567E9
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + '1.0' FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -419,7 +432,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -431,13 +444,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: DoubleColAddDoubleScalar(col 3:double, val 1.0)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double) -> 4:double
-                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -474,44 +487,45 @@ POSTHOOK: query: SELECT key + '1.0' FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--4399.0
-NULL
-1.0
-1.0
-101.0
-11.0
-2.0
-1.1
-1.01
-201.0
-21.0
-3.0
-1.0
-1.2
-1.02
-1.3
-1.33
-1.333
-0.7
-0.6699999999999999
-0.667
-2.0
-3.0
-4.140000000000001
 -0.1200000000000001
 -0.1200000000000001
 -0.12200000000000011
-2.12
-2.122
+-1.2345678891234567E9
+-1254.49
+-4399.0
+0.667
+0.6699999999999999
+0.7
+1.0
+1.0
+1.0
+1.01
+1.02
+1.1
+1.2
+1.2345678911234567E9
+1.3
+1.33
+1.333
+101.0
+11.0
 125.0
 126.2
--1254.49
-4.140000000000001
-4.140000000000001
-4.140000000000001
 2.0
--1.2345678891234567E9
-1.2345678911234567E9
+2.0
+2.0
+2.12
+2.122
+201.0
+21.0
+3.0
+3.0
+4.140000000000001
+4.140000000000001
+4.140000000000001
+4.140000000000001
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -535,7 +549,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -547,13 +561,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3]
                         selectExpressions: DecimalColSubtractDecimalColumn(col 0:decimal(20,10), col 0:decimal(20,10)) -> 3:decimal(21,10)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -591,43 +605,44 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
 0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
 NULL
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - value FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -651,7 +666,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -663,13 +678,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: DecimalColSubtractDecimalColumn(col 0:decimal(20,10), col 3:decimal(10,0))(children: CastLongToDecimal(col 1:int) -> 3:decimal(10,0)) -> 4:decimal(21,10)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -706,44 +721,45 @@ POSTHOOK: query: SELECT key - value FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--8800.0000000000
-NULL
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.1000000000
-0.0100000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.0000000000
-0.2000000000
-0.0200000000
-0.3000000000
-0.3300000000
-0.3330000000
+-0.1200000000
+-0.1200000000
+-0.1234567890
 -0.3000000000
 -0.3300000000
 -0.3330000000
+-0.4900000000
+-0.8600000000
+-8800.0000000000
 0.0000000000
 0.0000000000
-0.1400000000
--0.1200000000
--0.1200000000
-9.8780000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0100000000
+0.0200000000
+0.1000000000
 0.1200000000
 0.1220000000
-0.0000000000
-0.2000000000
--0.4900000000
-0.1400000000
-0.1400000000
--0.8600000000
-0.0000000000
--0.1234567890
 0.1234567800
+0.1400000000
+0.1400000000
+0.1400000000
+0.2000000000
+0.2000000000
+0.3000000000
+0.3300000000
+0.3330000000
+9.8780000000
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - (value/2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -767,7 +783,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -779,13 +795,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: DoubleColSubtractDoubleColumn(col 3:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 4:double) -> 5:double) -> 4:double
-                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -822,44 +838,45 @@ POSTHOOK: query: SELECT key - (value/2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--6600.0
-NULL
-0.0
-0.0
-50.0
-5.0
-0.5
-0.1
-0.01
-100.0
-10.0
-1.0
-0.0
-0.2
-0.02
-0.3
-0.33
-0.333
 -0.3
 -0.33
 -0.333
+-0.6200000000000001
+-0.6200000000000001
+-6.172839451234567E8
+-627.99
+-6600.0
+0.0
+0.0
+0.0
+0.01
+0.02
+0.1
+0.2
+0.3
+0.33
+0.333
 0.5
-1.0
-1.6400000000000001
--0.6200000000000001
--0.6200000000000001
-4.378
+0.5
+0.5
 0.6200000000000001
 0.6220000000000001
+1.0
+1.0
+1.1400000000000001
+1.6400000000000001
+1.6400000000000001
+1.6400000000000001
+10.0
+100.0
+4.378
+5.0
+50.0
+6.172839451234567E8
 62.0
 62.7
--627.99
-1.6400000000000001
-1.6400000000000001
-1.1400000000000001
-0.5
--6.172839451234567E8
-6.172839451234567E8
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - '1.0' FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -883,7 +900,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -895,13 +912,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: DoubleColSubtractDoubleScalar(col 3:double, val 1.0)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double) -> 4:double
-                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -938,44 +955,45 @@ POSTHOOK: query: SELECT key - '1.0' FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--4401.0
-NULL
--1.0
--1.0
-99.0
-9.0
-0.0
--0.9
--0.99
-199.0
-19.0
-1.0
--1.0
--0.8
--0.98
--0.7
--0.6699999999999999
 -0.667
+-0.6699999999999999
+-0.7
+-0.8
+-0.9
+-0.98
+-0.99
+-1.0
+-1.0
+-1.0
+-1.2345678911234567E9
 -1.3
 -1.33
 -1.333
-0.0
-1.0
-2.14
+-1256.49
 -2.12
 -2.12
 -2.122
+-4401.0
+0.0
+0.0
+0.0
 0.1200000000000001
 0.12200000000000011
+1.0
+1.0
+1.2345678891234567E9
 123.0
 124.2
--1256.49
+19.0
+199.0
 2.14
 2.14
 2.14
-0.0
--1.2345678911234567E9
-1.2345678891234567E9
+2.14
+9.0
+99.0
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -999,7 +1017,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1011,13 +1029,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3]
                         selectExpressions: DecimalColMultiplyDecimalColumn(col 0:decimal(20,10), col 0:decimal(20,10)) -> 3:decimal(38,17)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1054,44 +1072,45 @@ POSTHOOK: query: SELECT key * key FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-19360000.00000000000000000
-NULL
 0.00000000000000000
 0.00000000000000000
-10000.00000000000000000
-100.00000000000000000
-1.00000000000000000
-0.01000000000000000
+0.00000000000000000
 0.00010000000000000
-40000.00000000000000000
-400.00000000000000000
-4.00000000000000000
-0.00000000000000000
-0.04000000000000000
 0.00040000000000000
+0.01000000000000000
+0.04000000000000000
 0.09000000000000000
+0.09000000000000000
+0.10890000000000000
 0.10890000000000000
 0.11088900000000000
-0.09000000000000000
-0.10890000000000000
 0.11088900000000000
 1.00000000000000000
-4.00000000000000000
-9.85960000000000000
+1.00000000000000000
+1.00000000000000000
+1.25440000000000000
 1.25440000000000000
 1.25440000000000000
 1.25888400000000000
-1.25440000000000000
 1.25888400000000000
+100.00000000000000000
+10000.00000000000000000
+1524157875323883652.79682997652796840
+1524157875323883675.01905199875019052
 15376.00000000000000000
 15675.04000000000000000
 1576255.14010000000000000
+19360000.00000000000000000
+4.00000000000000000
+4.00000000000000000
+400.00000000000000000
+40000.00000000000000000
 9.85960000000000000
 9.85960000000000000
 9.85960000000000000
-1.00000000000000000
-1524157875323883675.01905199875019052
-1524157875323883652.79682997652796840
+9.85960000000000000
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value FROM DECIMAL_UDF where key * value > 0
 PREHOOK: type: QUERY
@@ -1115,7 +1134,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1125,7 +1144,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterDecimalColGreaterDecimalScalar(col 4:decimal(31,10), val 0)(children: DecimalColMultiplyDecimalColumn(col 0:decimal(20,10), col 3:decimal(10,0))(children: CastLongToDecimal(col 1:int) -> 3:decimal(10,0)) -> 4:decimal(31,10))
                     predicate: ((key * CAST( value AS decimal(10,0))) > 0) (type: boolean)
-                    Statistics: Num rows: 12 Data size: 1392 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 13 Data size: 1508 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: decimal(20,10)), value (type: int)
                       outputColumnNames: _col0, _col1
@@ -1133,13 +1152,13 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [0, 1]
-                      Statistics: Num rows: 12 Data size: 1392 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 13 Data size: 1508 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 12 Data size: 1392 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 13 Data size: 1508 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1176,29 +1195,29 @@ POSTHOOK: query: SELECT key, value FROM DECIMAL_UDF where key * value > 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-100.0000000000	100
-10.0000000000	10
-1.0000000000	1
-200.0000000000	200
-20.0000000000	20
-2.0000000000	2
-1.0000000000	1
-2.0000000000	2
-3.1400000000	3
 -1.1200000000	-1
 -1.1200000000	-1
 -1.1220000000	-11
+-1234567890.1234567890	-1234567890
+-1255.4900000000	-1255
+1.0000000000	1
+1.0000000000	1
+1.0000000000	1
 1.1200000000	1
 1.1220000000	1
+10.0000000000	10
+100.0000000000	100
+1234567890.1234567800	1234567890
 124.0000000000	124
 125.2000000000	125
--1255.4900000000	-1255
+2.0000000000	2
+2.0000000000	2
+20.0000000000	20
+200.0000000000	200
+3.1400000000	3
 3.1400000000	3
 3.1400000000	3
 3.1400000000	4
-1.0000000000	1
--1234567890.1234567890	-1234567890
-1234567890.1234567800	1234567890
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * value FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -1222,7 +1241,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1234,13 +1253,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: DecimalColMultiplyDecimalColumn(col 0:decimal(20,10), col 3:decimal(10,0))(children: CastLongToDecimal(col 1:int) -> 3:decimal(10,0)) -> 4:decimal(31,10)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1278,17 +1297,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
 -19360000.0000000000
-NULL
 0.0000000000
 0.0000000000
-10000.0000000000
-100.0000000000
-1.0000000000
 0.0000000000
 0.0000000000
-40000.0000000000
-400.0000000000
-4.0000000000
 0.0000000000
 0.0000000000
 0.0000000000
@@ -1299,22 +1311,30 @@ NULL
 0.0000000000
 0.0000000000
 1.0000000000
-4.0000000000
-9.4200000000
+1.0000000000
+1.0000000000
 1.1200000000
 1.1200000000
-12.3420000000
 1.1200000000
 1.1220000000
+100.0000000000
+10000.0000000000
+12.3420000000
+12.5600000000
+1524157875171467876.3907942000
+1524157875171467887.5019052100
 15376.0000000000
 15650.0000000000
 1575639.9500000000
+4.0000000000
+4.0000000000
+400.0000000000
+40000.0000000000
 9.4200000000
 9.4200000000
-12.5600000000
-1.0000000000
-1524157875171467887.5019052100
-1524157875171467876.3907942000
+9.4200000000
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * (value/2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -1338,7 +1358,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1350,13 +1370,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: DoubleColMultiplyDoubleColumn(col 3:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 4:double) -> 5:double) -> 4:double
-                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1393,44 +1413,45 @@ POSTHOOK: query: SELECT key * (value/2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
+-0.0
+-0.0
+-0.0
 -9680000.0
-NULL
 0.0
 0.0
-5000.0
-50.0
+0.0
+0.0
+0.0
+0.0
+0.0
+0.0
+0.0
+0.0
 0.5
-0.0
-0.0
-20000.0
-200.0
-2.0
-0.0
-0.0
-0.0
-0.0
-0.0
-0.0
--0.0
--0.0
--0.0
 0.5
-2.0
-4.71
+0.5
 0.56
 0.56
-6.171
 0.56
 0.561
+2.0
+2.0
+200.0
+20000.0
+4.71
+4.71
+4.71
+50.0
+5000.0
+6.171
+6.28
+7.6207893758573389E17
+7.6207893758573389E17
 7688.0
 7825.0
 787819.975
-4.71
-4.71
-6.28
-0.5
-7.6207893758573389E17
-7.6207893758573389E17
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * '2.0' FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -1454,7 +1475,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1466,13 +1487,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [4]
                         selectExpressions: DoubleColMultiplyDoubleScalar(col 3:double, val 2.0)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double) -> 4:double
-                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1509,49 +1530,50 @@ POSTHOOK: query: SELECT key * '2.0' FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--8800.0
-NULL
-0.0
-0.0
-200.0
-20.0
-2.0
-0.2
-0.02
-400.0
-40.0
-4.0
-0.0
-0.4
-0.04
-0.6
-0.66
-0.666
 -0.6
 -0.66
 -0.666
-2.0
-4.0
-6.28
 -2.24
 -2.24
 -2.244
+-2.4691357802469134E9
+-2510.98
+-8800.0
+0.0
+0.0
+0.0
+0.02
+0.04
+0.2
+0.4
+0.6
+0.66
+0.666
+2.0
+2.0
+2.0
 2.24
 2.244
+2.4691357802469134E9
+20.0
+200.0
 248.0
 250.4
--2510.98
+4.0
+4.0
+40.0
+400.0
 6.28
 6.28
 6.28
-2.0
--2.4691357802469134E9
-2.4691357802469134E9
+6.28
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key / 0 FROM DECIMAL_UDF limit 1
+SELECT key / 0 FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key / 0 FROM DECIMAL_UDF limit 1
+SELECT key / 0 FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -1570,7 +1592,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1582,23 +1604,17 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3]
                         selectExpressions: DecimalColDivideDecimalScalar(col 0:decimal(20,10), val 0) -> 3:decimal(22,12)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 1
-                      Limit Vectorization:
-                          className: VectorLimitOperator
-                          native: true
-                      Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-                      File Output Operator
-                        compressed: false
-                        File Sink Vectorization:
-                            className: VectorFileSinkOperator
-                            native: false
-                        Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
-                        table:
-                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -1619,18 +1635,56 @@ STAGE PLANS:
 
   Stage: Stage-0
     Fetch Operator
-      limit: 1
+      limit: -1
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key / 0 FROM DECIMAL_UDF limit 1
+PREHOOK: query: SELECT key / 0 FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key / 0 FROM DECIMAL_UDF limit 1
+POSTHOOK: query: SELECT key / 0 FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / key FROM DECIMAL_UDF WHERE key is not null and key <> 0
@@ -1655,7 +1709,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1665,7 +1719,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterDecimalColNotEqualDecimalScalar(col 0:decimal(20,10), val 0)
                     predicate: (key <> 0) (type: boolean)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: (key / key) (type: decimal(38,18))
                       outputColumnNames: _col0
@@ -1674,13 +1728,13 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumnNums: [3]
                           selectExpressions: DecimalColDivideDecimalColumn(col 0:decimal(20,10), col 0:decimal(20,10)) -> 3:decimal(38,18)
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1774,7 +1828,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1784,7 +1838,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColNotEqualLongScalar(col 1:int, val 0)
                     predicate: (value <> 0) (type: boolean)
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: (key / CAST( value AS decimal(10,0))) (type: decimal(31,21))
                       outputColumnNames: _col0
@@ -1793,13 +1847,13 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumnNums: [4]
                           selectExpressions: DecimalColDivideDecimalColumn(col 0:decimal(20,10), col 3:decimal(10,0))(children: CastLongToDecimal(col 1:int) -> 3:decimal(10,0)) -> 4:decimal(31,21)
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1837,29 +1891,29 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
 -1.000000000000000000000
-1.000000000000000000000
-1.000000000000000000000
-1.000000000000000000000
-1.000000000000000000000
-1.000000000000000000000
-1.000000000000000000000
-1.000000000000000000000
-1.000000000000000000000
-1.046666666666666666667
-1.120000000000000000000
-1.120000000000000000000
 0.102000000000000000000
-1.120000000000000000000
-1.122000000000000000000
-1.000000000000000000000
-1.001600000000000000000
-1.000390438247011952191
-1.046666666666666666667
-1.046666666666666666667
 0.785000000000000000000
 1.000000000000000000000
-1.000000000100000000000
+1.000000000000000000000
+1.000000000000000000000
+1.000000000000000000000
+1.000000000000000000000
+1.000000000000000000000
+1.000000000000000000000
+1.000000000000000000000
+1.000000000000000000000
+1.000000000000000000000
 1.000000000099999992710
+1.000000000100000000000
+1.000390438247011952191
+1.001600000000000000000
+1.046666666666666666667
+1.046666666666666666667
+1.046666666666666666667
+1.120000000000000000000
+1.120000000000000000000
+1.120000000000000000000
+1.122000000000000000000
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
@@ -1883,7 +1937,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -1893,7 +1947,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColNotEqualLongScalar(col 1:int, val 0)
                     predicate: (value <> 0) (type: boolean)
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: (UDFToDouble(key) / (UDFToDouble(value) / 2.0)) (type: double)
                       outputColumnNames: _col0
@@ -1902,13 +1956,13 @@ STAGE PLANS:
                           native: true
                           projectedOutputColumnNums: [4]
                           selectExpressions: DoubleColDivideDoubleColumn(col 3:double, col 5:double)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double, DoubleColDivideDoubleScalar(col 4:double, val 2.0)(children: CastLongToDouble(col 1:int) -> 4:double) -> 5:double) -> 4:double
-                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
                         File Sink Vectorization:
                             className: VectorFileSinkOperator
                             native: false
-                        Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1946,29 +2000,29 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
 -2.0
-2.0
-2.0
-2.0
-2.0
-2.0
-2.0
-2.0
-2.0
-2.0933333333333333
-2.24
-2.24
 0.20400000000000001
-2.24
-2.244
-2.0
-2.0032
-2.000780876494024
-2.0933333333333333
-2.0933333333333333
 1.57
 2.0
+2.0
+2.0
+2.0
+2.0
+2.0
+2.0
+2.0
+2.0
+2.0
 2.0000000002
 2.0000000002
+2.000780876494024
+2.0032
+2.0933333333333333
+2.0933333333333333
+2.0933333333333333
+2.24
+2.24
+2.24
+2.244
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT 1 + (key / '2.0') FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -1992,7 +2046,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -2004,13 +2058,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3]
                         selectExpressions: DoubleScalarAddDoubleColumn(val 1.0, col 4:double)(children: DoubleColDivideDoubleScalar(col 3:double, val 2.0)(children: CastDecimalToDouble(col 0:decimal(20,10)) -> 3:double) -> 4:double) -> 3:double
-                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2048,43 +2102,44 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
 -2199.0
-NULL
+-6.172839440617284E8
+-626.745
+0.43899999999999995
+0.43999999999999995
+0.43999999999999995
+0.8335
+0.835
+0.85
 1.0
 1.0
-51.0
-6.0
-1.5
-1.05
+1.0
 1.005
-101.0
-11.0
-2.0
-1.0
-1.1
 1.01
+1.05
+1.1
 1.15
 1.165
 1.1665
-0.85
-0.835
-0.8335
 1.5
-2.0
-2.5700000000000003
-0.43999999999999995
-0.43999999999999995
-0.43899999999999995
+1.5
+1.5
 1.56
 1.561
+101.0
+11.0
+2.0
+2.0
+2.5700000000000003
+2.5700000000000003
+2.5700000000000003
+2.5700000000000003
+51.0
+6.0
+6.172839460617284E8
 63.0
 63.6
--626.745
-2.5700000000000003
-2.5700000000000003
-2.5700000000000003
-1.5
--6.172839440617284E8
-6.172839460617284E8
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT abs(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -2108,7 +2163,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -2120,13 +2175,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3]
                         selectExpressions: FuncAbsDecimalToDecimal(col 0:decimal(20,10)) -> 3:decimal(20,10)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2163,44 +2218,45 @@ POSTHOOK: query: SELECT abs(key) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-4400.0000000000
-NULL
 0.0000000000
 0.0000000000
-100.0000000000
-10.0000000000
-1.0000000000
-0.1000000000
+0.0000000000
 0.0100000000
-200.0000000000
-20.0000000000
-2.0000000000
-0.0000000000
-0.2000000000
 0.0200000000
+0.1000000000
+0.2000000000
 0.3000000000
+0.3000000000
+0.3300000000
 0.3300000000
 0.3330000000
-0.3000000000
-0.3300000000
 0.3330000000
 1.0000000000
-2.0000000000
-3.1400000000
+1.0000000000
+1.0000000000
+1.1200000000
 1.1200000000
 1.1200000000
 1.1220000000
-1.1200000000
 1.1220000000
+10.0000000000
+100.0000000000
+1234567890.1234567800
+1234567890.1234567890
 124.0000000000
 125.2000000000
 1255.4900000000
+2.0000000000
+2.0000000000
+20.0000000000
+200.0000000000
 3.1400000000
 3.1400000000
 3.1400000000
-1.0000000000
-1234567890.1234567890
-1234567890.1234567800
+3.1400000000
+4400.0000000000
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
 PREHOOK: type: QUERY
@@ -2228,7 +2284,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -2239,7 +2295,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1]
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(key), count(key), avg(key)
                       Group By Vectorization:
@@ -2253,7 +2309,7 @@ STAGE PLANS:
                       keys: value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 17 Data size: 7004 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 18 Data size: 7416 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
@@ -2264,7 +2320,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumnNums: [1, 2, 3]
-                        Statistics: Num rows: 17 Data size: 7004 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 18 Data size: 7416 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: decimal(30,10)), _col2 (type: bigint), _col3 (type: struct<count:bigint,sum:decimal(30,10),input:decimal(20,10)>)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -2382,23 +2438,24 @@ POSTHOOK: query: SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DE
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
+-1	-1.120000000000000000	-1.12000000000000	-2.2400000000
+-11	-1.122000000000000000	-1.12200000000000	-1.1220000000
 -1234567890	-1234567890.123456789000000000	-1234567890.12345678900000	-1234567890.1234567890
 -1255	-1255.490000000000000000	-1255.49000000000000	-1255.4900000000
--11	-1.122000000000000000	-1.12200000000000	-1.1220000000
--1	-1.120000000000000000	-1.12000000000000	-2.2400000000
 0	0.025384615384615385	0.02538461538462	0.3300000000
 1	1.048400000000000000	1.04840000000000	5.2420000000
-2	2.000000000000000000	2.00000000000000	4.0000000000
-3	3.140000000000000000	3.14000000000000	9.4200000000
-4	3.140000000000000000	3.14000000000000	3.1400000000
 10	10.000000000000000000	10.00000000000000	10.0000000000
-20	20.000000000000000000	20.00000000000000	20.0000000000
 100	100.000000000000000000	100.00000000000000	100.0000000000
+1234567890	1234567890.123456780000000000	1234567890.12345678000000	1234567890.1234567800
 124	124.000000000000000000	124.00000000000000	124.0000000000
 125	125.200000000000000000	125.20000000000000	125.2000000000
+2	2.000000000000000000	2.00000000000000	4.0000000000
+20	20.000000000000000000	20.00000000000000	20.0000000000
 200	200.000000000000000000	200.00000000000000	200.0000000000
+3	3.140000000000000000	3.14000000000000	9.4200000000
+4	3.140000000000000000	3.14000000000000	3.1400000000
 4400	-4400.000000000000000000	-4400.00000000000000	-4400.0000000000
-1234567890	1234567890.123456780000000000	1234567890.12345678000000	1234567890.1234567800
+NULL	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT -key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -2422,7 +2479,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -2434,13 +2491,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3]
                         selectExpressions: FuncNegateDecimalToDecimal(col 0:decimal(20,10)) -> 3:decimal(20,10)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2477,44 +2534,45 @@ POSTHOOK: query: SELECT -key FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-4400.0000000000
-NULL
-0.0000000000
-0.0000000000
--100.0000000000
--10.0000000000
--1.0000000000
--0.1000000000
 -0.0100000000
--200.0000000000
--20.0000000000
--2.0000000000
-0.0000000000
--0.2000000000
 -0.0200000000
+-0.1000000000
+-0.2000000000
 -0.3000000000
 -0.3300000000
 -0.3330000000
+-1.0000000000
+-1.0000000000
+-1.0000000000
+-1.1200000000
+-1.1220000000
+-10.0000000000
+-100.0000000000
+-1234567890.1234567800
+-124.0000000000
+-125.2000000000
+-2.0000000000
+-2.0000000000
+-20.0000000000
+-200.0000000000
+-3.1400000000
+-3.1400000000
+-3.1400000000
+-3.1400000000
+0.0000000000
+0.0000000000
+0.0000000000
 0.3000000000
 0.3300000000
 0.3330000000
--1.0000000000
--2.0000000000
--3.1400000000
 1.1200000000
 1.1200000000
 1.1220000000
--1.1200000000
--1.1220000000
--124.0000000000
--125.2000000000
-1255.4900000000
--3.1400000000
--3.1400000000
--3.1400000000
--1.0000000000
 1234567890.1234567890
--1234567890.1234567800
+1255.4900000000
+4400.0000000000
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT +key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -2548,44 +2606,45 @@ POSTHOOK: query: SELECT +key FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--4400.0000000000
-NULL
-0.0000000000
-0.0000000000
-100.0000000000
-10.0000000000
-1.0000000000
-0.1000000000
-0.0100000000
-200.0000000000
-20.0000000000
-2.0000000000
-0.0000000000
-0.2000000000
-0.0200000000
-0.3000000000
-0.3300000000
-0.3330000000
 -0.3000000000
 -0.3300000000
 -0.3330000000
-1.0000000000
-2.0000000000
-3.1400000000
 -1.1200000000
 -1.1200000000
 -1.1220000000
+-1234567890.1234567890
+-1255.4900000000
+-4400.0000000000
+0.0000000000
+0.0000000000
+0.0000000000
+0.0100000000
+0.0200000000
+0.1000000000
+0.2000000000
+0.3000000000
+0.3300000000
+0.3330000000
+1.0000000000
+1.0000000000
+1.0000000000
 1.1200000000
 1.1220000000
+10.0000000000
+100.0000000000
+1234567890.1234567800
 124.0000000000
 125.2000000000
--1255.4900000000
+2.0000000000
+2.0000000000
+20.0000000000
+200.0000000000
 3.1400000000
 3.1400000000
 3.1400000000
-1.0000000000
--1234567890.1234567890
-1234567890.1234567800
+3.1400000000
+NULL
+NULL
 PREHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF
@@ -2603,14 +2662,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ceil(key) (type: decimal(11,0))
                     outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2632,44 +2691,45 @@ POSTHOOK: query: SELECT CEIL(key) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
+-1
+-1
+-1
+-1234567890
+-1255
 -4400
-NULL
 0
 0
-100
+0
+0
+0
+0
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
 10
-1
-1
-1
-200
-20
-2
-0
-1
-1
-1
-1
-1
-0
-0
-0
-1
-2
-4
--1
--1
--1
-2
-2
+100
+1234567891
 124
 126
--1255
+2
+2
+2
+2
+20
+200
 4
 4
 4
-1
--1234567890
-1234567891
+4
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT FLOOR(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -2693,7 +2753,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -2705,13 +2765,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3]
                         selectExpressions: FuncFloorDecimalToDecimal(col 0:decimal(20,10)) -> 3:decimal(11,0)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2748,44 +2808,45 @@ POSTHOOK: query: SELECT FLOOR(key) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
+-1
+-1
+-1
+-1234567891
+-1256
+-2
+-2
+-2
 -4400
-NULL
 0
 0
-100
+0
+0
+0
+0
+0
+0
+0
+0
+1
+1
+1
+1
+1
 10
-1
-0
-0
-200
-20
-2
-0
-0
-0
-0
-0
-0
--1
--1
--1
-1
-2
-3
--2
--2
--2
-1
-1
+100
+1234567890
 124
 125
--1256
+2
+2
+20
+200
 3
 3
 3
-1
--1234567891
-1234567890
+3
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ROUND(key, 2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -2809,7 +2870,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -2821,13 +2882,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3]
                         selectExpressions: FuncRoundWithNumDigitsDecimalToDecimal(col 0:decimal(20,10), decimalPlaces 2) -> 3:decimal(13,2)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2864,44 +2925,45 @@ POSTHOOK: query: SELECT ROUND(key, 2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--4400.00
-NULL
-0.00
-0.00
-100.00
-10.00
-1.00
-0.10
-0.01
-200.00
-20.00
-2.00
-0.00
-0.20
-0.02
-0.30
-0.33
-0.33
 -0.30
 -0.33
 -0.33
+-1.12
+-1.12
+-1.12
+-1234567890.12
+-1255.49
+-4400.00
+0.00
+0.00
+0.00
+0.01
+0.02
+0.10
+0.20
+0.30
+0.33
+0.33
 1.00
-2.00
-3.14
--1.12
--1.12
--1.12
+1.00
+1.00
 1.12
 1.12
+10.00
+100.00
+1234567890.12
 124.00
 125.20
--1255.49
+2.00
+2.00
+20.00
+200.00
 3.14
 3.14
 3.14
-1.00
--1234567890.12
-1234567890.12
+3.14
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT POWER(key, 2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -2925,7 +2987,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -2937,13 +2999,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [3]
                         selectExpressions: VectorUDFAdaptor(power(key, 2)) -> 3:double
-                    Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 304 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 312 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2980,44 +3042,45 @@ POSTHOOK: query: SELECT POWER(key, 2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-1.936E7
-NULL
 0.0
 0.0
-10000.0
-100.0
-1.0
+0.0
 0.010000000000000002
-1.0E-4
-40000.0
-400.0
-4.0
-0.0
 0.04000000000000001
-4.0E-4
 0.09
+0.09
+0.10890000000000001
 0.10890000000000001
 0.11088900000000002
-0.09
-0.10890000000000001
 0.11088900000000002
 1.0
-4.0
-9.8596
+1.0
+1.0
+1.0E-4
+1.2544000000000002
 1.2544000000000002
 1.2544000000000002
 1.2588840000000003
-1.2544000000000002
 1.2588840000000003
+1.52415787532388352E18
+1.52415787532388352E18
+1.936E7
+100.0
+10000.0
 15376.0
 15675.04
 1576255.1401
+4.0
+4.0
+4.0E-4
+400.0
+40000.0
 9.8596
 9.8596
 9.8596
-1.0
-1.52415787532388352E18
-1.52415787532388352E18
+9.8596
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -3041,7 +3104,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3053,13 +3116,13 @@ STAGE PLANS:
                         native: true
                         projectedOutputColumnNums: [5]
                         selectExpressions: DecimalColModuloDecimalColumn(col 3:decimal(21,10), col 4:decimal(22,12))(children: DecimalColAddDecimalScalar(col 0:decimal(20,10), val 1) -> 3:decimal(21,10), DecimalColDivideDecimalScalar(col 0:decimal(20,10), val 2) -> 4:decimal(22,12)) -> 5:decimal(22,12)
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
                       File Sink Vectorization:
                           className: VectorFileSinkOperator
                           native: false
-                      Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 39 Data size: 4368 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -3096,44 +3159,45 @@ POSTHOOK: query: SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--2199.000000000000
-NULL
-NULL
-NULL
-1.000000000000
-1.000000000000
-0.000000000000
-0.000000000000
-0.000000000000
-1.000000000000
-1.000000000000
-0.000000000000
-NULL
-0.000000000000
-0.000000000000
-0.100000000000
-0.010000000000
-0.001000000000
-0.100000000000
-0.010000000000
-0.001000000000
-0.000000000000
-0.000000000000
-1.000000000000
 -0.120000000000
 -0.120000000000
 -0.122000000000
-0.440000000000
-0.439000000000
-1.000000000000
-1.000000000000
--626.745000000000
-1.000000000000
-1.000000000000
-1.000000000000
-0.000000000000
+-2199.000000000000
 -617283944.061728394500
+-626.745000000000
+0.000000000000
+0.000000000000
+0.000000000000
+0.000000000000
+0.000000000000
+0.000000000000
+0.000000000000
+0.000000000000
+0.000000000000
+0.001000000000
+0.001000000000
+0.010000000000
+0.010000000000
+0.100000000000
+0.100000000000
+0.439000000000
+0.440000000000
 1.000000000000
+1.000000000000
+1.000000000000
+1.000000000000
+1.000000000000
+1.000000000000
+1.000000000000
+1.000000000000
+1.000000000000
+1.000000000000
+1.000000000000
+NULL
+NULL
+NULL
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF GROUP BY value
 PREHOOK: type: QUERY
@@ -3160,7 +3224,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3171,7 +3235,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1]
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: stddev(key), variance(key)
                       Group By Vectorization:
@@ -3185,7 +3249,7 @@ STAGE PLANS:
                       keys: value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 17 Data size: 2788 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 18 Data size: 2952 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
@@ -3196,7 +3260,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumnNums: [1, 2]
-                        Statistics: Num rows: 17 Data size: 2788 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 18 Data size: 2952 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: struct<count:bigint,sum:double,variance:double>), _col2 (type: struct<count:bigint,sum:double,variance:double>)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -3270,23 +3334,24 @@ POSTHOOK: query: SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF GROUP
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-4	0.0	0.0
+-1	0.0	0.0
+-11	0.0	0.0
 -1234567890	0.0	0.0
+-1255	0.0	0.0
 0	0.22561046704494161	0.050900082840236685
 1	0.05928102563215321	0.0035142400000000066
-2	0.0	0.0
-3	0.0	0.0
-124	0.0	0.0
-200	0.0	0.0
-4400	0.0	0.0
-1234567890	0.0	0.0
 10	0.0	0.0
-125	0.0	0.0
--1255	0.0	0.0
--11	0.0	0.0
--1	0.0	0.0
-20	0.0	0.0
 100	0.0	0.0
+1234567890	0.0	0.0
+124	0.0	0.0
+125	0.0	0.0
+2	0.0	0.0
+20	0.0	0.0
+200	0.0	0.0
+3	0.0	0.0
+4	0.0	0.0
+4400	0.0	0.0
+NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF GROUP BY value
 PREHOOK: type: QUERY
@@ -3313,7 +3378,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3324,7 +3389,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0, 1]
-                    Statistics: Num rows: 38 Data size: 4408 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: stddev_samp(key), var_samp(key)
                       Group By Vectorization:
@@ -3338,7 +3403,7 @@ STAGE PLANS:
                       keys: value (type: int)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 17 Data size: 2788 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 18 Data size: 2952 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
@@ -3349,7 +3414,7 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                             valueColumnNums: [1, 2]
-                        Statistics: Num rows: 17 Data size: 2788 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 18 Data size: 2952 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: struct<count:bigint,sum:double,variance:double>), _col2 (type: struct<count:bigint,sum:double,variance:double>)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -3423,23 +3488,24 @@ POSTHOOK: query: SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-4	NULL	NULL
+-1	0.0	0.0
+-11	NULL	NULL
 -1234567890	NULL	NULL
+-1255	NULL	NULL
 0	0.2348228191855647	0.055141756410256405
 1	0.06627820154470102	0.004392800000000008
-2	0.0	0.0
-3	0.0	0.0
-124	NULL	NULL
-200	NULL	NULL
-4400	NULL	NULL
-1234567890	NULL	NULL
 10	NULL	NULL
-125	NULL	NULL
--1255	NULL	NULL
--11	NULL	NULL
--1	0.0	0.0
-20	NULL	NULL
 100	NULL	NULL
+1234567890	NULL	NULL
+124	NULL	NULL
+125	NULL	NULL
+2	0.0	0.0
+20	NULL	NULL
+200	NULL	NULL
+3	0.0	0.0
+4	NULL	NULL
+4400	NULL	NULL
+NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -3466,11 +3532,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: decimal(20,10))
                     outputColumnNames: _col0
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: histogram_numeric(_col0, 3)
                       mode: hash
@@ -3550,7 +3616,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3561,7 +3627,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0]
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: min(key)
                       Group By Vectorization:
@@ -3681,7 +3747,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3692,7 +3758,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0]
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: max(key)
                       Group By Vectorization:
@@ -3812,7 +3878,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_udf
-                  Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
@@ -3823,7 +3889,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [0]
-                    Statistics: Num rows: 38 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 39 Data size: 4256 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count(key)
                       Group By Vectorization:
@@ -3939,6 +4005,16 @@ POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DE
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@decimal_udf_txt_small
+PREHOOK: query: insert into DECIMAL_UDF_txt_small values (NULL, NULL)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@decimal_udf_txt_small
+POSTHOOK: query: insert into DECIMAL_UDF_txt_small values (NULL, NULL)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@decimal_udf_txt_small
+POSTHOOK: Lineage: decimal_udf_txt_small.key EXPRESSION []
+POSTHOOK: Lineage: decimal_udf_txt_small.value EXPRESSION []
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + key FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
@@ -4018,44 +4094,45 @@ POSTHOOK: query: SELECT key + key FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
--8800.000
-NULL
-0.000
-0.000
-200.000
-20.000
-2.000
-0.200
-0.020
-400.000
-40.000
-4.000
-0.000
-0.400
-0.040
-0.600
-0.660
-0.666
 -0.600
 -0.660
 -0.666
-2.000
-4.000
-6.280
 -2.240
 -2.240
 -2.244
+-2469135780.246
+-2510.980
+-8800.000
+0.000
+0.000
+0.000
+0.020
+0.040
+0.200
+0.400
+0.600
+0.660
+0.666
+2.000
+2.000
+2.000
 2.240
 2.244
+20.000
+200.000
+2469135780.246
 248.000
 250.400
--2510.980
+4.000
+4.000
+40.000
+400.000
 6.280
 6.280
 6.280
-2.000
--2469135780.246
-2469135780.246
+6.280
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + value FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
@@ -4135,44 +4212,45 @@ POSTHOOK: query: SELECT key + value FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
-0.000
-NULL
-0.000
-0.000
-200.000
-20.000
-2.000
-0.100
-0.010
-400.000
-40.000
-4.000
-0.000
-0.200
-0.020
-0.300
-0.330
-0.333
 -0.300
 -0.330
 -0.333
-2.000
-4.000
-6.140
--2.120
--2.120
 -12.122
+-2.120
+-2.120
+-2469135780.123
+-2510.490
+0.000
+0.000
+0.000
+0.000
+0.010
+0.020
+0.100
+0.200
+0.300
+0.330
+0.333
+2.000
+2.000
+2.000
 2.120
 2.122
+20.000
+200.000
+2469135780.123
 248.000
 250.200
--2510.490
+4.000
+4.000
+40.000
+400.000
+6.140
 6.140
 6.140
 7.140
-2.000
--2469135780.123
-2469135780.123
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + (value/2) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
@@ -4252,44 +4330,45 @@ POSTHOOK: query: SELECT key + (value/2) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
--2200.0
-NULL
-0.0
-0.0
-150.0
-15.0
-1.5
-0.1
-0.01
-300.0
-30.0
-3.0
-0.0
-0.2
-0.02
-0.3
-0.33
-0.333
 -0.3
 -0.33
 -0.333
-1.5
-3.0
-4.640000000000001
 -1.62
 -1.62
+-1.851851835123E9
+-1882.99
+-2200.0
 -6.622
+0.0
+0.0
+0.0
+0.01
+0.02
+0.1
+0.2
+0.3
+0.33
+0.333
+1.5
+1.5
+1.5
 1.62
 1.622
+1.851851835123E9
+15.0
+150.0
 186.0
 187.7
--1882.99
+3.0
+3.0
+30.0
+300.0
+4.640000000000001
 4.640000000000001
 4.640000000000001
 5.140000000000001
-1.5
--1.851851835123E9
-1.851851835123E9
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key + '1.0' FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
@@ -4369,44 +4448,45 @@ POSTHOOK: query: SELECT key + '1.0' FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
--4399.0
-NULL
-1.0
-1.0
-101.0
-11.0
-2.0
-1.1
-1.01
-201.0
-21.0
-3.0
-1.0
-1.2
-1.02
-1.3
-1.33
-1.333
-0.7
-0.6699999999999999
-0.667
-2.0
-3.0
-4.140000000000001
 -0.1200000000000001
 -0.1200000000000001
 -0.12200000000000011
-2.12
-2.122
+-1.234567889123E9
+-1254.49
+-4399.0
+0.667
+0.6699999999999999
+0.7
+1.0
+1.0
+1.0
+1.01
+1.02
+1.1
+1.2
+1.234567891123E9
+1.3
+1.33
+1.333
+101.0
+11.0
 125.0
 126.2
--1254.49
-4.140000000000001
-4.140000000000001
-4.140000000000001
 2.0
--1.234567889123E9
-1.234567891123E9
+2.0
+2.0
+2.12
+2.122
+201.0
+21.0
+3.0
+3.0
+4.140000000000001
+4.140000000000001
+4.140000000000001
+4.140000000000001
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - key FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
@@ -4487,43 +4567,44 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
 NULL
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
-0.000
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - value FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
@@ -4603,44 +4684,45 @@ POSTHOOK: query: SELECT key - value FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
--8800.000
-NULL
-0.000
-0.000
-0.000
-0.000
-0.000
-0.100
-0.010
-0.000
-0.000
-0.000
-0.000
-0.200
-0.020
-0.300
-0.330
-0.333
+-0.120
+-0.120
+-0.123
 -0.300
 -0.330
 -0.333
+-0.490
+-0.860
+-8800.000
 0.000
 0.000
-0.140
--0.120
--0.120
-9.878
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.010
+0.020
+0.100
 0.120
 0.122
-0.000
-0.200
--0.490
-0.140
-0.140
--0.860
-0.000
--0.123
 0.123
+0.140
+0.140
+0.140
+0.200
+0.200
+0.300
+0.330
+0.333
+9.878
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - (value/2) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
@@ -4720,44 +4802,45 @@ POSTHOOK: query: SELECT key - (value/2) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
--6600.0
-NULL
-0.0
-0.0
-50.0
-5.0
-0.5
-0.1
-0.01
-100.0
-10.0
-1.0
-0.0
-0.2
-0.02
-0.3
-0.33
-0.333
 -0.3
 -0.33
 -0.333
+-0.6200000000000001
+-0.6200000000000001
+-6.172839451229999E8
+-627.99
+-6600.0
+0.0
+0.0
+0.0
+0.01
+0.02
+0.1
+0.2
+0.3
+0.33
+0.333
 0.5
-1.0
-1.6400000000000001
--0.6200000000000001
--0.6200000000000001
-4.378
+0.5
+0.5
 0.6200000000000001
 0.6220000000000001
+1.0
+1.0
+1.1400000000000001
+1.6400000000000001
+1.6400000000000001
+1.6400000000000001
+10.0
+100.0
+4.378
+5.0
+50.0
+6.172839451229999E8
 62.0
 62.7
--627.99
-1.6400000000000001
-1.6400000000000001
-1.1400000000000001
-0.5
--6.172839451229999E8
-6.172839451229999E8
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key - '1.0' FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
@@ -4837,44 +4920,45 @@ POSTHOOK: query: SELECT key - '1.0' FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
--4401.0
-NULL
--1.0
--1.0
-99.0
-9.0
-0.0
--0.9
--0.99
-199.0
-19.0
-1.0
--1.0
--0.8
--0.98
--0.7
--0.6699999999999999
 -0.667
+-0.6699999999999999
+-0.7
+-0.8
+-0.9
+-0.98
+-0.99
+-1.0
+-1.0
+-1.0
+-1.234567891123E9
 -1.3
 -1.33
 -1.333
-0.0
-1.0
-2.14
+-1256.49
 -2.12
 -2.12
 -2.122
+-4401.0
+0.0
+0.0
+0.0
 0.1200000000000001
 0.12200000000000011
+1.0
+1.0
+1.234567889123E9
 123.0
 124.2
--1256.49
+19.0
+199.0
 2.14
 2.14
 2.14
-0.0
--1.234567891123E9
-1.234567889123E9
+2.14
+9.0
+99.0
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * key FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
@@ -4954,44 +5038,45 @@ POSTHOOK: query: SELECT key * key FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
-19360000.000000
-NULL
 0.000000
 0.000000
-10000.000000
-100.000000
-1.000000
-0.010000
+0.000000
 0.000100
-40000.000000
-400.000000
-4.000000
-0.000000
-0.040000
 0.000400
+0.010000
+0.040000
 0.090000
+0.090000
+0.108900
 0.108900
 0.110889
-0.090000
-0.108900
 0.110889
 1.000000
-4.000000
-9.859600
+1.000000
+1.000000
+1.254400
 1.254400
 1.254400
 1.258884
-1.254400
 1.258884
+100.000000
+10000.000000
+1524157875322755800.955129
+1524157875322755800.955129
 15376.000000
 15675.040000
 1576255.140100
+19360000.000000
+4.000000
+4.000000
+400.000000
+40000.000000
 9.859600
 9.859600
 9.859600
-1.000000
-1524157875322755800.955129
-1524157875322755800.955129
+9.859600
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key, value FROM DECIMAL_UDF_txt_small where key * value > 0
 PREHOOK: type: QUERY
@@ -5077,29 +5162,29 @@ POSTHOOK: query: SELECT key, value FROM DECIMAL_UDF_txt_small where key * value 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
-100.000	100
-10.000	10
-1.000	1
-200.000	200
-20.000	20
-2.000	2
-1.000	1
-2.000	2
-3.140	3
 -1.120	-1
 -1.120	-1
 -1.122	-11
+-1234567890.123	-1234567890
+-1255.490	-1255
+1.000	1
+1.000	1
+1.000	1
 1.120	1
 1.122	1
+10.000	10
+100.000	100
+1234567890.123	1234567890
 124.000	124
 125.200	125
--1255.490	-1255
+2.000	2
+2.000	2
+20.000	20
+200.000	200
+3.140	3
 3.140	3
 3.140	3
 3.140	4
-1.000	1
--1234567890.123	-1234567890
-1234567890.123	1234567890
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * value FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
@@ -5180,17 +5265,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 -19360000.000
-NULL
 0.000
 0.000
-10000.000
-100.000
-1.000
 0.000
 0.000
-40000.000
-400.000
-4.000
 0.000
 0.000
 0.000
@@ -5201,22 +5279,30 @@ NULL
 0.000
 0.000
 1.000
-4.000
-9.420
+1.000
+1.000
 1.120
 1.120
-12.342
 1.120
 1.122
+100.000
+10000.000
+12.342
+12.560
+1524157875170903950.470
+1524157875170903950.470
 15376.000
 15650.000
 1575639.950
+4.000
+4.000
+400.000
+40000.000
 9.420
 9.420
-12.560
-1.000
-1524157875170903950.470
-1524157875170903950.470
+9.420
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * (value/2) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
@@ -5296,44 +5382,45 @@ POSTHOOK: query: SELECT key * (value/2) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
+-0.0
+-0.0
+-0.0
 -9680000.0
-NULL
 0.0
 0.0
-5000.0
-50.0
+0.0
+0.0
+0.0
+0.0
+0.0
+0.0
+0.0
+0.0
 0.5
-0.0
-0.0
-20000.0
-200.0
-2.0
-0.0
-0.0
-0.0
-0.0
-0.0
-0.0
--0.0
--0.0
--0.0
 0.5
-2.0
-4.71
+0.5
 0.56
 0.56
-6.171
 0.56
 0.561
+2.0
+2.0
+200.0
+20000.0
+4.71
+4.71
+4.71
+50.0
+5000.0
+6.171
+6.28
+7.620789375854519E17
+7.620789375854519E17
 7688.0
 7825.0
 787819.975
-4.71
-4.71
-6.28
-0.5
-7.620789375854519E17
-7.620789375854519E17
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key * '2.0' FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
@@ -5413,49 +5500,50 @@ POSTHOOK: query: SELECT key * '2.0' FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
--8800.0
-NULL
-0.0
-0.0
-200.0
-20.0
-2.0
-0.2
-0.02
-400.0
-40.0
-4.0
-0.0
-0.4
-0.04
-0.6
-0.66
-0.666
 -0.6
 -0.66
 -0.666
-2.0
-4.0
-6.28
 -2.24
 -2.24
 -2.244
+-2.469135780246E9
+-2510.98
+-8800.0
+0.0
+0.0
+0.0
+0.02
+0.04
+0.2
+0.4
+0.6
+0.66
+0.666
+2.0
+2.0
+2.0
 2.24
 2.244
+2.469135780246E9
+20.0
+200.0
 248.0
 250.4
--2510.98
+4.0
+4.0
+40.0
+400.0
 6.28
 6.28
 6.28
-2.0
--2.469135780246E9
-2.469135780246E9
+6.28
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key / 0 FROM DECIMAL_UDF_txt_small limit 1
+SELECT key / 0 FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN VECTORIZATION DETAIL
-SELECT key / 0 FROM DECIMAL_UDF_txt_small limit 1
+SELECT key / 0 FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
   enabled: true
@@ -5487,22 +5575,16 @@ STAGE PLANS:
                         projectedOutputColumnNums: [3]
                         selectExpressions: DecimalColDivideDecimalScalar(col 0:decimal(15,3), val 0) -> 3:decimal(18,6)
                     Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
-                    Limit
-                      Number of rows: 1
-                      Limit Vectorization:
-                          className: VectorLimitOperator
-                          native: true
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
-                      File Output Operator
-                        compressed: false
-                        File Sink Vectorization:
-                            className: VectorFileSinkOperator
-                            native: false
-                        Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
-                        table:
-                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
@@ -5524,18 +5606,56 @@ STAGE PLANS:
 
   Stage: Stage-0
     Fetch Operator
-      limit: 1
+      limit: -1
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT key / 0 FROM DECIMAL_UDF_txt_small limit 1
+PREHOOK: query: SELECT key / 0 FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key / 0 FROM DECIMAL_UDF_txt_small limit 1
+POSTHOOK: query: SELECT key / 0 FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
 NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / key FROM DECIMAL_UDF_txt_small WHERE key is not null and key <> 0
@@ -5744,29 +5864,29 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 -1.00000000000000
-1.00000000000000
-1.00000000000000
-1.00000000000000
-1.00000000000000
-1.00000000000000
-1.00000000000000
-1.00000000000000
-1.00000000000000
-1.04666666666667
-1.12000000000000
-1.12000000000000
 0.10200000000000
-1.12000000000000
-1.12200000000000
-1.00000000000000
-1.00160000000000
-1.00039043824701
-1.04666666666667
-1.04666666666667
 0.78500000000000
 1.00000000000000
+1.00000000000000
+1.00000000000000
+1.00000000000000
+1.00000000000000
+1.00000000000000
+1.00000000000000
+1.00000000000000
+1.00000000000000
+1.00000000000000
 1.00000000009963
 1.00000000009963
+1.00039043824701
+1.00160000000000
+1.04666666666667
+1.04666666666667
+1.04666666666667
+1.12000000000000
+1.12000000000000
+1.12000000000000
+1.12200000000000
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT key / (value/2) FROM DECIMAL_UDF_txt_small  WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
@@ -5854,29 +5974,29 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 -2.0
-2.0
-2.0
-2.0
-2.0
-2.0
-2.0
-2.0
-2.0
-2.0933333333333333
-2.24
-2.24
 0.20400000000000001
-2.24
-2.244
-2.0
-2.0032
-2.000780876494024
-2.0933333333333333
-2.0933333333333333
 1.57
 2.0
+2.0
+2.0
+2.0
+2.0
+2.0
+2.0
+2.0
+2.0
+2.0
 2.0000000001992597
 2.0000000001992597
+2.000780876494024
+2.0032
+2.0933333333333333
+2.0933333333333333
+2.0933333333333333
+2.24
+2.24
+2.24
+2.244
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT 1 + (key / '2.0') FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
@@ -5957,43 +6077,44 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
 -2199.0
-NULL
+-6.172839440615E8
+-626.745
+0.43899999999999995
+0.43999999999999995
+0.43999999999999995
+0.8335
+0.835
+0.85
 1.0
 1.0
-51.0
-6.0
-1.5
-1.05
+1.0
 1.005
-101.0
-11.0
-2.0
-1.0
-1.1
 1.01
+1.05
+1.1
 1.15
 1.165
 1.1665
-0.85
-0.835
-0.8335
 1.5
-2.0
-2.5700000000000003
-0.43999999999999995
-0.43999999999999995
-0.43899999999999995
+1.5
+1.5
 1.56
 1.561
+101.0
+11.0
+2.0
+2.0
+2.5700000000000003
+2.5700000000000003
+2.5700000000000003
+2.5700000000000003
+51.0
+6.0
+6.172839460615E8
 63.0
 63.6
--626.745
-2.5700000000000003
-2.5700000000000003
-2.5700000000000003
-1.5
--6.172839440615E8
-6.172839460615E8
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT abs(key) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
@@ -6073,44 +6194,45 @@ POSTHOOK: query: SELECT abs(key) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
-4400.000
-NULL
 0.000
 0.000
-100.000
-10.000
-1.000
-0.100
+0.000
 0.010
-200.000
-20.000
-2.000
-0.000
-0.200
 0.020
+0.100
+0.200
 0.300
+0.300
+0.330
 0.330
 0.333
-0.300
-0.330
 0.333
 1.000
-2.000
-3.140
+1.000
+1.000
+1.120
 1.120
 1.120
 1.122
-1.120
 1.122
+10.000
+100.000
+1234567890.123
+1234567890.123
 124.000
 125.200
 1255.490
+2.000
+2.000
+20.000
+200.000
 3.140
 3.140
 3.140
-1.000
-1234567890.123
-1234567890.123
+3.140
+4400.000
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF_txt_small GROUP BY value ORDER BY value
 PREHOOK: type: QUERY
@@ -6293,23 +6415,24 @@ POSTHOOK: query: SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DE
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
+-1	-1.1200000000000000	-1.1200000	-2.240
+-11	-1.1220000000000000	-1.1220000	-1.122
 -1234567890	-1234567890.1230000000000000	-1234567890.1230000	-1234567890.123
 -1255	-1255.4900000000000000	-1255.4900000	-1255.490
--11	-1.1220000000000000	-1.1220000	-1.122
--1	-1.1200000000000000	-1.1200000	-2.240
 0	0.0253846153846154	0.0253846	0.330
 1	1.0484000000000000	1.0484000	5.242
-2	2.0000000000000000	2.0000000	4.000
-3	3.1400000000000000	3.1400000	9.420
-4	3.1400000000000000	3.1400000	3.140
 10	10.0000000000000000	10.0000000	10.000
-20	20.0000000000000000	20.0000000	20.000
 100	100.0000000000000000	100.0000000	100.000
+1234567890	1234567890.1230000000000000	1234567890.1230000	1234567890.123
 124	124.0000000000000000	124.0000000	124.000
 125	125.2000000000000000	125.2000000	125.200
+2	2.0000000000000000	2.0000000	4.000
+20	20.0000000000000000	20.0000000	20.000
 200	200.0000000000000000	200.0000000	200.000
+3	3.1400000000000000	3.1400000	9.420
+4	3.1400000000000000	3.1400000	3.140
 4400	-4400.0000000000000000	-4400.0000000	-4400.000
-1234567890	1234567890.1230000000000000	1234567890.1230000	1234567890.123
+NULL	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT -key FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
@@ -6389,44 +6512,45 @@ POSTHOOK: query: SELECT -key FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
-4400.000
-NULL
-0.000
-0.000
--100.000
--10.000
--1.000
--0.100
 -0.010
--200.000
--20.000
--2.000
-0.000
--0.200
 -0.020
+-0.100
+-0.200
 -0.300
 -0.330
 -0.333
+-1.000
+-1.000
+-1.000
+-1.120
+-1.122
+-10.000
+-100.000
+-1234567890.123
+-124.000
+-125.200
+-2.000
+-2.000
+-20.000
+-200.000
+-3.140
+-3.140
+-3.140
+-3.140
+0.000
+0.000
+0.000
 0.300
 0.330
 0.333
--1.000
--2.000
--3.140
 1.120
 1.120
 1.122
--1.120
--1.122
--124.000
--125.200
-1255.490
--3.140
--3.140
--3.140
--1.000
 1234567890.123
--1234567890.123
+1255.490
+4400.000
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT +key FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
@@ -6460,44 +6584,45 @@ POSTHOOK: query: SELECT +key FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
--4400.000
-NULL
-0.000
-0.000
-100.000
-10.000
-1.000
-0.100
-0.010
-200.000
-20.000
-2.000
-0.000
-0.200
-0.020
-0.300
-0.330
-0.333
 -0.300
 -0.330
 -0.333
-1.000
-2.000
-3.140
 -1.120
 -1.120
 -1.122
+-1234567890.123
+-1255.490
+-4400.000
+0.000
+0.000
+0.000
+0.010
+0.020
+0.100
+0.200
+0.300
+0.330
+0.333
+1.000
+1.000
+1.000
 1.120
 1.122
+10.000
+100.000
+1234567890.123
 124.000
 125.200
--1255.490
+2.000
+2.000
+20.000
+200.000
 3.140
 3.140
 3.140
-1.000
--1234567890.123
-1234567890.123
+3.140
+NULL
+NULL
 PREHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPlAIN SELECT CEIL(key) FROM DECIMAL_UDF_txt_small
@@ -6544,44 +6669,45 @@ POSTHOOK: query: SELECT CEIL(key) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
+-1
+-1
+-1
+-1234567890
+-1255
 -4400
-NULL
 0
 0
-100
+0
+0
+0
+0
+1
+1
+1
+1
+1
+1
+1
+1
+1
+1
 10
-1
-1
-1
-200
-20
-2
-0
-1
-1
-1
-1
-1
-0
-0
-0
-1
-2
-4
--1
--1
--1
-2
-2
+100
+1234567891
 124
 126
--1255
+2
+2
+2
+2
+20
+200
 4
 4
 4
-1
--1234567890
-1234567891
+4
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT FLOOR(key) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
@@ -6661,44 +6787,45 @@ POSTHOOK: query: SELECT FLOOR(key) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
+-1
+-1
+-1
+-1234567891
+-1256
+-2
+-2
+-2
 -4400
-NULL
 0
 0
-100
+0
+0
+0
+0
+0
+0
+0
+0
+1
+1
+1
+1
+1
 10
-1
-0
-0
-200
-20
-2
-0
-0
-0
-0
-0
-0
--1
--1
--1
-1
-2
-3
--2
--2
--2
-1
-1
+100
+1234567890
 124
 125
--1256
+2
+2
+20
+200
 3
 3
 3
-1
--1234567891
-1234567890
+3
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ROUND(key, 2) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
@@ -6778,44 +6905,45 @@ POSTHOOK: query: SELECT ROUND(key, 2) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
--4400.00
-NULL
-0.00
-0.00
-100.00
-10.00
-1.00
-0.10
-0.01
-200.00
-20.00
-2.00
-0.00
-0.20
-0.02
-0.30
-0.33
-0.33
 -0.30
 -0.33
 -0.33
+-1.12
+-1.12
+-1.12
+-1234567890.12
+-1255.49
+-4400.00
+0.00
+0.00
+0.00
+0.01
+0.02
+0.10
+0.20
+0.30
+0.33
+0.33
 1.00
-2.00
-3.14
--1.12
--1.12
--1.12
+1.00
+1.00
 1.12
 1.12
+10.00
+100.00
+1234567890.12
 124.00
 125.20
--1255.49
+2.00
+2.00
+20.00
+200.00
 3.14
 3.14
 3.14
-1.00
--1234567890.12
-1234567890.12
+3.14
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT POWER(key, 2) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
@@ -6895,44 +7023,45 @@ POSTHOOK: query: SELECT POWER(key, 2) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
-1.936E7
-NULL
 0.0
 0.0
-10000.0
-100.0
-1.0
+0.0
 0.010000000000000002
-1.0E-4
-40000.0
-400.0
-4.0
-0.0
 0.04000000000000001
-4.0E-4
 0.09
+0.09
+0.10890000000000001
 0.10890000000000001
 0.11088900000000002
-0.09
-0.10890000000000001
 0.11088900000000002
 1.0
-4.0
-9.8596
+1.0
+1.0
+1.0E-4
+1.2544000000000002
 1.2544000000000002
 1.2544000000000002
 1.2588840000000003
-1.2544000000000002
 1.2588840000000003
+1.52415787532275558E18
+1.52415787532275558E18
+1.936E7
+100.0
+10000.0
 15376.0
 15675.04
 1576255.1401
+4.0
+4.0
+4.0E-4
+400.0
+40000.0
 9.8596
 9.8596
 9.8596
-1.0
-1.52415787532275558E18
-1.52415787532275558E18
+9.8596
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY
@@ -7012,44 +7141,45 @@ POSTHOOK: query: SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF_txt_small
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
--2199.000000
-NULL
-NULL
-NULL
-1.000000
-1.000000
-0.000000
-0.000000
-0.000000
-1.000000
-1.000000
-0.000000
-NULL
-0.000000
-0.000000
-0.100000
-0.010000
-0.001000
-0.100000
-0.010000
-0.001000
-0.000000
-0.000000
-1.000000
 -0.120000
 -0.120000
 -0.122000
-0.440000
-0.439000
-1.000000
-1.000000
--626.745000
-1.000000
-1.000000
-1.000000
-0.000000
+-2199.000000
 -617283944.061500
+-626.745000
+0.000000
+0.000000
+0.000000
+0.000000
+0.000000
+0.000000
+0.000000
+0.000000
+0.000000
+0.001000
+0.001000
+0.010000
+0.010000
+0.100000
+0.100000
+0.439000
+0.440000
 1.000000
+1.000000
+1.000000
+1.000000
+1.000000
+1.000000
+1.000000
+1.000000
+1.000000
+1.000000
+1.000000
+NULL
+NULL
+NULL
+NULL
+NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_txt_small GROUP BY value
 PREHOOK: type: QUERY
@@ -7187,23 +7317,24 @@ POSTHOOK: query: SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF_txt_s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
-4	0.0	0.0
+-1	0.0	0.0
+-11	0.0	0.0
 -1234567890	0.0	0.0
+-1255	0.0	0.0
 0	0.22561046704494161	0.050900082840236685
 1	0.05928102563215321	0.0035142400000000066
-2	0.0	0.0
-3	0.0	0.0
-124	0.0	0.0
-200	0.0	0.0
-4400	0.0	0.0
-1234567890	0.0	0.0
 10	0.0	0.0
-125	0.0	0.0
--1255	0.0	0.0
--11	0.0	0.0
--1	0.0	0.0
-20	0.0	0.0
 100	0.0	0.0
+1234567890	0.0	0.0
+124	0.0	0.0
+125	0.0	0.0
+2	0.0	0.0
+20	0.0	0.0
+200	0.0	0.0
+3	0.0	0.0
+4	0.0	0.0
+4400	0.0	0.0
+NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_txt_small GROUP BY value
 PREHOOK: type: QUERY
@@ -7341,23 +7472,24 @@ POSTHOOK: query: SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf_txt_small
 #### A masked pattern was here ####
-4	NULL	NULL
+-1	0.0	0.0
+-11	NULL	NULL
 -1234567890	NULL	NULL
+-1255	NULL	NULL
 0	0.2348228191855647	0.055141756410256405
 1	0.06627820154470102	0.004392800000000008
-2	0.0	0.0
-3	0.0	0.0
-124	NULL	NULL
-200	NULL	NULL
-4400	NULL	NULL
-1234567890	NULL	NULL
 10	NULL	NULL
-125	NULL	NULL
--1255	NULL	NULL
--11	NULL	NULL
--1	0.0	0.0
-20	NULL	NULL
 100	NULL	NULL
+1234567890	NULL	NULL
+124	NULL	NULL
+125	NULL	NULL
+2	0.0	0.0
+20	NULL	NULL
+200	NULL	NULL
+3	0.0	0.0
+4	NULL	NULL
+4400	NULL	NULL
+NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF_txt_small
 PREHOOK: type: QUERY

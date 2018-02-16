@@ -2,6 +2,7 @@ set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
+set hive.cli.print.header=true;
 
 drop table if exists vector_interval_1;
 create table vector_interval_1 (ts timestamp, dt date, str1 string, str2 string) stored as orc;
@@ -10,6 +11,8 @@ insert into vector_interval_1
   select timestamp '2001-01-01 01:02:03', date '2001-01-01', '1-2', '1 2:3:4' from src limit 1;
 insert into vector_interval_1
   select null, null, null, null from src limit 1;
+
+select * from vector_interval_1;
 
 -- constants/cast from string
 explain vectorization expression

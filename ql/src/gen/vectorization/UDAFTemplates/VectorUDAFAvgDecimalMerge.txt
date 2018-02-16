@@ -368,7 +368,7 @@ public class <ClassName> extends VectorAggregateExpression {
       Aggregation myagg = (Aggregation)agg;
 
       if (inputStructColVector.isRepeating) {
-        if (inputStructColVector.noNulls) {
+        if (inputStructColVector.noNulls || !inputStructColVector.isNull[0]) {
           if (myagg.isNull) {
             myagg.isNull = false;
             myagg.mergeSum.setFromLong(0L);
@@ -529,9 +529,12 @@ public class <ClassName> extends VectorAggregateExpression {
 
 #IF PARTIAL2
     ColumnVector[] fields = outputColVector.fields;
+    fields[AVERAGE_COUNT_FIELD_INDEX].isNull[batchIndex] = false;
     ((LongColumnVector) fields[AVERAGE_COUNT_FIELD_INDEX]).vector[batchIndex] = myagg.mergeCount;
+    fields[AVERAGE_SUM_FIELD_INDEX].isNull[batchIndex] = false;
     ((DecimalColumnVector) fields[AVERAGE_SUM_FIELD_INDEX]).vector[batchIndex].set(myagg.mergeSum);
 
+    // NULL out useless source field.
     ColumnVector sourceColVector = (ColumnVector) fields[AVERAGE_SOURCE_FIELD_INDEX];
     sourceColVector.isRepeating = true;
     sourceColVector.noNulls = false;

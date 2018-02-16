@@ -60,26 +60,24 @@ public class <ClassName> extends VectorExpression {
   @Override
   public void evaluate(VectorizedRowBatch batch) {
 
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
 
     DecimalColumnVector inputColVector = (DecimalColumnVector) batch.cols[colNum];
     int[] sel = batch.selected;
-    boolean[] nullPos = inputColVector.isNull;
-    int n = batch.size;
-    HiveDecimalWritable[] vector = inputColVector.vector;
+    boolean[] inputIsNull = inputColVector.isNull;
 
-    // return immediately if batch is empty
-    if (n == 0) {
-      return;
-    }
+    HiveDecimalWritable[] vector = inputColVector.vector;
 
     if (inputColVector.noNulls) {
       if (inputColVector.isRepeating) {
-
-        // All must be selected otherwise size would be zero.
-        // Repeating property will not change.
         if (<OptionalNot>(DecimalUtil.compare(vector[0], leftValue) < 0 || DecimalUtil.compare(vector[0], rightValue) > 0)) {
 
           // Entire batch is filtered out.
@@ -108,10 +106,7 @@ public class <ClassName> extends VectorExpression {
       }
     } else {
       if (inputColVector.isRepeating) {
-
-        // All must be selected otherwise size would be zero.
-        // Repeating property will not change.
-        if (!nullPos[0]) {
+        if (!inputIsNull[0]) {
           if (<OptionalNot>(DecimalUtil.compare(vector[0], leftValue) < 0 || DecimalUtil.compare(vector[0], rightValue) > 0)) {
 
             // Entire batch is filtered out.
@@ -124,19 +119,19 @@ public class <ClassName> extends VectorExpression {
         int newSize = 0;
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
             if (<OptionalNot>(DecimalUtil.compare(leftValue, vector[i]) <= 0 && DecimalUtil.compare(vector[i], rightValue) <= 0)) {
              sel[newSize++] = i;
             }
           }
         }
-        
+
         // Change the selected vector
         batch.size = newSize;
       } else {
         int newSize = 0;
         for(int i = 0; i != n; i++) {
-          if (!nullPos[i]) {
+          if (!inputIsNull[i]) {
             if (<OptionalNot>(DecimalUtil.compare(leftValue, vector[i]) <= 0 && DecimalUtil.compare(vector[i], rightValue) <= 0)) {
               sel[newSize++] = i;
             }
