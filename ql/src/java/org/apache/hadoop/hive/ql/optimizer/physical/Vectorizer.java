@@ -27,6 +27,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -354,6 +356,8 @@ public class Vectorizer implements PhysicalPlanResolver {
   private BaseWork currentBaseWork;
   private Operator<? extends OperatorDesc> currentOperator;
   private Collection<Class<?>> vectorizedInputFormatExcludes;
+  private Map<Operator<? extends OperatorDesc>, Set<ImmutablePair<Operator<? extends OperatorDesc>, Operator<? extends OperatorDesc>>>> delayedFixups =
+      new IdentityHashMap<Operator<? extends OperatorDesc>, Set<ImmutablePair<Operator<?>, Operator<?>>>>();
 
   public void testSetCurrentBaseWork(BaseWork testBaseWork) {
     currentBaseWork = testBaseWork;
@@ -749,6 +753,8 @@ public class Vectorizer implements PhysicalPlanResolver {
     List<Operator<? extends OperatorDesc>> currentVectorParentList = newOperatorList();
     currentVectorParentList.add(dummyVectorOperator);
 
+    delayedFixups.clear();
+
     do {
       List<Operator<? extends OperatorDesc>> nextParentList = newOperatorList();
       List<Operator<? extends OperatorDesc>> nextVectorParentList= newOperatorList();
@@ -777,6 +783,8 @@ public class Vectorizer implements PhysicalPlanResolver {
       currentParentList = nextParentList;
       currentVectorParentList = nextVectorParentList;
     } while (currentParentList.size() > 0);
+
+    runDelayedFixups();
 
     return dummyVectorOperator;
   }
@@ -844,10 +852,39 @@ public class Vectorizer implements PhysicalPlanResolver {
       if (childMultipleParent == parent) {
         childMultipleParents.set(i, vectorParent);
       } else {
-        fixupOtherParent(childMultipleParent, child, vectorChild);
+        queueDelayedFixup(childMultipleParent, child, vectorChild);
       }
     }
     vectorChild.setParentOperators(childMultipleParents);
+  }
+
+  /*
+   * The fix up is delayed so that the parent operators aren't modified until the entire operator
+   * tree has been vectorized.
+   */
+  private void queueDelayedFixup(Operator<? extends OperatorDesc> parent,
+      Operator<? extends OperatorDesc> child, Operator<? extends OperatorDesc> vectorChild) {
+    if (delayedFixups.get(parent) == null) {
+      HashSet<ImmutablePair<Operator<? extends OperatorDesc>, Operator<? extends OperatorDesc>>> value =
+          new HashSet<ImmutablePair<Operator<? extends OperatorDesc>, Operator<? extends OperatorDesc>>>(1);
+      delayedFixups.put(parent, value);
+    }
+    delayedFixups.get(parent).add(
+        new ImmutablePair<Operator<? extends OperatorDesc>, Operator<? extends OperatorDesc>>(
+            child, vectorChild));
+  }
+
+  private void runDelayedFixups() {
+    for (Entry<Operator<? extends OperatorDesc>, Set<ImmutablePair<Operator<? extends OperatorDesc>, Operator<? extends OperatorDesc>>>> delayed 
+        : delayedFixups.entrySet()) {
+      Operator<? extends OperatorDesc> key = delayed.getKey();
+      Set<ImmutablePair<Operator<? extends OperatorDesc>, Operator<? extends OperatorDesc>>> value =
+          delayed.getValue();
+      for (ImmutablePair<Operator<? extends OperatorDesc>, Operator<? extends OperatorDesc>> swap : value) {
+        fixupOtherParent(key, swap.getLeft(), swap.getRight());
+      }
+    }
+    delayedFixups.clear();
   }
 
   private void fixupOtherParent(
