@@ -123,7 +123,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    */
   public HiveTableScan copy(RelDataType newRowtype) {
     return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table), this.tblAlias, this.concatQbIDAlias,
-            newRowtype, this.useQBIdInDigest, this.insideView);
+        newRowtype, this.useQBIdInDigest, this.insideView);
   }
 
   @Override public RelWriter explainTerms(RelWriter pw) {
