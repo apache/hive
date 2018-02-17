@@ -377,9 +377,8 @@ public final class HiveMaterializedViewsRegistry {
       List<Interval> intervals = Arrays.asList(DruidTable.DEFAULT_INTERVAL);
       rowType = dtFactory.createStructType(druidColTypes, druidColNames);
       RelOptHiveTable optTable = new RelOptHiveTable(null, fullyQualifiedTabName,
-              rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-              conf, new HashMap<>(), new HashMap<>(), new AtomicInteger());
-
+          rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
+          conf, new HashMap<>(), new HashMap<>(), new AtomicInteger());
       DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
           dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
           intervals, null, null);
@@ -390,8 +389,8 @@ public final class HiveMaterializedViewsRegistry {
     } else {
       // Build Hive Table Scan Rel
       RelOptHiveTable optTable = new RelOptHiveTable(null, fullyQualifiedTabName,
-              rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-              conf, new HashMap<>(), new HashMap<>(), new AtomicInteger());
+          rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
+          conf, new HashMap<>(), new HashMap<>(), new AtomicInteger());
       tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
           viewTable.getTableName(), null, false, false);
     }

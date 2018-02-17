@@ -58,6 +58,8 @@ import java.util.stream.Collectors;
 import javax.jdo.JDODataStoreException;
 
 import org.apache.calcite.plan.RelOptMaterialization;
+import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Project;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileChecksum;
@@ -1365,8 +1367,14 @@ public class Hive {
               HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(
                   dbName, materializedViewTable.getTableName());
           if (materialization != null) {
-            RelOptHiveTable cachedMaterializedViewTable =
-                (RelOptHiveTable) materialization.tableRel.getTable();
+            RelNode viewScan = materialization.tableRel;
+            RelOptHiveTable cachedMaterializedViewTable;
+            if (viewScan instanceof Project) {
+              // There is a Project on top (due to nullability)
+              cachedMaterializedViewTable = (RelOptHiveTable) viewScan.getInput(0).getTable();
+            } else {
+              cachedMaterializedViewTable = (RelOptHiveTable) viewScan.getTable();
+            }
             if (cachedMaterializedViewTable.getHiveTableMD().getCreateTime() ==
                 materializedViewTable.getCreateTime()) {
               // It is in the cache and up to date
