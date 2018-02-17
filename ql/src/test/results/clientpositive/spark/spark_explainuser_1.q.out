@@ -1188,10 +1188,10 @@ Reducer 3 <- Reducer 2 (SORT)
 
 Stage-0
   Fetch Operator
-    limit:-1
+    limit:1
     Stage-1
       Reducer 3
-      File Output Operator [FS_11]
+      File Output Operator [FS_10]
         Limit [LIM_9] (rows=1 width=97)
           Number of rows:1
           Select Operator [SEL_8] (rows=10 width=97)
@@ -1375,7 +1375,7 @@ Stage-0
                                   <-Reducer 2 [SORT]
                                     SORT [RS_8]
                                       Select Operator [SEL_6] (rows=3 width=105)
-                                        Output:["_col0","_col1","_col2","_col5"]
+                                        Output:["_col0","_col1","_col2","_col3"]
                                         Group By Operator [GBY_5] (rows=3 width=101)
                                           Output:["_col0","_col1","_col2","_col3"],aggregations:["sum(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                         <-Map 1 [GROUP]

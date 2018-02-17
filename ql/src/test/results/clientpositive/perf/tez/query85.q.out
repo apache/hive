@@ -190,7 +190,7 @@ Stage-0
           <-Reducer 9 [SIMPLE_EDGE]
             SHUFFLE [RS_52]
               Select Operator [SEL_51] (rows=1023990 width=385)
-                Output:["_col5","_col6","_col7","_col8"]
+                Output:["_col4","_col5","_col6","_col7"]
                 Group By Operator [GBY_50] (rows=1023990 width=385)
                   Output:["_col0","_col1","_col2","_col3"],aggregations:["avg(VALUE._col0)","avg(VALUE._col1)","avg(VALUE._col2)"],keys:KEY._col0
                 <-Reducer 8 [SIMPLE_EDGE]

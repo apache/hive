@@ -461,10 +461,10 @@ STAGE PLANS:
                 Statistics: Num rows: 1023990 Data size: 394452395 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
                   expressions: _col1 (type: double), _col2 (type: decimal(11,6)), _col3 (type: decimal(11,6)), substr(_col0, 1, 20) (type: string)
-                  outputColumnNames: _col5, _col6, _col7, _col8
+                  outputColumnNames: _col4, _col5, _col6, _col7
                   Statistics: Num rows: 1023990 Data size: 394452395 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
-                    key expressions: _col8 (type: string), _col5 (type: double), _col6 (type: decimal(11,6)), _col7 (type: decimal(11,6))
+                    key expressions: _col7 (type: string), _col4 (type: double), _col5 (type: decimal(11,6)), _col6 (type: decimal(11,6))
                     sort order: ++++
                     Statistics: Num rows: 1023990 Data size: 394452395 Basic stats: COMPLETE Column stats: NONE
                     TopN Hash Memory Usage: 0.1
