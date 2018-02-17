@@ -1,0 +1,796 @@
+PREHOOK: query: create table emps (
+  empid int,
+  deptno int,
+  name varchar(256),
+  salary float,
+  commission int)
+stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emps
+POSTHOOK: query: create table emps (
+  empid int,
+  deptno int,
+  name varchar(256),
+  salary float,
+  commission int)
+stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emps
+PREHOOK: query: insert into emps values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
+  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (110, 10, 'Bill', 10000, 250)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@emps
+POSTHOOK: query: insert into emps values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
+  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250), (110, 10, 'Bill', 10000, 250)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@emps
+POSTHOOK: Lineage: emps.commission SCRIPT []
+POSTHOOK: Lineage: emps.deptno SCRIPT []
+POSTHOOK: Lineage: emps.empid SCRIPT []
+POSTHOOK: Lineage: emps.name SCRIPT []
+POSTHOOK: Lineage: emps.salary SCRIPT []
+PREHOOK: query: analyze table emps compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps
+PREHOOK: Output: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table emps compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps
+POSTHOOK: Output: default@emps
+#### A masked pattern was here ####
+PREHOOK: query: create table depts (
+  deptno int,
+  name varchar(256),
+  locationid int)
+stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@depts
+POSTHOOK: query: create table depts (
+  deptno int,
+  name varchar(256),
+  locationid int)
+stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@depts
+PREHOOK: query: insert into depts values (10, 'Sales', 10), (30, 'Marketing', null), (20, 'HR', 20)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@depts
+POSTHOOK: query: insert into depts values (10, 'Sales', 10), (30, 'Marketing', null), (20, 'HR', 20)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@depts
+POSTHOOK: Lineage: depts.deptno SCRIPT []
+POSTHOOK: Lineage: depts.locationid SCRIPT []
+POSTHOOK: Lineage: depts.name SCRIPT []
+PREHOOK: query: analyze table depts compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts
+PREHOOK: Output: default@depts
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table depts compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts
+POSTHOOK: Output: default@depts
+#### A masked pattern was here ####
+PREHOOK: query: create table dependents (
+  empid int,
+  name varchar(256))
+stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dependents
+POSTHOOK: query: create table dependents (
+  empid int,
+  name varchar(256))
+stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dependents
+PREHOOK: query: insert into dependents values (10, 'Michael'), (10, 'Jane')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@dependents
+POSTHOOK: query: insert into dependents values (10, 'Michael'), (10, 'Jane')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@dependents
+POSTHOOK: Lineage: dependents.empid SCRIPT []
+POSTHOOK: Lineage: dependents.name SCRIPT []
+PREHOOK: query: analyze table dependents compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dependents
+PREHOOK: Output: default@dependents
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table dependents compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dependents
+POSTHOOK: Output: default@dependents
+#### A masked pattern was here ####
+PREHOOK: query: create table locations (
+  locationid int,
+  name varchar(256))
+stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@locations
+POSTHOOK: query: create table locations (
+  locationid int,
+  name varchar(256))
+stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@locations
+PREHOOK: query: insert into locations values (10, 'San Francisco'), (10, 'San Diego')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@locations
+POSTHOOK: query: insert into locations values (10, 'San Francisco'), (10, 'San Diego')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@locations
+POSTHOOK: Lineage: locations.locationid SCRIPT []
+POSTHOOK: Lineage: locations.name SCRIPT []
+PREHOOK: query: analyze table locations compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@locations
+PREHOOK: Output: default@locations
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table locations compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@locations
+POSTHOOK: Output: default@locations
+#### A masked pattern was here ####
+PREHOOK: query: alter table emps add constraint pk1 primary key (empid) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table emps add constraint pk1 primary key (empid) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table depts add constraint pk2 primary key (deptno) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table depts add constraint pk2 primary key (deptno) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table dependents add constraint pk3 primary key (empid) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table dependents add constraint pk3 primary key (empid) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table locations add constraint pk4 primary key (locationid) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table locations add constraint pk4 primary key (locationid) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table emps add constraint fk1 foreign key (deptno) references depts(deptno) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table emps add constraint fk1 foreign key (deptno) references depts(deptno) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table depts add constraint fk2 foreign key (locationid) references locations(locationid) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table depts add constraint fk2 foreign key (locationid) references locations(locationid) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: create materialized view mv1 enable rewrite as
+select empid, depts.deptno from emps
+join depts using (deptno) where depts.deptno > 10
+group by empid, depts.deptno
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1
+POSTHOOK: query: create materialized view mv1 enable rewrite as
+select empid, depts.deptno from emps
+join depts using (deptno) where depts.deptno > 10
+group by empid, depts.deptno
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1
+PREHOOK: query: analyze table mv1 compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv1
+PREHOOK: Output: default@mv1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv1
+POSTHOOK: Output: default@mv1
+#### A masked pattern was here ####
+PREHOOK: query: explain
+select empid from emps
+join depts using (deptno) where depts.deptno > 20
+group by empid, depts.deptno
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select empid from emps
+join depts using (deptno) where depts.deptno > 20
+group by empid, depts.deptno
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: default.mv1
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (deptno > 20) (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: empid (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select empid from emps
+join depts using (deptno) where depts.deptno > 20
+group by empid, depts.deptno
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Input: default@mv1
+#### A masked pattern was here ####
+POSTHOOK: query: select empid from emps
+join depts using (deptno) where depts.deptno > 20
+group by empid, depts.deptno
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@mv1
+#### A masked pattern was here ####
+PREHOOK: query: drop materialized view mv1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv1
+PREHOOK: Output: default@mv1
+POSTHOOK: query: drop materialized view mv1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv1
+POSTHOOK: Output: default@mv1
+PREHOOK: query: create materialized view mv1 enable rewrite as
+select depts.deptno, empid from depts
+join emps using (deptno) where depts.deptno > 10
+group by empid, depts.deptno
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1
+POSTHOOK: query: create materialized view mv1 enable rewrite as
+select depts.deptno, empid from depts
+join emps using (deptno) where depts.deptno > 10
+group by empid, depts.deptno
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1
+PREHOOK: query: analyze table mv1 compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv1
+PREHOOK: Output: default@mv1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv1
+POSTHOOK: Output: default@mv1
+#### A masked pattern was here ####
+PREHOOK: query: explain
+select empid from emps
+join depts using (deptno) where depts.deptno > 20
+group by empid, depts.deptno
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select empid from emps
+join depts using (deptno) where depts.deptno > 20
+group by empid, depts.deptno
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: default.mv1
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (deptno > 20) (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: empid (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select empid from emps
+join depts using (deptno) where depts.deptno > 20
+group by empid, depts.deptno
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Input: default@mv1
+#### A masked pattern was here ####
+POSTHOOK: query: select empid from emps
+join depts using (deptno) where depts.deptno > 20
+group by empid, depts.deptno
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@mv1
+#### A masked pattern was here ####
+PREHOOK: query: drop materialized view mv1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv1
+PREHOOK: Output: default@mv1
+POSTHOOK: query: drop materialized view mv1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv1
+POSTHOOK: Output: default@mv1
+PREHOOK: query: create materialized view mv1 enable rewrite as
+select empid, depts.deptno from emps
+join depts using (deptno) where emps.deptno > 10
+group by empid, depts.deptno
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1
+POSTHOOK: query: create materialized view mv1 enable rewrite as
+select empid, depts.deptno from emps
+join depts using (deptno) where emps.deptno > 10
+group by empid, depts.deptno
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1
+PREHOOK: query: analyze table mv1 compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv1
+PREHOOK: Output: default@mv1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv1
+POSTHOOK: Output: default@mv1
+#### A masked pattern was here ####
+PREHOOK: query: explain
+select empid from emps
+join depts using (deptno) where depts.deptno > 20
+group by empid, depts.deptno
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select empid from emps
+join depts using (deptno) where depts.deptno > 20
+group by empid, depts.deptno
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: default.mv1
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (deptno > 20) (type: boolean)
+              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: empid (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select empid from emps
+join depts using (deptno) where depts.deptno > 20
+group by empid, depts.deptno
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Input: default@mv1
+#### A masked pattern was here ####
+POSTHOOK: query: select empid from emps
+join depts using (deptno) where depts.deptno > 20
+group by empid, depts.deptno
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@mv1
+#### A masked pattern was here ####
+PREHOOK: query: drop materialized view mv1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv1
+PREHOOK: Output: default@mv1
+POSTHOOK: query: drop materialized view mv1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv1
+POSTHOOK: Output: default@mv1
+PREHOOK: query: create materialized view mv1 enable rewrite as
+select depts.deptno, emps.empid from depts
+join emps using (deptno) where emps.empid > 10
+group by depts.deptno, emps.empid
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1
+POSTHOOK: query: create materialized view mv1 enable rewrite as
+select depts.deptno, emps.empid from depts
+join emps using (deptno) where emps.empid > 10
+group by depts.deptno, emps.empid
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1
+PREHOOK: query: analyze table mv1 compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv1
+PREHOOK: Output: default@mv1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv1
+POSTHOOK: Output: default@mv1
+#### A masked pattern was here ####
+PREHOOK: query: explain
+select depts.deptno from depts
+join emps using (deptno) where emps.empid > 15
+group by depts.deptno, emps.empid
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select depts.deptno from depts
+join emps using (deptno) where emps.empid > 15
+group by depts.deptno, emps.empid
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: default.mv1
+            Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (empid > 15) (type: boolean)
+              Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: deptno (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select depts.deptno from depts
+join emps using (deptno) where emps.empid > 15
+group by depts.deptno, emps.empid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Input: default@mv1
+#### A masked pattern was here ####
+POSTHOOK: query: select depts.deptno from depts
+join emps using (deptno) where emps.empid > 15
+group by depts.deptno, emps.empid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@mv1
+#### A masked pattern was here ####
+10
+10
+10
+10
+20
+PREHOOK: query: drop materialized view mv1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv1
+PREHOOK: Output: default@mv1
+POSTHOOK: query: drop materialized view mv1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv1
+POSTHOOK: Output: default@mv1
+PREHOOK: query: create materialized view mv1 enable rewrite as
+select depts.deptno, emps.empid from depts
+join emps using (deptno) where emps.empid > 10
+group by depts.deptno, emps.empid
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1
+POSTHOOK: query: create materialized view mv1 enable rewrite as
+select depts.deptno, emps.empid from depts
+join emps using (deptno) where emps.empid > 10
+group by depts.deptno, emps.empid
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1
+PREHOOK: query: analyze table mv1 compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv1
+PREHOOK: Output: default@mv1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv1
+POSTHOOK: Output: default@mv1
+#### A masked pattern was here ####
+PREHOOK: query: explain
+select depts.deptno from depts
+join emps using (deptno) where emps.empid > 15
+group by depts.deptno
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select depts.deptno from depts
+join emps using (deptno) where emps.empid > 15
+group by depts.deptno
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: default.mv1
+            Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: (empid > 15) (type: boolean)
+              Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: deptno (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 5 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select depts.deptno from depts
+join emps using (deptno) where emps.empid > 15
+group by depts.deptno
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Input: default@mv1
+#### A masked pattern was here ####
+POSTHOOK: query: select depts.deptno from depts
+join emps using (deptno) where emps.empid > 15
+group by depts.deptno
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@mv1
+#### A masked pattern was here ####
+10
+20
+PREHOOK: query: drop materialized view mv1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv1
+PREHOOK: Output: default@mv1
+POSTHOOK: query: drop materialized view mv1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv1
+POSTHOOK: Output: default@mv1
+Warning: Shuffle Join JOIN[10][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Stage-1:MAPRED' is a cross product
+PREHOOK: query: create materialized view mv1 enable rewrite as
+select depts.name, dependents.name as name2, emps.deptno, depts.deptno as deptno2, dependents.empid
+from depts, dependents, emps
+where depts.deptno > 10
+group by depts.name, dependents.name, emps.deptno, depts.deptno, dependents.empid
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@dependents
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1
+POSTHOOK: query: create materialized view mv1 enable rewrite as
+select depts.name, dependents.name as name2, emps.deptno, depts.deptno as deptno2, dependents.empid
+from depts, dependents, emps
+where depts.deptno > 10
+group by depts.name, dependents.name, emps.deptno, depts.deptno, dependents.empid
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@dependents
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1
+PREHOOK: query: analyze table mv1 compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv1
+PREHOOK: Output: default@mv1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv1
+POSTHOOK: Output: default@mv1
+#### A masked pattern was here ####
+PREHOOK: query: explain
+select dependents.empid
+from depts
+join dependents on (depts.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno > 10
+group by dependents.empid
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select dependents.empid
+from depts
+join dependents on (depts.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno > 10
+group by dependents.empid
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: default.mv1
+            Statistics: Num rows: 8 Data size: 1536 Basic stats: COMPLETE Column stats: COMPLETE
+            Filter Operator
+              predicate: ((deptno = deptno2) and (name = name2)) (type: boolean)
+              Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: empid (type: int)
+                outputColumnNames: _col0
+                Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+      Reduce Operator Tree:
+        Group By Operator
+          keys: KEY._col0 (type: int)
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+          File Output Operator
+            compressed: false
+            Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select dependents.empid
+from depts
+join dependents on (depts.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno > 10
+group by dependents.empid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dependents
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Input: default@mv1
+#### A masked pattern was here ####
+POSTHOOK: query: select dependents.empid
+from depts
+join dependents on (depts.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno > 10
+group by dependents.empid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dependents
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@mv1
+#### A masked pattern was here ####
+PREHOOK: query: drop materialized view mv1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv1
+PREHOOK: Output: default@mv1
+POSTHOOK: query: drop materialized view mv1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv1
+POSTHOOK: Output: default@mv1

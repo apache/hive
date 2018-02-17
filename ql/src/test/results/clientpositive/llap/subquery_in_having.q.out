@@ -1573,11 +1573,11 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@src_null
 POSTHOOK: Lineage: src_null.key SCRIPT []
 POSTHOOK: Lineage: src_null.value EXPRESSION []
+Warning: Map Join MAPJOIN[122][bigTable=?] in task 'Map 1' is a cross product
 Warning: Map Join MAPJOIN[123][bigTable=?] in task 'Map 1' is a cross product
 Warning: Map Join MAPJOIN[124][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[125][bigTable=?] in task 'Map 1' is a cross product
-Warning: Shuffle Join MERGEJOIN[126][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-Warning: Shuffle Join MERGEJOIN[127][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 6' is a cross product
+Warning: Shuffle Join MERGEJOIN[125][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[126][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 6' is a cross product
 PREHOOK: query: explain
 select key, value, count(*)
 from src_null b
@@ -2049,11 +2049,11 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+Warning: Map Join MAPJOIN[122][bigTable=?] in task 'Map 1' is a cross product
 Warning: Map Join MAPJOIN[123][bigTable=?] in task 'Map 1' is a cross product
 Warning: Map Join MAPJOIN[124][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[125][bigTable=?] in task 'Map 1' is a cross product
-Warning: Shuffle Join MERGEJOIN[126][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
-Warning: Shuffle Join MERGEJOIN[127][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 6' is a cross product
+Warning: Shuffle Join MERGEJOIN[125][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[126][tables = [$hdt$_2, $hdt$_3]] in Stage 'Reducer 6' is a cross product
 PREHOOK: query: select key, value, count(*)
 from src_null b
 where NOT EXISTS (select key from src_null where src_null.value <> b.value)

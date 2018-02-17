@@ -17,7 +17,7 @@ POSTHOOK: Output: default@agg1
 POSTHOOK: Lineage: agg1.col0 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: agg1.col1 SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: agg1.col2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-Warning: Shuffle Join JOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT single_use_subq11.a1 AS a1,
        single_use_subq11.a2 AS a2
@@ -207,7 +207,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[21][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-2:MAPRED' is a cross product
 PREHOOK: query: SELECT single_use_subq11.a1 AS a1,
        single_use_subq11.a2 AS a2
 FROM   (SELECT Sum(agg1.col2) AS a1

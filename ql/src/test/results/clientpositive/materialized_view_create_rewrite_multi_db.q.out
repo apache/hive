@@ -156,7 +156,7 @@ STAGE PLANS:
           alias: db2.cmv_mat_view2
           Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: a (type: int), c (type: decimal(10,2))
+            expressions: 3 (type: int), c (type: decimal(10,2))
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
             ListSink

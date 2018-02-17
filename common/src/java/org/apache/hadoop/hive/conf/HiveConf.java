@@ -1162,6 +1162,13 @@ public class HiveConf extends Configuration {
     // materialized views
     HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING("hive.materializedview.rewriting", false,
         "Whether to try to rewrite queries using the materialized views enabled for rewriting"),
+    HIVE_MATERIALIZED_VIEW_REWRITING_SELECTION_STRATEGY("hive.materializedview.rewriting.strategy", "heuristic",
+        new StringSet("heuristic", "costbased"),
+        "The strategy that should be used to cost and select the materialized view rewriting. \n" +
+            "  heuristic: Always try to select the plan using the materialized view if rewriting produced one," +
+            "choosing the plan with lower cost among possible plans containing a materialized view\n" +
+            "  costbased: Fully cost-based strategy, always use plan with lower cost, independently on whether " +
+            "it uses a materialized view or not"),
     HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW("hive.materializedview.rewriting.time.window", "0s", new TimeValidator(TimeUnit.SECONDS),
         "Time window, specified in seconds, after which outdated materialized views become invalid for automatic query rewriting.\n" +
         "For instance, if a materialized view is created and afterwards one of its source tables is changed at " +
