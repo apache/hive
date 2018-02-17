@@ -424,11 +424,11 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 1724 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Select Operator
-                    Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                       tag: 1
                       auto parallelism: false
             Execution mode: llap
@@ -498,7 +498,7 @@ STAGE PLANS:
                   0 
                   1 
                 Position of Big Table: 0
-                Statistics: Num rows: 1392 Data size: 238866 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1392 Data size: 233298 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
                   mode: hash

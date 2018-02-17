@@ -1728,7 +1728,7 @@ Stage-0
       Reducer 2 llap
       File Output Operator [FS_16]
         Merge Join Operator [MERGEJOIN_27] (rows=292 width=10)
-          Conds:RS_12._col1=RS_13._col1(Inner),Output:["_col0","_col1"]
+          Conds:RS_12._col1=RS_13._col0(Inner),Output:["_col0","_col1"]
         <-Map 1 [SIMPLE_EDGE] llap
           SHUFFLE [RS_12]
             PartitionCols:_col1
@@ -1748,9 +1748,9 @@ Stage-0
                     default@tab,s1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
         <-Map 4 [SIMPLE_EDGE] llap
           SHUFFLE [RS_13]
-            PartitionCols:_col1
+            PartitionCols:_col0
             Select Operator [SEL_8] (rows=242 width=10)
-              Output:["_col1"]
+              Output:["_col0"]
               Filter Operator [FIL_24] (rows=242 width=10)
                 predicate:value is not null
                 TableScan [TS_6] (rows=242 width=10)
@@ -1803,7 +1803,7 @@ Stage-0
       Reducer 2 llap
       File Output Operator [FS_16]
         Merge Join Operator [MERGEJOIN_27] (rows=292 width=10)
-          Conds:RS_12._col1=RS_13._col1(Inner),Output:["_col0","_col1"]
+          Conds:RS_12._col1=RS_13._col0(Inner),Output:["_col0","_col1"]
         <-Map 1 [SIMPLE_EDGE] llap
           SHUFFLE [RS_12]
             PartitionCols:_col1
@@ -1823,9 +1823,9 @@ Stage-0
                     default@tab,s1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
         <-Map 4 [SIMPLE_EDGE] llap
           SHUFFLE [RS_13]
-            PartitionCols:_col1
+            PartitionCols:_col0
             Select Operator [SEL_8] (rows=242 width=10)
-              Output:["_col1"]
+              Output:["_col0"]
               Filter Operator [FIL_24] (rows=242 width=10)
                 predicate:value is not null
                 TableScan [TS_6] (rows=242 width=10)
@@ -1959,7 +1959,7 @@ Stage-0
                   Reduce Output Operator [RS_24]
                     PartitionCols:_col0
                     Merge Join Operator [MERGEJOIN_50] (rows=292 width=10)
-                      Conds:RS_12._col1=RS_13._col1(Inner),Output:["_col0"]
+                      Conds:RS_12._col1=RS_13._col0(Inner),Output:["_col0"]
                     <-Map 1 [SIMPLE_EDGE] llap
                       SHUFFLE [RS_12]
                         PartitionCols:_col1
@@ -1979,9 +1979,9 @@ Stage-0
                                 default@tab,s1,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
                     <-Map 7 [SIMPLE_EDGE] llap
                       SHUFFLE [RS_13]
-                        PartitionCols:_col1
+                        PartitionCols:_col0
                         Select Operator [SEL_8] (rows=242 width=10)
-                          Output:["_col1"]
+                          Output:["_col0"]
                           Filter Operator [FIL_45] (rows=242 width=10)
                             predicate:value is not null
                             TableScan [TS_6] (rows=242 width=10)
