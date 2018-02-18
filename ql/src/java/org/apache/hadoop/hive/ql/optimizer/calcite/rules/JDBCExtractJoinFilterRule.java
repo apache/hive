@@ -44,8 +44,7 @@ public final class JDBCExtractJoinFilterRule extends AbstractJoinExtractFilterRu
     super(operand(HiveJoin.class,
             operand(HiveJdbcConverter.class, any()),
             operand(HiveJdbcConverter.class, any())), 
-          HiveRelFactories.HIVE_BUILDER, 
-          HiveRelFactories.HIVE_FILTER_FACTORY);
+          HiveRelFactories.HIVE_BUILDER, null);
   }
 
   //~ Methods ----------------------------------------------------------------
