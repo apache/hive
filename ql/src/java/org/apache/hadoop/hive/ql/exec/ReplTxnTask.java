@@ -21,24 +21,35 @@ package org.apache.hadoop.hive.ql.exec;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
+import com.google.common.collect.Lists;
 
-public class OpenTxnTask extends Task<OpenTxnWork> {
+import java.util.Iterator;
+import java.util.List;
+
+public class ReplTxnTask extends Task<ReplTxnWork> {
 
   private static final long serialVersionUID = 1L;
 
-  public OpenTxnTask() {
+  public ReplTxnTask() {
     super();
   }
 
   @Override
   public int execute(DriverContext driverContext) {
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-      Utilities.FILE_OP_LOGGER.trace("Executing OpenTxn for " + work.getTxnId());
+      Utilities.FILE_OP_LOGGER.trace("Executing ReplTxnTask for " + work.getTxnIds());
     }
 
     try {
-      long txnId = driverContext.getCtx().getHiveTxnManager().replOpenTxn(work.getReplPolicy(), work.getTxnId());
-      LOG.info("Replayed OpenTxn Event for policy " + work.getReplPolicy() + " with srcTxn " + work.getTxnId() + " and target txn id " + txnId);
+      if (work.getOperationType() ==  ReplTxnWork.OperationType.REPL_OPEN_TXN) {
+        List<Long> txnIdsItr = driverContext.getCtx().getHiveTxnManager()
+            .replOpenTxn(work.getReplPolicy(), work.getTxnIds(), work.getNumTxns());
+        for (int i = 0; i < txnIdsItr.size(); i++) {
+          LOG.info(
+              "Replayed OpenTxn Event for policy " + work.getReplPolicy() + " with srcTxn " + work
+                  .getTxnId(i) + " and target txn id " + txnIdsItr.get(i));
+        }
+      }
       return 0;
     } catch (Exception e) {
       console.printError("Failed with exception " + e.getMessage(), "\n"

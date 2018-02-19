@@ -39,7 +39,7 @@ import org.apache.hadoop.hive.ql.exec.ImportCommitWork;
 import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.OpenTxnWork;
+import org.apache.hadoop.hive.ql.exec.ReplTxnWork;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -410,7 +410,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Task<?> copyTask = null;
     if (replicationSpec.isInReplicationScope()) {
-      /*if (isSourceMm || isAcid(txnId)) {
+      /*if (isSourceMm || isAcid(writeId)) {
         // Note: this is replication gap, not MM gap... Repl V2 is not ready yet.
         throw new RuntimeException("Replicating MM and ACID tables is not supported");
       }*/
@@ -507,7 +507,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       Task<?> copyTask = null;
       if (replicationSpec.isInReplicationScope()) {
-        /*if (isSourceMm || isAcid(txnId)) {
+        /*if (isSourceMm || isAcid(writeId)) {
           // Note: this is replication gap, not MM gap... Repl V2 is not ready yet.
           throw new RuntimeException("Replicating MM and ACID tables is not supported");
         }*/
@@ -907,14 +907,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     @SuppressWarnings("unchecked")
     Task<ImportCommitWork> ict = (!isMmTable) ? null : TaskFactory.get(
         new ImportCommitWork(dbName, tblName, writeId, stmtId), conf);
-    return ict;
-  }
-
-  private static Task<?> createOpenTxnTask(
-          String dbName, String tblName, Long txnId, HiveConf conf, boolean isMmTable) {
-    @SuppressWarnings("unchecked")
-    Task<OpenTxnWork> ict = (!isMmTable) ? null : TaskFactory.get(
-            new OpenTxnWork(dbName, tblName, txnId), conf);
     return ict;
   }
 

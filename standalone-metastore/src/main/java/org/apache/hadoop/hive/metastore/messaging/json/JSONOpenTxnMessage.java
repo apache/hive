@@ -19,7 +19,6 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
-import org.apache.thrift.TException;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import com.google.common.collect.Lists;
@@ -28,14 +27,21 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * JSON implementation of InsertMessage
+ * JSON implementation of OpenTxnMessage
  */
 public class JSONOpenTxnMessage extends OpenTxnMessage {
 
   @JsonProperty
-  Long txnid;
+  List<Long> txnIds;
 
+  @JsonProperty
   Long timestamp;
+
+  @JsonProperty
+  String server;
+
+  @JsonProperty
+  String servicePrincipal;
 
   /**
    * Default constructor, needed for Jackson.
@@ -43,13 +49,15 @@ public class JSONOpenTxnMessage extends OpenTxnMessage {
   public JSONOpenTxnMessage() {
   }
 
-  public JSONOpenTxnMessage(Long txnid, Long timestamp) {
+  public JSONOpenTxnMessage(String server, String servicePrincipal, Iterator<Long> txnIdsItr, Long timestamp) {
     this.timestamp = timestamp;
-    this.txnid = txnid;
+    this.txnIds = Lists.newArrayList(txnIdsItr);
+    this.server = server;
+    this.servicePrincipal = servicePrincipal;
   }
 
   @Override
-  public Long getTxnId() { return txnid; }
+  public Iterator<Long> getTxnIdItr() { return txnIds.iterator(); }
 
 
   @Override
@@ -64,12 +72,12 @@ public class JSONOpenTxnMessage extends OpenTxnMessage {
 
   @Override
   public String getServicePrincipal() {
-    return null;
+    return servicePrincipal;
   }
 
   @Override
   public String getServer() {
-    return null;
+    return server;
   }
 
   @Override

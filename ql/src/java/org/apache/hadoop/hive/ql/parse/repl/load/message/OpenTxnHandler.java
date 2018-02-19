@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
 import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
-import org.apache.hadoop.hive.ql.exec.OpenTxnWork;
+import org.apache.hadoop.hive.ql.exec.ReplTxnWork;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -33,10 +33,11 @@ public class OpenTxnHandler extends AbstractMessageHandler {
       throws SemanticException {
     OpenTxnMessage msg = deserializer.getOpenTxnMessage(context.dmd.getPayload());
 
-    Task<OpenTxnWork> openTxnTask = TaskFactory.get(
-        new OpenTxnWork(context.dbName, context.tableName, msg.getTxnId()),
+    Task<ReplTxnWork> openTxnTask = TaskFactory.get(
+        new ReplTxnWork(context.dbName, context.tableName, msg.getTxnIdItr(), ReplTxnWork.OperationType.REPL_OPEN_TXN),
         context.hiveConf
     );
+    updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, context.tableName, null);
     context.log.debug("Added Open txn task : {}", openTxnTask.getId());
     return Collections.singletonList(openTxnTask);
   }

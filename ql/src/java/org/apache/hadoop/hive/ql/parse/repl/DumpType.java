@@ -113,12 +113,6 @@ public enum DumpType {
       return new TruncatePartitionHandler();
     }
   },
-  EVENT_OPEN_TXN("EVENT_OPEN_TXN") {
-    @Override
-    public MessageHandler handler() {
-      return new OpenTxnHandler();
-    }
-  },
   EVENT_INSERT("EVENT_INSERT") {
     @Override
     public MessageHandler handler() {
@@ -189,6 +183,12 @@ public enum DumpType {
     @Override
     public MessageHandler handler() {
       return new DropDatabaseHandler();
+    }
+  },
+  EVENT_OPEN_TXN("EVENT_OPEN_TXN") {
+    @Override
+    public MessageHandler handler() {
+      return new OpenTxnHandler();
     }
   };
 

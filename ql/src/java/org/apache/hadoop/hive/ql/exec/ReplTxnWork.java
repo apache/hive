@@ -19,24 +19,61 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 
+import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import com.google.common.collect.Lists;
+
+import java.util.Iterator;
+import java.util.List;
 
 @Explain(displayName = "Open Transaction", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class OpenTxnWork implements Serializable {
+public class ReplTxnWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private String dbName;
   private String tableName;
-  private long txnId;
+  private List<Long> txnIds;
 
-  public OpenTxnWork(String dbName, String tableName, long txnId) {
-    this.txnId = txnId;
-    this.dbName = dbName;
-    this.tableName = tableName;
+  public enum OperationType {
+    REPL_OPEN_TXN(1),
+    REPL_ABORT_TXN(2),
+    REPL_COMMI_TXN(3);
+    private int value;
+    private OperationType(int value) {
+      this.value = value;
+    }
+    public int getValue() {
+      return value;
+    }
   }
 
-  public long getTxnId() {
-    return txnId;
+  OperationType operation;
+
+  public ReplTxnWork(String dbName, String tableName, Iterator<Long> txnIdsItr, OperationType type) {
+    this.txnIds = Lists.newArrayList(txnIdsItr);
+    this.dbName = dbName;
+    this.tableName = tableName;
+    this.operation = type;
+  }
+
+  public ReplTxnWork(String dbName, String tableName, Long txnId, OperationType type) {
+    this.txnIds = Lists.newArrayList();
+    this.txnIds.add(txnId);
+    this.dbName = dbName;
+    this.tableName = tableName;
+    this.operation = type;
+  }
+
+  public Iterator<Long> getTxnIds() {
+    return txnIds.iterator();
+  }
+
+  public Long getTxnId(int idx) {
+    return txnIds.get(idx);
+  }
+
+  public int getNumTxns() {
+    return txnIds.size();
   }
 
   public String getDbName() {
@@ -55,5 +92,9 @@ public class OpenTxnWork implements Serializable {
     } else {
       return dbName.toLowerCase() + "." + tableName.toLowerCase();
     }
+  }
+
+  public OperationType getOperationType() {
+    return operation;
   }
 }
