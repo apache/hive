@@ -938,11 +938,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       long txnHwm = validTxnList.getHighWatermark();
 
       // The output includes all the txns which are under the high water mark. It includes
-      // the committed transactions as well.
+      // the committed transactions as well. The results should be sorted in ascending order based
+      // on write id. The sorting is needed as exceptions list in ValidWriteIdList would be looked-up
+      // using binary search.
       String s = "select t2w_txnid, t2w_writeid from TXN_TO_WRITE_ID where t2w_txnid <= " + txnHwm
               + " and t2w_database = " + quoteString(names[0])
               + " and t2w_table = " + quoteString(names[1])
-              + " order by t2w_writeid";
+              + " order by t2w_writeid asc";
       LOG.debug("Going to execute query<" + s + ">");
       rs = stmt.executeQuery(s);
       long minOpenWriteId = Long.MAX_VALUE;
