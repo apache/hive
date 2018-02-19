@@ -6664,15 +6664,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public OpenTxnsResponse open_txns(OpenTxnRequest rqst) throws TException {
       OpenTxnsResponse response = getTxnHandler().openTxns(rqst);
+      List<Long> txnIds = response.getTxn_ids();
       if (!listeners.isEmpty()) {
-        List<Long> txnIds = response.getTxn_ids();
-        // TODO: can it be done in a batch ?
-        for (Long id : txnIds) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventType.OPEN_TXN,
-                  new OpenTxnEvent(id, true, this));
-        }
+        MetaStoreListenerNotifier.notifyEvent(listeners,EventType.OPEN_TXN,
+            new OpenTxnEvent(txnIds.iterator(),this));
       }
+      if (!transactionalListeners.isEmpty()) {
+        MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.OPEN_TXN,
+            new OpenTxnEvent(txnIds.iterator(),this));
+      }
+
       return response;
     }
 

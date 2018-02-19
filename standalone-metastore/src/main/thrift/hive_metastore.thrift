@@ -713,6 +713,8 @@ struct OpenTxnRequest {
     2: required string user,
     3: required string hostname,
     4: optional string agentInfo = "Unknown",
+    5: optional string replPolicy,
+    6: optional list<i64> replSrcTxnId,
 }
 
 struct OpenTxnsResponse {

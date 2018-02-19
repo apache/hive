@@ -19,6 +19,8 @@
 
 package org.apache.hadoop.hive.metastore.messaging;
 
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * HCat message sent when an open transaction is done.
@@ -32,8 +34,8 @@ public abstract class OpenTxnMessage extends EventMessage {
   /**
    * Get the table object associated with the insert
    *
-   * @return The TxnId
+   * @return The lists of TxnIds
    */
-  public abstract Long getTxnId();
+  abstract public Iterator<Long> getTxnIdItr();
 
 }

@@ -260,7 +260,7 @@ public class JSONMessageDeserializer extends MessageDeserializer {
     try {
       return mapper.readValue(messageBody, JSONOpenTxnMessage.class);
     } catch (Exception e) {
-      throw new IllegalArgumentException("Could not construct DropConstraintMessage", e);
+      throw new IllegalArgumentException("Could not construct OpenTxnMessage", e);
     }
   }
 }

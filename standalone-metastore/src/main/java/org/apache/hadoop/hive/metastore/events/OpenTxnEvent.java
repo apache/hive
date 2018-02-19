@@ -21,28 +21,31 @@ package org.apache.hadoop.hive.metastore.events;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import com.google.common.collect.Lists;
+
+import java.util.Iterator;
+import java.util.List;
 
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public class OpenTxnEvent extends ListenerEvent {
 
-  private final Long txnId;
+  private final List<Long> txnIds;
   
   /**
    *
-   * @param transactionId Unique identification for the transaction just opened.
-   * @param status status of insert, true = success, false = failure
+   * @param txnIdsItr List of unique identification for the transaction just opened.
    * @param handler handler that is firing the event
    */
-  public OpenTxnEvent(Long transactionId, boolean status, IHMSHandler handler) {
-    super(status, handler);
-    txnId = transactionId;
+  public OpenTxnEvent(Iterator<Long> txnIdsItr, IHMSHandler handler) {
+    super(true, handler);
+    txnIds = Lists.newArrayList(txnIdsItr);
   }
 
   /**
-   * @return Long txnId
+   * @return Iterator<Long> txnIds
    */
-  public Long getTxnId() {
-    return txnId;
+  public Iterator<Long> getTxnIdItr() {
+    return txnIds.iterator();
   }
 }

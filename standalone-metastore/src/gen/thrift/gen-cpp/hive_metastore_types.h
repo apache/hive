@@ -5732,8 +5732,10 @@ inline std::ostream& operator<<(std::ostream& out, const GetOpenTxnsResponse& ob
 }
 
 typedef struct _OpenTxnRequest__isset {
-  _OpenTxnRequest__isset() : agentInfo(true) {}
+  _OpenTxnRequest__isset() : agentInfo(true), replPolicy(false), replSrcTxnId(false) {}
   bool agentInfo :1;
+  bool replPolicy :1;
+  bool replSrcTxnId :1;
 } _OpenTxnRequest__isset;
 
 class OpenTxnRequest {
@@ -5741,7 +5743,7 @@ class OpenTxnRequest {
 
   OpenTxnRequest(const OpenTxnRequest&);
   OpenTxnRequest& operator=(const OpenTxnRequest&);
-  OpenTxnRequest() : num_txns(0), user(), hostname(), agentInfo("Unknown") {
+  OpenTxnRequest() : num_txns(0), user(), hostname(), agentInfo("Unknown"), replPolicy() {
   }
 
   virtual ~OpenTxnRequest() throw();
@@ -5749,6 +5751,8 @@ class OpenTxnRequest {
   std::string user;
   std::string hostname;
   std::string agentInfo;
+  std::string replPolicy;
+  std::vector<int64_t>  replSrcTxnId;
 
   _OpenTxnRequest__isset __isset;
 
@@ -5759,6 +5763,10 @@ class OpenTxnRequest {
   void __set_hostname(const std::string& val);
 
   void __set_agentInfo(const std::string& val);
+
+  void __set_replPolicy(const std::string& val);
+
+  void __set_replSrcTxnId(const std::vector<int64_t> & val);
 
   bool operator == (const OpenTxnRequest & rhs) const
   {
@@ -5771,6 +5779,14 @@ class OpenTxnRequest {
     if (__isset.agentInfo != rhs.__isset.agentInfo)
       return false;
     else if (__isset.agentInfo && !(agentInfo == rhs.agentInfo))
+      return false;
+    if (__isset.replPolicy != rhs.__isset.replPolicy)
+      return false;
+    else if (__isset.replPolicy && !(replPolicy == rhs.replPolicy))
+      return false;
+    if (__isset.replSrcTxnId != rhs.__isset.replSrcTxnId)
+      return false;
+    else if (__isset.replSrcTxnId && !(replSrcTxnId == rhs.replSrcTxnId))
       return false;
     return true;
   }
