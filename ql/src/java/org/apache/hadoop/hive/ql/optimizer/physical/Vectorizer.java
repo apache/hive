@@ -101,6 +101,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedSupport.Support;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+import org.apache.hadoop.hive.ql.io.NullRowsInputFormat;
+import org.apache.hadoop.hive.ql.io.OneNullRowInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -351,6 +353,14 @@ public class Vectorizer implements PhysicalPlanResolver {
   private static final Set<Support> vectorDeserializeTextSupportSet = new TreeSet<Support>();
   static {
     vectorDeserializeTextSupportSet.addAll(Arrays.asList(Support.values()));
+  }
+
+  private static final Set<String> supportedAcidInputFormats = new TreeSet<String>();
+  static {
+    supportedAcidInputFormats.add(OrcInputFormat.class.getName());
+    // For metadataonly or empty rows optimizations, null/onerow input format can be selected.
+    supportedAcidInputFormats.add(NullRowsInputFormat.class.getName());
+    supportedAcidInputFormats.add(OneNullRowInputFormat.class.getName());
   }
 
   private BaseWork currentBaseWork;
@@ -1201,7 +1211,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         // Today, ACID tables are only ORC and that format is vectorizable.  Verify these
         // assumptions.
         Preconditions.checkState(isInputFileFormatVectorized);
-        Preconditions.checkState(inputFileFormatClassName.equals(OrcInputFormat.class.getName()));
+        Preconditions.checkState(supportedAcidInputFormats.contains(inputFileFormatClassName));
 
         if (!useVectorizedInputFileFormat) {
           enabledConditionsNotMetList.add("Vectorizing ACID tables requires "
