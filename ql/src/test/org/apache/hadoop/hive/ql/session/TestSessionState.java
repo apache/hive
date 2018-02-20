@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.session;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +29,10 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocalFileSystem;
+import org.apache.hadoop.fs.ParentNotDirectoryException;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -255,6 +261,53 @@ public class TestSessionState {
         Assert.fail(ioException.getMessage());
         LOG.error("Fail to close the created session: ", ioException);
       }
+    }
+  }
+
+  /**
+   * Unit test for SessionState.createPath().
+   */
+  @Test
+  public void testCreatePath() throws Exception {
+    HiveConf conf = new HiveConf();
+    LocalFileSystem localFileSystem = FileSystem.getLocal(conf);
+
+    Path repeatedCreate = new Path("repeatedCreate");
+    SessionState.createPath(conf, repeatedCreate, "700", true, true);
+    assertTrue(localFileSystem.exists(repeatedCreate));
+    // second time will complete silently
+    SessionState.createPath(conf, repeatedCreate, "700", true, true);
+
+    Path fileNotDirectory = new Path("fileNotDirectory");
+    localFileSystem.create(fileNotDirectory);
+    localFileSystem.deleteOnExit(fileNotDirectory);
+
+    // Show we cannot create a child of a file
+    try {
+      SessionState.createPath(conf, new Path(fileNotDirectory, "child"), "700", true, true);
+      fail("did not get expected exception creating a child of a file");
+    } catch (ParentNotDirectoryException e) {
+      assertTrue(e.getMessage().contains("Parent path is not a directory"));
+    }
+
+    // Show we cannot create a child of a null directory
+    try {
+      //noinspection ConstantConditions
+      SessionState.createPath(conf, new Path((String) null, "child"), "700", true, true);
+      fail("did not get expected exception creating a Path from a null string");
+    } catch (IllegalArgumentException e) {
+      assertTrue(e.getMessage().contains("Can not create a Path from a null string"));
+    }
+
+    // Create a directory with no permissions
+    Path noPermissions = new Path("noPermissions");
+    SessionState.createPath(conf, noPermissions, "000", true, true);
+    // Show we cannot create a child of the directory with no permissions
+    try {
+      SessionState.createPath(conf, new Path(noPermissions, "child"), "700", true, true);
+      fail("did not get expected exception creating a child of a directory with no permissions");
+    } catch (IOException e) {
+      assertTrue(e.getMessage().contains("Failed to create directory noPermissions/child"));
     }
   }
 }
