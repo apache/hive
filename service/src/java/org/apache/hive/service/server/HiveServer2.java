@@ -78,6 +78,7 @@ import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.hive.http.HttpServer;
 import org.apache.hive.http.LlapServlet;
+import org.apache.hive.http.security.PamAuthenticator;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.cli.CLIService;
@@ -116,11 +117,20 @@ public class HiveServer2 extends CompositeService {
   private HttpServer webServer; // Web UI
   private TezSessionPoolManager tezSessionPoolManager;
   private WorkloadManager wm;
+  private PamAuthenticator pamAuthenticator;
 
   public HiveServer2() {
     super(HiveServer2.class.getSimpleName());
     HiveConf.setLoadHiveServer2Config(true);
   }
+
+  @VisibleForTesting
+  public HiveServer2(PamAuthenticator pamAuthenticator) {
+    super(HiveServer2.class.getSimpleName());
+    HiveConf.setLoadHiveServer2Config(true);
+    this.pamAuthenticator = pamAuthenticator;
+  }
+
 
   @Override
   public synchronized void init(HiveConf hiveConf) {
@@ -254,6 +264,21 @@ public class HiveServer2 extends CompositeService {
             builder.setSPNEGOPrincipal(spnegoPrincipal);
             builder.setSPNEGOKeytab(spnegoKeytab);
             builder.setUseSPNEGO(true);
+          }
+          if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_PAM)) {
+            if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL)) {
+              String hiveServer2PamServices = hiveConf.getVar(ConfVars.HIVE_SERVER2_PAM_SERVICES);
+              if (hiveServer2PamServices == null || hiveServer2PamServices.isEmpty()) {
+                throw new IllegalArgumentException(ConfVars.HIVE_SERVER2_PAM_SERVICES.varname + " are not configured.");
+              }
+              builder.setPAMAuthenticator(pamAuthenticator == null ? new PamAuthenticator(hiveConf) : pamAuthenticator);
+              builder.setUsePAM(true);
+            } else if (hiveConf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
+              builder.setPAMAuthenticator(pamAuthenticator == null ? new PamAuthenticator(hiveConf) : pamAuthenticator);
+              builder.setUsePAM(true);
+            } else {
+              throw new IllegalArgumentException(ConfVars.HIVE_SERVER2_WEBUI_USE_SSL.varname + " has false value. It is recommended to set to true when PAM is used.");
+            }
           }
           builder.addServlet("llap", LlapServlet.class);
           builder.setContextRootRewriteTarget("/hiveserver2.jsp");
