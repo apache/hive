@@ -1,0 +1,17 @@
+
+set hive.mapred.mode=nonstrict;
+set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+
+set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.vectorized.execution.enabled=true;
+
+CREATE TABLE acid_vectorized(a INT, b STRING) CLUSTERED BY(a) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true');
+insert into table acid_vectorized select cint, cstring1 from alltypesorc where cint is not null order by cint limit 10;
+insert into table acid_vectorized values (1, 'bar');
+
+explain extended
+select sum(a) from acid_vectorized where false;
+
+select sum(a) from acid_vectorized where false;
+
