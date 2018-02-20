@@ -2450,6 +2450,8 @@ public class HiveConf extends Configuration {
         "the value of hive.server2.webui.host or the correct host name."),
     HIVE_SERVER2_WEBUI_MAX_HISTORIC_QUERIES("hive.server2.webui.max.historic.queries", 25,
         "The maximum number of past queries to show in HiverSever2 WebUI."),
+    HIVE_SERVER2_WEBUI_USE_PAM("hive.server2.webui.use.pam", false,
+        "If true, the HiveServer2 WebUI will be secured with PAM."),
 
     // Tez session settings
     HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE("hive.server2.tez.interactive.queue", "",
