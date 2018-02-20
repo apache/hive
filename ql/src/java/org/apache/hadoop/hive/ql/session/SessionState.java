@@ -740,7 +740,8 @@ public class SessionState {
    * @return
    * @throws IOException
    */
-  private static void createPath(HiveConf conf, Path path, String permission, boolean isLocal,
+  @VisibleForTesting
+  static void createPath(HiveConf conf, Path path, String permission, boolean isLocal,
       boolean isCleanUp) throws IOException {
     FsPermission fsPermission = new FsPermission(permission);
     FileSystem fs;
@@ -750,7 +751,9 @@ public class SessionState {
       fs = path.getFileSystem(conf);
     }
     if (!fs.exists(path)) {
-      fs.mkdirs(path, fsPermission);
+      if (!fs.mkdirs(path, fsPermission)) {
+        throw new IOException("Failed to create directory " + path + " on fs " + fs.getUri());
+      }
       String dirType = isLocal ? "local" : "HDFS";
       LOG.info("Created " + dirType + " directory: " + path.toString());
     }
