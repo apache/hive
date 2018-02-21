@@ -1,5 +1,6 @@
 -- Continue on errors, we do check some error conditions below.
 set hive.cli.errors.ignore=true;
+set hive.test.authz.sstd.hs2.mode=true;
 
 -- Prevent NPE in calcite.
 set hive.cbo.enable=false;
@@ -210,8 +211,9 @@ SELECT * FROM SYS.WM_TRIGGERS;
 CREATE POOL plan_1.default WITH
    ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5, SCHEDULING_POLICY='default';
 
-CREATE POOL plan_2.default WITH
-   ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5, SCHEDULING_POLICY='default';
+CREATE POOL plan_2.default WITH QUERY_PARALLELISM=5, SCHEDULING_POLICY='default';
+CREATE POOL plan_2.default WITH ALLOC_FRACTION=1.0;
+CREATE POOL plan_2.default WITH ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5;
 SELECT * FROM SYS.WM_POOLS;
 
 CREATE POOL plan_2.default.c1 WITH

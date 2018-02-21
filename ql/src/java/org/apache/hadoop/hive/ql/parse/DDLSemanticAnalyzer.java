@@ -1135,8 +1135,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeCreatePool(ASTNode ast) throws SemanticException {
     // TODO: allow defaults for e.g. scheduling policy.
-    if (ast.getChildCount() != 5) {
-      throw new SemanticException("Invalid syntax for create pool.");
+    if (ast.getChildCount() < 3) {
+      throw new SemanticException("Expected more arguments: " + ast.toStringTree());
     }
     String rpName = unescapeIdentifier(ast.getChild(0).getText());
     String poolPath = poolPath(ast.getChild(1));
@@ -1167,6 +1167,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     if (!pool.isSetAllocFraction()) {
       throw new SemanticException("alloc_fraction should be specified for a pool");
+    }
+    if (!pool.isSetQueryParallelism()) {
+      throw new SemanticException("query_parallelism should be specified for a pool");
     }
     CreateOrAlterWMPoolDesc desc = new CreateOrAlterWMPoolDesc(pool, poolPath, false);
     addServiceOutput();
