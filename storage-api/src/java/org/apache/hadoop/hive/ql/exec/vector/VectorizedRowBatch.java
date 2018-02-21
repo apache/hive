@@ -180,12 +180,12 @@ public class VectorizedRowBatch implements Writable {
     return b.toString();
   }
 
-  @Override
-  public String toString() {
+  public String stringify(String prefix) {
     if (size == 0) {
       return "";
     }
     StringBuilder b = new StringBuilder();
+    b.append(prefix);
     b.append("Column vector types: ");
     for (int k = 0; k < projectionSize; k++) {
       int projIndex = projectedColumns[k];
@@ -233,11 +233,18 @@ public class VectorizedRowBatch implements Writable {
           if (k > 0) {
             b.append(", ");
           }
-          cv.stringifyValue(b, i);
+          if (cv != null) {
+            try {
+              cv.stringifyValue(b, i);
+            } catch (Exception ex) {
+              b.append("<invalid>");
+            }
+          }
         }
         b.append(']');
         if (j < size - 1) {
           b.append('\n');
+          b.append(prefix);
         }
       }
     } else {
@@ -260,10 +267,16 @@ public class VectorizedRowBatch implements Writable {
         b.append(']');
         if (i < size - 1) {
           b.append('\n');
+          b.append(prefix);
         }
       }
     }
     return b.toString();
+  }
+
+  @Override
+  public String toString() {
+    return stringify("");
   }
 
   @Override
