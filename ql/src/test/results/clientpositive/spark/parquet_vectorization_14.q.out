@@ -147,31 +147,14 @@ STAGE PLANS:
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [double, double]
         Reducer 2 
-            Execution mode: vectorized
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true
-                reduceColumnNullOrder: aaaaa
-                reduceColumnSortOrder: +++++
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 11
-                    dataColumns: KEY._col0:string, KEY._col1:float, KEY._col2:double, KEY._col3:timestamp, KEY._col4:boolean, VALUE._col0:struct<count:bigint,sum:double,variance:double>, VALUE._col1:float, VALUE._col2:struct<count:bigint,sum:double,variance:double>, VALUE._col3:bigint, VALUE._col4:struct<count:bigint,sum:double,variance:double>, VALUE._col5:struct<count:bigint,sum:double,variance:double>
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                notVectorizedReason: GROUPBY operator: Vector aggregation : "stddev_samp" for input type: "STRUCT" and output type: "DOUBLE" and mode: FINAL not supported for evaluator GenericUDAFStdSampleEvaluator
+                vectorized: false
             Reduce Operator Tree:
               Group By Operator
                 aggregations: stddev_samp(VALUE._col0), max(VALUE._col1), stddev_pop(VALUE._col2), count(VALUE._col3), var_pop(VALUE._col4), var_samp(VALUE._col5)
-                Group By Vectorization:
-                    aggregators: VectorUDAFVarFinal(col 5:struct<count:bigint,sum:double,variance:double>) -> double aggregation: stddev_samp, VectorUDAFMaxDouble(col 6:float) -> float, VectorUDAFVarFinal(col 7:struct<count:bigint,sum:double,variance:double>) -> double aggregation: stddev_pop, VectorUDAFCountMerge(col 8:bigint) -> bigint, VectorUDAFVarFinal(col 9:struct<count:bigint,sum:double,variance:double>) -> double aggregation: var_pop, VectorUDAFVarFinal(col 10:struct<count:bigint,sum:double,variance:double>) -> double aggregation: var_samp
-                    className: VectorGroupByOperator
-                    groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:string, col 1:float, col 2:double, col 3:timestamp, col 4:boolean
-                    native: false
-                    vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5]
                 keys: KEY._col0 (type: string), KEY._col1 (type: float), KEY._col2 (type: double), KEY._col3 (type: timestamp), KEY._col4 (type: boolean)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10
@@ -179,21 +162,10 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col3 (type: timestamp), _col1 (type: float), _col0 (type: string), _col4 (type: boolean), _col2 (type: double), (-26.28 + _col2) (type: double), (- (-26.28 + _col2)) (type: double), _col5 (type: double), (_col1 * -26.28) (type: float), _col6 (type: float), (- _col1) (type: float), (- _col6) (type: float), ((- (-26.28 + _col2)) / 10.175) (type: double), _col7 (type: double), _col8 (type: bigint), (- ((- (-26.28 + _col2)) / 10.175)) (type: double), (-1.389 % _col5) (type: double), (UDFToDouble(_col1) - _col2) (type: double), _col9 (type: double), (_col9 % 10.175) (type: double), _col10 (type: double), (- (UDFToDouble(_col1) - _col2)) (type: double)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21
-                  Select Vectorization:
-                      className: VectorSelectOperator
-                      native: true
-                      projectedOutputColumnNums: [3, 1, 0, 4, 2, 11, 13, 5, 12, 6, 14, 15, 16, 7, 8, 18, 17, 19, 9, 20, 10, 22]
-                      selectExpressions: DoubleScalarAddDoubleColumn(val -26.28, col 2:double) -> 11:double, DoubleColUnaryMinus(col 12:double)(children: DoubleScalarAddDoubleColumn(val -26.28, col 2:double) -> 12:double) -> 13:double, DoubleColMultiplyDoubleScalar(col 1:float, val -26.280000686645508) -> 12:float, DoubleColUnaryMinus(col 1:float) -> 14:float, DoubleColUnaryMinus(col 6:float) -> 15:float, DoubleColDivideDoubleScalar(col 17:double, val 10.175)(children: DoubleColUnaryMinus(col 16:double)(children: DoubleScalarAddDoubleColumn(val -26.28, col 2:double) -> 16:double) -> 17:double) -> 16:double, DoubleColUnaryMinus(col 17:double)(children: DoubleColDivideDoubleScalar(col 18:double, val 10.175)(children: DoubleColUnaryMinus(col 17:double)(children: DoubleScalarAddDoubleColumn(val -26.28, col 2:double) -> 17:double) -> 18:double) -> 17:double) -> 18:double, DoubleScalarModuloDoubleColumn(val -1.389, col 5:double) -> 17:double, DoubleColSubtractDoubleColumn(col 1:double, col 2:double)(children: col 1:float) -> 19:double, DoubleColModuloDoubleScalar(col 9:double, val 10.175) -> 20:double, DoubleColUnaryMinus(col 21:double)(children: DoubleColSubtractDoubleColumn(col 1:double, col 2:double)(children: col 1:float) -> 21:double) -> 22:double
                   Statistics: Num rows: 303 Data size: 3636 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col2 (type: string), _col1 (type: float), _col4 (type: double), _col0 (type: timestamp)
                     sort order: ++++
-                    Reduce Sink Vectorization:
-                        className: VectorReduceSinkObjectHashOperator
-                        keyColumnNums: [0, 1, 2, 3]
-                        native: true
-                        nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        valueColumnNums: [4, 11, 13, 5, 12, 6, 14, 15, 16, 7, 8, 18, 17, 19, 9, 20, 10, 22]
                     Statistics: Num rows: 303 Data size: 3636 Basic stats: COMPLETE Column stats: NONE
                     value expressions: _col3 (type: boolean), _col5 (type: double), _col6 (type: double), _col7 (type: double), _col8 (type: float), _col9 (type: float), _col10 (type: float), _col11 (type: float), _col12 (type: double), _col13 (type: double), _col14 (type: bigint), _col15 (type: double), _col16 (type: double), _col17 (type: double), _col18 (type: double), _col19 (type: double), _col20 (type: double), _col21 (type: double)
         Reducer 3 

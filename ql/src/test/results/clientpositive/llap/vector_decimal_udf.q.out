@@ -3280,40 +3280,21 @@ STAGE PLANS:
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
-                reduceColumnSortOrder: +
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 3
-                    dataColumns: KEY._col0:int, VALUE._col0:struct<count:bigint,sum:double,variance:double>, VALUE._col1:struct<count:bigint,sum:double,variance:double>
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                notVectorizedReason: GROUPBY operator: Vector aggregation : "stddev" for input type: "STRUCT" and output type: "DOUBLE" and mode: FINAL not supported for evaluator GenericUDAFStdEvaluator
+                vectorized: false
             Reduce Operator Tree:
               Group By Operator
                 aggregations: stddev(VALUE._col0), variance(VALUE._col1)
-                Group By Vectorization:
-                    aggregators: VectorUDAFVarFinal(col 1:struct<count:bigint,sum:double,variance:double>) -> double aggregation: stddev, VectorUDAFVarFinal(col 2:struct<count:bigint,sum:double,variance:double>) -> double aggregation: variance
-                    className: VectorGroupByOperator
-                    groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:int
-                    native: false
-                    vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumnNums: [0, 1]
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 17 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  File Sink Vectorization:
-                      className: VectorFileSinkOperator
-                      native: false
                   Statistics: Num rows: 17 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -3434,40 +3415,21 @@ STAGE PLANS:
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
-                reduceColumnSortOrder: +
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 3
-                    dataColumns: KEY._col0:int, VALUE._col0:struct<count:bigint,sum:double,variance:double>, VALUE._col1:struct<count:bigint,sum:double,variance:double>
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                notVectorizedReason: GROUPBY operator: Vector aggregation : "stddev_samp" for input type: "STRUCT" and output type: "DOUBLE" and mode: FINAL not supported for evaluator GenericUDAFStdSampleEvaluator
+                vectorized: false
             Reduce Operator Tree:
               Group By Operator
                 aggregations: stddev_samp(VALUE._col0), var_samp(VALUE._col1)
-                Group By Vectorization:
-                    aggregators: VectorUDAFVarFinal(col 1:struct<count:bigint,sum:double,variance:double>) -> double aggregation: stddev_samp, VectorUDAFVarFinal(col 2:struct<count:bigint,sum:double,variance:double>) -> double aggregation: var_samp
-                    className: VectorGroupByOperator
-                    groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:int
-                    native: false
-                    vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumnNums: [0, 1]
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 17 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  File Sink Vectorization:
-                      className: VectorFileSinkOperator
-                      native: false
                   Statistics: Num rows: 17 Data size: 340 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -7263,40 +7225,21 @@ STAGE PLANS:
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
-                reduceColumnSortOrder: +
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 3
-                    dataColumns: KEY._col0:int, VALUE._col0:struct<count:bigint,sum:double,variance:double>, VALUE._col1:struct<count:bigint,sum:double,variance:double>
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                notVectorizedReason: GROUPBY operator: Vector aggregation : "stddev" for input type: "STRUCT" and output type: "DOUBLE" and mode: FINAL not supported for evaluator GenericUDAFStdEvaluator
+                vectorized: false
             Reduce Operator Tree:
               Group By Operator
                 aggregations: stddev(VALUE._col0), variance(VALUE._col1)
-                Group By Vectorization:
-                    aggregators: VectorUDAFVarFinal(col 1:struct<count:bigint,sum:double,variance:double>) -> double aggregation: stddev, VectorUDAFVarFinal(col 2:struct<count:bigint,sum:double,variance:double>) -> double aggregation: variance
-                    className: VectorGroupByOperator
-                    groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:int
-                    native: false
-                    vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumnNums: [0, 1]
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  File Sink Vectorization:
-                      className: VectorFileSinkOperator
-                      native: false
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -7418,40 +7361,21 @@ STAGE PLANS:
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: a
-                reduceColumnSortOrder: +
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 3
-                    dataColumns: KEY._col0:int, VALUE._col0:struct<count:bigint,sum:double,variance:double>, VALUE._col1:struct<count:bigint,sum:double,variance:double>
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                notVectorizedReason: GROUPBY operator: Vector aggregation : "stddev_samp" for input type: "STRUCT" and output type: "DOUBLE" and mode: FINAL not supported for evaluator GenericUDAFStdSampleEvaluator
+                vectorized: false
             Reduce Operator Tree:
               Group By Operator
                 aggregations: stddev_samp(VALUE._col0), var_samp(VALUE._col1)
-                Group By Vectorization:
-                    aggregators: VectorUDAFVarFinal(col 1:struct<count:bigint,sum:double,variance:double>) -> double aggregation: stddev_samp, VectorUDAFVarFinal(col 2:struct<count:bigint,sum:double,variance:double>) -> double aggregation: var_samp
-                    className: VectorGroupByOperator
-                    groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:int
-                    native: false
-                    vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumnNums: [0, 1]
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
-                  File Sink Vectorization:
-                      className: VectorFileSinkOperator
-                      native: false
                   Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
