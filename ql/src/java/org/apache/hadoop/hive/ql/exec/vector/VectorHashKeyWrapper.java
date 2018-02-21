@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import org.apache.hive.common.util.Murmur3;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Arrays;
 
@@ -29,8 +30,11 @@ import org.apache.hadoop.hive.ql.exec.KeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import com.google.common.base.Preconditions;
 
@@ -350,7 +354,10 @@ public class VectorHashKeyWrapper extends KeyWrapper {
   }
 
   public void assignTimestamp(int index, Timestamp value) {
-    timestampValues[index] = value;
+    // Do not assign the input value object to the timestampValues array element.
+    // Always copy value using set* methods.
+    timestampValues[index].setTime(value.getTime());
+    timestampValues[index].setNanos(value.getNanos());
   }
 
   public void assignTimestamp(int index, TimestampColumnVector colVector, int elementNum) {
@@ -359,7 +366,9 @@ public class VectorHashKeyWrapper extends KeyWrapper {
 
   public void assignNullTimestamp(int keyIndex, int index) {
     isNull[keyIndex] = true;
-    timestampValues[index] = ZERO_TIMESTAMP; // assign 0 to simplify hashcode
+    // assign 0 to simplify hashcode
+    timestampValues[index].setTime(ZERO_TIMESTAMP.getTime());
+    timestampValues[index].setNanos(ZERO_TIMESTAMP.getNanos());
   }
 
   public void assignIntervalDayTime(int index, HiveIntervalDayTime value) {
@@ -372,7 +381,162 @@ public class VectorHashKeyWrapper extends KeyWrapper {
 
   public void assignNullIntervalDayTime(int keyIndex, int index) {
     isNull[keyIndex] = true;
-    intervalDayTimeValues[index] = ZERO_INTERVALDAYTIME; // assign 0 to simplify hashcode
+    intervalDayTimeValues[index].set(ZERO_INTERVALDAYTIME); // assign 0 to simplify hashcode
+  }
+
+  /*
+   * This method is mainly intended for debug display purposes.
+   */
+  public String stringifyKeys(VectorColumnSetInfo columnSetInfo)
+  {
+    StringBuilder sb = new StringBuilder();
+    boolean isFirstKey = true;
+
+    if (longValues.length > 0) {
+      isFirstKey = false;
+      sb.append("longs ");
+      boolean isFirstValue = true;
+      for (int i = 0; i < columnSetInfo.longIndices.length; i++) {
+        if (isFirstValue) {
+          isFirstValue = false;
+        } else {
+          sb.append(", ");
+        }
+        int keyIndex = columnSetInfo.longIndices[i];
+        if (isNull[keyIndex]) {
+          sb.append("null");
+        } else {
+          sb.append(longValues[i]);
+          PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) columnSetInfo.typeInfos[keyIndex];
+          // FUTURE: Add INTERVAL_YEAR_MONTH, etc, as desired.
+          switch (primitiveTypeInfo.getPrimitiveCategory()) {
+          case DATE:
+            {
+              Date dt = new Date(0);
+              dt.setTime(DateWritable.daysToMillis((int) longValues[i]));
+              sb.append(" date ");
+              sb.append(dt.toString());
+            }
+            break;
+          default:
+            // Add nothing more.
+            break;
+          }
+        }
+      }
+    }
+    if (doubleValues.length > 0) {
+      if (isFirstKey) {
+        isFirstKey = false;
+      } else {
+        sb.append(", ");
+      }
+      sb.append("doubles ");
+      boolean isFirstValue = true;
+      for (int i = 0; i < columnSetInfo.doubleIndices.length; i++) {
+        if (isFirstValue) {
+          isFirstValue = false;
+        } else {
+          sb.append(", ");
+        }
+        int keyIndex = columnSetInfo.doubleIndices[i];
+        if (isNull[keyIndex]) {
+          sb.append("null");
+        } else {
+          sb.append(doubleValues[i]);
+        }
+      }
+    }
+    if (byteValues.length > 0) {
+      if (isFirstKey) {
+        isFirstKey = false;
+      } else {
+        sb.append(", ");
+      }
+      sb.append("byte lengths ");
+      boolean isFirstValue = true;
+      for (int i = 0; i < columnSetInfo.stringIndices.length; i++) {
+        if (isFirstValue) {
+          isFirstValue = false;
+        } else {
+          sb.append(", ");
+        }
+        int keyIndex = columnSetInfo.stringIndices[i];
+        if (isNull[keyIndex]) {
+          sb.append("null");
+        } else {
+          sb.append(byteLengths[i]);
+        }
+      }
+    }
+    if (decimalValues.length > 0) {
+      if (isFirstKey) {
+        isFirstKey = true;
+      } else {
+        sb.append(", ");
+      }
+      sb.append("decimals ");
+      boolean isFirstValue = true;
+      for (int i = 0; i < columnSetInfo.decimalIndices.length; i++) {
+        if (isFirstValue) {
+          isFirstValue = false;
+        } else {
+          sb.append(", ");
+        }
+        int keyIndex = columnSetInfo.decimalIndices[i];
+        if (isNull[keyIndex]) {
+          sb.append("null");
+        } else {
+          sb.append(decimalValues[i]);
+        }
+      }
+    }
+    if (timestampValues.length > 0) {
+      if (isFirstKey) {
+        isFirstKey = false;
+      } else {
+        sb.append(", ");
+      }
+      sb.append("timestamps ");
+      boolean isFirstValue = true;
+      for (int i = 0; i < columnSetInfo.timestampIndices.length; i++) {
+        if (isFirstValue) {
+          isFirstValue = false;
+        } else {
+          sb.append(", ");
+        }
+        int keyIndex = columnSetInfo.timestampIndices[i];
+        if (isNull[keyIndex]) {
+          sb.append("null");
+        } else {
+          sb.append(timestampValues[i]);
+        }
+      }
+    }
+    if (intervalDayTimeValues.length > 0) {
+      if (isFirstKey) {
+        isFirstKey = false;
+      } else {
+        sb.append(", ");
+      }
+      sb.append("interval day times ");
+      boolean isFirstValue = true;
+      for (int i = 0; i < columnSetInfo.intervalDayTimeIndices.length; i++) {
+        if (isFirstValue) {
+          isFirstValue = false;
+        } else {
+          sb.append(", ");
+        }
+        int keyIndex = columnSetInfo.intervalDayTimeIndices[i];
+        if (isNull[keyIndex]) {
+          sb.append("null");
+        } else {
+          sb.append(intervalDayTimeValues[i]);
+        }
+      }
+    }
+
+    return sb.toString();
   }
 
   @Override
