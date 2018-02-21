@@ -78,11 +78,11 @@ cd $workingDir/
     echo "Unknown repository type '${repositoryType}'"
     exit 1
   fi
-  rm -rf ../yetus
-  mkdir ../yetus
+  rm -rf ../yetus_${buildTag}
+  mkdir ../yetus_${buildTag}
   #Wait until git gc finishes in the background before proceeding:
   while ! git gc 2>/dev/null; do sleep 1s ; done
-  cp -R . ../yetus
+  cp -R . ../yetus_${buildTag}
   mkdir $logDir/yetus
   patchCommandPath=$workingDir/scratch/smart-apply-patch.sh
   patchFilePath=$workingDir/scratch/build.patch
