@@ -170,13 +170,12 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
+                notVectorizedReason: GROUPBY operator: Vector aggregation : "stddev_pop" for input type: "STRUCT" and output type: "DOUBLE" and mode: FINAL not supported for evaluator GenericUDAFStdEvaluator
+                vectorized: false
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0), min(VALUE._col1), count(VALUE._col2), avg(VALUE._col3), stddev_pop(VALUE._col4)

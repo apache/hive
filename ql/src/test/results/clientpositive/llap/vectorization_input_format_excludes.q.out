@@ -200,13 +200,12 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
+                notVectorizedReason: GROUPBY operator: Vector aggregation : "stddev_pop" for input type: "STRUCT" and output type: "DOUBLE" and mode: FINAL not supported for evaluator GenericUDAFStdEvaluator
+                vectorized: false
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0), min(VALUE._col1), count(VALUE._col2), avg(VALUE._col3), stddev_pop(VALUE._col4)
@@ -522,13 +521,12 @@ STAGE PLANS:
                 enabledConditionsNotMet: Row deserialization of vectorized input format not supported IS false, hive.vectorized.use.vectorized.input.format IS true AND hive.vectorized.input.format.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false
                 inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
+                notVectorizedReason: GROUPBY operator: Vector aggregation : "stddev_pop" for input type: "STRUCT" and output type: "DOUBLE" and mode: FINAL not supported for evaluator GenericUDAFStdEvaluator
+                vectorized: false
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0), min(VALUE._col1), count(VALUE._col2), avg(VALUE._col3), stddev_pop(VALUE._col4)
@@ -854,13 +852,12 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
+                notVectorizedReason: GROUPBY operator: Vector aggregation : "stddev_pop" for input type: "STRUCT" and output type: "DOUBLE" and mode: FINAL not supported for evaluator GenericUDAFStdEvaluator
+                vectorized: false
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0), min(VALUE._col1), count(VALUE._col2), avg(VALUE._col3), stddev_pop(VALUE._col4)
@@ -1224,13 +1221,12 @@ STAGE PLANS:
                 enabledConditionsNotMet: hive.vectorized.use.vectorized.input.format IS true AND hive.vectorized.input.format.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.orc.OrcInputFormat IS false
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
+                notVectorizedReason: GROUPBY operator: Vector aggregation : "stddev_pop" for input type: "STRUCT" and output type: "DOUBLE" and mode: FINAL not supported for evaluator GenericUDAFStdEvaluator
+                vectorized: false
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0), min(VALUE._col1), count(VALUE._col2), avg(VALUE._col3), stddev_pop(VALUE._col4)
