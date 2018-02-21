@@ -66,9 +66,9 @@ default	srcpart			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	srcpart			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	srcpart			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	srcpart			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-PREHOOK: query: DROP DATABASE IF EXISTS SYS
+PREHOOK: query: DROP DATABASE IF EXISTS SYS CASCADE
 PREHOOK: type: DROPDATABASE
-POSTHOOK: query: DROP DATABASE IF EXISTS SYS
+POSTHOOK: query: DROP DATABASE IF EXISTS SYS CASCADE
 POSTHOOK: type: DROPDATABASE
 PREHOOK: query: CREATE DATABASE SYS
 PREHOOK: type: CREATEDATABASE
@@ -1504,6 +1504,80 @@ FROM TBLS"
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@TBLS
 POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE TABLE IF NOT EXISTS `MV_CREATION_METADATA` (
+  `MV_CREATION_METADATA_ID` bigint,
+  `DB_NAME` string,
+  `TBL_NAME` string,
+  `TXN_LIST` string,
+  CONSTRAINT `SYS_PK_MV_CREATION_METADATA` PRIMARY KEY (`MV_CREATION_METADATA_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"MV_CREATION_METADATA_ID\",
+  \"DB_NAME\",
+  \"TBL_NAME\",
+  \"TXN_LIST\"
+FROM MV_CREATION_METADATA"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@MV_CREATION_METADATA
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS `MV_CREATION_METADATA` (
+  `MV_CREATION_METADATA_ID` bigint,
+  `DB_NAME` string,
+  `TBL_NAME` string,
+  `TXN_LIST` string,
+  CONSTRAINT `SYS_PK_MV_CREATION_METADATA` PRIMARY KEY (`MV_CREATION_METADATA_ID`) DISABLE
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"MV_CREATION_METADATA_ID\",
+  \"DB_NAME\",
+  \"TBL_NAME\",
+  \"TXN_LIST\"
+FROM MV_CREATION_METADATA"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@MV_CREATION_METADATA
+POSTHOOK: Output: database:sys
+PREHOOK: query: CREATE TABLE IF NOT EXISTS `MV_TABLES_USED` (
+  `MV_CREATION_METADATA_ID` bigint,
+  `TBL_ID` bigint
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"MV_CREATION_METADATA_ID\",
+  \"TBL_ID\"
+FROM MV_TABLES_USED"
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: SYS@MV_TABLES_USED
+PREHOOK: Output: database:sys
+POSTHOOK: query: CREATE TABLE IF NOT EXISTS `MV_TABLES_USED` (
+  `MV_CREATION_METADATA_ID` bigint,
+  `TBL_ID` bigint
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+"hive.sql.database.type" = "METASTORE",
+"hive.sql.query" =
+"SELECT
+  \"MV_CREATION_METADATA_ID\",
+  \"TBL_ID\"
+FROM MV_TABLES_USED"
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: SYS@MV_TABLES_USED
+POSTHOOK: Output: database:sys
 PREHOOK: query: CREATE TABLE IF NOT EXISTS `TBL_COL_PRIVS` (
   `TBL_COLUMN_GRANT_ID` bigint,
   `COLUMN_NAME` string,
@@ -2381,47 +2455,9 @@ LEFT OUTER JOIN WM_POOL ON WM_POOL.POOL_ID = WM_MAPPING.POOL_ID
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@WM_MAPPINGS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `MV_CREATION_METADATA` (
-  TBL_ID bigint,
-  TBL_NAME string,
-  LAST_TRANSACTION_INFO string
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-"hive.sql.database.type" = "METASTORE",
-"hive.sql.query" =
-"SELECT
-  \"TBL_ID\",
-  \"TBL_NAME\",
-  \"LAST_TRANSACTION_INFO\"
-FROM
-  \"MV_CREATION_METADATA\""
-)
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: SYS@MV_CREATION_METADATA
-PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `MV_CREATION_METADATA` (
-  TBL_ID bigint,
-  TBL_NAME string,
-  LAST_TRANSACTION_INFO string
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-"hive.sql.database.type" = "METASTORE",
-"hive.sql.query" =
-"SELECT
-  \"TBL_ID\",
-  \"TBL_NAME\",
-  \"LAST_TRANSACTION_INFO\"
-FROM
-  \"MV_CREATION_METADATA\""
-)
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: SYS@MV_CREATION_METADATA
-POSTHOOK: Output: database:sys
-PREHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA
+PREHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA CASCADE
 PREHOOK: type: DROPDATABASE
-POSTHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA
+POSTHOOK: query: DROP DATABASE IF EXISTS INFORMATION_SCHEMA CASCADE
 POSTHOOK: type: DROPDATABASE
 PREHOOK: query: CREATE DATABASE INFORMATION_SCHEMA
 PREHOOK: type: CREATEDATABASE
@@ -3175,6 +3211,7 @@ POSTHOOK: Lineage: VIEWS.table_schema SIMPLE [(dbs)d.FieldSchema(name:name, type
 POSTHOOK: Lineage: VIEWS.view_definition SIMPLE [(tbls)t.FieldSchema(name:view_original_text, type:string, comment:from deserializer), ]
 PREHOOK: query: SHOW RESOURCE PLANS
 PREHOOK: type: SHOW RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: SHOW RESOURCE PLANS
 POSTHOOK: type: SHOW RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -3187,15 +3224,18 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 PREHOOK: query: CREATE RESOURCE PLAN plan_1
 PREHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE RESOURCE PLAN plan_1
 POSTHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: query: SHOW RESOURCE PLANS
 PREHOOK: type: SHOW RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: SHOW RESOURCE PLANS
 POSTHOOK: type: SHOW RESOURCEPLAN
 plan_1	DISABLED	 
 PREHOOK: query: SHOW RESOURCE PLAN plan_1
 PREHOOK: type: SHOW RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: SHOW RESOURCE PLAN plan_1
 POSTHOOK: type: SHOW RESOURCEPLAN
 plan_1[status=DISABLED,parallelism=null,defaultPool=default]
@@ -3212,20 +3252,24 @@ POSTHOOK: Input: sys@wm_resourceplans
 plan_1	DISABLED	NULL	default
 PREHOOK: query: CREATE RESOURCE PLAN plan_2 WITH QUERY_PARALLELISM=5
 PREHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE RESOURCE PLAN plan_2 WITH QUERY_PARALLELISM=5
 POSTHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 SET QUERY_PARALLELISM=10
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_2 SET QUERY_PARALLELISM=10
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SHOW RESOURCE PLANS
 PREHOOK: type: SHOW RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: SHOW RESOURCE PLANS
 POSTHOOK: type: SHOW RESOURCEPLAN
 plan_1	DISABLED	 
 plan_2	DISABLED	10
 PREHOOK: query: SHOW RESOURCE PLAN plan_2
 PREHOOK: type: SHOW RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: SHOW RESOURCE PLAN plan_2
 POSTHOOK: type: SHOW RESOURCEPLAN
 plan_2[status=DISABLED,parallelism=10,defaultPool=default]
@@ -3244,6 +3288,7 @@ plan_2	DISABLED	10	default
 FAILED: SemanticException Invalid create arguments (tok_create_rp plan_3 (tok_query_parallelism 5) (tok_default_pool all))
 PREHOOK: query: ALTER RESOURCE PLAN plan_1 RENAME TO plan_2
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. AlreadyExistsException(message:Resource plan name should be unique: )
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
@@ -3257,6 +3302,7 @@ plan_1	DISABLED	NULL	default
 plan_2	DISABLED	10	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_1 RENAME TO plan_3
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_1 RENAME TO plan_3
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -3271,6 +3317,7 @@ plan_2	DISABLED	10	default
 plan_3	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 4
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 4
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -3285,6 +3332,7 @@ plan_2	DISABLED	10	default
 plan_3	DISABLED	4	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 UNSET QUERY_PARALLELISM
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 UNSET QUERY_PARALLELISM
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -3299,6 +3347,7 @@ plan_2	DISABLED	10	default
 plan_3	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 30, DEFAULT POOL = default1
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Cannot find pool: default1)
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
@@ -3312,16 +3361,20 @@ plan_2	DISABLED	10	default
 plan_3	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 RENAME TO plan_4
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 30
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -3336,6 +3389,7 @@ plan_2	DISABLED	10	default
 plan_3	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan plan_3 is disabled and should be enabled before activation (or in the same command))
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
@@ -3349,6 +3403,7 @@ plan_2	DISABLED	10	default
 plan_3	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -3363,6 +3418,7 @@ plan_2	DISABLED	10	default
 plan_3	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -3377,6 +3433,7 @@ plan_2	DISABLED	10	default
 plan_3	ENABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -3391,6 +3448,7 @@ plan_2	DISABLED	10	default
 plan_3	ACTIVE	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -3405,6 +3463,7 @@ plan_2	DISABLED	10	default
 plan_3	ACTIVE	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan plan_3 is active; activate another plan first, or disable workload management.)
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
@@ -3418,6 +3477,7 @@ plan_2	DISABLED	10	default
 plan_3	ACTIVE	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan plan_3 is active; activate another plan first, or disable workload management.)
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
@@ -3431,6 +3491,7 @@ plan_2	DISABLED	10	default
 plan_3	ACTIVE	NULL	default
 PREHOOK: query: DISABLE WORKLOAD MANAGEMENT
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: DISABLE WORKLOAD MANAGEMENT
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -3445,10 +3506,12 @@ plan_2	DISABLED	10	default
 plan_3	ENABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE ACTIVATE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -3463,6 +3526,7 @@ plan_2	DISABLED	10	default
 plan_3	ACTIVE	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_2 ENABLE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -3477,6 +3541,7 @@ plan_2	ENABLED	10	default
 plan_3	ACTIVE	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_2 ACTIVATE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -3491,6 +3556,7 @@ plan_2	ACTIVE	10	default
 plan_3	ENABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -3505,6 +3571,7 @@ plan_2	ACTIVE	10	default
 plan_3	ENABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -3519,9 +3586,11 @@ plan_2	ACTIVE	10	default
 plan_3	DISABLED	NULL	default
 PREHOOK: query: DROP RESOURCE PLAN plan_2
 PREHOOK: type: DROP RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message:Cannot drop an active resource plan)
 PREHOOK: query: DROP RESOURCE PLAN plan_3
 PREHOOK: type: DROP RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: DROP RESOURCE PLAN plan_3
 POSTHOOK: type: DROP RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -3535,10 +3604,12 @@ POSTHOOK: Input: sys@wm_resourceplans
 plan_2	ACTIVE	10	default
 PREHOOK: query: CREATE RESOURCE PLAN `table`
 PREHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE RESOURCE PLAN `table`
 POSTHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: query: ALTER RESOURCE PLAN `table` SET QUERY_PARALLELISM = 1
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN `table` SET QUERY_PARALLELISM = 1
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -3553,10 +3624,12 @@ plan_2	ACTIVE	10	default
 table	DISABLED	1	default
 PREHOOK: query: CREATE RESOURCE PLAN plan_1
 PREHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE RESOURCE PLAN plan_1
 POSTHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: query: CREATE TRIGGER plan_1.trigger_1 WHEN BYTES_READ > 10kb DO KILL
 PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE TRIGGER plan_1.trigger_1 WHEN BYTES_READ > 10kb DO KILL
 POSTHOOK: type: CREATE TRIGGER
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
@@ -3570,6 +3643,7 @@ POSTHOOK: Input: sys@wm_triggers
 plan_1	trigger_1	BYTES_READ > 10kb	KILL
 PREHOOK: query: CREATE TRIGGER plan_1.trigger_1 WHEN ELAPSED_TIME > 300 DO KILL
 PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. AlreadyExistsException(message:Trigger already exists, use alter: )
 FAILED: ParseException line 4:58 mismatched input 'AND' expecting DO near '30sec' in create trigger statement
 FAILED: ParseException line 2:61 mismatched input 'OR' expecting DO near '30second' in create trigger statement
@@ -3579,6 +3653,7 @@ FAILED: ParseException line 2:50 mismatched input '<=' expecting > near 'ELAPSED
 FAILED: ParseException line 2:50 mismatched input '=' expecting > near 'ELAPSED_TIME' in comparisionOperator
 PREHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME > 30hour DO MOVE TO slow_pool
 PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE TRIGGER plan_1.trigger_2 WHEN ELAPSED_TIME > 30hour DO MOVE TO slow_pool
 POSTHOOK: type: CREATE TRIGGER
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
@@ -3593,6 +3668,7 @@ plan_1	trigger_1	BYTES_READ > 10kb	KILL
 plan_1	trigger_2	ELAPSED_TIME > 30hour	MOVE TO slow_pool
 PREHOOK: query: ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > 1min DO KILL
 PREHOOK: type: ALTER TRIGGER
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER TRIGGER plan_1.trigger_1 WHEN BYTES_READ > 1min DO KILL
 POSTHOOK: type: ALTER TRIGGER
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
@@ -3607,6 +3683,7 @@ plan_1	trigger_1	BYTES_READ > 1min	KILL
 plan_1	trigger_2	ELAPSED_TIME > 30hour	MOVE TO slow_pool
 PREHOOK: query: DROP TRIGGER plan_1.trigger_1
 PREHOOK: type: DROP TRIGGER
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: DROP TRIGGER plan_1.trigger_1
 POSTHOOK: type: DROP TRIGGER
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
@@ -3620,25 +3697,31 @@ POSTHOOK: Input: sys@wm_triggers
 plan_1	trigger_2	ELAPSED_TIME > 30hour	MOVE TO slow_pool
 PREHOOK: query: CREATE TRIGGER plan_2.trigger_1 WHEN BYTES_READ > 100mb DO MOVE TO null_pool
 PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
 PREHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > 100KB DO MOVE TO `table`
 PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE TRIGGER `table`.`table` WHEN BYTES_WRITTEN > 100KB DO MOVE TO `table`
 POSTHOOK: type: CREATE TRIGGER
 PREHOOK: query: CREATE TRIGGER `table`.`trigger` WHEN BYTES_WRITTEN > 100MB DO MOVE TO `default`
 PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE TRIGGER `table`.`trigger` WHEN BYTES_WRITTEN > 100MB DO MOVE TO `default`
 POSTHOOK: type: CREATE TRIGGER
 PREHOOK: query: CREATE TRIGGER `table`.`database` WHEN BYTES_WRITTEN > 1GB DO MOVE TO `default`
 PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE TRIGGER `table`.`database` WHEN BYTES_WRITTEN > 1GB DO MOVE TO `default`
 POSTHOOK: type: CREATE TRIGGER
 PREHOOK: query: CREATE TRIGGER `table`.`trigger1` WHEN ELAPSED_TIME > 10 DO KILL
 PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE TRIGGER `table`.`trigger1` WHEN ELAPSED_TIME > 10 DO KILL
 POSTHOOK: type: CREATE TRIGGER
 PREHOOK: query: CREATE TRIGGER `table`.`trigger2` WHEN ELAPSED_TIME > 1hour DO KILL
 PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE TRIGGER `table`.`trigger2` WHEN ELAPSED_TIME > 1hour DO KILL
 POSTHOOK: type: CREATE TRIGGER
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
@@ -3657,6 +3740,7 @@ table	trigger1	ELAPSED_TIME > 10	KILL
 table	trigger2	ELAPSED_TIME > 1hour	KILL
 PREHOOK: query: DROP TRIGGER `table`.`database`
 PREHOOK: type: DROP TRIGGER
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: DROP TRIGGER `table`.`database`
 POSTHOOK: type: DROP TRIGGER
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
@@ -3674,6 +3758,7 @@ table	trigger1	ELAPSED_TIME > 10	KILL
 table	trigger2	ELAPSED_TIME > 1hour	KILL
 PREHOOK: query: ALTER RESOURCE PLAN plan_1 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_1 ENABLE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -3689,12 +3774,15 @@ plan_2	ACTIVE	10	default
 table	DISABLED	1	default
 PREHOOK: query: DROP TRIGGER plan_1.trigger_2
 PREHOOK: type: DROP TRIGGER
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
 PREHOOK: query: ALTER TRIGGER plan_1.trigger_2 WHEN BYTES_READ > 1000gb DO KILL
 PREHOOK: type: ALTER TRIGGER
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
 PREHOOK: query: ALTER RESOURCE PLAN plan_1 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_1 ACTIVATE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -3710,16 +3798,20 @@ plan_2	ENABLED	10	default
 table	DISABLED	1	default
 PREHOOK: query: DROP TRIGGER plan_1.trigger_2
 PREHOOK: type: DROP TRIGGER
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
 PREHOOK: query: ALTER TRIGGER plan_1.trigger_2 WHEN BYTES_READ > 1000KB DO KILL
 PREHOOK: type: ALTER TRIGGER
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_2 DISABLE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: CREATE TRIGGER plan_2.trigger_1 WHEN BYTES_READ > 0 DO MOVE TO null_pool
 PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE TRIGGER plan_2.trigger_1 WHEN BYTES_READ > 0 DO MOVE TO null_pool
 POSTHOOK: type: CREATE TRIGGER
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
@@ -3739,10 +3831,13 @@ table	trigger2	ELAPSED_TIME > 1hour	KILL
 PREHOOK: query: CREATE POOL plan_1.default WITH
    ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5, SCHEDULING_POLICY='default'
 PREHOOK: type: CREATE POOL
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Resource plan must be disabled to edit it.)
-PREHOOK: query: CREATE POOL plan_2.default WITH
-   ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5, SCHEDULING_POLICY='default'
+FAILED: SemanticException alloc_fraction should be specified for a pool
+FAILED: SemanticException query_parallelism should be specified for a pool
+PREHOOK: query: CREATE POOL plan_2.default WITH ALLOC_FRACTION=1.0, QUERY_PARALLELISM=5
 PREHOOK: type: CREATE POOL
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. AlreadyExistsException(message:Pool already exists: )
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
@@ -3759,29 +3854,35 @@ FAILED: SemanticException Invalid scheduling policy invalid
 PREHOOK: query: CREATE POOL plan_2.default.c1 WITH
     ALLOC_FRACTION=0.3, QUERY_PARALLELISM=3, SCHEDULING_POLICY='fair'
 PREHOOK: type: CREATE POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE POOL plan_2.default.c1 WITH
     ALLOC_FRACTION=0.3, QUERY_PARALLELISM=3, SCHEDULING_POLICY='fair'
 POSTHOOK: type: CREATE POOL
 PREHOOK: query: CREATE POOL plan_2.default.c2 WITH
     QUERY_PARALLELISM=2, SCHEDULING_POLICY='fair', ALLOC_FRACTION=0.7
 PREHOOK: type: CREATE POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE POOL plan_2.default.c2 WITH
     QUERY_PARALLELISM=2, SCHEDULING_POLICY='fair', ALLOC_FRACTION=0.7
 POSTHOOK: type: CREATE POOL
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 VALIDATE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_2 VALIDATE
 POSTHOOK: type: ALTER RESOURCEPLAN
 Sum of children pools' alloc fraction should be less than 1 got: 1.0 for pool: default
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 ENABLE ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:ResourcePlan: plan_2 is invalid: [Sum of children pools' alloc fraction should be less than 1 got: 1.0 for pool: default])
 PREHOOK: query: ALTER POOL plan_2.default.c2 SET ALLOC_FRACTION = 0.5, QUERY_PARALLELISM = 1
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER POOL plan_2.default.c2 SET ALLOC_FRACTION = 0.5, QUERY_PARALLELISM = 1
 POSTHOOK: type: ALTER POOL
 PREHOOK: query: ALTER POOL plan_2.default.c2 SET SCHEDULING_POLICY='fair'
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER POOL plan_2.default.c2 SET SCHEDULING_POLICY='fair'
 POSTHOOK: type: ALTER POOL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
@@ -3799,6 +3900,7 @@ plan_2	default.c2	0.5	1	fair
 table	default	1.0	4	NULL
 PREHOOK: query: ALTER POOL plan_2.default.c2 UNSET SCHEDULING_POLICY
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER POOL plan_2.default.c2 UNSET SCHEDULING_POLICY
 POSTHOOK: type: ALTER POOL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
@@ -3816,23 +3918,28 @@ plan_2	default.c2	0.5	1	NULL
 table	default	1.0	4	NULL
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 VALIDATE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_2 VALIDATE
 POSTHOOK: type: ALTER RESOURCEPLAN
 warn: Sum of all pools' query parallelism: 9 is less than resource plan query parallelism: 10
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 ENABLE ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_2 ENABLE ACTIVATE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: ALTER RESOURCE PLAN plan_1 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_1 ACTIVATE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_2 DISABLE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: ALTER POOL plan_2.default SET path = def
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER POOL plan_2.default SET path = def
 POSTHOOK: type: ALTER POOL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
@@ -3850,6 +3957,7 @@ plan_2	def.c2	0.5	1	NULL
 table	default	1.0	4	NULL
 PREHOOK: query: DROP POOL plan_2.default
 PREHOOK: type: DROP POOL
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Cannot delete pool: default)
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
@@ -3867,33 +3975,39 @@ table	default	1.0	4	NULL
 PREHOOK: query: CREATE POOL plan_2.child1.child2 WITH
     QUERY_PARALLELISM=2, SCHEDULING_POLICY='fifo', ALLOC_FRACTION=0.8
 PREHOOK: type: CREATE POOL
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Pool path is invalid, the parent does not exist)
 PREHOOK: query: CREATE POOL `table`.`table` WITH
   SCHEDULING_POLICY='fifo', ALLOC_FRACTION=0.5, QUERY_PARALLELISM=1
 PREHOOK: type: CREATE POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE POOL `table`.`table` WITH
   SCHEDULING_POLICY='fifo', ALLOC_FRACTION=0.5, QUERY_PARALLELISM=1
 POSTHOOK: type: CREATE POOL
 PREHOOK: query: CREATE POOL `table`.`table`.pool1 WITH
   SCHEDULING_POLICY='fair', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.9
 PREHOOK: type: CREATE POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE POOL `table`.`table`.pool1 WITH
   SCHEDULING_POLICY='fair', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.9
 POSTHOOK: type: CREATE POOL
 PREHOOK: query: CREATE POOL `table`.`table`.pool1.child1 WITH
   SCHEDULING_POLICY='fair', QUERY_PARALLELISM=1, ALLOC_FRACTION=0.3
 PREHOOK: type: CREATE POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE POOL `table`.`table`.pool1.child1 WITH
   SCHEDULING_POLICY='fair', QUERY_PARALLELISM=1, ALLOC_FRACTION=0.3
 POSTHOOK: type: CREATE POOL
 PREHOOK: query: CREATE POOL `table`.`table`.pool1.child2 WITH
   SCHEDULING_POLICY='fair', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.7
 PREHOOK: type: CREATE POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE POOL `table`.`table`.pool1.child2 WITH
   SCHEDULING_POLICY='fair', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.7
 POSTHOOK: type: CREATE POOL
 PREHOOK: query: ALTER POOL `table`.`table` SET ALLOC_FRACTION=0.0
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER POOL `table`.`table` SET ALLOC_FRACTION=0.0
 POSTHOOK: type: ALTER POOL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
@@ -3915,6 +4029,7 @@ table	table.pool1.child1	0.3	1	fair
 table	table.pool1.child2	0.7	3	fair
 PREHOOK: query: ALTER POOL `table`.`table`.pool1 SET PATH = `table`.pool
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER POOL `table`.`table`.pool1 SET PATH = `table`.pool
 POSTHOOK: type: ALTER POOL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
@@ -3936,6 +4051,7 @@ table	table.pool.child1	0.3	1	fair
 table	table.pool.child2	0.7	3	fair
 PREHOOK: query: DROP POOL `table`.`table`
 PREHOOK: type: DROP POOL
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Pool has children cannot drop.)
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
@@ -3956,6 +4072,7 @@ table	table.pool.child1	0.3	1	fair
 table	table.pool.child2	0.7	3	fair
 PREHOOK: query: DROP POOL `table`.default
 PREHOOK: type: DROP POOL
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Cannot drop default pool of a resource plan)
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
@@ -3987,10 +4104,12 @@ plan_2	DISABLED	10	def
 table	DISABLED	1	default
 PREHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: DROP POOL `table`.default
 PREHOOK: type: DROP POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: DROP POOL `table`.default
 POSTHOOK: type: DROP POOL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
@@ -4011,6 +4130,7 @@ table	table.pool.child1	0.3	1	fair
 table	table.pool.child2	0.7	3	fair
 PREHOOK: query: ALTER RESOURCE PLAN `table` UNSET DEFAULT POOL
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN `table` UNSET DEFAULT POOL
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -4026,34 +4146,42 @@ plan_2	DISABLED	10	def
 table	DISABLED	1	NULL
 PREHOOK: query: ALTER POOL plan_2.def.c1 ADD TRIGGER trigger_1
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER POOL plan_2.def.c1 ADD TRIGGER trigger_1
 POSTHOOK: type: ALTER POOL
 PREHOOK: query: ALTER POOL plan_2.def.c2 ADD TRIGGER trigger_1
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER POOL plan_2.def.c2 ADD TRIGGER trigger_1
 POSTHOOK: type: ALTER POOL
 PREHOOK: query: ALTER POOL `table`.`table` ADD TRIGGER `table`
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER POOL `table`.`table` ADD TRIGGER `table`
 POSTHOOK: type: ALTER POOL
 PREHOOK: query: ALTER POOL `table`.`table`.pool.child1 ADD TRIGGER `table`
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER POOL `table`.`table`.pool.child1 ADD TRIGGER `table`
 POSTHOOK: type: ALTER POOL
 PREHOOK: query: ALTER POOL `table`.`table`.pool.child1 ADD TRIGGER `trigger1`
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER POOL `table`.`table`.pool.child1 ADD TRIGGER `trigger1`
 POSTHOOK: type: ALTER POOL
 PREHOOK: query: ALTER TRIGGER `table`.`trigger1` ADD TO POOL `table`.pool.child2
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER TRIGGER `table`.`trigger1` ADD TO POOL `table`.pool.child2
 POSTHOOK: type: ALTER POOL
 PREHOOK: query: ALTER POOL `table`.`table`.pool.child2 ADD TRIGGER `trigger2`
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER POOL `table`.`table`.pool.child2 ADD TRIGGER `trigger2`
 POSTHOOK: type: ALTER POOL
 PREHOOK: query: ALTER TRIGGER `table`.`trigger1` ADD TO UNMANAGED
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER TRIGGER `table`.`trigger1` ADD TO UNMANAGED
 POSTHOOK: type: ALTER POOL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
@@ -4074,6 +4202,7 @@ table	table.pool.child2	trigger1
 table	table.pool.child2	trigger2
 PREHOOK: query: SHOW RESOURCE PLAN `table`
 PREHOOK: type: SHOW RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: SHOW RESOURCE PLAN `table`
 POSTHOOK: type: SHOW RESOURCEPLAN
 table[status=DISABLED,parallelism=1,defaultPool=null]
@@ -4092,10 +4221,12 @@ table[status=DISABLED,parallelism=1,defaultPool=null]
      |  trigger trigger: if (BYTES_WRITTEN > 100MB) { MOVE TO default }
 PREHOOK: query: ALTER TRIGGER `table`.`trigger1` DROP FROM POOL `table`.pool.child2
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER TRIGGER `table`.`trigger1` DROP FROM POOL `table`.pool.child2
 POSTHOOK: type: ALTER POOL
 PREHOOK: query: ALTER TRIGGER `table`.`trigger1` DROP FROM UNMANAGED
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER TRIGGER `table`.`trigger1` DROP FROM UNMANAGED
 POSTHOOK: type: ALTER POOL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
@@ -4114,9 +4245,11 @@ table	table.pool.child1	trigger1
 table	table.pool.child2	trigger2
 PREHOOK: query: ALTER POOL plan_2.default ADD TRIGGER trigger_1
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Cannot find pool: default)
 PREHOOK: query: ALTER POOL plan_2.def ADD TRIGGER trigger_2
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Cannot find trigger with name: trigger_2)
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
 PREHOOK: type: QUERY
@@ -4134,17 +4267,21 @@ table	table.pool.child1	trigger1
 table	table.pool.child2	trigger2
 PREHOOK: query: ALTER POOL plan_2.def.c1 DROP TRIGGER trigger_1
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER POOL plan_2.def.c1 DROP TRIGGER trigger_1
 POSTHOOK: type: ALTER POOL
 PREHOOK: query: ALTER POOL plan_2.def.c1 DROP TRIGGER trigger_2
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. NoSuchObjectException(message:Cannot find trigger with name: trigger_2)
 PREHOOK: query: DROP POOL `table`.`table`.pool.child1
 PREHOOK: type: DROP POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: DROP POOL `table`.`table`.pool.child1
 POSTHOOK: type: DROP POOL
 PREHOOK: query: DROP POOL `table`.`table`.pool.child2
 PREHOOK: type: DROP POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: DROP POOL `table`.`table`.pool.child2
 POSTHOOK: type: DROP POOL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS_TO_TRIGGERS
@@ -4159,34 +4296,42 @@ plan_2	def.c2	trigger_1
 table	table	table
 PREHOOK: query: CREATE USER MAPPING "user1" IN plan_2 TO def
 PREHOOK: type: CREATE MAPPING
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE USER MAPPING "user1" IN plan_2 TO def
 POSTHOOK: type: CREATE MAPPING
 PREHOOK: query: CREATE USER MAPPING 'user2' IN plan_2 TO def WITH ORDER 1
 PREHOOK: type: CREATE MAPPING
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE USER MAPPING 'user2' IN plan_2 TO def WITH ORDER 1
 POSTHOOK: type: CREATE MAPPING
 PREHOOK: query: CREATE GROUP MAPPING "group1" IN plan_2 TO def.c1
 PREHOOK: type: CREATE MAPPING
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE GROUP MAPPING "group1" IN plan_2 TO def.c1
 POSTHOOK: type: CREATE MAPPING
 PREHOOK: query: CREATE APPLICATION MAPPING "app1" IN plan_2 TO def.c1
 PREHOOK: type: CREATE MAPPING
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE APPLICATION MAPPING "app1" IN plan_2 TO def.c1
 POSTHOOK: type: CREATE MAPPING
 PREHOOK: query: CREATE GROUP MAPPING 'group2' IN plan_2 TO def.c2 WITH ORDER 1
 PREHOOK: type: CREATE MAPPING
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE GROUP MAPPING 'group2' IN plan_2 TO def.c2 WITH ORDER 1
 POSTHOOK: type: CREATE MAPPING
 PREHOOK: query: CREATE GROUP MAPPING 'group3' IN plan_2 UNMANAGED WITH ORDER 1
 PREHOOK: type: CREATE MAPPING
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE GROUP MAPPING 'group3' IN plan_2 UNMANAGED WITH ORDER 1
 POSTHOOK: type: CREATE MAPPING
 PREHOOK: query: ALTER USER MAPPING "user1" IN plan_2 UNMANAGED
 PREHOOK: type: ALTER MAPPING
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER USER MAPPING "user1" IN plan_2 UNMANAGED
 POSTHOOK: type: ALTER MAPPING
 PREHOOK: query: SHOW RESOURCE PLAN plan_2
 PREHOOK: type: SHOW RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: SHOW RESOURCE PLAN plan_2
 POSTHOOK: type: SHOW RESOURCEPLAN
 plan_2[status=DISABLED,parallelism=10,defaultPool=def]
@@ -4218,21 +4363,26 @@ plan_2	USER	user1	<unmanaged>	0
 plan_2	USER	user2	def	1
 PREHOOK: query: DROP POOL plan_2.def.c1
 PREHOOK: type: DROP POOL
+PREHOOK: Output: dummyHostnameForTest
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. InvalidOperationException(message:Please remove all mappings for this pool.)
 PREHOOK: query: DROP USER MAPPING "user2" in plan_2
 PREHOOK: type: DROP MAPPING
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: DROP USER MAPPING "user2" in plan_2
 POSTHOOK: type: DROP MAPPING
 PREHOOK: query: DROP GROUP MAPPING "group2" in plan_2
 PREHOOK: type: DROP MAPPING
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: DROP GROUP MAPPING "group2" in plan_2
 POSTHOOK: type: DROP MAPPING
 PREHOOK: query: DROP GROUP MAPPING "group3" in plan_2
 PREHOOK: type: DROP MAPPING
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: DROP GROUP MAPPING "group3" in plan_2
 POSTHOOK: type: DROP MAPPING
 PREHOOK: query: DROP APPLICATION MAPPING "app1" in plan_2
 PREHOOK: type: DROP MAPPING
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: DROP APPLICATION MAPPING "app1" in plan_2
 POSTHOOK: type: DROP MAPPING
 PREHOOK: query: SELECT * FROM SYS.WM_MAPPINGS
@@ -4247,14 +4397,17 @@ plan_2	GROUP	group1	def.c1	0
 plan_2	USER	user1	<unmanaged>	0
 PREHOOK: query: CREATE RESOURCE PLAN plan_4
 PREHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE RESOURCE PLAN plan_4
 POSTHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: query: ALTER RESOURCE PLAN plan_4 ENABLE ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_4 ENABLE ACTIVATE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SHOW RESOURCE PLAN plan_2
 PREHOOK: type: SHOW RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: SHOW RESOURCE PLAN plan_2
 POSTHOOK: type: SHOW RESOURCEPLAN
 plan_2[status=DISABLED,parallelism=10,defaultPool=def]
@@ -4268,10 +4421,12 @@ plan_2[status=DISABLED,parallelism=10,defaultPool=def]
      |  mapped for users: user1
 PREHOOK: query: DROP RESOURCE PLAN plan_2
 PREHOOK: type: DROP RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: DROP RESOURCE PLAN plan_2
 POSTHOOK: type: DROP RESOURCEPLAN
 PREHOOK: query: CREATE RESOURCE PLAN plan_2
 PREHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE RESOURCE PLAN plan_2
 POSTHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -4331,34 +4486,42 @@ POSTHOOK: Input: sys@wm_mappings
 #### A masked pattern was here ####
 PREHOOK: query: CREATE RESOURCE PLAN plan_4a LIKE plan_4
 PREHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE RESOURCE PLAN plan_4a LIKE plan_4
 POSTHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: query: CREATE POOL plan_4a.pool1 WITH SCHEDULING_POLICY='fair', QUERY_PARALLELISM=2, ALLOC_FRACTION=0.0
 PREHOOK: type: CREATE POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE POOL plan_4a.pool1 WITH SCHEDULING_POLICY='fair', QUERY_PARALLELISM=2, ALLOC_FRACTION=0.0
 POSTHOOK: type: CREATE POOL
 PREHOOK: query: CREATE USER MAPPING "user1" IN plan_4a TO pool1
 PREHOOK: type: CREATE MAPPING
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE USER MAPPING "user1" IN plan_4a TO pool1
 POSTHOOK: type: CREATE MAPPING
 PREHOOK: query: CREATE TRIGGER plan_4a.trigger_1 WHEN BYTES_READ > 10GB DO KILL
 PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE TRIGGER plan_4a.trigger_1 WHEN BYTES_READ > 10GB DO KILL
 POSTHOOK: type: CREATE TRIGGER
 PREHOOK: query: CREATE TRIGGER plan_4a.trigger_2 WHEN BYTES_READ > 11GB DO KILL
 PREHOOK: type: CREATE TRIGGER
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE TRIGGER plan_4a.trigger_2 WHEN BYTES_READ > 11GB DO KILL
 POSTHOOK: type: CREATE TRIGGER
 PREHOOK: query: ALTER POOL plan_4a.pool1 ADD TRIGGER trigger_2
 PREHOOK: type: ALTER POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER POOL plan_4a.pool1 ADD TRIGGER trigger_2
 POSTHOOK: type: ALTER POOL
 PREHOOK: query: CREATE RESOURCE PLAN plan_4b LIKE plan_4a
 PREHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE RESOURCE PLAN plan_4b LIKE plan_4a
 POSTHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: query: CREATE POOL plan_4b.pool2 WITH SCHEDULING_POLICY='fair', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.0
 PREHOOK: type: CREATE POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE POOL plan_4b.pool2 WITH SCHEDULING_POLICY='fair', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.0
 POSTHOOK: type: CREATE POOL
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -4433,6 +4596,7 @@ plan_4a	USER	user1	pool1	0
 plan_4b	USER	user1	pool1	0
 PREHOOK: query: REPLACE RESOURCE PLAN plan_4a WITH plan_4b
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: REPLACE RESOURCE PLAN plan_4a WITH plan_4b
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -4469,6 +4633,7 @@ table	table	0.0	1	fifo
 table	table.pool	0.9	3	fair
 PREHOOK: query: REPLACE ACTIVE RESOURCE PLAN WITH plan_4a
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: REPLACE ACTIVE RESOURCE PLAN WITH plan_4a
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
@@ -4487,14 +4652,17 @@ plan_4a-old-0	DISABLED	NULL	default
 table	DISABLED	1	NULL
 PREHOOK: query: CREATE RESOURCE PLAN plan_4a LIKE plan_4
 PREHOOK: type: CREATE RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE RESOURCE PLAN plan_4a LIKE plan_4
 POSTHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: query: CREATE POOL plan_4a.pool3 WITH SCHEDULING_POLICY='fair', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.0
 PREHOOK: type: CREATE POOL
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: CREATE POOL plan_4a.pool3 WITH SCHEDULING_POLICY='fair', QUERY_PARALLELISM=3, ALLOC_FRACTION=0.0
 POSTHOOK: type: CREATE POOL
 PREHOOK: query: ALTER RESOURCE PLAN plan_4a ENABLE ACTIVATE WITH REPLACE
 PREHOOK: type: ALTER RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: ALTER RESOURCE PLAN plan_4a ENABLE ACTIVATE WITH REPLACE
 POSTHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
