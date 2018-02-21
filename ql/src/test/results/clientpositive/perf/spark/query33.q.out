@@ -232,7 +232,7 @@ STAGE PLANS:
                   alias: item
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((i_category) IN ('Books') and i_manufact_id is not null) (type: boolean)
+                    predicate: ((i_category = 'Books') and i_manufact_id is not null) (type: boolean)
                     Statistics: Num rows: 231000 Data size: 331780228 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: i_manufact_id (type: int)

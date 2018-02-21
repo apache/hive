@@ -115,10 +115,10 @@ Stage-0
                                       <-Map 9 [SIMPLE_EDGE]
                                         SHUFFLE [RS_16]
                                           PartitionCols:_col0
-                                          Select Operator [SEL_8] (rows=36525 width=1119)
+                                          Select Operator [SEL_8] (rows=36524 width=1119)
                                             Output:["_col0","_col2"]
-                                            Filter Operator [FIL_50] (rows=36525 width=1119)
-                                              predicate:((d_year) IN (2000) and d_date_sk is not null)
+                                            Filter Operator [FIL_50] (rows=36524 width=1119)
+                                              predicate:((d_year = 2000) and d_date_sk is not null)
                                               TableScan [TS_6] (rows=73049 width=1119)
                                                 default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_moy"]
                                       <-Reducer 2 [SIMPLE_EDGE]
