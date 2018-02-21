@@ -49,8 +49,7 @@ public class VectorGroupKeyHelper extends VectorColumnSetInfo {
       VectorExpression keyExpression = keyExpressions[i];
 
       TypeInfo typeInfo = keyExpression.getOutputTypeInfo();
-      Type columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);
-      addKey(columnVectorType);
+      addKey(typeInfo);
 
       // The output of the key expression is the input column.
       final int inputColumnNum = keyExpression.getOutputColumnNum();
