@@ -133,17 +133,17 @@ STAGE PLANS:
                   alias: date_dim
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((d_year) IN (2000) and d_date_sk is not null) (type: boolean)
-                    Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                    predicate: ((d_year = 2000) and d_date_sk is not null) (type: boolean)
+                    Statistics: Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int), d_moy (type: int)
                       outputColumnNames: _col0, _col2
-                      Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: int)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: int)
-                        Statistics: Num rows: 36525 Data size: 40871475 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 36524 Data size: 40870356 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col2 (type: int)
         Reducer 2 
             Reduce Operator Tree:

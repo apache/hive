@@ -222,7 +222,7 @@ Stage-0
                                           Select Operator [SEL_5] (rows=231000 width=1436)
                                             Output:["i_manufact_id"]
                                             Filter Operator [FIL_159] (rows=231000 width=1436)
-                                              predicate:((i_category) IN ('Books') and i_manufact_id is not null)
+                                              predicate:((i_category = 'Books') and i_manufact_id is not null)
                                               TableScan [TS_3] (rows=462000 width=1436)
                                                 default@item,item,Tbl:COMPLETE,Col:NONE,Output:["i_category","i_manufact_id"]
                             <-Reducer 21 [SIMPLE_EDGE]
