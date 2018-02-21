@@ -1630,9 +1630,22 @@ public class TestJdbcWithMiniHS2 {
           + " ROW FORMAT DELIMITED FIELDS terminated by '\\t' LINES terminated by '\\n'");
       String extendedDescription = getDetailedTableDescription(stmt, table);
       assertNotNull("could not get Detailed Table Information", extendedDescription);
-      assertTrue("description appears truncated", extendedDescription.endsWith(")"));
-      assertTrue("bad line delimiter", extendedDescription.contains("line.delim=\\n"));
-      assertTrue("bad field delimiter", extendedDescription.contains("field.delim=\\t"));
+      assertTrue("description appears truncated: " + extendedDescription,
+          extendedDescription.endsWith(")"));
+      assertTrue("bad line delimiter: " + extendedDescription,
+          extendedDescription.contains("line.delim=\\n"));
+      assertTrue("bad field delimiter: " + extendedDescription,
+          extendedDescription.contains("field.delim=\\t"));
+
+      String view = "testDescribeView";
+      stmt.execute("create view " + view + " as select * from " + table);
+      String extendedViewDescription = getDetailedTableDescription(stmt, view);
+      assertTrue("bad view text: " + extendedViewDescription,
+          extendedViewDescription.contains("viewOriginalText:select * from " + table));
+      assertTrue("bad expanded view text: " + extendedViewDescription,
+          extendedViewDescription.contains(
+              "viewExpandedText:select `testdescribe`.`orderid`, `testdescribe`.`orderdate`, "
+                  + "`testdescribe`.`customerid` from `testjdbcminihs2`"));
     }
   }
 
