@@ -487,6 +487,9 @@ public class <ClassName> extends VectorAggregateExpression {
      * Mode FINAL.
 #ENDIF FINAL
      */
+
+/*
+    There seems to be a Wrong Results bug in VectorUDAFVarFinal -- disabling vectorization for now...
     return
         GenericUDAFVariance.isVarianceFamilyName(name) &&
         inputColVectorType == ColumnVector.Type.STRUCT &&
@@ -498,6 +501,8 @@ public class <ClassName> extends VectorAggregateExpression {
         outputColVectorType == ColumnVector.Type.DOUBLE &&
         mode == Mode.FINAL;
 #ENDIF FINAL
+*/
+    return false;
   }
 
   @Override

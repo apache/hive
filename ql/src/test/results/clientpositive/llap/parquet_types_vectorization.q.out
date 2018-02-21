@@ -209,7 +209,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: all inputs (cache only)
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0), min(VALUE._col1), count(VALUE._col2), avg(VALUE._col3), stddev_pop(VALUE._col4)
