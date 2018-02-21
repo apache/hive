@@ -102,6 +102,7 @@ import org.apache.orc.impl.StreamName;
 import org.apache.tez.common.CallableWithNdc;
 import org.apache.tez.common.counters.TezCounters;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 
 public class SerDeEncodedDataReader extends CallableWithNdc<Void>
@@ -848,7 +849,9 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     try {
       if (slice != null) {
         // If we had a cache range already, we expect a single matching disk slice.
+        // Given that there's cached data we expect there to be some disk data.
         Vectors vectors = currentFileRead.readNextSlice();
+        assert vectors != null;
         if (!vectors.isSupported()) {
           // Not in VRB mode - the new cache data is ready, we should use it.
           CacheWriter cacheWriter = currentFileRead.getCacheWriter();
@@ -864,8 +867,9 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
         ++stripeIxRef.value;
       } else {
         // All the data comes from disk. The reader may have split it into multiple slices.
+        // It is also possible there's no data in the file.
         Vectors vectors = currentFileRead.readNextSlice();
-        assert vectors != null;
+        if (vectors == null) return true;
         result = true;
         if (!vectors.isSupported()) {
           // Not in VRB mode - the new cache data is (partially) ready, we should use it.
@@ -1255,7 +1259,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     private int rowsPerSlice = 0;
     private long currentKnownTornStart;
     private long lastStartOffset = Long.MIN_VALUE, firstStartOffset = Long.MIN_VALUE;
-    private boolean hasUnsplittableData = false;
+    private boolean hasAnyData = false;
     private final EncodingWriter writer;
     private final boolean maySplitTheSplit;
     private final int targetSliceRowCount;
@@ -1263,6 +1267,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
 
     public FileReaderYieldReturn(ReaderWithOffsets offsetReader, FileSplit split, EncodingWriter writer,
         boolean maySplitTheSplit, int targetSliceRowCount) {
+      Preconditions.checkNotNull(offsetReader);
       this.offsetReader = offsetReader;
       currentKnownTornStart = split.getStart();
       this.writer = writer;
@@ -1276,10 +1281,12 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
 
     public Vectors readNextSlice() throws IOException {
-      if (offsetReader == null) return null;
+      if (offsetReader == null) {
+        return null; // This means the reader has already been closed.
+      }
       try {
         while (offsetReader.next()) {
-          hasUnsplittableData = true;
+          hasAnyData = true;
           Writable value = offsetReader.getCurrentRow();
           lastStartOffset = offsetReader.getCurrentRowStartOffset();
           if (firstStartOffset == Long.MIN_VALUE) {
@@ -1310,12 +1317,11 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
           }
         }
         try {
-          Vectors result = null;
-          if (rowsPerSlice > 0 || (!maySplitTheSplit && hasUnsplittableData)) {
+          if (rowsPerSlice > 0 || (!maySplitTheSplit && hasAnyData)) {
             long fileOffset = -1;
             if (!offsetReader.hasOffsets()) {
               // The reader doesn't support offsets. We adjust offsets to match future splits.
-              // If cached split was starting at row start, that row would be skipped, so +1
+              // If cached split was starting at row start, that row would be skipped, so +1 byte.
               firstStartOffset = split.getStart() + 1;
               // Last row starting at the end of the split would be read.
               lastStartOffset = split.getStart() + split.getLength();
@@ -1333,11 +1339,11 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
                 currentKnownTornStart, firstStartOffset, lastStartOffset, fileOffset);
             // Close the writer to finalize the metadata.
             writer.close();
-            result = new Vectors(writer.extractCurrentVrbs());
+            return new Vectors(writer.extractCurrentVrbs());
           } else {
             writer.close();
+            return null; // There's no more data.
           }
-          return result;
         } finally {
           closeOffsetReader();
         }
