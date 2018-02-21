@@ -892,11 +892,12 @@ replConfigsList
     ;
 
 replStatusStatement
-@init { pushMsg("replication load statement", state); }
+@init { pushMsg("replication status statement", state); }
 @after { popMsg(state); }
       : KW_REPL KW_STATUS
         (dbName=identifier) (DOT tblName=identifier)?
-      -> ^(TOK_REPL_STATUS $dbName $tblName?)
+        (KW_WITH replConf=replConfigs)?
+      -> ^(TOK_REPL_STATUS $dbName ^(TOK_TABNAME $tblName)? $replConf?)
       ;
 
 ddlStatement
