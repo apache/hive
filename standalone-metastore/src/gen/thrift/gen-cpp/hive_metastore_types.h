@@ -7325,13 +7325,14 @@ class AddDynamicPartitions {
 
   AddDynamicPartitions(const AddDynamicPartitions&);
   AddDynamicPartitions& operator=(const AddDynamicPartitions&);
-  AddDynamicPartitions() : txnid(0), dbname(), tablename(), operationType((DataOperationType::type)5) {
+  AddDynamicPartitions() : txnid(0), writeid(0), dbname(), tablename(), operationType((DataOperationType::type)5) {
     operationType = (DataOperationType::type)5;
 
   }
 
   virtual ~AddDynamicPartitions() throw();
   int64_t txnid;
+  int64_t writeid;
   std::string dbname;
   std::string tablename;
   std::vector<std::string>  partitionnames;
@@ -7340,6 +7341,8 @@ class AddDynamicPartitions {
   _AddDynamicPartitions__isset __isset;
 
   void __set_txnid(const int64_t val);
+
+  void __set_writeid(const int64_t val);
 
   void __set_dbname(const std::string& val);
 
@@ -7352,6 +7355,8 @@ class AddDynamicPartitions {
   bool operator == (const AddDynamicPartitions & rhs) const
   {
     if (!(txnid == rhs.txnid))
+      return false;
+    if (!(writeid == rhs.writeid))
       return false;
     if (!(dbname == rhs.dbname))
       return false;

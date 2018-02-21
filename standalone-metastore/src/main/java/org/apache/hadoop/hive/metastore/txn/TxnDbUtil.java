@@ -100,7 +100,7 @@ public final class TxnDbUtil {
       stmt.execute("INSERT INTO NEXT_TXN_ID VALUES(1)");
 
       stmt.execute("CREATE TABLE TXN_TO_WRITE_ID (" +
-          " T2W_TXNID bigint," +
+          " T2W_TXNID bigint NOT NULL," +
           " T2W_DATABASE varchar(128) NOT NULL," +
           " T2W_TABLE varchar(256) NOT NULL," +
           " T2W_WRITEID bigint NOT NULL)");

@@ -12373,6 +12373,7 @@ class AddDynamicPartitions:
   """
   Attributes:
    - txnid
+   - writeid
    - dbname
    - tablename
    - partitionnames
@@ -12382,14 +12383,16 @@ class AddDynamicPartitions:
   thrift_spec = (
     None, # 0
     (1, TType.I64, 'txnid', None, None, ), # 1
-    (2, TType.STRING, 'dbname', None, None, ), # 2
-    (3, TType.STRING, 'tablename', None, None, ), # 3
-    (4, TType.LIST, 'partitionnames', (TType.STRING,None), None, ), # 4
-    (5, TType.I32, 'operationType', None,     5, ), # 5
+    (2, TType.I64, 'writeid', None, None, ), # 2
+    (3, TType.STRING, 'dbname', None, None, ), # 3
+    (4, TType.STRING, 'tablename', None, None, ), # 4
+    (5, TType.LIST, 'partitionnames', (TType.STRING,None), None, ), # 5
+    (6, TType.I32, 'operationType', None,     5, ), # 6
   )
 
-  def __init__(self, txnid=None, dbname=None, tablename=None, partitionnames=None, operationType=thrift_spec[5][4],):
+  def __init__(self, txnid=None, writeid=None, dbname=None, tablename=None, partitionnames=None, operationType=thrift_spec[6][4],):
     self.txnid = txnid
+    self.writeid = writeid
     self.dbname = dbname
     self.tablename = tablename
     self.partitionnames = partitionnames
@@ -12410,16 +12413,21 @@ class AddDynamicPartitions:
         else:
           iprot.skip(ftype)
       elif fid == 2:
-        if ftype == TType.STRING:
-          self.dbname = iprot.readString()
+        if ftype == TType.I64:
+          self.writeid = iprot.readI64()
         else:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.STRING:
-          self.tablename = iprot.readString()
+          self.dbname = iprot.readString()
         else:
           iprot.skip(ftype)
       elif fid == 4:
+        if ftype == TType.STRING:
+          self.tablename = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
         if ftype == TType.LIST:
           self.partitionnames = []
           (_etype572, _size569) = iprot.readListBegin()
@@ -12429,7 +12437,7 @@ class AddDynamicPartitions:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
-      elif fid == 5:
+      elif fid == 6:
         if ftype == TType.I32:
           self.operationType = iprot.readI32()
         else:
@@ -12448,23 +12456,27 @@ class AddDynamicPartitions:
       oprot.writeFieldBegin('txnid', TType.I64, 1)
       oprot.writeI64(self.txnid)
       oprot.writeFieldEnd()
+    if self.writeid is not None:
+      oprot.writeFieldBegin('writeid', TType.I64, 2)
+      oprot.writeI64(self.writeid)
+      oprot.writeFieldEnd()
     if self.dbname is not None:
-      oprot.writeFieldBegin('dbname', TType.STRING, 2)
+      oprot.writeFieldBegin('dbname', TType.STRING, 3)
       oprot.writeString(self.dbname)
       oprot.writeFieldEnd()
     if self.tablename is not None:
-      oprot.writeFieldBegin('tablename', TType.STRING, 3)
+      oprot.writeFieldBegin('tablename', TType.STRING, 4)
       oprot.writeString(self.tablename)
       oprot.writeFieldEnd()
     if self.partitionnames is not None:
-      oprot.writeFieldBegin('partitionnames', TType.LIST, 4)
+      oprot.writeFieldBegin('partitionnames', TType.LIST, 5)
       oprot.writeListBegin(TType.STRING, len(self.partitionnames))
       for iter575 in self.partitionnames:
         oprot.writeString(iter575)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.operationType is not None:
-      oprot.writeFieldBegin('operationType', TType.I32, 5)
+      oprot.writeFieldBegin('operationType', TType.I32, 6)
       oprot.writeI32(self.operationType)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -12473,6 +12485,8 @@ class AddDynamicPartitions:
   def validate(self):
     if self.txnid is None:
       raise TProtocol.TProtocolException(message='Required field txnid is unset!')
+    if self.writeid is None:
+      raise TProtocol.TProtocolException(message='Required field writeid is unset!')
     if self.dbname is None:
       raise TProtocol.TProtocolException(message='Required field dbname is unset!')
     if self.tablename is None:
@@ -12485,6 +12499,7 @@ class AddDynamicPartitions:
   def __hash__(self):
     value = 17
     value = (value * 31) ^ hash(self.txnid)
+    value = (value * 31) ^ hash(self.writeid)
     value = (value * 31) ^ hash(self.dbname)
     value = (value * 31) ^ hash(self.tablename)
     value = (value * 31) ^ hash(self.partitionnames)

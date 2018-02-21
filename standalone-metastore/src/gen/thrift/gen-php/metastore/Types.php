@@ -17715,6 +17715,10 @@ class AddDynamicPartitions {
    */
   public $txnid = null;
   /**
+   * @var int
+   */
+  public $writeid = null;
+  /**
    * @var string
    */
   public $dbname = null;
@@ -17739,14 +17743,18 @@ class AddDynamicPartitions {
           'type' => TType::I64,
           ),
         2 => array(
+          'var' => 'writeid',
+          'type' => TType::I64,
+          ),
+        3 => array(
           'var' => 'dbname',
           'type' => TType::STRING,
           ),
-        3 => array(
+        4 => array(
           'var' => 'tablename',
           'type' => TType::STRING,
           ),
-        4 => array(
+        5 => array(
           'var' => 'partitionnames',
           'type' => TType::LST,
           'etype' => TType::STRING,
@@ -17754,7 +17762,7 @@ class AddDynamicPartitions {
             'type' => TType::STRING,
             ),
           ),
-        5 => array(
+        6 => array(
           'var' => 'operationType',
           'type' => TType::I32,
           ),
@@ -17763,6 +17771,9 @@ class AddDynamicPartitions {
     if (is_array($vals)) {
       if (isset($vals['txnid'])) {
         $this->txnid = $vals['txnid'];
+      }
+      if (isset($vals['writeid'])) {
+        $this->writeid = $vals['writeid'];
       }
       if (isset($vals['dbname'])) {
         $this->dbname = $vals['dbname'];
@@ -17806,20 +17817,27 @@ class AddDynamicPartitions {
           }
           break;
         case 2:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->dbname);
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->writeid);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case 3:
           if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->tablename);
+            $xfer += $input->readString($this->dbname);
           } else {
             $xfer += $input->skip($ftype);
           }
           break;
         case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tablename);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
           if ($ftype == TType::LST) {
             $this->partitionnames = array();
             $_size571 = 0;
@@ -17836,7 +17854,7 @@ class AddDynamicPartitions {
             $xfer += $input->skip($ftype);
           }
           break;
-        case 5:
+        case 6:
           if ($ftype == TType::I32) {
             $xfer += $input->readI32($this->operationType);
           } else {
@@ -17861,13 +17879,18 @@ class AddDynamicPartitions {
       $xfer += $output->writeI64($this->txnid);
       $xfer += $output->writeFieldEnd();
     }
+    if ($this->writeid !== null) {
+      $xfer += $output->writeFieldBegin('writeid', TType::I64, 2);
+      $xfer += $output->writeI64($this->writeid);
+      $xfer += $output->writeFieldEnd();
+    }
     if ($this->dbname !== null) {
-      $xfer += $output->writeFieldBegin('dbname', TType::STRING, 2);
+      $xfer += $output->writeFieldBegin('dbname', TType::STRING, 3);
       $xfer += $output->writeString($this->dbname);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->tablename !== null) {
-      $xfer += $output->writeFieldBegin('tablename', TType::STRING, 3);
+      $xfer += $output->writeFieldBegin('tablename', TType::STRING, 4);
       $xfer += $output->writeString($this->tablename);
       $xfer += $output->writeFieldEnd();
     }
@@ -17875,7 +17898,7 @@ class AddDynamicPartitions {
       if (!is_array($this->partitionnames)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('partitionnames', TType::LST, 4);
+      $xfer += $output->writeFieldBegin('partitionnames', TType::LST, 5);
       {
         $output->writeListBegin(TType::STRING, count($this->partitionnames));
         {
@@ -17889,7 +17912,7 @@ class AddDynamicPartitions {
       $xfer += $output->writeFieldEnd();
     }
     if ($this->operationType !== null) {
-      $xfer += $output->writeFieldBegin('operationType', TType::I32, 5);
+      $xfer += $output->writeFieldBegin('operationType', TType::I32, 6);
       $xfer += $output->writeI32($this->operationType);
       $xfer += $output->writeFieldEnd();
     }

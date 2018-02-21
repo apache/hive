@@ -483,8 +483,9 @@ public class TestCompactionTxnHandler {
 
     AllocateTableWriteIdsResponse writeIds
             = txnHandler.allocateTableWriteIds(new AllocateTableWriteIdsRequest(openTxns.getTxn_ids(), dbName, tableName));
+    long writeId = writeIds.getTxnToWriteIds().get(0).getWriteId();
     assertEquals(txnId, writeIds.getTxnToWriteIds().get(0).getTxnId());
-    assertEquals(1, writeIds.getTxnToWriteIds().get(0).getWriteId());
+    assertEquals(1, writeId);
 
     // lock a table, as in dynamic partitions
     LockComponent lc = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, dbName);
@@ -497,7 +498,7 @@ public class TestCompactionTxnHandler {
     LockResponse lock = txnHandler.lock(lr);
     assertEquals(LockState.ACQUIRED, lock.getState());
 
-    AddDynamicPartitions adp = new AddDynamicPartitions(txnId, dbName, tableName,
+    AddDynamicPartitions adp = new AddDynamicPartitions(txnId, writeId, dbName, tableName,
       Arrays.asList("ds=yesterday", "ds=today"));
     adp.setOperationType(dop);
     txnHandler.addDynamicPartitions(adp);

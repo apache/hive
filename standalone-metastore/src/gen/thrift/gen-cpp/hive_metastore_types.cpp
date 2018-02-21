@@ -17842,6 +17842,10 @@ void AddDynamicPartitions::__set_txnid(const int64_t val) {
   this->txnid = val;
 }
 
+void AddDynamicPartitions::__set_writeid(const int64_t val) {
+  this->writeid = val;
+}
+
 void AddDynamicPartitions::__set_dbname(const std::string& val) {
   this->dbname = val;
 }
@@ -17872,6 +17876,7 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
   using ::apache::thrift::protocol::TProtocolException;
 
   bool isset_txnid = false;
+  bool isset_writeid = false;
   bool isset_dbname = false;
   bool isset_tablename = false;
   bool isset_partitionnames = false;
@@ -17893,6 +17898,14 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
         }
         break;
       case 2:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->writeid);
+          isset_writeid = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->dbname);
           isset_dbname = true;
@@ -17900,7 +17913,7 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
           xfer += iprot->skip(ftype);
         }
         break;
-      case 3:
+      case 4:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->tablename);
           isset_tablename = true;
@@ -17908,7 +17921,7 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
           xfer += iprot->skip(ftype);
         }
         break;
-      case 4:
+      case 5:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->partitionnames.clear();
@@ -17928,7 +17941,7 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
           xfer += iprot->skip(ftype);
         }
         break;
-      case 5:
+      case 6:
         if (ftype == ::apache::thrift::protocol::T_I32) {
           int32_t ecast744;
           xfer += iprot->readI32(ecast744);
@@ -17949,6 +17962,8 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
 
   if (!isset_txnid)
     throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_writeid)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
   if (!isset_dbname)
     throw TProtocolException(TProtocolException::INVALID_DATA);
   if (!isset_tablename)
@@ -17967,15 +17982,19 @@ uint32_t AddDynamicPartitions::write(::apache::thrift::protocol::TProtocol* opro
   xfer += oprot->writeI64(this->txnid);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("dbname", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeFieldBegin("writeid", ::apache::thrift::protocol::T_I64, 2);
+  xfer += oprot->writeI64(this->writeid);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("dbname", ::apache::thrift::protocol::T_STRING, 3);
   xfer += oprot->writeString(this->dbname);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("tablename", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeFieldBegin("tablename", ::apache::thrift::protocol::T_STRING, 4);
   xfer += oprot->writeString(this->tablename);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("partitionnames", ::apache::thrift::protocol::T_LIST, 4);
+  xfer += oprot->writeFieldBegin("partitionnames", ::apache::thrift::protocol::T_LIST, 5);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->partitionnames.size()));
     std::vector<std::string> ::const_iterator _iter745;
@@ -17988,7 +18007,7 @@ uint32_t AddDynamicPartitions::write(::apache::thrift::protocol::TProtocol* opro
   xfer += oprot->writeFieldEnd();
 
   if (this->__isset.operationType) {
-    xfer += oprot->writeFieldBegin("operationType", ::apache::thrift::protocol::T_I32, 5);
+    xfer += oprot->writeFieldBegin("operationType", ::apache::thrift::protocol::T_I32, 6);
     xfer += oprot->writeI32((int32_t)this->operationType);
     xfer += oprot->writeFieldEnd();
   }
@@ -18000,6 +18019,7 @@ uint32_t AddDynamicPartitions::write(::apache::thrift::protocol::TProtocol* opro
 void swap(AddDynamicPartitions &a, AddDynamicPartitions &b) {
   using ::std::swap;
   swap(a.txnid, b.txnid);
+  swap(a.writeid, b.writeid);
   swap(a.dbname, b.dbname);
   swap(a.tablename, b.tablename);
   swap(a.partitionnames, b.partitionnames);
@@ -18009,6 +18029,7 @@ void swap(AddDynamicPartitions &a, AddDynamicPartitions &b) {
 
 AddDynamicPartitions::AddDynamicPartitions(const AddDynamicPartitions& other746) {
   txnid = other746.txnid;
+  writeid = other746.writeid;
   dbname = other746.dbname;
   tablename = other746.tablename;
   partitionnames = other746.partitionnames;
@@ -18017,6 +18038,7 @@ AddDynamicPartitions::AddDynamicPartitions(const AddDynamicPartitions& other746)
 }
 AddDynamicPartitions& AddDynamicPartitions::operator=(const AddDynamicPartitions& other747) {
   txnid = other747.txnid;
+  writeid = other747.writeid;
   dbname = other747.dbname;
   tablename = other747.tablename;
   partitionnames = other747.partitionnames;
@@ -18028,6 +18050,7 @@ void AddDynamicPartitions::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "AddDynamicPartitions(";
   out << "txnid=" << to_string(txnid);
+  out << ", " << "writeid=" << to_string(writeid);
   out << ", " << "dbname=" << to_string(dbname);
   out << ", " << "tablename=" << to_string(tablename);
   out << ", " << "partitionnames=" << to_string(partitionnames);

@@ -1518,19 +1518,22 @@ public class AcidUtils {
    * Set the valid write id list for the current table scan.
    */
   public static void setValidWriteIdList(Configuration conf, TableScanDesc tsDesc) {
-    String dbName = tsDesc.getDatabaseName();
-    String tableName = tsDesc.getTableName();
-    if ((dbName != null) && (tableName != null)) {
+    if (tsDesc.isTranscationalTable()) {
+      String dbName = tsDesc.getDatabaseName();
+      String tableName = tsDesc.getTableName();
       ValidWriteIdList validWriteIdList = getTableValidWriteIdList(conf,
                                                     AcidUtils.getFullTableName(dbName, tableName));
       if (validWriteIdList != null) {
         setValidWriteIdList(conf, validWriteIdList);
-      } else if (HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, false)) {
+      } else {
         // Log error if the acid table is missing from the ValidWriteIdList conf
         LOG.error("setValidWriteIdList on table: " + AcidUtils.getFullTableName(dbName, tableName)
-                + " isAcidTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, false)
+                + " isAcidTable: " + true
                 + " acidProperty: " + getAcidOperationalProperties(conf)
                 + " couldn't find the ValidWriteId list from ValidTxnWriteIdList: "
+                + conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
+        throw new IllegalStateException("ACID table: " + AcidUtils.getFullTableName(dbName, tableName)
+                + " is missing from the ValidWriteIdList config: "
                 + conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
       }
     }

@@ -2767,13 +2767,15 @@ end
 class AddDynamicPartitions
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TXNID = 1
-  DBNAME = 2
-  TABLENAME = 3
-  PARTITIONNAMES = 4
-  OPERATIONTYPE = 5
+  WRITEID = 2
+  DBNAME = 3
+  TABLENAME = 4
+  PARTITIONNAMES = 5
+  OPERATIONTYPE = 6
 
   FIELDS = {
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'},
+    WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeid'},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename'},
     PARTITIONNAMES => {:type => ::Thrift::Types::LIST, :name => 'partitionnames', :element => {:type => ::Thrift::Types::STRING}},
@@ -2784,6 +2786,7 @@ class AddDynamicPartitions
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnid is unset!') unless @txnid
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field writeid is unset!') unless @writeid
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbname is unset!') unless @dbname
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tablename is unset!') unless @tablename
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partitionnames is unset!') unless @partitionnames

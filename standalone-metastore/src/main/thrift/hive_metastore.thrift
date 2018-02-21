@@ -887,10 +887,11 @@ struct ShowCompactResponse {
 
 struct AddDynamicPartitions {
     1: required i64 txnid,
-    2: required string dbname,
-    3: required string tablename,
-    4: required list<string> partitionnames,
-    5: optional DataOperationType operationType = DataOperationType.UNSET
+    2: required i64 writeid,
+    3: required string dbname,
+    4: required string tablename,
+    5: required list<string> partitionnames,
+    6: optional DataOperationType operationType = DataOperationType.UNSET
 }
 
 struct BasicTxnInfo {

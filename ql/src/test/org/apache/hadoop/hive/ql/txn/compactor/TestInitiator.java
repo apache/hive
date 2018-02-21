@@ -351,7 +351,7 @@ public class TestInitiator extends CompactorTest {
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
     long writeid = allocateWriteId("default", "cthdp", txnid);
-    assert(writeid==txnid);
+    Assert.assertEquals(24, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
     startInitiator();
@@ -386,7 +386,7 @@ public class TestInitiator extends CompactorTest {
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
     long writeid = allocateWriteId("default", "cphdp", txnid);
-    assert(writeid==txnid);
+    Assert.assertEquals(24, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
     startInitiator();
@@ -420,7 +420,7 @@ public class TestInitiator extends CompactorTest {
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
     long writeid = allocateWriteId("default", "nctdpnhe", txnid);
-    assert(writeid==txnid);
+    Assert.assertEquals(54, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
     startInitiator();
@@ -458,7 +458,7 @@ public class TestInitiator extends CompactorTest {
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
     long writeid = allocateWriteId("default", "cttmd", txnid);
-    assert(writeid==txnid);
+    Assert.assertEquals(211, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
     startInitiator();
@@ -502,7 +502,7 @@ public class TestInitiator extends CompactorTest {
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
     long writeid = allocateWriteId("default", "cptmd", txnid);
-    assert(writeid==txnid);
+    Assert.assertEquals(211, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
     startInitiator();
@@ -536,7 +536,7 @@ public class TestInitiator extends CompactorTest {
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
     long writeid = allocateWriteId("default", "nctned", txnid);
-    assert(writeid==txnid);
+    Assert.assertEquals(211, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
     startInitiator();
@@ -574,7 +574,7 @@ public class TestInitiator extends CompactorTest {
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
     long writeid = allocateWriteId("default", "cmomwbv", txnid);
-    assert(writeid==txnid);
+    Assert.assertEquals(321, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
     startInitiator();
@@ -617,7 +617,7 @@ public class TestInitiator extends CompactorTest {
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
     long writeid = allocateWriteId("default", "ednb", txnid);
-    assert(writeid==txnid);
+    Assert.assertEquals(211, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
     startInitiator();
@@ -653,7 +653,7 @@ public class TestInitiator extends CompactorTest {
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
     long writeid = allocateWriteId("default", "ttospgocr", txnid);
-    assert(writeid==txnid);
+    Assert.assertEquals(24, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
     txnid = openTxn();
@@ -667,7 +667,7 @@ public class TestInitiator extends CompactorTest {
     req.setTxnid(txnid);
     res = txnHandler.lock(req);
     writeid = allocateWriteId("default", "ttospgocr", txnid);
-    assert(writeid==txnid);
+    Assert.assertEquals(25, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
     startInitiator();
@@ -702,7 +702,7 @@ public class TestInitiator extends CompactorTest {
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
     long writeid = allocateWriteId("default", "nctdp", txnid);
-    assert(writeid==txnid);
+    Assert.assertEquals(24, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
     startInitiator();
@@ -732,7 +732,7 @@ public class TestInitiator extends CompactorTest {
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
     long writeid = allocateWriteId("default", "dt", txnid);
-    assert(writeid==txnid);
+    Assert.assertEquals(24, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
     ms.dropTable("default", "dt");
@@ -766,7 +766,7 @@ public class TestInitiator extends CompactorTest {
     req.setTxnid(txnid);
     LockResponse res = txnHandler.lock(req);
     long writeid = allocateWriteId("default", "dp", txnid);
-    assert(writeid==txnid);
+    Assert.assertEquals(24, writeid);
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
 
     ms.dropPartition("default", "dp", Collections.singletonList("today"), true);

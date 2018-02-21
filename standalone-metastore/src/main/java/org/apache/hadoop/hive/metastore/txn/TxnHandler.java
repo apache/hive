@@ -1000,7 +1000,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         // Check if all the input txns are in open state. Write ID should be allocated only for open transactions.
         if (!isTxnsInOpenState(txnIds, stmt)) {
-          throw new IllegalStateException("Not all input txns " + txnIds + " are in open state.");
+          ensureAllTxnsValid(txnIds, stmt);
+          throw new RuntimeException("This should never happen for txnIds: " + txnIds);
         }
 
         List<TxnToWriteId> txnToWriteIds = new ArrayList<>();
@@ -1013,6 +1014,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         // Traverse the TXN_TO_WRITE_ID to see if any of the input txns already have allocated a
         // write id for the same db.table. If yes, then need to reuse it else have to allocate new one
+        // The write id would have been already allocated in case of multi-statement txns where
+        // first write on a table will allocate write id and rest of the writes should re-use it.
         prefix.append("select t2w_txnid, t2w_writeid from TXN_TO_WRITE_ID where"
                         + " t2w_database = " + quoteString(dbName)
                         + " and t2w_table = " + quoteString(tblName) + " and ");
@@ -2069,7 +2072,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     Connection dbConn = null;
     Statement stmt = null;
     ResultSet lockHandle = null;
-    ResultSet rs = null;
     try {
       try {
         lockInternal();
@@ -2087,20 +2089,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           ot = OpertaionType.fromDataOperationType(rqst.getOperationType());
         }
 
-        // It is assumed the caller have already allocated write id for adding data to the dynamic partitions.
-        // Get the write id allocated by this txn for the given table writes
-        String s = "select t2w_writeid from TXN_TO_WRITE_ID where"
-                + " t2w_database = " + quoteString(rqst.getDbname().toLowerCase())
-                + " and t2w_table = " + quoteString(rqst.getTablename().toLowerCase())
-                + " and t2w_txnid = " + rqst.getTxnid();
-        LOG.debug("Going to execute query <" + s + ">");
-        rs = stmt.executeQuery(s);
-        if (!rs.next()) {
-          throw new IllegalStateException("Adding dynamic partitions failed as no write id allocated for"
-                  + " the table: " + rqst.getDbname() + "." + rqst.getTablename()
-                  + " by txn: " + rqst.getTxnid());
-        }
-        Long writeId = rs.getLong(1);
+        Long writeId = rqst.getWriteid();
         List<String> rows = new ArrayList<>();
         for (String partName : rqst.getPartitionnames()) {
           rows.add(rqst.getTxnid() + "," + quoteString(rqst.getDbname()) + "," + quoteString(rqst.getTablename()) +
@@ -2123,7 +2112,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         throw new MetaException("Unable to insert into from transaction database " +
           StringUtils.stringifyException(e));
       } finally {
-        close(rs);
         close(lockHandle, stmt, dbConn);
         unlockInternal();
       }
@@ -3315,7 +3303,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * @param stmt db statement
    * @return If all txns in open state, then return true else false
    */
-  private boolean isTxnsInOpenState(List<Long> txnIds, Statement stmt) throws SQLException, MetaException {
+  private boolean isTxnsInOpenState(List<Long> txnIds, Statement stmt) throws SQLException {
     List<String> queries = new ArrayList<>();
     StringBuilder prefix = new StringBuilder();
     StringBuilder suffix = new StringBuilder();
@@ -3336,6 +3324,66 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
     }
     return count == txnIds.size();
+  }
+
+  /**
+   * Checks if all the txns in the list are in open state.
+   * @param txnIds list of txns to be evaluated for open state
+   * @param stmt db statement
+   */
+  private void ensureAllTxnsValid(List<Long> txnIds, Statement stmt) throws SQLException {
+    List<String> queries = new ArrayList<>();
+    StringBuilder prefix = new StringBuilder();
+    StringBuilder suffix = new StringBuilder();
+
+    // Check if any of the txns in the list is aborted.
+    prefix.append("select txn_id, txn_state from TXNS where ");
+    suffix.append("");
+    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix,
+            txnIds, "txn_id", false, false);
+    Long txnId;
+    char txnState;
+    for (String query : queries) {
+      LOG.debug("Going to execute query <" + query + ">");
+      ResultSet rs = stmt.executeQuery(query);
+      if (rs.next()) {
+        txnId = rs.getLong(1);
+        txnState = rs.getString(2).charAt(0);
+        if (txnState != TXN_OPEN) {
+          throw new IllegalStateException("Write ID allocation failed as input txn: " + txnId
+                  + " with state: " + txnState + " is not in open state.");
+        }
+      }
+    }
+    // Check if any of the txns in the list is committed.
+    checkIfTxnsCommitted(txnIds, stmt);
+  }
+
+  /**
+   * Checks if all the txns in the list are in committed. If yes, throw eception.
+   * @param txnIds list of txns to be evaluated for committed
+   * @param stmt db statement
+   */
+  private void checkIfTxnsCommitted(List<Long> txnIds, Statement stmt) throws SQLException {
+    List<String> queries = new ArrayList<>();
+    StringBuilder prefix = new StringBuilder();
+    StringBuilder suffix = new StringBuilder();
+
+    // Check if any of the txns in the list is committed. If yes, throw exception.
+    prefix.append("select ctc_txnid from COMPLETED_TXN_COMPONENTS where ");
+    suffix.append("");
+    TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix,
+            txnIds, "ctc_txnid", false, false);
+    Long txnId;
+    for (String query : queries) {
+      LOG.debug("Going to execute query <" + query + ">");
+      ResultSet rs = stmt.executeQuery(query);
+      if (rs.next()) {
+        txnId = rs.getLong(1);
+        throw new IllegalStateException("Write ID allocation failed as input txn: "
+                + txnId + " is already committed.");
+      }
+    }
   }
 
   /**

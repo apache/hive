@@ -80,7 +80,6 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
 
         AcidUtils.setAcidOperationalProperties(job, ts.getConf().isTranscationalTable(),
             ts.getConf().getAcidOperationalProperties());
-        AcidUtils.setValidWriteIdList(job, ts.getConf());
       }
       sink = work.getSink();
       fetch = new FetchOperator(work, job, source, getVirtualColumns(source));

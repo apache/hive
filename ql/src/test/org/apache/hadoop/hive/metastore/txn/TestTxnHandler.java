@@ -155,10 +155,11 @@ public class TestTxnHandler {
 
     AllocateTableWriteIdsResponse writeIds
             = txnHandler.allocateTableWriteIds(new AllocateTableWriteIdsRequest(Collections.singletonList(3L), "default", "T"));
+    long writeId = writeIds.getTxnToWriteIds().get(0).getWriteId();
     assertEquals(3, writeIds.getTxnToWriteIds().get(0).getTxnId());
-    assertEquals(1, writeIds.getTxnToWriteIds().get(0).getWriteId());
+    assertEquals(1, writeId);
 
-    AddDynamicPartitions adp = new AddDynamicPartitions(3, "default", "T", parts);
+    AddDynamicPartitions adp = new AddDynamicPartitions(3, writeId, "default", "T", parts);
     adp.setOperationType(DataOperationType.INSERT);
     txnHandler.addDynamicPartitions(adp);
     GetOpenTxnsInfoResponse txnsInfo = txnHandler.getOpenTxnsInfo();
