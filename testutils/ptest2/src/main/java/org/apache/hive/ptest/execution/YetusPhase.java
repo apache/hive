@@ -57,12 +57,12 @@ public class YetusPhase extends Phase {
 
     super(hostExecutors, localCommandFactory, templateDefaults, logger);
     this.mPatchFile = patchFile;
-    this.mWorkingDir = new File(workingDir, YETUS_OUTPUT_FOLDER);
+    this.buildTag = templateDefaults.get("buildTag");
+    this.mWorkingDir = new File(workingDir, YETUS_OUTPUT_FOLDER + "_" + this.buildTag);
     this.mLogFile = new File(logDir, YETUS_LOG_FILE);
     this.mOutputDir = new File(logDir, YETUS_OUTPUT_FOLDER);
     this.mScratchDir = scratchDir;
     this.conf = configuration;
-    this.buildTag = templateDefaults.get("buildTag");
     this.buildUrl = conf.getLogsURL() + "/" + this.buildTag + "/";
 
   }
