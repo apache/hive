@@ -102,6 +102,7 @@ import org.apache.hive.hcatalog.data.Pair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -962,6 +963,7 @@ public class TestDbNotificationListener {
   }
 
   @Test
+  @Ignore("HIVE-18715")
   public void createIndex() throws Exception {
     String indexName = "createIndex";
     String dbName = "default";
@@ -1033,6 +1035,7 @@ public class TestDbNotificationListener {
   }
 
   @Test
+  @Ignore("HIVE-18715")
   public void dropIndex() throws Exception {
     String indexName = "dropIndex";
     String dbName = "default";
@@ -1108,6 +1111,7 @@ public class TestDbNotificationListener {
   }
 
   @Test
+  @Ignore("HIVE-18715")
   public void alterIndex() throws Exception {
     String indexName = "alterIndex";
     String dbName = "default";
