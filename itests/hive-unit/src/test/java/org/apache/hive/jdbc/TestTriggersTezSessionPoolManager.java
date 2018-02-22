@@ -45,6 +45,16 @@ public class TestTriggersTezSessionPoolManager extends AbstractJdbcTriggersTest 
   }
 
   @Test(timeout = 60000)
+  public void testTriggerShortQueryElapsedTime() throws Exception {
+    Expression expression = ExpressionFactory.fromString("ELAPSED_TIME > 100");
+    Trigger trigger = new ExecutionTrigger("slow_query", expression, new Action(Action.Type.KILL_QUERY));
+    setupTriggers(Lists.newArrayList(trigger));
+    String query = "select sleep(t1.under_col, 500), t1.value from " + tableName + " t1 join " + tableName +
+      " t2 on t1.under_col>=t2.under_col";
+    runQueryWithTrigger(query, null, trigger + " violated");
+  }
+
+  @Test(timeout = 60000)
   public void testTriggerSlowQueryExecutionTime() throws Exception {
     Expression expression = ExpressionFactory.fromString("EXECUTION_TIME > 1000");
     Trigger trigger = new ExecutionTrigger("slow_query", expression, new Action(Action.Type.KILL_QUERY));

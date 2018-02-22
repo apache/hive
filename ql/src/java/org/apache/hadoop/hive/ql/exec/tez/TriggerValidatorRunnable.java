@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.ql.wm.Action;
 import org.apache.hadoop.hive.ql.wm.SessionTriggerProvider;
+import org.apache.hadoop.hive.ql.wm.TimeCounterLimit;
 import org.apache.hadoop.hive.ql.wm.Trigger;
 import org.apache.hadoop.hive.ql.wm.TriggerActionHandler;
 import org.apache.hadoop.hive.ql.wm.WmContext;
@@ -48,8 +49,9 @@ public class TriggerValidatorRunnable implements Runnable {
       for (TezSessionState sessionState : sessions) {
         WmContext wmContext = sessionState.getWmContext();
         if (wmContext != null && !wmContext.isQueryCompleted()
-          && !wmContext.getCurrentCounters().isEmpty()) {
+          && !wmContext.getSubscribedCounters().isEmpty()) {
           Map<String, Long> currentCounters = wmContext.getCurrentCounters();
+          wmContext.updateElapsedTimeCounter();
           for (Trigger currentTrigger : triggers) {
             String desiredCounter = currentTrigger.getExpression().getCounterLimit().getName();
             // there could be interval where desired counter value is not populated by the time we make this check
