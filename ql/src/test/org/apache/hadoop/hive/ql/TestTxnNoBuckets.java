@@ -363,11 +363,8 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
     Assert.assertEquals(2, BucketCodec.determineVersion(537001984).decodeWriterId(537001984));
     Assert.assertEquals(1, BucketCodec.determineVersion(536936448).decodeWriterId(536936448));
 
-    // Explain query allocate write id and unused. So, update here gets write id=2.
     assertVectorized(shouldVectorize(), "update T set b = 88 where b = 80");
     runStatementOnDriver("update T set b = 88 where b = 80");
-
-    // Explain query allocate write id and unused. So, delete here gets write id=4.
     assertVectorized(shouldVectorize(), "delete from T where b = 8");
     runStatementOnDriver("delete from T where b = 8");
     String expected3[][] = {
@@ -379,7 +376,7 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
         {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":2}\t12\t12", "warehouse/t/000000_0_copy_1"},
         {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}\t20\t40", "warehouse/t/HIVE_UNION_SUBDIR_15/000000_0"},
         {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":5}\t50\t60", "warehouse/t/HIVE_UNION_SUBDIR_16/000000_0"},
-        {"{\"transactionid\":2,\"bucketid\":536870912,\"rowid\":0}\t60\t88", "warehouse/t/delta_0000002_0000002_0000/bucket_00000"},
+        {"{\"transactionid\":1,\"bucketid\":536870912,\"rowid\":0}\t60\t88", "warehouse/t/delta_0000001_0000001_0000/bucket_00000"},
     };
     rs = runStatementOnDriver("select ROW__ID, a, b, INPUT__FILE__NAME from T order by a, b, INPUT__FILE__NAME");
     checkExpected(rs, expected3,"after converting to acid (no compaction with updates)");
@@ -391,15 +388,15 @@ ekoifman:apache-hive-3.0.0-SNAPSHOT-bin ekoifman$ tree /Users/ekoifman/dev/hiver
 
     /*Compaction preserves location of rows wrt buckets/tranches (for now)*/
     String expected4[][] = {
-        {"{\"transactionid\":0,\"bucketid\":537001984,\"rowid\":0}\t1\t2", "warehouse/t/base_0000004/bucket_00002"},
-        {"{\"transactionid\":0,\"bucketid\":537001984,\"rowid\":1}\t2\t4", "warehouse/t/base_0000004/bucket_00002"},
-        {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":1}\t5\t6", "warehouse/t/base_0000004/bucket_00000"},
-        {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":0}\t9\t10", "warehouse/t/base_0000004/bucket_00000"},
-        {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":3}\t10\t20", "warehouse/t/base_0000004/bucket_00000"},
-        {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":2}\t12\t12", "warehouse/t/base_0000004/bucket_00000"},
-        {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}\t20\t40", "warehouse/t/base_0000004/bucket_00000"},
-        {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":5}\t50\t60", "warehouse/t/base_0000004/bucket_00000"},
-        {"{\"transactionid\":2,\"bucketid\":536870912,\"rowid\":0}\t60\t88", "warehouse/t/base_0000004/bucket_00000"},
+        {"{\"transactionid\":0,\"bucketid\":537001984,\"rowid\":0}\t1\t2", "warehouse/t/base_0000002/bucket_00002"},
+        {"{\"transactionid\":0,\"bucketid\":537001984,\"rowid\":1}\t2\t4", "warehouse/t/base_0000002/bucket_00002"},
+        {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":1}\t5\t6", "warehouse/t/base_0000002/bucket_00000"},
+        {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":0}\t9\t10", "warehouse/t/base_0000002/bucket_00000"},
+        {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":3}\t10\t20", "warehouse/t/base_0000002/bucket_00000"},
+        {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":2}\t12\t12", "warehouse/t/base_0000002/bucket_00000"},
+        {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":4}\t20\t40", "warehouse/t/base_0000002/bucket_00000"},
+        {"{\"transactionid\":0,\"bucketid\":536870912,\"rowid\":5}\t50\t60", "warehouse/t/base_0000002/bucket_00000"},
+        {"{\"transactionid\":1,\"bucketid\":536870912,\"rowid\":0}\t60\t88", "warehouse/t/base_0000002/bucket_00000"},
     };
     checkExpected(rs, expected4,"after major compact");
   }

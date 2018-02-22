@@ -262,6 +262,7 @@ public class TestUpdateDeleteSemanticAnalyzer {
 
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
     SessionState.get().initTxnMgr(conf);
+    SessionState.get().getTxnMgr().openTxn(ctx, conf.getUser());
     db = sem.getDb();
 
     // I have to create the tables here (rather than in setup()) because I need the Hive

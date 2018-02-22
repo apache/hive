@@ -664,7 +664,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       String value = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
       writeIdList = value == null ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(value);
       LOG.debug("Context:: Read ValidWriteIdList: " + writeIdList.toString()
-              + " isAcidTable: " + isTableTransactional);
+              + " isTransactionalTable: " + isTableTransactional);
     }
 
     @VisibleForTesting
@@ -2011,7 +2011,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     ValidWriteIdList validWriteIdList
             = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
     LOG.debug("getReader:: Read ValidWriteIdList: " + validWriteIdList.toString()
-            + " isAcidTable: " + AcidUtils.isFullAcidScan(conf));
+            + " isTransactionalTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN));
 
     final OrcRawRecordMerger records =
         new OrcRawRecordMerger(conf, true, reader, split.isOriginal(), bucket,

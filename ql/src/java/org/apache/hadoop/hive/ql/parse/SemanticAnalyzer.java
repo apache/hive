@@ -6888,11 +6888,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           checkAcidConstraints(qb, table_desc, dest_tab);
         }
         try {
-          if (isMmTable) {
-            writeId = txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
+          if (ctx.getExplainConfig() != null) {
+            writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
           } else {
-            writeId = acidOp == Operation.NOT_ACID ? null :
-                    txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
+            if (isMmTable) {
+              writeId = txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
+            } else {
+              writeId = acidOp == Operation.NOT_ACID ? null :
+                      txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
+            }
           }
         } catch (LockException ex) {
           throw new SemanticException("Failed to allocate write Id", ex);
@@ -6975,11 +6979,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         checkAcidConstraints(qb, table_desc, dest_tab);
       }
       try {
-        if (isMmTable) {
-          writeId = txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
+        if (ctx.getExplainConfig() != null) {
+          writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
         } else {
-          writeId = (acidOp == Operation.NOT_ACID) ? null :
-                  txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
+          if (isMmTable) {
+            writeId = txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
+          } else {
+            writeId = (acidOp == Operation.NOT_ACID) ? null :
+                    txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
+          }
         }
       } catch (LockException ex) {
         throw new SemanticException("Failed to allocate write Id", ex);
@@ -7023,7 +7031,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (AcidUtils.isInsertOnlyTable(tblDesc.getTblProps(), true)) {
           isMmTable = isMmCtas = true;
           try {
-            writeId = txnMgr.getTableWriteId(tblDesc.getDatabaseName(), tblDesc.getTableName());
+            if (ctx.getExplainConfig() != null) {
+              writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
+            } else {
+              writeId = txnMgr.getTableWriteId(tblDesc.getDatabaseName(), tblDesc.getTableName());
+            }
           } catch (LockException ex) {
             throw new SemanticException("Failed to allocate write Id", ex);
           }

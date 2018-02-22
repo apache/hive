@@ -3343,28 +3343,36 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             txnIds, "txn_id", false, false);
     Long txnId;
     char txnState;
+    boolean isAborted = false;
+    StringBuilder errorMsg = new StringBuilder("Write ID allocation failed for input txns: ");
     for (String query : queries) {
       LOG.debug("Going to execute query <" + query + ">");
       ResultSet rs = stmt.executeQuery(query);
-      if (rs.next()) {
+      while (rs.next()) {
         txnId = rs.getLong(1);
         txnState = rs.getString(2).charAt(0);
         if (txnState != TXN_OPEN) {
-          throw new IllegalStateException("Write ID allocation failed as input txn: " + txnId
-                  + " with state: " + txnState + " is not in open state.");
+          isAborted = true;
+          errorMsg.append("{").append(txnId).append(",").append(txnState).append("}");
         }
       }
     }
     // Check if any of the txns in the list is committed.
-    checkIfTxnsCommitted(txnIds, stmt);
+    boolean isCommitted = checkIfTxnsCommitted(txnIds, stmt, errorMsg);
+    if (isAborted || isCommitted) {
+      LOG.error(errorMsg.toString());
+      throw new IllegalStateException("Write ID allocation failed as not all input txns in open state");
+    }
   }
 
   /**
    * Checks if all the txns in the list are in committed. If yes, throw eception.
    * @param txnIds list of txns to be evaluated for committed
    * @param stmt db statement
+   * @return true if any input txn is committed, else false
    */
-  private void checkIfTxnsCommitted(List<Long> txnIds, Statement stmt) throws SQLException {
+  private boolean checkIfTxnsCommitted(List<Long> txnIds, Statement stmt, StringBuilder errorMsg)
+          throws SQLException {
     List<String> queries = new ArrayList<>();
     StringBuilder prefix = new StringBuilder();
     StringBuilder suffix = new StringBuilder();
@@ -3375,15 +3383,19 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix,
             txnIds, "ctc_txnid", false, false);
     Long txnId;
+    boolean isCommitted = false;
     for (String query : queries) {
       LOG.debug("Going to execute query <" + query + ">");
       ResultSet rs = stmt.executeQuery(query);
-      if (rs.next()) {
+      while (rs.next()) {
+        isCommitted = true;
         txnId = rs.getLong(1);
-        throw new IllegalStateException("Write ID allocation failed as input txn: "
-                + txnId + " is already committed.");
+        if (errorMsg != null) {
+          errorMsg.append("{").append(txnId).append(",c}");
+        }
       }
     }
+    return isCommitted;
   }
 
   /**

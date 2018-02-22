@@ -327,7 +327,10 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     Long writeId = 0L; // Initialize with 0 for non-ACID and non-MM tables.
     if (((table != null) && AcidUtils.isTransactionalTable(table))
             || AcidUtils.isTablePropertyTransactional(tblDesc.getTblProps())) {
-      writeId = SessionState.get().getTxnMgr().getTableWriteId(tblDesc.getDatabaseName(), tblDesc.getTableName());
+      // Explain plan doesn't open a txn and hence no need to allocate write id.
+      if (x.getCtx().getExplainConfig() == null) {
+        writeId = SessionState.get().getTxnMgr().getTableWriteId(tblDesc.getDatabaseName(), tblDesc.getTableName());
+      }
     }
     int stmtId = 0;
 
