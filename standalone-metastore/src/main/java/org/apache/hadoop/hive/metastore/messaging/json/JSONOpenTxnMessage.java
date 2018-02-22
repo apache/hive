@@ -34,10 +34,13 @@ public class JSONOpenTxnMessage extends OpenTxnMessage {
   @JsonProperty
   List<Long> txnIds;
 
+  @JsonProperty
   Long timestamp;
 
+  @JsonProperty
   String server;
 
+  @JsonProperty
   String servicePrincipal;
 
   /**
