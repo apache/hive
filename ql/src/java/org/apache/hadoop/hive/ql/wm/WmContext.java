@@ -236,4 +236,10 @@ public class WmContext implements PrintSummary {
         " Cluster %: " + WmContext.DECIMAL_FORMAT.format(wmEvent.getWmTezSessionInfo().getClusterPercent()));
     }
   }
+
+  public void updateElapsedTimeCounter() {
+    if (subscribedCounters.contains(TimeCounterLimit.TimeCounter.ELAPSED_TIME.name())) {
+      currentCounters.put(TimeCounterLimit.TimeCounter.ELAPSED_TIME.name(), getElapsedTime());
+    }
+  }
 }

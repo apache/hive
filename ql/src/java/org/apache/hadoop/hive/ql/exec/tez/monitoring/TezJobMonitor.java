@@ -360,11 +360,6 @@ public class TezJobMonitor {
 
     // Time based counters. If DAG is done already don't update these counters.
     if (!done) {
-      counterName = TimeCounterLimit.TimeCounter.ELAPSED_TIME.name();
-      if (desiredCounters.contains(counterName)) {
-        updatedCounters.put(counterName, context.getWmContext().getElapsedTime());
-      }
-
       counterName = TimeCounterLimit.TimeCounter.EXECUTION_TIME.name();
       if (desiredCounters.contains(counterName) && executionStartTime > 0) {
         updatedCounters.put(counterName, System.currentTimeMillis() - executionStartTime);
