@@ -444,6 +444,12 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
           new VectorizationCondition(
               vectorMapJoinDesc.getSmallTableExprVectorizes(),
               "Small table vectorizes"));
+      if (!mapJoinDesc.isNoOuterJoin()) {
+        conditionList.add(
+            new VectorizationCondition(
+                !vectorMapJoinDesc.getOuterJoinHasNoKeys(),
+                "Outer Join has keys"));
+      }
 
       if (isFastHashTableEnabled) {
         conditionList.add(

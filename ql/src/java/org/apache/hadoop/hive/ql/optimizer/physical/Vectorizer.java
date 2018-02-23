@@ -3150,6 +3150,8 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     List<ExprNodeDesc> keyDesc = desc.getKeys().get(posBigTable);
 
+    boolean outerJoinHasNoKeys = (!desc.isNoOuterJoin() && keyDesc.size() == 0);
+
     // For now, we don't support joins on or using DECIMAL_64.
     VectorExpression[] allBigTableKeyExpressions =
         vContext.getVectorExpressionsUpConvertDecimal64(keyDesc);
@@ -3452,6 +3454,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     vectorDesc.setOneMapJoinCondition(oneMapJoinCondition);
     vectorDesc.setHasNullSafes(hasNullSafes);
     vectorDesc.setSmallTableExprVectorizes(smallTableExprVectorizes);
+    vectorDesc.setOuterJoinHasNoKeys(outerJoinHasNoKeys);
 
     vectorDesc.setIsFastHashTableEnabled(isFastHashTableEnabled);
     vectorDesc.setIsHybridHashJoin(isHybridHashJoin);
@@ -3468,7 +3471,8 @@ public class Vectorizer implements PhysicalPlanResolver {
         !isTezOrSpark ||
         !oneMapJoinCondition ||
         hasNullSafes ||
-        !smallTableExprVectorizes) {
+        !smallTableExprVectorizes ||
+        outerJoinHasNoKeys) {
       result = false;
     }
 
