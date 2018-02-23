@@ -2690,7 +2690,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   /**
-   * Sort more restrictive locks after less restrictive ones
+   * Sort more restrictive locks after less restrictive ones.  Why?
+   * Consider insert overwirte table DB.T1 select ... from T2:
+   * this takes X lock on DB.T1 and S lock on T2
+   * Also, create table DB.T3: takes S lock on DB.
+   * so the state of the lock manger is {X(T1), S(T2) S(DB)} all in acquired state.
+   * This is made possible by HIVE-10242.
+   * Now a select * from T1 will try to get S(T1) which according to the 'jumpTable' will
+   * be acquired once it sees S(DB).  So need to check stricter locks first.
    */
   private final static class LockTypeComparator implements Comparator<LockType> {
     public boolean equals(Object other) {
@@ -2842,7 +2849,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * Lock acquisition is meant to be fair, so every lock can only block on some lock with smaller
    * hl_lock_ext_id by only checking earlier locks.
    *
-   * For any given SQL statment all locks required by it are grouped under single extLockId and are
+   * For any given SQL statement all locks required by it are grouped under single extLockId and are
    * granted all at once or all locks wait.
    *
    * This is expected to run at READ_COMMITTED.
@@ -2871,7 +2878,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     boolean isPartOfDynamicPartitionInsert = true;
     try {
       /**
-       * checkLock() must be mutexed against any other checkLock to make sure 2 conflicting locks
+       * checkLock() must be mutex'd against any other checkLock to make sure 2 conflicting locks
        * are not granted by parallel checkLock() calls.
        */
       handle = getMutexAPI().acquireLock(MUTEX_KEY.CheckLock.name());
@@ -3007,7 +3014,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           query.append("))");
         }
       }
-      query.append(" and hl_lock_ext_id <= ").append(extLockId);
+      query.append(" and hl_lock_ext_id < ").append(extLockId);
 
       LOG.debug("Going to execute query <" + query.toString() + ">");
       stmt = dbConn.createStatement();
@@ -3027,57 +3034,43 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
 
       for (LockInfo info : locksBeingChecked) {
-        // Find the lock record we're checking
-        int index = -1;
-        for (int i = 0; i < locks.length; i++) {
-          if (locks[i].equals(info)) {
-            index = i;
-            break;
-          }
-        }
-
-        // If we didn't find the lock, then it must not be in the table
-        if (index == -1) {
-          LOG.debug("Going to rollback");
-          dbConn.rollback();
-          throw new MetaException("How did we get here, we heartbeated our lock before we started! ( " + info + ")");
-        }
-
-
         // If we've found it and it's already been marked acquired,
         // then just look at the other locks.
-        if (locks[index].state == LockState.ACQUIRED) {
+        if (info.state == LockState.ACQUIRED) {
           /**this is what makes this method @SafeToRetry*/
           continue;
         }
 
         // Look at everything in front of this lock to see if it should block
         // it or not.
-        for (int i = index - 1; i >= 0; i--) {
+        for (int i = locks.length - 1; i >= 0; i--) {
           // Check if we're operating on the same database, if not, move on
-          if (!locks[index].db.equals(locks[i].db)) {
+          if (!info.db.equals(locks[i].db)) {
             continue;
           }
 
           // If table is null on either of these, then they are claiming to
           // lock the whole database and we need to check it.  Otherwise,
           // check if they are operating on the same table, if not, move on.
-          if (locks[index].table != null && locks[i].table != null
-            && !locks[index].table.equals(locks[i].table)) {
+          if (info.table != null && locks[i].table != null
+            && !info.table.equals(locks[i].table)) {
             continue;
           }
+          // if here, we may be checking a DB level lock against a Table level lock.  Alternatively,
+          // we could have used Intention locks (for example a request for S lock on table would
+          // cause an IS lock DB that contains the table).  Similarly, at partition level.
 
           // If partition is null on either of these, then they are claiming to
           // lock the whole table and we need to check it.  Otherwise,
           // check if they are operating on the same partition, if not, move on.
-          if (locks[index].partition != null && locks[i].partition != null
-            && !locks[index].partition.equals(locks[i].partition)) {
+          if (info.partition != null && locks[i].partition != null
+            && !info.partition.equals(locks[i].partition)) {
             continue;
           }
 
           // We've found something that matches what we're trying to lock,
           // so figure out if we can lock it too.
-          LockAction lockAction = jumpTable.get(locks[index].type).get(locks[i].type).get(locks[i].state);
+          LockAction lockAction = jumpTable.get(info.type).get(locks[i].type).get(locks[i].state);
           LOG.debug("desired Lock: " + info + " checked Lock: " + locks[i] + " action: " + lockAction);
           switch (lockAction) {
             case WAIT:
