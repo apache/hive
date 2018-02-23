@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -117,8 +117,8 @@ public class TestVectorizedOrcAcidRowBatchReader {
         .filesystem(fs)
         .bucket(bucket)
         .writingBase(false)
-        .minimumTransactionId(1)
-        .maximumTransactionId(NUM_OTID)
+        .minimumWriteId(1)
+        .maximumWriteId(NUM_OTID)
         .inspector(inspector)
         .reporter(Reporter.NULL)
         .recordIdColumn(1)
@@ -141,7 +141,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     // Create a delete delta that has rowIds divisible by 2 but not by 3. This will produce
     // a delete delta file with 50,000 delete events.
     long currTxnId = NUM_OTID + 1;
-    options.minimumTransactionId(currTxnId).maximumTransactionId(currTxnId);
+    options.minimumWriteId(currTxnId).maximumWriteId(currTxnId);
     updater = new OrcRecordUpdater(root, options);
     for (long i = 1; i <= NUM_OTID; ++i) {
       for (long j = 0; j < NUM_ROWID_PER_OTID; j += 1) {
@@ -154,7 +154,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     // Now, create a delete delta that has rowIds divisible by 3 but not by 2. This will produce
     // a delete delta file with 25,000 delete events.
     currTxnId = NUM_OTID + 2;
-    options.minimumTransactionId(currTxnId).maximumTransactionId(currTxnId);
+    options.minimumWriteId(currTxnId).maximumWriteId(currTxnId);
     updater = new OrcRecordUpdater(root, options);
     for (long i = 1; i <= NUM_OTID; ++i) {
       for (long j = 0; j < NUM_ROWID_PER_OTID; j += 1) {
@@ -167,7 +167,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     // Now, create a delete delta that has rowIds divisible by both 3 and 2. This will produce
     // a delete delta file with 25,000 delete events.
     currTxnId = NUM_OTID + 3;
-    options.minimumTransactionId(currTxnId).maximumTransactionId(currTxnId);
+    options.minimumWriteId(currTxnId).maximumWriteId(currTxnId);
     updater = new OrcRecordUpdater(root, options);
     for (long i = 1; i <= NUM_OTID; ++i) {
       for (long j = 0; j < NUM_ROWID_PER_OTID; j += 1) {
@@ -216,7 +216,7 @@ public class TestVectorizedOrcAcidRowBatchReader {
     List<OrcSplit> splits = getSplits();
     // Mark one of the transactions as an exception to test that invalid transactions
     // are being handled properly.
-    conf.set(ValidTxnList.VALID_TXNS_KEY, "14:1:1:5"); // Exclude transaction 5
+    conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY, "tbl:14:1:1:5"); // Exclude transaction 5
 
     VectorizedOrcAcidRowBatchReader vectorizedReader = new VectorizedOrcAcidRowBatchReader(splits.get(0), conf, Reporter.NULL, new VectorizedRowBatchCtx());
     if (deleteEventRegistry.equals(ColumnizedDeleteEventRegistry.class.getName())) {

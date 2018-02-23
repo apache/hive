@@ -48,6 +48,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 public class TestMutatorClient {
 
   private static final long TRANSACTION_ID = 42L;
+  private static final long WRITE_ID1 = 78L;
+  private static final long WRITE_ID2 = 33L;
   private static final String TABLE_NAME_1 = "TABLE_1";
   private static final String TABLE_NAME_2 = "TABLE_2";
   private static final String DB_NAME = "DB_1";
@@ -89,6 +91,8 @@ public class TestMutatorClient {
     when(mockParameters.get("transactional")).thenReturn(Boolean.TRUE.toString());
 
     when(mockMetaStoreClient.openTxn(USER)).thenReturn(TRANSACTION_ID);
+    when(mockMetaStoreClient.allocateTableWriteId(TRANSACTION_ID, DB_NAME, TABLE_NAME_1)).thenReturn(WRITE_ID1);
+    when(mockMetaStoreClient.allocateTableWriteId(TRANSACTION_ID, DB_NAME, TABLE_NAME_2)).thenReturn(WRITE_ID2);
 
     client = new MutatorClient(mockMetaStoreClient, mockConfiguration, mockLockFailureListener, USER,
         Collections.singletonList(TABLE_1));
@@ -110,13 +114,13 @@ public class TestMutatorClient {
     assertThat(outTables.get(0).getTableName(), is(TABLE_NAME_1));
     assertThat(outTables.get(0).getTotalBuckets(), is(2));
     assertThat(outTables.get(0).getOutputFormatName(), is(OrcOutputFormat.class.getName()));
-    assertThat(outTables.get(0).getTransactionId(), is(0L));
+    assertThat(outTables.get(0).getWriteId(), is(0L));
     assertThat(outTables.get(0).getTable(), is(mockTable1));
     assertThat(outTables.get(1).getDatabaseName(), is(DB_NAME));
     assertThat(outTables.get(1).getTableName(), is(TABLE_NAME_2));
     assertThat(outTables.get(1).getTotalBuckets(), is(2));
     assertThat(outTables.get(1).getOutputFormatName(), is(OrcOutputFormat.class.getName()));
-    assertThat(outTables.get(1).getTransactionId(), is(0L));
+    assertThat(outTables.get(1).getWriteId(), is(0L));
     assertThat(outTables.get(1).getTable(), is(mockTable2));
   }
 
@@ -179,8 +183,8 @@ public class TestMutatorClient {
 
     assertThat(transaction.getTransactionId(), is(TRANSACTION_ID));
     assertThat(transaction.getState(), is(TxnState.INACTIVE));
-    assertThat(outTables.get(0).getTransactionId(), is(TRANSACTION_ID));
-    assertThat(outTables.get(1).getTransactionId(), is(TRANSACTION_ID));
+    assertThat(outTables.get(0).getWriteId(), is(WRITE_ID1));
+    assertThat(outTables.get(1).getWriteId(), is(WRITE_ID2));
   }
 
   @Test

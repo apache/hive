@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -62,10 +63,13 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   public long getCurrentTxnId() {
     return 0L;
   }
-
   @Override
-  public int getWriteIdAndIncrement() {
+  public int getStmtIdAndIncrement() {
     return 0;
+  }
+  @Override
+  public long getTableWriteId(String dbName, String tableName) throws LockException {
+    return 0L;
   }
   @Override
   public HiveLockManager getLockManager() throws LockException {
@@ -217,6 +221,12 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   @Override
   public ValidTxnList getValidTxns() throws LockException {
     return new ValidReadTxnList();
+  }
+
+  @Override
+  public ValidTxnWriteIdList getValidWriteIds(List<String> tableList,
+                                              String validTxnList) throws LockException {
+    return new ValidTxnWriteIdList(getCurrentTxnId());
   }
 
   @Override

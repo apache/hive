@@ -38,8 +38,10 @@ import java.util.Set;
 @InterfaceStability.Evolving
 public interface TxnStore extends Configurable {
 
-  enum MUTEX_KEY {Initiator, Cleaner, HouseKeeper, CompactionHistory, CheckLock,
-    WriteSetCleaner, CompactionScheduler}
+  enum MUTEX_KEY {
+    Initiator, Cleaner, HouseKeeper, CompactionHistory, CheckLock,
+    WriteSetCleaner, CompactionScheduler, WriteIdAllocator
+  }
   // Compactor states (Should really be enum)
   String INITIATED_RESPONSE = "initiated";
   String WORKING_RESPONSE = "working";
@@ -123,6 +125,25 @@ public interface TxnStore extends Configurable {
   public BasicTxnInfo getFirstCompletedTransactionForTableAfterCommit(
       String inputDbName, String inputTableName, ValidTxnList txnList)
           throws MetaException;
+  /**
+   * Gets the list of valid write ids for the given table wrt to current txn
+   * @param rqst info on transaction and list of table names associated with given transaction
+   * @throws NoSuchTxnException
+   * @throws MetaException
+   */
+  @RetrySemantics.ReadOnly
+  GetValidWriteIdsResponse getValidWriteIds(GetValidWriteIdsRequest rqst)
+          throws NoSuchTxnException,  MetaException;
+
+  /**
+   * Allocate a write ID for the given table and associate it with a transaction
+   * @param rqst info on transaction and table to allocate write id
+   * @throws NoSuchTxnException
+   * @throws TxnAbortedException
+   * @throws MetaException
+   */
+  AllocateTableWriteIdsResponse allocateTableWriteIds(AllocateTableWriteIdsRequest rqst)
+    throws NoSuchTxnException, TxnAbortedException, MetaException;
 
   /**
    * Obtain a lock.
@@ -206,7 +227,7 @@ public interface TxnStore extends Configurable {
   CompactionResponse compact(CompactionRequest rqst) throws MetaException;
 
   /**
-   * Show list of current compactions
+   * Show list of current compactions.
    * @param rqst info on which compactions to show
    * @return compaction information
    * @throws MetaException
@@ -226,7 +247,7 @@ public interface TxnStore extends Configurable {
       throws NoSuchTxnException,  TxnAbortedException, MetaException;
 
   /**
-   * Clean up corresponding records in metastore tables
+   * Clean up corresponding records in metastore tables.
    * @param type Hive object type
    * @param db database object
    * @param table table object
@@ -350,10 +371,10 @@ public interface TxnStore extends Configurable {
   List<String> findColumnsWithStats(CompactionInfo ci) throws MetaException;
 
   /**
-   * Record the highest txn id that the {@code ci} compaction job will pay attention to.
+   * Record the highest write id that the {@code ci} compaction job will pay attention to.
    */
   @RetrySemantics.Idempotent
-  void setCompactionHighestTxnId(CompactionInfo ci, long highestTxnId) throws MetaException;
+  void setCompactionHighestWriteId(CompactionInfo ci, long highestWriteId) throws MetaException;
 
   /**
    * For any given compactable entity (partition, table if not partitioned) the history of compactions

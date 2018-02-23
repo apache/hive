@@ -150,12 +150,13 @@ public final class JavaUtils {
   public static String lockIdToString(long extLockId) {
     return "lockid:" + extLockId;
   }
-  /**
-   * Utility method for ACID to normalize logging info.  Matches
-   * org.apache.hadoop.hive.metastore.api.LockResponse#toString
-   */
+
   public static String txnIdToString(long txnId) {
     return "txnid:" + txnId;
+  }
+
+  public static String writeIdToString(long writeId) {
+    return "writeid:" + writeId;
   }
 
   public static String txnIdsToString(List<Long> txnIds) {
@@ -166,7 +167,7 @@ public final class JavaUtils {
     // prevent instantiation
   }
 
-  public static Long extractTxnId(Path file) {
+  public static Long extractWriteId(Path file) {
     String fileName = file.getName();
     String[] parts = fileName.split("_", 4);  // e.g. delta_0000001_0000001_0000 or base_0000022
     if (parts.length < 2 || !(DELTA_PREFIX.equals(parts[0]) || BASE_PREFIX.equals(parts[0]))) {

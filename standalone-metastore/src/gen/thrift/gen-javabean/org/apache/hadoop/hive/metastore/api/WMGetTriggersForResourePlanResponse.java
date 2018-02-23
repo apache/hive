@@ -346,14 +346,14 @@ import org.slf4j.LoggerFactory;
           case 1: // TRIGGERS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list810 = iprot.readListBegin();
-                struct.triggers = new ArrayList<WMTrigger>(_list810.size);
-                WMTrigger _elem811;
-                for (int _i812 = 0; _i812 < _list810.size; ++_i812)
+                org.apache.thrift.protocol.TList _list850 = iprot.readListBegin();
+                struct.triggers = new ArrayList<WMTrigger>(_list850.size);
+                WMTrigger _elem851;
+                for (int _i852 = 0; _i852 < _list850.size; ++_i852)
                 {
-                  _elem811 = new WMTrigger();
-                  _elem811.read(iprot);
-                  struct.triggers.add(_elem811);
+                  _elem851 = new WMTrigger();
+                  _elem851.read(iprot);
+                  struct.triggers.add(_elem851);
                 }
                 iprot.readListEnd();
               }
@@ -380,9 +380,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(TRIGGERS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.triggers.size()));
-            for (WMTrigger _iter813 : struct.triggers)
+            for (WMTrigger _iter853 : struct.triggers)
             {
-              _iter813.write(oprot);
+              _iter853.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -414,9 +414,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetTriggers()) {
         {
           oprot.writeI32(struct.triggers.size());
-          for (WMTrigger _iter814 : struct.triggers)
+          for (WMTrigger _iter854 : struct.triggers)
           {
-            _iter814.write(oprot);
+            _iter854.write(oprot);
           }
         }
       }
@@ -428,14 +428,14 @@ import org.slf4j.LoggerFactory;
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list815 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.triggers = new ArrayList<WMTrigger>(_list815.size);
-          WMTrigger _elem816;
-          for (int _i817 = 0; _i817 < _list815.size; ++_i817)
+          org.apache.thrift.protocol.TList _list855 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.triggers = new ArrayList<WMTrigger>(_list855.size);
+          WMTrigger _elem856;
+          for (int _i857 = 0; _i857 < _list855.size; ++_i857)
           {
-            _elem816 = new WMTrigger();
-            _elem816.read(iprot);
-            struct.triggers.add(_elem816);
+            _elem856 = new WMTrigger();
+            _elem856.read(iprot);
+            struct.triggers.add(_elem856);
           }
         }
         struct.setTriggersIsSet(true);

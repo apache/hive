@@ -37,8 +37,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.ValidReadTxnList;
-import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -151,8 +151,9 @@ public class FetchOperator implements Serializable {
     initialize();
   }
 
-  public void setValidTxnList(String txnStr) {
-    job.set(ValidTxnList.VALID_TXNS_KEY, txnStr);
+  public void setValidWriteIdList(String writeIdStr) {
+    job.set(ValidWriteIdList.VALID_WRITEIDS_KEY, writeIdStr);
+    LOG.debug("FetchOperator set writeIdStr: " + writeIdStr);
   }
   private void initialize() throws HiveException {
     if (isStatReader) {
@@ -274,7 +275,7 @@ public class FetchOperator implements Serializable {
       }
       FileSystem fs = currPath.getFileSystem(job);
       if (fs.exists(currPath)) {
-        if (extractValidTxnList() != null &&
+        if (extractValidWriteIdList() != null &&
             AcidUtils.isInsertOnlyTable(currDesc.getTableDesc().getProperties())) {
           return true;
         }
@@ -407,17 +408,17 @@ public class FetchOperator implements Serializable {
     if (inputFormat instanceof HiveInputFormat) {
       return StringUtils.escapeString(currPath.toString()); // No need to process here.
     }
-    ValidTxnList validTxnList;
+    ValidWriteIdList validWriteIdList;
     if (AcidUtils.isInsertOnlyTable(currDesc.getTableDesc().getProperties())) {
-      validTxnList = extractValidTxnList();
+      validWriteIdList = extractValidWriteIdList();
     } else {
-      validTxnList = null;  // non-MM case
+      validWriteIdList = null;  // non-MM case
     }
-    if (validTxnList != null) {
+    if (validWriteIdList != null) {
       Utilities.FILE_OP_LOGGER.info("Processing " + currDesc.getTableName() + " for MM paths");
     }
 
-    Path[] dirs = HiveInputFormat.processPathsForMmRead(Lists.newArrayList(currPath), job, validTxnList);
+    Path[] dirs = HiveInputFormat.processPathsForMmRead(Lists.newArrayList(currPath), job, validWriteIdList);
     if (dirs == null || dirs.length == 0) {
       return null; // No valid inputs. This condition is logged inside the call.
     }
@@ -428,10 +429,11 @@ public class FetchOperator implements Serializable {
     return str.toString();
   }
 
-  private ValidTxnList extractValidTxnList() {
+  private ValidWriteIdList extractValidWriteIdList() {
     if (currDesc.getTableName() == null || !org.apache.commons.lang.StringUtils.isBlank(currDesc.getTableName())) {
-      String txnString = job.get(ValidTxnList.VALID_TXNS_KEY);
-      return txnString == null ? new ValidReadTxnList() : new ValidReadTxnList(txnString);
+      String txnString = job.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
+      LOG.debug("FetchOperator get writeIdStr: " + txnString);
+      return txnString == null ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
     }
     return null;  // not fetching from a table directly but from a temp location
   }

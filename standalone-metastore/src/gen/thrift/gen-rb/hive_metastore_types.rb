@@ -2220,6 +2220,131 @@ class CommitTxnRequest
   ::Thrift::Struct.generate_accessors self
 end
 
+class GetValidWriteIdsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  FULLTABLENAMES = 1
+  VALIDTXNLIST = 2
+
+  FIELDS = {
+    FULLTABLENAMES => {:type => ::Thrift::Types::LIST, :name => 'fullTableNames', :element => {:type => ::Thrift::Types::STRING}},
+    VALIDTXNLIST => {:type => ::Thrift::Types::STRING, :name => 'validTxnList'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field fullTableNames is unset!') unless @fullTableNames
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field validTxnList is unset!') unless @validTxnList
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TableValidWriteIds
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  FULLTABLENAME = 1
+  WRITEIDHIGHWATERMARK = 2
+  INVALIDWRITEIDS = 3
+  MINOPENWRITEID = 4
+  ABORTEDBITS = 5
+
+  FIELDS = {
+    FULLTABLENAME => {:type => ::Thrift::Types::STRING, :name => 'fullTableName'},
+    WRITEIDHIGHWATERMARK => {:type => ::Thrift::Types::I64, :name => 'writeIdHighWaterMark'},
+    INVALIDWRITEIDS => {:type => ::Thrift::Types::LIST, :name => 'invalidWriteIds', :element => {:type => ::Thrift::Types::I64}},
+    MINOPENWRITEID => {:type => ::Thrift::Types::I64, :name => 'minOpenWriteId', :optional => true},
+    ABORTEDBITS => {:type => ::Thrift::Types::STRING, :name => 'abortedBits', :binary => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field fullTableName is unset!') unless @fullTableName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field writeIdHighWaterMark is unset!') unless @writeIdHighWaterMark
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field invalidWriteIds is unset!') unless @invalidWriteIds
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field abortedBits is unset!') unless @abortedBits
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetValidWriteIdsResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TBLVALIDWRITEIDS = 1
+
+  FIELDS = {
+    TBLVALIDWRITEIDS => {:type => ::Thrift::Types::LIST, :name => 'tblValidWriteIds', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TableValidWriteIds}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblValidWriteIds is unset!') unless @tblValidWriteIds
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class AllocateTableWriteIdsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TXNIDS = 1
+  DBNAME = 2
+  TABLENAME = 3
+
+  FIELDS = {
+    TXNIDS => {:type => ::Thrift::Types::LIST, :name => 'txnIds', :element => {:type => ::Thrift::Types::I64}},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnIds is unset!') unless @txnIds
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class TxnToWriteId
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TXNID = 1
+  WRITEID = 2
+
+  FIELDS = {
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId'},
+    WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnId is unset!') unless @txnId
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field writeId is unset!') unless @writeId
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class AllocateTableWriteIdsResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TXNTOWRITEIDS = 1
+
+  FIELDS = {
+    TXNTOWRITEIDS => {:type => ::Thrift::Types::LIST, :name => 'txnToWriteIds', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TxnToWriteId}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnToWriteIds is unset!') unless @txnToWriteIds
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class LockComponent
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TYPE = 1
@@ -2642,13 +2767,15 @@ end
 class AddDynamicPartitions
   include ::Thrift::Struct, ::Thrift::Struct_Union
   TXNID = 1
-  DBNAME = 2
-  TABLENAME = 3
-  PARTITIONNAMES = 4
-  OPERATIONTYPE = 5
+  WRITEID = 2
+  DBNAME = 3
+  TABLENAME = 4
+  PARTITIONNAMES = 5
+  OPERATIONTYPE = 6
 
   FIELDS = {
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'},
+    WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeid'},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename'},
     PARTITIONNAMES => {:type => ::Thrift::Types::LIST, :name => 'partitionnames', :element => {:type => ::Thrift::Types::STRING}},
@@ -2659,6 +2786,7 @@ class AddDynamicPartitions
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnid is unset!') unless @txnid
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field writeid is unset!') unless @writeid
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbname is unset!') unless @dbname
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tablename is unset!') unless @tablename
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partitionnames is unset!') unless @partitionnames
