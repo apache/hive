@@ -7856,7 +7856,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
 
       // Initialize materializations invalidation cache
-      MaterializationsInvalidationCache.get().init(handler.getMS(), handler.getTxnHandler());
+      MaterializationsInvalidationCache.get().init(conf, handler);
 
       TServerSocket serverSocket;
 
