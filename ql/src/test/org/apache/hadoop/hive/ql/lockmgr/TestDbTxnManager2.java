@@ -72,7 +72,7 @@ import java.util.Map;
  * each statement and can also simulate concurrent (but very controlled) work but w/o forking any
  * threads.  The limitation here is that not all statements are allowed in an explicit transaction.
  * For example, "drop table foo".  This approach will also cause the query to execute which will
- * make tests slower but will exericise the code path that is much closer to the actual user calls.
+ * make tests slower but will exercise the code path that is much closer to the actual user calls.
  *
  * In either approach, each logical "session" should use it's own Transaction Manager.  This requires
  * using {@link #swapTxnManager(HiveTxnManager)} since in the SessionState the TM is associated with
@@ -1467,7 +1467,7 @@ public class TestDbTxnManager2 {
       3, TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPLETED_TXN_COMPONENTS where ctc_table='tab1' and ctc_partition is not null"));
   }
   /**
-   * Concurrent delte/detele of same partition - should pass
+   * Concurrent delete/detele of same partition - should pass
    */
   @Test
   public void testWriteSetTracking11() throws Exception {
@@ -2229,5 +2229,110 @@ public class TestDbTxnManager2 {
     txnMgr2.commitTxn();
     Assert.assertEquals("Lock remained", 0, getLocks().size());
     Assert.assertEquals("Lock remained", 0, getLocks(txnMgr2).size());
+  }
+  @Test
+  public void testFairness() throws Exception {
+    dropTable(new String[] {"T6"});
+    CommandProcessorResponse cpr = driver.run("create table if not exists T6(a int)");
+    checkCmdOnDriver(cpr);
+    cpr = driver.compileAndRespond("select a from T6");
+    checkCmdOnDriver(cpr);
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "Fifer");//gets S lock on T6
+    HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    cpr = driver.compileAndRespond("drop table if exists T6");
+    checkCmdOnDriver(cpr);
+    //tries to get X lock on T6 and gets Waiting state
+    LockState lockState = ((DbTxnManager) txnMgr2).acquireLocks(driver.getPlan(), ctx, "Fiddler", false);
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T6", null, locks);
+    checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "T6", null, locks);
+
+    HiveTxnManager txnMgr3 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr3);
+    //this should block behind the X lock on  T6
+    //this is a contrived example, in practice this query would of course fail after drop table
+    cpr = driver.compileAndRespond("select a from T6");
+    checkCmdOnDriver(cpr);
+    ((DbTxnManager)txnMgr3).acquireLocks(driver.getPlan(), ctx, "Fifer", false);//gets S lock on T6
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 3, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T6", null, locks);
+    checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T6", null, locks);
+    checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "T6", null, locks);
+  }
+
+  /**
+   * T7 is a table with 2 partitions
+   * 1. run select from T7
+   * 2. run drop partition from T7
+   * concurrently with 1 starting first so that 2 blocks
+   * 3. start another concurrent select on T7 - it should block behind waiting X (from drop) - LM should be fair
+   * 4. finish #1 so that drop unblocks
+   * 5. rollback the drop to release its X lock
+   * 6. # should unblock
+   */
+  @Test
+  public void testFairness2() throws Exception {
+    dropTable(new String[]{"T7"});
+    CommandProcessorResponse cpr = driver.run("create table if not exists T7 (a int) "
+        + "partitioned by (p int) stored as orc TBLPROPERTIES ('transactional'='true')");
+    checkCmdOnDriver(cpr);
+    checkCmdOnDriver(driver.run(
+        "insert into T7 partition(p) values(1,1),(1,2)"));//create 2 partitions
+    cpr = driver.compileAndRespond("select a from T7 ");
+    checkCmdOnDriver(cpr);
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "Fifer");//gets S lock on T7
+    HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    cpr = driver.compileAndRespond("alter table T7 drop partition (p=1)");
+    checkCmdOnDriver(cpr);
+    //tries to get X lock on T7.p=1 and gets Waiting state
+    LockState lockState = ((DbTxnManager) txnMgr2).acquireLocks(driver.getPlan(), ctx,
+        "Fiddler", false);
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 4, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", null, locks);
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=1", locks);
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=2", locks);
+    checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "T7", "p=1", locks);
+
+    HiveTxnManager txnMgr3 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr3);
+    //this should block behind the X lock on  T7.p=1
+    cpr = driver.compileAndRespond("select a from T7");
+    checkCmdOnDriver(cpr);
+    //tries to get S lock on T7, S on T7.p=1 and S on T7.p=2
+    ((DbTxnManager)txnMgr3).acquireLocks(driver.getPlan(), ctx, "Fifer", false);
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 7, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", null, locks);
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=1", locks);
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=2", locks);
+    checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", null, locks);
+    checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", "p=1", locks);
+    checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", "p=2", locks);
+    checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "T7", "p=1", locks);
+
+    txnMgr.commitTxn();//release locks from "select a from T7" - to unblock hte drop partition
+    //retest the the "drop partiton" X lock
+    lockState = ((DbLockManager)txnMgr2.getLockManager()).checkLock(locks.get(6).getLockid());
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 4, locks.size());
+    checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "T7", "p=1", locks);
+    checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", null, locks);
+    checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", "p=1", locks);
+    checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", "p=2", locks);
+
+    txnMgr2.rollbackTxn();//release the X lock on T7.p=1
+    //re-test the locks
+    lockState = ((DbLockManager)txnMgr2.getLockManager()).checkLock(locks.get(1).getLockid());//S lock on T7
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 3, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", null, locks);
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=1", locks);
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=2", locks);
+
   }
 }

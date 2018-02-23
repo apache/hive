@@ -246,7 +246,7 @@ public class Cleaner extends CompactorThread {
        * are resolved (i.e. not opened).  This is what "highestWriteId" tracks.  This is only tracked
        * since Hive 1.3.0/2.0 - thus may be 0.  See ValidCompactorWriteIdList and uses for more info.
        * 
-       * We only want to clean up to the highestWriteId - otherwise we risk deleteing deltas from
+       * We only want to clean up to the highestWriteId - otherwise we risk deleting deltas from
        * under an active reader.
        * 
        * Suppose we have deltas D2 D3 for table T, i.e. the last compaction created D3 so now there is a 
