@@ -77,7 +77,7 @@ public class SparkTask extends Task<SparkWork> {
   private static final LogHelper console = new LogHelper(LOG);
   private PerfLogger perfLogger;
   private static final long serialVersionUID = 1L;
-  private transient String sparkJobID;
+  private transient int sparkJobID;
   private transient SparkStatistics sparkStatistics;
   private transient long submitTime;
   private transient long startTime;
@@ -123,18 +123,19 @@ public class SparkTask extends Task<SparkWork> {
       }
 
       addToHistory(jobRef);
-      sparkJobID = jobRef.getJobId();
       this.jobID = jobRef.getSparkJobStatus().getAppID();
       rc = jobRef.monitorJob();
       SparkJobStatus sparkJobStatus = jobRef.getSparkJobStatus();
+      sparkJobID = sparkJobStatus.getJobId();
       getSparkJobInfo(sparkJobStatus, rc);
       if (rc == 0) {
         sparkStatistics = sparkJobStatus.getSparkStatistics();
         if (LOG.isInfoEnabled() && sparkStatistics != null) {
-          LOG.info(String.format("=====Spark Job[%s] statistics=====", jobRef.getJobId()));
+          LOG.info(String.format("=====Spark Job[%s] statistics=====", sparkJobID));
           logSparkStatistic(sparkStatistics);
         }
-        LOG.info("Execution completed successfully");
+        LOG.info("Successfully completed Spark Job " + sparkJobID + " with application ID " +
+                jobID + " and task ID " + getId());
       } else if (rc == 2) { // Cancel job if the monitor found job submission timeout.
         // TODO: If the timeout is because of lack of resources in the cluster, we should
         // ideally also cancel the app request here. But w/o facilities from Spark or YARN,
@@ -192,7 +193,8 @@ public class SparkTask extends Task<SparkWork> {
     console.printInfo("Starting Spark Job = " + jobRef.getJobId());
     if (SessionState.get() != null) {
       SessionState.get().getHiveHistory()
-	  .setQueryProperty(queryState.getQueryId(), Keys.SPARK_JOB_ID, jobRef.getJobId());
+              .setQueryProperty(queryState.getQueryId(), Keys.SPARK_JOB_ID,
+                      Integer.toString(jobRef.getSparkJobStatus().getJobId()));
     }
   }
 
@@ -277,7 +279,7 @@ public class SparkTask extends Task<SparkWork> {
     return ((ReduceWork) children.get(0)).getReducer();
   }
 
-  public String getSparkJobID() {
+  public int getSparkJobID() {
     return sparkJobID;
   }
 
