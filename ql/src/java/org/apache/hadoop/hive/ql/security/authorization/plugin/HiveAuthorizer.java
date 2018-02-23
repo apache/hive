@@ -275,5 +275,9 @@ public interface HiveAuthorizer {
    */
   public boolean needTransform();
 
+  /**
+   * @return HivePolicyProvider instance (expected to be a singleton)
+   * @throws HiveAuthzPluginException
+   */
+  public HivePolicyProvider getHivePolicyProvider() throws HiveAuthzPluginException;
 }
-
