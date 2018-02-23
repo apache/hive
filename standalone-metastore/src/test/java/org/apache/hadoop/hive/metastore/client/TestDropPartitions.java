@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -40,9 +38,9 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -55,12 +53,7 @@ import com.google.common.collect.Lists;
  */
 @RunWith(Parameterized.class)
 @Category(MetastoreCheckinTest.class)
-public class TestDropPartitions {
-
-  // Needed until there is no junit release with @BeforeParam, @AfterParam (junit 4.13)
-  // https://github.com/junit-team/junit4/commit/1bf8438b65858565dbb64736bfe13aae9cfc1b5a
-  // Then we should remove our own copy
-  private static Set<AbstractMetaStoreService> metaStoreServices = null;
+public class TestDropPartitions extends MetaStoreClientTest {
   private AbstractMetaStoreService metaStore;
   private IMetaStoreClient client;
 
@@ -72,34 +65,18 @@ public class TestDropPartitions {
   private static final short MAX = -1;
   private static final Partition[] PARTITIONS = new Partition[3];
 
-  @Parameterized.Parameters(name = "{0}")
-  public static List<Object[]> getMetaStoreToTest() throws Exception {
-    List<Object[]> result = MetaStoreFactoryForTests.getMetaStores();
-    metaStoreServices = result.stream()
-                            .map(test -> (AbstractMetaStoreService)test[1])
-                            .collect(Collectors.toSet());
-    return result;
-  }
-
-  public TestDropPartitions(String name, AbstractMetaStoreService metaStore) throws Exception {
-    this.metaStore = metaStore;
+  @BeforeClass
+  public static void startMetaStores() {
     Map<MetastoreConf.ConfVars, String> msConf = new HashMap<MetastoreConf.ConfVars, String>();
     // Enable trash, so it can be tested
     Map<String, String> extraConf = new HashMap<String, String>();
     extraConf.put("fs.trash.checkpoint.interval", "30");  // FS_TRASH_CHECKPOINT_INTERVAL_KEY
     extraConf.put("fs.trash.interval", "30");             // FS_TRASH_INTERVAL_KEY (hadoop-2)
-
-    this.metaStore.start(msConf, extraConf);
+    startMetaStores(msConf, extraConf);
   }
 
-  // Needed until there is no junit release with @BeforeParam, @AfterParam (junit 4.13)
-  // https://github.com/junit-team/junit4/commit/1bf8438b65858565dbb64736bfe13aae9cfc1b5a
-  // Then we should move this to @AfterParam
-  @AfterClass
-  public static void stopMetaStores() throws Exception {
-    for(AbstractMetaStoreService metaStoreService : metaStoreServices) {
-      metaStoreService.stop();
-    }
+  public TestDropPartitions(String name, AbstractMetaStoreService metaStore) {
+    this.metaStore = metaStore;
   }
 
   @Before

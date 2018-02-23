@@ -18,8 +18,6 @@
 package org.apache.hadoop.hive.metastore.client;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -35,7 +33,6 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.thrift.TException;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,11 +47,7 @@ import com.google.common.collect.Lists;
  */
 @RunWith(Parameterized.class)
 @Category(MetastoreCheckinTest.class)
-public class TestGetListIndexes {
-  // Needed until there is no junit release with @BeforeParam, @AfterParam (junit 4.13)
-  // https://github.com/junit-team/junit4/commit/1bf8438b65858565dbb64736bfe13aae9cfc1b5a
-  // Then we should remove our own copy
-  private static Set<AbstractMetaStoreService> metaStoreServices = null;
+public class TestGetListIndexes extends MetaStoreClientTest {
   private AbstractMetaStoreService metaStore;
   private IMetaStoreClient client;
 
@@ -71,28 +64,8 @@ public class TestGetListIndexes {
   private static final Index[] INDEXES = new Index[5];
   private static final short MAX = -1;
 
-  @Parameterized.Parameters(name = "{0}")
-  public static List<Object[]> getMetaStoreToTest() throws Exception {
-    List<Object[]> result = MetaStoreFactoryForTests.getMetaStores();
-    metaStoreServices = result.stream()
-        .map(test -> (AbstractMetaStoreService)test[1])
-        .collect(Collectors.toSet());
-    return result;
-  }
-
-  public TestGetListIndexes(String name, AbstractMetaStoreService metaStore) throws Exception {
+  public TestGetListIndexes(String name, AbstractMetaStoreService metaStore) {
     this.metaStore = metaStore;
-    this.metaStore.start();
-  }
-
-  // Needed until there is no junit release with @BeforeParam, @AfterParam (junit 4.13)
-  // https://github.com/junit-team/junit4/commit/1bf8438b65858565dbb64736bfe13aae9cfc1b5a
-  // Then we should move this to @AfterParam
-  @AfterClass
-  public static void stopMetaStores() throws Exception {
-    for (AbstractMetaStoreService metaStoreService : metaStoreServices) {
-      metaStoreService.stop();
-    }
   }
 
   @Before
