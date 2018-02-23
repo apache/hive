@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -55,15 +54,12 @@ public class TestMetaStoreMaterializationsCacheCleaner {
   @Test
   public void testCleanerScenario1() throws Exception {
     // create mock raw store
-    final RawStore rawStore = mock(RawStore.class);
-    when(rawStore.getAllDatabases()).thenReturn(ImmutableList.of());
     Configuration conf = new Configuration();
     conf.set("metastore.materializations.invalidation.impl", "DISABLE");
-    when(rawStore.getConf()).thenReturn(conf);
-    // create mock txn store
-    final TxnStore txnStore = mock(TxnStore.class);
+    // create mock handler
+    final IHMSHandler handler = mock(IHMSHandler.class);
     // initialize invalidation cache (set conf to disable)
-    MaterializationsInvalidationCache.get().init(rawStore, txnStore);
+    MaterializationsInvalidationCache.get().init(conf, handler);
 
     // This is a dummy test, invalidation cache is not supposed to
     // record any information.
@@ -176,15 +172,12 @@ public class TestMetaStoreMaterializationsCacheCleaner {
   @Test
   public void testCleanerScenario2() throws Exception {
     // create mock raw store
-    final RawStore rawStore = mock(RawStore.class);
-    when(rawStore.getAllDatabases()).thenReturn(ImmutableList.of());
     Configuration conf = new Configuration();
     conf.set("metastore.materializations.invalidation.impl", "DEFAULT");
-    when(rawStore.getConf()).thenReturn(conf);
-    // create mock txn store
-    final TxnStore txnStore = mock(TxnStore.class);
+    // create mock handler
+    final IHMSHandler handler = mock(IHMSHandler.class);
     // initialize invalidation cache (set conf to default)
-    MaterializationsInvalidationCache.get().init(rawStore, txnStore);
+    MaterializationsInvalidationCache.get().init(conf, handler);
 
     // Scenario consists of the following steps:
     // Create tbl1
