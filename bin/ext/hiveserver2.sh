@@ -25,6 +25,7 @@ hiveserver2() {
   JAR=${HIVE_LIB}/hive-service-[0-9].*.jar
 
   export HADOOP_CLIENT_OPTS=" -Dproc_hiveserver2 $HADOOP_CLIENT_OPTS "
+  export HADOOP_OPTS="$HIVESERVER2_HADOOP_OPTS $HADOOP_OPTS"
   exec $HADOOP jar $JAR $CLASS $HIVE_OPTS "$@"
 }
 
