@@ -165,7 +165,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       // through the network
       client = HiveMetaStore.newRetryingHMSHandler("hive client", this.conf, true);
       // Initialize materializations invalidation cache (only for local metastore)
-      MaterializationsInvalidationCache.get().init(((IHMSHandler) client).getMS(), ((IHMSHandler) client).getTxnHandler());
+      MaterializationsInvalidationCache.get().init(conf, (IHMSHandler) client);
       isConnected = true;
       snapshotActiveConf();
       return;

@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import com.google.common.collect.HashMultimap;
@@ -38,7 +39,6 @@ import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,10 +81,10 @@ public final class MaterializationsInvalidationCache {
 
   /* Whether the cache has been initialized or not. */
   private boolean initialized;
-  /* Store to answer calls not related to transactions. */
-  private RawStore store;
-  /* Store to answer calls related to transactions. */
-  private TxnStore txnStore;
+  /* Configuration for cache. */
+  private Configuration conf;
+  /* Handler to connect to metastore. */
+  private IHMSHandler handler;
 
   private MaterializationsInvalidationCache() {
   }
@@ -105,12 +105,12 @@ public final class MaterializationsInvalidationCache {
    * multiple times in embedded mode. This will not happen when we run the metastore remotely
    * as the method is called only once.
    */
-  public synchronized void init(final RawStore store, final TxnStore txnStore) {
-    this.store = store;
-    this.txnStore = txnStore;
+  public synchronized void init(Configuration conf, IHMSHandler handler) {
+    this.conf = conf;
+    this.handler = handler;
 
     // This will only be true for debugging purposes
-    this.disable = MetastoreConf.getVar(store.getConf(),
+    this.disable = MetastoreConf.getVar(conf,
         MetastoreConf.ConfVars.MATERIALIZATIONS_INVALIDATION_CACHE_IMPL).equals("DISABLE");
     if (disable) {
       // Nothing to do
@@ -129,6 +129,7 @@ public final class MaterializationsInvalidationCache {
     @Override
     public void run() {
       try {
+        RawStore store = handler.getMS();
         for (String dbName : store.getAllDatabases()) {
           for (Table mv : store.getTableObjectsByName(dbName, store.getTables(dbName, null, TableType.MATERIALIZED_VIEW))) {
             addMaterializedView(mv.getDbName(), mv.getTableName(), ImmutableSet.copyOf(mv.getCreationMetadata().getTablesUsed()),
@@ -217,7 +218,7 @@ public final class MaterializationsInvalidationCache {
         // check if the MV is still valid.
         try {
           String[] names =  qNameTableUsed.split("\\.");
-          BasicTxnInfo e = txnStore.getFirstCompletedTransactionForTableAfterCommit(
+          BasicTxnInfo e = handler.getTxnHandler().getFirstCompletedTransactionForTableAfterCommit(
                   names[0], names[1], txnList);
           if (!e.isIsnull()) {
             modificationsTree.put(e.getTxnid(), e.getTime());
