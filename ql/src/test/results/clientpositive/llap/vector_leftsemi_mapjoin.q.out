@@ -4918,7 +4918,7 @@ STAGE PLANS:
                     Map Join Vectorization:
                         className: VectorMapJoinOperator
                         native: false
-                        nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.execution.engine tez IN [tez, spark] IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                        nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.execution.engine tez IN [tez, spark] IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                         nativeConditionsNotMet: hive.vectorized.execution.mapjoin.native.enabled IS false, One MapJoin Condition IS false
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkObjectHashOperator
@@ -5677,7 +5677,7 @@ STAGE PLANS:
                         Map Join Vectorization:
                             className: VectorMapJoinOperator
                             native: false
-                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                             nativeConditionsNotMet: hive.vectorized.execution.mapjoin.native.enabled IS false
                           Reduce Sink Vectorization:
                               className: VectorReduceSinkObjectHashOperator
@@ -8746,7 +8746,7 @@ STAGE PLANS:
                         bigTableValueExpressions: col 0:int
                         className: VectorMapJoinOperator
                         native: false
-                        nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.execution.engine tez IN [tez, spark] IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                        nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.execution.engine tez IN [tez, spark] IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                         nativeConditionsNotMet: hive.vectorized.execution.mapjoin.native.enabled IS false, One MapJoin Condition IS false
                     outputColumnNames: _col0
                     input vertices:
@@ -10032,7 +10032,7 @@ STAGE PLANS:
                             bigTableValueExpressions: col 0:int
                             className: VectorMapJoinOperator
                             native: false
-                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                             nativeConditionsNotMet: hive.vectorized.execution.mapjoin.native.enabled IS false
                         outputColumnNames: _col0
                         input vertices:
@@ -13276,7 +13276,7 @@ STAGE PLANS:
                         bigTableValueExpressions: col 0:int
                         className: VectorMapJoinOperator
                         native: false
-                        nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                        nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                         nativeConditionsNotMet: One MapJoin Condition IS false
                     outputColumnNames: _col0
                     input vertices:
@@ -14564,7 +14564,7 @@ STAGE PLANS:
                             bigTableValueColumnNums: [0]
                             className: VectorMapJoinOuterStringOperator
                             native: true
-                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                             projectedOutputColumnNums: [0]
                         outputColumnNames: _col0
                         input vertices:
@@ -17809,7 +17809,7 @@ STAGE PLANS:
                         bigTableValueExpressions: col 0:int
                         className: VectorMapJoinOperator
                         native: false
-                        nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                        nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                         nativeConditionsNotMet: One MapJoin Condition IS false
                     outputColumnNames: _col0
                     input vertices:
@@ -19097,7 +19097,7 @@ STAGE PLANS:
                             bigTableValueColumnNums: [0]
                             className: VectorMapJoinOuterStringOperator
                             native: true
-                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                             projectedOutputColumnNums: [0]
                         outputColumnNames: _col0
                         input vertices:
