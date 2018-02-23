@@ -510,6 +510,7 @@ public final class FileUtils {
    *
    * @param fs FileSystem to use
    * @param f path to create.
+   * @param inheritPerms whether directory inherits the permission of the last-existing parent path
    * @param conf Hive configuration
    *
    * @return true if directory created successfully.  False otherwise, including if it exists.
@@ -678,13 +679,26 @@ public final class FileUtils {
     } else {
       //rename the directory
       if (fs.rename(sourcePath, destPath)) {
-        HdfsUtils.setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, fs, destPath.getParent()), fs, destPath,
-                true);
+        HdfsUtils.setParentFileStatus(conf, fs, destPath, true);
         return true;
       }
 
       return false;
     }
+  }
+
+  public static boolean renameWithPermsNoCheck(FileSystem fs, Path sourcePath,
+      Path destPath,  Configuration conf) throws IOException {
+    return renameWithPermsNoCheck(fs, sourcePath, destPath, shouldInheritPerms(conf, fs), conf);
+  }
+
+  public static boolean renameWithPermsNoCheck(FileSystem fs, Path sourcePath,
+      Path destPath, boolean inheritPerms, Configuration conf) throws IOException {
+    LOG.debug("Renaming " + sourcePath + " to " + destPath);
+    boolean result = fs.rename(sourcePath, destPath);
+    if (!result || !inheritPerms) return result;
+    HdfsUtils.setParentFileStatus(conf, fs, destPath, true);
+    return true;
   }
 
   /**

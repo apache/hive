@@ -1147,6 +1147,7 @@ public final class Utilities {
    *          the src directory
    * @param dst
    *          the target directory
+   * @param jc 
    * @throws IOException
    */
   public static void renameOrMoveFiles(FileSystem fs, Path src, Path dst) throws IOException,
@@ -1159,7 +1160,6 @@ public final class Utilities {
       // move file by file
       FileStatus[] files = fs.listStatus(src);
       for (FileStatus file : files) {
-
         Path srcFilePath = file.getPath();
         String fileName = srcFilePath.getName();
         Path dstFilePath = new Path(dst, fileName);

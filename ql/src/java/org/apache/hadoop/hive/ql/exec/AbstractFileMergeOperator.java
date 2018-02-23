@@ -220,6 +220,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
         // if outPath does not exist, then it means all paths within combine split are skipped as
         // they are incompatible for merge (for example: files without stripe stats).
         // Those files will be added to incompatFileSet
+         // TODO: we might want to inherit permissions here: FileUtils.renameWithPermsNoCheck(fs, outPath, finalPath, jc)
         if (fs.exists(outPath)) {
           FileStatus fss = fs.getFileStatus(outPath);
           if (!fs.rename(outPath, finalPath)) {

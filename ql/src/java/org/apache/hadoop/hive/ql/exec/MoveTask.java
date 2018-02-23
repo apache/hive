@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -79,6 +80,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
   private static final long serialVersionUID = 1L;
   private static transient final Logger LOG = LoggerFactory.getLogger(MoveTask.class);
+  private boolean inheritPerms;
 
   public MoveTask() {
     super();
@@ -94,7 +96,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
       FileSystem fs = sourcePath.getFileSystem(conf);
       if (isDfsDir) {
-        moveFileInDfs (sourcePath, targetPath, fs);
+        moveFileInDfs(sourcePath, targetPath, fs, conf);
       } else {
         // This is a local file
         FileSystem dstFs = FileSystem.getLocal(conf);
@@ -106,7 +108,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
   }
 
-  private void moveFileInDfs (Path sourcePath, Path targetPath, FileSystem fs)
+  private void moveFileInDfs(Path sourcePath, Path targetPath, FileSystem fs, HiveConf conf)
       throws HiveException, IOException {
     // if source exists, rename. Otherwise, create a empty directory
     if (fs.exists(sourcePath)) {
@@ -129,7 +131,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         throw new HiveException("Unable to rename: " + sourcePath
             + " to: " + targetPath);
       }
-    } else if (!fs.mkdirs(targetPath)) {
+    } else if (!FileUtils.mkdir(fs, targetPath, inheritPerms, conf)) {
       throw new HiveException("Unable to make directory: " + targetPath);
     }
   }
@@ -182,7 +184,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       }
       fs.mkdirs(mkDirPath);
       if (FileUtils.shouldInheritPerms(conf, fs)) {
-        FileUtils.inheritPerms(conf, new HdfsUtils.HadoopFileStatus(conf, fs, actualPath), fs, mkDirPath, true);
+        FileUtils.inheritPerms(conf, new HdfsUtils.HadoopFileStatus(conf, fs, actualPath),
+            fs, mkDirPath, true);
       }
     }
     return deletePath;
@@ -244,6 +247,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   @Override
   public int execute(DriverContext driverContext) {
 
+    inheritPerms = HiveConf.getBoolVar(conf, ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
+
     try {
       if (driverContext.getCtx().getExplainAnalyze() == AnalyzeState.RUNNING) {
         return 0;
@@ -270,9 +275,9 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           Path destPath = lmfd.getTargetDirs().get(i);
           FileSystem fs = destPath.getFileSystem(conf);
           if (!fs.exists(destPath.getParent())) {
-            fs.mkdirs(destPath.getParent());
+            FileUtils.mkdir(fs, destPath.getParent(), inheritPerms, conf);
           }
-          moveFile(srcPath, destPath, isDfsDir);
+          moveFile(srcPath, destPath, isDfsDir); 
           i++;
         }
       }

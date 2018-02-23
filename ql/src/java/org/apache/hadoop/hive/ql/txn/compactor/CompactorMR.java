@@ -32,11 +32,14 @@ import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StringableMap;
 import org.apache.hadoop.hive.common.ValidCompactorTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -861,9 +864,12 @@ public class CompactorMR {
       FileStatus[] contents = fs.listStatus(tmpLocation);//expect 1 base or delta dir in this list
       //we have MIN_TXN, MAX_TXN and IS_MAJOR in JobConf so we could figure out exactly what the dir
       //name is that we want to rename; leave it for another day
+      boolean inheritPerms = FileUtils.shouldInheritPerms(conf, fs);
       for (int i = 0; i < contents.length; i++) {
         Path newPath = new Path(finalLocation, contents[i].getPath().getName());
-        fs.rename(contents[i].getPath(), newPath);
+        if (fs.rename(contents[i].getPath(), newPath) && inheritPerms) {
+          HdfsUtils.setParentFileStatus(conf, fs, newPath, true);
+        }
       }
       fs.delete(tmpLocation, true);
     }

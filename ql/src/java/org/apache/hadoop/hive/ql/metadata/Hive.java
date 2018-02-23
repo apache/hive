@@ -2913,6 +2913,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
         final boolean needToCopy = needToCopy(srcP, destf, srcFs, destFs);
 
         final boolean isRenameAllowed = !needToCopy && !isSrcLocal;
+
+
         // If we do a rename for a non-local file, we will be transfering the original
         // file permissions from source to the destination. Else, in case of mvFile() where we
         // copy from source to destination, we will inherit the destination's parent group ownership.
@@ -2920,7 +2922,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
           fullDestStatus.getFileStatus().getGroup();
         if (null == pool) {
           try {
+
             Path destPath = mvFile(conf, srcFs, srcP, destFs, destf, isSrcLocal, isRenameAllowed);
+            if (inheritPerms) {
+              HdfsUtils.setFullFileStatus(conf, fullDestStatus, destFs, destPath, false);
+            }
 
             if (null != newFiles) {
               newFiles.add(destPath);
@@ -2934,9 +2940,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             @Override
             public ObjectPair<Path, Path> call() throws Exception {
               SessionState.setCurrentSessionState(parentSession);
-
               Path destPath = mvFile(conf, srcFs, srcP, destFs, destf, isSrcLocal, isRenameAllowed);
-
               if (inheritPerms) {
                 // TODO: These are all files.
                 FileUtils.inheritPerms(conf, fullDestStatus, srcGroup, destFs, destPath, false, false);
@@ -3163,7 +3167,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
                 new ThreadFactoryBuilder().setDaemon(true).setNameFormat("Move-Thread-%d").build()) : null;
             /* Move files one by one because source is a subdirectory of destination */
             for (final FileStatus srcStatus : srcs) {
-
               final Path destFile = new Path(destf, srcStatus.getPath().getName());
               if (null == pool) {
                 if(!destFs.rename(srcStatus.getPath(), destFile)) {
@@ -3175,11 +3178,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
                   @Override
                   public Void call() throws Exception {
                     SessionState.setCurrentSessionState(parentSession);
+                    // TODO: why does this preserve /source/ (tmp file) group combined with /dest/ status?
                     final String group = srcStatus.getGroup();
                     if(destFs.rename(srcStatus.getPath(), destFile)) {
                       if (inheritPerms) {
-                        // TODO: These are all files.
-                        FileUtils.inheritPerms(conf, desiredStatus, group, destFs, destFile, false, false);
+                        // Note: for union, etc these may be directories.
+                        FileUtils.inheritPerms(conf, desiredStatus, group, destFs, destFile, true);
                       }
                     } else {
                       throw new IOException("rename for src path: " + srcStatus.getPath() + " to dest path:"
@@ -3206,6 +3210,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
                 }
               }
             }
+            // TODO: the inheritPerms logic in pool and non-pool case is different (per-file vs once).
+            //       Should this be reconciled?
             return true;
           } else {
             if (destFs.rename(srcf, destf)) {
@@ -3262,10 +3268,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   static protected void copyFiles(HiveConf conf, Path srcf, Path destf,
       FileSystem fs, boolean isSrcLocal, boolean isAcid, List<Path> newFiles) throws HiveException {
+    boolean inheritPerms = HiveConf.getBoolVar(conf,
+        HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
+
     try {
       // create the destination if it does not exist
       if (!fs.exists(destf)) {
-        FileUtils.mkdir(fs, destf, conf);
+        FileUtils.mkdir(fs, destf, inheritPerms, conf);
       }
     } catch (IOException e) {
       throw new HiveException(
@@ -3291,14 +3300,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
     // If we're moving files around for an ACID write then the rules and paths are all different.
     // You can blame this on Owen.
     if (isAcid) {
-      moveAcidFiles(srcFs, srcs, destf, newFiles);
+      moveAcidFiles(srcFs, srcs, destf, newFiles, inheritPerms, conf);
     } else {
       copyFiles(conf, fs, srcs, srcFs, destf, isSrcLocal, newFiles);
     }
   }
 
   private static void moveAcidFiles(FileSystem fs, FileStatus[] stats, Path dst,
-                                    List<Path> newFiles) throws HiveException {
+      List<Path> newFiles, boolean inheritPerms, Configuration conf) throws HiveException {
     // The layout for ACID files is table|partname/base|delta|delete_delta/bucket
     // We will always only be writing delta files.  In the buckets created by FileSinkOperator
     // it will look like bucket/delta|delete_delta/bucket.  So we need to move that into
@@ -3327,16 +3336,17 @@ private void constructOneLBLocationMap(FileStatus fSta,
       for (FileStatus origBucketStat : origBucketStats) {
         Path origBucketPath = origBucketStat.getPath();
         moveAcidDeltaFiles(AcidUtils.DELTA_PREFIX, AcidUtils.deltaFileFilter,
-                fs, dst, origBucketPath, createdDeltaDirs, newFiles);
+                fs, dst, origBucketPath, createdDeltaDirs, newFiles, inheritPerms, conf);
         moveAcidDeltaFiles(AcidUtils.DELETE_DELTA_PREFIX, AcidUtils.deleteEventDeltaDirFilter,
-                fs, dst,origBucketPath, createdDeltaDirs, newFiles);
+                fs, dst,origBucketPath, createdDeltaDirs, newFiles, inheritPerms, conf);
       }
     }
   }
 
+
   private static void moveAcidDeltaFiles(String deltaFileType, PathFilter pathFilter, FileSystem fs,
-                                         Path dst, Path origBucketPath, Set<Path> createdDeltaDirs,
-                                         List<Path> newFiles) throws HiveException {
+      Path dst, Path origBucketPath, Set<Path> createdDeltaDirs,
+      List<Path> newFiles, boolean inheritPerms, Configuration conf) throws HiveException {
     LOG.debug("Acid move looking for " + deltaFileType + " files in bucket " + origBucketPath);
 
     FileStatus[] deltaStats = null;
@@ -3358,7 +3368,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       try {
         if (!createdDeltaDirs.contains(deltaDest)) {
           try {
-            fs.mkdirs(deltaDest);
+            FileUtils.mkdir(fs, deltaDest, inheritPerms, conf);
             createdDeltaDirs.add(deltaDest);
           } catch (IOException swallowIt) {
             // Don't worry about this, as it likely just means it's already been created.
@@ -3373,7 +3383,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           Path bucketDest = new Path(deltaDest, bucketSrc.getName());
           LOG.info("Moving bucket " + bucketSrc.toUri().toString() + " to " +
               bucketDest.toUri().toString());
-          fs.rename(bucketSrc, bucketDest);
+          FileUtils.renameWithPermsNoCheck(fs, bucketSrc, bucketDest, inheritPerms, conf);
           if (newFiles != null) newFiles.add(bucketDest);
         }
       } catch (IOException e) {
@@ -3459,7 +3469,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
       // first call FileUtils.mkdir to make sure that destf directory exists, if not, it creates
       // destf with inherited permissions
-      boolean destfExist = FileUtils.mkdir(destFs, destf, conf);
+      boolean inheritPerms = HiveConf.getBoolVar(conf, HiveConf.ConfVars
+          .HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
+      boolean destfExist = FileUtils.mkdir(destFs, destf, inheritPerms, conf);
       if(!destfExist) {
         throw new IOException("Directory " + destf.toString()
             + " does not exist and could not be created.");
@@ -3477,7 +3489,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
         }
       } else { // its either a file or glob
         for (FileStatus src : srcs) {
-          if (!moveFile(conf, src.getPath(), new Path(destf, src.getPath().getName()), true, isSrcLocal)) {
+          Path destFile = new Path(destf, src.getPath().getName());
+          if (!moveFile(conf, src.getPath(), destFile, true, isSrcLocal)) {
             throw new IOException("Error moving: " + srcf + " into: " + destf);
           }
         }

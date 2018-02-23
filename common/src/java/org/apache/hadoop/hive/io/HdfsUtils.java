@@ -26,7 +26,6 @@ import java.util.List;
 import com.google.common.annotations.VisibleForTesting;
 
 import org.apache.commons.lang.ArrayUtils;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -39,7 +38,6 @@ import org.apache.hadoop.fs.permission.AclStatus;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
-
 import org.apache.hadoop.hive.common.StorageUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -295,5 +293,11 @@ public class HdfsUtils {
     AclStatus getAclStatus() {
       return this.aclStatus;
     }
+  }
+
+  public static void setParentFileStatus(
+      Configuration conf, FileSystem fs, Path destPath, boolean recursive) throws IOException {
+    setFullFileStatus(conf, new HdfsUtils.HadoopFileStatus(conf, fs, destPath.getParent()),
+        fs, destPath, recursive);
   }
 }

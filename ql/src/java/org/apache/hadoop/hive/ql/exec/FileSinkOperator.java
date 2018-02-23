@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import com.google.common.collect.Lists;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -639,6 +640,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       throw new HiveException(e);
     }
   }
+
 
   /**
    * Report status to JT so that JT won't kill this task if closing takes too long
