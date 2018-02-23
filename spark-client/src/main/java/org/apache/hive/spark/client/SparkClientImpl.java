@@ -575,7 +575,7 @@ class SparkClientImpl implements SparkClient {
     }
 
     private void handle(ChannelHandlerContext ctx, Error msg) {
-      LOG.warn("Error reported from remote driver.", msg.cause);
+      LOG.warn("Error reported from remote driver: {}", msg.cause);
     }
 
     private void handle(ChannelHandlerContext ctx, JobMetrics msg) {
