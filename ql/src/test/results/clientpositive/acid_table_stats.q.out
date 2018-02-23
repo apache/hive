@@ -95,7 +95,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	3950                
+	totalSize           	3949                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -133,9 +133,9 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: acid
-            Statistics: Num rows: 81 Data size: 39500 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 81 Data size: 39490 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              Statistics: Num rows: 81 Data size: 39500 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 81 Data size: 39490 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
                 mode: hash
@@ -210,7 +210,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	208000              
-	totalSize           	3950                
+	totalSize           	3949                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -261,7 +261,7 @@ Partition Parameters:
 	numFiles            	2                   
 	numRows             	1000                
 	rawDataSize         	208000              
-	totalSize           	3950                
+	totalSize           	3949                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -386,7 +386,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	1000                
 	rawDataSize         	208000              
-	totalSize           	7904                
+	totalSize           	7890                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -433,7 +433,7 @@ Partition Parameters:
 	numFiles            	4                   
 	numRows             	2000                
 	rawDataSize         	416000              
-	totalSize           	7904                
+	totalSize           	7890                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

@@ -27,8 +27,8 @@ import java.util.TreeMap;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ValidReadTxnList;
-import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
@@ -72,7 +72,7 @@ public class VectorizedOrcAcidRowBatchReader
   protected float progress = 0.0f;
   protected Object[] partitionValues;
   private boolean addPartitionCols = true;
-  private final ValidTxnList validTxnList;
+  private final ValidWriteIdList validWriteIdList;
   private final DeleteEventRegistry deleteEventRegistry;
   /**
    * {@link RecordIdentifier}/{@link VirtualColumn#ROWID} information
@@ -183,8 +183,10 @@ public class VectorizedOrcAcidRowBatchReader
       partitionValues = null;
     }
 
-    String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
-    this.validTxnList = (txnString == null) ? new ValidReadTxnList() : new ValidReadTxnList(txnString);
+    String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
+    this.validWriteIdList = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
+    LOG.debug("VectorizedOrcAcidRowBatchReader:: Read ValidWriteIdList: " + this.validWriteIdList.toString()
+            + " isFullAcidTable: " + AcidUtils.isFullAcidScan(conf));
 
     // Clone readerOptions for deleteEvents.
     Reader.Options deleteEventReaderOptions = readerOptions.clone();
@@ -214,7 +216,7 @@ public class VectorizedOrcAcidRowBatchReader
     }
     rowIdProjected = areRowIdsProjected(rbCtx);
     rootPath = orcSplit.getRootDir();
-    syntheticProps = computeOffsetAndBucket(orcSplit, conf, validTxnList);
+    syntheticProps = computeOffsetAndBucket(orcSplit, conf, validWriteIdList);
   }
 
   /**
@@ -242,8 +244,8 @@ public class VectorizedOrcAcidRowBatchReader
    * before/during split computation and passing the info in the split.  (HIVE-17917)
    */
   private OffsetAndBucketProperty computeOffsetAndBucket(
-    OrcSplit split, JobConf conf,ValidTxnList validTxnList) throws IOException {
-    if(!needSyntheticRowIds(split.isOriginal(), !deleteEventRegistry.isEmpty(), rowIdProjected)) {
+      OrcSplit split, JobConf conf, ValidWriteIdList validWriteIdList) throws IOException {
+    if (!needSyntheticRowIds(split.isOriginal(), !deleteEventRegistry.isEmpty(), rowIdProjected)) {
       if(split.isOriginal()) {
         /**
          * Even if we don't need to project ROW_IDs, we still need to check the transaction ID that
@@ -252,22 +254,20 @@ public class VectorizedOrcAcidRowBatchReader
          * filter out base/delta files but this makes fewer dependencies)
          */
         OrcRawRecordMerger.TransactionMetaData syntheticTxnInfo =
-          OrcRawRecordMerger.TransactionMetaData.findTransactionIDForSynthetcRowIDs(split.getPath(),
-            split.getRootDir(), conf);
-        return new OffsetAndBucketProperty(-1,-1,
-          syntheticTxnInfo.syntheticTransactionId);
+            OrcRawRecordMerger.TransactionMetaData.findWriteIDForSynthetcRowIDs(split.getPath(),
+                    split.getRootDir(), conf);
+        return new OffsetAndBucketProperty(-1,-1, syntheticTxnInfo.syntheticWriteId);
       }
       return null;
     }
     long rowIdOffset = 0;
     OrcRawRecordMerger.TransactionMetaData syntheticTxnInfo =
-      OrcRawRecordMerger.TransactionMetaData.findTransactionIDForSynthetcRowIDs(split.getPath(),
-        split.getRootDir(), conf);
+        OrcRawRecordMerger.TransactionMetaData.findWriteIDForSynthetcRowIDs(split.getPath(), split.getRootDir(), conf);
     int bucketId = AcidUtils.parseBaseOrDeltaBucketFilename(split.getPath(), conf).getBucketId();
     int bucketProperty = BucketCodec.V1.encode(new AcidOutputFormat.Options(conf)
       .statementId(syntheticTxnInfo.statementId).bucket(bucketId));
     AcidUtils.Directory directoryState = AcidUtils.getAcidState( syntheticTxnInfo.folder, conf,
-      validTxnList, false, true);
+        validWriteIdList, false, true);
     for (HadoopShims.HdfsFileStatusWithId f : directoryState.getOriginalFiles()) {
       AcidOutputFormat.Options bucketOptions =
         AcidUtils.parseBaseOrDeltaBucketFilename(f.getFileStatus().getPath(), conf);
@@ -283,7 +283,7 @@ public class VectorizedOrcAcidRowBatchReader
       rowIdOffset += reader.getNumberOfRows();
     }
     return new OffsetAndBucketProperty(rowIdOffset, bucketProperty,
-      syntheticTxnInfo.syntheticTransactionId);
+      syntheticTxnInfo.syntheticWriteId);
   }
   /**
    * {@link VectorizedOrcAcidRowBatchReader} is always used for vectorized reads of acid tables.
@@ -426,7 +426,7 @@ public class VectorizedOrcAcidRowBatchReader
             " to handle original files that require ROW__IDs: " + rootPath);
         }
         /**
-         * {@link RecordIdentifier#getTransactionId()}
+         * {@link RecordIdentifier#getWriteId()}
          */
         recordIdColumnVector.fields[0].noNulls = true;
         recordIdColumnVector.fields[0].isRepeating = true;
@@ -450,11 +450,11 @@ public class VectorizedOrcAcidRowBatchReader
         }
         //Now populate a structure to use to apply delete events
         innerRecordIdColumnVector = new ColumnVector[OrcRecordUpdater.FIELDS];
-        innerRecordIdColumnVector[OrcRecordUpdater.ORIGINAL_TRANSACTION] = recordIdColumnVector.fields[0];
+        innerRecordIdColumnVector[OrcRecordUpdater.ORIGINAL_WRITEID] = recordIdColumnVector.fields[0];
         innerRecordIdColumnVector[OrcRecordUpdater.BUCKET] = recordIdColumnVector.fields[1];
         innerRecordIdColumnVector[OrcRecordUpdater.ROW_ID] = recordIdColumnVector.fields[2];
         //these are insert events so (original txn == current) txn for all rows
-        innerRecordIdColumnVector[OrcRecordUpdater.CURRENT_TRANSACTION] = recordIdColumnVector.fields[0];
+        innerRecordIdColumnVector[OrcRecordUpdater.CURRENT_WRITEID] = recordIdColumnVector.fields[0];
       }
       if(syntheticProps.syntheticTxnId > 0) {
         //"originals" (written before table was converted to acid) is considered written by
@@ -470,7 +470,7 @@ public class VectorizedOrcAcidRowBatchReader
           * reader (transactions) is concerned.  Since here we are reading 'original' schema file,
           * all rows in it have been created by the same txn, namely 'syntheticProps.syntheticTxnId'
           */
-          if (!validTxnList.isTxnValid(syntheticProps.syntheticTxnId)) {
+          if (!validWriteIdList.isWriteIdValid(syntheticProps.syntheticTxnId)) {
             selectedBitSet.clear(0, vectorizedRowBatchBase.size);
           }
         }
@@ -514,7 +514,7 @@ public class VectorizedOrcAcidRowBatchReader
       // Transfer columnVector objects from base batch to outgoing batch.
       System.arraycopy(payloadStruct.fields, 0, value.cols, 0, value.getDataColumnCount());
       if(rowIdProjected) {
-        recordIdColumnVector.fields[0] = vectorizedRowBatchBase.cols[OrcRecordUpdater.ORIGINAL_TRANSACTION];
+        recordIdColumnVector.fields[0] = vectorizedRowBatchBase.cols[OrcRecordUpdater.ORIGINAL_WRITEID];
         recordIdColumnVector.fields[1] = vectorizedRowBatchBase.cols[OrcRecordUpdater.BUCKET];
         recordIdColumnVector.fields[2] = vectorizedRowBatchBase.cols[OrcRecordUpdater.ROW_ID];
       }
@@ -531,24 +531,24 @@ public class VectorizedOrcAcidRowBatchReader
   }
 
   private void findRecordsWithInvalidTransactionIds(ColumnVector[] cols, int size, BitSet selectedBitSet) {
-    if (cols[OrcRecordUpdater.CURRENT_TRANSACTION].isRepeating) {
+    if (cols[OrcRecordUpdater.CURRENT_WRITEID].isRepeating) {
       // When we have repeating values, we can unset the whole bitset at once
       // if the repeating value is not a valid transaction.
       long currentTransactionIdForBatch = ((LongColumnVector)
-          cols[OrcRecordUpdater.CURRENT_TRANSACTION]).vector[0];
-      if (!validTxnList.isTxnValid(currentTransactionIdForBatch)) {
+          cols[OrcRecordUpdater.CURRENT_WRITEID]).vector[0];
+      if (!validWriteIdList.isWriteIdValid(currentTransactionIdForBatch)) {
         selectedBitSet.clear(0, size);
       }
       return;
     }
     long[] currentTransactionVector =
-        ((LongColumnVector) cols[OrcRecordUpdater.CURRENT_TRANSACTION]).vector;
+        ((LongColumnVector) cols[OrcRecordUpdater.CURRENT_WRITEID]).vector;
     // Loop through the bits that are set to true and mark those rows as false, if their
     // current transactions are not valid.
     for (int setBitIndex = selectedBitSet.nextSetBit(0);
         setBitIndex >= 0;
         setBitIndex = selectedBitSet.nextSetBit(setBitIndex+1)) {
-      if (!validTxnList.isTxnValid(currentTransactionVector[setBitIndex])) {
+      if (!validWriteIdList.isWriteIdValid(currentTransactionVector[setBitIndex])) {
         selectedBitSet.clear(setBitIndex);
       }
    }
@@ -630,30 +630,33 @@ public class VectorizedOrcAcidRowBatchReader
     private OrcRawRecordMerger.ReaderKey deleteRecordKey;
     private OrcStruct deleteRecordValue;
     private Boolean isDeleteRecordAvailable = null;
-    private ValidTxnList validTxnList;
+    private ValidWriteIdList validWriteIdList;
 
     SortMergedDeleteEventRegistry(JobConf conf, OrcSplit orcSplit, Reader.Options readerOptions)
-      throws IOException {
-        final Path[] deleteDeltas = getDeleteDeltaDirsFromSplit(orcSplit);
-        if (deleteDeltas.length > 0) {
-          int bucket = AcidUtils.parseBaseOrDeltaBucketFilename(orcSplit.getPath(), conf).getBucketId();
-          String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
-          this.validTxnList = (txnString == null) ? new ValidReadTxnList() : new ValidReadTxnList(txnString);
-          OrcRawRecordMerger.Options mergerOptions = new OrcRawRecordMerger.Options().isDeleteReader(true);
-          assert !orcSplit.isOriginal() : "If this now supports Original splits, set up mergeOptions properly";
-          this.deleteRecords = new OrcRawRecordMerger(conf, true, null, false, bucket,
-                                                      validTxnList, readerOptions, deleteDeltas,
-                                                      mergerOptions);
-          this.deleteRecordKey = new OrcRawRecordMerger.ReaderKey();
-          this.deleteRecordValue = this.deleteRecords.createValue();
-          // Initialize the first value in the delete reader.
-          this.isDeleteRecordAvailable = this.deleteRecords.next(deleteRecordKey, deleteRecordValue);
-        } else {
-          this.isDeleteRecordAvailable = false;
-          this.deleteRecordKey = null;
-          this.deleteRecordValue = null;
-          this.deleteRecords = null;
-        }
+            throws IOException {
+      final Path[] deleteDeltas = getDeleteDeltaDirsFromSplit(orcSplit);
+      if (deleteDeltas.length > 0) {
+        int bucket = AcidUtils.parseBaseOrDeltaBucketFilename(orcSplit.getPath(), conf).getBucketId();
+        String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
+        this.validWriteIdList
+                = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
+        LOG.debug("SortMergedDeleteEventRegistry:: Read ValidWriteIdList: " + this.validWriteIdList.toString()
+                + " isFullAcidTable: " + AcidUtils.isFullAcidScan(conf));
+        OrcRawRecordMerger.Options mergerOptions = new OrcRawRecordMerger.Options().isDeleteReader(true);
+        assert !orcSplit.isOriginal() : "If this now supports Original splits, set up mergeOptions properly";
+        this.deleteRecords = new OrcRawRecordMerger(conf, true, null, false, bucket,
+                                                    validWriteIdList, readerOptions, deleteDeltas,
+                                                    mergerOptions);
+        this.deleteRecordKey = new OrcRawRecordMerger.ReaderKey();
+        this.deleteRecordValue = this.deleteRecords.createValue();
+        // Initialize the first value in the delete reader.
+        this.isDeleteRecordAvailable = this.deleteRecords.next(deleteRecordKey, deleteRecordValue);
+      } else {
+        this.isDeleteRecordAvailable = false;
+        this.deleteRecordKey = null;
+        this.deleteRecordValue = null;
+        this.deleteRecords = null;
+      }
     }
 
     @Override
@@ -671,8 +674,8 @@ public class VectorizedOrcAcidRowBatchReader
       }
 
       long[] originalTransaction =
-          cols[OrcRecordUpdater.ORIGINAL_TRANSACTION].isRepeating ? null
-              : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_TRANSACTION]).vector;
+          cols[OrcRecordUpdater.ORIGINAL_WRITEID].isRepeating ? null
+              : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector;
       long[] bucket =
           cols[OrcRecordUpdater.BUCKET].isRepeating ? null
               : ((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector;
@@ -682,7 +685,7 @@ public class VectorizedOrcAcidRowBatchReader
 
       // The following repeatedX values will be set, if any of the columns are repeating.
       long repeatedOriginalTransaction = (originalTransaction != null) ? -1
-          : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_TRANSACTION]).vector[0];
+          : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector[0];
       long repeatedBucket = (bucket != null) ? -1
           : ((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector[0];
       long repeatedRowId = (rowId != null) ? -1
@@ -828,12 +831,12 @@ public class VectorizedOrcAcidRowBatchReader
       private final RecordReader recordReader;
       private int indexPtrInBatch;
       private final int bucketForSplit; // The bucket value should be same for all the records.
-      private final ValidTxnList validTxnList;
+      private final ValidWriteIdList validWriteIdList;
       private boolean isBucketPropertyRepeating;
       private final boolean isBucketedTable;
 
       DeleteReaderValue(Reader deleteDeltaReader, Reader.Options readerOptions, int bucket,
-          ValidTxnList validTxnList, boolean isBucketedTable) throws IOException {
+          ValidWriteIdList validWriteIdList, boolean isBucketedTable) throws IOException {
         this.recordReader  = deleteDeltaReader.rowsOptions(readerOptions);
         this.bucketForSplit = bucket;
         this.batch = deleteDeltaReader.getSchema().createRowBatch();
@@ -841,7 +844,7 @@ public class VectorizedOrcAcidRowBatchReader
           this.batch = null; // Oh! the first batch itself was null. Close the reader.
         }
         this.indexPtrInBatch = 0;
-        this.validTxnList = validTxnList;
+        this.validWriteIdList = validWriteIdList;
         this.isBucketedTable = isBucketedTable;
         checkBucketId();//check 1st batch
       }
@@ -866,7 +869,7 @@ public class VectorizedOrcAcidRowBatchReader
             checkBucketId(deleteRecordKey.bucketProperty);
           }
           ++indexPtrInBatch;
-          if (validTxnList.isTxnValid(currentTransaction)) {
+          if (validWriteIdList.isWriteIdValid(currentTransaction)) {
             isValidNext = true;
           }
         }
@@ -878,17 +881,17 @@ public class VectorizedOrcAcidRowBatchReader
       }
       private long setCurrentDeleteKey(DeleteRecordKey deleteRecordKey) {
         int originalTransactionIndex =
-          batch.cols[OrcRecordUpdater.ORIGINAL_TRANSACTION].isRepeating ? 0 : indexPtrInBatch;
-        long originalTransaction =
-          ((LongColumnVector) batch.cols[OrcRecordUpdater.ORIGINAL_TRANSACTION]).vector[originalTransactionIndex];
+          batch.cols[OrcRecordUpdater.ORIGINAL_WRITEID].isRepeating ? 0 : indexPtrInBatch;
+        long originalTransaction
+                = ((LongColumnVector) batch.cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector[originalTransactionIndex];
         int bucketPropertyIndex =
           batch.cols[OrcRecordUpdater.BUCKET].isRepeating ? 0 : indexPtrInBatch;
         int bucketProperty = (int)((LongColumnVector)batch.cols[OrcRecordUpdater.BUCKET]).vector[bucketPropertyIndex];
         long rowId = ((LongColumnVector) batch.cols[OrcRecordUpdater.ROW_ID]).vector[indexPtrInBatch];
-        int currentTransactionIndex =
-          batch.cols[OrcRecordUpdater.CURRENT_TRANSACTION].isRepeating ? 0 : indexPtrInBatch;
-        long currentTransaction =
-          ((LongColumnVector) batch.cols[OrcRecordUpdater.CURRENT_TRANSACTION]).vector[currentTransactionIndex];
+        int currentTransactionIndex
+                = batch.cols[OrcRecordUpdater.CURRENT_WRITEID].isRepeating ? 0 : indexPtrInBatch;
+        long currentTransaction
+                = ((LongColumnVector) batch.cols[OrcRecordUpdater.CURRENT_WRITEID]).vector[currentTransactionIndex];
         deleteRecordKey.set(originalTransaction, bucketProperty, rowId);
         return currentTransaction;
       }
@@ -976,14 +979,17 @@ public class VectorizedOrcAcidRowBatchReader
     private TreeMap<DeleteRecordKey, DeleteReaderValue> sortMerger;
     private long rowIds[];
     private CompressedOtid compressedOtids[];
-    private ValidTxnList validTxnList;
+    private ValidWriteIdList validWriteIdList;
     private Boolean isEmpty = null;
 
     ColumnizedDeleteEventRegistry(JobConf conf, OrcSplit orcSplit,
         Reader.Options readerOptions) throws IOException, DeleteEventsOverflowMemoryException {
       int bucket = AcidUtils.parseBaseOrDeltaBucketFilename(orcSplit.getPath(), conf).getBucketId();
-      String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
-      this.validTxnList = (txnString == null) ? new ValidReadTxnList() : new ValidReadTxnList(txnString);
+      String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
+      this.validWriteIdList
+              = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
+      LOG.debug("ColumnizedDeleteEventRegistry:: Read ValidWriteIdList: " + this.validWriteIdList.toString()
+              + " isFullAcidTable: " + AcidUtils.isFullAcidScan(conf));
       this.sortMerger = new TreeMap<DeleteRecordKey, DeleteReaderValue>();
       this.rowIds = null;
       this.compressedOtids = null;
@@ -1025,7 +1031,7 @@ public class VectorizedOrcAcidRowBatchReader
                 throw new DeleteEventsOverflowMemoryException();
               }
               DeleteReaderValue deleteReaderValue = new DeleteReaderValue(deleteDeltaReader,
-                  readerOptions, bucket, validTxnList, isBucketedTable);
+                  readerOptions, bucket, validWriteIdList, isBucketedTable);
               DeleteRecordKey deleteRecordKey = new DeleteRecordKey();
               if (deleteReaderValue.next(deleteRecordKey)) {
                 sortMerger.put(deleteRecordKey, deleteReaderValue);
@@ -1165,10 +1171,10 @@ public class VectorizedOrcAcidRowBatchReader
       // check if it is deleted or not.
 
       long[] originalTransactionVector =
-          cols[OrcRecordUpdater.ORIGINAL_TRANSACTION].isRepeating ? null
-              : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_TRANSACTION]).vector;
+          cols[OrcRecordUpdater.ORIGINAL_WRITEID].isRepeating ? null
+              : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector;
       long repeatedOriginalTransaction = (originalTransactionVector != null) ? -1
-          : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_TRANSACTION]).vector[0];
+          : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector[0];
 
       long[] bucketProperties =
         cols[OrcRecordUpdater.BUCKET].isRepeating ? null

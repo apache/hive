@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hive.hcatalog.streaming.mutate.client.lock.Lock;
 import org.apache.hive.hcatalog.streaming.mutate.client.lock.LockFailureListener;
 import org.apache.thrift.TException;
@@ -94,8 +95,22 @@ public class MutatorClient implements Closeable {
       throw new TransactionException("Not connected - cannot create transaction.");
     }
     Transaction transaction = new Transaction(metaStoreClient, lockOptions);
+    long txnId = transaction.getTransactionId();
     for (AcidTable table : tables) {
-      table.setTransactionId(transaction.getTransactionId());
+      try {
+        table.setWriteId(metaStoreClient.allocateTableWriteId(txnId,
+                table.getDatabaseName(), table.getTableName()));
+      } catch (TException ex) {
+        try {
+          metaStoreClient.rollbackTxn(txnId);
+        } catch (TException e) {
+          LOG.warn("Allocation of write id failed for table {} and rollback transaction {} failed due to {}",
+                  AcidUtils.getFullTableName(table.getDatabaseName(), table.getTableName()), txnId, e.getMessage());
+        }
+        throw new TransactionException("Unable to allocate table write ID for table "
+                + AcidUtils.getFullTableName(table.getDatabaseName(), table.getTableName())
+                + " under txn " + txnId, ex);
+      }
     }
     LOG.debug("Created transaction {}", transaction);
     return transaction;

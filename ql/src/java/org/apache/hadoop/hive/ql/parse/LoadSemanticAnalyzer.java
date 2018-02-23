@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -316,17 +317,22 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    Long txnId = null;
+    Long writeId = null;
     int stmtId = -1;
     if (AcidUtils.isTransactionalTable(ts.tableHandle)) {
-      txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
-      stmtId = SessionState.get().getTxnMgr().getWriteIdAndIncrement();
+      try {
+        writeId = SessionState.get().getTxnMgr().getTableWriteId(ts.tableHandle.getDbName(),
+                ts.tableHandle.getTableName());
+      } catch (LockException ex) {
+        throw new SemanticException("Failed to allocate the write id", ex);
+      }
+      stmtId = SessionState.get().getTxnMgr().getStmtIdAndIncrement();
     }
 
     LoadTableDesc loadTableWork;
     loadTableWork = new LoadTableDesc(new Path(fromURI),
       Utilities.getTableDesc(ts.tableHandle), partSpec,
-      isOverWrite ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING, txnId);
+      isOverWrite ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING, writeId);
     loadTableWork.setStmtId(stmtId);
     if (preservePartitionSpecs){
       // Note : preservePartitionSpecs=true implies inheritTableSpecs=false but

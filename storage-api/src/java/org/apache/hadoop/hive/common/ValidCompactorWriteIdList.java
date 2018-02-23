@@ -22,35 +22,39 @@ import java.util.Arrays;
 import java.util.BitSet;
 
 /**
- * An implementation of {@link org.apache.hadoop.hive.common.ValidTxnList} for use by the compactor.
- * 
+ * An implementation of {@link ValidWriteIdList} for use by the compactor.
+ *
  * Compaction should only include txns up to smallest open txn (exclussive).
- * There may be aborted txns in the snapshot represented by this ValidCompactorTxnList.
- * Thus {@link #isTxnRangeValid(long, long)} returns NONE for any range that inluces any unresolved
- * transactions.  Any txn above {@code highWatermark} is unresolved.
+ * There may be aborted write ids in the snapshot represented by this ValidCompactorWriteIdList.
+ * Thus {@link #isWriteIdRangeValid(long, long)} returns NONE for any range that includes any unresolved
+ * write ids.  Any write id above {@code highWatermark} is unresolved.
  * These produce the logic we need to assure that the compactor only sees records less than the lowest
- * open transaction when choosing which files to compact, but that it still ignores aborted
+ * open write ids when choosing which files to compact, but that it still ignores aborted
  * records when compacting.
- * 
+ *
  * See org.apache.hadoop.hive.metastore.txn.TxnUtils#createValidCompactTxnList() for proper
  * way to construct this.
  */
-public class ValidCompactorTxnList extends ValidReadTxnList {
-  public ValidCompactorTxnList() {
+public class ValidCompactorWriteIdList extends ValidReaderWriteIdList {
+  public ValidCompactorWriteIdList() {
     super();
   }
-  public ValidCompactorTxnList(long[] abortedTxnList, BitSet abortedBits, long highWatermark) {
-    this(abortedTxnList, abortedBits, highWatermark, Long.MAX_VALUE);
+  public ValidCompactorWriteIdList(String tableName, long[] abortedWriteIdList, BitSet abortedBits,
+                                   long highWatermark) {
+    this(tableName, abortedWriteIdList, abortedBits, highWatermark, Long.MAX_VALUE);
   }
   /**
-   * @param abortedTxnList list of all aborted transactions
+   * @param tableName table which is under compaction. Full name of format <db_name>.<table_name>
+   * @param abortedWriteIdList list of all aborted write ids
    * @param abortedBits bitset marking whether the corresponding transaction is aborted
-   * @param highWatermark highest committed transaction to be considered for compaction,
-   *                      equivalently (lowest_open_txn - 1).
+   * @param highWatermark highest committed write id to be considered for compaction,
+   *                      equivalently (lowest_open_write_id - 1).
+   * @param minOpenWriteId minimum write ID which maps to a open transaction
    */
-  public ValidCompactorTxnList(long[] abortedTxnList, BitSet abortedBits, long highWatermark, long minOpenTxnId) {
+  public ValidCompactorWriteIdList(String tableName, long[] abortedWriteIdList, BitSet abortedBits,
+                                   long highWatermark, long minOpenWriteId) {
     // abortedBits should be all true as everything in exceptions are aborted txns
-    super(abortedTxnList, abortedBits, highWatermark, minOpenTxnId);
+    super(tableName, abortedWriteIdList, abortedBits, highWatermark, minOpenWriteId);
     if(this.exceptions.length <= 0) {
       return;
     }
@@ -66,24 +70,24 @@ public class ValidCompactorTxnList extends ValidReadTxnList {
     }
     /*
      * ensure that we throw out any exceptions above highWatermark to make
-     * {@link #isTxnValid(long)} faster 
+     * {@link #isWriteIdValid(long)} faster
      */
     this.exceptions = Arrays.copyOf(this.exceptions, lastElementPos + 1);
   }
-  public ValidCompactorTxnList(String value) {
+  public ValidCompactorWriteIdList(String value) {
     super(value);
   }
   /**
-   * Returns org.apache.hadoop.hive.common.ValidTxnList.RangeResponse.ALL if all txns in
+   * Returns org.apache.hadoop.hive.common.ValidWriteIdList.RangeResponse.ALL if all write ids in
    * the range are resolved and RangeResponse.NONE otherwise
    */
   @Override
-  public RangeResponse isTxnRangeValid(long minTxnId, long maxTxnId) {
-    return highWatermark >= maxTxnId ? RangeResponse.ALL : RangeResponse.NONE;
+  public RangeResponse isWriteIdRangeValid(long minWriteId, long maxWriteId) {
+    return highWatermark >= maxWriteId ? RangeResponse.ALL : RangeResponse.NONE;
   }
 
   @Override
-  public boolean isTxnAborted(long txnid) {
-    return Arrays.binarySearch(exceptions, txnid) >= 0;
+  public boolean isWriteIdAborted(long writeId) {
+    return Arrays.binarySearch(exceptions, writeId) >= 0;
   }
 }

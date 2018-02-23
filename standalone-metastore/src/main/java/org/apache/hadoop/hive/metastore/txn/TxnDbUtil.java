@@ -86,16 +86,29 @@ public final class TxnDbUtil {
           "  TC_DATABASE varchar(128) NOT NULL," +
           "  TC_TABLE varchar(128)," +
           "  TC_PARTITION varchar(767)," +
-          "  TC_OPERATION_TYPE char(1) NOT NULL)");
+          "  TC_OPERATION_TYPE char(1) NOT NULL," +
+          "  TC_WRITEID bigint)");
       stmt.execute("CREATE TABLE COMPLETED_TXN_COMPONENTS (" +
           "  CTC_TXNID bigint," +
           "  CTC_DATABASE varchar(128) NOT NULL," +
           "  CTC_TABLE varchar(128)," +
           "  CTC_PARTITION varchar(767)," +
           "  CTC_ID bigint GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) NOT NULL," +
-          "  CTC_TIMESTAMP timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL)");
+          "  CTC_TIMESTAMP timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL," +
+          "  CTC_WRITEID bigint)");
       stmt.execute("CREATE TABLE NEXT_TXN_ID (" + "  NTXN_NEXT bigint NOT NULL)");
       stmt.execute("INSERT INTO NEXT_TXN_ID VALUES(1)");
+
+      stmt.execute("CREATE TABLE TXN_TO_WRITE_ID (" +
+          " T2W_TXNID bigint NOT NULL," +
+          " T2W_DATABASE varchar(128) NOT NULL," +
+          " T2W_TABLE varchar(256) NOT NULL," +
+          " T2W_WRITEID bigint NOT NULL)");
+      stmt.execute("CREATE TABLE NEXT_WRITE_ID (" +
+          " NWI_DATABASE varchar(128) NOT NULL," +
+          " NWI_TABLE varchar(256) NOT NULL," +
+          " NWI_NEXT bigint NOT NULL)");
+
       stmt.execute("CREATE TABLE HIVE_LOCKS (" +
           " HL_LOCK_EXT_ID bigint NOT NULL," +
           " HL_LOCK_INT_ID bigint NOT NULL," +
@@ -130,7 +143,7 @@ public final class TxnDbUtil {
           " CQ_WORKER_ID varchar(128)," +
           " CQ_START bigint," +
           " CQ_RUN_AS varchar(128)," +
-          " CQ_HIGHEST_TXN_ID bigint," +
+          " CQ_HIGHEST_WRITE_ID bigint," +
           " CQ_META_INFO varchar(2048) for bit data," +
           " CQ_HADOOP_JOB_ID varchar(32))");
 
@@ -138,20 +151,20 @@ public final class TxnDbUtil {
       stmt.execute("INSERT INTO NEXT_COMPACTION_QUEUE_ID VALUES(1)");
       
       stmt.execute("CREATE TABLE COMPLETED_COMPACTIONS (" +
-        " CC_ID bigint PRIMARY KEY," +
-        " CC_DATABASE varchar(128) NOT NULL," +
-        " CC_TABLE varchar(128) NOT NULL," +
-        " CC_PARTITION varchar(767)," +
-        " CC_STATE char(1) NOT NULL," +
-        " CC_TYPE char(1) NOT NULL," +
-        " CC_TBLPROPERTIES varchar(2048)," +
-        " CC_WORKER_ID varchar(128)," +
-        " CC_START bigint," +
-        " CC_END bigint," +
-        " CC_RUN_AS varchar(128)," +
-        " CC_HIGHEST_TXN_ID bigint," +
-        " CC_META_INFO varchar(2048) for bit data," +
-        " CC_HADOOP_JOB_ID varchar(32))");
+          " CC_ID bigint PRIMARY KEY," +
+          " CC_DATABASE varchar(128) NOT NULL," +
+          " CC_TABLE varchar(128) NOT NULL," +
+          " CC_PARTITION varchar(767)," +
+          " CC_STATE char(1) NOT NULL," +
+          " CC_TYPE char(1) NOT NULL," +
+          " CC_TBLPROPERTIES varchar(2048)," +
+          " CC_WORKER_ID varchar(128)," +
+          " CC_START bigint," +
+          " CC_END bigint," +
+          " CC_RUN_AS varchar(128)," +
+          " CC_HIGHEST_WRITE_ID bigint," +
+          " CC_META_INFO varchar(2048) for bit data," +
+          " CC_HADOOP_JOB_ID varchar(32))");
       
       stmt.execute("CREATE TABLE AUX_TABLE (" +
         " MT_KEY1 varchar(128) NOT NULL," +
@@ -219,6 +232,8 @@ public final class TxnDbUtil {
         success &= dropTable(stmt, "COMPLETED_TXN_COMPONENTS", retryCount);
         success &= dropTable(stmt, "TXNS", retryCount);
         success &= dropTable(stmt, "NEXT_TXN_ID", retryCount);
+        success &= dropTable(stmt, "TXN_TO_WRITE_ID", retryCount);
+        success &= dropTable(stmt, "NEXT_WRITE_ID", retryCount);
         success &= dropTable(stmt, "HIVE_LOCKS", retryCount);
         success &= dropTable(stmt, "NEXT_LOCK_ID", retryCount);
         success &= dropTable(stmt, "COMPACTION_QUEUE", retryCount);

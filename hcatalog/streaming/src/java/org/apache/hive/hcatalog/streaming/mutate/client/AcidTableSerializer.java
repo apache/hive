@@ -54,10 +54,10 @@ public class AcidTableSerializer {
       data.writeUTF(table.getDatabaseName());
       data.writeUTF(table.getTableName());
       data.writeBoolean(table.createPartitions());
-      if (table.getTransactionId() <= 0) {
-        LOG.warn("Transaction ID <= 0. The recipient is probably expecting a transaction ID.");
+      if (table.getWriteId() <= 0) {
+        LOG.warn("Write ID <= 0. The recipient is probably expecting a table write ID.");
       }
-      data.writeLong(table.getTransactionId());
+      data.writeLong(table.getWriteId());
       data.writeByte(table.getTableType().getId());
 
       Table metaTable = table.getTable();
@@ -91,12 +91,12 @@ public class AcidTableSerializer {
       String databaseName = in.readUTF();
       String tableName = in.readUTF();
       boolean createPartitions = in.readBoolean();
-      long transactionId = in.readLong();
+      long writeId = in.readLong();
       TableType tableType = TableType.valueOf(in.readByte());
       int thriftLength = in.readInt();
 
       table = new AcidTable(databaseName, tableName, createPartitions, tableType);
-      table.setTransactionId(transactionId);
+      table.setWriteId(writeId);
 
       Table metaTable = null;
       if (thriftLength > 0) {

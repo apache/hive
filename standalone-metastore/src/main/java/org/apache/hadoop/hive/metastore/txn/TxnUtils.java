@@ -18,15 +18,16 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.ValidCompactorTxnList;
+import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
+import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.TxnInfo;
-import org.apache.hadoop.hive.metastore.api.TxnState;
+import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -63,53 +64,94 @@ public class TxnUtils {
     BitSet abortedBits = BitSet.valueOf(txns.getAbortedBits());
     long[] exceptions = new long[open.size() - (currentTxn > 0 ? 1 : 0)];
     int i = 0;
-    for(long txn: open) {
+    for (long txn : open) {
       if (currentTxn > 0 && currentTxn == txn) continue;
       exceptions[i++] = txn;
     }
-    if(txns.isSetMin_open_txn()) {
+    if (txns.isSetMin_open_txn()) {
       return new ValidReadTxnList(exceptions, abortedBits, highWater, txns.getMin_open_txn());
-    }
-    else {
+    } else {
       return new ValidReadTxnList(exceptions, abortedBits, highWater);
     }
   }
 
   /**
-   * Transform a {@link org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse} to a
-   * {@link org.apache.hadoop.hive.common.ValidTxnList}.  This assumes that the caller intends to
-   * compact the files, and thus treats only open transactions as invalid.  Additionally any
-   * txnId &gt; highestOpenTxnId is also invalid.  This is to avoid creating something like
-   * delta_17_120 where txnId 80, for example, is still open.
-   * @param txns txn list from the metastore
-   * @return a valid txn list.
+   * Transform a {@link org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse} to a
+   * {@link org.apache.hadoop.hive.common.ValidTxnWriteIdList}.  This assumes that the caller intends to
+   * read the files, and thus treats both open and aborted transactions as invalid.
+   * @param currentTxnId current txn ID for which we get the valid write ids list
+   * @param validWriteIds valid write ids list from the metastore
+   * @return a valid write IDs list for the whole transaction.
    */
-  public static ValidTxnList createValidCompactTxnList(GetOpenTxnsInfoResponse txns) {
-    //highWater is the last txn id that has been allocated
-    long highWater = txns.getTxn_high_water_mark();
-    long minOpenTxn = Long.MAX_VALUE;
-    long[] exceptions = new long[txns.getOpen_txnsSize()];
+  public static ValidTxnWriteIdList createValidTxnWriteIdList(Long currentTxnId,
+                                                              GetValidWriteIdsResponse validWriteIds) {
+    ValidTxnWriteIdList validTxnWriteIdList = new ValidTxnWriteIdList(currentTxnId);
+    for (TableValidWriteIds tableWriteIds : validWriteIds.getTblValidWriteIds()) {
+      validTxnWriteIdList.addTableValidWriteIdList(createValidReaderWriteIdList(tableWriteIds));
+    }
+    return validTxnWriteIdList;
+  }
+
+  /**
+   * Transform a {@link org.apache.hadoop.hive.metastore.api.TableValidWriteIds} to a
+   * {@link org.apache.hadoop.hive.common.ValidReaderWriteIdList}.  This assumes that the caller intends to
+   * read the files, and thus treats both open and aborted write ids as invalid.
+   * @param tableWriteIds valid write ids for the given table from the metastore
+   * @return a valid write IDs list for the input table
+   */
+  public static ValidReaderWriteIdList createValidReaderWriteIdList(TableValidWriteIds tableWriteIds) {
+    String fullTableName = tableWriteIds.getFullTableName();
+    long highWater = tableWriteIds.getWriteIdHighWaterMark();
+    List<Long> invalids = tableWriteIds.getInvalidWriteIds();
+    BitSet abortedBits = BitSet.valueOf(tableWriteIds.getAbortedBits());
+    long[] exceptions = new long[invalids.size()];
     int i = 0;
-    for (TxnInfo txn : txns.getOpen_txns()) {
-      if (txn.getState() == TxnState.OPEN) {
-        minOpenTxn = Math.min(minOpenTxn, txn.getId());
-      }
-      else {
-        //only need aborted since we don't consider anything above minOpenTxn
-        exceptions[i++] = txn.getId();
+    for (long writeId : invalids) {
+      exceptions[i++] = writeId;
+    }
+    if (tableWriteIds.isSetMinOpenWriteId()) {
+      return new ValidReaderWriteIdList(fullTableName, exceptions, abortedBits, highWater,
+                                        tableWriteIds.getMinOpenWriteId());
+    } else {
+      return new ValidReaderWriteIdList(fullTableName, exceptions, abortedBits, highWater);
+    }
+  }
+
+  /**
+   * Transform a {@link org.apache.hadoop.hive.metastore.api.TableValidWriteIds} to a
+   * {@link org.apache.hadoop.hive.common.ValidCompactorWriteIdList}.  This assumes that the caller intends to
+   * compact the files, and thus treats only open transactions/write ids as invalid.  Additionally any
+   * writeId &gt; highestOpenWriteId is also invalid.  This is to avoid creating something like
+   * delta_17_120 where writeId 80, for example, is still open.
+   * @param tableValidWriteIds table write id list from the metastore
+   * @return a valid write id list.
+   */
+  public static ValidCompactorWriteIdList createValidCompactWriteIdList(TableValidWriteIds tableValidWriteIds) {
+    String fullTableName = tableValidWriteIds.getFullTableName();
+    long highWater = tableValidWriteIds.getWriteIdHighWaterMark();
+    long minOpenWriteId = Long.MAX_VALUE;
+    List<Long> invalids = tableValidWriteIds.getInvalidWriteIds();
+    BitSet abortedBits = BitSet.valueOf(tableValidWriteIds.getAbortedBits());
+    long[] exceptions = new long[invalids.size()];
+    int i = 0;
+    for (long writeId : invalids) {
+      if (abortedBits.get(i)) {
+        // Only need aborted since we don't consider anything above minOpenWriteId
+        exceptions[i++] = writeId;
+      } else {
+        minOpenWriteId = Math.min(minOpenWriteId, writeId);
       }
     }
     if(i < exceptions.length) {
       exceptions = Arrays.copyOf(exceptions, i);
     }
-    highWater = minOpenTxn == Long.MAX_VALUE ? highWater : minOpenTxn - 1;
+    highWater = minOpenWriteId == Long.MAX_VALUE ? highWater : minOpenWriteId - 1;
     BitSet bitSet = new BitSet(exceptions.length);
-    bitSet.set(0, exceptions.length); // for ValidCompactorTxnList, everything in exceptions are aborted
-    if(minOpenTxn == Long.MAX_VALUE) {
-      return new ValidCompactorTxnList(exceptions, bitSet, highWater);
-    }
-    else {
-      return new ValidCompactorTxnList(exceptions, bitSet, highWater, minOpenTxn);
+    bitSet.set(0, exceptions.length); // for ValidCompactorWriteIdList, everything in exceptions are aborted
+    if (minOpenWriteId == Long.MAX_VALUE) {
+      return new ValidCompactorWriteIdList(fullTableName, exceptions, bitSet, highWater);
+    } else {
+      return new ValidCompactorWriteIdList(fullTableName, exceptions, bitSet, highWater, minOpenWriteId);
     }
   }
 
@@ -134,7 +176,7 @@ public class TxnUtils {
    * Note, users are responsible for using the correct TxnManager. We do not look at
    * SessionState.get().getTxnMgr().supportsAcid() here
    * Should produce the same result as
-   * {@link org.apache.hadoop.hive.ql.io.AcidUtils#isTransactionalTable(org.apache.hadoop.hive.ql.metadata.Table)}
+   * {@link org.apache.hadoop.hive.ql.io.AcidUtils#isTransactionalTable(org.apache.hadoop.hive.ql.metadata.Table)}.
    * @return true if table is a transactional table, false otherwise
    */
   public static boolean isTransactionalTable(Table table) {
@@ -148,13 +190,26 @@ public class TxnUtils {
 
   /**
    * Should produce the same result as
-   * {@link org.apache.hadoop.hive.ql.io.AcidUtils#isAcidTable(org.apache.hadoop.hive.ql.metadata.Table)}
+   * {@link org.apache.hadoop.hive.ql.io.AcidUtils#isAcidTable(org.apache.hadoop.hive.ql.metadata.Table)}.
    */
   public static boolean isAcidTable(Table table) {
     return TxnUtils.isTransactionalTable(table) &&
       TransactionalValidationListener.DEFAULT_TRANSACTIONAL_PROPERTY.equals(table.getParameters()
       .get(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES));
   }
+
+  /**
+   * Should produce the result as <dbName>.<tableName>.
+   */
+  public static String getFullTableName(String dbName, String tableName) {
+    return dbName.toLowerCase() + "." + tableName.toLowerCase();
+  }
+
+  public static String[] getDbTableName(String fullTableName) {
+    return fullTableName.split("\\.");
+  }
+
+
 
   /**
    * Build a query (or queries if one query is too big but only for the case of 'IN' 
@@ -357,7 +412,7 @@ public class TxnUtils {
     return ret;
   }
 
-  /*
+  /**
    * Compute and return the size of a query statement with the given parameters as input variables.
    *
    * @param sizeSoFar     size of the current contents of the buf
