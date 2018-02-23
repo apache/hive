@@ -186,7 +186,7 @@ public class VectorizedOrcAcidRowBatchReader
     String txnString = conf.get(ValidWriteIdList.VALID_WRITEIDS_KEY);
     this.validWriteIdList = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
     LOG.debug("VectorizedOrcAcidRowBatchReader:: Read ValidWriteIdList: " + this.validWriteIdList.toString()
-            + " isTransactionalTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN));
+            + " isFullAcidTable: " + AcidUtils.isFullAcidScan(conf));
 
     // Clone readerOptions for deleteEvents.
     Reader.Options deleteEventReaderOptions = readerOptions.clone();
@@ -641,7 +641,7 @@ public class VectorizedOrcAcidRowBatchReader
         this.validWriteIdList
                 = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
         LOG.debug("SortMergedDeleteEventRegistry:: Read ValidWriteIdList: " + this.validWriteIdList.toString()
-                + " isTransactionalTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN));
+                + " isFullAcidTable: " + AcidUtils.isFullAcidScan(conf));
         OrcRawRecordMerger.Options mergerOptions = new OrcRawRecordMerger.Options().isDeleteReader(true);
         assert !orcSplit.isOriginal() : "If this now supports Original splits, set up mergeOptions properly";
         this.deleteRecords = new OrcRawRecordMerger(conf, true, null, false, bucket,
@@ -989,7 +989,7 @@ public class VectorizedOrcAcidRowBatchReader
       this.validWriteIdList
               = (txnString == null) ? new ValidReaderWriteIdList() : new ValidReaderWriteIdList(txnString);
       LOG.debug("ColumnizedDeleteEventRegistry:: Read ValidWriteIdList: " + this.validWriteIdList.toString()
-              + " isTransactionalTable: " + HiveConf.getBoolVar(conf, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN));
+              + " isFullAcidTable: " + AcidUtils.isFullAcidScan(conf));
       this.sortMerger = new TreeMap<DeleteRecordKey, DeleteReaderValue>();
       this.rowIds = null;
       this.compressedOtids = null;

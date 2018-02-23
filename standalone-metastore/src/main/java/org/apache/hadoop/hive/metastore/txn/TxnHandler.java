@@ -1000,7 +1000,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         // Check if all the input txns are in open state. Write ID should be allocated only for open transactions.
         if (!isTxnsInOpenState(txnIds, stmt)) {
-          ensureAllTxnsValid(txnIds, stmt);
+          ensureAllTxnsValid(dbName, tblName, txnIds, stmt);
           throw new RuntimeException("This should never happen for txnIds: " + txnIds);
         }
 
@@ -3328,10 +3328,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   /**
    * Checks if all the txns in the list are in open state.
+   * @param dbName Database name
+   * @param tblName Table on which we try to allocate write id
    * @param txnIds list of txns to be evaluated for open state
    * @param stmt db statement
    */
-  private void ensureAllTxnsValid(List<Long> txnIds, Statement stmt) throws SQLException {
+  private void ensureAllTxnsValid(String dbName, String tblName, List<Long> txnIds, Statement stmt)
+          throws SQLException {
     List<String> queries = new ArrayList<>();
     StringBuilder prefix = new StringBuilder();
     StringBuilder suffix = new StringBuilder();
@@ -3344,7 +3347,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     Long txnId;
     char txnState;
     boolean isAborted = false;
-    StringBuilder errorMsg = new StringBuilder("Write ID allocation failed for input txns: ");
+    StringBuilder errorMsg = new StringBuilder();
+    errorMsg.append("Write ID allocation on ")
+            .append(Warehouse.getQualifiedName(dbName, tblName))
+            .append(" failed for input txns: ");
     for (String query : queries) {
       LOG.debug("Going to execute query <" + query + ">");
       ResultSet rs = stmt.executeQuery(query);
@@ -3361,7 +3367,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     boolean isCommitted = checkIfTxnsCommitted(txnIds, stmt, errorMsg);
     if (isAborted || isCommitted) {
       LOG.error(errorMsg.toString());
-      throw new IllegalStateException("Write ID allocation failed as not all input txns in open state");
+      throw new IllegalStateException("Write ID allocation failed on "
+              + Warehouse.getQualifiedName(dbName, tblName)
+              + " as not all input txns in open state");
     }
   }
 
