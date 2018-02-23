@@ -17,9 +17,9 @@
  */
 package org.apache.hadoop.hive.metastore.txn;
 
-import org.apache.hadoop.hive.common.ValidCompactorTxnList;
+import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
+import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -42,11 +42,11 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public boolean tooManyAborts = false;
   /**
    * {@code 0} means it wasn't set (e.g. in case of upgrades, since ResultSet.getLong() will return 0 if field is NULL) 
-   * See {@link TxnStore#setCompactionHighestTxnId(CompactionInfo, long)} for precise definition.
-   * See also {@link TxnUtils#createValidCompactTxnList(GetOpenTxnsInfoResponse)} and
-   * {@link ValidCompactorTxnList#highWatermark}
+   * See {@link TxnStore#setCompactionHighestWriteId(CompactionInfo, long)} for precise definition.
+   * See also {@link TxnUtils#createValidCompactWriteIdList(TableValidWriteIds)} and
+   * {@link ValidCompactorWriteIdList#highWatermark}.
    */
-  public long highestTxnId;
+  public long highestWriteId;
   byte[] metaInfo;
   String hadoopJobId;
 
@@ -107,7 +107,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
       "properties:" + properties + "," +
       "runAs:" + runAs + "," +
       "tooManyAborts:" + tooManyAborts + "," +
-      "highestTxnId:" + highestTxnId;
+      "highestWriteId:" + highestWriteId;
   }
 
   /**
@@ -127,7 +127,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     fullCi.workerId = rs.getString(8);
     fullCi.start = rs.getLong(9);
     fullCi.runAs = rs.getString(10);
-    fullCi.highestTxnId = rs.getLong(11);
+    fullCi.highestWriteId = rs.getLong(11);
     fullCi.metaInfo = rs.getBytes(12);
     fullCi.hadoopJobId = rs.getString(13);
     return fullCi;
@@ -144,7 +144,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     pStmt.setLong(9, ci.start);
     pStmt.setLong(10, endTime);
     pStmt.setString(11, ci.runAs);
-    pStmt.setLong(12, ci.highestTxnId);
+    pStmt.setLong(12, ci.highestWriteId);
     pStmt.setBytes(13, ci.metaInfo);
     pStmt.setString(14, ci.hadoopJobId);
   }

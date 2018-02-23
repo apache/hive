@@ -73,8 +73,8 @@ public abstract class AbstractRecordWriter implements RecordWriter {
 
   private final AcidOutputFormat<?,?> outf;
   private Object[] bucketFieldData; // Pre-allocated in constructor. Updated on each write.
-  private Long curBatchMinTxnId;
-  private Long curBatchMaxTxnId;
+  private Long curBatchMinWriteId;
+  private Long curBatchMaxWriteId;
 
   private static final class TableWriterPair {
     private final Table tbl;
@@ -143,7 +143,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
    * used to tag error msgs to provied some breadcrumbs
    */
   String getWatermark() {
-    return partitionPath + " txnIds[" + curBatchMinTxnId + "," + curBatchMaxTxnId + "]";
+    return partitionPath + " writeIds[" + curBatchMinWriteId + "," + curBatchMaxWriteId + "]";
   }
   // return the column numbers of the bucketed columns
   private List<Integer> getBucketColIDs(List<String> bucketCols, List<FieldSchema> cols) {
@@ -207,15 +207,15 @@ public abstract class AbstractRecordWriter implements RecordWriter {
 
   /**
    * Creates a new record updater for the new batch
-   * @param minTxnId smallest Txnid in the batch
-   * @param maxTxnID largest Txnid in the batch
+   * @param minWriteId smallest writeid in the batch
+   * @param maxWriteID largest writeid in the batch
    * @throws StreamingIOFailure if failed to create record updater
    */
   @Override
-  public void newBatch(Long minTxnId, Long maxTxnID)
+  public void newBatch(Long minWriteId, Long maxWriteID)
           throws StreamingIOFailure, SerializationError {
-    curBatchMinTxnId = minTxnId;
-    curBatchMaxTxnId = maxTxnID;
+    curBatchMinWriteId = minWriteId;
+    curBatchMaxWriteId = maxWriteID;
     updaters = new ArrayList<RecordUpdater>(totalBuckets);
     for (int bucket = 0; bucket < totalBuckets; bucket++) {
       updaters.add(bucket, null);//so that get(i) returns null rather than ArrayOutOfBounds
@@ -265,7 +265,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     return bucketFieldData;
   }
 
-  private RecordUpdater createRecordUpdater(int bucketId, Long minTxnId, Long maxTxnID)
+  private RecordUpdater createRecordUpdater(int bucketId, Long minWriteId, Long maxWriteID)
           throws IOException, SerializationError {
     try {
       // Initialize table properties from the table parameters. This is required because the table
@@ -278,8 +278,8 @@ public abstract class AbstractRecordWriter implements RecordWriter {
                       .inspector(getSerde().getObjectInspector())
                       .bucket(bucketId)
                       .tableProperties(tblProperties)
-                      .minimumTransactionId(minTxnId)
-                      .maximumTransactionId(maxTxnID)
+                      .minimumWriteId(minWriteId)
+                      .maximumWriteId(maxWriteID)
                       .statementId(-1)
                       .finalDestination(partitionPath));
     } catch (SerDeException e) {
@@ -292,7 +292,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     RecordUpdater recordUpdater = updaters.get(bucketId);
     if (recordUpdater == null) {
       try {
-        recordUpdater = createRecordUpdater(bucketId, curBatchMinTxnId, curBatchMaxTxnId);
+        recordUpdater = createRecordUpdater(bucketId, curBatchMinWriteId, curBatchMaxWriteId);
       } catch (IOException e) {
         String errMsg = "Failed creating RecordUpdater for " + getWatermark();
         LOG.error(errMsg, e);

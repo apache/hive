@@ -6691,6 +6691,17 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public GetValidWriteIdsResponse get_valid_write_ids(GetValidWriteIdsRequest rqst) throws TException {
+      return getTxnHandler().getValidWriteIds(rqst);
+    }
+
+    @Override
+    public AllocateTableWriteIdsResponse allocate_table_write_ids(
+            AllocateTableWriteIdsRequest rqst) throws TException {
+      return getTxnHandler().allocateTableWriteIds(rqst);
+    }
+
+    @Override
     public LockResponse lock(LockRequest rqst) throws TException {
       return getTxnHandler().lock(rqst);
     }

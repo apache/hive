@@ -36,8 +36,8 @@ import java.util.Map.Entry;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
-import org.apache.hadoop.hive.common.ValidReadTxnList;
-import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hive.common.util.Ref;
 import org.slf4j.Logger;
@@ -478,12 +478,17 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       InputFormat inputFormat, Class<? extends InputFormat> inputFormatClass, int splits,
       TableDesc table, List<InputSplit> result)
           throws IOException {
-    ValidTxnList validTxnList;
+    ValidWriteIdList validWriteIdList = AcidUtils.getTableValidWriteIdList(conf, table.getTableName());
+    ValidWriteIdList validMmWriteIdList;
     if (AcidUtils.isInsertOnlyTable(table.getProperties())) {
-      String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
-      validTxnList = txnString == null ? new ValidReadTxnList() : new ValidReadTxnList(txnString);
+      if (validWriteIdList == null) {
+        throw new IOException("Insert-Only table: " + table.getTableName()
+                + " is missing from the ValidWriteIdList config: "
+                + conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
+      }
+      validMmWriteIdList = validWriteIdList;
     } else {
-      validTxnList = null;  // for non-MM case
+      validMmWriteIdList = null;  // for non-MM case
     }
 
     try {
@@ -491,6 +496,15 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       if (tableScan != null) {
         AcidUtils.setAcidOperationalProperties(conf, tableScan.getConf().isTranscationalTable(),
             tableScan.getConf().getAcidOperationalProperties());
+
+        if (tableScan.getConf().isTranscationalTable() && (validWriteIdList == null)) {
+          throw new IOException("Acid table: " + table.getTableName()
+                  + " is missing from the ValidWriteIdList config: "
+                  + conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
+        }
+        if (validWriteIdList != null) {
+          AcidUtils.setValidWriteIdList(conf, validWriteIdList);
+        }
       }
     } catch (HiveException e) {
       throw new IOException(e);
@@ -500,7 +514,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       pushFilters(conf, tableScan, this.mrwork);
     }
 
-    Path[] finalDirs = processPathsForMmRead(dirs, conf, validTxnList);
+    Path[] finalDirs = processPathsForMmRead(dirs, conf, validMmWriteIdList);
     if (finalDirs == null) {
       return; // No valid inputs.
     }
@@ -531,13 +545,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   }
 
   public static Path[] processPathsForMmRead(List<Path> dirs, JobConf conf,
-      ValidTxnList validTxnList) throws IOException {
-    if (validTxnList == null) {
+      ValidWriteIdList validWriteIdList) throws IOException {
+    if (validWriteIdList == null) {
       return dirs.toArray(new Path[dirs.size()]);
     } else {
       List<Path> finalPaths = new ArrayList<>(dirs.size());
       for (Path dir : dirs) {
-        processForWriteIds(dir, conf, validTxnList, finalPaths);
+        processForWriteIds(dir, conf, validWriteIdList, finalPaths);
       }
       if (finalPaths.isEmpty()) {
         LOG.warn("No valid inputs found in " + dirs);
@@ -548,7 +562,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   }
 
   private static void processForWriteIds(Path dir, JobConf conf,
-      ValidTxnList validTxnList, List<Path> finalPaths) throws IOException {
+      ValidWriteIdList validWriteIdList, List<Path> finalPaths) throws IOException {
     FileSystem fs = dir.getFileSystem(conf);
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       Utilities.FILE_OP_LOGGER.trace("Checking " + dir + " (root) for inputs");
@@ -574,10 +588,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         }
         if (!file.isDirectory()) {
           Utilities.FILE_OP_LOGGER.warn("Ignoring a file not in MM directory " + path);
-        } else if (JavaUtils.extractTxnId(path) == null) {
+        } else if (JavaUtils.extractWriteId(path) == null) {
           subdirs.add(path);
         } else if (!hadAcidState) {
-          AcidUtils.Directory dirInfo = AcidUtils.getAcidState(currDir, conf, validTxnList, Ref.from(false), true, null);
+          AcidUtils.Directory dirInfo
+                  = AcidUtils.getAcidState(currDir, conf, validWriteIdList, Ref.from(false), true, null);
           hadAcidState = true;
 
           // Find the base, created for IOW.
@@ -890,6 +905,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
         AcidUtils.setAcidOperationalProperties(job, ts.getConf().isTranscationalTable(),
             ts.getConf().getAcidOperationalProperties());
+        AcidUtils.setValidWriteIdList(job, ts.getConf());
       }
     }
   }

@@ -34,7 +34,7 @@ public class AcidTable implements Serializable {
   private final String tableName;
   private final boolean createPartitions;
   private final TableType tableType;
-  private long transactionId;
+  private long writeId;
 
   private Table table;
 
@@ -48,10 +48,10 @@ public class AcidTable implements Serializable {
   /**
    * Returns {@code 0} until such a time that a {@link Transaction} has been acquired (when
    * {@link MutatorClient#newTransaction()} exits), at which point this will return the
-   * {@link Transaction#getTransactionId() transaction id}.
+   * write id.
    */
-  public long getTransactionId() {
-    return transactionId;
+  public long getWriteId() {
+    return writeId;
   }
 
   public String getDatabaseName() {
@@ -105,8 +105,8 @@ public class AcidTable implements Serializable {
     return table;
   }
 
-  void setTransactionId(long transactionId) {
-    this.transactionId = transactionId;
+  void setWriteId(long writeId) {
+    this.writeId = writeId;
   }
 
   void setTable(Table table) {
@@ -123,7 +123,7 @@ public class AcidTable implements Serializable {
   public String toString() {
     return "AcidTable [databaseName=" + databaseName + ", tableName=" + tableName + ", createPartitions="
         + createPartitions + ", tableType=" + tableType + ", outputFormatName=" + getOutputFormatName()
-        + ", totalBuckets=" + getTotalBuckets() + ", transactionId=" + transactionId + "]";
+        + ", totalBuckets=" + getTotalBuckets() + ", writeId=" + writeId + "]";
   }
 
 }

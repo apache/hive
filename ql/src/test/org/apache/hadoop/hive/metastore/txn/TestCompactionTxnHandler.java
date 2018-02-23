@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore.txn;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
@@ -56,7 +58,7 @@ import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
 /**
- * Tests for TxnHandler.
+ * Tests for CompactionTxnHandler.
  */
 public class TestCompactionTxnHandler {
 
@@ -478,6 +480,13 @@ public class TestCompactionTxnHandler {
     String tableName = "adp_table";
     OpenTxnsResponse openTxns = txnHandler.openTxns(new OpenTxnRequest(1, "me", "localhost"));
     long txnId = openTxns.getTxn_ids().get(0);
+
+    AllocateTableWriteIdsResponse writeIds
+            = txnHandler.allocateTableWriteIds(new AllocateTableWriteIdsRequest(openTxns.getTxn_ids(), dbName, tableName));
+    long writeId = writeIds.getTxnToWriteIds().get(0).getWriteId();
+    assertEquals(txnId, writeIds.getTxnToWriteIds().get(0).getTxnId());
+    assertEquals(1, writeId);
+
     // lock a table, as in dynamic partitions
     LockComponent lc = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, dbName);
     lc.setIsDynamicPartitionWrite(true);
@@ -489,7 +498,7 @@ public class TestCompactionTxnHandler {
     LockResponse lock = txnHandler.lock(lr);
     assertEquals(LockState.ACQUIRED, lock.getState());
 
-    AddDynamicPartitions adp = new AddDynamicPartitions(txnId, dbName, tableName,
+    AddDynamicPartitions adp = new AddDynamicPartitions(txnId, writeId, dbName, tableName,
       Arrays.asList("ds=yesterday", "ds=today"));
     adp.setOperationType(dop);
     txnHandler.addDynamicPartitions(adp);

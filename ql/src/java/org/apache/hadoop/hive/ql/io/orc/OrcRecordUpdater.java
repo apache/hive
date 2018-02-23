@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
  * A RecordUpdater where the files are stored as ORC.
  * A note on various record structures: the {@code row} coming in (as in {@link #insert(long, Object)}
  * for example), is a struct like <RecordIdentifier, f1, ... fn> but what is written to the file
- * * is <op, otid, writerId, rowid, ctid, <f1, ... fn>> (see {@link #createEventSchema(ObjectInspector)})
+ * * is <op, owid, writerId, rowid, cwid, <f1, ... fn>> (see {@link #createEventSchema(ObjectInspector)})
  * So there are OIs here to make the translation.
  */
 public class OrcRecordUpdater implements RecordUpdater {
@@ -72,10 +72,10 @@ public class OrcRecordUpdater implements RecordUpdater {
   final static int DELETE_OPERATION = 2;
   //column indexes of corresponding data in storage layer
   final static int OPERATION = 0;
-  final static int ORIGINAL_TRANSACTION = 1;
+  final static int ORIGINAL_WRITEID = 1;
   final static int BUCKET = 2;
   final static int ROW_ID = 3;
-  final static int CURRENT_TRANSACTION = 4;
+  final static int CURRENT_WRITEID = 4;
   final static int ROW = 5;
   /**
    * total number of fields (above)
@@ -100,8 +100,8 @@ public class OrcRecordUpdater implements RecordUpdater {
   private final FSDataOutputStream flushLengths;
   private final OrcStruct item;
   private final IntWritable operation = new IntWritable();
-  private final LongWritable currentTransaction = new LongWritable(-1);
-  private final LongWritable originalTransaction = new LongWritable(-1);
+  private final LongWritable currentWriteId = new LongWritable(-1);
+  private final LongWritable originalWriteId = new LongWritable(-1);
   private final IntWritable bucket = new IntWritable();
   private final LongWritable rowId = new LongWritable();
   private long insertedRows = 0;
@@ -112,12 +112,12 @@ public class OrcRecordUpdater implements RecordUpdater {
   private KeyIndexBuilder deleteEventIndexBuilder;
   private StructField recIdField = null; // field to look for the record identifier in
   private StructField rowIdField = null; // field inside recId to look for row id in
-  private StructField originalTxnField = null;  // field inside recId to look for original txn in
+  private StructField originalWriteIdField = null;  // field inside recId to look for original write id in
   private StructField bucketField = null; // field inside recId to look for bucket in
   private StructObjectInspector rowInspector; // OI for the original row
   private StructObjectInspector recIdInspector; // OI for the record identifier struct
   private LongObjectInspector rowIdInspector; // OI for the long row id inside the recordIdentifier
-  private LongObjectInspector origTxnInspector; // OI for the original txn inside the record
+  private LongObjectInspector origWriteIdInspector; // OI for the original write id inside the record
   // identifer
   private IntObjectInspector bucketInspector;
 
@@ -126,11 +126,11 @@ public class OrcRecordUpdater implements RecordUpdater {
   }
 
   static long getCurrentTransaction(OrcStruct struct) {
-    return ((LongWritable) struct.getFieldValue(CURRENT_TRANSACTION)).get();
+    return ((LongWritable) struct.getFieldValue(CURRENT_WRITEID)).get();
   }
 
   static long getOriginalTransaction(OrcStruct struct) {
-    return ((LongWritable) struct.getFieldValue(ORIGINAL_TRANSACTION)).get();
+    return ((LongWritable) struct.getFieldValue(ORIGINAL_WRITEID)).get();
   }
 
   static int getBucket(OrcStruct struct) {
@@ -184,15 +184,13 @@ public class OrcRecordUpdater implements RecordUpdater {
     fields.add(new OrcStruct.Field("operation",
         PrimitiveObjectInspectorFactory.writableIntObjectInspector, OPERATION));
     fields.add(new OrcStruct.Field("originalTransaction",
-        PrimitiveObjectInspectorFactory.writableLongObjectInspector,
-        ORIGINAL_TRANSACTION));
+        PrimitiveObjectInspectorFactory.writableLongObjectInspector, ORIGINAL_WRITEID));
     fields.add(new OrcStruct.Field("bucket",
         PrimitiveObjectInspectorFactory.writableIntObjectInspector, BUCKET));
     fields.add(new OrcStruct.Field("rowId",
         PrimitiveObjectInspectorFactory.writableLongObjectInspector, ROW_ID));
     fields.add(new OrcStruct.Field("currentTransaction",
-        PrimitiveObjectInspectorFactory.writableLongObjectInspector,
-        CURRENT_TRANSACTION));
+        PrimitiveObjectInspectorFactory.writableLongObjectInspector, CURRENT_WRITEID));
     fields.add(new OrcStruct.Field("row", rowInspector, ROW));
     return new OrcStruct.OrcStructInspector(fields);
   }
@@ -246,7 +244,7 @@ public class OrcRecordUpdater implements RecordUpdater {
         }
       }
     }
-    if (options.getMinimumTransactionId() != options.getMaximumTransactionId()
+    if (options.getMinimumWriteId() != options.getMaximumWriteId()
         && !options.isWritingBase()){
       //throw if file already exists as that should never happen
       flushLengths = fs.create(OrcAcidUtils.getSideFile(this.path), false, 8,
@@ -316,8 +314,8 @@ public class OrcRecordUpdater implements RecordUpdater {
         options.getRecordIdColumn())));
     item = new OrcStruct(FIELDS);
     item.setFieldValue(OPERATION, operation);
-    item.setFieldValue(CURRENT_TRANSACTION, currentTransaction);
-    item.setFieldValue(ORIGINAL_TRANSACTION, originalTransaction);
+    item.setFieldValue(CURRENT_WRITEID, currentWriteId);
+    item.setFieldValue(ORIGINAL_WRITEID, originalWriteId);
     item.setFieldValue(BUCKET, bucket);
     item.setFieldValue(ROW_ID, rowId);
   }
@@ -342,9 +340,9 @@ public class OrcRecordUpdater implements RecordUpdater {
       List<? extends StructField> fields =
           ((StructObjectInspector) recIdField.getFieldObjectInspector()).getAllStructFieldRefs();
       // Go by position, not field name, as field names aren't guaranteed.  The order of fields
-      // in RecordIdentifier is transactionId, bucketId, rowId
-      originalTxnField = fields.get(0);
-      origTxnInspector = (LongObjectInspector)originalTxnField.getFieldObjectInspector();
+      // in RecordIdentifier is writeId, bucketId, rowId
+      originalWriteIdField = fields.get(0);
+      origWriteIdInspector = (LongObjectInspector)originalWriteIdField.getFieldObjectInspector();
       bucketField = fields.get(1);
       bucketInspector = (IntObjectInspector) bucketField.getFieldObjectInspector();
       rowIdField = fields.get(2);
@@ -361,27 +359,27 @@ public class OrcRecordUpdater implements RecordUpdater {
    * thus even for unbucketed tables, the N in bucket_N file name matches writerId/bucketId even for
    * late split
    */
-  private void addSimpleEvent(int operation, long currentTransaction, long rowId, Object row)
+  private void addSimpleEvent(int operation, long currentWriteId, long rowId, Object row)
       throws IOException {
     this.operation.set(operation);
-    this.currentTransaction.set(currentTransaction);
+    this.currentWriteId.set(currentWriteId);
     Integer currentBucket = null;
-    // If this is an insert, originalTransaction should be set to this transaction.  If not,
+    // If this is an insert, originalWriteId should be set to this transaction.  If not,
     // it will be reset by the following if anyway.
-    long originalTransaction = currentTransaction;
+    long originalWriteId = currentWriteId;
     if (operation == DELETE_OPERATION || operation == UPDATE_OPERATION) {
       Object rowIdValue = rowInspector.getStructFieldData(row, recIdField);
-      originalTransaction = origTxnInspector.get(
-          recIdInspector.getStructFieldData(rowIdValue, originalTxnField));
+      originalWriteId = origWriteIdInspector.get(
+          recIdInspector.getStructFieldData(rowIdValue, originalWriteIdField));
       rowId = rowIdInspector.get(recIdInspector.getStructFieldData(rowIdValue, rowIdField));
       currentBucket = setBucket(bucketInspector.get(
         recIdInspector.getStructFieldData(rowIdValue, bucketField)), operation);
     }
     this.rowId.set(rowId);
-    this.originalTransaction.set(originalTransaction);
+    this.originalWriteId.set(originalWriteId);
     item.setFieldValue(OrcRecordUpdater.OPERATION, new IntWritable(operation));
     item.setFieldValue(OrcRecordUpdater.ROW, (operation == DELETE_OPERATION ? null : row));
-    indexBuilder.addKey(operation, originalTransaction, bucket.get(), rowId);
+    indexBuilder.addKey(operation, originalWriteId, bucket.get(), rowId);
     if (writer == null) {
       writer = OrcFile.createWriter(path, writerOptions);
     }
@@ -389,18 +387,18 @@ public class OrcRecordUpdater implements RecordUpdater {
     restoreBucket(currentBucket, operation);
   }
 
-  private void addSplitUpdateEvent(int operation, long currentTransaction, long rowId, Object row)
+  private void addSplitUpdateEvent(int operation, long currentWriteId, long rowId, Object row)
       throws IOException {
     if (operation == INSERT_OPERATION) {
       // Just insert the record in the usual way, i.e., default to the simple behavior.
-      addSimpleEvent(operation, currentTransaction, rowId, row);
+      addSimpleEvent(operation, currentWriteId, rowId, row);
       return;
     }
     this.operation.set(operation);
-    this.currentTransaction.set(currentTransaction);
+    this.currentWriteId.set(currentWriteId);
     Object rowValue = rowInspector.getStructFieldData(row, recIdField);
-    long originalTransaction = origTxnInspector.get(
-            recIdInspector.getStructFieldData(rowValue, originalTxnField));
+    long originalWriteId = origWriteIdInspector.get(
+            recIdInspector.getStructFieldData(rowValue, originalWriteIdField));
     rowId = rowIdInspector.get(
             recIdInspector.getStructFieldData(rowValue, rowIdField));
     Integer currentBucket = null;
@@ -423,54 +421,54 @@ public class OrcRecordUpdater implements RecordUpdater {
 
       // A delete/update generates a delete event for the original row.
       this.rowId.set(rowId);
-      this.originalTransaction.set(originalTransaction);
+      this.originalWriteId.set(originalWriteId);
       item.setFieldValue(OrcRecordUpdater.OPERATION, new IntWritable(DELETE_OPERATION));
       item.setFieldValue(OrcRecordUpdater.ROW, null); // ROW is null for delete events.
-      deleteEventIndexBuilder.addKey(DELETE_OPERATION, originalTransaction, bucket.get(), rowId);
+      deleteEventIndexBuilder.addKey(DELETE_OPERATION, originalWriteId, bucket.get(), rowId);
       deleteEventWriter.addRow(item);
       restoreBucket(currentBucket, operation);
     }
 
     if (operation == UPDATE_OPERATION) {
       // A new row is also inserted in the usual delta file for an update event.
-      addSimpleEvent(INSERT_OPERATION, currentTransaction, insertedRows++, row);
+      addSimpleEvent(INSERT_OPERATION, currentWriteId, insertedRows++, row);
     }
   }
 
   @Override
-  public void insert(long currentTransaction, Object row) throws IOException {
-    if (this.currentTransaction.get() != currentTransaction) {
+  public void insert(long currentWriteId, Object row) throws IOException {
+    if (this.currentWriteId.get() != currentWriteId) {
       insertedRows = 0;
     }
     if (acidOperationalProperties.isSplitUpdate()) {
-      addSplitUpdateEvent(INSERT_OPERATION, currentTransaction, insertedRows++, row);
+      addSplitUpdateEvent(INSERT_OPERATION, currentWriteId, insertedRows++, row);
     } else {
-      addSimpleEvent(INSERT_OPERATION, currentTransaction, insertedRows++, row);
+      addSimpleEvent(INSERT_OPERATION, currentWriteId, insertedRows++, row);
     }
     rowCountDelta++;
   }
 
   @Override
-  public void update(long currentTransaction, Object row) throws IOException {
-    if (this.currentTransaction.get() != currentTransaction) {
+  public void update(long currentWriteId, Object row) throws IOException {
+    if (this.currentWriteId.get() != currentWriteId) {
       insertedRows = 0;
     }
     if (acidOperationalProperties.isSplitUpdate()) {
-      addSplitUpdateEvent(UPDATE_OPERATION, currentTransaction, -1L, row);
+      addSplitUpdateEvent(UPDATE_OPERATION, currentWriteId, -1L, row);
     } else {
-      addSimpleEvent(UPDATE_OPERATION, currentTransaction, -1L, row);
+      addSimpleEvent(UPDATE_OPERATION, currentWriteId, -1L, row);
     }
   }
 
   @Override
-  public void delete(long currentTransaction, Object row) throws IOException {
-    if (this.currentTransaction.get() != currentTransaction) {
+  public void delete(long currentWriteId, Object row) throws IOException {
+    if (this.currentWriteId.get() != currentWriteId) {
       insertedRows = 0;
     }
     if (acidOperationalProperties.isSplitUpdate()) {
-      addSplitUpdateEvent(DELETE_OPERATION, currentTransaction, -1L, row);
+      addSplitUpdateEvent(DELETE_OPERATION, currentWriteId, -1L, row);
     } else {
-      addSimpleEvent(DELETE_OPERATION, currentTransaction, -1L, row);
+      addSimpleEvent(DELETE_OPERATION, currentWriteId, -1L, row);
     }
     rowCountDelta--;
   }

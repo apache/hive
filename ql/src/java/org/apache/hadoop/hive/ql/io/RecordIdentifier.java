@@ -88,7 +88,7 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
         Arrays.fill(struct, null);
         return;
       }
-      struct[Field.transactionId.ordinal()] = ri.getTransactionId();
+      struct[Field.transactionId.ordinal()] = ri.getWriteId();
       struct[Field.bucketId.ordinal()] = ri.getBucketProperty();
       struct[Field.rowId.ordinal()] = ri.getRowId();
     }
@@ -101,20 +101,20 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
   public RecordIdentifier() {
   }
 
-  public RecordIdentifier(long transactionId, int bucket, long rowId) {
-    this.transactionId = transactionId;
+  public RecordIdentifier(long writeId, int bucket, long rowId) {
+    this.transactionId = writeId;
     this.bucketId = bucket;
     this.rowId = rowId;
   }
 
   /**
    * Set the identifier.
-   * @param transactionId the transaction id
+   * @param writeId the write id
    * @param bucketId the bucket id
    * @param rowId the row id
    */
-  public void setValues(long transactionId, int bucketId, long rowId) {
-    this.transactionId = transactionId;
+  public void setValues(long writeId, int bucketId, long rowId) {
+    this.transactionId = writeId;
     this.bucketId = bucketId;
     this.rowId = rowId;
   }
@@ -134,10 +134,10 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
   }
 
   /**
-   * What was the original transaction id for the last row?
-   * @return the transaction id
+   * What was the original write id for the last row?
+   * @return the write id
    */
-  public long getTransactionId() {
+  public long getWriteId() {
     return transactionId;
   }
 
@@ -223,7 +223,7 @@ public class RecordIdentifier implements WritableComparable<RecordIdentifier> {
       BucketCodec.determineVersion(bucketId);
     String s = "(" + codec.getVersion() + "." + codec.decodeWriterId(bucketId) +
       "." + codec.decodeStatementId(bucketId) + ")";
-    return "{originalTxn: " + transactionId + ", " + bucketToString() + ", row: " + getRowId() +"}";
+    return "{originalWriteId: " + transactionId + ", " + bucketToString() + ", row: " + getRowId() +"}";
   }
   protected String bucketToString() {
     BucketCodec codec =

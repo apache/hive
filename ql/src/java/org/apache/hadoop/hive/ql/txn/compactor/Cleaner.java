@@ -23,8 +23,8 @@ import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -243,10 +243,10 @@ public class Cleaner extends CompactorThread {
 
       /**
        * Each Compaction only compacts as far as the highest txn id such that all txns below it
-       * are resolved (i.e. not opened).  This is what "highestTxnId" tracks.  This is only tracked
-       * since Hive 1.3.0/2.0 - thus may be 0.  See ValidCompactorTxnList and uses for more info.
+       * are resolved (i.e. not opened).  This is what "highestWriteId" tracks.  This is only tracked
+       * since Hive 1.3.0/2.0 - thus may be 0.  See ValidCompactorWriteIdList and uses for more info.
        * 
-       * We only want to clean up to the highestTxnId - otherwise we risk deleteing deltas from
+       * We only want to clean up to the highestWriteId - otherwise we risk deleteing deltas from
        * under an active reader.
        * 
        * Suppose we have deltas D2 D3 for table T, i.e. the last compaction created D3 so now there is a 
@@ -255,10 +255,11 @@ public class Cleaner extends CompactorThread {
        * Between that check and removeFiles() a query starts (it will be reading D3) and another compaction
        * completes which creates D4.
        * Now removeFiles() (more specifically AcidUtils.getAcidState()) will declare D3 to be obsolete
-       * unless ValidTxnList is "capped" at highestTxnId.
+       * unless ValidTxnList is "capped" at highestWriteId.
        */
-      final ValidTxnList txnList = ci.highestTxnId > 0 ? 
-        new ValidReadTxnList(new long[0], new BitSet(), ci.highestTxnId) : new ValidReadTxnList();
+      final ValidWriteIdList txnList = (ci.highestWriteId > 0)
+              ? new ValidReaderWriteIdList(ci.getFullTableName(), new long[0], new BitSet(), ci.highestWriteId)
+              : new ValidReaderWriteIdList();
 
       if (runJobAsSelf(ci.runAs)) {
         removeFiles(location, txnList);
@@ -288,8 +289,8 @@ public class Cleaner extends CompactorThread {
     }
   }
 
-  private void removeFiles(String location, ValidTxnList txnList) throws IOException {
-    AcidUtils.Directory dir = AcidUtils.getAcidState(new Path(location), conf, txnList);
+  private void removeFiles(String location, ValidWriteIdList writeIdList) throws IOException {
+    AcidUtils.Directory dir = AcidUtils.getAcidState(new Path(location), conf, writeIdList);
     List<FileStatus> obsoleteDirs = dir.getObsolete();
     List<Path> filesToDelete = new ArrayList<Path>(obsoleteDirs.size());
     for (FileStatus stat : obsoleteDirs) {

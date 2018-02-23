@@ -90,7 +90,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 
   // Record what type of write this is.  Default is non-ACID (ie old style).
   private AcidUtils.Operation writeType = AcidUtils.Operation.NOT_ACID;
-  private long txnId = 0;  // transaction id for this operation
+  private long tableWriteId = 0;  // table write id for this operation
   private int statementId = -1;
 
   private transient Table table;
@@ -167,7 +167,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     ret.setStatsReliable(statsReliable);
     ret.setDpSortState(dpSortState);
     ret.setWriteType(writeType);
-    ret.setTransactionId(txnId);
+    ret.setTableWriteId(tableWriteId);
     ret.setStatementId(statementId);
     ret.setStatsTmpDir(statsTmpDir);
     ret.setIsMerge(isMerge);
@@ -207,7 +207,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   public Path getMergeInputDirName() {
     Path root = getFinalDirName();
     if (isMmTable()) {
-      return new Path(root, AcidUtils.deltaSubdir(txnId, txnId, statementId));
+      return new Path(root, AcidUtils.deltaSubdir(tableWriteId, tableWriteId, statementId));
     } else {
       return root;
     }
@@ -483,11 +483,11 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   public String getWriteTypeString() {
     return getWriteType() == AcidUtils.Operation.NOT_ACID ? null : getWriteType().toString();
   }
-  public void setTransactionId(long id) {
-    txnId = id;
+  public void setTableWriteId(long id) {
+    tableWriteId = id;
   }
-  public long getTransactionId() {
-    return txnId;
+  public long getTableWriteId() {
+    return tableWriteId;
   }
 
   public void setStatementId(int id) {

@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -551,7 +552,7 @@ public class HiveEndPoint {
     private final IMetaStoreClient msClient;
     private final IMetaStoreClient heartbeaterMSClient;
     private final RecordWriter recordWriter;
-    private final List<Long> txnIds;
+    private final List<TxnToWriteId> txnToWriteIds;
 
     //volatile because heartbeat() may be in a "different" thread; updates of this are "piggybacking"
     private volatile int currentTxnIndex = -1;
@@ -602,14 +603,19 @@ public class HiveEndPoint {
         this.recordWriter = recordWriter;
         this.agentInfo = agentInfo;
 
-        txnIds = openTxnImpl(msClient, user, numTxns, ugi);
+        List<Long> txnIds = openTxnImpl(msClient, user, numTxns, ugi);
+        txnToWriteIds = allocateWriteIdsImpl(msClient, txnIds, ugi);
+        assert(txnToWriteIds.size() == numTxns);
+
         txnStatus = new TxnState[numTxns];
         for(int i = 0; i < txnStatus.length; i++) {
+          assert(txnToWriteIds.get(i).getTxnId() == txnIds.get(i));
           txnStatus[i] = TxnState.OPEN;//Open matches Metastore state
         }
-
         this.state = TxnState.INACTIVE;
-        recordWriter.newBatch(txnIds.get(0), txnIds.get(txnIds.size()-1));
+
+        // The Write Ids returned for the transaction batch is also sequential
+        recordWriter.newBatch(txnToWriteIds.get(0).getWriteId(), txnToWriteIds.get(numTxns-1).getWriteId());
         success = true;
       } catch (TException e) {
         throw new TransactionBatchUnAvailable(endPt, e);
@@ -632,12 +638,26 @@ public class HiveEndPoint {
         public Object run() throws Exception {
           return msClient.openTxns(user, numTxns).getTxn_ids();
         }
-      }) ;
+      });
+    }
+
+    private List<TxnToWriteId> allocateWriteIdsImpl(final IMetaStoreClient msClient,
+                                                    final List<Long> txnIds, UserGroupInformation ugi)
+            throws IOException, TException,  InterruptedException {
+      if(ugi==null) {
+        return  msClient.allocateTableWriteIdsBatch(txnIds, endPt.database, endPt.table);
+      }
+      return (List<TxnToWriteId>) ugi.doAs(new PrivilegedExceptionAction<Object>() {
+        @Override
+        public Object run() throws Exception {
+          return msClient.allocateTableWriteIdsBatch(txnIds, endPt.database, endPt.table);
+        }
+      });
     }
 
     @Override
     public String toString() {
-      if (txnIds==null || txnIds.isEmpty()) {
+      if (txnToWriteIds==null || txnToWriteIds.isEmpty()) {
         return "{}";
       }
       StringBuilder sb = new StringBuilder(" TxnStatus[");
@@ -646,7 +666,11 @@ public class HiveEndPoint {
         sb.append(state == null ? "N" : state);
       }
       sb.append("] LastUsed ").append(JavaUtils.txnIdToString(lastTxnUsed));
-      return "TxnIds=[" + txnIds.get(0) + "..." + txnIds.get(txnIds.size()-1)
+      return "TxnId/WriteIds=[" + txnToWriteIds.get(0).getTxnId()
+              + "/" + txnToWriteIds.get(0).getWriteId()
+              + "..."
+              + txnToWriteIds.get(txnToWriteIds.size()-1).getTxnId()
+              + "/" + txnToWriteIds.get(txnToWriteIds.size()-1).getWriteId()
               + "] on endPoint = " + endPt + "; " + sb;
     }
 
@@ -680,7 +704,8 @@ public class HiveEndPoint {
 
     private void beginNextTransactionImpl() throws TransactionError {
       state = TxnState.INACTIVE;//clear state from previous txn
-      if ( currentTxnIndex + 1 >= txnIds.size() ) {
+
+      if ((currentTxnIndex + 1) >= txnToWriteIds.size()) {
         throw new InvalidTrasactionState("No more transactions available in" +
                 " current batch for end point : " + endPt);
       }
@@ -699,13 +724,25 @@ public class HiveEndPoint {
     }
 
     /**
-     * Get Id of currently open transaction
+     * Get Id of currently open transaction.
      * @return -1 if there is no open TX
      */
     @Override
     public Long getCurrentTxnId() {
-      if(currentTxnIndex >= 0) {
-        return txnIds.get(currentTxnIndex);
+      if (currentTxnIndex >= 0) {
+        return txnToWriteIds.get(currentTxnIndex).getTxnId();
+      }
+      return -1L;
+    }
+
+    /**
+     * Get Id of currently open transaction.
+     * @return -1 if there is no open TX
+     */
+    @Override
+    public Long getCurrentWriteId() {
+      if (currentTxnIndex >= 0) {
+        return txnToWriteIds.get(currentTxnIndex).getWriteId();
       }
       return -1L;
     }
@@ -727,9 +764,9 @@ public class HiveEndPoint {
     @Override
     public int remainingTransactions() {
       if (currentTxnIndex>=0) {
-        return txnIds.size() - currentTxnIndex -1;
+        return txnToWriteIds.size() - currentTxnIndex -1;
       }
-      return txnIds.size();
+      return txnToWriteIds.size();
     }
 
 
@@ -824,7 +861,7 @@ public class HiveEndPoint {
     private void writeImpl(Collection<byte[]> records)
             throws StreamingException {
       for (byte[] record : records) {
-        recordWriter.write(getCurrentTxnId(), record);
+        recordWriter.write(getCurrentWriteId(), record);
       }
     }
 
@@ -869,7 +906,7 @@ public class HiveEndPoint {
     private void commitImpl() throws TransactionError, StreamingException {
       try {
         recordWriter.flush();
-        msClient.commitTxn(txnIds.get(currentTxnIndex));
+        msClient.commitTxn(txnToWriteIds.get(currentTxnIndex).getTxnId());
         state = TxnState.COMMITTED;
         txnStatus[currentTxnIndex] = TxnState.COMMITTED;
       } catch (NoSuchTxnException e) {
@@ -932,8 +969,8 @@ public class HiveEndPoint {
           int minOpenTxnIndex = Math.max(currentTxnIndex +
             (state == TxnState.ABORTED || state == TxnState.COMMITTED ? 1 : 0), 0);
           for(currentTxnIndex = minOpenTxnIndex;
-              currentTxnIndex < txnIds.size(); currentTxnIndex++) {
-            msClient.rollbackTxn(txnIds.get(currentTxnIndex));
+              currentTxnIndex < txnToWriteIds.size(); currentTxnIndex++) {
+            msClient.rollbackTxn(txnToWriteIds.get(currentTxnIndex).getTxnId());
             txnStatus[currentTxnIndex] = TxnState.ABORTED;
           }
           currentTxnIndex--;//since the loop left it == txnId.size()
@@ -960,15 +997,15 @@ public class HiveEndPoint {
       if(isClosed) {
         return;
       }
-      if(state != TxnState.OPEN && currentTxnIndex >= txnIds.size() - 1) {
+      if(state != TxnState.OPEN && currentTxnIndex >= txnToWriteIds.size() - 1) {
         //here means last txn in the batch is resolved but the close() hasn't been called yet so
         //there is nothing to heartbeat
         return;
       }
       //if here after commit()/abort() but before next beginNextTransaction(), currentTxnIndex still
       //points at the last txn which we don't want to heartbeat
-      Long first = txnIds.get(state == TxnState.OPEN ? currentTxnIndex : currentTxnIndex + 1);
-      Long last = txnIds.get(txnIds.size()-1);
+      Long first = txnToWriteIds.get(state == TxnState.OPEN ? currentTxnIndex : currentTxnIndex + 1).getTxnId();
+      Long last = txnToWriteIds.get(txnToWriteIds.size()-1).getTxnId();
       try {
         HeartbeatTxnRangeResponse resp = heartbeaterMSClient.heartbeatTxnRange(first, last);
         if (!resp.getAborted().isEmpty() || !resp.getNosuch().isEmpty()) {
