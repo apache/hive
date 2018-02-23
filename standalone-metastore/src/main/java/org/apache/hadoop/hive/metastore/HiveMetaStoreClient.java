@@ -48,12 +48,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.security.auth.login.LoginException;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -2231,6 +2232,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public ValidWriteIdList getValidWriteIds(String fullTableName) throws TException {
+    GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName), null);
+    GetValidWriteIdsResponse validWriteIds = client.get_valid_write_ids(rqst);
+    return TxnUtils.createValidReaderWriteIdList(validWriteIds.getTblValidWriteIds().get(0));
+  }
+
+  @Override
+  public ValidTxnWriteIdList getValidWriteIds(Long currentTxnId, List<String> tablesList, String validTxnList)
+          throws TException {
+    GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(tablesList, validTxnList);
+    return TxnUtils.createValidTxnWriteIdList(currentTxnId, client.get_valid_write_ids(rqst));
+  }
+
+  @Override
   public long openTxn(String user) throws TException {
     OpenTxnsResponse txns = openTxns(user, 1);
     return txns.getTxn_ids().get(0);
@@ -2267,6 +2282,19 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public void abortTxns(List<Long> txnids) throws NoSuchTxnException, TException {
     client.abort_txns(new AbortTxnsRequest(txnids));
+  }
+
+  @Override
+  public long allocateTableWriteId(long txnId, String dbName, String tableName) throws TException {
+    return allocateTableWriteIdsBatch(Collections.singletonList(txnId), dbName, tableName).get(0).getWriteId();
+  }
+
+  @Override
+  public List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName)
+          throws TException {
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(txnIds, dbName, tableName);
+    AllocateTableWriteIdsResponse writeIds = client.allocate_table_write_ids(rqst);
+    return writeIds.getTxnToWriteIds();
   }
 
   @Override
@@ -2354,14 +2382,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Deprecated
   @Override
-  public void addDynamicPartitions(long txnId, String dbName, String tableName,
+  public void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName,
                                    List<String> partNames) throws TException {
-    client.add_dynamic_partitions(new AddDynamicPartitions(txnId, dbName, tableName, partNames));
+    client.add_dynamic_partitions(new AddDynamicPartitions(txnId, writeId, dbName, tableName, partNames));
   }
   @Override
-  public void addDynamicPartitions(long txnId, String dbName, String tableName,
+  public void addDynamicPartitions(long txnId, long writeId, String dbName, String tableName,
                                    List<String> partNames, DataOperationType operationType) throws TException {
-    AddDynamicPartitions adp = new AddDynamicPartitions(txnId, dbName, tableName, partNames);
+    AddDynamicPartitions adp = new AddDynamicPartitions(txnId, writeId, dbName, tableName, partNames);
     adp.setOperationType(operationType);
     client.add_dynamic_partitions(adp);
   }

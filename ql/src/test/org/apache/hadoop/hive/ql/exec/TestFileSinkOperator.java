@@ -27,7 +27,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -292,8 +292,12 @@ public class TestFileSinkOperator {
     }
     desc.setWriteType(writeType);
     desc.setGatherStats(true);
-    if (txnId > 0) desc.setTransactionId(txnId);
-    if (writeType != AcidUtils.Operation.NOT_ACID) desc.setTransactionId(1L);
+    if (txnId > 0) {
+      desc.setTableWriteId(txnId);
+    }
+    if (writeType != AcidUtils.Operation.NOT_ACID) {
+      desc.setTableWriteId(1L);
+    }
 
     FileSinkOperator op = (FileSinkOperator)OperatorFactory.get(
         new CompilationOpContext(), FileSinkDesc.class);
@@ -699,7 +703,7 @@ public class TestFileSinkOperator {
     public RawReader<Row> getRawReader(Configuration conf,
                                               boolean collapseEvents,
                                               int bucket,
-                                              ValidTxnList validTxnList,
+                                              ValidWriteIdList validWriteIdList,
                                               Path baseDirectory,
                                               Path[] deltaDirectory) throws
         IOException {
@@ -725,18 +729,18 @@ public class TestFileSinkOperator {
 
       return new RecordUpdater() {
         @Override
-        public void insert(long currentTransaction, Object row) throws IOException {
+        public void insert(long currentWriteId, Object row) throws IOException {
           addRow(row);
           numRecordsAdded++;
         }
 
         @Override
-        public void update(long currentTransaction, Object row) throws IOException {
+        public void update(long currentWriteId, Object row) throws IOException {
           addRow(row);
         }
 
         @Override
-        public void delete(long currentTransaction, Object row) throws IOException {
+        public void delete(long currentWriteId, Object row) throws IOException {
           addRow(row);
           numRecordsAdded--;
         }

@@ -131,6 +131,8 @@ import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -6801,7 +6803,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ListBucketingCtx lbCtx = null;
     Map<String, String> partSpec = null;
     boolean isMmTable = false, isMmCtas = false;
-    Long txnId = null;
+    Long writeId = null;
+    HiveTxnManager txnMgr = SessionState.get().getTxnMgr();
 
     switch (dest_type.intValue()) {
     case QBMetaData.DEST_TABLE: {
@@ -6884,15 +6887,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           //todo: should this be done for MM?  is it ok to use CombineHiveInputFormat with MM
           checkAcidConstraints(qb, table_desc, dest_tab);
         }
-        if (isMmTable) {
-          txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
-        } else {
-          txnId = acidOp == Operation.NOT_ACID ? null :
-              SessionState.get().getTxnMgr().getCurrentTxnId();
+        try {
+          if (ctx.getExplainConfig() != null) {
+            writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
+          } else {
+            if (isMmTable) {
+              writeId = txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
+            } else {
+              writeId = acidOp == Operation.NOT_ACID ? null :
+                      txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
+            }
+          }
+        } catch (LockException ex) {
+          throw new SemanticException("Failed to allocate write Id", ex);
         }
         boolean isReplace = !qb.getParseInfo().isInsertIntoTable(
             dest_tab.getDbName(), dest_tab.getTableName());
-        ltd = new LoadTableDesc(queryTmpdir, table_desc, dpCtx, acidOp, isReplace, txnId);
+        ltd = new LoadTableDesc(queryTmpdir, table_desc, dpCtx, acidOp, isReplace, writeId);
         // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
         // deltas and base and leave them up to the cleaner to clean up
         LoadFileType loadType = (!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
@@ -6967,13 +6978,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         //todo: should this be done for MM?  is it ok to use CombineHiveInputFormat with MM?
         checkAcidConstraints(qb, table_desc, dest_tab);
       }
-      if (isMmTable) {
-        txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
-      } else {
-        txnId = (acidOp == Operation.NOT_ACID) ? null :
-            SessionState.get().getTxnMgr().getCurrentTxnId();
+      try {
+        if (ctx.getExplainConfig() != null) {
+          writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
+        } else {
+          if (isMmTable) {
+            writeId = txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
+          } else {
+            writeId = (acidOp == Operation.NOT_ACID) ? null :
+                    txnMgr.getTableWriteId(dest_tab.getDbName(), dest_tab.getTableName());
+          }
+        }
+      } catch (LockException ex) {
+        throw new SemanticException("Failed to allocate write Id", ex);
       }
-      ltd = new LoadTableDesc(queryTmpdir, table_desc, dest_part.getSpec(), acidOp, txnId);
+      ltd = new LoadTableDesc(queryTmpdir, table_desc, dest_part.getSpec(), acidOp, writeId);
       // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
       // deltas and base and leave them up to the cleaner to clean up
       LoadFileType loadType = (!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
@@ -7011,8 +7030,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         destTableIsMaterialization = tblDesc.isMaterialization();
         if (AcidUtils.isInsertOnlyTable(tblDesc.getTblProps(), true)) {
           isMmTable = isMmCtas = true;
-          txnId = SessionState.get().getTxnMgr().getCurrentTxnId();
-          tblDesc.setInitialMmWriteId(txnId);
+          try {
+            if (ctx.getExplainConfig() != null) {
+              writeId = 0L; // For explain plan, txn won't be opened and doesn't make sense to allocate write id
+            } else {
+              writeId = txnMgr.getTableWriteId(tblDesc.getDatabaseName(), tblDesc.getTableName());
+            }
+          } catch (LockException ex) {
+            throw new SemanticException("Failed to allocate write Id", ex);
+          }
+          tblDesc.setInitialMmWriteId(writeId);
         }
       } else if (viewDesc != null) {
         field_schemas = new ArrayList<FieldSchema>();
@@ -7156,7 +7183,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     FileSinkDesc fileSinkDesc = createFileSinkDesc(dest, table_desc, dest_part,
         dest_path, currentTableId, destTableIsFullAcid, destTableIsTemporary,//this was 1/4 acid
         destTableIsMaterialization, queryTmpdir, rsCtx, dpCtx, lbCtx, fsRS,
-        canBeMerged, dest_tab, txnId, isMmCtas, dest_type, qb);
+        canBeMerged, dest_tab, writeId, isMmCtas, dest_type, qb);
     if (isMmCtas) {
       // Add FSD so that the LoadTask compilation could fix up its path to avoid the move.
       tableDesc.setWriter(fileSinkDesc);

@@ -364,6 +364,18 @@ class AbortTxnsRequest;
 
 class CommitTxnRequest;
 
+class GetValidWriteIdsRequest;
+
+class TableValidWriteIds;
+
+class GetValidWriteIdsResponse;
+
+class AllocateTableWriteIdsRequest;
+
+class TxnToWriteId;
+
+class AllocateTableWriteIdsResponse;
+
 class LockComponent;
 
 class LockRequest;
@@ -5954,6 +5966,294 @@ inline std::ostream& operator<<(std::ostream& out, const CommitTxnRequest& obj)
   return out;
 }
 
+
+class GetValidWriteIdsRequest {
+ public:
+
+  GetValidWriteIdsRequest(const GetValidWriteIdsRequest&);
+  GetValidWriteIdsRequest& operator=(const GetValidWriteIdsRequest&);
+  GetValidWriteIdsRequest() : validTxnList() {
+  }
+
+  virtual ~GetValidWriteIdsRequest() throw();
+  std::vector<std::string>  fullTableNames;
+  std::string validTxnList;
+
+  void __set_fullTableNames(const std::vector<std::string> & val);
+
+  void __set_validTxnList(const std::string& val);
+
+  bool operator == (const GetValidWriteIdsRequest & rhs) const
+  {
+    if (!(fullTableNames == rhs.fullTableNames))
+      return false;
+    if (!(validTxnList == rhs.validTxnList))
+      return false;
+    return true;
+  }
+  bool operator != (const GetValidWriteIdsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetValidWriteIdsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetValidWriteIdsRequest &a, GetValidWriteIdsRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetValidWriteIdsRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _TableValidWriteIds__isset {
+  _TableValidWriteIds__isset() : minOpenWriteId(false) {}
+  bool minOpenWriteId :1;
+} _TableValidWriteIds__isset;
+
+class TableValidWriteIds {
+ public:
+
+  TableValidWriteIds(const TableValidWriteIds&);
+  TableValidWriteIds& operator=(const TableValidWriteIds&);
+  TableValidWriteIds() : fullTableName(), writeIdHighWaterMark(0), minOpenWriteId(0), abortedBits() {
+  }
+
+  virtual ~TableValidWriteIds() throw();
+  std::string fullTableName;
+  int64_t writeIdHighWaterMark;
+  std::vector<int64_t>  invalidWriteIds;
+  int64_t minOpenWriteId;
+  std::string abortedBits;
+
+  _TableValidWriteIds__isset __isset;
+
+  void __set_fullTableName(const std::string& val);
+
+  void __set_writeIdHighWaterMark(const int64_t val);
+
+  void __set_invalidWriteIds(const std::vector<int64_t> & val);
+
+  void __set_minOpenWriteId(const int64_t val);
+
+  void __set_abortedBits(const std::string& val);
+
+  bool operator == (const TableValidWriteIds & rhs) const
+  {
+    if (!(fullTableName == rhs.fullTableName))
+      return false;
+    if (!(writeIdHighWaterMark == rhs.writeIdHighWaterMark))
+      return false;
+    if (!(invalidWriteIds == rhs.invalidWriteIds))
+      return false;
+    if (__isset.minOpenWriteId != rhs.__isset.minOpenWriteId)
+      return false;
+    else if (__isset.minOpenWriteId && !(minOpenWriteId == rhs.minOpenWriteId))
+      return false;
+    if (!(abortedBits == rhs.abortedBits))
+      return false;
+    return true;
+  }
+  bool operator != (const TableValidWriteIds &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TableValidWriteIds & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(TableValidWriteIds &a, TableValidWriteIds &b);
+
+inline std::ostream& operator<<(std::ostream& out, const TableValidWriteIds& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class GetValidWriteIdsResponse {
+ public:
+
+  GetValidWriteIdsResponse(const GetValidWriteIdsResponse&);
+  GetValidWriteIdsResponse& operator=(const GetValidWriteIdsResponse&);
+  GetValidWriteIdsResponse() {
+  }
+
+  virtual ~GetValidWriteIdsResponse() throw();
+  std::vector<TableValidWriteIds>  tblValidWriteIds;
+
+  void __set_tblValidWriteIds(const std::vector<TableValidWriteIds> & val);
+
+  bool operator == (const GetValidWriteIdsResponse & rhs) const
+  {
+    if (!(tblValidWriteIds == rhs.tblValidWriteIds))
+      return false;
+    return true;
+  }
+  bool operator != (const GetValidWriteIdsResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetValidWriteIdsResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetValidWriteIdsResponse &a, GetValidWriteIdsResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetValidWriteIdsResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class AllocateTableWriteIdsRequest {
+ public:
+
+  AllocateTableWriteIdsRequest(const AllocateTableWriteIdsRequest&);
+  AllocateTableWriteIdsRequest& operator=(const AllocateTableWriteIdsRequest&);
+  AllocateTableWriteIdsRequest() : dbName(), tableName() {
+  }
+
+  virtual ~AllocateTableWriteIdsRequest() throw();
+  std::vector<int64_t>  txnIds;
+  std::string dbName;
+  std::string tableName;
+
+  void __set_txnIds(const std::vector<int64_t> & val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tableName(const std::string& val);
+
+  bool operator == (const AllocateTableWriteIdsRequest & rhs) const
+  {
+    if (!(txnIds == rhs.txnIds))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tableName == rhs.tableName))
+      return false;
+    return true;
+  }
+  bool operator != (const AllocateTableWriteIdsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AllocateTableWriteIdsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AllocateTableWriteIdsRequest &a, AllocateTableWriteIdsRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const AllocateTableWriteIdsRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class TxnToWriteId {
+ public:
+
+  TxnToWriteId(const TxnToWriteId&);
+  TxnToWriteId& operator=(const TxnToWriteId&);
+  TxnToWriteId() : txnId(0), writeId(0) {
+  }
+
+  virtual ~TxnToWriteId() throw();
+  int64_t txnId;
+  int64_t writeId;
+
+  void __set_txnId(const int64_t val);
+
+  void __set_writeId(const int64_t val);
+
+  bool operator == (const TxnToWriteId & rhs) const
+  {
+    if (!(txnId == rhs.txnId))
+      return false;
+    if (!(writeId == rhs.writeId))
+      return false;
+    return true;
+  }
+  bool operator != (const TxnToWriteId &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TxnToWriteId & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(TxnToWriteId &a, TxnToWriteId &b);
+
+inline std::ostream& operator<<(std::ostream& out, const TxnToWriteId& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class AllocateTableWriteIdsResponse {
+ public:
+
+  AllocateTableWriteIdsResponse(const AllocateTableWriteIdsResponse&);
+  AllocateTableWriteIdsResponse& operator=(const AllocateTableWriteIdsResponse&);
+  AllocateTableWriteIdsResponse() {
+  }
+
+  virtual ~AllocateTableWriteIdsResponse() throw();
+  std::vector<TxnToWriteId>  txnToWriteIds;
+
+  void __set_txnToWriteIds(const std::vector<TxnToWriteId> & val);
+
+  bool operator == (const AllocateTableWriteIdsResponse & rhs) const
+  {
+    if (!(txnToWriteIds == rhs.txnToWriteIds))
+      return false;
+    return true;
+  }
+  bool operator != (const AllocateTableWriteIdsResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AllocateTableWriteIdsResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AllocateTableWriteIdsResponse &a, AllocateTableWriteIdsResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const AllocateTableWriteIdsResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
 typedef struct _LockComponent__isset {
   _LockComponent__isset() : tablename(false), partitionname(false), operationType(true), isAcid(true), isDynamicPartitionWrite(true) {}
   bool tablename :1;
@@ -7025,13 +7325,14 @@ class AddDynamicPartitions {
 
   AddDynamicPartitions(const AddDynamicPartitions&);
   AddDynamicPartitions& operator=(const AddDynamicPartitions&);
-  AddDynamicPartitions() : txnid(0), dbname(), tablename(), operationType((DataOperationType::type)5) {
+  AddDynamicPartitions() : txnid(0), writeid(0), dbname(), tablename(), operationType((DataOperationType::type)5) {
     operationType = (DataOperationType::type)5;
 
   }
 
   virtual ~AddDynamicPartitions() throw();
   int64_t txnid;
+  int64_t writeid;
   std::string dbname;
   std::string tablename;
   std::vector<std::string>  partitionnames;
@@ -7040,6 +7341,8 @@ class AddDynamicPartitions {
   _AddDynamicPartitions__isset __isset;
 
   void __set_txnid(const int64_t val);
+
+  void __set_writeid(const int64_t val);
 
   void __set_dbname(const std::string& val);
 
@@ -7052,6 +7355,8 @@ class AddDynamicPartitions {
   bool operator == (const AddDynamicPartitions & rhs) const
   {
     if (!(txnid == rhs.txnid))
+      return false;
+    if (!(writeid == rhs.writeid))
       return false;
     if (!(dbname == rhs.dbname))
       return false;

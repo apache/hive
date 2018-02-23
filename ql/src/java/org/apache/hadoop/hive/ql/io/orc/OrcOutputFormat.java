@@ -204,20 +204,20 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
     }
 
     @Override
-    public void insert(long currentTransaction, Object row) throws IOException {
-      out.println("insert " + path + " currTxn: " + currentTransaction +
+    public void insert(long currentWriteId, Object row) throws IOException {
+      out.println("insert " + path + " currWriteId: " + currentWriteId +
           " obj: " + stringifyObject(row, inspector));
     }
 
     @Override
-    public void update(long currentTransaction, Object row) throws IOException {
-      out.println("update " + path + " currTxn: " + currentTransaction +
+    public void update(long currentWriteId, Object row) throws IOException {
+      out.println("update " + path + " currWriteId: " + currentWriteId +
           " obj: " + stringifyObject(row, inspector));
     }
 
     @Override
-    public void delete(long currentTransaction, Object row) throws IOException {
-      out.println("delete " + path + " currTxn: " + currentTransaction + " obj: " + row);
+    public void delete(long currentWriteId, Object row) throws IOException {
+      out.println("delete " + path + " currWriteId: " + currentWriteId + " obj: " + row);
     }
 
     @Override
@@ -307,7 +307,7 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
         watcher.addKey(
             ((IntWritable) orc.getFieldValue(OrcRecordUpdater.OPERATION)).get(),
             ((LongWritable)
-                orc.getFieldValue(OrcRecordUpdater.ORIGINAL_TRANSACTION)).get(),
+                orc.getFieldValue(OrcRecordUpdater.ORIGINAL_WRITEID)).get(),
             ((IntWritable) orc.getFieldValue(OrcRecordUpdater.BUCKET)).get(),
             ((LongWritable) orc.getFieldValue(OrcRecordUpdater.ROW_ID)).get());
         writer.addRow(w);

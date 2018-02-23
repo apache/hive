@@ -39,7 +39,7 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
   private boolean inheritTableSpecs = true; //For partitions, flag controlling whether the current
                                             //table specs are to be used
   private int stmtId;
-  private Long currentTransactionId;
+  private Long currentWriteId;
   private boolean isInsertOverwrite;
 
   // TODO: the below seem like they should just be combined into partitionDesc
@@ -71,7 +71,7 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
     this.dpCtx = o.dpCtx;
     this.lbCtx = o.lbCtx;
     this.inheritTableSpecs = o.inheritTableSpecs;
-    this.currentTransactionId = o.currentTransactionId;
+    this.currentWriteId = o.currentWriteId;
     this.table = o.table;
     this.partitionSpec = o.partitionSpec;
   }
@@ -80,13 +80,13 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
       final TableDesc table,
       final Map<String, String> partitionSpec,
       final LoadFileType loadFileType,
-      final AcidUtils.Operation writeType, Long currentTransactionId) {
+      final AcidUtils.Operation writeType, Long currentWriteId) {
     super(sourcePath, writeType);
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       Utilities.FILE_OP_LOGGER.trace("creating part LTD from " + sourcePath + " to "
         + ((table.getProperties() == null) ? "null" : table.getTableName()));
     }
-    init(table, partitionSpec, loadFileType, currentTransactionId);
+    init(table, partitionSpec, loadFileType, currentWriteId);
   }
 
   /**
@@ -95,21 +95,22 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
    * @param table
    * @param partitionSpec
    * @param loadFileType
+   * @param writeId
    */
   public LoadTableDesc(final Path sourcePath,
                        final TableDesc table,
                        final Map<String, String> partitionSpec,
                        final LoadFileType loadFileType,
-                       final Long txnId) {
-    this(sourcePath, table, partitionSpec, loadFileType, AcidUtils.Operation.NOT_ACID, txnId);
+                       final Long writeId) {
+    this(sourcePath, table, partitionSpec, loadFileType, AcidUtils.Operation.NOT_ACID, writeId);
   }
 
   public LoadTableDesc(final Path sourcePath,
       final TableDesc table,
       final Map<String, String> partitionSpec,
-      final AcidUtils.Operation writeType, Long currentTransactionId) {
+      final AcidUtils.Operation writeType, Long currentWriteId) {
     this(sourcePath, table, partitionSpec, LoadFileType.REPLACE_ALL,
-            writeType, currentTransactionId);
+            writeType, currentWriteId);
   }
 
   /**
@@ -120,16 +121,16 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
    */
   public LoadTableDesc(final Path sourcePath,
                        final org.apache.hadoop.hive.ql.plan.TableDesc table,
-                       final Map<String, String> partitionSpec, Long txnId) {
+                       final Map<String, String> partitionSpec) {
     this(sourcePath, table, partitionSpec, LoadFileType.REPLACE_ALL,
-      AcidUtils.Operation.NOT_ACID, txnId);
+      AcidUtils.Operation.NOT_ACID, null);
   }
 
   public LoadTableDesc(final Path sourcePath,
       final TableDesc table,
       final DynamicPartitionCtx dpCtx,
       final AcidUtils.Operation writeType,
-      boolean isReplace, Long txnId) {
+      boolean isReplace, Long writeId) {
     super(sourcePath, writeType);
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       Utilities.FILE_OP_LOGGER.trace("creating LTD from " + sourcePath + " to " + table.getTableName());
@@ -137,9 +138,9 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
     this.dpCtx = dpCtx;
     LoadFileType lft = isReplace ?  LoadFileType.REPLACE_ALL :  LoadFileType.OVERWRITE_EXISTING;
     if (dpCtx != null && dpCtx.getPartSpec() != null && partitionSpec == null) {
-      init(table, dpCtx.getPartSpec(), lft, txnId);
+      init(table, dpCtx.getPartSpec(), lft, writeId);
     } else {
-      init(table, new LinkedHashMap<String, String>(), lft, txnId);
+      init(table, new LinkedHashMap<String, String>(), lft, writeId);
     }
   }
 
@@ -147,11 +148,11 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
       final org.apache.hadoop.hive.ql.plan.TableDesc table,
       final Map<String, String> partitionSpec,
       final LoadFileType loadFileType,
-      Long txnId) {
+      Long writeId) {
     this.table = table;
     this.partitionSpec = partitionSpec;
     this.loadFileType = loadFileType;
-    this.currentTransactionId = txnId;
+    this.currentWriteId = writeId;
   }
 
   @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -232,8 +233,8 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
     this.lbCtx = lbCtx;
   }
 
-  public long getTxnId() {
-    return currentTransactionId == null ? 0 : currentTransactionId;
+  public long getWriteId() {
+    return currentWriteId == null ? 0 : currentWriteId;
   }
 
   public int getStmtId() {

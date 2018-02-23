@@ -18,16 +18,17 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.mapred.JobConf;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.mapred.JobConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.Driver;
@@ -138,10 +139,15 @@ public class Worker extends CompactorThread {
         }
 
         final boolean isMajor = ci.isMajorCompaction();
-        final ValidTxnList txns =
-            TxnUtils.createValidCompactTxnList(txnHandler.getOpenTxnsInfo());
-        LOG.debug("ValidCompactTxnList: " + txns.writeToString());
-        txnHandler.setCompactionHighestTxnId(ci, txns.getHighWatermark());
+
+        // Compaction doesn't work under a transaction and hence pass 0 for current txn Id
+        // The response will have one entry per table and hence we get only one OpenWriteIds
+        String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
+        GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName), null);
+        final ValidWriteIdList tblValidWriteIds =
+                TxnUtils.createValidCompactWriteIdList(txnHandler.getValidWriteIds(rqst).getTblValidWriteIds().get(0));
+        LOG.debug("ValidCompactWriteIdList: " + tblValidWriteIds.writeToString());
+        txnHandler.setCompactionHighestWriteId(ci, tblValidWriteIds.getHighWatermark());
         final StringBuilder jobName = new StringBuilder(name);
         jobName.append("-compactor-");
         jobName.append(ci.getFullPartitionName());
@@ -164,14 +170,14 @@ public class Worker extends CompactorThread {
         launchedJob = true;
         try {
           if (runJobAsSelf(runAs)) {
-            mr.run(conf, jobName.toString(), t, sd, txns, ci, su, txnHandler);
+            mr.run(conf, jobName.toString(), t, sd, tblValidWriteIds, ci, su, txnHandler);
           } else {
             UserGroupInformation ugi = UserGroupInformation.createProxyUser(t.getOwner(),
               UserGroupInformation.getLoginUser());
             ugi.doAs(new PrivilegedExceptionAction<Object>() {
               @Override
               public Object run() throws Exception {
-                mr.run(conf, jobName.toString(), t, sd, txns, ci, su, txnHandler);
+                mr.run(conf, jobName.toString(), t, sd, tblValidWriteIds, ci, su, txnHandler);
                 return null;
               }
             });

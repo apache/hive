@@ -48,7 +48,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.permission.FsPermission;
-import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -2267,7 +2267,7 @@ public class TestInputOutputFormat {
     // write the orc file to the mock file system
     Path partDir = new Path(conf.get("mapred.input.dir"));
     OrcRecordUpdater writer = new OrcRecordUpdater(partDir,
-        new AcidOutputFormat.Options(conf).maximumTransactionId(10)
+        new AcidOutputFormat.Options(conf).maximumWriteId(10)
             .writingBase(true).bucket(0).inspector(inspector).finalDestination(partDir));
     for (int i = 0; i < 100; ++i) {
       BigRow row = new BigRow(i);
@@ -2424,7 +2424,7 @@ public class TestInputOutputFormat {
 
     // write a base file in partition 0
     OrcRecordUpdater writer = new OrcRecordUpdater(partDir[0],
-        new AcidOutputFormat.Options(conf).maximumTransactionId(10)
+        new AcidOutputFormat.Options(conf).maximumWriteId(10)
             .writingBase(true).bucket(0).inspector(inspector).finalDestination(partDir[0]));
     for(int i=0; i < 10; ++i) {
       writer.insert(10, new MyRow(i, 2 * i));
@@ -2437,7 +2437,7 @@ public class TestInputOutputFormat {
 
     // write a delta file in partition 0
     writer = new OrcRecordUpdater(partDir[0],
-        new AcidOutputFormat.Options(conf).maximumTransactionId(10)
+        new AcidOutputFormat.Options(conf).maximumWriteId(10)
             .writingBase(true).bucket(1).inspector(inspector).finalDestination(partDir[0]));
     for(int i=10; i < 20; ++i) {
       writer.insert(10, new MyRow(i, 2*i));
@@ -3558,12 +3558,12 @@ public class TestInputOutputFormat {
     }
     writer.close();
 
-    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf).bucket(1).minimumTransactionId(1)
-      .maximumTransactionId(1).inspector(inspector).finalDestination(mockPath);
+    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf).bucket(1).minimumWriteId(1)
+        .maximumWriteId(1).inspector(inspector).finalDestination(mockPath);
     OrcOutputFormat of = new OrcOutputFormat();
     RecordUpdater ru = of.getRecordUpdater(mockPath, options);
     for (int i = 0; i < 10; ++i) {
-      ru.insert(options.getMinimumTransactionId(), new MyRow(i, 2 * i));
+      ru.insert(options.getMinimumWriteId(), new MyRow(i, 2 * i));
     }
     ru.close(false);//this deletes the side file
 
@@ -3638,12 +3638,12 @@ public class TestInputOutputFormat {
     }
     writer.close();
 
-    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf).bucket(1).minimumTransactionId(1)
-      .maximumTransactionId(1).inspector(inspector).finalDestination(mockPath);
+    AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf).bucket(1).minimumWriteId(1)
+        .maximumWriteId(1).inspector(inspector).finalDestination(mockPath);
     OrcOutputFormat of = new OrcOutputFormat();
     RecordUpdater ru = of.getRecordUpdater(mockPath, options);
     for (int i = 0; i < 10; ++i) {
-      ru.insert(options.getMinimumTransactionId(), new MyRow(i, 2 * i));
+      ru.insert(options.getMinimumWriteId(), new MyRow(i, 2 * i));
     }
     ru.close(false);//this deletes the side file
 
@@ -3895,7 +3895,7 @@ public class TestInputOutputFormat {
     long fileLength = fs.getFileStatus(testFilePath).getLen();
 
     // test with same schema with include
-    conf.set(ValidTxnList.VALID_TXNS_KEY, "100:99:");
+    conf.set(ValidWriteIdList.VALID_WRITEIDS_KEY, "tbl:100:99:");
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, "a,b,d");
     conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, "int,struct<c:int>,string");
     conf.set(ColumnProjectionUtils.READ_ALL_COLUMNS, "false");
@@ -3912,7 +3912,7 @@ public class TestInputOutputFormat {
     while (reader.next(id, struct)) {
       assertEquals("id " + record, record, id.getRowId());
       assertEquals("bucket " + record, 0, id.getBucketProperty());
-      assertEquals("trans " + record, 1, id.getTransactionId());
+      assertEquals("writeid " + record, 1, id.getWriteId());
       assertEquals("a " + record,
           42 * record, ((IntWritable) struct.getFieldValue(0)).get());
       assertEquals(null, struct.getFieldValue(1));
@@ -3939,7 +3939,7 @@ public class TestInputOutputFormat {
     while (reader.next(id, struct)) {
       assertEquals("id " + record, record, id.getRowId());
       assertEquals("bucket " + record, 0, id.getBucketProperty());
-      assertEquals("trans " + record, 1, id.getTransactionId());
+      assertEquals("writeid " + record, 1, id.getWriteId());
       assertEquals("a " + record,
           42 * record, ((IntWritable) struct.getFieldValue(0)).get());
       assertEquals(null, struct.getFieldValue(1));

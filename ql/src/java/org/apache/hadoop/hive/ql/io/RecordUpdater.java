@@ -30,27 +30,26 @@ public interface RecordUpdater {
 
   /**
    * Insert a new record into the table.
-   * @param currentTransaction the transaction id of the current transaction.
+   * @param currentWriteId the table write id of the current transaction.
    * @param row the row of data to insert
    * @throws IOException
    */
-  void insert(long currentTransaction,
-              Object row) throws IOException;
+  void insert(long currentWriteId, Object row) throws IOException;
 
   /**
    * Update an old record with a new set of values.
-   * @param currentTransaction the current transaction id
+   * @param currentWriteId the current write id
    * @param row the new values for the row
    * @throws IOException
    */
-  void update(long currentTransaction, Object row) throws IOException;
+  void update(long currentWriteId, Object row) throws IOException;
 
   /**
    * Delete a row from the table.
-   * @param currentTransaction the current transaction id
+   * @param currentWriteId the current write id
    * @throws IOException
    */
-  void delete(long currentTransaction, Object row) throws IOException;
+  void delete(long currentWriteId, Object row) throws IOException;
 
   /**
    * Flush the current set of rows to the underlying file system, so that
