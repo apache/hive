@@ -350,14 +350,14 @@ import org.slf4j.LoggerFactory;
           case 1: // SCHEMA_VERSIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list828 = iprot.readListBegin();
-                struct.schemaVersions = new ArrayList<FindSchemasByColsRespEntry>(_list828.size);
-                FindSchemasByColsRespEntry _elem829;
-                for (int _i830 = 0; _i830 < _list828.size; ++_i830)
+                org.apache.thrift.protocol.TList _list826 = iprot.readListBegin();
+                struct.schemaVersions = new ArrayList<FindSchemasByColsRespEntry>(_list826.size);
+                FindSchemasByColsRespEntry _elem827;
+                for (int _i828 = 0; _i828 < _list826.size; ++_i828)
                 {
-                  _elem829 = new FindSchemasByColsRespEntry();
-                  _elem829.read(iprot);
-                  struct.schemaVersions.add(_elem829);
+                  _elem827 = new FindSchemasByColsRespEntry();
+                  _elem827.read(iprot);
+                  struct.schemaVersions.add(_elem827);
                 }
                 iprot.readListEnd();
               }
@@ -383,9 +383,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(SCHEMA_VERSIONS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.schemaVersions.size()));
-          for (FindSchemasByColsRespEntry _iter831 : struct.schemaVersions)
+          for (FindSchemasByColsRespEntry _iter829 : struct.schemaVersions)
           {
-            _iter831.write(oprot);
+            _iter829.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -416,9 +416,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetSchemaVersions()) {
         {
           oprot.writeI32(struct.schemaVersions.size());
-          for (FindSchemasByColsRespEntry _iter832 : struct.schemaVersions)
+          for (FindSchemasByColsRespEntry _iter830 : struct.schemaVersions)
           {
-            _iter832.write(oprot);
+            _iter830.write(oprot);
           }
         }
       }
@@ -430,14 +430,14 @@ import org.slf4j.LoggerFactory;
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list833 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.schemaVersions = new ArrayList<FindSchemasByColsRespEntry>(_list833.size);
-          FindSchemasByColsRespEntry _elem834;
-          for (int _i835 = 0; _i835 < _list833.size; ++_i835)
+          org.apache.thrift.protocol.TList _list831 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.schemaVersions = new ArrayList<FindSchemasByColsRespEntry>(_list831.size);
+          FindSchemasByColsRespEntry _elem832;
+          for (int _i833 = 0; _i833 < _list831.size; ++_i833)
           {
-            _elem834 = new FindSchemasByColsRespEntry();
-            _elem834.read(iprot);
-            struct.schemaVersions.add(_elem834);
+            _elem832 = new FindSchemasByColsRespEntry();
+            _elem832.read(iprot);
+            struct.schemaVersions.add(_elem832);
           }
         }
         struct.setSchemaVersionsIsSet(true);

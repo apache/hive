@@ -113,7 +113,8 @@ POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=0).value SIMPLE [(src)src.
 POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1 PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 2 items
-#### A masked pattern was here ####
+-rw-r--r--   3 ### USER ### ### GROUP ###        738 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       1041 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
@@ -164,7 +165,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-#### A masked pattern was here ####
+          destination: hdfs://### HDFS PATH ###
 
   Stage: Stage-0
     Move Operator
@@ -217,7 +218,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-#### A masked pattern was here ####
+          destination: hdfs://### HDFS PATH ###
 
 PREHOOK: query: INSERT OVERWRITE TABLE orcfile_merge1b PARTITION (ds='1', part)
     SELECT key, value, PMOD(HASH(key), 2) as part
@@ -237,7 +238,7 @@ POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=0).value SIMPLE [(src)src
 POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1b PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 1 items
-#### A masked pattern was here ####
+-rw-r--r--   3 ### USER ### ### GROUP ###       1344 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: EXPLAIN
     INSERT OVERWRITE TABLE orcfile_merge1c PARTITION (ds='1', part)
         SELECT key, value, PMOD(HASH(key), 2) as part
@@ -288,7 +289,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-#### A masked pattern was here ####
+          destination: hdfs://### HDFS PATH ###
 
   Stage: Stage-0
     Move Operator
@@ -333,7 +334,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-#### A masked pattern was here ####
+          destination: hdfs://### HDFS PATH ###
 
 PREHOOK: query: INSERT OVERWRITE TABLE orcfile_merge1c PARTITION (ds='1', part)
     SELECT key, value, PMOD(HASH(key), 2) as part
@@ -353,7 +354,7 @@ POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=0).value SIMPLE [(src)src
 POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: orcfile_merge1c PARTITION(ds=1,part=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 Found 1 items
-#### A masked pattern was here ####
+-rw-r--r--   3 ### USER ### ### GROUP ###       1648 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM orcfile_merge1 WHERE ds='1'
@@ -362,7 +363,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orcfile_merge1
 PREHOOK: Input: default@orcfile_merge1@ds=1/part=0
 PREHOOK: Input: default@orcfile_merge1@ds=1/part=1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM orcfile_merge1 WHERE ds='1'
@@ -371,7 +372,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orcfile_merge1
 POSTHOOK: Input: default@orcfile_merge1@ds=1/part=0
 POSTHOOK: Input: default@orcfile_merge1@ds=1/part=1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -21975308766
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
@@ -381,7 +382,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orcfile_merge1b
 PREHOOK: Input: default@orcfile_merge1b@ds=1/part=0
 PREHOOK: Input: default@orcfile_merge1b@ds=1/part=1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM orcfile_merge1b WHERE ds='1'
@@ -390,7 +391,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orcfile_merge1b
 POSTHOOK: Input: default@orcfile_merge1b@ds=1/part=0
 POSTHOOK: Input: default@orcfile_merge1b@ds=1/part=1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -21975308766
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
@@ -400,7 +401,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@orcfile_merge1c
 PREHOOK: Input: default@orcfile_merge1c@ds=1/part=0
 PREHOOK: Input: default@orcfile_merge1c@ds=1/part=1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c)
     FROM orcfile_merge1c WHERE ds='1'
@@ -409,46 +410,46 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orcfile_merge1c
 POSTHOOK: Input: default@orcfile_merge1c@ds=1/part=0
 POSTHOOK: Input: default@orcfile_merge1c@ds=1/part=1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -21975308766
 PREHOOK: query: select count(*) from orcfile_merge1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orcfile_merge1
 PREHOOK: Input: default@orcfile_merge1@ds=1/part=0
 PREHOOK: Input: default@orcfile_merge1@ds=1/part=1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from orcfile_merge1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orcfile_merge1
 POSTHOOK: Input: default@orcfile_merge1@ds=1/part=0
 POSTHOOK: Input: default@orcfile_merge1@ds=1/part=1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: select count(*) from orcfile_merge1b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orcfile_merge1b
 PREHOOK: Input: default@orcfile_merge1b@ds=1/part=0
 PREHOOK: Input: default@orcfile_merge1b@ds=1/part=1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from orcfile_merge1b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orcfile_merge1b
 POSTHOOK: Input: default@orcfile_merge1b@ds=1/part=0
 POSTHOOK: Input: default@orcfile_merge1b@ds=1/part=1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: select count(*) from orcfile_merge1c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orcfile_merge1c
 PREHOOK: Input: default@orcfile_merge1c@ds=1/part=0
 PREHOOK: Input: default@orcfile_merge1c@ds=1/part=1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from orcfile_merge1c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orcfile_merge1c
 POSTHOOK: Input: default@orcfile_merge1c@ds=1/part=0
 POSTHOOK: Input: default@orcfile_merge1c@ds=1/part=1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 500
 PREHOOK: query: DROP TABLE orcfile_merge1
 PREHOOK: type: DROPTABLE

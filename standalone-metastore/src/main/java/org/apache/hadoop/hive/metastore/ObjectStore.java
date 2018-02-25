@@ -68,7 +68,6 @@ import javax.jdo.identity.IntIdentity;
 import javax.sql.DataSource;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.hadoop.classification.InterfaceAudience;
@@ -80,10 +79,10 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.MetaStoreDirectSql.SqlFilterForPushdown;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -140,11 +139,14 @@ import org.apache.hadoop.hive.metastore.api.UnknownPartitionException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
+import org.apache.hadoop.hive.metastore.api.WMNullablePool;
+import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
@@ -153,6 +155,7 @@ import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MConstraint;
+import org.apache.hadoop.hive.metastore.model.MCreationMetadata;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.model.MDelegationToken;
@@ -197,11 +200,9 @@ import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
-import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
-import org.apache.thrift.TSerializer;
-import org.apache.thrift.protocol.TJSONProtocol;
 import org.datanucleus.AbstractNucleusContext;
 import org.datanucleus.ClassLoaderResolver;
 import org.datanucleus.ClassLoaderResolverImpl;
@@ -1132,6 +1133,11 @@ public class ObjectStore implements RawStore, Configurable {
       MTable mtbl = convertToMTable(tbl);
       pm.makePersistent(mtbl);
 
+      if (tbl.getCreationMetadata() != null) {
+        MCreationMetadata mcm = convertToMCreationMetadata(tbl.getCreationMetadata());
+        pm.makePersistent(mcm);
+      }
+
       PrincipalPrivilegeSet principalPrivs = tbl.getPrivileges();
       List<Object> toPersistPrivObjs = new ArrayList<>();
       if (principalPrivs != null) {
@@ -1155,7 +1161,7 @@ public class ObjectStore implements RawStore, Configurable {
         if (MetaStoreUtils.isMaterializedViewTable(tbl)) {
           // Add to the invalidation cache
           MaterializationsInvalidationCache.get().createMaterializedView(
-              tbl, tbl.getCreationMetadata().keySet());
+              tbl, tbl.getCreationMetadata().getTablesUsed());
         }
       }
     }
@@ -1241,6 +1247,12 @@ public class ObjectStore implements RawStore, Configurable {
         }
 
         preDropStorageDescriptor(tbl.getSd());
+
+        if (materializedView) {
+          dropCreationMetadata(
+              tbl.getDatabase().getName(), tbl.getTableName());
+        }
+
         // then remove the table
         pm.deletePersistentAll(tbl);
       }
@@ -1252,6 +1264,25 @@ public class ObjectStore implements RawStore, Configurable {
         if (materializedView) {
           MaterializationsInvalidationCache.get().dropMaterializedView(dbName, tableName);
         }
+      }
+    }
+    return success;
+  }
+
+  private boolean dropCreationMetadata(String dbName, String tableName) throws MetaException,
+      NoSuchObjectException, InvalidObjectException, InvalidInputException {
+    boolean success = false;
+    try {
+      openTransaction();
+      MCreationMetadata mcm = getCreationMetadata(dbName, tableName);
+      pm.retrieve(mcm);
+      if (mcm != null) {
+        pm.deletePersistentAll(mcm);
+      }
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
       }
     }
     return success;
@@ -1309,6 +1340,11 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       tbl = convertToTable(getMTable(dbName, tableName));
+      // Retrieve creation metadata if needed
+      if (tbl != null && TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType())) {
+        tbl.setCreationMetadata(
+            convertToCreationMetadata(getCreationMetadata(dbName, tableName)));
+      }
       commited = commitTransaction();
     } finally {
       if (!commited) {
@@ -1565,6 +1601,25 @@ public class ObjectStore implements RawStore, Configurable {
     return nmtbl;
   }
 
+  private MCreationMetadata getCreationMetadata(String dbName, String tblName) {
+    boolean commited = false;
+    MCreationMetadata mcm = null;
+    Query query = null;
+    try {
+      openTransaction();
+      query = pm.newQuery(
+          MCreationMetadata.class, "tblName == table && dbName == db");
+      query.declareParameters("java.lang.String table, java.lang.String db");
+      query.setUnique(true);
+      mcm = (MCreationMetadata) query.execute(tblName, dbName);
+      pm.retrieve(mcm);
+      commited = commitTransaction();
+    } finally {
+      rollbackAndCleanup(commited, query);
+    }
+    return mcm;
+  }
+
   private MTable getMTable(String db, String table) {
     AttachedMTableInfo nmtbl = getMTable(db, table, false);
     return nmtbl.mtbl;
@@ -1641,7 +1696,6 @@ public class ObjectStore implements RawStore, Configurable {
         .getRetention(), convertToStorageDescriptor(mtbl.getSd()),
         convertToFieldSchemas(mtbl.getPartitionKeys()), convertMap(mtbl.getParameters()),
         mtbl.getViewOriginalText(), mtbl.getViewExpandedText(), tableType);
-    t.setCreationMetadata(convertToCreationMetadata(mtbl.getCreationMetadata()));
     t.setRewriteEnabled(mtbl.isRewriteEnabled());
     return t;
   }
@@ -1681,7 +1735,7 @@ public class ObjectStore implements RawStore, Configurable {
         .getCreateTime(), tbl.getLastAccessTime(), tbl.getRetention(),
         convertToMFieldSchemas(tbl.getPartitionKeys()), tbl.getParameters(),
         tbl.getViewOriginalText(), tbl.getViewExpandedText(), tbl.isRewriteEnabled(),
-        convertToMCreationMetadata(tbl.getCreationMetadata()), tableType);
+        tableType);
   }
 
   private List<MFieldSchema> convertToMFieldSchemas(List<FieldSchema> keys) {
@@ -1897,56 +1951,37 @@ public class ObjectStore implements RawStore, Configurable {
             .getSkewedColValueLocationMaps()), sd.isStoredAsSubDirectories());
   }
 
-  private Map<String, String> convertToMCreationMetadata(
-      Map<String, BasicTxnInfo> m) throws MetaException {
+  private MCreationMetadata convertToMCreationMetadata(
+      CreationMetadata m) throws MetaException {
     if (m == null) {
       return null;
     }
-    Map<String, String> r = new HashMap<>();
-    for (Entry<String, BasicTxnInfo> e : m.entrySet()) {
-      r.put(e.getKey(), serializeBasicTransactionInfo(e.getValue()));
+    Set<MTable> tablesUsed = new HashSet<>();
+    for (String fullyQualifiedName : m.getTablesUsed()) {
+      String[] names =  fullyQualifiedName.split("\\.");
+      tablesUsed.add(getMTable(names[0], names[1], false).mtbl);
     }
-    return r;
+    return new MCreationMetadata(m.getDbName(), m.getTblName(),
+        tablesUsed, m.getValidTxnList());
   }
 
-  private Map<String, BasicTxnInfo> convertToCreationMetadata(
-      Map<String, String> m) throws MetaException {
-    if (m == null) {
+  private CreationMetadata convertToCreationMetadata(
+      MCreationMetadata s) throws MetaException {
+    if (s == null) {
       return null;
     }
-    Map<String, BasicTxnInfo> r = new HashMap<>();
-    for (Entry<String, String> e : m.entrySet()) {
-      r.put(e.getKey(), deserializeBasicTransactionInfo(e.getValue()));
+    Set<String> tablesUsed = new HashSet<>();
+    for (MTable mtbl : s.getTables()) {
+      tablesUsed.add(
+          Warehouse.getQualifiedName(
+              mtbl.getDatabase().getName(), mtbl.getTableName()));
+    }
+    CreationMetadata r = new CreationMetadata(
+        s.getDbName(), s.getTblName(), tablesUsed);
+    if (s.getTxnList() != null) {
+      r.setValidTxnList(s.getTxnList());
     }
     return r;
-  }
-
-  private String serializeBasicTransactionInfo(BasicTxnInfo entry)
-      throws MetaException {
-    if (entry.isIsnull()) {
-      return "";
-    }
-    try {
-      TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-      return serializer.toString(entry, "UTF-8");
-    } catch (TException e) {
-      throw new MetaException("Error serializing object " + entry + ": " + e.toString());
-    }
-  }
-
-  private BasicTxnInfo deserializeBasicTransactionInfo(String s)
-      throws MetaException {
-    if (s.equals("")) {
-      return new BasicTxnInfo(true);
-    }
-    try {
-      TDeserializer deserializer = new TDeserializer(new TJSONProtocol.Factory());
-      BasicTxnInfo r = new BasicTxnInfo();
-      deserializer.deserialize(r, s, "UTF-8");
-      return r;
-    } catch (TException e) {
-      throw new MetaException("Error deserializing object " + s + ": " + e.toString());
-    }
   }
 
   @Override
@@ -2743,6 +2778,9 @@ public class ObjectStore implements RawStore, Configurable {
 
   private List<String> getPartitionNamesNoTxn(String dbName, String tableName, short max) {
     List<String> pns = new ArrayList<>();
+    if (max == 0) {
+      return pns;
+    }
     dbName = normalizeIdentifier(dbName);
     tableName = normalizeIdentifier(tableName);
     Query query =
@@ -2751,6 +2789,7 @@ public class ObjectStore implements RawStore, Configurable {
             + "order by partitionName asc");
     query.declareParameters("java.lang.String t1, java.lang.String t2");
     query.setResult("partitionName");
+
     if (max > 0) {
       query.setRange(0, max);
     }
@@ -3715,9 +3754,14 @@ public class ObjectStore implements RawStore, Configurable {
       oldt.setViewOriginalText(newt.getViewOriginalText());
       oldt.setViewExpandedText(newt.getViewExpandedText());
       oldt.setRewriteEnabled(newt.isRewriteEnabled());
-      registerCreationSignature = !MapUtils.isEmpty(newt.getCreationMetadata());
+      registerCreationSignature = newTable.getCreationMetadata() != null;
       if (registerCreationSignature) {
-        oldt.setCreationMetadata(newt.getCreationMetadata());
+        // Update creation metadata
+        MCreationMetadata newMcm = convertToMCreationMetadata(
+            newTable.getCreationMetadata());
+        MCreationMetadata mcm = getCreationMetadata(dbname, name);
+        mcm.setTables(newMcm.getTables());
+        mcm.setTxnList(newMcm.getTxnList());
       }
 
       // commit the changes
@@ -3730,7 +3774,7 @@ public class ObjectStore implements RawStore, Configurable {
             registerCreationSignature) {
           // Add to the invalidation cache if the creation signature has changed
           MaterializationsInvalidationCache.get().alterMaterializedView(
-              newTable, newTable.getCreationMetadata().keySet());
+              newTable, newTable.getCreationMetadata().getTablesUsed());
         }
       }
     }
@@ -7983,24 +8027,25 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public Map<String, List<ColumnStatisticsObj>> getColStatsForTablePartitions(String dbName,
-      String tableName) throws MetaException, NoSuchObjectException {
-    final boolean enableBitVector = MetastoreConf.getBoolVar(getConf(), ConfVars.STATS_FETCH_BITVECTOR);
-    return new GetHelper<Map<String, List<ColumnStatisticsObj>>>(dbName, tableName, true, false) {
+  public List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String dbName)
+      throws MetaException, NoSuchObjectException {
+    final boolean enableBitVector =
+        MetastoreConf.getBoolVar(getConf(), ConfVars.STATS_FETCH_BITVECTOR);
+    return new GetHelper<List<ColStatsObjWithSourceInfo>>(dbName, null, true, false) {
       @Override
-      protected Map<String, List<ColumnStatisticsObj>> getSqlResult(
-          GetHelper<Map<String, List<ColumnStatisticsObj>>> ctx) throws MetaException {
-        return directSql.getColStatsForTablePartitions(dbName, tblName, enableBitVector);
+      protected List<ColStatsObjWithSourceInfo> getSqlResult(
+          GetHelper<List<ColStatsObjWithSourceInfo>> ctx) throws MetaException {
+        return directSql.getColStatsForAllTablePartitions(dbName, enableBitVector);
       }
 
       @Override
-      protected Map<String, List<ColumnStatisticsObj>> getJdoResult(
-          GetHelper<Map<String, List<ColumnStatisticsObj>>> ctx) throws MetaException,
-          NoSuchObjectException {
+      protected List<ColStatsObjWithSourceInfo> getJdoResult(
+          GetHelper<List<ColStatsObjWithSourceInfo>> ctx)
+          throws MetaException, NoSuchObjectException {
         // This is fast path for query optimizations, if we can find this info
         // quickly using directSql, do it. No point in failing back to slow path
         // here.
-        throw new MetaException("Jdo path is not implemented for stats aggr.");
+        throw new MetaException("Jdo path is not implemented for getPartitionColStatsForDatabase.");
       }
 
       @Override
@@ -10304,7 +10349,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public WMFullResourcePlan alterResourcePlan(String name, WMResourcePlan changes,
+  public WMFullResourcePlan alterResourcePlan(String name, WMNullableResourcePlan changes,
       boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
     throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException, MetaException {
     name = name == null ? null : normalizeIdentifier(name);
@@ -10335,14 +10380,15 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private WMFullResourcePlan handleSimpleAlter(String name, WMResourcePlan changes,
+  private WMFullResourcePlan handleSimpleAlter(String name, WMNullableResourcePlan changes,
       boolean canActivateDisabled, boolean canDeactivate)
           throws InvalidOperationException, NoSuchObjectException, MetaException {
     MWMResourcePlan plan = name == null ? getActiveMWMResourcePlan()
         : getMWMResourcePlan(name, !changes.isSetStatus());
     boolean hasNameChange = changes.isSetName() && !changes.getName().equals(name);
     // Verify that field changes are consistent with what Hive does. Note: we could handle this.
-    if (changes.isSetQueryParallelism() || changes.isSetDefaultPoolPath() || hasNameChange) {
+    if (changes.isSetIsSetQueryParallelism()
+        || changes.isSetIsSetDefaultPoolPath() || hasNameChange) {
       if (changes.isSetStatus()) {
         throw new InvalidOperationException("Cannot change values during status switch.");
       } else if (plan.getStatus() != MWMResourcePlan.Status.DISABLED) {
@@ -10360,15 +10406,23 @@ public class ObjectStore implements RawStore, Configurable {
         plan.setName(newName);
       }
     }
-    if (changes.isSetQueryParallelism()) {
-      if (changes.getQueryParallelism() <= 0) {
-        throw new InvalidOperationException("queryParallelism should be positive.");
+    if (changes.isSetIsSetQueryParallelism() && changes.isIsSetQueryParallelism()) {
+      if (changes.isSetQueryParallelism()) {
+        if (changes.getQueryParallelism() <= 0) {
+          throw new InvalidOperationException("queryParallelism should be positive.");
+        }
+        plan.setQueryParallelism(changes.getQueryParallelism());
+      } else {
+        plan.setQueryParallelism(null);
       }
-      plan.setQueryParallelism(changes.getQueryParallelism());
     }
-    if (changes.isSetDefaultPoolPath()) {
-      MWMPool pool = getPool(plan, changes.getDefaultPoolPath());
-      plan.setDefaultPool(pool);
+    if (changes.isSetIsSetDefaultPoolPath() && changes.isIsSetDefaultPoolPath()) {
+      if (changes.isSetDefaultPoolPath()) {
+        MWMPool pool = getPool(plan, changes.getDefaultPoolPath());
+        plan.setDefaultPool(pool);
+      } else {
+        plan.setDefaultPool(null);
+      }
     }
 
     // Handle the status change.
@@ -10379,7 +10433,7 @@ public class ObjectStore implements RawStore, Configurable {
     return null;
   }
 
-  private WMFullResourcePlan handleAlterReplace(String name, WMResourcePlan changes)
+  private WMFullResourcePlan handleAlterReplace(String name, WMNullableResourcePlan changes)
           throws InvalidOperationException, NoSuchObjectException, MetaException {
     // Verify that field changes are consistent with what Hive does. Note: we could handle this.
     if (changes.isSetQueryParallelism() || changes.isSetDefaultPoolPath()) {
@@ -10517,10 +10571,10 @@ public class ObjectStore implements RawStore, Configurable {
     if (doValidate) {
       // Note: this may use additional inputs from the caller, e.g. maximum query
       // parallelism in the cluster based on physical constraints.
-      List<String> planErrors = getResourcePlanErrors(mResourcePlan);
-      if (!planErrors.isEmpty()) {
+      WMValidateResourcePlanResponse response = getResourcePlanErrors(mResourcePlan);
+      if (!response.getErrors().isEmpty()) {
         throw new InvalidOperationException(
-            "ResourcePlan: " + name + " is invalid: " + planErrors);
+            "ResourcePlan: " + name + " is invalid: " + response.getErrors());
       }
     }
     if (doActivate) {
@@ -10553,8 +10607,6 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private static class PoolData {
-    int queryParallelism = 0;
-    int totalChildrenQueryParallelism = 0;
     double totalChildrenAllocFraction = 0;
     boolean found = false;
     boolean hasChildren = false;
@@ -10569,12 +10621,16 @@ public class ObjectStore implements RawStore, Configurable {
     return poolData;
   }
 
-  private List<String> getResourcePlanErrors(MWMResourcePlan mResourcePlan) {
-    List<String> errors = new ArrayList<>();
-    if (mResourcePlan.getQueryParallelism() != null && mResourcePlan.getQueryParallelism() < 1) {
-      errors.add("Query parallelism should for resource plan be positive. Got: " +
-        mResourcePlan.getQueryParallelism());
+  private WMValidateResourcePlanResponse getResourcePlanErrors(MWMResourcePlan mResourcePlan) {
+    WMValidateResourcePlanResponse response = new WMValidateResourcePlanResponse();
+    response.setErrors(new ArrayList());
+    response.setWarnings(new ArrayList());
+    Integer rpParallelism = mResourcePlan.getQueryParallelism();
+    if (rpParallelism != null && rpParallelism < 1) {
+      response.addToErrors("Query parallelism should for resource plan be positive. Got: " +
+          rpParallelism);
     }
+    int totalQueryParallelism = 0;
     Map<String, PoolData> poolInfo = new HashMap<>();
     for (MWMPool pool : mResourcePlan.getPools()) {
       PoolData currentPoolData = getPoolData(poolInfo, pool.getPath());
@@ -10584,45 +10640,54 @@ public class ObjectStore implements RawStore, Configurable {
       parentPoolData.hasChildren = true;
       parentPoolData.totalChildrenAllocFraction += pool.getAllocFraction();
       if (pool.getQueryParallelism() != null && pool.getQueryParallelism() < 1) {
-        errors.add("Invalid query parallelism for pool: " + pool.getPath());
+        response.addToErrors("Invalid query parallelism for pool: " + pool.getPath());
       } else {
-        currentPoolData.queryParallelism = pool.getQueryParallelism();
-        parentPoolData.totalChildrenQueryParallelism += pool.getQueryParallelism();
+        totalQueryParallelism += pool.getQueryParallelism();
       }
       if (!MetaStoreUtils.isValidSchedulingPolicy(pool.getSchedulingPolicy())) {
-        errors.add("Invalid scheduling policy "
-            + pool.getSchedulingPolicy() + " for pool: " + pool.getPath());
+        response.addToErrors("Invalid scheduling policy " + pool.getSchedulingPolicy() +
+            " for pool: " + pool.getPath());
+      }
+    }
+    if (rpParallelism != null) {
+      if (rpParallelism < totalQueryParallelism) {
+        response.addToErrors("Sum of all pools' query parallelism: " + totalQueryParallelism  +
+            " exceeds resource plan query parallelism: " + rpParallelism);
+      } else if (rpParallelism != totalQueryParallelism) {
+        response.addToWarnings("Sum of all pools' query parallelism: " + totalQueryParallelism  +
+            " is less than resource plan query parallelism: " + rpParallelism);
       }
     }
     for (Entry<String, PoolData> entry : poolInfo.entrySet()) {
-      PoolData poolData = entry.getValue();
+      final PoolData poolData = entry.getValue();
+      final boolean isRoot = entry.getKey().isEmpty();
       // Special case for root parent
-      if (entry.getKey().equals("")) {
+      if (isRoot) {
         poolData.found = true;
-        poolData.queryParallelism = mResourcePlan.getQueryParallelism() == null ?
-            poolData.totalChildrenQueryParallelism : mResourcePlan.getQueryParallelism();
-      }
-      if (!poolData.found) {
-        errors.add("Pool does not exists but has children: " + entry.getKey());
-      }
-      if (poolData.hasChildren) {
-        if (Math.abs(1.0 - poolData.totalChildrenAllocFraction) > 0.001) {
-          errors.add("Sum of children pools' alloc fraction should be equal 1.0 got: " +
+        if (!poolData.hasChildren) {
+          response.addToErrors("Root has no children");
+        } else if (Math.abs(1.0 - poolData.totalChildrenAllocFraction) > 0.001) {
+          response.addToErrors("Sum of root children pools' alloc fraction should be 1.0 got: " +
               poolData.totalChildrenAllocFraction + " for pool: " + entry.getKey());
         }
-        if (poolData.queryParallelism != poolData.totalChildrenQueryParallelism) {
-          errors.add("Sum of children pools' query parallelism: " +
-              poolData.totalChildrenQueryParallelism + " is not equal to pool parallelism: " +
-              poolData.queryParallelism + " for pool: " + entry.getKey());
+      }
+      if (!poolData.found) {
+        response.addToErrors("Pool does not exists but has children: " + entry.getKey());
+      }
+      if (poolData.hasChildren) {
+        if (!isRoot && 1.0 <= poolData.totalChildrenAllocFraction) {
+          response.addToErrors("Sum of children pools' alloc fraction should be less than 1 got: "
+              + poolData.totalChildrenAllocFraction + " for pool: " + entry.getKey());
         }
       }
     }
-    // TODO: validate trigger and action expressions. mResourcePlan.getTriggers()
-    return errors;
+    // trigger and action expressions are not validated here, since counters are not
+    // available and grammar check is there in the language itself.
+    return response;
   }
 
   @Override
-  public List<String> validateResourcePlan(String name)
+  public WMValidateResourcePlanResponse validateResourcePlan(String name)
       throws NoSuchObjectException, InvalidObjectException, MetaException {
     name = normalizeIdentifier(name);
     Query query = null;
@@ -10832,7 +10897,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void alterPool(WMPool pool, String poolPath) throws AlreadyExistsException,
+  public void alterPool(WMNullablePool pool, String poolPath) throws AlreadyExistsException,
       NoSuchObjectException, InvalidOperationException, MetaException {
     boolean commited = false;
     try {
@@ -10846,17 +10911,22 @@ public class ObjectStore implements RawStore, Configurable {
       if (pool.isSetQueryParallelism()) {
         mPool.setQueryParallelism(pool.getQueryParallelism());
       }
-      if (pool.isSetSchedulingPolicy()) {
-        String policy = pool.getSchedulingPolicy();
-        if (!MetaStoreUtils.isValidSchedulingPolicy(policy)) {
-          throw new InvalidOperationException("Invalid scheduling policy " + policy);
+      if (pool.isSetIsSetSchedulingPolicy() && pool.isIsSetSchedulingPolicy()) {
+        if (pool.isSetSchedulingPolicy()) {
+          String policy = pool.getSchedulingPolicy();
+          if (!MetaStoreUtils.isValidSchedulingPolicy(policy)) {
+            throw new InvalidOperationException("Invalid scheduling policy " + policy);
+          }
+          mPool.setSchedulingPolicy(pool.getSchedulingPolicy());
+        } else {
+          mPool.setSchedulingPolicy(null);
         }
-        mPool.setSchedulingPolicy(pool.getSchedulingPolicy());
       }
       if (pool.isSetPoolPath() && !pool.getPoolPath().equals(mPool.getPath())) {
         moveDescendents(resourcePlan, mPool.getPath(), pool.getPoolPath());
         mPool.setPath(pool.getPoolPath());
       }
+
       commited = commitTransaction();
     } finally {
       rollbackAndCleanup(commited, (Query)null);

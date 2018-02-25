@@ -20,7 +20,16 @@ package org.apache.hadoop.hive.ql.wm;
  */
 public class VertexCounterLimit implements CounterLimit {
   public enum VertexCounter {
-    TOTAL_TASKS
+    DAG_TOTAL_TASKS,
+    DAG_GROUPED_INPUT_SPLITS,
+    DAG_INPUT_DIRECTORIES,
+    DAG_INPUT_FILES,
+    DAG_RAW_INPUT_SPLITS,
+    VERTEX_TOTAL_TASKS,
+    VERTEX_GROUPED_INPUT_SPLITS,
+    VERTEX_INPUT_DIRECTORIES,
+    VERTEX_INPUT_FILES,
+    VERTEX_RAW_INPUT_SPLITS
   }
 
   private VertexCounter vertexCounter;

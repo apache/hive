@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -35,8 +35,8 @@ class ReaderImpl extends org.apache.hadoop.hive.ql.io.orc.ReaderImpl implements 
 
   @Override
   public EncodedReader encodedReader(Object fileKey, DataCache dataCache, DataReader dataReader,
-      PoolFactory pf, IoTrace trace) throws IOException {
+      PoolFactory pf, IoTrace trace, boolean useCodecPool) throws IOException {
     return new EncodedReaderImpl(fileKey, types, getSchema(), compressionKind, getWriterVersion(),
-        bufferSize, rowIndexStride, dataCache, dataReader, pf, trace);
+        bufferSize, rowIndexStride, dataCache, dataReader, pf, trace, useCodecPool);
   }
 }

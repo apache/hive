@@ -25,8 +25,8 @@
   Non-indexed VARCHAR: 4000 bytes (max length on Oracle 9i/10g/11g)
 
 -->
-<jdo>  
-  <package name="org.apache.hadoop.hive.metastore.model">  
+<jdo>
+  <package name="org.apache.hadoop.hive.metastore.model">
     <class name="MDatabase" identity-type="datastore" table="DBS" detachable="true">  
       <datastore-identity>
         <column name="DB_ID"/>
@@ -185,17 +185,27 @@
       <field name="tableType">
         <column name="TBL_TYPE" length="128" jdbc-type="VARCHAR"/>
       </field>
-      <field name="creationMetadata" table="MV_CREATION_METADATA">
-        <map key-type="java.lang.String" value-type="java.lang.String"/>
+    </class>
+
+    <class name="MCreationMetadata" identity-type="datastore" table="MV_CREATION_METADATA" detachable="true">
+      <datastore-identity>
+        <column name="MV_CREATION_METADATA_ID"/>
+      </datastore-identity>
+      <field name="dbName">
+        <column name="DB_NAME" length="128" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="tblName">
+        <column name="TBL_NAME" length="256" jdbc-type="VARCHAR"/>
+      </field>
+      <field name="tables" table="MV_TABLES_USED">
+        <collection element-type="MTable"/>
         <join>
-          <column name="TBL_ID"/>
+          <column name="MV_CREATION_METADATA_ID"/>
         </join>
-        <key>
-           <column name="TBL_NAME" length="180" jdbc-type="VARCHAR"/>
-        </key>
-        <value>
-           <column name="LAST_TRANSACTION_INFO" jdbc-type="LONGVARCHAR"/>
-        </value>
+        <element column="TBL_ID"/>
+      </field>
+      <field name="txnList">
+        <column name="TXN_LIST" jdbc-type="CLOB" allows-null="true"/>
       </field>
     </class>
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -408,7 +408,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
    */
   private long getMergeSize(FileSystem inpFs, Path dirPath, long avgSize) {
     AverageSize averageSize = getAverageSize(inpFs, dirPath);
-    if (averageSize.getTotalSize() <= 0) {
+    if (averageSize.getTotalSize() < 0) {
       return -1;
     }
 

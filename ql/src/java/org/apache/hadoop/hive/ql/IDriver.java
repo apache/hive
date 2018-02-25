@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -41,15 +41,13 @@ public interface IDriver extends CommandProcessor {
 
   void setOperationId(String guid64);
 
-  void setTryCount(int maxValue);
-
-  CommandProcessorResponse run() throws CommandNeedRetryException;
+  CommandProcessorResponse run();
   @Override
-  CommandProcessorResponse run(String command) throws CommandNeedRetryException;
+  CommandProcessorResponse run(String command);
 
 
   // create some "cover" to the result?
-  boolean getResults(List res) throws IOException, CommandNeedRetryException;
+  boolean getResults(List res) throws IOException;
 
   void setMaxRows(int maxRows);
 

@@ -32,16 +32,6 @@ key                 	string
 value               	string              	                    
 	 	 
 #### A masked pattern was here ####
-from src b 	 	 
-where exists	 	 
-  (select a.key 	 	 
-  from src a 	 	 
-  where b.value = a.value  and a.key = b.key and a.value > 'val_9'), viewExpandedText:select `b`.`key`, `b`.`value` 	 	 
-from `default`.`src` `b` 	 	 
-where exists	 	 
-  (select `a`.`key` 	 	 
-  from `default`.`src` `a` 	 	 
-  where `b`.`value` = `a`.`value`  and `a`.`key` = `b`.`key` and `a`.`value` > 'val_9'), tableType:VIRTUAL_VIEW, rewriteEnabled:false, creationMetadata:{})		 
 PREHOOK: query: select * 
 from cv1 where cv1.key in (select key from cv1 c where c.key > '95')
 PREHOOK: type: QUERY
@@ -95,18 +85,6 @@ key                 	string
 value               	string              	                    
 	 	 
 #### A masked pattern was here ####
-from src b 	 	 
-where b.key not in	 	 
-  (select a.key 	 	 
-  from src a 	 	 
-  where b.value = a.value  and a.key = b.key and a.value > 'val_11'	 	 
-  ), viewExpandedText:select `b`.`key`, `b`.`value` 	 	 
-from `default`.`src` `b` 	 	 
-where `b`.`key` not in	 	 
-  (select `a`.`key` 	 	 
-  from `default`.`src` `a` 	 	 
-  where `b`.`value` = `a`.`value`  and `a`.`key` = `b`.`key` and `a`.`value` > 'val_11'	 	 
-  ), tableType:VIRTUAL_VIEW, rewriteEnabled:false, creationMetadata:{})		 
 PREHOOK: query: explain
 select * 
 from cv2 where cv2.key in (select key from cv2 c where c.key < '11')
@@ -486,14 +464,6 @@ value               	string
 _c2                 	bigint              	                    
 	 	 
 #### A masked pattern was here ####
-from src b	 	 
-where b.key in (select key from src where src.key > '8')	 	 
-group by key, value	 	 
-having count(*) in (select count(*) from src s1 where s1.key > '9' group by s1.key ), viewExpandedText:select `b`.`key`, `b`.`value`, count(*) 	 	 
-from `default`.`src` `b`	 	 
-where `b`.`key` in (select `src`.`key` from `default`.`src` where `src`.`key` > '8')	 	 
-group by `b`.`key`, `b`.`value`	 	 
-having count(*) in (select count(*) from `default`.`src` `s1` where `s1`.`key` > '9' group by `s1`.`key` ), tableType:VIRTUAL_VIEW, rewriteEnabled:false, creationMetadata:{})		 
 PREHOOK: query: select * from cv3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cv3

@@ -1,0 +1,157 @@
+PREHOOK: query: create table student_2_lines(
+name string,
+age int,
+gpa double)
+row format delimited
+fields terminated by '\001'
+stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@student_2_lines
+POSTHOOK: query: create table student_2_lines(
+name string,
+age int,
+gpa double)
+row format delimited
+fields terminated by '\001'
+stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@student_2_lines
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/student_2_lines' OVERWRITE INTO TABLE student_2_lines
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@student_2_lines
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/student_2_lines' OVERWRITE INTO TABLE student_2_lines
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@student_2_lines
+PREHOOK: query: analyze table student_2_lines compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@student_2_lines
+PREHOOK: Output: default@student_2_lines
+POSTHOOK: query: analyze table student_2_lines compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@student_2_lines
+POSTHOOK: Output: default@student_2_lines
+PREHOOK: query: create table insert_10_1 (a float, b int, c timestamp, d binary)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@insert_10_1
+POSTHOOK: query: create table insert_10_1 (a float, b int, c timestamp, d binary)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@insert_10_1
+PREHOOK: query: explain vectorization detail
+insert overwrite table insert_10_1
+    select cast(gpa as float),
+    age,
+    IF(age>40,cast('2011-01-01 01:01:01' as timestamp),NULL),
+    IF(LENGTH(name)>10,cast(name as binary),NULL) from student_2_lines
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+insert overwrite table insert_10_1
+    select cast(gpa as float),
+    age,
+    IF(age>40,cast('2011-01-01 01:01:01' as timestamp),NULL),
+    IF(LENGTH(name)>10,cast(name as binary),NULL) from student_2_lines
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: student_2_lines
+                  Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:name:string, 1:age:int, 2:gpa:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: UDFToFloat(gpa) (type: float), age (type: int), if((age > 40), 2011-01-01 01:01:01.0, null) (type: timestamp), if((length(name) > 10), CAST( name AS BINARY), null) (type: binary)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [2, 1, 5, 8]
+                        selectExpressions: VectorUDFAdaptor(if((age > 40), 2011-01-01 01:01:01.0, null))(children: LongColGreaterLongScalar(col 1:int, val 40) -> 4:boolean) -> 5:timestamp, VectorUDFAdaptor(if((length(name) > 10), CAST( name AS BINARY), null))(children: LongColGreaterLongScalar(col 4:int, val 10)(children: StringLength(col 0:string) -> 4:int) -> 6:boolean, VectorUDFAdaptor(CAST( name AS BINARY)) -> 7:binary) -> 8:binary
+                    Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 2 Data size: 392 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.TextInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          name: default.insert_10_1
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 3
+                    includeColumns: [0, 1, 2]
+                    dataColumns: name:string, age:int, gpa:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, timestamp, bigint, string, string]
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.insert_10_1
+
+  Stage: Stage-3
+    Stats Work
+      Basic Stats Work:
+
+PREHOOK: query: insert overwrite table insert_10_1
+    select cast(gpa as float),
+    age,
+    IF(age>40,cast('2011-01-01 01:01:01' as timestamp),NULL),
+    IF(LENGTH(name)>10,cast(name as binary),NULL) from student_2_lines
+PREHOOK: type: QUERY
+PREHOOK: Input: default@student_2_lines
+PREHOOK: Output: default@insert_10_1
+POSTHOOK: query: insert overwrite table insert_10_1
+    select cast(gpa as float),
+    age,
+    IF(age>40,cast('2011-01-01 01:01:01' as timestamp),NULL),
+    IF(LENGTH(name)>10,cast(name as binary),NULL) from student_2_lines
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@student_2_lines
+POSTHOOK: Output: default@insert_10_1
+POSTHOOK: Lineage: insert_10_1.a EXPRESSION [(student_2_lines)student_2_lines.FieldSchema(name:gpa, type:double, comment:null), ]
+POSTHOOK: Lineage: insert_10_1.b SIMPLE [(student_2_lines)student_2_lines.FieldSchema(name:age, type:int, comment:null), ]
+POSTHOOK: Lineage: insert_10_1.c EXPRESSION [(student_2_lines)student_2_lines.FieldSchema(name:age, type:int, comment:null), ]
+POSTHOOK: Lineage: insert_10_1.d EXPRESSION [(student_2_lines)student_2_lines.FieldSchema(name:name, type:string, comment:null), ]

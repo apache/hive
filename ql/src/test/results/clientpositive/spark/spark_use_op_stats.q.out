@@ -87,13 +87,13 @@ FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 WHERE src1.key = 97
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT src1.key, src2.value
 FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 WHERE src1.key = 97
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 97	val_97
 97	val_97
 97	val_97
@@ -312,7 +312,7 @@ SELECT sum(hash(a.key, b.value)) FROM a JOIN b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@tmp
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: WITH a AS (
   SELECT src1.key, src2.value
   FROM tmp src1 JOIN tmp src2 ON (src1.key = src2.key)
@@ -327,5 +327,5 @@ SELECT sum(hash(a.key, b.value)) FROM a JOIN b ON a.key = b.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@tmp
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 180817551380

@@ -29,9 +29,8 @@ while [ -h "$this" ]; do
 done
 
 # convert relative path to absolute path
-bin=`dirname "$this"`
+# bin is set from calling script
 script=`basename "$this"`
-bin=`cd "$bin"; pwd`
 this="$bin/$script"
 
 # the root of the Hive installation

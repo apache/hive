@@ -17,9 +17,9 @@ POSTHOOK: Output: default@t1
 PREHOOK: query: SELECT count(*) FROM T1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT count(*) FROM T1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 6

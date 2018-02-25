@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -50,6 +50,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -79,6 +80,7 @@ import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -105,9 +107,11 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
@@ -716,16 +720,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int alterResourcePlan(Hive db, AlterResourcePlanDesc desc) throws HiveException {
     if (desc.shouldValidate()) {
-      List<String> errors = db.validateResourcePlan(desc.getResourcePlanName());
+      WMValidateResourcePlanResponse result = db.validateResourcePlan(desc.getResourcePlanName());
       try (DataOutputStream out = getOutputStream(desc.getResFile())) {
-        formatter.showErrors(out, errors);
+        formatter.showErrors(out, result);
       } catch (IOException e) {
         throw new HiveException(e);
       };
       return 0;
     }
 
-    WMResourcePlan resourcePlan = desc.getResourcePlan();
+    WMNullableResourcePlan resourcePlan = desc.getResourcePlan();
     final WorkloadManager wm = WorkloadManager.getInstance();
     final TezSessionPoolManager pm = TezSessionPoolManager.getInstance();
     boolean isActivate = false, isInTest = HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST);
@@ -818,9 +822,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int createOrAlterWMPool(Hive db, CreateOrAlterWMPoolDesc desc) throws HiveException {
     if (desc.isUpdate()) {
-      db.alterWMPool(desc.getPool(), desc.getPoolPath());
+      db.alterWMPool(desc.getAlterPool(), desc.getPoolPath());
     } else {
-      db.createWMPool(desc.getPool());
+      db.createWMPool(desc.getCreatePool());
     }
     return 0;
   }
@@ -4825,13 +4829,20 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       throws HiveException {
     try {
       String dbName = dropDb.getDatabaseName();
+      ReplicationSpec replicationSpec = dropDb.getReplicationSpec();
+      if (replicationSpec.isInReplicationScope()) {
+        Database database = db.getDatabase(dbName);
+        if (database == null
+            || !replicationSpec.allowEventReplacementInto(database.getParameters())) {
+          return 0;
+        }
+      }
       db.dropDatabase(dbName, true, dropDb.getIfExists(), dropDb.isCasdade());
       // Unregister the functions as well
       if (dropDb.isCasdade()) {
         FunctionRegistry.unregisterPermanentFunctions(dbName);
       }
-    }
-    catch (NoSuchObjectException ex) {
+    } catch (NoSuchObjectException ex) {
       throw new HiveException(ex, ErrorMsg.DATABASE_NOT_EXISTS, dropDb.getDatabaseName());
     }
     return 0;
@@ -5119,10 +5130,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
       if (crtView.isMaterialized()) {
         // We need to update the status of the creation signature
-        String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
-        oldview.getTTable().setCreationMetadata(
-            generateCreationMetadata(db, crtView.getTablesUsed(),
-                txnString == null ? null : new ValidReadTxnList(txnString)));
+        CreationMetadata cm =
+            new CreationMetadata(oldview.getDbName(), oldview.getTableName(),
+                ImmutableSet.copyOf(crtView.getTablesUsed()));
+        cm.setValidTxnList(conf.get(ValidTxnList.VALID_TXNS_KEY));
+        oldview.getTTable().setCreationMetadata(cm);
         db.alterTable(crtView.getViewName(), oldview, null);
         // This is a replace/rebuild, so we need an exclusive lock
         addIfAbsentByName(new WriteEntity(oldview, WriteEntity.WriteType.DDL_EXCLUSIVE));
@@ -5154,10 +5166,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       Table tbl = crtView.toTable(conf);
       // We set the signature for the view if it is a materialized view
       if (tbl.isMaterializedView()) {
-        String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
-        tbl.getTTable().setCreationMetadata(
-            generateCreationMetadata(db, crtView.getTablesUsed(),
-                txnString == null ? null : new ValidReadTxnList(txnString)));
+        CreationMetadata cm =
+            new CreationMetadata(tbl.getDbName(), tbl.getTableName(),
+                ImmutableSet.copyOf(crtView.getTablesUsed()));
+        cm.setValidTxnList(conf.get(ValidTxnList.VALID_TXNS_KEY));
+        tbl.getTTable().setCreationMetadata(cm);
       }
       db.createTable(tbl, crtView.getIfNotExists());
       addIfAbsentByName(new WriteEntity(tbl, WriteEntity.WriteType.DDL_NO_LOCK));
@@ -5169,39 +5182,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     return 0;
   }
 
-  private Map<String, BasicTxnInfo> generateCreationMetadata(
-      Hive db, List<String> tablesUsed, ValidReadTxnList txnList)
-          throws SemanticException {
-    Map<String, BasicTxnInfo> signature = new HashMap<>();
-    try {
-      if (!CollectionUtils.isEmpty(tablesUsed)) {
-        if (txnList == null) {
-          for (String fullyQualifiedName : tablesUsed) {
-            signature.put(fullyQualifiedName, new BasicTxnInfo(true));
-          }
-        } else {
-          List<String> dbNames = new ArrayList<>();
-          List<String> tableNames = new ArrayList<>();
-          for (String fullyQualifiedName : tablesUsed) {
-            // Add to creation metadata
-            String[] names =  fullyQualifiedName.split("\\.");
-            dbNames.add(names[0]);
-            tableNames.add(names[1]);
-          }
-          List<BasicTxnInfo> txnInfos =
-              db.getMSC().getLastCompletedTransactionForTables(dbNames, tableNames, txnList);
-          for (int i = 0; i < tablesUsed.size(); i++) {
-            signature.put(tablesUsed.get(i), txnInfos.get(i));
-          }
-        }
-      }
-    } catch (Exception ex) {
-      throw new SemanticException(ex);
-    }
-    return signature;
-  }
-
-  private int truncateTable(Hive db, TruncateTableDesc truncateTableDesc) throws HiveException {
+ private int truncateTable(Hive db, TruncateTableDesc truncateTableDesc) throws HiveException {
 
     if (truncateTableDesc.getColumnIndexes() != null) {
       ColumnTruncateWork truncateWork = new ColumnTruncateWork(

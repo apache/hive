@@ -29,7 +29,7 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
-    <druid.metamx.util.version>0.27.10</druid.metamx.util.version>
+    <druid.metamx.util.version>1.3.2</druid.metamx.util.version>
     <druid.guava.version>16.0.1</druid.guava.version>
   </properties>
 

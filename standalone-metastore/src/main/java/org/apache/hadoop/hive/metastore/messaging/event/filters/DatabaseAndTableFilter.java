@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.metastore.messaging.event.filters;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 
+import java.util.regex.Pattern;
+
 /**
  * Utility function that constructs a notification filter to match a given db name and/or table name.
  * If dbName == null, fetches all warehouse events.
@@ -26,19 +28,23 @@ import org.apache.hadoop.hive.metastore.api.NotificationEvent;
  * If dbName != null &amp;&amp; tableName != null, fetches all events for the specified table
  */
 public class DatabaseAndTableFilter extends BasicFilter {
-  private final String databaseName, tableName;
+  private final String tableName;
+  private final Pattern dbPattern;
 
-  public DatabaseAndTableFilter(final String databaseName, final String tableName) {
-    this.databaseName = databaseName;
+  public DatabaseAndTableFilter(final String databaseNameOrPattern, final String tableName) {
+    // we convert the databaseNameOrPattern to lower case because events will have these names in lower case.
+    this.dbPattern = (databaseNameOrPattern == null || databaseNameOrPattern.equals("*"))
+        ? null
+        : Pattern.compile(databaseNameOrPattern, Pattern.CASE_INSENSITIVE);
     this.tableName = tableName;
   }
 
   @Override
   boolean shouldAccept(final NotificationEvent event) {
-    if (databaseName == null) {
+    if (dbPattern == null) {
       return true; // if our dbName is null, we're interested in all wh events
     }
-    if (databaseName.equalsIgnoreCase(event.getDbName())) {
+    if (dbPattern.matcher(event.getDbName()).matches()) {
       if ((tableName == null)
           // if our dbName is equal, but tableName is blank, we're interested in this db-level event
           || (tableName.equalsIgnoreCase(event.getTableName()))

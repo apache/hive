@@ -166,4 +166,16 @@ abstract class BaseProtocol extends RpcDispatcher {
 
   }
 
+  protected static class SparkUIWebURL<T extends Serializable> implements Serializable {
+
+    final String UIWebURL;
+
+    SparkUIWebURL(String UIWebURL) {
+      this.UIWebURL = UIWebURL;
+    }
+
+    SparkUIWebURL() {
+      this(null);
+    }
+  }
 }

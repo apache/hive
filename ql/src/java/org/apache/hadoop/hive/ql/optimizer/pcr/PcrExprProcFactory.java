@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -290,7 +290,7 @@ public final class PcrExprProcFactory {
           }
         }
         return new NodeInfoWrapper(WalkState.PART_COL_STRUCT, null, getOutExpr(fd, nodeOutputs));
-      } else if (!FunctionRegistry.isDeterministic(fd.getGenericUDF())) {
+      } else if (!FunctionRegistry.isConsistentWithinQuery(fd.getGenericUDF())) {
         // If it's a non-deterministic UDF, set unknown to true
         return new NodeInfoWrapper(WalkState.UNKNOWN, null, getOutExpr(fd, nodeOutputs));
       } else {

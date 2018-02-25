@@ -17,12 +17,14 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockLevel;
 import org.apache.hadoop.hive.metastore.api.LockRequest;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.net.InetAddress;
 import java.util.List;
@@ -30,6 +32,7 @@ import java.util.List;
 /**
  * Tests for LockRequestBuilder.
  */
+@Category(MetastoreUnitTest.class)
 public class TestLockRequestBuilder {
 
   // Test failure if user not set

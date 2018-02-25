@@ -2995,6 +2995,7 @@ POSTHOOK: query: show table extended like `tgt_rc_merge_test`
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:tgt_rc_merge_test
 #### A masked pattern was here ####
+location:hdfs://### HDFS PATH ###
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
 columns:struct columns { i32 key, string value}
@@ -3067,6 +3068,7 @@ POSTHOOK: query: show table extended like `tgt_rc_merge_test`
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:tgt_rc_merge_test
 #### A masked pattern was here ####
+location:hdfs://### HDFS PATH ###
 inputformat:org.apache.hadoop.hive.ql.io.RCFileInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.RCFileOutputFormat
 columns:struct columns { i32 key, string value}
@@ -5469,12 +5471,12 @@ PREHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key select /*+ STREAMTABLE(a) 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@t1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: FROM T1 a JOIN src c ON c.key+1=a.key select /*+ STREAMTABLE(a) */ sum(hash(a.key)), sum(hash(a.val)), sum(hash(c.key))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@t1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 198	6274	194
 PREHOOK: query: explain
 select * FROM

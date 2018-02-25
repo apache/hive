@@ -364,7 +364,7 @@ struct Table {
   13: optional PrincipalPrivilegeSet privileges,
   14: optional bool temporary=false,
   15: optional bool rewriteEnabled,     // rewrite enabled or not
-  16: optional map<string, BasicTxnInfo> creationMetadata   // only for MVs, it stores table name used -> last modification before MV creation
+  16: optional CreationMetadata creationMetadata   // only for MVs, it stores table names used and txn list at MV creation
 }
 
 struct Partition {
@@ -895,17 +895,18 @@ struct AddDynamicPartitions {
 
 struct BasicTxnInfo {
     1: required bool isnull,
-    2: optional i64 id,
-    3: optional i64 time,
-    4: optional i64 txnid,
-    5: optional string dbname,
-    6: optional string tablename,
-    7: optional string partitionname
+    2: optional i64 time,
+    3: optional i64 txnid,
+    4: optional string dbname,
+    5: optional string tablename,
+    6: optional string partitionname
 }
 
-struct TxnsSnapshot {
-    1: required i64 txn_high_water_mark,
-    2: required list<i64> open_txns
+struct CreationMetadata {
+    1: required string dbName,
+    2: required string tblName,
+    3: required set<string> tablesUsed,
+    4: optional string validTxnList
 }
 
 struct NotificationEventRequest {
@@ -1110,12 +1111,31 @@ struct WMResourcePlan {
   4: optional string defaultPoolPath;
 }
 
+struct WMNullableResourcePlan {
+  1: required string name;
+  2: optional WMResourcePlanStatus status;
+  4: optional i32 queryParallelism;
+  5: optional bool isSetQueryParallelism;
+  6: optional string defaultPoolPath;
+  7: optional bool isSetDefaultPoolPath;
+}
+
 struct WMPool {
   1: required string resourcePlanName;
   2: required string poolPath;
   3: optional double allocFraction;
   4: optional i32 queryParallelism;
   5: optional string schedulingPolicy;
+}
+
+
+struct WMNullablePool {
+  1: required string resourcePlanName;
+  2: required string poolPath;
+  3: optional double allocFraction;
+  4: optional i32 queryParallelism;
+  5: optional string schedulingPolicy;
+  6: optional bool isSetSchedulingPolicy;
 }
 
 struct WMTrigger {
@@ -1181,7 +1201,7 @@ struct WMGetAllResourcePlanResponse {
 
 struct WMAlterResourcePlanRequest {
   1: optional string resourcePlanName;
-  2: optional WMResourcePlan resourcePlan;
+  2: optional WMNullableResourcePlan resourcePlan;
   3: optional bool isEnableAndActivate;
   4: optional bool isForceDeactivate;
   5: optional bool isReplace;
@@ -1197,6 +1217,7 @@ struct WMValidateResourcePlanRequest {
 
 struct WMValidateResourcePlanResponse {
   1: optional list<string> errors;
+  2: optional list<string> warnings;
 }
 
 struct WMDropResourcePlanRequest {
@@ -1244,7 +1265,7 @@ struct WMCreatePoolResponse {
 }
 
 struct WMAlterPoolRequest {
-  1: optional WMPool pool;
+  1: optional WMNullablePool pool;
   2: optional string poolPath;
 }
 
@@ -1873,8 +1894,6 @@ service ThriftHiveMetastore extends fb303.FacebookService
   CompactionResponse compact2(1:CompactionRequest rqst) 
   ShowCompactResponse show_compact(1:ShowCompactRequest rqst)
   void add_dynamic_partitions(1:AddDynamicPartitions rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
-  list<BasicTxnInfo> get_last_completed_transaction_for_tables(1:list<string> db_names, 2:list<string> table_names, 3:TxnsSnapshot txns_snapshot)
-  BasicTxnInfo get_last_completed_transaction_for_table(1:string db_name, 2:string table_name, 3:TxnsSnapshot txns_snapshot)
 
   // Notification logging calls
   NotificationEventResponse get_next_notification(1:NotificationEventRequest rqst) 

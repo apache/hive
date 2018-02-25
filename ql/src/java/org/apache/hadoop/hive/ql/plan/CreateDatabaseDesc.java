@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -53,12 +53,6 @@ public class CreateDatabaseDesc extends DDLDesc implements Serializable {
     this.ifNotExists = ifNotExists;
     this.dbProperties = null;
   }
-
-  public CreateDatabaseDesc(String databaseName, boolean ifNotExists) {
-    this(databaseName, null, null, ifNotExists);
-  }
-
-
 
   @Explain(displayName="if not exists", displayOnlyOnTrue = true)
   public boolean getIfNotExists() {

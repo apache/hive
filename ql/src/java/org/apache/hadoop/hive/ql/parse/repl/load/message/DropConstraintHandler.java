@@ -17,17 +17,16 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.apache.hadoop.hive.metastore.messaging.DropConstraintMessage;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
+
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
 
 public class DropConstraintHandler extends AbstractMessageHandler {
   @Override
@@ -41,8 +40,6 @@ public class DropConstraintHandler extends AbstractMessageHandler {
     AlterTableDesc dropConstraintsDesc = new AlterTableDesc(actualDbName + "." + actualTblName, constraintName,
         context.eventOnlyReplicationSpec());
     Task<DDLWork> dropConstraintsTask = TaskFactory.get(new DDLWork(readEntitySet, writeEntitySet, dropConstraintsDesc), context.hiveConf);
-    List<Task<? extends Serializable>> tasks = new ArrayList<Task<? extends Serializable>>();
-    tasks.add(dropConstraintsTask);
     context.log.debug("Added drop constrain task : {}:{}", dropConstraintsTask.getId(), actualTblName);
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, actualTblName, null);
     return Collections.singletonList(dropConstraintsTask);    

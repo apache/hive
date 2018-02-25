@@ -8,12 +8,12 @@ POSTHOOK: query: DROP DATABASE IF EXISTS encrypted_db
 POSTHOOK: type: DROPDATABASE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
 PREHOOK: Output: default@encrypted_table
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encrypted_table
 Encryption key created: 'key_128'
@@ -21,10 +21,11 @@ Encryption zone created: '/build/ql/test/data/warehouse/encrypted_table' using k
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:encrypted_db
+PREHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:encrypted_db
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Encryption key created: 'key_128_2'
 Encryption zone created: '/build/ql/test/data/warehouse/encrypted_db.db' using key: 'key_128_2'
 PREHOOK: query: INSERT OVERWRITE TABLE encrypted_table SELECT * FROM src
@@ -163,12 +164,12 @@ plain_table
 src
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
 PREHOOK: Output: default@encrypted_table_outloc
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encrypted_table_outloc
 Encryption key created: 'key_128_3'
@@ -194,10 +195,11 @@ src
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:encrypted_db_outloc
+PREHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:encrypted_db_outloc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 Encryption key created: 'key_128_4'
 Encryption zone created: '/build/ql/test/data/specified_db_location' using key: 'key_128_4'
 PREHOOK: query: USE encrypted_db_outloc

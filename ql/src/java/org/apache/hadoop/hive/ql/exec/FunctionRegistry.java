@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -214,6 +214,7 @@ public final class FunctionRegistry {
     system.registerUDF("rand", UDFRand.class, false);
     system.registerGenericUDF("abs", GenericUDFAbs.class);
     system.registerGenericUDF("sq_count_check", GenericUDFSQCountCheck.class);
+    system.registerGenericUDF("enforce_constraint", GenericUDFEnforceNotNullConstraint.class);
     system.registerGenericUDF("pmod", GenericUDFPosMod.class);
 
     system.registerUDF("ln", UDFLn.class, false);
@@ -1489,6 +1490,40 @@ public final class FunctionRegistry {
     }
 
     return false;
+  }
+
+  /**
+   * Returns whether a GenericUDF is a runtime constant or not.
+   */
+  public static boolean isRuntimeConstant(GenericUDF genericUDF) {
+    UDFType genericUDFType = AnnotationUtils.getAnnotation(genericUDF.getClass(), UDFType.class);
+    if (genericUDFType != null && genericUDFType.runtimeConstant()) {
+      return true;
+    }
+
+    if (genericUDF instanceof GenericUDFBridge) {
+      GenericUDFBridge bridge = (GenericUDFBridge) genericUDF;
+      UDFType bridgeUDFType = AnnotationUtils.getAnnotation(bridge.getUdfClass(), UDFType.class);
+      if (bridgeUDFType != null && bridgeUDFType.runtimeConstant()) {
+        return true;
+      }
+    }
+
+    if (genericUDF instanceof GenericUDFMacro) {
+      GenericUDFMacro macro = (GenericUDFMacro) (genericUDF);
+      return macro.isRuntimeConstant();
+    }
+
+    return false;
+  }
+
+  /**
+   * Returns whether the expression, for a single query, returns the same result given
+   * the same arguments/children. This includes deterministic functions as well as runtime
+   * constants (which may not be deterministic across queries).
+   */
+  public static boolean isConsistentWithinQuery(GenericUDF genericUDF) {
+    return (isDeterministic(genericUDF) || isRuntimeConstant(genericUDF)) && !isStateful(genericUDF);
   }
 
   /**

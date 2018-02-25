@@ -1,0 +1,80 @@
+PREHOOK: query: drop table tstz1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table tstz1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tstz1(`__time` timestamp with local time zone, n string, v integer)
+STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
+TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tstz1
+POSTHOOK: query: create table tstz1(`__time` timestamp with local time zone, n string, v integer)
+STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
+TBLPROPERTIES ("druid.segment.granularity" = "HOUR")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tstz1
+PREHOOK: query: insert into table tstz1
+values(cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone), 'Bill', 10)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tstz1
+POSTHOOK: query: insert into table tstz1
+values(cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone), 'Bill', 10)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tstz1
+PREHOOK: query: select `__time` from tstz1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+POSTHOOK: query: select `__time` from tstz1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+2016-01-03 12:26:34.0 US/Pacific
+PREHOOK: query: select cast(`__time` as timestamp) from tstz1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(`__time` as timestamp) from tstz1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+2016-01-03 12:26:34
+PREHOOK: query: select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+2016-01-03 12:26:34
+PREHOOK: query: select `__time` from tstz1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+POSTHOOK: query: select `__time` from tstz1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+2016-01-03 20:26:34.0 UTC
+PREHOOK: query: select cast(`__time` as timestamp) from tstz1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(`__time` as timestamp) from tstz1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+2016-01-03 20:26:34
+PREHOOK: query: select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tstz1
+#### A masked pattern was here ####
+2016-01-03 20:26:34

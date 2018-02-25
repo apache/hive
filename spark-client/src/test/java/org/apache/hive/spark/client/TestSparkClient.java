@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.Arrays;
@@ -67,6 +68,10 @@ public class TestSparkClient {
   // Timeouts are bad... mmmkay.
   private static final long TIMEOUT = 20;
   private static final HiveConf HIVECONF = new HiveConf();
+
+  static {
+    HIVECONF.set("hive.spark.client.connect.timeout", "30000ms");
+  }
 
   private Map<String, String> createConf() {
     Map<String, String> conf = new HashMap<String, String>();
@@ -298,7 +303,8 @@ public class TestSparkClient {
     SparkClient client = null;
     try {
       test.config(conf);
-      client = SparkClientFactory.createClient(conf, HIVECONF, UUID.randomUUID().toString());
+      client = SparkClientFactory.createClient(conf, HIVECONF, UUID.randomUUID().toString(),
+              mock(PrintStream.class));
       test.call(client);
     } finally {
       if (client != null) {

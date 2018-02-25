@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -38,11 +38,11 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
           + " \"dataSource\": \"sample_datasource\", "
           + " \"granularity\": \"DAY\", "
           + " \"descending\": \"true\", "
-          + " \"intervals\": [ \"2012-01-01T00:00:00.000/2012-01-03T00:00:00.000\" ]}";
+          + " \"intervals\": [ \"2012-01-01T00:00:00.000-08:00/2012-01-03T00:00:00.000-08:00\" ]}";
   private static final String TIMESERIES_QUERY_SPLIT =
       "[HiveDruidSplit{{\"queryType\":\"timeseries\","
           + "\"dataSource\":{\"type\":\"table\",\"name\":\"sample_datasource\"},"
-          + "\"intervals\":{\"type\":\"LegacySegmentSpec\",\"intervals\":[\"2012-01-01T00:00:00.000-08:00/2012-01-03T00:00:00.000-08:00\"]},"
+          + "\"intervals\":{\"type\":\"LegacySegmentSpec\",\"intervals\":[\"2012-01-01T08:00:00.000Z/2012-01-03T08:00:00.000Z\"]},"
           + "\"descending\":true,"
           + "\"virtualColumns\":[],"
           + "\"filter\":null,"
@@ -71,7 +71,7 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
           + " ], "
           + " \"granularity\": \"all\", "
           + " \"intervals\": [  "
-          + "  \"2013-08-31T00:00:00.000/2013-09-03T00:00:00.000\" "
+          + "  \"2013-08-31T00:00:00.000-07:00/2013-09-03T00:00:00.000-07:00\" "
           + " ]}";
   private static final String TOPN_QUERY_SPLIT =
       "[HiveDruidSplit{{\"queryType\":\"topN\","
@@ -80,7 +80,7 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
           + "\"dimension\":{\"type\":\"LegacyDimensionSpec\",\"dimension\":\"sample_dim\",\"outputName\":\"sample_dim\",\"outputType\":\"STRING\"},"
           + "\"metric\":{\"type\":\"LegacyTopNMetricSpec\",\"metric\":\"count\"},"
           + "\"threshold\":5,"
-          + "\"intervals\":{\"type\":\"LegacySegmentSpec\",\"intervals\":[\"2013-08-31T00:00:00.000-07:00/2013-09-03T00:00:00.000-07:00\"]},"
+          + "\"intervals\":{\"type\":\"LegacySegmentSpec\",\"intervals\":[\"2013-08-31T07:00:00.000Z/2013-09-03T07:00:00.000Z\"]},"
           + "\"filter\":null,"
           + "\"granularity\":{\"type\":\"all\"},"
           + "\"aggregations\":[{\"type\":\"longSum\",\"name\":\"count\",\"fieldName\":\"count\",\"expression\":null},"
@@ -102,12 +102,12 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
           + "  { \"type\": \"longSum\", \"name\": \"total_usage\", \"fieldName\": \"user_count\" },  "
           + "  { \"type\": \"doubleSum\", \"name\": \"data_transfer\", \"fieldName\": \"data_transfer\" } "
           + " ], "
-          + " \"intervals\": [ \"2012-01-01T00:00:00.000/2012-01-03T00:00:00.000\" ]"
+          + " \"intervals\": [ \"2012-01-01T00:00:00.000-08:00/2012-01-03T00:00:00.000-08:00\" ]"
           + " }";
   private static final String GROUP_BY_QUERY_SPLIT =
       "[HiveDruidSplit{{\"queryType\":\"groupBy\","
           + "\"dataSource\":{\"type\":\"table\",\"name\":\"sample_datasource\"},"
-          + "\"intervals\":{\"type\":\"LegacySegmentSpec\",\"intervals\":[\"2012-01-01T00:00:00.000-08:00/2012-01-03T00:00:00.000-08:00\"]},"
+          + "\"intervals\":{\"type\":\"LegacySegmentSpec\",\"intervals\":[\"2012-01-01T08:00:00.000Z/2012-01-03T08:00:00.000Z\"]},"
           + "\"virtualColumns\":[],"
           + "\"filter\":null,"
           + "\"granularity\":\"DAY\","
@@ -128,13 +128,13 @@ public class TestHiveDruidQueryBasedInputFormat extends TestCase {
           + " \"dimensions\":[\"robot\",\"namespace\",\"anonymous\",\"unpatrolled\",\"page\",\"language\",\"newpage\",\"user\"],  "
           + " \"metrics\":[\"count\",\"added\",\"delta\",\"variation\",\"deleted\"],  "
           + " \"granularity\": \"all\",  "
-          + " \"intervals\": [     \"2013-01-01/2013-01-02\"   ],  "
+          + " \"intervals\": [     \"2013-01-01T00:00:00.000-08:00/2013-01-02T00:00:00.000-08:00\"   ],  "
           + " \"pagingSpec\":{\"pagingIdentifiers\": {}, \"threshold\":5}, "
           + " \"context\":{\"druid.query.fetch\":true}}";
   private static final String SELECT_QUERY_SPLIT =
       "[HiveDruidSplit{{\"queryType\":\"select\","
           + "\"dataSource\":{\"type\":\"table\",\"name\":\"wikipedia\"},"
-          + "\"intervals\":{\"type\":\"LegacySegmentSpec\",\"intervals\":[\"2013-01-01T00:00:00.000-08:00/2013-01-02T00:00:00.000-08:00\"]},"
+          + "\"intervals\":{\"type\":\"LegacySegmentSpec\",\"intervals\":[\"2013-01-01T08:00:00.000Z/2013-01-02T08:00:00.000Z\"]},"
           + "\"descending\":false,"
           + "\"filter\":null,"
           + "\"granularity\":{\"type\":\"all\"},"

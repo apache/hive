@@ -508,12 +508,16 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_1
 POSTHOOK: Lineage: test_1.attr SCRIPT []
 POSTHOOK: Lineage: test_1.member SCRIPT []
-PREHOOK: query: EXPLAIN
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -528,18 +532,37 @@ STAGE PLANS:
                 TableScan
                   alias: test_1
                   Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
                   Select Operator
                     expressions: CASE WHEN ((member = 1)) THEN ((attr + 1)) ELSE ((attr + 2)) END (type: decimal(11,0))
                     outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: VectorUDFAdaptor(if((member = 1), (attr + 1), (attr + 2)))(children: VectorUDFAdaptor((member = 1)) -> 3:boolean, DecimalColAddDecimalScalar(col 1:decimal(10,0), val 1) -> 4:decimal(11,0), DecimalColAddDecimalScalar(col 1:decimal(10,0), val 2) -> 5:decimal(11,0)) -> 6:decimal(11,0)
                     Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
 
   Stage: Stage-0
     Fetch Operator
@@ -558,12 +581,16 @@ POSTHOOK: Input: default@test_1
 3
 4
 4
-PREHOOK: query: EXPLAIN
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -578,18 +605,37 @@ STAGE PLANS:
                 TableScan
                   alias: test_1
                   Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
                   Select Operator
                     expressions: CASE WHEN ((member = 1)) THEN (1) ELSE ((attr + 2)) END (type: decimal(11,0))
                     outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: VectorUDFAdaptor(if((member = 1), 1, (attr + 2)))(children: VectorUDFAdaptor((member = 1)) -> 3:boolean, DecimalColAddDecimalScalar(col 1:decimal(10,0), val 2) -> 4:decimal(11,0)) -> 5:decimal(11,0)
                     Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
 
   Stage: Stage-0
     Fetch Operator
@@ -608,12 +654,16 @@ POSTHOOK: Input: default@test_1
 3
 4
 1
-PREHOOK: query: EXPLAIN
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -628,18 +678,37 @@ STAGE PLANS:
                 TableScan
                   alias: test_1
                   Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
                   Select Operator
                     expressions: CASE WHEN ((member = 1)) THEN ((attr + 1)) ELSE (2) END (type: decimal(11,0))
                     outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: VectorUDFAdaptor(if((member = 1), (attr + 1), 2))(children: VectorUDFAdaptor((member = 1)) -> 3:boolean, DecimalColAddDecimalScalar(col 1:decimal(10,0), val 1) -> 4:decimal(11,0)) -> 5:decimal(11,0)
                     Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
 
   Stage: Stage-0
     Fetch Operator
@@ -676,12 +745,16 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_2
 POSTHOOK: Lineage: test_2.attr SCRIPT []
 POSTHOOK: Lineage: test_2.member SCRIPT []
-PREHOOK: query: EXPLAIN
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -696,18 +769,37 @@ STAGE PLANS:
                 TableScan
                   alias: test_2
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
                   Select Operator
                     expressions: CASE WHEN ((member = 1)) THEN ((attr + 1)) ELSE ((attr + 2)) END (type: bigint)
                     outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: IfExprLongColumnLongColumn(col 3:boolean, col 4:bigint, col 5:bigint)(children: LongColEqualLongScalar(col 0:bigint, val 1) -> 3:boolean, LongColAddLongScalar(col 1:bigint, val 1) -> 4:bigint, LongColAddLongScalar(col 1:bigint, val 2) -> 5:bigint) -> 6:bigint
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
 
   Stage: Stage-0
     Fetch Operator
@@ -726,12 +818,16 @@ POSTHOOK: Input: default@test_2
 3
 4
 4
-PREHOOK: query: EXPLAIN
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -746,18 +842,37 @@ STAGE PLANS:
                 TableScan
                   alias: test_2
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
                   Select Operator
                     expressions: CASE WHEN ((member = 1)) THEN (null) ELSE ((attr + 2)) END (type: bigint)
                     outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: IfExprNullColumn(col 3:boolean, null, col 4)(children: LongColEqualLongScalar(col 0:bigint, val 1) -> 3:boolean, LongColAddLongScalar(col 1:bigint, val 2) -> 4:bigint) -> 5:bigint
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
 
   Stage: Stage-0
     Fetch Operator
@@ -776,12 +891,16 @@ POSTHOOK: Input: default@test_2
 3
 4
 NULL
-PREHOOK: query: EXPLAIN
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
 SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2
 POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -796,18 +915,37 @@ STAGE PLANS:
                 TableScan
                   alias: test_2
                   Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
                   Select Operator
                     expressions: CASE WHEN ((member = 1)) THEN ((attr + 1)) ELSE (null) END (type: bigint)
                     outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [5]
+                        selectExpressions: IfExprColumnNull(col 3:boolean, col 4:bigint, null)(children: LongColEqualLongScalar(col 0:bigint, val 1) -> 3:boolean, LongColAddLongScalar(col 1:bigint, val 1) -> 4:bigint) -> 5:bigint
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                       table:
                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
 
   Stage: Stage-0
     Fetch Operator

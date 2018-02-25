@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -209,6 +209,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
   }
 
+  @Override
   public void configure(JobConf job) {
     this.job = job;
   }
@@ -222,7 +223,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     String ifName = inputFormat.getClass().getCanonicalName();
     boolean isSupported = inputFormat instanceof LlapWrappableInputFormatInterface;
     boolean isCacheOnly = inputFormat instanceof LlapCacheOnlyInputFormatInterface;
-    boolean isVectorized = Utilities.getUseVectorizedInputFileFormat(conf);
+    boolean isVectorized = Utilities.getIsVectorized(conf);
     if (!isVectorized) {
       // Pretend it's vectorized if the non-vector wrapped is enabled.
       isVectorized = HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_NONVECTOR_WRAPPER_ENABLED)
@@ -367,6 +368,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return instance;
   }
 
+  @Override
   public RecordReader getRecordReader(InputSplit split, JobConf job,
       Reporter reporter) throws IOException {
     HiveInputSplit hsplit = (HiveInputSplit) split;
@@ -475,7 +477,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     if (tableScan != null) {
-      pushFilters(conf, tableScan);
+      pushFilters(conf, tableScan, this.mrwork);
     }
 
     Path[] finalDirs = processPathsForMmRead(dirs, conf, validTxnList);
@@ -499,6 +501,12 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     InputSplit[] iss = inputFormat.getSplits(conf, splits);
     for (InputSplit is : iss) {
       result.add(new HiveInputSplit(is, inputFormatClass.getName()));
+    }
+    if (iss.length == 0 && finalDirs.length > 0 && conf.getBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, false)) {
+      // If there are no inputs; the Execution engine skips the operator tree.
+      // To prevent it from happening; an opaque  ZeroRows input is added here - when needed.
+      result.add(new HiveInputSplit(new NullRowsInputFormat.DummyInputSplit(finalDirs[0].toString()),
+          ZeroRowsInputFormat.class.getName()));
     }
   }
 
@@ -592,6 +600,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return dirs;
   }
 
+  @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);
@@ -633,7 +642,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
             tableScan.getNeededColumnIDs(), tableScan.getNeededColumns());
           pushDownProjection = true;
           // push down filters
-          pushFilters(newjob, tableScan);
+          pushFilters(newjob, tableScan, this.mrwork);
         }
       } else {
         if (LOG.isDebugEnabled()) {
@@ -729,7 +738,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return partDesc;
   }
 
-  public static void pushFilters(JobConf jobConf, TableScanOperator tableScan) {
+  public static void pushFilters(JobConf jobConf, TableScanOperator tableScan,
+    final MapWork mrwork) {
 
     // ensure filters are not set from previous pushFilters
     jobConf.unset(TableScanDesc.FILTER_TEXT_CONF_STR);
@@ -750,6 +760,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     // push down filters
     ExprNodeGenericFuncDesc filterExpr = (ExprNodeGenericFuncDesc)scanDesc.getFilterExpr();
     if (filterExpr == null) {
+      return;
+    }
+
+    // disable filter pushdown for mapreduce when there are more than one table aliases,
+    // since we don't clone jobConf per alias
+    if (mrwork != null && mrwork.getAliases() != null && mrwork.getAliases().size() > 1 &&
+      jobConf.get(ConfVars.HIVE_EXECUTION_ENGINE.varname).equals("mr")) {
       return;
     }
 
@@ -849,7 +866,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         ColumnProjectionUtils.appendReadColumns(
             jobConf, ts.getNeededColumnIDs(), ts.getNeededColumns(), ts.getNeededNestedColumnPaths());
         // push down filters
-        pushFilters(jobConf, ts);
+        pushFilters(jobConf, ts, this.mrwork);
 
         AcidUtils.setAcidTableScan(job, ts.getConf().isAcidTable());
         AcidUtils.setAcidOperationalProperties(job, ts.getConf().getAcidOperationalProperties());

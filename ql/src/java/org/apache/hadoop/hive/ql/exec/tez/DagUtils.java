@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -21,10 +21,14 @@ import java.util.Collection;
 
 import java.util.concurrent.ConcurrentHashMap;
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import javax.security.auth.login.LoginException;
+
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -39,6 +43,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipOutputStream;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tez.mapreduce.common.MRInputSplitDistributor;
@@ -563,13 +569,26 @@ public class DagUtils {
             MultiMRInput.createConfigBuilder(conf, HiveInputFormat.class).build());
       }
 
+      // To be populated for SMB joins only for all the small tables
+      Map<String, Integer> inputToBucketMap = new HashMap<>();
+      if (mergeJoinWork.getMergeJoinOperator().getParentOperators().size() == 1
+              && mergeJoinWork.getMergeJoinOperator().getOpTraits() != null) {
+        // This is an SMB join.
+        for (BaseWork work : mapWorkList) {
+          MapWork mw = (MapWork) work;
+          Map<String, Operator<?>> aliasToWork = mw.getAliasToWork();
+          Preconditions.checkState(aliasToWork.size() == 1,
+                  "More than 1 alias in SMB mapwork");
+          inputToBucketMap.put(mw.getName(), mw.getWorks().get(0).getOpTraits().getNumBuckets());
+        }
+      }
       VertexManagerPluginDescriptor desc =
         VertexManagerPluginDescriptor.create(CustomPartitionVertex.class.getName());
       // the +1 to the size is because of the main work.
       CustomVertexConfiguration vertexConf =
           new CustomVertexConfiguration(mergeJoinWork.getMergeJoinOperator().getConf()
               .getNumBuckets(), vertexType, mergeJoinWork.getBigTableAlias(),
-              mapWorkList.size() + 1);
+              mapWorkList.size() + 1, inputToBucketMap);
       DataOutputBuffer dob = new DataOutputBuffer();
       vertexConf.write(dob);
       byte[] userPayload = dob.getData();
@@ -662,7 +681,8 @@ public class DagUtils {
             .setCustomInitializerDescriptor(descriptor).build();
       } else {
         // Not HiveInputFormat, or a custom VertexManager will take care of grouping splits
-        if (vertexHasCustomInput) {
+        if (vertexHasCustomInput && vertexType == VertexType.MULTI_INPUT_UNINITIALIZED_EDGES) {
+          // SMB Join.
           dataSource =
               MultiMRInput.createConfigBuilder(conf, inputFormatClass).groupSplits(false).build();
         } else {
@@ -948,7 +968,9 @@ public class DagUtils {
   }
 
   public static String[] getTempFilesFromConf(Configuration conf) {
-    if (conf == null) return new String[0]; // In tests.
+    if (conf == null) {
+      return new String[0]; // In tests.
+    }
     String addedFiles = Utilities.getResourceFiles(conf, SessionState.ResourceType.FILE);
     if (StringUtils.isNotBlank(addedFiles)) {
       HiveConf.setVar(conf, ConfVars.HIVEADDEDFILES, addedFiles);
@@ -985,7 +1007,9 @@ public class DagUtils {
    */
   public List<LocalResource> localizeTempFiles(String hdfsDirPathStr, Configuration conf,
       String[] inputOutputJars, String[] skipJars) throws IOException, LoginException {
-    if (inputOutputJars == null) return null;
+    if (inputOutputJars == null) {
+      return null;
+    }
     List<LocalResource> tmpResources = new ArrayList<LocalResource>();
     addTempResources(conf, tmpResources, hdfsDirPathStr,
         LocalResourceType.FILE, inputOutputJars, skipJars);
@@ -1000,7 +1024,9 @@ public class DagUtils {
     if (skipFiles != null) {
       skipFileSet = new HashSet<>();
       for (String skipFile : skipFiles) {
-        if (StringUtils.isBlank(skipFile)) continue;
+        if (StringUtils.isBlank(skipFile)) {
+          continue;
+        }
         skipFileSet.add(new Path(skipFile));
       }
     }
@@ -1052,9 +1078,32 @@ public class DagUtils {
   }
 
   // the api that finds the jar being used by this class on disk
-  public String getExecJarPathLocal () throws URISyntaxException {
+  public String getExecJarPathLocal(Configuration configuration) throws URISyntaxException {
     // returns the location on disc of the jar of this class.
-    return DagUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString();
+
+    URI uri = DagUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+    if (configuration.getBoolean(ConfVars.HIVE_IN_TEST_IDE.varname, false)) {
+      if (new File(uri.getPath()).isDirectory()) {
+        // IDE support for running tez jobs
+        uri = createEmptyArchive();
+      }
+    }
+    return uri.toString();
+
+  }
+
+  /**
+   * Testing related; creates an empty archive to served being localized as hive-exec
+   */
+  private URI createEmptyArchive() {
+    try {
+      File outputJar = new File(System.getProperty("build.test.dir"), "empty.jar");
+      ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(outputJar));
+      zos.close();
+      return outputJar.toURI();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /*
@@ -1155,7 +1204,9 @@ public class DagUtils {
   public boolean checkOrWaitForTheFile(FileSystem srcFs, Path src, Path dest, Configuration conf,
       Object notifier, int waitAttempts, long sleepInterval, boolean doLog) throws IOException {
     for (int i = 0; i < waitAttempts; i++) {
-      if (checkPreExisting(srcFs, src, dest, conf)) return true;
+      if (checkPreExisting(srcFs, src, dest, conf)) {
+        return true;
+      }
       if (doLog && i == 0) {
         LOG.info("Waiting for the file " + dest + " (" + waitAttempts + " attempts, with "
             + sleepInterval + "ms interval)");
@@ -1519,7 +1570,9 @@ public class DagUtils {
   public static Map<String, LocalResource> getResourcesUpdatableForAm(
       Collection<LocalResource> allNonAppResources) {
     HashMap<String, LocalResource> allNonAppFileResources = new HashMap<>();
-    if (allNonAppResources == null) return allNonAppFileResources;
+    if (allNonAppResources == null) {
+      return allNonAppFileResources;
+    }
     for (LocalResource lr : allNonAppResources) {
       if (lr.getType() == LocalResourceType.FILE) {
         // TEZ AM will only localize FILE (no script operators in the AM)

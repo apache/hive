@@ -36,7 +36,7 @@
     <hadoop.version>2.8.1</hadoop.version>
     <junit.version>4.11</junit.version>
     <slf4j.version>1.7.10</slf4j.version>
-    <maven.checkstyle.plugin.version>2.15</maven.checkstyle.plugin.version>
+    <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
     <checkstyle.conf.dir>${basedir}/checkstyle/</checkstyle.conf.dir>
   </properties>
 
@@ -149,7 +149,8 @@
         <artifactId>maven-checkstyle-plugin</artifactId>
         <configuration>
           <configLocation>${checkstyle.conf.dir}/checkstyle.xml</configLocation>
-          <propertyExpansion>basedir=${checkstyle.conf.dir}</propertyExpansion>
+          <propertyExpansion>config_loc=${checkstyle.conf.dir}</propertyExpansion>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
         </configuration>
       </plugin>
       <plugin>

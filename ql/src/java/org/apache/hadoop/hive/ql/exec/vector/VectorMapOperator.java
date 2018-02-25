@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -620,6 +620,25 @@ public class VectorMapOperator extends AbstractMapOperator {
   }
 
   /*
+   * Flush a partially full deserializerBatch.
+   * @return Return true if the operator tree is not done yet.
+   */
+  private boolean flushDeserializerBatch() throws HiveException {
+    if (deserializerBatch.size > 0) {
+
+      batchCounter++;
+      oneRootOperator.process(deserializerBatch, 0);
+      deserializerBatch.reset();
+      if (oneRootOperator.getDone()) {
+        setDone(true);
+        return false;
+      }
+
+    }
+    return true;
+  }
+
+  /*
    * Setup the context for reading from the next partition file.
    */
   private void setupPartitionContextVars(String nominalPath) throws HiveException {
@@ -672,20 +691,14 @@ public class VectorMapOperator extends AbstractMapOperator {
           currentReadType == VectorMapOperatorReadType.VECTOR_DESERIALIZE ||
           currentReadType == VectorMapOperatorReadType.ROW_DESERIALIZE);
 
-      if (deserializerBatch.size > 0) {
+      /*
+       * Clear out any rows in the batch from previous partition since we are going to change
+       * the repeating partition column values.
+       */
+      if (!flushDeserializerBatch()) {
 
-        /*
-         * Clear out any rows in the batch from previous partition since we are going to change
-         * the repeating partition column values.
-         */
-        batchCounter++;
-        oneRootOperator.process(deserializerBatch, 0);
-        deserializerBatch.reset();
-        if (oneRootOperator.getDone()) {
-          setDone(true);
-          return;
-        }
-
+        // Operator tree is now done.
+        return;
       }
 
       /*
@@ -773,6 +786,38 @@ public class VectorMapOperator extends AbstractMapOperator {
     return null;
   }
 
+  /*
+   * Deliver a vector batch to the operator tree.
+   *
+   * The Vectorized Input File Format reader has already set the partition column
+   * values, reset and filled in the batch, etc.
+   *
+   * We pass the VectorizedRowBatch through here.
+   *
+   * @return Return true if the operator tree is not done yet.
+   */
+  private boolean deliverVectorizedRowBatch(Writable value) throws HiveException {
+
+    batchCounter++;
+    if (value != null) {
+      VectorizedRowBatch batch = (VectorizedRowBatch) value;
+      numRows += batch.size;
+      if (hasRowIdentifier) {
+        if (batchContext.getRecordIdColumnVector() == null) {
+          setRowIdentiferToNull(batch);
+        } else {
+          batch.cols[rowIdentifierColumnNum] = batchContext.getRecordIdColumnVector();
+        }
+      }
+    }
+    oneRootOperator.process(value, 0);
+    if (oneRootOperator.getDone()) {
+      setDone(true);
+      return false;
+    }
+    return true;
+  }
+
   @Override
   public void process(Writable value) throws HiveException {
 
@@ -798,30 +843,33 @@ public class VectorMapOperator extends AbstractMapOperator {
       try {
         if (currentReadType == VectorMapOperatorReadType.VECTORIZED_INPUT_FILE_FORMAT) {
 
-          /*
-           * The Vectorized Input File Format reader has already set the partition column
-           * values, reset and filled in the batch, etc.
-           *
-           * We pass the VectorizedRowBatch through here.
-           */
-          batchCounter++;
-          if (value != null) {
-            VectorizedRowBatch batch = (VectorizedRowBatch) value;
-            numRows += batch.size;
-            if (hasRowIdentifier) {
-              if (batchContext.getRecordIdColumnVector() == null) {
-                setRowIdentiferToNull(batch);
-              } else {
-                batch.cols[rowIdentifierColumnNum] = batchContext.getRecordIdColumnVector();
-              }
-            }
-          }
-          oneRootOperator.process(value, 0);
-          if (oneRootOperator.getDone()) {
-            setDone(true);
+          if (!deliverVectorizedRowBatch(value)) {
+
+            // Operator tree is now done.
             return;
           }
 
+        } else if (value instanceof VectorizedRowBatch) {
+
+          /*
+           * This case can happen with LLAP.  If it is able to deserialize and cache data from the
+           * input format, it will deliver that cached data to us as VRBs.
+           */
+
+          /*
+           * Clear out any rows we may have processed in row-mode for the current partition..
+           */
+          if (!flushDeserializerBatch()) {
+
+            // Operator tree is now done.
+            return;
+          }
+
+          if (!deliverVectorizedRowBatch(value)) {
+
+            // Operator tree is now done.
+            return;
+          }
         } else {
 
           /*

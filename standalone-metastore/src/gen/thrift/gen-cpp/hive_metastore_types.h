@@ -453,7 +453,7 @@ class AddDynamicPartitions;
 
 class BasicTxnInfo;
 
-class TxnsSnapshot;
+class CreationMetadata;
 
 class NotificationEventRequest;
 
@@ -519,7 +519,11 @@ class Materialization;
 
 class WMResourcePlan;
 
+class WMNullableResourcePlan;
+
 class WMPool;
+
+class WMNullablePool;
 
 class WMTrigger;
 
@@ -2506,7 +2510,7 @@ class Table {
   PrincipalPrivilegeSet privileges;
   bool temporary;
   bool rewriteEnabled;
-  std::map<std::string, BasicTxnInfo>  creationMetadata;
+  CreationMetadata creationMetadata;
 
   _Table__isset __isset;
 
@@ -2540,7 +2544,7 @@ class Table {
 
   void __set_rewriteEnabled(const bool val);
 
-  void __set_creationMetadata(const std::map<std::string, BasicTxnInfo> & val);
+  void __set_creationMetadata(const CreationMetadata& val);
 
   bool operator == (const Table & rhs) const
   {
@@ -7177,8 +7181,7 @@ inline std::ostream& operator<<(std::ostream& out, const AddDynamicPartitions& o
 }
 
 typedef struct _BasicTxnInfo__isset {
-  _BasicTxnInfo__isset() : id(false), time(false), txnid(false), dbname(false), tablename(false), partitionname(false) {}
-  bool id :1;
+  _BasicTxnInfo__isset() : time(false), txnid(false), dbname(false), tablename(false), partitionname(false) {}
   bool time :1;
   bool txnid :1;
   bool dbname :1;
@@ -7191,12 +7194,11 @@ class BasicTxnInfo {
 
   BasicTxnInfo(const BasicTxnInfo&);
   BasicTxnInfo& operator=(const BasicTxnInfo&);
-  BasicTxnInfo() : isnull(0), id(0), time(0), txnid(0), dbname(), tablename(), partitionname() {
+  BasicTxnInfo() : isnull(0), time(0), txnid(0), dbname(), tablename(), partitionname() {
   }
 
   virtual ~BasicTxnInfo() throw();
   bool isnull;
-  int64_t id;
   int64_t time;
   int64_t txnid;
   std::string dbname;
@@ -7206,8 +7208,6 @@ class BasicTxnInfo {
   _BasicTxnInfo__isset __isset;
 
   void __set_isnull(const bool val);
-
-  void __set_id(const int64_t val);
 
   void __set_time(const int64_t val);
 
@@ -7222,10 +7222,6 @@ class BasicTxnInfo {
   bool operator == (const BasicTxnInfo & rhs) const
   {
     if (!(isnull == rhs.isnull))
-      return false;
-    if (__isset.id != rhs.__isset.id)
-      return false;
-    else if (__isset.id && !(id == rhs.id))
       return false;
     if (__isset.time != rhs.__isset.time)
       return false;
@@ -7269,36 +7265,54 @@ inline std::ostream& operator<<(std::ostream& out, const BasicTxnInfo& obj)
   return out;
 }
 
+typedef struct _CreationMetadata__isset {
+  _CreationMetadata__isset() : validTxnList(false) {}
+  bool validTxnList :1;
+} _CreationMetadata__isset;
 
-class TxnsSnapshot {
+class CreationMetadata {
  public:
 
-  TxnsSnapshot(const TxnsSnapshot&);
-  TxnsSnapshot& operator=(const TxnsSnapshot&);
-  TxnsSnapshot() : txn_high_water_mark(0) {
+  CreationMetadata(const CreationMetadata&);
+  CreationMetadata& operator=(const CreationMetadata&);
+  CreationMetadata() : dbName(), tblName(), validTxnList() {
   }
 
-  virtual ~TxnsSnapshot() throw();
-  int64_t txn_high_water_mark;
-  std::vector<int64_t>  open_txns;
+  virtual ~CreationMetadata() throw();
+  std::string dbName;
+  std::string tblName;
+  std::set<std::string>  tablesUsed;
+  std::string validTxnList;
 
-  void __set_txn_high_water_mark(const int64_t val);
+  _CreationMetadata__isset __isset;
 
-  void __set_open_txns(const std::vector<int64_t> & val);
+  void __set_dbName(const std::string& val);
 
-  bool operator == (const TxnsSnapshot & rhs) const
+  void __set_tblName(const std::string& val);
+
+  void __set_tablesUsed(const std::set<std::string> & val);
+
+  void __set_validTxnList(const std::string& val);
+
+  bool operator == (const CreationMetadata & rhs) const
   {
-    if (!(txn_high_water_mark == rhs.txn_high_water_mark))
+    if (!(dbName == rhs.dbName))
       return false;
-    if (!(open_txns == rhs.open_txns))
+    if (!(tblName == rhs.tblName))
+      return false;
+    if (!(tablesUsed == rhs.tablesUsed))
+      return false;
+    if (__isset.validTxnList != rhs.__isset.validTxnList)
+      return false;
+    else if (__isset.validTxnList && !(validTxnList == rhs.validTxnList))
       return false;
     return true;
   }
-  bool operator != (const TxnsSnapshot &rhs) const {
+  bool operator != (const CreationMetadata &rhs) const {
     return !(*this == rhs);
   }
 
-  bool operator < (const TxnsSnapshot & ) const;
+  bool operator < (const CreationMetadata & ) const;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -7306,9 +7320,9 @@ class TxnsSnapshot {
   virtual void printTo(std::ostream& out) const;
 };
 
-void swap(TxnsSnapshot &a, TxnsSnapshot &b);
+void swap(CreationMetadata &a, CreationMetadata &b);
 
-inline std::ostream& operator<<(std::ostream& out, const TxnsSnapshot& obj)
+inline std::ostream& operator<<(std::ostream& out, const CreationMetadata& obj)
 {
   obj.printTo(out);
   return out;
@@ -8907,6 +8921,91 @@ inline std::ostream& operator<<(std::ostream& out, const WMResourcePlan& obj)
   return out;
 }
 
+typedef struct _WMNullableResourcePlan__isset {
+  _WMNullableResourcePlan__isset() : status(false), queryParallelism(false), isSetQueryParallelism(false), defaultPoolPath(false), isSetDefaultPoolPath(false) {}
+  bool status :1;
+  bool queryParallelism :1;
+  bool isSetQueryParallelism :1;
+  bool defaultPoolPath :1;
+  bool isSetDefaultPoolPath :1;
+} _WMNullableResourcePlan__isset;
+
+class WMNullableResourcePlan {
+ public:
+
+  WMNullableResourcePlan(const WMNullableResourcePlan&);
+  WMNullableResourcePlan& operator=(const WMNullableResourcePlan&);
+  WMNullableResourcePlan() : name(), status((WMResourcePlanStatus::type)0), queryParallelism(0), isSetQueryParallelism(0), defaultPoolPath(), isSetDefaultPoolPath(0) {
+  }
+
+  virtual ~WMNullableResourcePlan() throw();
+  std::string name;
+  WMResourcePlanStatus::type status;
+  int32_t queryParallelism;
+  bool isSetQueryParallelism;
+  std::string defaultPoolPath;
+  bool isSetDefaultPoolPath;
+
+  _WMNullableResourcePlan__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_status(const WMResourcePlanStatus::type val);
+
+  void __set_queryParallelism(const int32_t val);
+
+  void __set_isSetQueryParallelism(const bool val);
+
+  void __set_defaultPoolPath(const std::string& val);
+
+  void __set_isSetDefaultPoolPath(const bool val);
+
+  bool operator == (const WMNullableResourcePlan & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (__isset.status != rhs.__isset.status)
+      return false;
+    else if (__isset.status && !(status == rhs.status))
+      return false;
+    if (__isset.queryParallelism != rhs.__isset.queryParallelism)
+      return false;
+    else if (__isset.queryParallelism && !(queryParallelism == rhs.queryParallelism))
+      return false;
+    if (__isset.isSetQueryParallelism != rhs.__isset.isSetQueryParallelism)
+      return false;
+    else if (__isset.isSetQueryParallelism && !(isSetQueryParallelism == rhs.isSetQueryParallelism))
+      return false;
+    if (__isset.defaultPoolPath != rhs.__isset.defaultPoolPath)
+      return false;
+    else if (__isset.defaultPoolPath && !(defaultPoolPath == rhs.defaultPoolPath))
+      return false;
+    if (__isset.isSetDefaultPoolPath != rhs.__isset.isSetDefaultPoolPath)
+      return false;
+    else if (__isset.isSetDefaultPoolPath && !(isSetDefaultPoolPath == rhs.isSetDefaultPoolPath))
+      return false;
+    return true;
+  }
+  bool operator != (const WMNullableResourcePlan &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMNullableResourcePlan & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMNullableResourcePlan &a, WMNullableResourcePlan &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMNullableResourcePlan& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
 typedef struct _WMPool__isset {
   _WMPool__isset() : allocFraction(false), queryParallelism(false), schedulingPolicy(false) {}
   bool allocFraction :1;
@@ -8976,6 +9075,88 @@ class WMPool {
 void swap(WMPool &a, WMPool &b);
 
 inline std::ostream& operator<<(std::ostream& out, const WMPool& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _WMNullablePool__isset {
+  _WMNullablePool__isset() : allocFraction(false), queryParallelism(false), schedulingPolicy(false), isSetSchedulingPolicy(false) {}
+  bool allocFraction :1;
+  bool queryParallelism :1;
+  bool schedulingPolicy :1;
+  bool isSetSchedulingPolicy :1;
+} _WMNullablePool__isset;
+
+class WMNullablePool {
+ public:
+
+  WMNullablePool(const WMNullablePool&);
+  WMNullablePool& operator=(const WMNullablePool&);
+  WMNullablePool() : resourcePlanName(), poolPath(), allocFraction(0), queryParallelism(0), schedulingPolicy(), isSetSchedulingPolicy(0) {
+  }
+
+  virtual ~WMNullablePool() throw();
+  std::string resourcePlanName;
+  std::string poolPath;
+  double allocFraction;
+  int32_t queryParallelism;
+  std::string schedulingPolicy;
+  bool isSetSchedulingPolicy;
+
+  _WMNullablePool__isset __isset;
+
+  void __set_resourcePlanName(const std::string& val);
+
+  void __set_poolPath(const std::string& val);
+
+  void __set_allocFraction(const double val);
+
+  void __set_queryParallelism(const int32_t val);
+
+  void __set_schedulingPolicy(const std::string& val);
+
+  void __set_isSetSchedulingPolicy(const bool val);
+
+  bool operator == (const WMNullablePool & rhs) const
+  {
+    if (!(resourcePlanName == rhs.resourcePlanName))
+      return false;
+    if (!(poolPath == rhs.poolPath))
+      return false;
+    if (__isset.allocFraction != rhs.__isset.allocFraction)
+      return false;
+    else if (__isset.allocFraction && !(allocFraction == rhs.allocFraction))
+      return false;
+    if (__isset.queryParallelism != rhs.__isset.queryParallelism)
+      return false;
+    else if (__isset.queryParallelism && !(queryParallelism == rhs.queryParallelism))
+      return false;
+    if (__isset.schedulingPolicy != rhs.__isset.schedulingPolicy)
+      return false;
+    else if (__isset.schedulingPolicy && !(schedulingPolicy == rhs.schedulingPolicy))
+      return false;
+    if (__isset.isSetSchedulingPolicy != rhs.__isset.isSetSchedulingPolicy)
+      return false;
+    else if (__isset.isSetSchedulingPolicy && !(isSetSchedulingPolicy == rhs.isSetSchedulingPolicy))
+      return false;
+    return true;
+  }
+  bool operator != (const WMNullablePool &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const WMNullablePool & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(WMNullablePool &a, WMNullablePool &b);
+
+inline std::ostream& operator<<(std::ostream& out, const WMNullablePool& obj)
 {
   obj.printTo(out);
   return out;
@@ -9617,7 +9798,7 @@ class WMAlterResourcePlanRequest {
 
   virtual ~WMAlterResourcePlanRequest() throw();
   std::string resourcePlanName;
-  WMResourcePlan resourcePlan;
+  WMNullableResourcePlan resourcePlan;
   bool isEnableAndActivate;
   bool isForceDeactivate;
   bool isReplace;
@@ -9626,7 +9807,7 @@ class WMAlterResourcePlanRequest {
 
   void __set_resourcePlanName(const std::string& val);
 
-  void __set_resourcePlan(const WMResourcePlan& val);
+  void __set_resourcePlan(const WMNullableResourcePlan& val);
 
   void __set_isEnableAndActivate(const bool val);
 
@@ -9775,8 +9956,9 @@ inline std::ostream& operator<<(std::ostream& out, const WMValidateResourcePlanR
 }
 
 typedef struct _WMValidateResourcePlanResponse__isset {
-  _WMValidateResourcePlanResponse__isset() : errors(false) {}
+  _WMValidateResourcePlanResponse__isset() : errors(false), warnings(false) {}
   bool errors :1;
+  bool warnings :1;
 } _WMValidateResourcePlanResponse__isset;
 
 class WMValidateResourcePlanResponse {
@@ -9789,16 +9971,23 @@ class WMValidateResourcePlanResponse {
 
   virtual ~WMValidateResourcePlanResponse() throw();
   std::vector<std::string>  errors;
+  std::vector<std::string>  warnings;
 
   _WMValidateResourcePlanResponse__isset __isset;
 
   void __set_errors(const std::vector<std::string> & val);
+
+  void __set_warnings(const std::vector<std::string> & val);
 
   bool operator == (const WMValidateResourcePlanResponse & rhs) const
   {
     if (__isset.errors != rhs.__isset.errors)
       return false;
     else if (__isset.errors && !(errors == rhs.errors))
+      return false;
+    if (__isset.warnings != rhs.__isset.warnings)
+      return false;
+    else if (__isset.warnings && !(warnings == rhs.warnings))
       return false;
     return true;
   }
@@ -10356,12 +10545,12 @@ class WMAlterPoolRequest {
   }
 
   virtual ~WMAlterPoolRequest() throw();
-  WMPool pool;
+  WMNullablePool pool;
   std::string poolPath;
 
   _WMAlterPoolRequest__isset __isset;
 
-  void __set_pool(const WMPool& val);
+  void __set_pool(const WMNullablePool& val);
 
   void __set_poolPath(const std::string& val);
 

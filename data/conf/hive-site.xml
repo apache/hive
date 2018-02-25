@@ -141,7 +141,7 @@
 
 <property>
   <name>hive.exec.pre.hooks</name>
-  <value>org.apache.hadoop.hive.ql.hooks.PreExecutePrinter, org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyTables</value>
+  <value>org.apache.hadoop.hive.ql.hooks.PreExecutePrinter, org.apache.hadoop.hive.ql.hooks.EnforceReadOnlyTables, org.apache.hadoop.hive.ql.hooks.MaterializedViewRegistryPropertiesHook</value>
   <description>Pre Execute Hook for Tests</description>
 </property>
 
@@ -326,6 +326,11 @@
 <property>
   <name>yarn.nodemanager.disk-health-checker.max-disk-utilization-per-disk-percentage</name>
   <value>99</value>
+</property>
+
+<property>
+  <name>hive.query.results.cache.enabled</name>
+  <value>false</value>
 </property>
 
 </configuration>

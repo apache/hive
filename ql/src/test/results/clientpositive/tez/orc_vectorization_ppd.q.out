@@ -161,74 +161,74 @@ POSTHOOK: Lineage: testorc.s3 SIMPLE [(vectororc)vectororc.FieldSchema(name:s3, 
 PREHOOK: query: select count(*),int(sum(d)) from testorc where s1 is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*),int(sum(d)) from testorc where s1 is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3000	1505
 PREHOOK: query: select count(*),int(sum(d)) from testorc where s1 is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*),int(sum(d)) from testorc where s1 is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3000	1505
 PREHOOK: query: select count(*),int(sum(d)) from testorc where s2 in ("b", "c", "e", "g")
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*),int(sum(d)) from testorc where s2 in ("b", "c", "e", "g")
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 4000	2006
 PREHOOK: query: select count(*),int(sum(d)) from testorc where s2 in ("b", "c", "e", "g")
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*),int(sum(d)) from testorc where s2 in ("b", "c", "e", "g")
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 4000	2006
 PREHOOK: query: select count(*),int(sum(d)) from testorc where s3="z"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*),int(sum(d)) from testorc where s3="z"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2000	1011
 PREHOOK: query: select count(*),int(sum(d)) from testorc where s3="z"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*),int(sum(d)) from testorc where s3="z"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2000	1011
 PREHOOK: query: select count(*),int(sum(d)) from testorc where s2="a" or s2="g"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*),int(sum(d)) from testorc where s2="a" or s2="g"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2000	1006
 PREHOOK: query: select count(*),int(sum(d)) from testorc where s2="a" or s2="g"
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*),int(sum(d)) from testorc where s2="a" or s2="g"
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2000	1006
 PREHOOK: query: drop table srcorc
 PREHOOK: type: DROPTABLE

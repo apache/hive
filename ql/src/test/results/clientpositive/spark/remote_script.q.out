@@ -23,11 +23,11 @@ POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:str
 PREHOOK: query: select * from tmp_tmp ORDER BY key ASC, value ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_tmp
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from tmp_tmp ORDER BY key ASC, value ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_tmp
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	2	NULL
 1	2	NULL
 1

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.cache.CachedStore;
+import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
 import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
@@ -189,7 +190,16 @@ public class HiveServer2 extends CompositeService {
     initializeWorkloadManagement(hiveConf, sessionHive);
 
     // Create views registry
-    HiveMaterializedViewsRegistry.get().init(sessionHive);
+    HiveMaterializedViewsRegistry.get().init();
+
+    // Setup cache if enabled.
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED)) {
+      try {
+        QueryResultsCache.initialize(hiveConf);
+      } catch (Exception err) {
+        throw new RuntimeException("Error initializing the query results cache", err);
+      }
+    }
 
     // Setup web UI
     try {
@@ -287,12 +297,14 @@ public class HiveServer2 extends CompositeService {
       LOG.warn("Workload management is enabled but there's no resource plan");
     }
 
-    // Initialize workload management.
-    LOG.info("Initializing workload management");
-    try {
-      wm = WorkloadManager.create(wmQueue, hiveConf, resourcePlan);
-    } catch (ExecutionException | InterruptedException e) {
-      throw new ServiceException("Unable to instantiate Workload Manager", e);
+    if (hasQueue) {
+      // Initialize workload management.
+      LOG.info("Initializing workload management");
+      try {
+        wm = WorkloadManager.create(wmQueue, hiveConf, resourcePlan);
+      } catch (ExecutionException | InterruptedException e) {
+        throw new ServiceException("Unable to instantiate Workload Manager", e);
+      }
     }
 
     if (resourcePlan != null) {

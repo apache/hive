@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,23 +29,36 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
  * The first is always a boolean (LongColumnVector).
  * The second and third are string columns or string expression results.
  */
-public class IfExprStringGroupColumnStringGroupColumn extends IfExprConditionalFilter {
+public class IfExprStringGroupColumnStringGroupColumn extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  public IfExprStringGroupColumnStringGroupColumn(int arg1Column, int arg2Column, int arg3Column, int outputColumn) {
-    super(arg1Column, arg2Column, arg3Column, outputColumn);
+  private final int arg1Column;
+  private final int arg2Column;
+  private final int arg3Column;
+
+  public IfExprStringGroupColumnStringGroupColumn(int arg1Column, int arg2Column, int arg3Column,
+      int outputColumnNum) {
+    super(outputColumnNum);
+    this.arg1Column = arg1Column;
+    this.arg2Column = arg2Column;
+    this.arg3Column = arg3Column;
   }
 
   public IfExprStringGroupColumnStringGroupColumn() {
     super();
+
+    // Dummy final assignments.
+    arg1Column = -1;
+    arg2Column = -1;
+    arg3Column = -1;
   }
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
 
     if (childExpressions != null) {
-      super.evaluateIfConditionalExpr(batch, childExpressions);
+      super.evaluateChildren(batch);
     }
 
     LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];

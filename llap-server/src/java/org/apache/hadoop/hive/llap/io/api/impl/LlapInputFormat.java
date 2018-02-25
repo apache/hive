@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -110,7 +110,7 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       }
       // For non-vectorized operator case, wrap the reader if possible.
       RecordReader<NullWritable, VectorizedRowBatch> result = rr;
-      if (!Utilities.getUseVectorizedInputFileFormat(job)) {
+      if (!Utilities.getIsVectorized(job)) {
         result = wrapLlapReader(includedCols, rr, split);
         if (result == null) {
           // Cannot wrap a reader for non-vectorized pipeline.

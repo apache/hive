@@ -27,13 +27,13 @@ POSTHOOK: type: ALTERTABLE_ADDPARTS
 #### A masked pattern was here ####
 POSTHOOK: Output: default@dynpart
 POSTHOOK: Output: default@dynpart@value=0/value2=clusterA
-#### A masked pattern was here ####
+PREHOOK: query: alter table dynPart add partition (value='0', value2='clusterB') location 'hdfs://### HDFS PATH ###'
 PREHOOK: type: ALTERTABLE_ADDPARTS
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: default@dynpart
-#### A masked pattern was here ####
+POSTHOOK: query: alter table dynPart add partition (value='0', value2='clusterB') location 'hdfs://### HDFS PATH ###'
 POSTHOOK: type: ALTERTABLE_ADDPARTS
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: default@dynpart
 POSTHOOK: Output: default@dynpart@value=0/value2=clusterB
 PREHOOK: query: select value2, key from dynPart where value='0'
@@ -41,13 +41,13 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@dynpart
 PREHOOK: Input: default@dynpart@value=0/value2=clusterA
 PREHOOK: Input: default@dynpart@value=0/value2=clusterB
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select value2, key from dynPart where value='0'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dynpart
 POSTHOOK: Input: default@dynpart@value=0/value2=clusterA
 POSTHOOK: Input: default@dynpart@value=0/value2=clusterB
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 clusterA	10
 clusterB	20
 #### A masked pattern was here ####

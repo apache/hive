@@ -21,7 +21,8 @@ case "`uname`" in
 esac
 
 bin=`dirname "$0"`
-bin=`cd "$bin"; pwd`
+# The strange redirect on cd is because on some systems cd outputs the directory you changed to
+bin=`cd "$bin" 2>&1 > /dev/null; pwd`
 
 . "$bin"/metastore-config.sh
 
@@ -92,7 +93,7 @@ done
 
 # add the auxillary jars such as serdes
 if [ -d "${METASTORE_AUX_JARS_PATH}" ]; then
-  hive_aux_jars_abspath=`cd ${METASTORE_AUX_JARS_PATH} && pwd`
+  hive_aux_jars_abspath=`cd ${METASTORE_AUX_JARS_PATH} 2>&1 > /dev/null && pwd`
   for f in $hive_aux_jars_abspath/*.jar; do
     if [[ ! -f $f ]]; then
         continue;
@@ -218,15 +219,7 @@ for j in $SERVICE_LIST ; do
 done
 
 # to initialize logging for all services
-
-export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=metastore-log4j2.xml"
-
-if [[ "$SERVICE" =~ ^(hiveserver2|beeline|cli)$ ]] ; then
-  # If process is backgrounded, don't change terminal settings
-  if [[ ( ! $(ps -o stat= -p $$) =~ "+" ) && ! ( -p /dev/stdin ) ]]; then
-    export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Djline.terminal=jline.UnsupportedTerminal"
-  fi
-fi
+export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Dlog4j.configurationFile=metastore-log4j2.properties"
 
 if [ "$TORUN" = "" ] ; then
   echo "Service $SERVICE not found"

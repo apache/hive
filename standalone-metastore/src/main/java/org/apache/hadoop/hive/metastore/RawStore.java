@@ -33,7 +33,6 @@ import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
-import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -59,8 +58,11 @@ import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.WMNullablePool;
+import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -78,6 +80,7 @@ import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
 import org.apache.thrift.TException;
 
 public interface RawStore extends Configurable {
@@ -602,17 +605,15 @@ public interface RawStore extends Configurable {
     List<String> partNames, List<String> colNames) throws MetaException, NoSuchObjectException;
 
   /**
-   * Get all partition column statistics for a table in a db
+   * Get column stats for all partitions of all tables in the database
    *
    * @param dbName
-   * @param tableName
-   * @return Map of partition column statistics. Key in the map is partition name. Value is a list
-   *         of column stat object for each column in the partition
+   * @return List of column stats objects for all partitions of all tables in the database
    * @throws MetaException
    * @throws NoSuchObjectException
    */
-  Map<String, List<ColumnStatisticsObj>> getColStatsForTablePartitions(String dbName,
-      String tableName) throws MetaException, NoSuchObjectException;
+  List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String dbName)
+      throws MetaException, NoSuchObjectException;
 
   /**
    * Get the next notification event.
@@ -766,14 +767,14 @@ public interface RawStore extends Configurable {
 
   List<WMResourcePlan> getAllResourcePlans() throws MetaException;
 
-  WMFullResourcePlan alterResourcePlan(String name, WMResourcePlan resourcePlan,
+  WMFullResourcePlan alterResourcePlan(String name, WMNullableResourcePlan resourcePlan,
       boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
           MetaException;
 
   WMFullResourcePlan getActiveResourcePlan() throws MetaException;
 
-  List<String> validateResourcePlan(String name)
+  WMValidateResourcePlanResponse validateResourcePlan(String name)
       throws NoSuchObjectException, InvalidObjectException, MetaException;
 
   void dropResourcePlan(String name) throws NoSuchObjectException, MetaException;
@@ -794,7 +795,7 @@ public interface RawStore extends Configurable {
   void createPool(WMPool pool) throws AlreadyExistsException, NoSuchObjectException,
       InvalidOperationException, MetaException;
 
-  void alterPool(WMPool pool, String poolPath) throws AlreadyExistsException,
+  void alterPool(WMNullablePool pool, String poolPath) throws AlreadyExistsException,
       NoSuchObjectException, InvalidOperationException, MetaException;
 
   void dropWMPool(String resourcePlanName, String poolPath)

@@ -51,7 +51,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -179,7 +178,7 @@ public class MetastoreSchemaTool {
   Connection getConnectionToMetastore(boolean printInfo)
       throws HiveMetaException {
     return HiveSchemaHelper.getConnectionToMetastore(userName,
-        passWord, url, driver, printInfo, conf);
+        passWord, url, driver, printInfo, conf, hiveDb);
   }
 
   private NestedScriptParser getDbCommandParser(String dbType) {
@@ -529,7 +528,7 @@ public class MetastoreSchemaTool {
 
   private MetaStoreConnectionInfo getConnectionInfo(boolean printInfo) {
     return new MetaStoreConnectionInfo(userName, passWord, url, driver, printInfo, conf,
-        dbType);
+        dbType, hiveDb);
   }
   /**
    * Perform metastore schema upgrade
@@ -1170,7 +1169,7 @@ public class MetastoreSchemaTool {
     cmdLineOptions.addOptionGroup(optGroup);
   }
 
-  static void logAndPrintToError(String errmsg) {
+  private static void logAndPrintToError(String errmsg) {
     LOG.error(errmsg);
     System.err.println(errmsg);
   }

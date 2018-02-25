@@ -79,19 +79,19 @@ CREATE TABLE test_1 (member DECIMAL , attr DECIMAL) STORED AS ORC;
 
 INSERT INTO test_1 VALUES (3.0,1.0),(2.0,2.0),(1.0,3.0);
 --for length=3
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1;
 
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE attr+2.0 END FROM test_1;
 
 --for length=2 and the expr2 is null
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1;
 
 SELECT CASE WHEN member =1.0 THEN 1.0 ELSE attr+2.0 END FROM test_1;
 
 --for length=2 and the expr3 is null
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1;
 
 SELECT CASE WHEN member =1.0 THEN attr+1.0 ELSE 2.0 END FROM test_1;
@@ -102,19 +102,19 @@ CREATE TABLE test_2 (member BIGINT, attr BIGINT) STORED AS ORC;
 INSERT INTO test_2 VALUES (3,1),(2,2),(1,3);
 
 --for length=3
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2;
 
 SELECT CASE WHEN member=1 THEN attr+1 else attr+2 END FROM test_2;
 
 --for length=2 and the expression2 is null
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2;
 
 SELECT CASE WHEN member=1 THEN null else attr+2 END FROM test_2;
 
 --for length=2 and the expression3 is null
-EXPLAIN
+EXPLAIN VECTORIZATION EXPRESSION
 SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2;
 
 SELECT CASE WHEN member=1 THEN attr+1 else null END FROM test_2;

@@ -1,0 +1,27 @@
+PREHOOK: query: CREATE TABLE t1(i int, j int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1
+POSTHOOK: query: CREATE TABLE t1(i int, j int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1
+PREHOOK: query: insert into t1 values(1,2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1
+POSTHOOK: query: insert into t1 values(1,2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1
+POSTHOOK: Lineage: t1.i SCRIPT []
+POSTHOOK: Lineage: t1.j SCRIPT []
+PREHOOK: query: alter table t1 change j j int constraint nn0 not null enforced
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@t1
+PREHOOK: Output: default@t1
+POSTHOOK: query: alter table t1 change j j int constraint nn0 not null enforced
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@t1
+POSTHOOK: Output: default@t1
+FAILED: UDFArgumentException org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException: NOT NULL constraint violated!

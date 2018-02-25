@@ -6,7 +6,7 @@ where
 order by a.cint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select
   *
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -15,7 +15,7 @@ where
 order by a.cint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze
 select
   *
@@ -77,7 +77,7 @@ where
 order by a.cint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select
   *
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -86,7 +86,7 @@ where
 order by a.cint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 11	NULL	1000828	1531084669	11.0	NULL	wM316f6NqGIkoP388j3F6	poWQQo3Upvt3Wh	1969-12-31 16:00:02.351	NULL	false	true	11	NULL	1000828	1531084669	11.0	NULL	wM316f6NqGIkoP388j3F6	poWQQo3Upvt3Wh	1969-12-31 16:00:02.351	NULL	false	true
 NULL	-3799	1248059	1864027286	NULL	-3799.0	Uhps6mMh3IfHB3j7yH62K	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:54.622	false	true	NULL	-3799	1248059	1864027286	NULL	-3799.0	Uhps6mMh3IfHB3j7yH62K	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:54.622	false	true
 NULL	10782	1286921	1864027286	NULL	10782.0	ODLrXI8882q8LS8	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:52.138	true	true	NULL	10782	1286921	1864027286	NULL	10782.0	ODLrXI8882q8LS8	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:52.138	true	true
@@ -104,7 +104,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select
   count(*)
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -112,7 +112,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze
 select
   count(*)
@@ -171,7 +171,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select
   count(*)
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -179,7 +179,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 10
 PREHOOK: query: select
   a.csmallint, count(*) c1
@@ -190,7 +190,7 @@ group by a.csmallint
 order by c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select
   a.csmallint, count(*) c1
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -200,7 +200,7 @@ group by a.csmallint
 order by c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze
 select
   a.csmallint, count(*) c1
@@ -271,7 +271,7 @@ group by a.csmallint
 order by c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select
   a.csmallint, count(*) c1
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -281,7 +281,7 @@ group by a.csmallint
 order by c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -13036	1
 -8915	1
 -3799	1
@@ -295,7 +295,7 @@ where
 order by a.cint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select
   *
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -304,7 +304,7 @@ where
 order by a.cint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze
 select
   *
@@ -366,7 +366,7 @@ where
 order by a.cint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select
   *
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -375,7 +375,7 @@ where
 order by a.cint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 11	NULL	1000828	1531084669	11.0	NULL	wM316f6NqGIkoP388j3F6	poWQQo3Upvt3Wh	1969-12-31 16:00:02.351	NULL	false	true	11	NULL	1000828	1531084669	11.0	NULL	wM316f6NqGIkoP388j3F6	poWQQo3Upvt3Wh	1969-12-31 16:00:02.351	NULL	false	true
 NULL	-3799	1248059	1864027286	NULL	-3799.0	Uhps6mMh3IfHB3j7yH62K	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:54.622	false	true	NULL	-3799	1248059	1864027286	NULL	-3799.0	Uhps6mMh3IfHB3j7yH62K	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:54.622	false	true
 NULL	10782	1286921	1864027286	NULL	10782.0	ODLrXI8882q8LS8	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:52.138	true	true	NULL	10782	1286921	1864027286	NULL	10782.0	ODLrXI8882q8LS8	4KWs6gw7lv2WYd66P	NULL	1969-12-31 15:59:52.138	true	true
@@ -393,7 +393,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select
   count(*)
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -401,7 +401,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze
 select
   count(*)
@@ -460,7 +460,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select
   count(*)
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -468,7 +468,7 @@ where
   a.cint between 1000000 and 3000000 and b.cbigint is not null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 10
 PREHOOK: query: select
   a.csmallint, count(*) c1
@@ -479,7 +479,7 @@ group by a.csmallint
 order by c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select
   a.csmallint, count(*) c1
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -489,7 +489,7 @@ group by a.csmallint
 order by c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain analyze
 select
   a.csmallint, count(*) c1
@@ -560,7 +560,7 @@ group by a.csmallint
 order by c1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select
   a.csmallint, count(*) c1
 from alltypesorc a join alltypesorc b on a.cint = b.cint
@@ -570,7 +570,7 @@ group by a.csmallint
 order by c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -13036	1
 -8915	1
 -3799	1

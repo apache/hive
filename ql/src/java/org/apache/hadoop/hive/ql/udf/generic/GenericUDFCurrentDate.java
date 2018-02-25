@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,9 +29,9 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
-// If there is a new UDFType to describe a function that is deterministic within a query
-// but changes value between queries, this function would fall into that category.
-@UDFType(deterministic = true)
+// This function is not a deterministic function, but a runtime constant.
+// The return value is constant within a query but can be different between queries.
+@UDFType(deterministic = false, runtimeConstant = true)
 @Description(name = "current_date",
     value = "_FUNC_() - Returns the current date at the start of query evaluation."
     + " All calls of current_date within the same query return the same value.")

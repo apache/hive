@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,8 +22,6 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 
 /**
@@ -1032,7 +1030,7 @@ public class VectorHashKeyWrapperBatch extends VectorColumnSetInfo {
       kw.assignNullLong(keyIndex, columnTypeSpecificIndex);
       return;
     }
-    kw.assignLong(columnTypeSpecificIndex, value);
+    kw.assignLong(keyIndex, columnTypeSpecificIndex, value);
   }
 
   public void assignRowColumn(VectorizedRowBatch batch, int batchIndex, int keyIndex,

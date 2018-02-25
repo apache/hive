@@ -1,0 +1,176 @@
+PREHOOK: query: explain
+select key, value from src where key=0
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select key, value from src where key=0
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: (UDFToDouble(key) = 0.0) (type: boolean)
+            Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              ListSink
+
+PREHOOK: query: select key, value from src where key=0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select key, value from src where key=0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+test.comment=Query only requires fetch task - should not use results cache
+PREHOOK: query: explain
+select key, value from src where key=0
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select key, value from src where key=0
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: (UDFToDouble(key) = 0.0) (type: boolean)
+            Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+            Select Operator
+              expressions: key (type: string), value (type: string)
+              outputColumnNames: _col0, _col1
+              Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+              ListSink
+
+PREHOOK: query: select c1, count(*)
+from (select sign(value) c1, value from src where key < 10) q
+group by c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select c1, count(*)
+from (select sign(value) c1, value from src where key < 10) q
+group by c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+NULL	10
+test.comment=This query should use the cache
+PREHOOK: query: explain
+select c1, count(*)
+from (select sign(value) c1, value from src where key < 10) q
+group by c1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select c1, count(*)
+from (select sign(value) c1, value from src where key < 10) q
+group by c1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+      Cached Query Result: true
+
+PREHOOK: query: select c1, count(*)
+from (select current_timestamp c1, value from src where key < 10) q
+group by c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select c1, count(*)
+from (select current_timestamp c1, value from src where key < 10) q
+group by c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+2012-01-01 01:02:03	10
+test.comment=Queries using non-deterministic functions should not use results cache
+PREHOOK: query: explain
+select c1, count(*)
+from (select current_timestamp c1, value from src where key < 10) q
+group by c1
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select c1, count(*)
+from (select current_timestamp c1, value from src where key < 10) q
+group by c1
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Map Operator Tree:
+          TableScan
+            alias: src
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            Filter Operator
+              predicate: (UDFToDouble(key) < 10.0) (type: boolean)
+              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Select Operator
+                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  keys: 2012-01-01 01:02:03.0 (type: timestamp)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: timestamp)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: timestamp)
+                    Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: bigint)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations: count(VALUE._col0)
+          keys: KEY._col0 (type: timestamp)
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: 2012-01-01 01:02:03.0 (type: timestamp), _col1 (type: bigint)
+            outputColumnNames: _col0, _col1
+            Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

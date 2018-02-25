@@ -92,11 +92,11 @@ POSTHOOK: Output: default@over10k_orc_bucketed
 PREHOOK: query: select distinct si, si%4 from over10k order by si
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select distinct si, si%4 from over10k order by si
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 NULL	NULL
 256	0
 257	1
@@ -370,7 +370,10 @@ POSTHOOK: Lineage: over10k_orc_bucketed.si SIMPLE [(over10k)over10k.FieldSchema(
 POSTHOOK: Lineage: over10k_orc_bucketed.t SIMPLE [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: over10k_orc_bucketed.ts SIMPLE [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
 Found 4 items
-#### A masked pattern was here ####
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7838 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7786 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7419 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       8035 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: insert into over10k_orc_bucketed select * from over10k
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k
@@ -391,15 +394,30 @@ POSTHOOK: Lineage: over10k_orc_bucketed.si SIMPLE [(over10k)over10k.FieldSchema(
 POSTHOOK: Lineage: over10k_orc_bucketed.t SIMPLE [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: over10k_orc_bucketed.ts SIMPLE [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
 Found 8 items
-#### A masked pattern was here ####
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7838 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7838 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7786 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7786 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7419 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       7419 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       8035 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-rw-rw-   3 ### USER ### ### GROUP ###       8035 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: select distinct 7 as seven, INPUT__FILE__NAME from over10k_orc_bucketed
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_orc_bucketed
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select distinct 7 as seven, INPUT__FILE__NAME from over10k_orc_bucketed
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k_orc_bucketed
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+7	hdfs://### HDFS PATH ###
+7	hdfs://### HDFS PATH ###
+7	hdfs://### HDFS PATH ###
+7	hdfs://### HDFS PATH ###
+7	hdfs://### HDFS PATH ###
+7	hdfs://### HDFS PATH ###
+7	hdfs://### HDFS PATH ###
+7	hdfs://### HDFS PATH ###
 PREHOOK: query: alter table over10k_orc_bucketed set TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@over10k_orc_bucketed
@@ -466,11 +484,11 @@ STAGE PLANS:
 PREHOOK: query: select t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by  t, si, i
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_orc_bucketed
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by  t, si, i
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k_orc_bucketed
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -3	344	65733
 -3	344	65733
 5	501	65585
@@ -536,11 +554,11 @@ STAGE PLANS:
 PREHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by ROW__ID
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_orc_bucketed
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by ROW__ID
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k_orc_bucketed
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"transactionid":0,"bucketid":536870912,"rowid":36}	-3	344	65733
 {"transactionid":0,"bucketid":536870912,"rowid":300}	-3	344	65733
 {"transactionid":0,"bucketid":536936448,"rowid":82}	5	501	65585
@@ -631,11 +649,11 @@ POSTHOOK: Output: default@over10k_orc_bucketed
 PREHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by ROW__ID
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_orc_bucketed
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by ROW__ID
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k_orc_bucketed
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"transactionid":### Masked txnid ###,"bucketid":536870912,"rowid":0}	-3	344	0
 {"transactionid":### Masked txnid ###,"bucketid":536870912,"rowid":1}	-3	344	0
 {"transactionid":### Masked txnid ###,"bucketid":536936448,"rowid":0}	5	501	0
@@ -707,11 +725,11 @@ STAGE PLANS:
 PREHOOK: query: select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID having count(*) > 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_orc_bucketed
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID having count(*) > 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k_orc_bucketed
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: alter table over10k_orc_bucketed compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500')
 PREHOOK: type: ALTERTABLE_COMPACT
 POSTHOOK: query: alter table over10k_orc_bucketed compact 'major' WITH OVERWRITE TBLPROPERTIES ('compactor.mapreduce.map.memory.mb'='500', 'compactor.mapreduce.reduce.memory.mb'='500','compactor.mapreduce.map.memory.mb'='500', 'compactor.hive.tez.container.size'='500')
@@ -719,11 +737,11 @@ POSTHOOK: type: ALTERTABLE_COMPACT
 PREHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by ROW__ID
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_orc_bucketed
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select ROW__ID, t, si, i from over10k_orc_bucketed where b = 4294967363 and t < 100 order by ROW__ID
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k_orc_bucketed
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 {"transactionid":### Masked txnid ###,"bucketid":536870912,"rowid":0}	-3	344	0
 {"transactionid":### Masked txnid ###,"bucketid":536870912,"rowid":1}	-3	344	0
 {"transactionid":### Masked txnid ###,"bucketid":536936448,"rowid":0}	5	501	0
@@ -733,8 +751,8 @@ POSTHOOK: Input: default@over10k_orc_bucketed
 PREHOOK: query: select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID having count(*) > 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@over10k_orc_bucketed
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select ROW__ID, count(*) from over10k_orc_bucketed group by ROW__ID having count(*) > 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@over10k_orc_bucketed
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###

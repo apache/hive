@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -19,6 +19,7 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -52,6 +53,10 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
   @Override
   public void readBatch(int total, ColumnVector column, TypeInfo columnType) throws IOException {
     ListColumnVector lcv = (ListColumnVector) column;
+    // before readBatch, initial the size of offsets & lengths as the default value,
+    // the actual size will be assigned in setChildrenInfo() after reading complete.
+    lcv.offsets = new long[VectorizedRowBatch.DEFAULT_SIZE];
+    lcv.lengths = new long[VectorizedRowBatch.DEFAULT_SIZE];
     // Because the length of ListColumnVector.child can't be known now,
     // the valueList will save all data for ListColumnVector temporary.
     List<Object> valueList = new ArrayList<>();

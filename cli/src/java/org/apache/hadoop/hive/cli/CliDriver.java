@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.cli.OptionsProcessor;
 import org.apache.hadoop.hive.common.HiveInterruptUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
+import org.apache.hadoop.hive.common.cli.EscapeCRLFHelper;
 import org.apache.hadoop.hive.common.cli.ShellCmdExecutor;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.common.io.FetchConverter;
@@ -66,12 +67,11 @@ import org.apache.hadoop.hive.conf.Validator;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.IDriver;
-import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHelper;
 import org.apache.hadoop.hive.ql.exec.tez.TezJobExecHelper;
+import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
@@ -219,97 +219,88 @@ public class CliDriver {
   }
 
   int processLocalCmd(String cmd, CommandProcessor proc, CliSessionState ss) {
-    int tryCount = 0;
-    boolean needRetry;
+    boolean escapeCRLF = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CLI_PRINT_ESCAPE_CRLF);
     int ret = 0;
 
-    do {
-      try {
-        needRetry = false;
-        if (proc != null) {
-          if (proc instanceof IDriver) {
-            IDriver qp = (IDriver) proc;
-            PrintStream out = ss.out;
-            long start = System.currentTimeMillis();
-            if (ss.getIsVerbose()) {
-              out.println(cmd);
+    if (proc != null) {
+      if (proc instanceof IDriver) {
+        IDriver qp = (IDriver) proc;
+        PrintStream out = ss.out;
+        long start = System.currentTimeMillis();
+        if (ss.getIsVerbose()) {
+          out.println(cmd);
+        }
+
+        ret = qp.run(cmd).getResponseCode();
+        if (ret != 0) {
+          qp.close();
+          return ret;
+        }
+
+        // query has run capture the time
+        long end = System.currentTimeMillis();
+        double timeTaken = (end - start) / 1000.0;
+
+        ArrayList<String> res = new ArrayList<String>();
+
+        printHeader(qp, out);
+
+        // print the results
+        int counter = 0;
+        try {
+          if (out instanceof FetchConverter) {
+            ((FetchConverter) out).fetchStarted();
+          }
+          while (qp.getResults(res)) {
+            for (String r : res) {
+                  if (escapeCRLF) {
+                    r = EscapeCRLFHelper.escapeCRLF(r);
+                  }
+              out.println(r);
             }
-
-            qp.setTryCount(tryCount);
-            ret = qp.run(cmd).getResponseCode();
-            if (ret != 0) {
-              qp.close();
-              return ret;
+            counter += res.size();
+            res.clear();
+            if (out.checkError()) {
+              break;
             }
+          }
+        } catch (IOException e) {
+          console.printError("Failed with exception " + e.getClass().getName() + ":" + e.getMessage(),
+              "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
+          ret = 1;
+        }
 
-            // query has run capture the time
-            long end = System.currentTimeMillis();
-            double timeTaken = (end - start) / 1000.0;
+        int cret = qp.close();
+        if (ret == 0) {
+          ret = cret;
+        }
 
-            ArrayList<String> res = new ArrayList<String>();
+        if (out instanceof FetchConverter) {
+          ((FetchConverter) out).fetchFinished();
+        }
 
-            printHeader(qp, out);
+        console.printInfo(
+            "Time taken: " + timeTaken + " seconds" + (counter == 0 ? "" : ", Fetched: " + counter + " row(s)"));
+      } else {
+        String firstToken = tokenizeCmd(cmd.trim())[0];
+        String cmd_1 = getFirstCmd(cmd.trim(), firstToken.length());
 
-            // print the results
-            int counter = 0;
-            try {
-              if (out instanceof FetchConverter) {
-                ((FetchConverter)out).fetchStarted();
-              }
-              while (qp.getResults(res)) {
-                for (String r : res) {
-                  out.println(r);
-                }
-                counter += res.size();
-                res.clear();
-                if (out.checkError()) {
-                  break;
-                }
-              }
-            } catch (IOException e) {
-              console.printError("Failed with exception " + e.getClass().getName() + ":"
-                  + e.getMessage(), "\n"
-                  + org.apache.hadoop.util.StringUtils.stringifyException(e));
-              ret = 1;
-            }
-
-            int cret = qp.close();
-            if (ret == 0) {
-              ret = cret;
-            }
-
-            if (out instanceof FetchConverter) {
-              ((FetchConverter)out).fetchFinished();
-            }
-
-            console.printInfo("Time taken: " + timeTaken + " seconds" +
-                (counter == 0 ? "" : ", Fetched: " + counter + " row(s)"));
-          } else {
-            String firstToken = tokenizeCmd(cmd.trim())[0];
-            String cmd_1 = getFirstCmd(cmd.trim(), firstToken.length());
-
-            if (ss.getIsVerbose()) {
-              ss.out.println(firstToken + " " + cmd_1);
-            }
-            CommandProcessorResponse res = proc.run(cmd_1);
-            if (res.getResponseCode() != 0) {
-              ss.out.println("Query returned non-zero code: " + res.getResponseCode() +
-                  ", cause: " + res.getErrorMessage());
-            }
-            if (res.getConsoleMessages() != null) {
-              for (String consoleMsg : res.getConsoleMessages()) {
-                console.printInfo(consoleMsg);
-              }
-            }
-            ret = res.getResponseCode();
+        if (ss.getIsVerbose()) {
+          ss.out.println(firstToken + " " + cmd_1);
+        }
+        CommandProcessorResponse res = proc.run(cmd_1);
+        if (res.getResponseCode() != 0) {
+          ss.out
+              .println("Query returned non-zero code: " + res.getResponseCode() + ", cause: " + res.getErrorMessage());
+        }
+        if (res.getConsoleMessages() != null) {
+          for (String consoleMsg : res.getConsoleMessages()) {
+            console.printInfo(consoleMsg);
           }
         }
-      } catch (CommandNeedRetryException e) {
-        console.printInfo("Retry query with a different approach...");
-        tryCount++;
-        needRetry = true;
+        ret = res.getResponseCode();
       }
-    } while (needRetry);
+    }
 
     return ret;
   }
@@ -392,7 +383,7 @@ public class CliDriver {
 
       // we can not use "split" function directly as ";" may be quoted
       List<String> commands = splitSemiColon(line);
-      
+
       String command = "";
       for (String oneCmd : commands) {
 
@@ -424,7 +415,7 @@ public class CliDriver {
       }
     }
   }
-  
+
   public static List<String> splitSemiColon(String line) {
     boolean insideSingleQuote = false;
     boolean insideDoubleQuote = false;
@@ -759,6 +750,9 @@ public class CliDriver {
     }
 
     ss.updateThreadName();
+
+    // Create views registry
+    HiveMaterializedViewsRegistry.get().init();
 
     // execute cli driver work
     try {

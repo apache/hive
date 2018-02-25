@@ -37,11 +37,11 @@ POSTHOOK: Lineage: orc_table_2.v2 SCRIPT []
 PREHOOK: query: select * from orc_table_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from orc_table_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 <null1>	NULL
 <null2>	NULL
 one	1
@@ -51,11 +51,11 @@ two	2
 PREHOOK: query: select * from orc_table_2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from orc_table_2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	ZERO
 2	TWO
 3	THREE
@@ -203,12 +203,12 @@ PREHOOK: query: select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 left outer j
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1
 PREHOOK: Input: default@orc_table_2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 left outer join orc_table_2 t2 on t1.a = t2.c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1
 POSTHOOK: Input: default@orc_table_2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 <null1>	NULL	NULL	NULL
 <null2>	NULL	NULL	NULL
 one	1	NULL	NULL
@@ -356,12 +356,12 @@ PREHOOK: query: select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 right outer 
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_table_1
 PREHOOK: Input: default@orc_table_2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select t1.v1, t1.a, t2.c, t2.v2 from orc_table_1 t1 right outer join orc_table_2 t2 on t1.a = t2.c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_table_1
 POSTHOOK: Input: default@orc_table_2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 NULL	NULL	0	ZERO
 NULL	NULL	4	FOUR
 NULL	NULL	NULL	<NULL1>

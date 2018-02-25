@@ -32,6 +32,9 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.DaemonId;
 import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.NotTezEventHelper;
+import org.apache.hadoop.hive.llap.counters.FragmentCountersMap;
+import org.apache.hadoop.hive.llap.counters.LlapWmCounters;
+import org.apache.hadoop.hive.llap.counters.WmFragmentCounters;
 import org.apache.hadoop.hive.llap.daemon.ContainerRunner;
 import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
@@ -61,6 +64,7 @@ import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
 import org.apache.hadoop.hive.llap.security.LlapSignerImpl;
 import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
+import org.apache.hadoop.hive.ql.exec.tez.WorkloadManager;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -68,8 +72,8 @@ import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.service.CompositeService;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.util.AuxiliaryServiceHelper;
-import org.apache.log4j.MDC;
 import org.apache.log4j.NDC;
+import org.apache.tez.common.counters.TezCounters;
 import org.apache.tez.common.security.JobTokenIdentifier;
 import org.apache.tez.common.security.TokenCache;
 import org.apache.tez.dag.api.TezConfiguration;
@@ -81,6 +85,7 @@ import org.apache.tez.runtime.api.impl.ExecutionContextImpl;
 import org.apache.tez.runtime.api.impl.TezEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.google.common.base.Preconditions;
 import com.google.protobuf.ByteString;
@@ -212,17 +217,17 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     // This is the start of container-annotated logging.
     final String dagId = attemptId.getTaskID().getVertexID().getDAGId().toString();
     final String queryId = vertex.getHiveQueryId();
-    final String fragId = LlapTezUtils.stripAttemptPrefix(fragmentIdString);
+    final String fragmentId = LlapTezUtils.stripAttemptPrefix(fragmentIdString);
     MDC.put("dagId", dagId);
     MDC.put("queryId", queryId);
-    MDC.put("fragmentId", fragId);
+    MDC.put("fragmentId", fragmentId);
     // TODO: Ideally we want tez to use CallableWithMdc that retains the MDC for threads created in
     // thread pool. For now, we will push both dagId and queryId into NDC and the custom thread
     // pool that we use for task execution and llap io (StatsRecordingThreadPool) will pop them
     // using reflection and update the MDC.
     NDC.push(dagId);
     NDC.push(queryId);
-    NDC.push(fragId);
+    NDC.push(fragmentId);
     Scheduler.SubmissionState submissionState;
     SubmitWorkResponseProto.Builder responseBuilder = SubmitWorkResponseProto.newBuilder();
     try {
@@ -263,11 +268,13 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       Configuration callableConf = new Configuration(getConfig());
       UserGroupInformation fsTaskUgi = fsUgiFactory == null ? null : fsUgiFactory.createUgi();
       boolean isGuaranteed = request.hasIsGuaranteed() && request.getIsGuaranteed();
+      WmFragmentCounters wmCounters = new WmFragmentCounters(
+          FragmentCountersMap.getCountersForFragment(fragmentId));
       TaskRunnerCallable callable = new TaskRunnerCallable(request, fragmentInfo, callableConf,
           new ExecutionContextImpl(localAddress.get().getHostName()), env,
           credentials, memoryPerExecutor, amReporter, confParams, metrics, killedTaskHandler,
           this, tezHadoopShim, attemptId, vertex, initialEvent, fsTaskUgi,
-          completionListener, socketFactory, isGuaranteed);
+          completionListener, socketFactory, isGuaranteed, wmCounters);
       submissionState = executorService.schedule(callable);
 
       if (LOG.isInfoEnabled()) {

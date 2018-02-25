@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.http.Header;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
@@ -35,18 +36,20 @@ public abstract class HttpRequestInterceptorBase implements HttpRequestIntercept
   String cookieName;
   boolean isSSL;
   Map<String, String> additionalHeaders;
+  Map<String, String> customCookies;
 
   // Abstract function to add HttpAuth Header
   protected abstract void addHttpAuthHeader(HttpRequest httpRequest, HttpContext httpContext)
     throws Exception;
 
   public HttpRequestInterceptorBase(CookieStore cs, String cn, boolean isSSL,
-    Map<String, String> additionalHeaders) {
+      Map<String, String> additionalHeaders, Map<String, String> customCookies) {
     this.cookieStore = cs;
     this.isCookieEnabled = (cs != null);
     this.cookieName = cn;
     this.isSSL = isSSL;
     this.additionalHeaders = additionalHeaders;
+    this.customCookies = customCookies;
   }
 
   @Override
@@ -81,6 +84,21 @@ public abstract class HttpRequestInterceptorBase implements HttpRequestIntercept
         for (Map.Entry<String, String> entry : additionalHeaders.entrySet()) {
           httpRequest.addHeader(entry.getKey(), entry.getValue());
         }
+      }
+      // Add custom cookies if passed to the jdbc driver
+      if (customCookies != null) {
+        String cookieHeaderKeyValues = "";
+        Header cookieHeaderServer = httpRequest.getFirstHeader("Cookie");
+        if ((cookieHeaderServer != null) && (cookieHeaderServer.getValue() != null)) {
+          cookieHeaderKeyValues = cookieHeaderServer.getValue();
+        }
+        for (Map.Entry<String, String> entry : customCookies.entrySet()) {
+          cookieHeaderKeyValues += ";" + entry.getKey() + "=" + entry.getValue();
+        }
+        if (cookieHeaderKeyValues.startsWith(";")) {
+          cookieHeaderKeyValues = cookieHeaderKeyValues.substring(1);
+        }
+        httpRequest.addHeader("Cookie", cookieHeaderKeyValues);
       }
     } catch (Exception e) {
       throw new HttpException(e.getMessage(), e);

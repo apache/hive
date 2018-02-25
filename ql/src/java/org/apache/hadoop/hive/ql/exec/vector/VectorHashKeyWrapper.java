@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -300,6 +300,13 @@ public class VectorHashKeyWrapper extends KeyWrapper {
     throw new UnsupportedOperationException();
   }
 
+  public void assignLong(int keyIndex, int index, long v) {
+    isNull[keyIndex] = false;
+    longValues[index] = v;
+  }
+
+  // FIXME: isNull is not updated; which might cause problems
+  @Deprecated
   public void assignLong(int index, long v) {
     longValues[index] = v;
   }
@@ -478,6 +485,10 @@ public class VectorHashKeyWrapper extends KeyWrapper {
 
   public void clearIsNull() {
     Arrays.fill(isNull, false);
+  }
+
+  public void setNull() {
+    Arrays.fill(isNull, true);
   }
 
   public boolean isNull(int keyIndex) {

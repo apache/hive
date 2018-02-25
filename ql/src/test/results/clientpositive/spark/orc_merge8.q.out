@@ -117,7 +117,10 @@ POSTHOOK: Lineage: alltypes_orc.ti SIMPLE [(alltypes)alltypes.FieldSchema(name:t
 POSTHOOK: Lineage: alltypes_orc.ts SIMPLE [(alltypes)alltypes.FieldSchema(name:ts, type:timestamp, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.vc SIMPLE [(alltypes)alltypes.FieldSchema(name:vc, type:varchar(5), comment:null), ]
 Found 4 items
-#### A masked pattern was here ####
+-rw-r--r--   3 ### USER ### ### GROUP ###       1595 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       1595 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       1606 ### HDFS DATE ### hdfs://### HDFS PATH ###
+-rw-r--r--   3 ### USER ### ### GROUP ###       1606 ### HDFS DATE ### hdfs://### HDFS PATH ###
 PREHOOK: query: alter table alltypes_orc concatenate
 PREHOOK: type: ALTER_TABLE_MERGE
 PREHOOK: Input: default@alltypes_orc
@@ -127,4 +130,4 @@ POSTHOOK: type: ALTER_TABLE_MERGE
 POSTHOOK: Input: default@alltypes_orc
 POSTHOOK: Output: default@alltypes_orc
 Found 1 items
-#### A masked pattern was here ####
+-rw-r--r--   3 ### USER ### ### GROUP ###       4634 ### HDFS DATE ### hdfs://### HDFS PATH ###

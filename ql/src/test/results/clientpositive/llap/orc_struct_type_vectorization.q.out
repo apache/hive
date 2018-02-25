@@ -1,0 +1,535 @@
+PREHOOK: query: DROP TABLE orc_struct_type_staging
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE orc_struct_type_staging
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE orc_struct_type
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE orc_struct_type
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE orc_struct_type_staging (
+id int,
+st1 struct<f1:int, f2:string>,
+st2 struct<f1:int, f3:string>
+) ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY '|'
+  COLLECTION ITEMS TERMINATED BY ','
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_struct_type_staging
+POSTHOOK: query: CREATE TABLE orc_struct_type_staging (
+id int,
+st1 struct<f1:int, f2:string>,
+st2 struct<f1:int, f3:string>
+) ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY '|'
+  COLLECTION ITEMS TERMINATED BY ','
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_struct_type_staging
+PREHOOK: query: CREATE TABLE orc_struct_type (
+id int,
+st1 struct<f1:int, f2:string>,
+st2 struct<f1:int, f3:string>
+) STORED AS ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orc_struct_type
+POSTHOOK: query: CREATE TABLE orc_struct_type (
+id int,
+st1 struct<f1:int, f2:string>,
+st2 struct<f1:int, f3:string>
+) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orc_struct_type
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/struct_type.txt' OVERWRITE INTO TABLE orc_struct_type_staging
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@orc_struct_type_staging
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/struct_type.txt' OVERWRITE INTO TABLE orc_struct_type_staging
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@orc_struct_type_staging
+PREHOOK: query: INSERT OVERWRITE TABLE orc_struct_type
+SELECT id, st1, st2 FROM orc_struct_type_staging where id < 1024
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_struct_type_staging
+PREHOOK: Output: default@orc_struct_type
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_struct_type
+SELECT id, st1, st2 FROM orc_struct_type_staging where id < 1024
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_struct_type_staging
+POSTHOOK: Output: default@orc_struct_type
+POSTHOOK: Lineage: orc_struct_type.id SIMPLE [(orc_struct_type_staging)orc_struct_type_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_struct_type.st1 SIMPLE [(orc_struct_type_staging)orc_struct_type_staging.FieldSchema(name:st1, type:struct<f1:int,f2:string>, comment:null), ]
+POSTHOOK: Lineage: orc_struct_type.st2 SIMPLE [(orc_struct_type_staging)orc_struct_type_staging.FieldSchema(name:st2, type:struct<f1:int,f3:string>, comment:null), ]
+PREHOOK: query: select count(*) from orc_struct_type
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_struct_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from orc_struct_type
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_struct_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1023
+PREHOOK: query: explain vectorization expression select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from orc_struct_type limit 10
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization expression select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from orc_struct_type limit 10
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: orc_struct_type
+                  Statistics: Num rows: 1023 Data size: 459256 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                  Select Operator
+                    expressions: st1 (type: struct<f1:int,f2:string>), st1.f1 (type: int), st1.f2 (type: string), st2 (type: struct<f1:int,f3:string>), st2.f1 (type: int), st2.f3 (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [1, 4, 5, 2, 6, 7]
+                        selectExpressions: VectorUDFStructField(col 1:struct<f1:int,f2:string>, col 0:int) -> 4:int, VectorUDFStructField(col 1:struct<f1:int,f2:string>, col 1:int) -> 5:string, VectorUDFStructField(col 2:struct<f1:int,f3:string>, col 0:int) -> 6:int, VectorUDFStructField(col 2:struct<f1:int,f3:string>, col 1:int) -> 7:string
+                    Statistics: Num rows: 1023 Data size: 459256 Basic stats: COMPLETE Column stats: NONE
+                    Limit
+                      Number of rows: 10
+                      Limit Vectorization:
+                          className: VectorLimitOperator
+                          native: true
+                      Statistics: Num rows: 10 Data size: 4480 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        File Sink Vectorization:
+                            className: VectorFileSinkOperator
+                            native: false
+                        Statistics: Num rows: 10 Data size: 4480 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from orc_struct_type limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_struct_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from orc_struct_type limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_struct_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"f1":1,"f2":"str1"}	1	str1	{"f1":2001,"f3":"str2001"}	2001	str2001
+{"f1":2,"f2":"str2"}	2	str2	{"f1":2002,"f3":"str2002"}	2002	str2002
+{"f1":3,"f2":"str3"}	3	str3	{"f1":2003,"f3":"str2003"}	2003	str2003
+{"f1":4,"f2":"str4"}	4	str4	{"f1":2004,"f3":"str2004"}	2004	str2004
+{"f1":5,"f2":"str5"}	5	str5	{"f1":2005,"f3":"str2005"}	2005	str2005
+{"f1":6,"f2":"str6"}	6	str6	{"f1":2006,"f3":"str2006"}	2006	str2006
+{"f1":7,"f2":"str7"}	7	str7	{"f1":2007,"f3":"str2007"}	2007	str2007
+{"f1":8,"f2":"str8"}	8	str8	{"f1":2008,"f3":"str2008"}	2008	str2008
+{"f1":9,"f2":"str9"}	9	str9	{"f1":2009,"f3":"str2009"}	2009	str2009
+{"f1":10,"f2":"str10"}	10	str10	{"f1":2010,"f3":"str2010"}	2010	str2010
+PREHOOK: query: select st1.f1, st2.f1, st2.f3 from orc_struct_type limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_struct_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select st1.f1, st2.f1, st2.f3 from orc_struct_type limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_struct_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	2001	str2001
+2	2002	str2002
+3	2003	str2003
+4	2004	str2004
+5	2005	str2005
+6	2006	str2006
+7	2007	str2007
+8	2008	str2008
+9	2009	str2009
+10	2010	str2010
+PREHOOK: query: select st1.f1, st2.f1 from orc_struct_type limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_struct_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select st1.f1, st2.f1 from orc_struct_type limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_struct_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	2001
+2	2002
+3	2003
+4	2004
+5	2005
+6	2006
+7	2007
+8	2008
+9	2009
+10	2010
+PREHOOK: query: explain vectorization expression select sum(st1.f1), st1.f1 from orc_struct_type where st1.f1 > 500 group by st1.f1 limit 10
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization expression select sum(st1.f1), st1.f1 from orc_struct_type where st1.f1 > 500 group by st1.f1 limit 10
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: orc_struct_type
+                  Pruned Column Paths: st1.f1
+                  Statistics: Num rows: 1023 Data size: 229628 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterLongColGreaterLongScalar(col 4:int, val 500)(children: VectorUDFStructField(col 1:struct<f1:int,f2:string>, col 0:int) -> 4:int)
+                    predicate: (st1.f1 > 500) (type: boolean)
+                    Statistics: Num rows: 341 Data size: 76542 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: st1.f1 (type: int)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [4]
+                          selectExpressions: VectorUDFStructField(col 1:struct<f1:int,f2:string>, col 0:int) -> 4:int
+                      Statistics: Num rows: 341 Data size: 76542 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: sum(_col0)
+                        Group By Vectorization:
+                            aggregators: VectorUDAFSumLong(col 4:int) -> bigint
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            keyExpressions: col 4:int
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: [0]
+                        keys: _col0 (type: int)
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 341 Data size: 76542 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: int)
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: int)
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkLongOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          Statistics: Num rows: 341 Data size: 76542 Basic stats: COMPLETE Column stats: NONE
+                          TopN Hash Memory Usage: 0.1
+                          value expressions: _col1 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumLong(col 1:bigint) -> bigint
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:int
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: [0]
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 170 Data size: 38158 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: _col1 (type: bigint), _col0 (type: int)
+                  outputColumnNames: _col0, _col1
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [1, 0]
+                  Statistics: Num rows: 170 Data size: 38158 Basic stats: COMPLETE Column stats: NONE
+                  Limit
+                    Number of rows: 10
+                    Limit Vectorization:
+                        className: VectorLimitOperator
+                        native: true
+                    Statistics: Num rows: 10 Data size: 2240 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 10 Data size: 2240 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select sum(st1.f1), st1.f1 from orc_struct_type where st1.f1 > 500 group by st1.f1 order by st1.f1 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_struct_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select sum(st1.f1), st1.f1 from orc_struct_type where st1.f1 > 500 group by st1.f1 order by st1.f1 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_struct_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+501	501
+502	502
+503	503
+504	504
+505	505
+506	506
+507	507
+508	508
+509	509
+510	510
+PREHOOK: query: INSERT OVERWRITE TABLE orc_struct_type
+SELECT id, st1, st2 FROM orc_struct_type_staging where id < 1025
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_struct_type_staging
+PREHOOK: Output: default@orc_struct_type
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_struct_type
+SELECT id, st1, st2 FROM orc_struct_type_staging where id < 1025
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_struct_type_staging
+POSTHOOK: Output: default@orc_struct_type
+POSTHOOK: Lineage: orc_struct_type.id SIMPLE [(orc_struct_type_staging)orc_struct_type_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_struct_type.st1 SIMPLE [(orc_struct_type_staging)orc_struct_type_staging.FieldSchema(name:st1, type:struct<f1:int,f2:string>, comment:null), ]
+POSTHOOK: Lineage: orc_struct_type.st2 SIMPLE [(orc_struct_type_staging)orc_struct_type_staging.FieldSchema(name:st2, type:struct<f1:int,f3:string>, comment:null), ]
+PREHOOK: query: select count(*) from orc_struct_type
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_struct_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from orc_struct_type
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_struct_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1024
+PREHOOK: query: select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from orc_struct_type limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_struct_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from orc_struct_type limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_struct_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"f1":1,"f2":"str1"}	1	str1	{"f1":2001,"f3":"str2001"}	2001	str2001
+{"f1":2,"f2":"str2"}	2	str2	{"f1":2002,"f3":"str2002"}	2002	str2002
+{"f1":3,"f2":"str3"}	3	str3	{"f1":2003,"f3":"str2003"}	2003	str2003
+{"f1":4,"f2":"str4"}	4	str4	{"f1":2004,"f3":"str2004"}	2004	str2004
+{"f1":5,"f2":"str5"}	5	str5	{"f1":2005,"f3":"str2005"}	2005	str2005
+{"f1":6,"f2":"str6"}	6	str6	{"f1":2006,"f3":"str2006"}	2006	str2006
+{"f1":7,"f2":"str7"}	7	str7	{"f1":2007,"f3":"str2007"}	2007	str2007
+{"f1":8,"f2":"str8"}	8	str8	{"f1":2008,"f3":"str2008"}	2008	str2008
+{"f1":9,"f2":"str9"}	9	str9	{"f1":2009,"f3":"str2009"}	2009	str2009
+{"f1":10,"f2":"str10"}	10	str10	{"f1":2010,"f3":"str2010"}	2010	str2010
+PREHOOK: query: select st1.f1, st2.f1, st2.f3 from orc_struct_type limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_struct_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select st1.f1, st2.f1, st2.f3 from orc_struct_type limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_struct_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	2001	str2001
+2	2002	str2002
+3	2003	str2003
+4	2004	str2004
+5	2005	str2005
+6	2006	str2006
+7	2007	str2007
+8	2008	str2008
+9	2009	str2009
+10	2010	str2010
+PREHOOK: query: select st1.f1, st2.f1 from orc_struct_type limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_struct_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select st1.f1, st2.f1 from orc_struct_type limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_struct_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	2001
+2	2002
+3	2003
+4	2004
+5	2005
+6	2006
+7	2007
+8	2008
+9	2009
+10	2010
+PREHOOK: query: select sum(st1.f1), st1.f1 from orc_struct_type where st1.f1 > 500 group by st1.f1 order by st1.f1 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_struct_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select sum(st1.f1), st1.f1 from orc_struct_type where st1.f1 > 500 group by st1.f1 order by st1.f1 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_struct_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+501	501
+502	502
+503	503
+504	504
+505	505
+506	506
+507	507
+508	508
+509	509
+510	510
+PREHOOK: query: INSERT OVERWRITE TABLE orc_struct_type
+SELECT id, st1, st2 FROM orc_struct_type_staging where id < 1026
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_struct_type_staging
+PREHOOK: Output: default@orc_struct_type
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_struct_type
+SELECT id, st1, st2 FROM orc_struct_type_staging where id < 1026
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_struct_type_staging
+POSTHOOK: Output: default@orc_struct_type
+POSTHOOK: Lineage: orc_struct_type.id SIMPLE [(orc_struct_type_staging)orc_struct_type_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_struct_type.st1 SIMPLE [(orc_struct_type_staging)orc_struct_type_staging.FieldSchema(name:st1, type:struct<f1:int,f2:string>, comment:null), ]
+POSTHOOK: Lineage: orc_struct_type.st2 SIMPLE [(orc_struct_type_staging)orc_struct_type_staging.FieldSchema(name:st2, type:struct<f1:int,f3:string>, comment:null), ]
+PREHOOK: query: select count(*) from orc_struct_type
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_struct_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from orc_struct_type
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_struct_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1025
+PREHOOK: query: select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from orc_struct_type limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_struct_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select st1, st1.f1, st1.f2, st2, st2.f1, st2.f3 from orc_struct_type limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_struct_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+{"f1":1,"f2":"str1"}	1	str1	{"f1":2001,"f3":"str2001"}	2001	str2001
+{"f1":2,"f2":"str2"}	2	str2	{"f1":2002,"f3":"str2002"}	2002	str2002
+{"f1":3,"f2":"str3"}	3	str3	{"f1":2003,"f3":"str2003"}	2003	str2003
+{"f1":4,"f2":"str4"}	4	str4	{"f1":2004,"f3":"str2004"}	2004	str2004
+{"f1":5,"f2":"str5"}	5	str5	{"f1":2005,"f3":"str2005"}	2005	str2005
+{"f1":6,"f2":"str6"}	6	str6	{"f1":2006,"f3":"str2006"}	2006	str2006
+{"f1":7,"f2":"str7"}	7	str7	{"f1":2007,"f3":"str2007"}	2007	str2007
+{"f1":8,"f2":"str8"}	8	str8	{"f1":2008,"f3":"str2008"}	2008	str2008
+{"f1":9,"f2":"str9"}	9	str9	{"f1":2009,"f3":"str2009"}	2009	str2009
+{"f1":10,"f2":"str10"}	10	str10	{"f1":2010,"f3":"str2010"}	2010	str2010
+PREHOOK: query: select st1.f1, st2.f1, st2.f3 from orc_struct_type limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_struct_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select st1.f1, st2.f1, st2.f3 from orc_struct_type limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_struct_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	2001	str2001
+2	2002	str2002
+3	2003	str2003
+4	2004	str2004
+5	2005	str2005
+6	2006	str2006
+7	2007	str2007
+8	2008	str2008
+9	2009	str2009
+10	2010	str2010
+PREHOOK: query: select st1.f1, st2.f1 from orc_struct_type limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_struct_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select st1.f1, st2.f1 from orc_struct_type limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_struct_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	2001
+2	2002
+3	2003
+4	2004
+5	2005
+6	2006
+7	2007
+8	2008
+9	2009
+10	2010
+PREHOOK: query: select sum(st1.f1), st1.f1 from orc_struct_type where st1.f1 > 500 group by st1.f1 order by st1.f1 limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_struct_type
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select sum(st1.f1), st1.f1 from orc_struct_type where st1.f1 > 500 group by st1.f1 order by st1.f1 limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_struct_type
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+501	501
+502	502
+503	503
+504	504
+505	505
+506	506
+507	507
+508	508
+509	509
+510	510

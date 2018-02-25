@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -79,6 +79,13 @@ public class GenericUDFMacro extends GenericUDF implements Serializable {
     return false;
   }
  
+  public boolean isRuntimeConstant() {
+    if(body != null) {
+      return body.isRuntimeConstant();
+    }
+    return false;
+  }
+
   private void checkNotNull(Object object, String msg) {
     if(object == null) {
       throw new NullPointerException(msg);

@@ -92,3 +92,36 @@ SELECT tf.col1, tf.col2, tf.col3
 FROM
   (SELECT key, value FROM mytbl) t,
   LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3);
+
+EXPLAIN
+SELECT t.key
+FROM
+  (SELECT key, value FROM mytbl) t,
+  LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf;
+
+SELECT t.key
+FROM
+  (SELECT key, value FROM mytbl) t,
+  LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf;
+
+EXPLAIN
+SELECT tf.col3
+FROM
+  (SELECT key, value FROM mytbl) t,
+  LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3);
+
+SELECT tf.col3
+FROM
+  (SELECT key, value FROM mytbl) t,
+  LATERAL TABLE(VALUES('A', 10, t.key),('B', 20, t.key)) AS tf(col1, col2, col3);
+
+EXPLAIN
+SELECT tf.col3
+FROM
+  (SELECT row_number() over (order by key desc) as r FROM mytbl) t,
+  LATERAL TABLE(VALUES('A', 10, t.r),('B', 20, t.r)) AS tf(col1, col2, col3);
+
+SELECT tf.col3
+FROM
+  (SELECT row_number() over (order by key desc) as r FROM mytbl) t,
+  LATERAL TABLE(VALUES('A', 10, t.r),('B', 20, t.r)) AS tf(col1, col2, col3);

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -1616,5 +1616,40 @@ public class TestJdbcWithMiniHS2 {
       verticesLists.add(vertices);
     }
     return verticesLists;
+  }
+
+  /**
+   * Test 'describe extended' on tables that have special white space characters in the row format.
+   */
+  @Test
+  public void testDescribe() throws Exception {
+    try (Statement stmt = conTestDb.createStatement()) {
+      String table = "testDescribe";
+      stmt.execute("drop table if exists " + table);
+      stmt.execute("create table " + table + " (orderid int, orderdate string, customerid int)"
+          + " ROW FORMAT DELIMITED FIELDS terminated by '\\t' LINES terminated by '\\n'");
+      String extendedDescription = getDetailedTableDescription(stmt, table);
+      assertNotNull("could not get Detailed Table Information", extendedDescription);
+      assertTrue("description appears truncated", extendedDescription.endsWith(")"));
+      assertTrue("bad line delimiter", extendedDescription.contains("line.delim=\\n"));
+      assertTrue("bad field delimiter", extendedDescription.contains("field.delim=\\t"));
+    }
+  }
+
+  /**
+   * Get Detailed Table Information via jdbc
+   */
+  private String getDetailedTableDescription(Statement stmt, String table) throws SQLException {
+    String extendedDescription = null;
+    try (ResultSet rs = stmt.executeQuery("describe extended " + table)) {
+      while (rs.next()) {
+        String out = rs.getString(1);
+        String tableInfo = rs.getString(2);
+        if ("Detailed Table Information".equals(out)) { // from TextMetaDataFormatter
+          extendedDescription = tableInfo;
+        }
+      }
+    }
+    return extendedDescription;
   }
 }

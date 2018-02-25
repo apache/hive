@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -100,6 +101,8 @@ public class ImportTableDesc {
                   table.getSd().getSerdeInfo().getSerializationLib(),
                   null, // storagehandler passed as table params
                   table.getSd().getSerdeInfo().getParameters());
+          this.createViewDesc.setTablesUsed(table.getCreationMetadata() != null ?
+              table.getCreationMetadata().getTablesUsed() : ImmutableSet.of());
         } else {
           this.createViewDesc = new CreateViewDesc(dbDotView,
                   table.getAllCols(),
@@ -314,10 +317,10 @@ public class ImportTableDesc {
   public Task<? extends Serializable> getCreateTableTask(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
       HiveConf conf) {
     switch (getDescType()) {
-      case TABLE:
-        return TaskFactory.get(new DDLWork(inputs, outputs, createTblDesc), conf);
-      case VIEW:
-        return TaskFactory.get(new DDLWork(inputs, outputs, createViewDesc), conf);
+    case TABLE:
+      return TaskFactory.get(new DDLWork(inputs, outputs, createTblDesc), conf, true);
+    case VIEW:
+      return TaskFactory.get(new DDLWork(inputs, outputs, createViewDesc), conf, true);
     }
     return null;
   }

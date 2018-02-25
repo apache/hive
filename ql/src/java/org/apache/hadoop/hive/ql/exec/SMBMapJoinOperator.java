@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.See the NOTICE file
  * distributed with this work for additional information
@@ -207,7 +207,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       ColumnProjectionUtils.appendReadColumns(
           jobClone, ts.getNeededColumnIDs(), ts.getNeededColumns(), ts.getNeededNestedColumnPaths());
       // push down filters
-      HiveInputFormat.pushFilters(jobClone, ts);
+      HiveInputFormat.pushFilters(jobClone, ts, null);
 
       AcidUtils.setAcidTableScan(jobClone, ts.getConf().isAcidTable());
       AcidUtils.setAcidOperationalProperties(jobClone, ts.getConf().getAcidOperationalProperties());

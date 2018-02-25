@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -287,7 +287,7 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
         getRawRecordWriter(Path path, Options options) throws IOException {
     final Path filename = AcidUtils.createFilename(path, options);
     final OrcFile.WriterOptions opts =
-        OrcFile.writerOptions(options.getConfiguration());
+        OrcFile.writerOptions(options.getTableProperties(), options.getConfiguration());
     if (!options.isWritingBase()) {
       opts.bufferSize(OrcRecordUpdater.DELTA_BUFFER_SIZE)
           .stripeSize(OrcRecordUpdater.DELTA_STRIPE_SIZE)

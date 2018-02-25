@@ -143,7 +143,7 @@ PREHOOK: Input: default@char_tbl1@gpa=3.5
 PREHOOK: Input: default@char_tbl2
 PREHOOK: Input: default@char_tbl2@gpa=3    
 PREHOOK: Input: default@char_tbl2@gpa=3.5  
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select c1.name, c1.age, c1.gpa, c2.name, c2.age, c2.gpa from char_tbl1 c1 join char_tbl2 c2 on (c1.gpa = c2.gpa)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_tbl1
@@ -152,7 +152,7 @@ POSTHOOK: Input: default@char_tbl1@gpa=3.5
 POSTHOOK: Input: default@char_tbl2
 POSTHOOK: Input: default@char_tbl2@gpa=3    
 POSTHOOK: Input: default@char_tbl2@gpa=3.5  
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 alice underhill	46	3.5                                               	alice underhill	46	3.5  
 PREHOOK: query: select c1.name, c1.age, c1.gpa, c2.name, c2.age, c2.gpa from char_tbl1 c1 join char_tbl2 c2 on (c1.gpa = c2.gpa)
 PREHOOK: type: QUERY
@@ -162,7 +162,7 @@ PREHOOK: Input: default@char_tbl1@gpa=3.5
 PREHOOK: Input: default@char_tbl2
 PREHOOK: Input: default@char_tbl2@gpa=3    
 PREHOOK: Input: default@char_tbl2@gpa=3.5  
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select c1.name, c1.age, c1.gpa, c2.name, c2.age, c2.gpa from char_tbl1 c1 join char_tbl2 c2 on (c1.gpa = c2.gpa)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@char_tbl1
@@ -171,5 +171,5 @@ POSTHOOK: Input: default@char_tbl1@gpa=3.5
 POSTHOOK: Input: default@char_tbl2
 POSTHOOK: Input: default@char_tbl2@gpa=3    
 POSTHOOK: Input: default@char_tbl2@gpa=3.5  
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 alice underhill	46	3.5                                               	alice underhill	46	3.5  

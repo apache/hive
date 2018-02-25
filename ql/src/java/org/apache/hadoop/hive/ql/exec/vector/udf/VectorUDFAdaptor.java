@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,11 +31,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprConditionalFilter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
@@ -62,7 +60,6 @@ public class VectorUDFAdaptor extends VectorExpression {
   private String resultType;
   private VectorUDFArgDesc[] argDescs;
   private ExprNodeGenericFuncDesc expr;
-  private IfExprConditionalFilter cf;
 
   private transient GenericUDF genericUDF;
   private transient GenericUDF.DeferredObject[] deferredChildren;
@@ -105,13 +102,6 @@ public class VectorUDFAdaptor extends VectorExpression {
     outputVectorAssignRow.init(outputTypeInfo, outputColumnNum);
 
     genericUDF.initialize(childrenOIs);
-    if((GenericUDFIf.class.getName()).equals(genericUDF.getUdfName())){
-
-      // UNDONE: This kind of work should be done in VectorizationContext.
-      cf = new IfExprConditionalFilter
-        (argDescs[0].getColumnNum(), argDescs[1].getColumnNum(),
-          argDescs[2].getColumnNum(), outputColumnNum);
-    }
 
     // Initialize constant arguments
     for (int i = 0; i < argDescs.length; i++) {
@@ -133,11 +123,7 @@ public class VectorUDFAdaptor extends VectorExpression {
     }
 
     if (childExpressions != null) {
-      if ((GenericUDFIf.class.getName()).equals(genericUDF.getUdfName()) && cf != null) {
-        cf.evaluateIfConditionalExpr(batch, childExpressions);
-      } else {
-        super.evaluateChildren(batch);
-      }
+      super.evaluateChildren(batch);
     }
 
     int[] sel = batch.selected;

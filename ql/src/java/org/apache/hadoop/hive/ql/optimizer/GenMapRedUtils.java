@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -243,12 +243,12 @@ public final class GenMapRedUtils {
         MapredWork plan = (MapredWork) currTask.getWork();
         for (int pos = 0; pos < size; pos++) {
           String taskTmpDir = taskTmpDirLst.get(pos);
-          TableDesc tt_desc = tt_descLst.get(pos);
+          Path taskTmpDirPath = new Path(taskTmpDir);
           MapWork mWork = plan.getMapWork();
-          if (mWork.getPathToAliases().get(taskTmpDir) == null) {
+          if (!mWork.getPathToAliases().containsKey(taskTmpDirPath)) {
             taskTmpDir = taskTmpDir.intern();
-            Path taskTmpDirPath = StringInternUtils.internUriStringsInPath(new Path(taskTmpDir));
-            mWork.removePathToAlias(taskTmpDirPath);
+            StringInternUtils.internUriStringsInPath(taskTmpDirPath);
+            TableDesc tt_desc = tt_descLst.get(pos);
             mWork.addPathToAlias(taskTmpDirPath, taskTmpDir);
             mWork.addPathToPartitionInfo(taskTmpDirPath, new PartitionDesc(tt_desc, null));
             mWork.getAliasToWork().put(taskTmpDir, topOperators.get(pos));

@@ -43,7 +43,7 @@ public abstract class DbInstallBase {
 
   private static final String HIVE_USER = "hiveuser";
   protected static final String HIVE_DB = "hivedb";
-  private static final String FIRST_VERSION = "2.3.0";
+  private static final String FIRST_VERSION = "1.2.0";
   private static final int MAX_STARTUP_WAIT = 5 * 60 * 1000;
 
   private String metastoreHome;
@@ -72,7 +72,7 @@ public abstract class DbInstallBase {
 
   @Before
   public void runDockerContainer() throws IOException, InterruptedException {
-    if (runCmdAndPrintStreams(buildRunCmd(), 60) != 0) {
+    if (runCmdAndPrintStreams(buildRunCmd(), 600) != 0) {
       throw new RuntimeException("Unable to start docker container");
     }
     long startTime = System.currentTimeMillis();
@@ -239,7 +239,7 @@ public abstract class DbInstallBase {
   @Test
   public void upgrade() throws HiveMetaException {
     Assert.assertEquals(0, createUser());
-    Assert.assertEquals(0, installAVersion(getCurrentVersionMinusOne()));
+    Assert.assertEquals(0, installAVersion(FIRST_VERSION));
     Assert.assertEquals(0, upgradeToLatest());
   }
 

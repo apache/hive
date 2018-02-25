@@ -348,4 +348,9 @@
   <value>99</value>
 </property>
 
+<property>
+  <name>hive.query.results.cache.enabled</name>
+  <value>false</value>
+</property>
+
 </configuration>

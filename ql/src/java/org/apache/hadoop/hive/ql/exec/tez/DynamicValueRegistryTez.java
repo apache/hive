@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.exec.DynamicValueRegistry;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.RuntimeValuesInfo;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.DynamicValue.NoDynamicValuesException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -73,7 +74,7 @@ public class DynamicValueRegistryTez implements DynamicValueRegistry {
   @Override
   public Object getValue(String key) {
     if (!values.containsKey(key)) {
-      throw new IllegalStateException("Value does not exist in registry: " + key);
+      throw new NoDynamicValuesException("Value does not exist in registry: " + key);
     }
     return values.get(key);
   }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -248,13 +248,14 @@ public class VectorMapJoinOperator extends VectorMapJoinBaseOperator {
     super.spillBigTableRow(hybridHtContainer, actualRow);
   }
 
+  // Only used by spillBigTableRow?
   // Code borrowed from VectorReduceSinkOperator
   private Object[] getRowObject(VectorizedRowBatch vrb, int rowIndex) throws HiveException {
     int batchIndex = rowIndex;
     if (vrb.selectedInUse) {
       batchIndex = vrb.selected[rowIndex];
     }
-    for (int i = 0; i < vrb.projectionSize; i++) {
+    for (int i = 0; i < singleRow.length; i++) {
       ColumnVector vectorColumn = vrb.cols[vrb.projectedColumns[i]];
       if (vectorColumn != null) {
         singleRow[i] = rowWriters[i].writeValue(vectorColumn, batchIndex);

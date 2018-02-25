@@ -47,27 +47,27 @@ public class HiveSchemaHelper {
 
   /***
    * Get JDBC connection to metastore db
-   *
    * @param userName metastore connection username
    * @param password metastore connection password
+   * @param url Metastore URL.  If null will be read from config file.
+   * @param driver Driver class.  If null will be read from config file.
    * @param printInfo print connection parameters
    * @param conf hive config object
+   * @param schema the schema to create the connection for
    * @return metastore connection object
    * @throws org.apache.hadoop.hive.metastore.HiveMetaException
    */
-  public static Connection getConnectionToMetastore(String userName,
-      String password, String url, String driver, boolean printInfo,
-      Configuration conf)
-      throws HiveMetaException {
+  public static Connection getConnectionToMetastore(String userName, String password, String url,
+      String driver, boolean printInfo, Configuration conf, String schema) throws HiveMetaException {
     try {
-      url = url == null ? MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECTURLKEY) : url;
-      driver = driver == null ? MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECTION_DRIVER) : driver;
+      url = url == null ? getValidConfVar(MetastoreConf.ConfVars.CONNECTURLKEY, conf) : url;
+      driver = driver == null ? getValidConfVar(MetastoreConf.ConfVars.CONNECTION_DRIVER, conf) : driver;
       if (printInfo) {
-        MetastoreSchemaTool.logAndPrintToError("Metastore connection URL:\t " + url);
-        MetastoreSchemaTool.logAndPrintToError("Metastore Connection Driver :\t " + driver);
-        MetastoreSchemaTool.logAndPrintToError("Metastore connection User:\t " + userName);
+        logAndPrintToStdout("Metastore connection URL:\t " + url);
+        logAndPrintToStdout("Metastore Connection Driver :\t " + driver);
+        logAndPrintToStdout("Metastore connection User:\t " + userName);
         if (MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST)) {
-          MetastoreSchemaTool.logAndPrintToError("Metastore connection Password:\t " + password);
+          logAndPrintToStdout("Metastore connection Password:\t " + password);
         }
       }
       if ((userName == null) || userName.isEmpty()) {
@@ -78,19 +78,23 @@ public class HiveSchemaHelper {
       Class.forName(driver);
 
       // Connect using the JDBC URL and user/pass from conf
-      return DriverManager.getConnection(url, userName, password);
-    } catch (SQLException e) {
-      LOG.error("Failed to connect", e);
-      throw new HiveMetaException("Failed to connect.", e);
+      Connection conn = DriverManager.getConnection(url, userName, password);
+      if (schema != null) {
+        conn.setSchema(schema);
+      }
+      return conn;
+    } catch (IOException | SQLException e) {
+      throw new HiveMetaException("Failed to get schema version.", e);
     } catch (ClassNotFoundException e) {
       LOG.error("Unable to find driver class", e);
       throw new HiveMetaException("Failed to load driver", e);
     }
   }
 
-  public static Connection getConnectionToMetastore(MetaStoreConnectionInfo info) throws HiveMetaException {
-    return getConnectionToMetastore(info.getUsername(), info.getPassword(), info.getUrl(),
-        info.getDriver(), info.getPrintInfo(), info.getConf());
+  public static Connection getConnectionToMetastore(MetaStoreConnectionInfo info, String schema)
+      throws HiveMetaException {
+    return getConnectionToMetastore(info.getUsername(), info.getPassword(), info.getUrl(), info.getDriver(),
+        info.getPrintInfo(), info.getConf(), schema);
   }
 
   public static String getValidConfVar(MetastoreConf.ConfVars confVar, Configuration conf)
@@ -100,6 +104,11 @@ public class HiveSchemaHelper {
       throw new IOException("Empty " + confVar.getVarname());
     }
     return confVarStr.trim();
+  }
+
+  private static void logAndPrintToStdout(String msg) {
+    LOG.info(msg);
+    System.out.println(msg);
   }
 
   public interface NestedScriptParser {
@@ -603,9 +612,10 @@ public class HiveSchemaHelper {
     private final boolean printInfo;
     private final Configuration conf;
     private final String dbType;
+    private final String metaDbType;
 
     public MetaStoreConnectionInfo(String userName, String password, String url, String driver,
-                                   boolean printInfo, Configuration conf, String dbType) {
+                                   boolean printInfo, Configuration conf, String dbType, String metaDbType) {
       super();
       this.userName = userName;
       this.password = password;
@@ -614,6 +624,7 @@ public class HiveSchemaHelper {
       this.printInfo = printInfo;
       this.conf = conf;
       this.dbType = dbType;
+      this.metaDbType = metaDbType;
     }
 
     public String getPassword() {
@@ -646,6 +657,10 @@ public class HiveSchemaHelper {
 
     public String getDbType() {
       return dbType;
+    }
+
+    public String getMetaDbType() {
+      return metaDbType;
     }
   }
 }

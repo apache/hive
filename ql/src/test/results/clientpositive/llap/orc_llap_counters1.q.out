@@ -248,7 +248,7 @@ Storage Desc Params:
 PREHOOK: query: select count(*) from orc_ppd where t > -100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 17728
    HDFS_BYTES_WRITTEN: 104
@@ -271,11 +271,16 @@ Stage-1 LLAP IO COUNTERS:
    NUM_VECTOR_BATCHES: 3
    ROWS_EMITTED: 2100
    SELECTED_ROWGROUPS: 3
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
 2094
 PREHOOK: query: select count(*) from orc_ppd where t > -100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_ppd
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 Stage-1 FILE SYSTEM COUNTERS:
    HDFS_BYTES_READ: 0
    HDFS_BYTES_WRITTEN: 104
@@ -296,6 +301,11 @@ Stage-1 LLAP IO COUNTERS:
    NUM_VECTOR_BATCHES: 3
    ROWS_EMITTED: 2100
    SELECTED_ROWGROUPS: 3
+Stage-1 INPUT COUNTERS:
+   GROUPED_INPUT_SPLITS_Map_1: 1
+   INPUT_DIRECTORIES_Map_1: 1
+   INPUT_FILES_Map_1: 1
+   RAW_INPUT_SPLITS_Map_1: 1
 2094
 PREHOOK: query: DROP TABLE staging
 PREHOOK: type: DROPTABLE

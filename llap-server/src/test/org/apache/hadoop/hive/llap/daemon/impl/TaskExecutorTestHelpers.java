@@ -217,7 +217,7 @@ public class TaskExecutorTestHelpers {
           LlapDaemonExecutorMetrics.class), mock(KilledTaskHandler.class), mock(
           FragmentCompletionHandler.class), new DefaultHadoopShim(), null,
           requestProto.getWorkSpec().getVertex(), initialEvent, null, mock(
-          SchedulerFragmentCompletingListener.class), mock(SocketFactory.class), isGuaranteed);
+          SchedulerFragmentCompletingListener.class), mock(SocketFactory.class), isGuaranteed, null);
       this.workTime = workTime;
       this.canFinish = canFinish;
       this.canFinishQueue = canFinishQueue;

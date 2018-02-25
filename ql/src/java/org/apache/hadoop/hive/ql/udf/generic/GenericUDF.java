@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -163,8 +163,7 @@ public abstract class GenericUDF implements Closeable {
 
     if (allConstant &&
         !ObjectInspectorUtils.isConstantObjectInspector(oi) &&
-        FunctionRegistry.isDeterministic(this) &&
-        !FunctionRegistry.isStateful(this) &&
+        FunctionRegistry.isConsistentWithinQuery(this) &&
         ObjectInspectorUtils.supportsConstantObjectInspector(oi)) {
       DeferredObject[] argumentValues =
         new DeferredJavaObject[arguments.length];

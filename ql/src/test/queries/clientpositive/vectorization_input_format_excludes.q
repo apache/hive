@@ -167,3 +167,27 @@ select ctinyint,
   stddev_pop(cdouble)
   from alltypes_orc
   group by ctinyint;
+
+-- test when input format is excluded row serde is used for vectorization
+set hive.vectorized.input.format.excludes=org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat,org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+set hive.vectorized.use.vectorized.input.format=true;
+set hive.vectorized.use.row.serde.deserialize=true;
+set hive.vectorized.row.serde.inputformat.excludes=;
+
+create table orcTbl (t1 tinyint, t2 tinyint)
+stored as orc;
+
+insert into orcTbl values (54, 9), (-104, 25), (-112, 24);
+
+explain vectorization select t1, t2, (t1+t2) from orcTbl where (t1+t2) > 10;
+
+select t1, t2, (t1+t2) from orcTbl where (t1+t2) > 10;
+
+create table parquetTbl (t1 tinyint, t2 tinyint)
+stored as parquet;
+
+insert into parquetTbl values (54, 9), (-104, 25), (-112, 24);
+
+explain vectorization SELECT t1, t2, (t1 + t2) FROM parquetTbl WHERE (t1 + t2) > 10;
+
+SELECT t1, t2, (t1 + t2) FROM parquetTbl WHERE (t1 + t2) > 10;

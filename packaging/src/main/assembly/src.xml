@@ -61,6 +61,7 @@
         <include>beeline/**/*</include>
         <include>bin/**/*</include>
         <include>checkstyle/**/*</include>
+        <include>classification/**/*</include>
         <include>cli/**/*</include>
         <include>common/**/*</include>
         <include>conf/**/*</include>
@@ -95,8 +96,10 @@
         <include>shims/**/*</include>
         <include>spark-client/**/*</include>
         <include>storage-api/**/*</include>
+        <include>standalone-metastore/**/*</include>
         <include>testutils/**/*</include>
         <include>vector-code-gen/**/*</include>
+        <include>kryo-registrator/**/*</include>
       </includes>
       <outputDirectory>/</outputDirectory>
     </fileSet>

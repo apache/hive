@@ -113,11 +113,21 @@
       </includes>
       <outputDirectory>lib/py/hive_metastore</outputDirectory>
     </fileSet>
+
+    <fileSet>
+      <directory>${project.basedir}/src/main/resources/</directory>
+      <fileMode>644</fileMode>
+      <includes>
+        <include>metastore-site.xml</include>
+        <include>metastore-log4j2.properties</include>
+      </includes>
+      <outputDirectory>conf</outputDirectory>
+    </fileSet>
   </fileSets>
 
   <files>
     <file>
-      <source>${project.basedir}/src/main/resources/metastore-log4j2.xml</source>
+      <source>${project.build.directory}/generated-sources/conf/metastore-site.xml.template</source>
       <outputDirectory>conf</outputDirectory>
     </file>
   </files>

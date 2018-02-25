@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -79,12 +80,14 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.Lists;
 
 import junit.framework.TestCase;
+import org.junit.experimental.categories.Category;
 
 /**
  * TestMetaStoreEventListener. Test case for
  * {@link org.apache.hadoop.hive.metastore.MetaStoreEventListener} and
  * {@link org.apache.hadoop.hive.metastore.MetaStorePreEventListener}
  */
+@Category(MetastoreUnitTest.class)
 public class TestMetaStoreEventListener {
   private Configuration conf;
   private HiveMetaStoreClient msc;

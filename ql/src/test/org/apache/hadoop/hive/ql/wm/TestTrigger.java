@@ -72,9 +72,16 @@ public class TestTrigger {
     assertTrue(trigger.apply(100000));
 
     expression = ExpressionFactory.createExpression(new VertexCounterLimit(VertexCounterLimit.VertexCounter
-      .TOTAL_TASKS,10000));
+      .VERTEX_TOTAL_TASKS, 10000));
     trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
-    assertEquals("counter: TOTAL_TASKS limit: 10000", expression.getCounterLimit().toString());
+    assertEquals("counter: VERTEX_TOTAL_TASKS limit: 10000", expression.getCounterLimit().toString());
+    assertFalse(trigger.apply(1000));
+    assertTrue(trigger.apply(100000));
+
+    expression = ExpressionFactory.createExpression(new VertexCounterLimit(VertexCounterLimit.VertexCounter
+      .DAG_TOTAL_TASKS, 10000));
+    trigger = new ExecutionTrigger("highly_parallel", expression, new Action(Action.Type.KILL_QUERY));
+    assertEquals("counter: DAG_TOTAL_TASKS limit: 10000", expression.getCounterLimit().toString());
     assertFalse(trigger.apply(1000));
     assertTrue(trigger.apply(100000));
 
@@ -163,10 +170,17 @@ public class TestTrigger {
     assertEquals(expected, expression);
     assertEquals(expected.hashCode(), expression.hashCode());
 
-    expression = ExpressionFactory.fromString(" TOTAL_TASKS > 10000");
+    expression = ExpressionFactory.fromString(" VERTEX_TOTAL_TASKS > 10000");
     expected = ExpressionFactory.createExpression(new VertexCounterLimit(VertexCounterLimit.VertexCounter
-      .TOTAL_TASKS,10000));
-    assertEquals("counter: TOTAL_TASKS limit: 10000", expression.getCounterLimit().toString());
+      .VERTEX_TOTAL_TASKS, 10000));
+    assertEquals("counter: VERTEX_TOTAL_TASKS limit: 10000", expression.getCounterLimit().toString());
+    assertEquals(expected, expression);
+    assertEquals(expected.hashCode(), expression.hashCode());
+
+    expression = ExpressionFactory.fromString(" DAG_TOTAL_TASKS > 10000");
+    expected = ExpressionFactory.createExpression(new VertexCounterLimit(VertexCounterLimit.VertexCounter
+      .DAG_TOTAL_TASKS, 10000));
+    assertEquals("counter: DAG_TOTAL_TASKS limit: 10000", expression.getCounterLimit().toString());
     assertEquals(expected, expression);
     assertEquals(expected.hashCode(), expression.hashCode());
 
@@ -185,25 +199,25 @@ public class TestTrigger {
     assertEquals(expected, expression);
     assertEquals(expected.hashCode(), expression.hashCode());
 
-    expression = ExpressionFactory.fromString(" SHUFFLE_BYTES > 1 gB");
+    expression = ExpressionFactory.fromString(" SHUFFLE_BYTES > 1gB");
     expected = ExpressionFactory.createExpression(new FileSystemCounterLimit("",
       FileSystemCounterLimit.FSCounter.SHUFFLE_BYTES, 1024 * 1024 * 1024));
     assertEquals(expected, expression);
     assertEquals(expected.hashCode(), expression.hashCode());
 
-    expression = ExpressionFactory.fromString(" SHUFFLE_BYTES > 1 TB");
+    expression = ExpressionFactory.fromString(" SHUFFLE_BYTES > 1TB");
     expected = ExpressionFactory.createExpression(new FileSystemCounterLimit("",
       FileSystemCounterLimit.FSCounter.SHUFFLE_BYTES, 1024L * 1024 * 1024 * 1024));
     assertEquals(expected, expression);
     assertEquals(expected.hashCode(), expression.hashCode());
 
-    expression = ExpressionFactory.fromString(" SHUFFLE_BYTES > 100 B");
+    expression = ExpressionFactory.fromString(" SHUFFLE_BYTES > 100");
     expected = ExpressionFactory.createExpression(new FileSystemCounterLimit("",
       FileSystemCounterLimit.FSCounter.SHUFFLE_BYTES, 100));
     assertEquals(expected, expression);
     assertEquals(expected.hashCode(), expression.hashCode());
 
-    expression = ExpressionFactory.fromString(" SHUFFLE_BYTES > 100bytes");
+    expression = ExpressionFactory.fromString(" SHUFFLE_BYTES > 100");
     expected = ExpressionFactory.createExpression(new FileSystemCounterLimit("",
       FileSystemCounterLimit.FSCounter.SHUFFLE_BYTES, 100));
     assertEquals(expected, expression);
@@ -213,38 +227,38 @@ public class TestTrigger {
   @Test
   public void testIllegalSizeCounterValue1() {
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Invalid size unit");
+    thrown.expectMessage("Invalid expression:  SHUFFLE_BYTES > 300GiB");
     ExpressionFactory.fromString(" SHUFFLE_BYTES > 300GiB");
   }
 
   @Test
   public void testIllegalSizeCounterValue2() {
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Invalid size unit");
+    thrown.expectMessage("Invalid expression:  SHUFFLE_BYTES > 300 foo");
     ExpressionFactory.fromString(" SHUFFLE_BYTES > 300 foo");
   }
 
   @Test
   public void testTimeValidationInTrigger() {
-    Expression expression = ExpressionFactory.fromString(" elapsed_TIME > 300 s");
+    Expression expression = ExpressionFactory.fromString(" elapsed_TIME > 300sec");
     Expression expected = ExpressionFactory.createExpression(new TimeCounterLimit(TimeCounterLimit.TimeCounter
       .ELAPSED_TIME, 300000));
     assertEquals(expected, expression);
     assertEquals(expected.hashCode(), expression.hashCode());
 
-    expression = ExpressionFactory.fromString(" elapsed_TIME > 300 seconds");
+    expression = ExpressionFactory.fromString(" elapsed_TIME > 300seconds");
     expected = ExpressionFactory.createExpression(new TimeCounterLimit(TimeCounterLimit.TimeCounter
       .ELAPSED_TIME, 300000));
     assertEquals(expected, expression);
     assertEquals(expected.hashCode(), expression.hashCode());
 
-    expression = ExpressionFactory.fromString(" elapsed_TIME > 300 sec");
+    expression = ExpressionFactory.fromString(" elapsed_TIME > 300sec");
     expected = ExpressionFactory.createExpression(new TimeCounterLimit(TimeCounterLimit.TimeCounter
       .ELAPSED_TIME, 300000));
     assertEquals(expected, expression);
     assertEquals(expected.hashCode(), expression.hashCode());
 
-    expression = ExpressionFactory.fromString(" elapsed_TIME > 300s");
+    expression = ExpressionFactory.fromString(" elapsed_TIME > 300second");
     expected = ExpressionFactory.createExpression(new TimeCounterLimit(TimeCounterLimit.TimeCounter
       .ELAPSED_TIME, 300000));
     assertEquals(expected, expression);
@@ -262,7 +276,14 @@ public class TestTrigger {
     assertEquals(expected, expression);
     assertEquals(expected.hashCode(), expression.hashCode());
 
-    expression = ExpressionFactory.fromString(" elapsed_TIME > 300000000 microseconds");
+    expression = ExpressionFactory.fromString(" elapsed_TIME > 300000ms");
+    expected = ExpressionFactory.createExpression(new TimeCounterLimit(TimeCounterLimit.TimeCounter
+      .ELAPSED_TIME, 300000));
+    assertEquals(expected, expression);
+    assertEquals(expected.hashCode(), expression.hashCode());
+
+
+    expression = ExpressionFactory.fromString(" elapsed_TIME > 300000000microseconds");
     expected = ExpressionFactory.createExpression(new TimeCounterLimit(TimeCounterLimit.TimeCounter
       .ELAPSED_TIME, 300000));
     assertEquals(expected, expression);
@@ -278,14 +299,14 @@ public class TestTrigger {
   @Test
   public void testIllegalTimeCounterValue1() {
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Invalid time unit");
-    ExpressionFactory.fromString(" elapsed_TIME > 300 light years");
+    thrown.expectMessage("Invalid expression:  elapsed_TIME > 300lightyears");
+    ExpressionFactory.fromString(" elapsed_TIME > 300lightyears");
   }
 
   @Test
   public void testIllegalTimeCounterValue2() {
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Invalid time unit");
+    thrown.expectMessage("Invalid expression:  elapsed_TIME > 300secTOR");
     ExpressionFactory.fromString(" elapsed_TIME > 300secTOR");
   }
 
@@ -293,10 +314,12 @@ public class TestTrigger {
   public void testActionFromMetastoreStr() {
     assertEquals(Action.Type.KILL_QUERY, Action.fromMetastoreExpression("KILL").getType());
     assertEquals(Action.Type.MOVE_TO_POOL, Action.fromMetastoreExpression("MOVE TO bi").getType());
+    assertEquals("bi", Action.fromMetastoreExpression("MOVE TO bi").getPoolName());
+    assertEquals("bi.c1.c2", Action.fromMetastoreExpression("MOVE TO bi.c1.c2").getPoolName());
     assertEquals("MOVE TO etl", Action.fromMetastoreExpression("MOVE TO etl").toString());
 
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Invalid move action expression (MOVE TO    ). Pool name is empty");
+    thrown.expectMessage("Invalid action expression: MOVE TO  ");
     assertEquals(Action.Type.MOVE_TO_POOL, Action.fromMetastoreExpression("MOVE TO    ").getType());
   }
 
@@ -327,56 +350,56 @@ public class TestTrigger {
   @Test
   public void testIllegalExpressionsUnsupportedPredicate() {
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Invalid predicate in expression");
+    thrown.expectMessage("Invalid expression: BYTES_READ < 1024");
     ExpressionFactory.fromString("BYTES_READ < 1024");
   }
 
   @Test
   public void testIllegalExpressionsMissingLimit() {
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Invalid predicate in expression");
+    thrown.expectMessage("Invalid expression: BYTES_READ >");
     ExpressionFactory.fromString("BYTES_READ >");
   }
 
   @Test
   public void testIllegalExpressionsMissingCounter() {
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Counter name cannot be empty!");
+    thrown.expectMessage("Invalid expression: > 1024");
     ExpressionFactory.fromString("> 1024");
   }
 
   @Test
   public void testIllegalExpressionsMultipleLimit() {
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Invalid predicate in expression");
+    thrown.expectMessage("Invalid expression: BYTES_READ > 1024 > 1025");
     ExpressionFactory.fromString("BYTES_READ > 1024 > 1025");
   }
 
   @Test
   public void testIllegalExpressionsMultipleCounters() {
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Invalid predicate in expression");
+    thrown.expectMessage("Invalid expression: BYTES_READ > BYTES_READ > 1025");
     ExpressionFactory.fromString("BYTES_READ > BYTES_READ > 1025");
   }
 
   @Test
   public void testIllegalExpressionsInvalidLimitPost() {
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Invalid size unit");
+    thrown.expectMessage("Invalid expression: BYTES_READ > 1024aaaa");
     ExpressionFactory.fromString("BYTES_READ > 1024aaaa");
   }
 
   @Test
   public void testIllegalExpressionsInvalidLimitPre() {
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Invalid counter value");
+    thrown.expectMessage("Invalid expression: BYTES_READ > foo1024");
     ExpressionFactory.fromString("BYTES_READ > foo1024");
   }
 
   @Test
   public void testIllegalExpressionsInvalidNegativeLimit() {
     thrown.expect(IllegalArgumentException.class);
-    thrown.expectMessage("Illegal value for counter limit. Expected a positive long value.");
+    thrown.expectMessage("Invalid expression: BYTES_READ > -1024");
     ExpressionFactory.fromString("BYTES_READ > -1024");
   }
 }

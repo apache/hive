@@ -18,9 +18,12 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.junit.experimental.categories.Category;
 
+@Category(MetastoreCheckinTest.class)
 public class TestSetUGIOnOnlyServer extends TestSetUGIOnBothClientServer {
 
   @Override

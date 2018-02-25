@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -171,8 +172,8 @@ public abstract class AbstractCoreBlobstoreCliDriver extends CliAdapter {
       }
     }).substitute(new HiveConf(), qt.getConf().get(HCONF_TEST_BLOBSTORE_PATH));
 
-    testBlobstorePath = QTestUtil.ensurePathEndsInSlash(testBlobstorePath);
-    testBlobstorePath += QTestUtil.ensurePathEndsInSlash(this.getClass().getSimpleName()); // name of child class
+    testBlobstorePath = HiveTestEnvSetup.ensurePathEndsInSlash(testBlobstorePath);
+    testBlobstorePath += HiveTestEnvSetup.ensurePathEndsInSlash(this.getClass().getSimpleName()); // name of child class
     String uid = new SimpleDateFormat("yyyyMMdd.HHmmss.SSS").format(Calendar.getInstance().getTime())
         + "-" + String.format("%03d", (int)(Math.random() * 999));
     testBlobstorePathUnique = testBlobstorePath + uid;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -191,8 +191,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
             break;
           }
         }
-        if (pkPos == rowType.getFieldNames().size()
-            || pkPos == rowType.getFieldNames().size()) {
+        if (pkPos == rowType.getFieldNames().size()) {
           LOG.error("Column for primary key definition " + pkColName + " not found");
           return ImmutableList.of();
         }
@@ -218,8 +217,7 @@ public class RelOptHiveTable extends RelOptAbstractTable {
             break;
           }
         }
-        if (ukPos == rowType.getFieldNames().size()
-            || ukPos == rowType.getFieldNames().size()) {
+        if (ukPos == rowType.getFieldNames().size()) {
           LOG.error("Column for unique constraint definition " + ukCol.colName + " not found");
           return ImmutableList.of();
         }

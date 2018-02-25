@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -159,13 +160,47 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast,
               "source contains directory: " + oneSrc.getPath().toString()));
         }
-        if(AcidUtils.isAcidTable(table)) {
-          if(!AcidUtils.originalBucketFilter.accept(oneSrc.getPath())) {
-            //acid files (e.g. bucket_0000) have ROW_ID embedded in them and so can't be simply
-            //copied to a table so only allow non-acid files for now
-            throw new SemanticException(ErrorMsg.ACID_LOAD_DATA_INVALID_FILE_NAME,
-              oneSrc.getPath().getName(), table.getFullyQualifiedName());
+      }
+      // Do another loop if table is bucketed
+      List<String> bucketCols = table.getBucketCols();
+      if (bucketCols != null && !bucketCols.isEmpty()) {
+        // Hive assumes that user names the files as per the corresponding
+        // bucket. For e.g, file names should follow the format 000000_0, 000000_1 etc.
+        // Here the 1st file will belong to bucket 0 and 2nd to bucket 1 and so on.
+        boolean[] bucketArray = new boolean[table.getNumBuckets()];
+        // initialize the array
+        Arrays.fill(bucketArray, false);
+        int numBuckets = table.getNumBuckets();
+
+        for (FileStatus oneSrc : srcs) {
+          String bucketName = oneSrc.getPath().getName();
+
+          //get the bucket id
+          String bucketIdStr =
+                  Utilities.getBucketFileNameFromPathSubString(bucketName);
+          int bucketId = Utilities.getBucketIdFromFile(bucketIdStr);
+          LOG.debug("bucket ID for file " + oneSrc.getPath() + " = " + bucketId
+          + " for table " + table.getFullyQualifiedName());
+          if (bucketId == -1) {
+            throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(
+                    "The file name is invalid : "
+                            + oneSrc.getPath().toString() + " for table "
+            + table.getFullyQualifiedName()));
           }
+          if (bucketId >= numBuckets) {
+            throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(
+                    "The file name corresponds to invalid bucketId : "
+                            + oneSrc.getPath().toString())
+                    + ". Maximum number of buckets can be " + numBuckets
+            + " for table " + table.getFullyQualifiedName());
+          }
+          if (bucketArray[bucketId]) {
+            throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(
+                    "Multiple files for same bucket : " + bucketId
+                            + ". Only 1 file per bucket allowed in single load command. To load multiple files for same bucket, use multiple statements for table "
+            + table.getFullyQualifiedName()));
+          }
+          bucketArray[bucketId] = true;
         }
       }
     } catch (IOException e) {

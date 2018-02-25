@@ -46,9 +46,9 @@ STAGE PLANS:
                       value expressions: _col0 (type: string), _col1 (type: string)
                       auto parallelism: false
             Path -> Alias:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### [src]
             Path -> Partition:
-#### A masked pattern was here ####
+              hdfs://### HDFS PATH ### 
                 Partition
                   base file name: src
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -61,6 +61,7 @@ STAGE PLANS:
                     columns.comments 'default','default'
                     columns.types string:string
 #### A masked pattern was here ####
+                    location hdfs://### HDFS PATH ###
                     name default.src
                     numFiles 1
                     numRows 500
@@ -82,6 +83,7 @@ STAGE PLANS:
                       columns.comments 'default','default'
                       columns.types string:string
 #### A masked pattern was here ####
+                      location hdfs://### HDFS PATH ###
                       name default.src
                       numFiles 1
                       numRows 500
@@ -106,10 +108,10 @@ STAGE PLANS:
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
-#### A masked pattern was here ####
+                  directory: hdfs://### HDFS PATH ###
                   NumFilesPerFileSink: 2
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
+                  Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -123,6 +125,7 @@ STAGE PLANS:
                         columns.comments 
                         columns.types int:string
 #### A masked pattern was here ####
+                        location hdfs://### HDFS PATH ###
                         name default.bucket4_1
                         numFiles 0
                         numRows 0
@@ -142,7 +145,7 @@ STAGE PLANS:
     Move Operator
       tables:
           replace: true
-#### A masked pattern was here ####
+          source: hdfs://### HDFS PATH ###
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -156,6 +159,7 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
+                location hdfs://### HDFS PATH ###
                 name default.bucket4_1
                 numFiles 0
                 numRows 0
@@ -171,7 +175,7 @@ STAGE PLANS:
   Stage: Stage-2
     Stats Work
       Basic Stats Work:
-#### A masked pattern was here ####
+          Stats Aggregation Key Prefix: hdfs://### HDFS PATH ###
 
 PREHOOK: query: insert overwrite table bucket4_1
 select * from src
@@ -211,11 +215,11 @@ STAGE PLANS:
 PREHOOK: query: select * from bucket4_1 tablesample (bucket 1 out of 2) s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket4_1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from bucket4_1 tablesample (bucket 1 out of 2) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@bucket4_1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 0	val_0
 0	val_0

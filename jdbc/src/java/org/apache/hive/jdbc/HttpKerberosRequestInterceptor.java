@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -42,10 +42,10 @@ public class HttpKerberosRequestInterceptor extends HttpRequestInterceptorBase {
   // A fair reentrant lock
   private static ReentrantLock kerberosLock = new ReentrantLock(true);
 
-  public HttpKerberosRequestInterceptor(String principal, String host,
-      String serverHttpUrl, boolean assumeSubject, CookieStore cs, String cn,
-      boolean isSSL, Map<String, String> additionalHeaders) {
-    super(cs, cn, isSSL, additionalHeaders);
+  public HttpKerberosRequestInterceptor(String principal, String host, String serverHttpUrl,
+      boolean assumeSubject, CookieStore cs, String cn, boolean isSSL,
+      Map<String, String> additionalHeaders, Map<String, String> customCookies) {
+    super(cs, cn, isSSL, additionalHeaders, customCookies);
     this.principal = principal;
     this.host = host;
     this.serverHttpUrl = serverHttpUrl;

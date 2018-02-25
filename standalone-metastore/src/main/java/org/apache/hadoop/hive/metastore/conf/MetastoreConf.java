@@ -96,7 +96,16 @@ public class MetastoreConf {
 
     @Override
     public String toString() {
-      return Long.toString(unit.toNanos(val)) + "ns";
+      switch (unit) {
+      case NANOSECONDS: return Long.toString(val) + "ns";
+      case MICROSECONDS: return Long.toString(val) + "us";
+      case MILLISECONDS: return Long.toString(val) + "ms";
+      case SECONDS: return Long.toString(val) + "s";
+      case MINUTES: return Long.toString(val) + "m";
+      case HOURS: return Long.toString(val) + "h";
+      case DAYS: return Long.toString(val) + "d";
+      }
+      throw new RuntimeException("Unknown time unit " + unit);
     }
   }
 
@@ -528,11 +537,16 @@ public class MetastoreConf {
             "The special string _HOST will be replaced automatically with the correct host name."),
     LIMIT_PARTITION_REQUEST("metastore.limit.partition.request",
         "hive.metastore.limit.partition.request", -1,
-        "This limits the number of partitions that can be requested from the metastore for a given table.\n" +
+        "This limits the number of partitions (whole partition objects) that can be requested " +
+        "from the metastore for a give table. MetaStore API methods using this are: \n" +
+                "get_partitions, \n" +
+                "get_partitions_with_auth, \n" +
+                "get_partitions_by_filter, \n" +
+                "get_partitions_by_expr.\n" +
             "The default value \"-1\" means no limit."),
     LOG4J_FILE("metastore.log4j.file", "hive.log4j.file", "",
         "Hive log4j configuration file.\n" +
-            "If the property is not set, then logging will be initialized using hive-log4j2.properties found on the classpath.\n" +
+            "If the property is not set, then logging will be initialized using metastore-log4j2.properties found on the classpath.\n" +
             "If the property is set, the value must be a valid URI (java.net.URI, e.g. \"file:///tmp/my-logging.xml\"), \n" +
             "which you can then extract a URL from and pass to PropertyConfigurator.configure(URL)."),
     MANAGER_FACTORY_CLASS("javax.jdo.PersistenceManagerFactoryClass",
@@ -718,6 +732,12 @@ public class MetastoreConf {
         "Number of retries upon failure of Thrift metastore calls"),
     THRIFT_URIS("metastore.thrift.uris", "hive.metastore.uris", "",
         "Thrift URI for the remote metastore. Used by metastore client to connect to remote metastore."),
+    THRIFT_URI_SELECTION("metastore.thrift.uri.selection", "hive.metastore.uri.selection", "RANDOM",
+        new Validator.StringSet("RANDOM", "SEQUENTIAL"),
+        "Determines the selection mechanism used by metastore client to connect to remote " +
+        "metastore.  SEQUENTIAL implies that the first valid metastore from the URIs specified " +
+        "as part of hive.metastore.uris will be picked.  RANDOM implies that the metastore " +
+        "will be picked randomly"),
     TIMEDOUT_TXN_REAPER_START("metastore.timedout.txn.reaper.start",
         "hive.timedout.txn.reaper.start", 100, TimeUnit.SECONDS,
         "Time delay of 1st reaper run after metastore start"),
@@ -766,6 +786,8 @@ public class MetastoreConf {
             "class is used to store and retrieve transactions and locks"),
     TXN_TIMEOUT("metastore.txn.timeout", "hive.txn.timeout", 300, TimeUnit.SECONDS,
         "time after which transactions are declared aborted if the client has not sent a heartbeat."),
+    URI_RESOLVER("metastore.uri.resolver", "hive.metastore.uri.resolver", "",
+            "If set, fully qualified class name of resolver for hive metastore uri's"),
     USERS_IN_ADMIN_ROLE("metastore.users.in.admin.role", "hive.users.in.admin.role", "", false,
         "Comma separated list of users who are in admin role for bootstrapping.\n" +
             "More users can be added in ADMIN role later."),
@@ -880,81 +902,91 @@ public class MetastoreConf {
     private final Object defaultVal;
     private final Validator validator;
     private final boolean caseSensitive;
+    private final String description;
 
-    ConfVars(String varname, String hiveName, String defaultVal, String comment) {
+    ConfVars(String varname, String hiveName, String defaultVal, String description) {
       this.varname = varname;
       this.hiveName = hiveName;
       this.defaultVal = defaultVal;
       validator = null;
       caseSensitive = false;
+      this.description = description;
     }
 
     ConfVars(String varname, String hiveName, String defaultVal, Validator validator,
-             String comment) {
+             String description) {
       this.varname = varname;
       this.hiveName = hiveName;
       this.defaultVal = defaultVal;
       this.validator = validator;
       caseSensitive = false;
+      this.description = description;
     }
 
     ConfVars(String varname, String hiveName, String defaultVal, boolean caseSensitive,
-             String comment) {
+             String description) {
       this.varname = varname;
       this.hiveName = hiveName;
       this.defaultVal = defaultVal;
       validator = null;
       this.caseSensitive = caseSensitive;
+      this.description = description;
     }
 
-    ConfVars(String varname, String hiveName, long defaultVal, String comment) {
+    ConfVars(String varname, String hiveName, long defaultVal, String description) {
       this.varname = varname;
       this.hiveName = hiveName;
       this.defaultVal = defaultVal;
       validator = null;
       caseSensitive = false;
+      this.description = description;
     }
 
     ConfVars(String varname, String hiveName, long defaultVal, Validator validator,
-             String comment) {
+             String description) {
       this.varname = varname;
       this.hiveName = hiveName;
       this.defaultVal = defaultVal;
       this.validator = validator;
       caseSensitive = false;
+      this.description = description;
     }
 
-    ConfVars(String varname, String hiveName, boolean defaultVal, String comment) {
+    ConfVars(String varname, String hiveName, boolean defaultVal, String description) {
       this.varname = varname;
       this.hiveName = hiveName;
       this.defaultVal = defaultVal;
       validator = null;
       caseSensitive = false;
+      this.description = description;
     }
 
-    ConfVars(String varname, String hiveName, double defaultVal, String comment) {
+    ConfVars(String varname, String hiveName, double defaultVal, String description) {
       this.varname = varname;
       this.hiveName = hiveName;
       this.defaultVal = defaultVal;
       validator = null;
       caseSensitive = false;
+      this.description = description;
     }
 
-    ConfVars(String varname, String hiveName, long defaultVal, TimeUnit unit, String comment) {
+    ConfVars(String varname, String hiveName, long defaultVal, TimeUnit unit, String description) {
       this.varname = varname;
       this.hiveName = hiveName;
       this.defaultVal = new TimeValue(defaultVal, unit);
       validator = new Validator.TimeValidator(unit);
       caseSensitive = false;
+      this.description = description;
     }
 
     ConfVars(String varname, String hiveName, long defaultVal, TimeUnit unit,
-             Validator validator, String comment) {
+             Validator validator, String description) {
       this.varname = varname;
       this.hiveName = hiveName;
       this.defaultVal = new TimeValue(defaultVal, unit);
       this.validator = validator;
       caseSensitive = false;
+      this.description = description;
     }
 
     public void validate(String value) throws IllegalArgumentException {
@@ -993,6 +1025,10 @@ public class MetastoreConf {
 
     public Object getDefaultVal() {
       return defaultVal;
+    }
+
+    public String getDescription() {
+      return description;
     }
 
     @Override

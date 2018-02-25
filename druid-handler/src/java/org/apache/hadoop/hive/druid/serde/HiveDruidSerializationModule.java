@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,9 +18,12 @@
 package org.apache.hadoop.hive.druid.serde;
 
 import io.druid.java.util.common.granularity.PeriodGranularity;
+import io.druid.query.spec.LegacySegmentSpec;
 
 import com.fasterxml.jackson.core.util.VersionUtil;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+
+import org.joda.time.Interval;
 
 /**
  * This class is used to define/override any serde behavior for classes from druid.

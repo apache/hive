@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -182,7 +182,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
   public void initTriggers(final HiveConf conf) throws HiveException {
     if (triggerValidatorRunnable == null) {
       final long triggerValidationIntervalMs = HiveConf.getTimeVar(conf, ConfVars
-        .HIVE_TRIGGER_VALIDATION_INTERVAL_MS, TimeUnit.MILLISECONDS);
+        .HIVE_TRIGGER_VALIDATION_INTERVAL, TimeUnit.MILLISECONDS);
       sessionTriggerProvider = new SessionTriggerProvider(openSessions, new LinkedList<>());
       triggerActionHandler = new KillTriggerActionHandler();
       triggerValidatorRunnable = new TriggerValidatorRunnable(

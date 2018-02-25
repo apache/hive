@@ -61,47 +61,47 @@ PREHOOK: query: SELECT COUNT(*) FROM test_table_bucketed TABLESAMPLE (BUCKET 1 O
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table_bucketed
 PREHOOK: Input: default@test_table_bucketed@part=1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT COUNT(*) FROM test_table_bucketed TABLESAMPLE (BUCKET 1 OUT OF 3) WHERE part = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table_bucketed
 POSTHOOK: Input: default@test_table_bucketed@part=1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 31
 PREHOOK: query: SELECT COUNT(*) FROM test_table_bucketed TABLESAMPLE (BUCKET 2 OUT OF 3) WHERE part = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table_bucketed
 PREHOOK: Input: default@test_table_bucketed@part=1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT COUNT(*) FROM test_table_bucketed TABLESAMPLE (BUCKET 2 OUT OF 3) WHERE part = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table_bucketed
 POSTHOOK: Input: default@test_table_bucketed@part=1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 179
 PREHOOK: query: SELECT COUNT(*) FROM test_table_bucketed TABLESAMPLE (BUCKET 3 OUT OF 3) WHERE part = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table_bucketed
 PREHOOK: Input: default@test_table_bucketed@part=1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT COUNT(*) FROM test_table_bucketed TABLESAMPLE (BUCKET 3 OUT OF 3) WHERE part = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table_bucketed
 POSTHOOK: Input: default@test_table_bucketed@part=1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 99
 PREHOOK: query: SELECT cnt FROM (SELECT INPUT__FILE__NAME, COUNT(*) cnt FROM test_table_bucketed WHERE part = '1'
 GROUP BY INPUT__FILE__NAME ORDER BY INPUT__FILE__NAME ASC LIMIT 3) a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table_bucketed
 PREHOOK: Input: default@test_table_bucketed@part=1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT cnt FROM (SELECT INPUT__FILE__NAME, COUNT(*) cnt FROM test_table_bucketed WHERE part = '1'
 GROUP BY INPUT__FILE__NAME ORDER BY INPUT__FILE__NAME ASC LIMIT 3) a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_table_bucketed
 POSTHOOK: Input: default@test_table_bucketed@part=1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 31
 179
 99

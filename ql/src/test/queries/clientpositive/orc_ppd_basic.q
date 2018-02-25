@@ -178,8 +178,10 @@ select count(*) from orc_ppd where s = "wendy king" and t < 0;
 -- INPUT_RECORDS: 100
 select count(*) from orc_ppd where s = "wendy king" and t > 100;
 
+set hive.cbo.enable=false;
 set hive.optimize.index.filter=false;
 -- when cbo is disabled constant gets converted to HiveDecimal
+--  74.72f + 0.0 = 74.72000122070312
 select count(*) from orc_ppd where f=74.72;
 set hive.optimize.index.filter=true;
 select count(*) from orc_ppd where f=74.72;
@@ -190,6 +192,21 @@ select count(*) from orc_ppd where f=74.72;
 set hive.optimize.index.filter=true;
 select count(*) from orc_ppd where f=74.72;
 
+-- 42.47f + 0.0 == 42.470001220703125
+create temporary table orc_ppd_1 stored as orc as select * from orc_ppd_staging where d = 42.47;
+
+set hive.cbo.enable=false;
+set hive.optimize.index.filter=false;
+-- when cbo is disabled constant gets converted to HiveDecimal
+select count(*) from orc_ppd_1 where d=42.47;
+set hive.optimize.index.filter=true;
+select count(*) from orc_ppd_1 where d=42.47;
+
+set hive.cbo.enable=true;
+set hive.optimize.index.filter=false;
+select count(*) from orc_ppd_1 where d=42.47;
+set hive.optimize.index.filter=true;
+select count(*) from orc_ppd_1 where d=42.47;
 
 RESET;
 set hive.compute.query.using.stats=false;

@@ -276,7 +276,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: lag not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
+                notVectorizedReason: PTF operator: Only PTF directly under reduce-shuffle is supported
                 vectorized: false
             Reduce Operator Tree:
               Group By Operator
@@ -484,7 +484,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: lag not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
+                notVectorizedReason: PTF operator: Only PTF directly under reduce-shuffle is supported
                 vectorized: false
             Reduce Operator Tree:
               Group By Operator
@@ -4553,31 +4553,15 @@ STAGE PLANS:
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
         Reducer 2 
-            Execution mode: vectorized, llap
+            Execution mode: llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: aa
-                reduceColumnSortOrder: ++
-                allNative: false
-                usesVectorUDFAdaptor: false
-                vectorized: true
-                rowBatchContext:
-                    dataColumnCount: 3
-                    dataColumns: KEY._col0:string, KEY._col1:string, VALUE._col0:double
-                    partitionColumnCount: 0
-                    scratchColumnTypeNames: []
+                notVectorizedReason: PTF operator: Only PTF directly under reduce-shuffle is supported
+                vectorized: false
             Reduce Operator Tree:
               Group By Operator
                 aggregations: sum(VALUE._col0)
-                Group By Vectorization:
-                    aggregators: VectorUDAFSumDouble(col 2:double) -> double
-                    className: VectorGroupByOperator
-                    groupByMode: MERGEPARTIAL
-                    keyExpressions: col 0:string, col 1:string
-                    native: false
-                    vectorProcessingMode: MERGE_PARTIAL
-                    projectedOutputColumnNums: [0]
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2
@@ -4601,37 +4585,14 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: RANGE PRECEDING(MAX)~CURRENT
-                  PTF Vectorization:
-                      className: VectorPTFOperator
-                      evaluatorClasses: [VectorPTFEvaluatorDoubleSum]
-                      functionInputExpressions: [RoundWithNumDigitsDoubleToDouble(col 2, decimalPlaces 2) -> 4:double]
-                      functionNames: [sum]
-                      keyInputColumns: [0]
-                      native: true
-                      nonKeyInputColumns: [1, 2]
-                      orderExpressions: [col 0:string]
-                      outputColumns: [3, 0, 1, 2]
-                      outputTypes: [double, string, string, double]
-                      streamingColumns: []
                   Statistics: Num rows: 13 Data size: 2574 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string), round(_col2, 2) (type: double), round(sum_window_0, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        projectedOutputColumnNums: [0, 1, 5, 6]
-                        selectExpressions: RoundWithNumDigitsDoubleToDouble(col 2, decimalPlaces 2) -> 5:double, RoundWithNumDigitsDoubleToDouble(col 3, decimalPlaces 2) -> 6:double
                     Statistics: Num rows: 13 Data size: 2678 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string)
                       sort order: ++
-                      Reduce Sink Vectorization:
-                          className: VectorReduceSinkObjectHashOperator
-                          keyColumnNums: [0, 1]
-                          native: true
-                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                          valueColumnNums: [5, 6]
                       Statistics: Num rows: 13 Data size: 2678 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col2 (type: double), _col3 (type: double)
         Reducer 3 
@@ -4700,6 +4661,22 @@ POSTHOOK: Input: default@mfgr_price_view
 POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 sq.p_mfgr	sq.p_brand	sq.s	sq.s1
+Manufacturer#1	Brand#12	4800.84	8749.73
+Manufacturer#1	Brand#14	2346.3	8749.73
+Manufacturer#1	Brand#15	1602.59	8749.73
+Manufacturer#2	Brand#22	3491.38	8923.62
+Manufacturer#2	Brand#23	2031.98	8923.62
+Manufacturer#2	Brand#24	1698.66	8923.62
+Manufacturer#2	Brand#25	1701.6	8923.62
+Manufacturer#3	Brand#31	1671.68	7532.61
+Manufacturer#3	Brand#32	3333.37	7532.61
+Manufacturer#3	Brand#34	1337.29	7532.61
+Manufacturer#3	Brand#35	1190.27	7532.61
+Manufacturer#4	Brand#41	4755.94	7337.62
+Manufacturer#4	Brand#42	2581.68	7337.62
+Manufacturer#5	Brand#51	1611.66	7672.66
+Manufacturer#5	Brand#52	3254.17	7672.66
+Manufacturer#5	Brand#53	2806.83	7672.66
 PREHOOK: query: select p_mfgr, p_brand, s, 
 round(sum(s) over w1 ,2)  as s1
 from mfgr_price_view 
@@ -6134,7 +6111,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: PTF operator: lag not in supported functions [avg, count, dense_rank, first_value, last_value, max, min, rank, row_number, sum]
+                notVectorizedReason: PTF operator: Only PTF directly under reduce-shuffle is supported
                 vectorized: false
             Reduce Operator Tree:
               Group By Operator

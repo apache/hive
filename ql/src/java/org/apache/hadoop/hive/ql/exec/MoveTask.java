@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -294,8 +294,13 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             //'sourcePath' result of 'select ...' part of CTAS statement
             assert lfd.getIsDfsDir();
             FileSystem srcFs = sourcePath.getFileSystem(conf);
-            List<Path> newFiles = new ArrayList<>();
-            Hive.moveAcidFiles(srcFs, srcFs.globStatus(sourcePath), targetPath, newFiles);
+            FileStatus[] srcs = srcFs.globStatus(sourcePath);
+            if(srcs != null) {
+              List<Path> newFiles = new ArrayList<>();
+              Hive.moveAcidFiles(srcFs, srcs, targetPath, newFiles);
+            } else {
+              LOG.debug("No files found to move from " + sourcePath + " to " + targetPath);
+            }
           }
           else {
             moveFile(sourcePath, targetPath, lfd.getIsDfsDir());
@@ -503,8 +508,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         (tbd.getLbCtx() == null) ? 0 : tbd.getLbCtx().calculateListBucketingLevel(),
         work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
             !tbd.isMmTable(),
-        work.getLoadTableWork().getTxnId(), tbd.getStmtId(), hasFollowingStatsTask(),
-        work.getLoadTableWork().getWriteType());
+        work.getLoadTableWork().getTxnId(),
+        tbd.getStmtId(),
+        hasFollowingStatsTask(),
+        work.getLoadTableWork().getWriteType(),
+        tbd.isInsertOverwrite());
 
     // publish DP columns to its subscribers
     if (dps != null && dps.size() > 0) {

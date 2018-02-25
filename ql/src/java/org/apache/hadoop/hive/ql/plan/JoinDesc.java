@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -386,7 +386,8 @@ public class JoinDesc extends AbstractOperatorDesc {
     }
     Map<String, String> explainColMap = new HashMap<>();
     for(String col:this.colExprMap.keySet()){
-      String taggedCol = this.reversedExprs.get(col) + ":" + this.colExprMap.get(col);
+      String taggedCol = this.reversedExprs.get(col) + ":"
+          + this.colExprMap.get(col).getExprString();
       explainColMap.put(col, taggedCol);
     }
     return explainColMap;

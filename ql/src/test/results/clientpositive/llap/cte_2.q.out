@@ -3,13 +3,13 @@ q2 as (select * from src s2 where key = '4')
 select * from q1 union all select * from q2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with q1 as (select * from src where key= '5'),
 q2 as (select * from src s2 where key = '4')
 select * from q1 union all select * from q2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	val_5
 5	val_5
 5	val_5
@@ -41,11 +41,11 @@ POSTHOOK: Lineage: s1.value SIMPLE [(src)src.FieldSchema(name:value, type:string
 PREHOOK: query: select * from s1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@s1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from s1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@s1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	val_5
 5	val_5
 5	val_5
@@ -62,13 +62,13 @@ from q1
 select *
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with q1 as (select * from src where key= '5')
 from q1
 select *
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 5	val_5
 5	val_5
 5	val_5
@@ -90,11 +90,11 @@ POSTHOOK: Lineage: s2.key SIMPLE []
 PREHOOK: query: select * from s2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@s2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from s2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@s2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 4
 PREHOOK: query: drop table s2
 PREHOOK: type: DROPTABLE
@@ -123,12 +123,12 @@ PREHOOK: query: select * from v1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@v1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from v1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@v1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 5
 5
 5
@@ -160,13 +160,13 @@ select * from v1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@v1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: with q1 as ( select key from src where key = '4')
 select * from v1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@v1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 5
 5
 5

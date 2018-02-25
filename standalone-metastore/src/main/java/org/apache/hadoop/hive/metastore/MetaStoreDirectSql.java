@@ -82,6 +82,7 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
 import org.apache.hive.common.util.BloomFilter;
 import org.datanucleus.store.rdbms.query.ForwardQueryResult;
 import org.slf4j.Logger;
@@ -216,7 +217,7 @@ class MetaStoreDirectSql {
       doCommit = true;
     }
     LinkedList<Query> initQueries = new LinkedList<>();
-  
+
     try {
       // Force the underlying db to initialize.
       initQueries.add(pm.newQuery(MDatabase.class, "name == ''"));
@@ -389,8 +390,7 @@ class MetaStoreDirectSql {
    * @param tableType Table type, or null if we want to get all tables
    * @return list of table names
    */
-  public List<String> getTables(String db_name, TableType tableType) throws MetaException {
-    List<String> ret = new ArrayList<String>();
+  public List<String> getTables(String dbName, TableType tableType) throws MetaException {
     String queryText = "SELECT " + TBLS + ".\"TBL_NAME\""
       + " FROM " + TBLS + " "
       + " INNER JOIN " + DBS + " ON " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
@@ -398,51 +398,35 @@ class MetaStoreDirectSql {
       + (tableType == null ? "" : "AND " + TBLS + ".\"TBL_TYPE\" = ? ") ;
 
     List<String> pms = new ArrayList<String>();
-    pms.add(db_name);
+    pms.add(dbName);
     if (tableType != null) {
       pms.add(tableType.toString());
     }
 
     Query<?> queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
-    List<Object[]> sqlResult = ensureList(executeWithArray(
-        queryParams, pms.toArray(), queryText));
-
-    if (!sqlResult.isEmpty()) {
-      for (Object[] line : sqlResult) {
-        ret.add(extractSqlString(line[0]));
-      }
-    }
-    return ret;
+    return executeWithArray(
+        queryParams, pms.toArray(), queryText);
   }
 
   /**
    * Get table names by using direct SQL queries.
    *
    * @param dbName Metastore database namme
-   * @param tableType Table type, or null if we want to get all tables
    * @return list of table names
    */
-  public List<String> getMaterializedViewsForRewriting(String db_name) throws MetaException {
-    List<String> ret = new ArrayList<String>();
+  public List<String> getMaterializedViewsForRewriting(String dbName) throws MetaException {
     String queryText = "SELECT " + TBLS + ".\"TBL_NAME\""
       + " FROM " + TBLS + " "
       + " INNER JOIN " + DBS + " ON " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
       + " WHERE " + DBS + ".\"NAME\" = ? AND " + TBLS + ".\"TBL_TYPE\" = ? " ;
 
     List<String> pms = new ArrayList<String>();
-    pms.add(db_name);
+    pms.add(dbName);
     pms.add(TableType.MATERIALIZED_VIEW.toString());
 
     Query<?> queryParams = pm.newQuery("javax.jdo.query.SQL", queryText);
-    List<Object[]> sqlResult = ensureList(executeWithArray(
-        queryParams, pms.toArray(), queryText));
-
-    if (!sqlResult.isEmpty()) {
-      for (Object[] line : sqlResult) {
-        ret.add(extractSqlString(line[0]));
-      }
-    }
-    return ret;
+    return executeWithArray(
+        queryParams, pms.toArray(), queryText);
   }
 
   /**
@@ -968,7 +952,7 @@ class MetaStoreDirectSql {
   /**
    * Convert a boolean value returned from the RDBMS to a Java Boolean object.
    * MySQL has booleans, but e.g. Derby uses 'Y'/'N' mapping.
-   * 
+   *
    * @param value
    *          column value from the database
    * @return The Boolean value of the database column value, null if the column
@@ -1499,81 +1483,63 @@ class MetaStoreDirectSql {
     });
   }
 
-  // Get aggregated column stats for a table per partition for all columns in the partition
-  // This is primarily used to populate stats object when using CachedStore (Check CachedStore#prewarm)
-  public Map<String, List<ColumnStatisticsObj>> getColStatsForTablePartitions(String dbName,
-      String tblName, boolean enableBitVector) throws MetaException {
-    String queryText = "select \"PARTITION_NAME\", " + getStatsList(enableBitVector) + " from "
-        + " " + PART_COL_STATS + " where \"DB_NAME\" = ? and \"TABLE_NAME\" = ?"
-        + " order by \"PARTITION_NAME\"";
+  public List<ColStatsObjWithSourceInfo> getColStatsForAllTablePartitions(String dbName,
+      boolean enableBitVector) throws MetaException {
+    String queryText = "select \"TABLE_NAME\", \"PARTITION_NAME\", " + getStatsList(enableBitVector)
+        + " from " + " " + PART_COL_STATS + " where \"DB_NAME\" = ?";
     long start = 0;
     long end = 0;
     Query query = null;
     boolean doTrace = LOG.isDebugEnabled();
     Object qResult = null;
     start = doTrace ? System.nanoTime() : 0;
-    query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    qResult = executeWithArray(query, prepareParams(dbName, tblName,
-        Collections.<String>emptyList(), Collections.<String>emptyList()), queryText);
-    if (qResult == null) {
-      query.closeAll();
-      return Collections.emptyMap();
-    }
-    end = doTrace ? System.nanoTime() : 0;
-    timingTrace(doTrace, queryText, start, end);
-    List<Object[]> list = ensureList(qResult);
-    Map<String, List<ColumnStatisticsObj>> partColStatsMap =
-        new HashMap<String, List<ColumnStatisticsObj>>();
-    String partNameCurrent = null;
-    List<ColumnStatisticsObj> partColStatsList = new ArrayList<ColumnStatisticsObj>();
-    for (Object[] row : list) {
-      String partName = (String) row[0];
-      if (partNameCurrent == null) {
-        // Update the current partition we are working on
-        partNameCurrent = partName;
-        // Create a new list for this new partition
-        partColStatsList = new ArrayList<ColumnStatisticsObj>();
-        // Add the col stat for the current column
-        partColStatsList.add(prepareCSObj(row, 1));
-      } else if (!partNameCurrent.equalsIgnoreCase(partName)) {
-        // Save the previous partition and its col stat list
-        partColStatsMap.put(partNameCurrent, partColStatsList);
-        // Update the current partition we are working on
-        partNameCurrent = partName;
-        // Create a new list for this new partition
-        partColStatsList = new ArrayList<ColumnStatisticsObj>();
-        // Add the col stat for the current column
-        partColStatsList.add(prepareCSObj(row, 1));
-      } else {
-        partColStatsList.add(prepareCSObj(row, 1));
+    List<ColStatsObjWithSourceInfo> colStatsForDB = new ArrayList<ColStatsObjWithSourceInfo>();
+    try {
+      query = pm.newQuery("javax.jdo.query.SQL", queryText);
+      qResult = executeWithArray(query, new Object[] { dbName }, queryText);
+      if (qResult == null) {
+        query.closeAll();
+        return colStatsForDB;
       }
-      Deadline.checkTimeout();
+      end = doTrace ? System.nanoTime() : 0;
+      timingTrace(doTrace, queryText, start, end);
+      List<Object[]> list = ensureList(qResult);
+      for (Object[] row : list) {
+        String tblName = (String) row[0];
+        String partName = (String) row[1];
+        ColumnStatisticsObj colStatObj = prepareCSObj(row, 2);
+        colStatsForDB.add(new ColStatsObjWithSourceInfo(colStatObj, dbName, tblName, partName));
+        Deadline.checkTimeout();
+      }
+    } finally {
+      query.closeAll();
     }
-    query.closeAll();
-    return partColStatsMap;
+    return colStatsForDB;
   }
 
   /** Should be called with the list short enough to not trip up Oracle/etc. */
   private List<ColumnStatisticsObj> columnStatisticsObjForPartitionsBatch(String dbName,
       String tableName, List<String> partNames, List<String> colNames, boolean areAllPartsFound,
-      boolean useDensityFunctionForNDVEstimation, double ndvTuner, boolean enableBitVector) throws MetaException {
-    if(enableBitVector) {
-      return aggrStatsUseJava(dbName, tableName, partNames, colNames, useDensityFunctionForNDVEstimation, ndvTuner);
-    }
-    else {
-      return aggrStatsUseDB(dbName, tableName, partNames, colNames, areAllPartsFound, useDensityFunctionForNDVEstimation, ndvTuner);
+      boolean useDensityFunctionForNDVEstimation, double ndvTuner, boolean enableBitVector)
+      throws MetaException {
+    if (enableBitVector) {
+      return aggrStatsUseJava(dbName, tableName, partNames, colNames, areAllPartsFound,
+          useDensityFunctionForNDVEstimation, ndvTuner);
+    } else {
+      return aggrStatsUseDB(dbName, tableName, partNames, colNames, areAllPartsFound,
+          useDensityFunctionForNDVEstimation, ndvTuner);
     }
   }
 
   private List<ColumnStatisticsObj> aggrStatsUseJava(String dbName, String tableName,
-      List<String> partNames, List<String> colNames,
+      List<String> partNames, List<String> colNames, boolean areAllPartsFound,
       boolean useDensityFunctionForNDVEstimation, double ndvTuner) throws MetaException {
     // 1. get all the stats for colNames in partNames;
-    List<ColumnStatistics> partStats = getPartitionStats(dbName, tableName, partNames, colNames,
-        true);
+    List<ColumnStatistics> partStats =
+        getPartitionStats(dbName, tableName, partNames, colNames, true);
     // 2. use util function to aggr stats
     return MetaStoreUtils.aggrPartitionStats(partStats, dbName, tableName, partNames, colNames,
-        useDensityFunctionForNDVEstimation, ndvTuner);
+        areAllPartsFound, useDensityFunctionForNDVEstimation, ndvTuner);
   }
 
   private List<ColumnStatisticsObj> aggrStatsUseDB(String dbName,

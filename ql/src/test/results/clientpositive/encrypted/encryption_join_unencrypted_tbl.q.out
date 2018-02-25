@@ -4,12 +4,12 @@ POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table PURGE
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
 PREHOOK: Output: default@encrypted_table
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encrypted_table
 Encryption key created: 'key_128'
@@ -587,9 +587,10 @@ STAGE PLANS:
                   value expressions: _col0 (type: int), _col1 (type: string)
                   auto parallelism: false
       Path -> Alias:
-#### A masked pattern was here ####
+        hdfs://### HDFS PATH ### [$hdt$_1:t2]
+        hdfs://### HDFS PATH ### [$hdt$_0:t1]
       Path -> Partition:
-#### A masked pattern was here ####
+        hdfs://### HDFS PATH ### 
           Partition
             base file name: encrypted_table
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -602,6 +603,7 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
+              location hdfs://### HDFS PATH ###
               name default.encrypted_table
               numFiles 1
               numRows 500
@@ -623,6 +625,7 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
+                location hdfs://### HDFS PATH ###
                 name default.encrypted_table
                 numFiles 1
                 numRows 500
@@ -635,7 +638,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.encrypted_table
             name: default.encrypted_table
-#### A masked pattern was here ####
+        hdfs://### HDFS PATH ### 
           Partition
             base file name: src
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -648,6 +651,7 @@ STAGE PLANS:
               columns.comments 'default','default'
               columns.types string:string
 #### A masked pattern was here ####
+              location hdfs://### HDFS PATH ###
               name default.src
               numFiles 1
               numRows 500
@@ -669,6 +673,7 @@ STAGE PLANS:
                 columns.comments 'default','default'
                 columns.types string:string
 #### A masked pattern was here ####
+                location hdfs://### HDFS PATH ###
                 name default.src
                 numFiles 1
                 numRows 500
@@ -697,10 +702,10 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-#### A masked pattern was here ####
+            directory: hdfs://### HDFS PATH ###
             NumFilesPerFileSink: 1
             Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
+            Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

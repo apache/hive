@@ -52,7 +52,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), 0 (type: int)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), 0 (type: bigint)
           mode: partials
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
@@ -68,15 +68,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
+              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
               sort order: +++
-              Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
+              Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
               Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
           mode: final
           outputColumnNames: _col0, _col1, _col3
           Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: NONE
@@ -137,7 +137,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), 0 (type: int)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), 0 (type: bigint)
           mode: partials
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
@@ -153,15 +153,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
+              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
               sort order: +++
-              Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
+              Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
               Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
           mode: final
           outputColumnNames: _col0, _col1, _col3
           Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: NONE
@@ -246,7 +246,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), 0 (type: int)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), 0 (type: bigint)
           mode: partials
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
@@ -262,15 +262,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
+              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
               sort order: +++
-              Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
+              Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
               Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col3 (type: double)
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
           mode: final
           outputColumnNames: _col0, _col1, _col3
           Statistics: Num rows: 2 Data size: 720 Basic stats: COMPLETE Column stats: NONE
@@ -378,7 +378,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), 0 (type: int)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), 0 (type: bigint)
           mode: partials
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 24 Data size: 168 Basic stats: COMPLETE Column stats: NONE
@@ -394,15 +394,15 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             Reduce Output Operator
-              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int)
+              key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
               sort order: +++
-              Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: int)
+              Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
               Statistics: Num rows: 24 Data size: 168 Basic stats: COMPLETE Column stats: NONE
               value expressions: _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
           aggregations: sum(VALUE._col0)
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: int)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
           mode: final
           outputColumnNames: _col0, _col1, _col3
           Statistics: Num rows: 12 Data size: 84 Basic stats: COMPLETE Column stats: NONE

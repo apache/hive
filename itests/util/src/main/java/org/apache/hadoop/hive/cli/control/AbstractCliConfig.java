@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -23,26 +23,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.FsType;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
+import org.apache.hive.testutils.HiveTestEnvSetup;
+
 import com.google.common.base.Splitter;
-import com.google.common.collect.Sets;
 
 public abstract class AbstractCliConfig {
 
-  public static final String HIVE_ROOT = getHiveRoot();
+  public static final String HIVE_ROOT = HiveTestEnvSetup.HIVE_ROOT;
 
   public static enum MetastoreType {
     sql
@@ -77,31 +76,6 @@ public abstract class AbstractCliConfig {
     queryFile = getSysPropValue("qfile");
     queryFileRegex = getSysPropValue("qfile_regex");
     runDisabled = getSysPropValue("run_disabled");
-  }
-
-  private static String getHiveRoot() {
-    List<String> candidateSiblings = new ArrayList<>();
-    if (System.getProperty("hive.root") != null) {
-      try {
-        candidateSiblings.add(new File(System.getProperty("hive.root")).getCanonicalPath());
-      } catch (IOException e) {
-        throw new RuntimeException("error getting hive.root",e);
-      }
-    }
-    candidateSiblings.add(new File(".").getAbsolutePath());
-
-    for (String string : candidateSiblings) {
-      File curr = new File(string);
-      do {
-        Set<String> lls = Sets.newHashSet(curr.list());
-        if (lls.contains("itests") && lls.contains("ql") && lls.contains("metastore")) {
-          System.out.println("detected hiveRoot: " + curr);
-          return QTestUtil.ensurePathEndsInSlash(curr.getAbsolutePath());
-        }
-        curr = curr.getParentFile();
-      } while (curr != null);
-    }
-    throw new RuntimeException("unable to find hiveRoot");
   }
 
   protected void setQueryDir(String dir) {
@@ -237,7 +211,7 @@ public abstract class AbstractCliConfig {
     File queryDir = new File(queryDirectory);
 
     // dedup file list
-    Set<File> testFiles = new LinkedHashSet<>();
+    Set<File> testFiles = new TreeSet<>();
     if (queryFile != null && !queryFile.equals("")) {
       // The user may have passed a list of files - comma separated
       for (String qFile : TEST_SPLITTER.split(queryFile)) {

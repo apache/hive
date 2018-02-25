@@ -53,7 +53,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField PRIVILEGES_FIELD_DESC = new org.apache.thrift.protocol.TField("privileges", org.apache.thrift.protocol.TType.STRUCT, (short)13);
   private static final org.apache.thrift.protocol.TField TEMPORARY_FIELD_DESC = new org.apache.thrift.protocol.TField("temporary", org.apache.thrift.protocol.TType.BOOL, (short)14);
   private static final org.apache.thrift.protocol.TField REWRITE_ENABLED_FIELD_DESC = new org.apache.thrift.protocol.TField("rewriteEnabled", org.apache.thrift.protocol.TType.BOOL, (short)15);
-  private static final org.apache.thrift.protocol.TField CREATION_METADATA_FIELD_DESC = new org.apache.thrift.protocol.TField("creationMetadata", org.apache.thrift.protocol.TType.MAP, (short)16);
+  private static final org.apache.thrift.protocol.TField CREATION_METADATA_FIELD_DESC = new org.apache.thrift.protocol.TField("creationMetadata", org.apache.thrift.protocol.TType.STRUCT, (short)16);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -76,7 +76,7 @@ import org.slf4j.LoggerFactory;
   private PrincipalPrivilegeSet privileges; // optional
   private boolean temporary; // optional
   private boolean rewriteEnabled; // optional
-  private Map<String,BasicTxnInfo> creationMetadata; // optional
+  private CreationMetadata creationMetadata; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -226,9 +226,7 @@ import org.slf4j.LoggerFactory;
     tmpMap.put(_Fields.REWRITE_ENABLED, new org.apache.thrift.meta_data.FieldMetaData("rewriteEnabled", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.CREATION_METADATA, new org.apache.thrift.meta_data.FieldMetaData("creationMetadata", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT            , "BasicTxnInfo"))));
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT        , "CreationMetadata")));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Table.class, metaDataMap);
   }
@@ -316,19 +314,7 @@ import org.slf4j.LoggerFactory;
     this.temporary = other.temporary;
     this.rewriteEnabled = other.rewriteEnabled;
     if (other.isSetCreationMetadata()) {
-      Map<String,BasicTxnInfo> __this__creationMetadata = new HashMap<String,BasicTxnInfo>(other.creationMetadata.size());
-      for (Map.Entry<String, BasicTxnInfo> other_element : other.creationMetadata.entrySet()) {
-
-        String other_element_key = other_element.getKey();
-        BasicTxnInfo other_element_value = other_element.getValue();
-
-        String __this__creationMetadata_copy_key = other_element_key;
-
-        BasicTxnInfo __this__creationMetadata_copy_value = other_element_value;
-
-        __this__creationMetadata.put(__this__creationMetadata_copy_key, __this__creationMetadata_copy_value);
-      }
-      this.creationMetadata = __this__creationMetadata;
+      this.creationMetadata = other.creationMetadata;
     }
   }
 
@@ -727,22 +713,11 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __REWRITEENABLED_ISSET_ID, value);
   }
 
-  public int getCreationMetadataSize() {
-    return (this.creationMetadata == null) ? 0 : this.creationMetadata.size();
-  }
-
-  public void putToCreationMetadata(String key, BasicTxnInfo val) {
-    if (this.creationMetadata == null) {
-      this.creationMetadata = new HashMap<String,BasicTxnInfo>();
-    }
-    this.creationMetadata.put(key, val);
-  }
-
-  public Map<String,BasicTxnInfo> getCreationMetadata() {
+  public CreationMetadata getCreationMetadata() {
     return this.creationMetadata;
   }
 
-  public void setCreationMetadata(Map<String,BasicTxnInfo> creationMetadata) {
+  public void setCreationMetadata(CreationMetadata creationMetadata) {
     this.creationMetadata = creationMetadata;
   }
 
@@ -887,7 +862,7 @@ import org.slf4j.LoggerFactory;
       if (value == null) {
         unsetCreationMetadata();
       } else {
-        setCreationMetadata((Map<String,BasicTxnInfo>)value);
+        setCreationMetadata((CreationMetadata)value);
       }
       break;
 
@@ -1738,21 +1713,9 @@ import org.slf4j.LoggerFactory;
             }
             break;
           case 16: // CREATION_METADATA
-            if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
-              {
-                org.apache.thrift.protocol.TMap _map197 = iprot.readMapBegin();
-                struct.creationMetadata = new HashMap<String,BasicTxnInfo>(2*_map197.size);
-                String _key198;
-                BasicTxnInfo _val199;
-                for (int _i200 = 0; _i200 < _map197.size; ++_i200)
-                {
-                  _key198 = iprot.readString();
-                  _val199 = new BasicTxnInfo();
-                  _val199.read(iprot);
-                  struct.creationMetadata.put(_key198, _val199);
-                }
-                iprot.readMapEnd();
-              }
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.creationMetadata = new CreationMetadata();
+              struct.creationMetadata.read(iprot);
               struct.setCreationMetadataIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -1804,9 +1767,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PARTITION_KEYS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitionKeys.size()));
-          for (FieldSchema _iter201 : struct.partitionKeys)
+          for (FieldSchema _iter197 : struct.partitionKeys)
           {
-            _iter201.write(oprot);
+            _iter197.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1816,10 +1779,10 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.parameters.size()));
-          for (Map.Entry<String, String> _iter202 : struct.parameters.entrySet())
+          for (Map.Entry<String, String> _iter198 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter202.getKey());
-            oprot.writeString(_iter202.getValue());
+            oprot.writeString(_iter198.getKey());
+            oprot.writeString(_iter198.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -1860,15 +1823,7 @@ import org.slf4j.LoggerFactory;
       if (struct.creationMetadata != null) {
         if (struct.isSetCreationMetadata()) {
           oprot.writeFieldBegin(CREATION_METADATA_FIELD_DESC);
-          {
-            oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, struct.creationMetadata.size()));
-            for (Map.Entry<String, BasicTxnInfo> _iter203 : struct.creationMetadata.entrySet())
-            {
-              oprot.writeString(_iter203.getKey());
-              _iter203.getValue().write(oprot);
-            }
-            oprot.writeMapEnd();
-          }
+          struct.creationMetadata.write(oprot);
           oprot.writeFieldEnd();
         }
       }
@@ -1963,19 +1918,19 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetPartitionKeys()) {
         {
           oprot.writeI32(struct.partitionKeys.size());
-          for (FieldSchema _iter204 : struct.partitionKeys)
+          for (FieldSchema _iter199 : struct.partitionKeys)
           {
-            _iter204.write(oprot);
+            _iter199.write(oprot);
           }
         }
       }
       if (struct.isSetParameters()) {
         {
           oprot.writeI32(struct.parameters.size());
-          for (Map.Entry<String, String> _iter205 : struct.parameters.entrySet())
+          for (Map.Entry<String, String> _iter200 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter205.getKey());
-            oprot.writeString(_iter205.getValue());
+            oprot.writeString(_iter200.getKey());
+            oprot.writeString(_iter200.getValue());
           }
         }
       }
@@ -1998,14 +1953,7 @@ import org.slf4j.LoggerFactory;
         oprot.writeBool(struct.rewriteEnabled);
       }
       if (struct.isSetCreationMetadata()) {
-        {
-          oprot.writeI32(struct.creationMetadata.size());
-          for (Map.Entry<String, BasicTxnInfo> _iter206 : struct.creationMetadata.entrySet())
-          {
-            oprot.writeString(_iter206.getKey());
-            _iter206.getValue().write(oprot);
-          }
-        }
+        struct.creationMetadata.write(oprot);
       }
     }
 
@@ -2044,29 +1992,29 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(7)) {
         {
-          org.apache.thrift.protocol.TList _list207 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.partitionKeys = new ArrayList<FieldSchema>(_list207.size);
-          FieldSchema _elem208;
-          for (int _i209 = 0; _i209 < _list207.size; ++_i209)
+          org.apache.thrift.protocol.TList _list201 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.partitionKeys = new ArrayList<FieldSchema>(_list201.size);
+          FieldSchema _elem202;
+          for (int _i203 = 0; _i203 < _list201.size; ++_i203)
           {
-            _elem208 = new FieldSchema();
-            _elem208.read(iprot);
-            struct.partitionKeys.add(_elem208);
+            _elem202 = new FieldSchema();
+            _elem202.read(iprot);
+            struct.partitionKeys.add(_elem202);
           }
         }
         struct.setPartitionKeysIsSet(true);
       }
       if (incoming.get(8)) {
         {
-          org.apache.thrift.protocol.TMap _map210 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.parameters = new HashMap<String,String>(2*_map210.size);
-          String _key211;
-          String _val212;
-          for (int _i213 = 0; _i213 < _map210.size; ++_i213)
+          org.apache.thrift.protocol.TMap _map204 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.parameters = new HashMap<String,String>(2*_map204.size);
+          String _key205;
+          String _val206;
+          for (int _i207 = 0; _i207 < _map204.size; ++_i207)
           {
-            _key211 = iprot.readString();
-            _val212 = iprot.readString();
-            struct.parameters.put(_key211, _val212);
+            _key205 = iprot.readString();
+            _val206 = iprot.readString();
+            struct.parameters.put(_key205, _val206);
           }
         }
         struct.setParametersIsSet(true);
@@ -2097,19 +2045,8 @@ import org.slf4j.LoggerFactory;
         struct.setRewriteEnabledIsSet(true);
       }
       if (incoming.get(15)) {
-        {
-          org.apache.thrift.protocol.TMap _map214 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.creationMetadata = new HashMap<String,BasicTxnInfo>(2*_map214.size);
-          String _key215;
-          BasicTxnInfo _val216;
-          for (int _i217 = 0; _i217 < _map214.size; ++_i217)
-          {
-            _key215 = iprot.readString();
-            _val216 = new BasicTxnInfo();
-            _val216.read(iprot);
-            struct.creationMetadata.put(_key215, _val216);
-          }
-        }
+        struct.creationMetadata = new CreationMetadata();
+        struct.creationMetadata.read(iprot);
         struct.setCreationMetadataIsSet(true);
       }
     }

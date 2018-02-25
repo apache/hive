@@ -16,6 +16,6 @@
 # limitations under the License.
 
 bin=`dirname "$0"`
-bin=`cd "$bin"; pwd`
+bin=`cd "$bin" 2>&1 > /dev/null; pwd`
 
 . "$bin"/base --service schemaTool "$@"

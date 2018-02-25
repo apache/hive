@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.cache;
 
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -75,8 +77,14 @@ import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
+import org.apache.hadoop.hive.metastore.api.WMNullablePool;
+import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
+import org.apache.hadoop.hive.metastore.cache.SharedCache.StatsType;
+import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
+import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -100,10 +108,12 @@ import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.google.common.annotations.VisibleForTesting;
 
 // TODO filter->expr
@@ -129,6 +139,9 @@ public class CachedStore implements RawStore, Configurable {
   private static AtomicBoolean isTableColStatsCacheDirty = new AtomicBoolean(false);
   private static ReentrantReadWriteLock partitionColStatsCacheLock = new ReentrantReadWriteLock(
       true);
+  private static ReentrantReadWriteLock partitionAggrColStatsCacheLock =
+      new ReentrantReadWriteLock(true);
+  private static AtomicBoolean isPartitionAggrColStatsCacheDirty = new AtomicBoolean(false);
   private static AtomicBoolean isPartitionColStatsCacheDirty = new AtomicBoolean(false);
   private static List<Pattern> whitelistPatterns = null;
   private static List<Pattern> blacklistPatterns = null;
@@ -260,6 +273,14 @@ public class CachedStore implements RawStore, Configurable {
     SharedCache sharedCache = sharedCacheWrapper.getUnsafe();
     for (int i = 0; i < dbNames.size(); i++) {
       String dbName = StringUtils.normalizeIdentifier(dbNames.get(i));
+      // Cache partition column stats
+      Deadline.startTimer("getColStatsForDatabase");
+      List<ColStatsObjWithSourceInfo> colStatsForDB =
+          rawStore.getPartitionColStatsForDatabase(dbName);
+      Deadline.stopTimer();
+      if (colStatsForDB != null) {
+        sharedCache.addPartitionColStatsToCache(colStatsForDB);
+      }
       LOG.info("Caching database: {}. Cached {} / {} databases so far.", dbName, i, dbNames.size());
       Database db = rawStore.getDatabase(dbName);
       sharedCache.addDatabaseToCache(dbName, db);
@@ -288,14 +309,6 @@ public class CachedStore implements RawStore, Configurable {
           for (Partition partition : partitions) {
             sharedCache.addPartitionToCache(dbName, tblName, partition);
           }
-          // Cache partition column stats
-          Deadline.startTimer("getColStatsForTablePartitions");
-          Map<String, List<ColumnStatisticsObj>> colStatsPerPartition =
-              rawStore.getColStatsForTablePartitions(dbName, tblName);
-          Deadline.stopTimer();
-          if (colStatsPerPartition != null) {
-            sharedCache.addPartitionColStatsToCache(dbName, tblName, colStatsPerPartition);
-          }
         }
         // Cache table column stats
         List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
@@ -305,6 +318,28 @@ public class CachedStore implements RawStore, Configurable {
         Deadline.stopTimer();
         if ((tableColStats != null) && (tableColStats.getStatsObjSize() > 0)) {
           sharedCache.addTableColStatsToCache(dbName, tblName, tableColStats.getStatsObj());
+        }
+        // Cache aggregate stats for all partitions of a table and for all but default partition
+        List<String> partNames = rawStore.listPartitionNames(dbName, tblName, (short) -1);
+        if ((partNames != null) && (partNames.size() > 0)) {
+          AggrStats aggrStatsAllPartitions =
+              rawStore.get_aggr_stats_for(dbName, tblName, partNames, colNames);
+          // Remove default partition from partition names and get aggregate
+          // stats again
+          List<FieldSchema> partKeys = table.getPartitionKeys();
+          String defaultPartitionValue = MetastoreConf.getVar(rawStore.getConf(), ConfVars.DEFAULTPARTITIONNAME);
+          List<String> partCols = new ArrayList<String>();
+          List<String> partVals = new ArrayList<String>();
+          for (FieldSchema fs : partKeys) {
+            partCols.add(fs.getName());
+            partVals.add(defaultPartitionValue);
+          }
+          String defaultPartitionName = FileUtils.makePartName(partCols, partVals);
+          partNames.remove(defaultPartitionName);
+          AggrStats aggrStatsAllButDefaultPartition =
+              rawStore.get_aggr_stats_for(dbName, tblName, partNames, colNames);
+          sharedCache.addAggregateStatsToCache(dbName, tblName, aggrStatsAllPartitions,
+              aggrStatsAllButDefaultPartition);
         }
       }
     }
@@ -328,11 +363,10 @@ public class CachedStore implements RawStore, Configurable {
     if (cacheUpdateMaster == null) {
       initBlackListWhiteList(conf);
       if (!MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)) {
-        cacheRefreshPeriod =
-            MetastoreConf.getTimeVar(conf, ConfVars.CACHED_RAW_STORE_CACHE_UPDATE_FREQUENCY,
-                TimeUnit.MILLISECONDS);
+        cacheRefreshPeriod = MetastoreConf.getTimeVar(conf,
+            ConfVars.CACHED_RAW_STORE_CACHE_UPDATE_FREQUENCY, TimeUnit.MILLISECONDS);
       }
-      LOG.info("CachedStore: starting cache update service (run every " + cacheRefreshPeriod + "ms");
+      LOG.info("CachedStore: starting cache update service (run every {} ms", cacheRefreshPeriod);
       cacheUpdateMaster = Executors.newScheduledThreadPool(1, new ThreadFactory() {
         @Override
         public Thread newThread(Runnable r) {
@@ -342,8 +376,8 @@ public class CachedStore implements RawStore, Configurable {
           return t;
         }
       });
-      cacheUpdateMaster.scheduleAtFixedRate(new CacheUpdateMasterWork(conf), 0,
-          cacheRefreshPeriod, TimeUnit.MILLISECONDS);
+      cacheUpdateMaster.scheduleAtFixedRate(new CacheUpdateMasterWork(conf), 0, cacheRefreshPeriod,
+          TimeUnit.MILLISECONDS);
     }
   }
 
@@ -422,6 +456,7 @@ public class CachedStore implements RawStore, Configurable {
           // Update the database in cache
           updateDatabases(rawStore, dbNames);
           for (String dbName : dbNames) {
+            updateDatabasePartitionColStats(rawStore, dbName);
             // Update the tables in cache
             updateTables(rawStore, dbName);
             List<String> tblNames = getAllTablesInternal(dbName, sharedCacheWrapper.getUnsafe());
@@ -433,13 +468,94 @@ public class CachedStore implements RawStore, Configurable {
               updateTablePartitions(rawStore, dbName, tblName);
               // Update the table column stats for a table in cache
               updateTableColStats(rawStore, dbName, tblName);
-              // Update the partitions column stats for a table in cache
-              updateTablePartitionColStats(rawStore, dbName, tblName);
+              // Update aggregate column stats cache
+              updateAggregateStatsCache(rawStore, dbName, tblName);
             }
           }
         }
       } catch (Exception e) {
         LOG.error("Updating CachedStore: error happen when refresh; ignoring", e);
+      }
+    }
+
+    private void updateDatabasePartitionColStats(RawStore rawStore, String dbName) {
+      try {
+        Deadline.startTimer("getColStatsForDatabasePartitions");
+        List<ColStatsObjWithSourceInfo> colStatsForDB =
+            rawStore.getPartitionColStatsForDatabase(dbName);
+        Deadline.stopTimer();
+        if (colStatsForDB != null) {
+          if (partitionColStatsCacheLock.writeLock().tryLock()) {
+            // Skip background updates if we detect change
+            if (isPartitionColStatsCacheDirty.compareAndSet(true, false)) {
+              LOG.debug("Skipping partition column stats cache update; the partition column stats "
+                  + "list we have is dirty.");
+              return;
+            }
+            sharedCacheWrapper.getUnsafe()
+                .refreshPartitionColStats(StringUtils.normalizeIdentifier(dbName), colStatsForDB);
+          }
+        }
+      } catch (MetaException | NoSuchObjectException e) {
+        LOG.info("Updating CachedStore: unable to read partitions column stats of database: {}",
+            dbName, e);
+      } finally {
+        if (partitionColStatsCacheLock.isWriteLockedByCurrentThread()) {
+          partitionColStatsCacheLock.writeLock().unlock();
+        }
+      }
+    }
+
+    // Update cached aggregate stats for all partitions of a table and for all
+    // but default partition
+    private void updateAggregateStatsCache(RawStore rawStore, String dbName, String tblName) {
+      try {
+        Table table = rawStore.getTable(dbName, tblName);
+        List<String> partNames = rawStore.listPartitionNames(dbName, tblName, (short) -1);
+        List<String> colNames = MetaStoreUtils.getColumnNamesForTable(table);
+        if ((partNames != null) && (partNames.size() > 0)) {
+          Deadline.startTimer("getAggregareStatsForAllPartitions");
+          AggrStats aggrStatsAllPartitions =
+              rawStore.get_aggr_stats_for(dbName, tblName, partNames, colNames);
+          Deadline.stopTimer();
+          // Remove default partition from partition names and get aggregate stats again
+          List<FieldSchema> partKeys = table.getPartitionKeys();
+          String defaultPartitionValue =
+              MetastoreConf.getVar(rawStore.getConf(), ConfVars.DEFAULTPARTITIONNAME);
+          List<String> partCols = new ArrayList<String>();
+          List<String> partVals = new ArrayList<String>();
+          for (FieldSchema fs : partKeys) {
+            partCols.add(fs.getName());
+            partVals.add(defaultPartitionValue);
+          }
+          String defaultPartitionName = FileUtils.makePartName(partCols, partVals);
+          partNames.remove(defaultPartitionName);
+          Deadline.startTimer("getAggregareStatsForAllPartitionsExceptDefault");
+          AggrStats aggrStatsAllButDefaultPartition =
+              rawStore.get_aggr_stats_for(dbName, tblName, partNames, colNames);
+          Deadline.stopTimer();
+          if ((aggrStatsAllPartitions != null) && (aggrStatsAllButDefaultPartition != null)) {
+            if (partitionAggrColStatsCacheLock.writeLock().tryLock()) {
+              // Skip background updates if we detect change
+              if (isPartitionAggrColStatsCacheDirty.compareAndSet(true, false)) {
+                LOG.debug(
+                    "Skipping aggregate column stats cache update; the aggregate column stats we "
+                        + "have is dirty.");
+                return;
+              }
+              sharedCacheWrapper.getUnsafe().refreshAggregateStatsCache(
+                  StringUtils.normalizeIdentifier(dbName), StringUtils.normalizeIdentifier(tblName),
+                  aggrStatsAllPartitions, aggrStatsAllButDefaultPartition);
+            }
+          }
+        }
+      } catch (MetaException | NoSuchObjectException e) {
+        LOG.info("Updating CachedStore: unable to read aggregate column stats of table: " + tblName,
+            e);
+      } finally {
+        if (partitionAggrColStatsCacheLock.isWriteLockedByCurrentThread()) {
+          partitionAggrColStatsCacheLock.writeLock().unlock();
+        }
       }
     }
 
@@ -555,36 +671,6 @@ public class CachedStore implements RawStore, Configurable {
       } finally {
         if (tableColStatsCacheLock.isWriteLockedByCurrentThread()) {
           tableColStatsCacheLock.writeLock().unlock();
-        }
-      }
-    }
-
-    // Update the cached partition col stats for a table
-    private void updateTablePartitionColStats(RawStore rawStore, String dbName, String tblName) {
-      try {
-        Deadline.startTimer("getColStatsForTablePartitions");
-        Map<String, List<ColumnStatisticsObj>> colStatsPerPartition =
-            rawStore.getColStatsForTablePartitions(dbName, tblName);
-        Deadline.stopTimer();
-        if (colStatsPerPartition != null) {
-          if (partitionColStatsCacheLock.writeLock().tryLock()) {
-            // Skip background updates if we detect change
-            if (isPartitionColStatsCacheDirty.compareAndSet(true, false)) {
-              LOG.debug("Skipping partition column stats cache update; the partition column stats "
-                  + "list we have is dirty.");
-              return;
-            }
-            sharedCacheWrapper.getUnsafe().refreshPartitionColStats(
-                StringUtils.normalizeIdentifier(dbName),
-                StringUtils.normalizeIdentifier(tblName), colStatsPerPartition);
-          }
-        }
-      } catch (MetaException | NoSuchObjectException e) {
-        LOG.info("Updating CachedStore: unable to read partitions column stats of table: "
-            + tblName, e);
-      } finally {
-        if (partitionColStatsCacheLock.isWriteLockedByCurrentThread()) {
-          partitionColStatsCacheLock.writeLock().unlock();
         }
       }
     }
@@ -841,6 +927,15 @@ public class CachedStore implements RawStore, Configurable {
       } finally {
         partitionCacheLock.readLock().unlock();
       }
+      // Remove aggregate partition col stats for this table
+      try {
+        // Wait if background cache update is happening
+        partitionAggrColStatsCacheLock.readLock().lock();
+        isPartitionAggrColStatsCacheDirty.set(true);
+        sharedCache.removeAggrPartitionColStatsFromCache(dbName, tblName);
+      } finally {
+        partitionAggrColStatsCacheLock.readLock().unlock();
+      }
     }
     return succ;
   }
@@ -866,6 +961,15 @@ public class CachedStore implements RawStore, Configurable {
         }
       } finally {
         partitionCacheLock.readLock().unlock();
+      }
+      // Remove aggregate partition col stats for this table
+      try {
+        // Wait if background cache update is happening
+        partitionAggrColStatsCacheLock.readLock().lock();
+        isPartitionAggrColStatsCacheDirty.set(true);
+        sharedCache.removeAggrPartitionColStatsFromCache(dbName, tblName);
+      } finally {
+        partitionAggrColStatsCacheLock.readLock().unlock();
       }
     }
     return succ;
@@ -895,6 +999,15 @@ public class CachedStore implements RawStore, Configurable {
       } finally {
         partitionCacheLock.readLock().unlock();
       }
+      // Remove aggregate partition col stats for this table
+      try {
+        // Wait if background cache update is happening
+        partitionAggrColStatsCacheLock.readLock().lock();
+        isPartitionAggrColStatsCacheDirty.set(true);
+        sharedCache.removeAggrPartitionColStatsFromCache(dbName, tblName);
+      } finally {
+        partitionAggrColStatsCacheLock.readLock().unlock();
+      }
     }
     return succ;
   }
@@ -911,9 +1024,8 @@ public class CachedStore implements RawStore, Configurable {
     SharedCache sharedCache = sharedCacheWrapper.get();
     Partition part =
         sharedCache.getPartitionFromCache(dbName, tblName, part_vals);
-    if (part != null) {
-      part.unsetPrivileges();
-    } else {
+    if (part == null) {
+      // TODO Manage privileges
       throw new NoSuchObjectException("partition values=" + part_vals.toString());
     }
     return part;
@@ -961,6 +1073,15 @@ public class CachedStore implements RawStore, Configurable {
       } finally {
         partitionColStatsCacheLock.readLock().unlock();
       }
+      // Remove aggregate partition col stats for this table
+      try {
+        // Wait if background cache update is happening
+        partitionAggrColStatsCacheLock.readLock().lock();
+        isPartitionAggrColStatsCacheDirty.set(true);
+        sharedCache.removeAggrPartitionColStatsFromCache(dbName, tblName);
+      } finally {
+        partitionAggrColStatsCacheLock.readLock().unlock();
+      }
     }
     return succ;
   }
@@ -975,11 +1096,6 @@ public class CachedStore implements RawStore, Configurable {
     }
     SharedCache sharedCache = sharedCacheWrapper.get();
     List<Partition> parts = sharedCache.listCachedPartitions(dbName, tblName, max);
-    if (parts != null) {
-      for (Partition part : parts) {
-        part.unsetPrivileges();
-      }
-    }
     return parts;
   }
 
@@ -1048,6 +1164,15 @@ public class CachedStore implements RawStore, Configurable {
         sharedCache.removePartitionColStatsFromCache(dbName, tblName);
       } finally {
         partitionColStatsCacheLock.readLock().unlock();
+      }
+      // Update aggregate partition col stats keys wherever applicable
+      try {
+        // Wait if background cache update is happening
+        partitionAggrColStatsCacheLock.readLock().lock();
+        isPartitionAggrColStatsCacheDirty.set(true);
+        sharedCache.alterTableInAggrPartitionColStatsCache(dbName, tblName, newTable);
+      } finally {
+        partitionAggrColStatsCacheLock.readLock().unlock();
       }
     }
   }
@@ -1229,6 +1354,15 @@ public class CachedStore implements RawStore, Configurable {
     } finally {
       partitionColStatsCacheLock.readLock().unlock();
     }
+    // Remove aggregate partition col stats for this table
+    try {
+      // Wait if background cache update is happening
+      partitionAggrColStatsCacheLock.readLock().lock();
+      isPartitionAggrColStatsCacheDirty.set(true);
+      sharedCache.removeAggrPartitionColStatsFromCache(dbName, tblName);
+    } finally {
+      partitionAggrColStatsCacheLock.readLock().unlock();
+    }
   }
 
   @Override
@@ -1267,6 +1401,15 @@ public class CachedStore implements RawStore, Configurable {
       }
     } finally {
       partitionColStatsCacheLock.readLock().unlock();
+    }
+    // Remove aggregate partition col stats for this table
+    try {
+      // Wait if background cache update is happening
+      partitionAggrColStatsCacheLock.readLock().lock();
+      isPartitionAggrColStatsCacheDirty.set(true);
+      sharedCache.removeAggrPartitionColStatsFromCache(dbName, tblName);
+    } finally {
+      partitionAggrColStatsCacheLock.readLock().unlock();
     }
   }
 
@@ -1343,11 +1486,6 @@ public class CachedStore implements RawStore, Configurable {
     Table table = sharedCache.getTableFromCache(dbName, tblName);
     boolean hasUnknownPartitions = getPartitionNamesPrunedByExprNoTxn(table, expr,
         defaultPartitionName, maxParts, partNames, sharedCache);
-    for (String partName : partNames) {
-      Partition part = sharedCache.getPartitionFromCache(dbName, tblName, partNameToVals(partName));
-      part.unsetPrivileges();
-      result.add(part);
-    }
     return hasUnknownPartitions;
   }
 
@@ -1806,6 +1944,15 @@ public class CachedStore implements RawStore, Configurable {
       } finally {
         partitionColStatsCacheLock.readLock().unlock();
       }
+      // Remove aggregate partition col stats for this table
+      try {
+        // Wait if background cache update is happening
+        partitionAggrColStatsCacheLock.readLock().lock();
+        isPartitionAggrColStatsCacheDirty.set(true);
+        sharedCache.removeAggrPartitionColStatsFromCache(dbName, tblName);
+      } finally {
+        partitionAggrColStatsCacheLock.readLock().unlock();
+      }
     }
     return succ;
   }
@@ -1839,6 +1986,15 @@ public class CachedStore implements RawStore, Configurable {
       } finally {
         partitionColStatsCacheLock.readLock().unlock();
       }
+      // Remove aggregate partition col stats for this table
+      try {
+        // Wait if background cache update is happening
+        partitionAggrColStatsCacheLock.readLock().lock();
+        isPartitionAggrColStatsCacheDirty.set(true);
+        sharedCache.removeAggrPartitionColStatsFromCache(dbName, tblName);
+      } finally {
+        partitionAggrColStatsCacheLock.readLock().unlock();
+      }
     }
     return succ;
   }
@@ -1846,53 +2002,106 @@ public class CachedStore implements RawStore, Configurable {
   @Override
   public AggrStats get_aggr_stats_for(String dbName, String tblName, List<String> partNames,
       List<String> colNames) throws MetaException, NoSuchObjectException {
+    List<ColumnStatisticsObj> colStats;
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
     if (!sharedCacheWrapper.isInitialized() || !shouldCacheTable(dbName, tblName)) {
       rawStore.get_aggr_stats_for(dbName, tblName, partNames, colNames);
     }
     SharedCache sharedCache = sharedCacheWrapper.get();
-    List<ColumnStatisticsObj> colStats =
-        mergeColStatsForPartitions(StringUtils.normalizeIdentifier(dbName),
-            StringUtils.normalizeIdentifier(tblName), partNames, colNames, sharedCache);
-    return new AggrStats(colStats, partNames.size());
-  }
-
-  private List<ColumnStatisticsObj> mergeColStatsForPartitions(String dbName, String tblName,
-      List<String> partNames, List<String> colNames, SharedCache sharedCache)
-          throws MetaException {
-    final boolean useDensityFunctionForNDVEstimation = MetastoreConf.getBoolVar(getConf(),
-        ConfVars.STATS_NDV_DENSITY_FUNCTION);
-    final double ndvTuner = MetastoreConf.getDoubleVar(getConf(), ConfVars.STATS_NDV_TUNER);
-    Map<String, List<ColumnStatistics>> map = new HashMap<>();
-
-    for (String colName : colNames) {
-      List<ColumnStatistics> colStats = new ArrayList<>();
-      for (String partName : partNames) {
-        String colStatsCacheKey = CacheUtils.buildKey(dbName, tblName, partNameToVals(partName),
-            colName);
-        List<ColumnStatisticsObj> colStat = new ArrayList<>();
-        ColumnStatisticsObj colStatsForPart = sharedCache
-            .getCachedPartitionColStats(colStatsCacheKey);
-        if (colStatsForPart != null) {
-          colStat.add(colStatsForPart);
-          ColumnStatisticsDesc csDesc = new ColumnStatisticsDesc(false, dbName, tblName);
-          csDesc.setPartName(partName);
-          colStats.add(new ColumnStatistics(csDesc, colStat));
-        } else {
-          LOG.debug("Stats not found in CachedStore for: dbName={} tblName={} partName={} colName={}",
-            dbName, tblName,partName, colName);
+    List<String> allPartNames = rawStore.listPartitionNames(dbName, tblName, (short) -1);
+    if (partNames.size() == allPartNames.size()) {
+      colStats = sharedCache.getAggrStatsFromCache(dbName, tblName, colNames, StatsType.ALL);
+      if (colStats != null) {
+        return new AggrStats(colStats, partNames.size());
+      }
+    } else if (partNames.size() == (allPartNames.size() - 1)) {
+      String defaultPartitionName = MetastoreConf.getVar(getConf(), ConfVars.DEFAULTPARTITIONNAME);
+      if (!partNames.contains(defaultPartitionName)) {
+        colStats =
+            sharedCache.getAggrStatsFromCache(dbName, tblName, colNames, StatsType.ALLBUTDEFAULT);
+        if (colStats != null) {
+          return new AggrStats(colStats, partNames.size());
         }
       }
-      map.put(colName, colStats);
     }
-    // Note that enableBitVector does not apply here because ColumnStatisticsObj
-    // itself will tell whether
-    // bitvector is null or not and aggr logic can automatically apply.
-    return MetaStoreUtils.aggrPartitionStats(map, dbName, tblName, partNames, colNames,
-        useDensityFunctionForNDVEstimation, ndvTuner);
+    LOG.debug("Didn't find aggr stats in cache. Merging them. tblName= {}, parts= {}, cols= {}",
+        tblName, partNames, colNames);
+    MergedColumnStatsForPartitions mergedColStats =
+        mergeColStatsForPartitions(dbName, tblName, partNames, colNames, sharedCache);
+    return new AggrStats(mergedColStats.getColStats(), mergedColStats.getPartsFound());
   }
 
+  private MergedColumnStatsForPartitions mergeColStatsForPartitions(String dbName, String tblName,
+      List<String> partNames, List<String> colNames, SharedCache sharedCache) throws MetaException {
+    final boolean useDensityFunctionForNDVEstimation =
+        MetastoreConf.getBoolVar(getConf(), ConfVars.STATS_NDV_DENSITY_FUNCTION);
+    final double ndvTuner = MetastoreConf.getDoubleVar(getConf(), ConfVars.STATS_NDV_TUNER);
+    Map<ColumnStatsAggregator, List<ColStatsObjWithSourceInfo>> colStatsMap =
+        new HashMap<ColumnStatsAggregator, List<ColStatsObjWithSourceInfo>>();
+    boolean areAllPartsFound = true;
+    long partsFound = 0;
+    for (String colName : colNames) {
+      long partsFoundForColumn = 0;
+      ColumnStatsAggregator colStatsAggregator = null;
+      List<ColStatsObjWithSourceInfo> colStatsWithPartInfoList =
+          new ArrayList<ColStatsObjWithSourceInfo>();
+      for (String partName : partNames) {
+        String colStatsCacheKey =
+            CacheUtils.buildKey(dbName, tblName, partNameToVals(partName), colName);
+        ColumnStatisticsObj colStatsForPart =
+            sharedCache.getCachedPartitionColStats(colStatsCacheKey);
+        if (colStatsForPart != null) {
+          ColStatsObjWithSourceInfo colStatsWithPartInfo =
+              new ColStatsObjWithSourceInfo(colStatsForPart, dbName, tblName, partName);
+          colStatsWithPartInfoList.add(colStatsWithPartInfo);
+          if (colStatsAggregator == null) {
+            colStatsAggregator = ColumnStatsAggregatorFactory.getColumnStatsAggregator(
+                colStatsForPart.getStatsData().getSetField(), useDensityFunctionForNDVEstimation,
+                ndvTuner);
+          }
+          partsFoundForColumn++;
+        } else {
+          LOG.debug(
+              "Stats not found in CachedStore for: dbName={} tblName={} partName={} colName={}",
+              dbName, tblName, partName, colName);
+        }
+      }
+      if (colStatsWithPartInfoList.size() > 0) {
+        colStatsMap.put(colStatsAggregator, colStatsWithPartInfoList);
+      }
+      if (partsFoundForColumn == partNames.size()) {
+        partsFound++;
+      }
+      if (colStatsMap.size() < 1) {
+        LOG.debug("No stats data found for: dbName={} tblName= {} partNames= {} colNames= ", dbName,
+            tblName, partNames, colNames);
+        return new MergedColumnStatsForPartitions(new ArrayList<ColumnStatisticsObj>(), 0);
+      }
+    }
+    // Note that enableBitVector does not apply here because ColumnStatisticsObj
+    // itself will tell whether bitvector is null or not and aggr logic can automatically apply.
+    return new MergedColumnStatsForPartitions(MetaStoreUtils.aggrPartitionStats(colStatsMap,
+        partNames, areAllPartsFound, useDensityFunctionForNDVEstimation, ndvTuner), partsFound);
+  }
+
+  class MergedColumnStatsForPartitions {
+    List<ColumnStatisticsObj> colStats = new ArrayList<ColumnStatisticsObj>();
+    long partsFound;
+
+    MergedColumnStatsForPartitions(List<ColumnStatisticsObj> colStats, long partsFound) {
+      this.colStats = colStats;
+      this.partsFound = partsFound;
+    }
+
+    List<ColumnStatisticsObj> getColStats() {
+      return colStats;
+    }
+
+    long getPartsFound() {
+      return partsFound;
+    }
+  }
 
   @Override
   public long cleanupEvents() {
@@ -1990,6 +2199,15 @@ public class CachedStore implements RawStore, Configurable {
       }
     } finally {
       partitionColStatsCacheLock.readLock().unlock();
+    }
+    // Remove aggregate partition col stats for this table
+    try {
+      // Wait if background cache update is happening
+      partitionAggrColStatsCacheLock.readLock().lock();
+      isPartitionAggrColStatsCacheDirty.set(true);
+      sharedCache.removeAggrPartitionColStatsFromCache(dbName, tblName);
+    } finally {
+      partitionAggrColStatsCacheLock.readLock().unlock();
     }
   }
 
@@ -2256,9 +2474,9 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public Map<String, List<ColumnStatisticsObj>> getColStatsForTablePartitions(String dbName,
-      String tableName) throws MetaException, NoSuchObjectException {
-    return rawStore.getColStatsForTablePartitions(dbName, tableName);
+  public List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String dbName)
+      throws MetaException, NoSuchObjectException {
+    return rawStore.getPartitionColStatsForDatabase(dbName);
   }
 
   // TODO - not clear if we should cache these or not.  For now, don't bother
@@ -2478,7 +2696,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public WMFullResourcePlan alterResourcePlan(String name, WMResourcePlan resourcePlan,
+  public WMFullResourcePlan alterResourcePlan(String name, WMNullableResourcePlan resourcePlan,
     boolean canActivateDisabled, boolean canDeactivate, boolean isReplace)
       throws AlreadyExistsException, NoSuchObjectException, InvalidOperationException,
           MetaException {
@@ -2492,7 +2710,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> validateResourcePlan(String name)
+  public WMValidateResourcePlanResponse validateResourcePlan(String name)
       throws NoSuchObjectException, InvalidObjectException, MetaException {
     return rawStore.validateResourcePlan(name);
   }
@@ -2534,7 +2752,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public void alterPool(WMPool pool, String poolPath) throws AlreadyExistsException,
+  public void alterPool(WMNullablePool pool, String poolPath) throws AlreadyExistsException,
       NoSuchObjectException, InvalidOperationException, MetaException {
     rawStore.alterPool(pool, poolPath);
   }

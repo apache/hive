@@ -4,12 +4,12 @@ POSTHOOK: query: DROP TABLE IF EXISTS table_key_1 PURGE
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_key_1
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_key_1
 Encryption key created: 'key_1'
@@ -20,12 +20,12 @@ POSTHOOK: query: DROP TABLE IF EXISTS table_key_2 PURGE
 POSTHOOK: type: DROPTABLE
 #### A masked pattern was here ####
 PREHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: database:default
 PREHOOK: Output: default@table_key_2
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_key_2
 Encryption key created: 'key_2'
@@ -105,9 +105,10 @@ STAGE PLANS:
                   value expressions: _col1 (type: string)
                   auto parallelism: false
       Path -> Alias:
-#### A masked pattern was here ####
+        hdfs://### HDFS PATH ### [$hdt$_0:t1]
+        hdfs://### HDFS PATH ### [$hdt$_1:t2]
       Path -> Partition:
-#### A masked pattern was here ####
+        hdfs://### HDFS PATH ### 
           Partition
             base file name: table_key_1
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -120,6 +121,7 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
+              location hdfs://### HDFS PATH ###
               name default.table_key_1
               numFiles 1
               numRows 500
@@ -141,6 +143,7 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
+                location hdfs://### HDFS PATH ###
                 name default.table_key_1
                 numFiles 1
                 numRows 500
@@ -153,7 +156,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.table_key_1
             name: default.table_key_1
-#### A masked pattern was here ####
+        hdfs://### HDFS PATH ### 
           Partition
             base file name: table_key_2
             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -166,6 +169,7 @@ STAGE PLANS:
               columns.comments 
               columns.types int:string
 #### A masked pattern was here ####
+              location hdfs://### HDFS PATH ###
               name default.table_key_2
               numFiles 1
               numRows 500
@@ -187,6 +191,7 @@ STAGE PLANS:
                 columns.comments 
                 columns.types int:string
 #### A masked pattern was here ####
+                location hdfs://### HDFS PATH ###
                 name default.table_key_2
                 numFiles 1
                 numRows 500
@@ -215,10 +220,10 @@ STAGE PLANS:
           File Output Operator
             compressed: false
             GlobalTableId: 0
-#### A masked pattern was here ####
+            directory: hdfs://### HDFS PATH ###
             NumFilesPerFileSink: 1
             Statistics: Num rows: 550 Data size: 5843 Basic stats: COMPLETE Column stats: NONE
-#### A masked pattern was here ####
+            Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -245,12 +250,12 @@ PREHOOK: query: SELECT * FROM table_key_1 t1 JOIN table_key_2 t2 WHERE (t1.key =
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_key_1
 PREHOOK: Input: default@table_key_2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM table_key_1 t1 JOIN table_key_2 t2 WHERE (t1.key = t2.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_key_1
 POSTHOOK: Input: default@table_key_2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0	0	val_0
 0	val_0	0	val_0
 0	val_0	0	val_0

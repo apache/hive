@@ -39,6 +39,7 @@
     <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
     <maven.repo.local>${settings.localRepository}</maven.repo.local>
     <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
+    <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
 
     <!-- Test Properties -->
     <log4j.conf.dir>${project.basedir}/src/test/resources</log4j.conf.dir>
@@ -48,12 +49,14 @@
     <test.forkcount>1</test.forkcount>
     <skipITests>true</skipITests>
     <itest.jdbc.jars>set-this-to-colon-separated-full-path-list-of-jars-to-run-integration-tests</itest.jdbc.jars>
+    <test.groups>org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest</test.groups>
 
     <!-- Plugin versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
     <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
     <checkstyle.conf.dir>${basedir}/checkstyle/</checkstyle.conf.dir>
-    <maven.checkstyle.plugin.version>2.15</maven.checkstyle.plugin.version>
+    <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
+    <maven.surefire.version>2.20.1</maven.surefire.version>
 
     <!-- Dependency versions -->
     <antlr.version>3.5.2</antlr.version>
@@ -326,9 +329,10 @@
 
     <!-- registry dependencies -->
     <dependency>
-      <groupId>org.flywaydb</groupId>
-      <artifactId>flyway-maven-plugin</artifactId>
-      <version>${flyway.version}</version>
+      <groupId>com.microsoft.sqlserver</groupId>
+      <artifactId>mssql-jdbc</artifactId>
+      <version>6.2.1.jre8</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>commons-cli</groupId>
@@ -469,7 +473,6 @@
 
 
     <!-- test scope dependencies -->
-
     <dependency>
       <groupId>com.microsoft.sqlserver</groupId>
       <artifactId>mssql-jdbc</artifactId>
@@ -501,11 +504,6 @@
       <artifactId>postgresql</artifactId>
       <version>9.3-1102-jdbc41</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.glassfish.jersey.core</groupId>
-      <artifactId>jersey-server</artifactId>
-      <version>${jersey.version}</version>
     </dependency>
   </dependencies>
 
@@ -605,6 +603,48 @@
         </plugins>
       </build>
     </profile>
+      <!--
+    <profile>
+      <id>checkin</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>${maven.surefire.version}</version>
+            <configuration>
+              <includes>
+                <include>**/Test*</include>
+              </includes>
+              <redirectTestOutputToFile>true</redirectTestOutputToFile>
+              <reuseForks>false</reuseForks>
+              <forkCount>${test.forkcount}</forkCount>
+              <argLine>-Xmx2048m</argLine>
+              <failIfNoTests>false</failIfNoTests>
+              <systemPropertyVariables>
+                <build.dir>${project.build.directory}</build.dir>
+                <datanucleus.schema.autoCreateAll>true</datanucleus.schema.autoCreateAll>
+                <derby.version>${derby.version}</derby.version>
+                <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
+                <log4j.debug>true</log4j.debug>
+                <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
+                <javax.jdo.option.ConnectionURL>jdbc:derby:memory:${test.tmp.dir}/junit_metastore_db;create=true</javax.jdo.option.ConnectionURL>
+                <metastore.schema.verification>false</metastore.schema.verification>
+                <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
+                <metastore.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</metastore.warehouse.dir>
+              </systemPropertyVariables>
+              <additionalClasspathElements>
+                <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
+              </additionalClasspathElements>
+            </configuration>
+
+          </plugin>
+
+
+        </plugins>
+      </build>
+    </profile>
+    -->
   </profiles>
 
   <build>
@@ -641,6 +681,11 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>${maven.checkstyle.plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>${maven.exec.plugin.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -704,13 +749,14 @@
         <artifactId>maven-checkstyle-plugin</artifactId>
         <configuration>
           <configLocation>${checkstyle.conf.dir}/checkstyle.xml</configLocation>
-          <propertyExpansion>basedir=${checkstyle.conf.dir}</propertyExpansion>
+          <propertyExpansion>config_loc=${checkstyle.conf.dir}</propertyExpansion>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
         </configuration>
       </plugin>
       <plugin>
         <groupId>com.github.os72</groupId>
         <artifactId>protoc-jar-maven-plugin</artifactId>
-        <version>3.0.0-a3</version>
+        <version>3.5.1.1</version>
         <executions>
           <execution>
             <phase>generate-sources</phase>
@@ -784,7 +830,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.16</version>
+        <version>${maven.surefire.version}</version>
         <configuration>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
@@ -806,6 +852,7 @@
           <additionalClasspathElements>
             <additionalClasspathElement>${log4j.conf.dir}</additionalClasspathElement>
           </additionalClasspathElements>
+          <groups>${test.groups}</groups>
         </configuration>
       </plugin>
       <plugin>
@@ -861,6 +908,27 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <executable>java</executable>
+          <arguments>
+            <argument>-classpath</argument>
+            <classpath/>
+            <argument>org.apache.hadoop.hive.metastore.conf.ConfTemplatePrinter</argument>
+            <argument>${project.build.directory}/generated-sources/conf/metastore-site.xml.template</argument>
+          </arguments>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.datanucleus</groupId>

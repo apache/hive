@@ -16,6 +16,7 @@
 # limitations under the License.
 
 bin=`dirname "$0"`
-bin=`cd "$bin"; pwd`
+# The strange redirect on cd is because on some systems cd outputs the directory you changed to
+bin=`cd "$bin" 2>&1 > /dev/null; pwd`
 
 . "$bin"/base --service metastore "$@"

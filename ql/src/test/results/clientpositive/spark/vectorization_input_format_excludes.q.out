@@ -422,7 +422,7 @@ STAGE PLANS:
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Map Vectorization:
                 enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.row.serde.deserialize IS true AND hive.vectorized.row.serde.inputformat.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false, hive.vectorized.use.vectorized.input.format IS true AND hive.vectorized.input.format.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false
+                enabledConditionsNotMet: Row deserialization of vectorized input format not supported IS false, hive.vectorized.use.vectorized.input.format IS true AND hive.vectorized.input.format.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false
                 inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
 
   Stage: Stage-0
@@ -511,7 +511,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: int), _col2 (type: smallint), _col3 (type: bigint), _col4 (type: struct<count:bigint,sum:double,input:float>), _col5 (type: struct<count:bigint,sum:double,variance:double>)
             Map Vectorization:
                 enabled: false
-                enabledConditionsNotMet: hive.vectorized.use.row.serde.deserialize IS true AND hive.vectorized.row.serde.inputformat.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false, hive.vectorized.use.vectorized.input.format IS true AND hive.vectorized.input.format.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false
+                enabledConditionsNotMet: Row deserialization of vectorized input format not supported IS false, hive.vectorized.use.vectorized.input.format IS true AND hive.vectorized.input.format.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false
                 inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
         Reducer 2 
             Execution mode: vectorized
@@ -1386,3 +1386,155 @@ POSTHOOK: Input: default@alltypes_orc
 8	1070764888	-15778	1034	8.0	9562.355155774725
 9	626923679	-13629	25	9.0	10157.217948808622
 NULL	1073418988	-16379	3115	NULL	305051.4870777435
+PREHOOK: query: create table orcTbl (t1 tinyint, t2 tinyint)
+stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@orcTbl
+POSTHOOK: query: create table orcTbl (t1 tinyint, t2 tinyint)
+stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@orcTbl
+PREHOOK: query: insert into orcTbl values (54, 9), (-104, 25), (-112, 24)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@orctbl
+POSTHOOK: query: insert into orcTbl values (54, 9), (-104, 25), (-112, 24)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@orctbl
+POSTHOOK: Lineage: orctbl.t1 SCRIPT []
+POSTHOOK: Lineage: orctbl.t2 SCRIPT []
+PREHOOK: query: explain vectorization select t1, t2, (t1+t2) from orcTbl where (t1+t2) > 10
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization select t1, t2, (t1+t2) from orcTbl where (t1+t2) > 10
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: orctbl
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (UDFToInteger((t1 + t2)) > 10) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: t1 (type: tinyint), t2 (type: tinyint), (t1 + t2) (type: tinyint)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Map Vectorization:
+                enabled: false
+                enabledConditionsNotMet: Row deserialization of vectorized input format not supported IS false, hive.vectorized.use.vectorized.input.format IS true AND hive.vectorized.input.format.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.orc.OrcInputFormat IS false
+                inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select t1, t2, (t1+t2) from orcTbl where (t1+t2) > 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orctbl
+#### A masked pattern was here ####
+POSTHOOK: query: select t1, t2, (t1+t2) from orcTbl where (t1+t2) > 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orctbl
+#### A masked pattern was here ####
+54	9	63
+PREHOOK: query: create table parquetTbl (t1 tinyint, t2 tinyint)
+stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquetTbl
+POSTHOOK: query: create table parquetTbl (t1 tinyint, t2 tinyint)
+stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquetTbl
+PREHOOK: query: insert into parquetTbl values (54, 9), (-104, 25), (-112, 24)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@parquettbl
+POSTHOOK: query: insert into parquetTbl values (54, 9), (-104, 25), (-112, 24)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@parquettbl
+POSTHOOK: Lineage: parquettbl.t1 SCRIPT []
+POSTHOOK: Lineage: parquettbl.t2 SCRIPT []
+PREHOOK: query: explain vectorization SELECT t1, t2, (t1 + t2) FROM parquetTbl WHERE (t1 + t2) > 10
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization SELECT t1, t2, (t1 + t2) FROM parquetTbl WHERE (t1 + t2) > 10
+POSTHOOK: type: QUERY
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Spark
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: parquettbl
+                  Statistics: Num rows: 3 Data size: 6 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (UDFToInteger((t1 + t2)) > 10) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: t1 (type: tinyint), t2 (type: tinyint), (t1 + t2) (type: tinyint)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+                      File Output Operator
+                        compressed: false
+                        Statistics: Num rows: 1 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Map Vectorization:
+                enabled: false
+                enabledConditionsNotMet: Row deserialization of vectorized input format not supported IS false, hive.vectorized.use.vectorized.input.format IS true AND hive.vectorized.input.format.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT t1, t2, (t1 + t2) FROM parquetTbl WHERE (t1 + t2) > 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquettbl
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t1, t2, (t1 + t2) FROM parquetTbl WHERE (t1 + t2) > 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquettbl
+#### A masked pattern was here ####
+54	9	63

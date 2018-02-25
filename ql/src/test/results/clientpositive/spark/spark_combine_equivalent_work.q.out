@@ -52,7 +52,7 @@ PREHOOK: Input: default@a1
 PREHOOK: Input: default@a1@end_dt=20161020
 PREHOOK: Input: default@a1@end_dt=20161021
 PREHOOK: Input: default@a2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT T1.KEHHAO,COUNT(1) FROM (
 SELECT KEHHAO FROM a1 T
 WHERE T.KEHHAO = '2000721360' AND '20161018' BETWEEN T.START_DT AND T.END_DT-1
@@ -67,7 +67,7 @@ POSTHOOK: Input: default@a1
 POSTHOOK: Input: default@a1@end_dt=20161020
 POSTHOOK: Input: default@a1@end_dt=20161021
 POSTHOOK: Input: default@a2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: SELECT T1.KEHHAO,COUNT(1) FROM (
 SELECT KEHHAO FROM a1 T
 WHERE T.KEHHAO = '2000721360' AND '20161018' BETWEEN T.START_DT AND T.END_DT-1
@@ -81,7 +81,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@a1
 PREHOOK: Input: default@a1@end_dt=20161020
 PREHOOK: Input: default@a1@end_dt=20161021
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT T1.KEHHAO,COUNT(1) FROM (
 SELECT KEHHAO FROM a1 T
 WHERE T.KEHHAO = '2000721360' AND '20161018' BETWEEN T.START_DT AND T.END_DT-1
@@ -95,7 +95,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a1
 POSTHOOK: Input: default@a1@end_dt=20161020
 POSTHOOK: Input: default@a1@end_dt=20161021
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2000721360	2
 PREHOOK: query: DROP TABLE a1
 PREHOOK: type: DROPTABLE

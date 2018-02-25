@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -70,16 +70,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Throwables;
-
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileStatus;
@@ -98,11 +95,13 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hive.druid.MiniDruidCluster;
+import org.apache.hive.testutils.HiveTestEnvSetup;
 import org.apache.hadoop.hive.llap.LlapItUtils;
 import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Index;
+import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -112,6 +111,7 @@ import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.CuratorFrameworkSingleton;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
@@ -137,6 +137,8 @@ import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
 import junit.framework.TestSuite;
@@ -162,9 +164,13 @@ public class QTestUtil {
   private static final String TEST_TMP_DIR_PROPERTY = "test.tmp.dir"; // typically target/tmp
   private static final String BUILD_DIR_PROPERTY = "build.dir"; // typically target
 
+  public static final String PATH_HDFS_REGEX = "(hdfs://)([a-zA-Z0-9:/_\\-\\.=])+";
+  public static final String PATH_HDFS_WITH_DATE_USER_GROUP_REGEX = "([a-z]+) ([a-z]+)([ ]+)([0-9]+) ([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}) " + PATH_HDFS_REGEX;
+
   private String testWarehouse;
   private final String testFiles;
   protected final String outDir;
+  protected String overrideResultsDir;
   protected final String logDir;
   private final TreeMap<String, String> qMap;
   private final Set<String> qSkipSet;
@@ -194,7 +200,6 @@ public class QTestUtil {
   private MiniLlapCluster llapCluster = null;
   private String hadoopVer = null;
   private QTestSetup setup = null;
-  private TezSessionState tezSessionState = null;
   private SparkSession sparkSession = null;
   private boolean isSessionStateStarted = false;
   private static final String javaVersion = getJavaVersion();
@@ -534,7 +539,7 @@ public class QTestUtil {
   }
 
   public QTestUtil(String outDir, String logDir, MiniClusterType clusterType,
-      String confDir, String hadzoopVer, String initScript, String cleanupScript,
+      String confDir, String hadoopVer, String initScript, String cleanupScript,
       boolean withLlapIo, FsType fsType)
     throws Exception {
     LOG.info("Setting up QTestUtil with outDir={}, logDir={}, clusterType={}, confDir={}," +
@@ -922,6 +927,26 @@ public class QTestUtil {
     conf.set("hive.metastore.filter.hook",
         "org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl");
     db = Hive.get(conf);
+
+    // First delete any MVs to avoid race conditions
+    for (String dbName : db.getAllDatabases()) {
+      SessionState.get().setCurrentDatabase(dbName);
+      for (String tblName : db.getAllTables()) {
+        Table tblObj = null;
+        try {
+          tblObj = db.getTable(tblName);
+        } catch (InvalidTableException e) {
+          LOG.warn("Trying to drop table " + e.getTableName() + ". But it does not exist.");
+          continue;
+        }
+        // only remove MVs first
+        if (!tblObj.isMaterializedView()) {
+          continue;
+        }
+        db.dropTable(dbName, tblName, true, true, fsType == FsType.encrypted_hdfs);
+      }
+    }
+
     // Delete any tables other than the source tables
     // and any databases other than the default database.
     for (String dbName : db.getAllDatabases()) {
@@ -988,6 +1013,9 @@ public class QTestUtil {
     if (System.getenv(QTEST_LEAVE_FILES) != null) {
       return;
     }
+
+    // Remove any cached results from the previous test.
+    QueryResultsCache.cleanupInstance();
 
     // allocate and initialize a new conf since a test can
     // modify conf by using 'set' commands
@@ -1123,6 +1151,9 @@ public class QTestUtil {
       createRemoteDirs();
     }
 
+    // Create views registry
+    HiveMaterializedViewsRegistry.get().init();
+
     testWarehouse = conf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
     String execEngine = conf.get("hive.execution.engine");
     conf.set("hive.execution.engine", "mr");
@@ -1185,7 +1216,7 @@ public class QTestUtil {
     boolean canReuseSession = !qNoSessionReuseQuerySet.contains(tname);
     if (oldSs != null && canReuseSession && clusterType.getCoreClusterType() == CoreClusterType.TEZ) {
       // Copy the tezSessionState from the old CliSessionState.
-      tezSessionState = oldSs.getTezSession();
+      TezSessionState tezSessionState = oldSs.getTezSession();
       oldSs.setTezSession(null);
       ss.setTezSession(tezSessionState);
       oldSs.close();
@@ -1200,6 +1231,9 @@ public class QTestUtil {
 
     if (oldSs != null && oldSs.out != null && oldSs.out != System.out) {
       oldSs.out.close();
+    }
+    if (oldSs != null) {
+      oldSs.close();
     }
     SessionState.start(ss);
 
@@ -1230,7 +1264,7 @@ public class QTestUtil {
     SessionState oldSs = SessionState.get();
     if (oldSs != null && canReuseSession && clusterType.getCoreClusterType() == CoreClusterType.TEZ) {
       // Copy the tezSessionState from the old CliSessionState.
-      tezSessionState = oldSs.getTezSession();
+      TezSessionState tezSessionState = oldSs.getTezSession();
       ss.setTezSession(tezSessionState);
       oldSs.setTezSession(null);
       oldSs.close();
@@ -1244,6 +1278,9 @@ public class QTestUtil {
     }
     if (oldSs != null && oldSs.out != null && oldSs.out != System.out) {
       oldSs.out.close();
+    }
+    if (oldSs != null) {
+      oldSs.close();
     }
     SessionState.start(ss);
 
@@ -1280,13 +1317,7 @@ public class QTestUtil {
   }
 
   public int execute(String tname) {
-    try {
-      return drv.run(qMap.get(tname)).getResponseCode();
-    } catch (CommandNeedRetryException e) {
-      LOG.error("driver failed to run the command: " + tname + " due to the exception: ", e);
-      e.printStackTrace();
-      return -1;
-    }
+    return drv.run(qMap.get(tname)).getResponseCode();
   }
 
   public int executeClient(String tname1, String tname2) {
@@ -1537,6 +1568,7 @@ public class QTestUtil {
     String ret = (new File(outDir, testName)).getPath();
     // List of configurations. Currently the list consists of hadoop version and execution mode only
     List<String> configs = new ArrayList<String>();
+    configs.add(this.clusterType.toString());
     configs.add(this.hadoopVer);
 
     Deque<String> stack = new LinkedList<String>();
@@ -1544,7 +1576,7 @@ public class QTestUtil {
     sb.append(testName);
     stack.push(sb.toString());
 
-    // example file names are input1.q.out_0.20.0_minimr or input2.q.out_0.17
+    // example file names are input1.q.out_mr_0.17 or input2.q.out_0.17
     for (String s: configs) {
       sb.append('_');
       sb.append(s);
@@ -1649,7 +1681,6 @@ public class QTestUtil {
   private final Pattern[] planMask = toPattern(new String[] {
       ".*file:.*",
       ".*pfile:.*",
-      ".*hdfs:.*",
       ".*/tmp/.*",
       ".*invalidscheme:.*",
       ".*lastUpdateTime.*",
@@ -1721,9 +1752,16 @@ public class QTestUtil {
     partialPlanMask = ppm.toArray(new PatternReplacementPair[ppm.size()]);
   }
   /* This list may be modified by specific cli drivers to mask strings that change on every test */
-  private final List<Pair<Pattern, String>> patternsWithMaskComments = new ArrayList<Pair<Pattern, String>>() {{
-    add(toPatternPair("(pblob|s3.?|swift|wasb.?).*hive-staging.*","### BLOBSTORE_STAGING_PATH ###"));
-  }};
+  private final List<Pair<Pattern, String>> patternsWithMaskComments =
+      new ArrayList<Pair<Pattern, String>>() {
+        {
+          add(toPatternPair("(pblob|s3.?|swift|wasb.?).*hive-staging.*",
+              "### BLOBSTORE_STAGING_PATH ###"));
+          add(toPatternPair(PATH_HDFS_WITH_DATE_USER_GROUP_REGEX,
+              "### USER ### ### GROUP ###$3$4 ### HDFS DATE ### $6### HDFS PATH ###"));
+          add(toPatternPair(PATH_HDFS_REGEX, "$1### HDFS PATH ###"));
+        }
+      };
 
   private Pair<Pattern, String> toPatternPair(String patternStr, String maskComment) {
     return ImmutablePair.of(Pattern.compile(patternStr), maskComment);
@@ -2155,17 +2193,6 @@ public class QTestUtil {
     System.err.flush();
   }
 
-  public static String ensurePathEndsInSlash(String path) {
-    if(path == null) {
-      throw new NullPointerException("Path cannot be null");
-    }
-    if(path.endsWith(File.separator)) {
-      return path;
-    } else {
-      return path + File.separator;
-    }
-  }
-
   private static String[] cachedQvFileList = null;
   private static ImmutableList<String> cachedDefaultQvFileList = null;
   private static Pattern qvSuffix = Pattern.compile("_[0-9]+.qv$", Pattern.CASE_INSENSITIVE);
@@ -2493,5 +2520,4 @@ public class QTestUtil {
       }
     }
   }
-
 }

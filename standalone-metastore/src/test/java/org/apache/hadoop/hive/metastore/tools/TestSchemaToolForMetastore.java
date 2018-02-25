@@ -119,13 +119,13 @@ public class TestSchemaToolForMetastore {
   // Test to validate that all tables exist in the HMS metastore.
   @Test
   public void testValidateSchemaTables() throws Exception {
-    schemaTool.doInit("2.3.0");
+    schemaTool.doInit("1.2.0");
 
     boolean isValid = schemaTool.validateSchemaTables(conn);
     Assert.assertTrue(isValid);
 
     // upgrade from 2.0.0 schema and re-validate
-    schemaTool.doUpgrade("2.3.0");
+    schemaTool.doUpgrade("1.2.0");
     isValid = schemaTool.validateSchemaTables(conn);
     Assert.assertTrue(isValid);
 
@@ -193,10 +193,10 @@ public class TestSchemaToolForMetastore {
   // Test dryrun of schema upgrade
   @Test
   public void testSchemaUpgradeDryRun() throws Exception {
-    schemaTool.doInit("2.3.0");
+    schemaTool.doInit("1.2.0");
 
     schemaTool.setDryRun(true);
-    schemaTool.doUpgrade("2.3.0");
+    schemaTool.doUpgrade("1.2.0");
     schemaTool.setDryRun(false);
     try {
       schemaTool.verifySchemaVersion();
@@ -258,8 +258,8 @@ public class TestSchemaToolForMetastore {
   @Test
   public void testSchemaUpgrade() throws Exception {
     boolean foundException = false;
-    // Initialize 2.3.0 schema
-    schemaTool.doInit("2.3.0");
+    // Initialize 1.2.0 schema
+    schemaTool.doInit("1.2.0");
     // verify that driver fails due to older version schema
     try {
       schemaTool.verifySchemaVersion();
@@ -293,7 +293,7 @@ public class TestSchemaToolForMetastore {
     System.setOut(outPrintStream);
 
     // Upgrade schema from 0.7.0 to latest
-    schemaTool.doUpgrade("2.3.0");
+    schemaTool.doUpgrade("1.2.0");
 
     LOG.info("stdout is " + stdout.toString());
     LOG.info("stderr is " + stderr.toString());
@@ -400,7 +400,7 @@ public class TestSchemaToolForMetastore {
 
   @Test
   public void testMetastoreDbPropertiesAfterUpgrade() throws HiveMetaException, IOException {
-    schemaTool.doInit("2.3.0");
+    schemaTool.doInit("1.2.0");
     schemaTool.doUpgrade();
     validateMetastoreDbPropertiesTable();
   }

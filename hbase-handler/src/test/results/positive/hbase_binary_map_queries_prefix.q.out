@@ -55,7 +55,7 @@ PREHOOK: query: CREATE TABLE t_hbase_maps(key STRING,
                           simple_string_col STRING)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-string:,cf-string:simple_string_col")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t_hbase_maps
@@ -64,7 +64,7 @@ POSTHOOK: query: CREATE TABLE t_hbase_maps(key STRING,
                           simple_string_col STRING)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-string:,cf-string:simple_string_col")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_hbase_maps
@@ -122,7 +122,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps(key STRING,
                                        string_map_cols MAP<STRING, STRING>, simple_string_col STRING)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-string:string_col.*,cf-string:simple_string_col")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t_ext_hbase_maps
@@ -130,7 +130,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps(key STRING,
                                        string_map_cols MAP<STRING, STRING>, simple_string_col STRING)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-string:string_col.*,cf-string:simple_string_col")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_ext_hbase_maps
@@ -161,7 +161,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps_cut_prefix(key STRING,
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-string:string_.*,cf-string:simple_string_col"
     ,"hbase.columns.mapping.prefix.hide"="true")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t_ext_hbase_maps_cut_prefix
@@ -170,7 +170,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps_cut_prefix(key STRING,
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-string:string_.*,cf-string:simple_string_col"
     ,"hbase.columns.mapping.prefix.hide"="true")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_ext_hbase_maps_cut_prefix

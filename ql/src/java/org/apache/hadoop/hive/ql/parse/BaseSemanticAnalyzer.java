@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -55,6 +55,8 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
+import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -148,6 +150,9 @@ public abstract class BaseSemanticAnalyzer {
   protected LineageInfo linfo;
   protected TableAccessInfo tableAccessInfo;
   protected ColumnAccessInfo columnAccessInfo;
+
+  protected CacheUsage cacheUsage;
+
   /**
    * Columns accessed by updates
    */
@@ -778,8 +783,10 @@ public abstract class BaseSemanticAnalyzer {
         constraintName = unescapeIdentifier(grandChild.getChild(0).getText().toLowerCase());
       } else if (type == HiveParser.TOK_ENABLE) {
         enable = true;
-        // validate is true by default if we enable the constraint
-        validate = true;
+        // validate is false by default if we enable the constraint
+        // TODO: A constraint like NOT NULL could be enabled using ALTER but VALIDATE remains
+        //  false in such cases. Ideally VALIDATE should be set to true to validate existing data
+        validate = false;
       } else if (type == HiveParser.TOK_DISABLE) {
         enable = false;
         // validate is false by default if we disable the constraint
@@ -792,7 +799,10 @@ public abstract class BaseSemanticAnalyzer {
         rely = true;
       }
     }
-    if (enable) {
+
+    // NOT NULL constraint could be enforced/enabled
+    if (child.getToken().getType() != HiveParser.TOK_NOT_NULL
+        && enable) {
       throw new SemanticException(
           ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("ENABLE/ENFORCED feature not supported yet. "
               + "Please use DISABLE/NOT ENFORCED instead."));
@@ -1939,5 +1949,13 @@ public abstract class BaseSemanticAnalyzer {
       return txnManager;
     }
     return SessionState.get().getTxnMgr();
+  }
+
+  public CacheUsage getCacheUsage() {
+    return cacheUsage;
+  }
+
+  public void setCacheUsage(CacheUsage cacheUsage) {
+    this.cacheUsage = cacheUsage;
   }
 }

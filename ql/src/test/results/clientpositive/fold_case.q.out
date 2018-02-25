@@ -511,3 +511,26 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: explain
+select (case when true then key when not true then to_date(key) else null end) from src
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select (case when true then key when not true then to_date(key) else null end) from src
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: key (type: string)
+            outputColumnNames: _col0
+            Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
+            ListSink
+

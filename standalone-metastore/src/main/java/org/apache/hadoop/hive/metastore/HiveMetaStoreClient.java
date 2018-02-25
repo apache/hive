@@ -57,13 +57,16 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.hooks.URIResolverHook;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
@@ -112,6 +115,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   private String tokenStrForm;
   private final boolean localMetaStore;
   private final MetaStoreFilterHook filterHook;
+  private final URIResolverHook uriResolverHook;
   private final int fileMetadataBatchSize;
 
   private Map<String, String> currentMetaVars;
@@ -145,6 +149,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     version = MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) ? TEST_VERSION : VERSION;
     filterHook = loadFilterHooks();
+    uriResolverHook = loadUriResolverHook();
     fileMetadataBatchSize = MetastoreConf.getIntVar(
         conf, ConfVars.BATCH_RETRIEVE_OBJECTS_MAX);
 
@@ -172,37 +177,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
     // user wants file store based configuration
     if (MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS) != null) {
-      String metastoreUrisString[] = MetastoreConf.getVar(conf,
-          ConfVars.THRIFT_URIS).split(",");
-      metastoreUris = new URI[metastoreUrisString.length];
-      try {
-        int i = 0;
-        for (String s : metastoreUrisString) {
-          URI tmpUri = new URI(s);
-          if (tmpUri.getScheme() == null) {
-            throw new IllegalArgumentException("URI: " + s
-                + " does not have a scheme");
-          }
-          metastoreUris[i++] = new URI(
-              tmpUri.getScheme(),
-              tmpUri.getUserInfo(),
-              HadoopThriftAuthBridge.getBridge().getCanonicalHostName(tmpUri.getHost()),
-              tmpUri.getPort(),
-              tmpUri.getPath(),
-              tmpUri.getQuery(),
-              tmpUri.getFragment()
-          );
-
-        }
-        // make metastore URIS random
-        List<?> uriList = Arrays.asList(metastoreUris);
-        Collections.shuffle(uriList);
-        metastoreUris = (URI[]) uriList.toArray();
-      } catch (IllegalArgumentException e) {
-        throw (e);
-      } catch (Exception e) {
-        MetaStoreUtils.logAndThrowMetaException(e);
-      }
+      resolveUris();
     } else {
       LOG.error("NOT getting uris from conf");
       throw new MetaException("MetaStoreURIs not found in conf file");
@@ -247,6 +222,51 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     open();
   }
 
+  private void resolveUris() throws MetaException {
+    String metastoreUrisString[] =  MetastoreConf.getVar(conf,
+            ConfVars.THRIFT_URIS).split(",");
+
+    List<URI> metastoreURIArray = new ArrayList<URI>();
+    try {
+      int i = 0;
+      for (String s : metastoreUrisString) {
+        URI tmpUri = new URI(s);
+        if (tmpUri.getScheme() == null) {
+          throw new IllegalArgumentException("URI: " + s
+                  + " does not have a scheme");
+        }
+        if (uriResolverHook != null) {
+          metastoreURIArray.addAll(uriResolverHook.resolveURI(tmpUri));
+        } else {
+          metastoreURIArray.add(new URI(
+                  tmpUri.getScheme(),
+                  tmpUri.getUserInfo(),
+                  HadoopThriftAuthBridge.getBridge().getCanonicalHostName(tmpUri.getHost()),
+                  tmpUri.getPort(),
+                  tmpUri.getPath(),
+                  tmpUri.getQuery(),
+                  tmpUri.getFragment()
+          ));
+        }
+      }
+      metastoreUris = new URI[metastoreURIArray.size()];
+      for (int j = 0; j < metastoreURIArray.size(); j++) {
+        metastoreUris[j] = metastoreURIArray.get(j);
+      }
+
+      if (MetastoreConf.getVar(conf, ConfVars.THRIFT_URI_SELECTION).equalsIgnoreCase("RANDOM")) {
+        List uriList = Arrays.asList(metastoreUris);
+        Collections.shuffle(uriList);
+        metastoreUris = (URI[]) uriList.toArray();
+      }
+    } catch (IllegalArgumentException e) {
+      throw (e);
+    } catch (Exception e) {
+      MetaStoreUtils.logAndThrowMetaException(e);
+    }
+  }
+
+
   private MetaStoreFilterHook loadFilterHooks() throws IllegalStateException {
     Class<? extends MetaStoreFilterHook> authProviderClass = MetastoreConf.
         getClass(conf, ConfVars.FILTER_HOOK, DefaultMetaStoreFilterHookImpl.class,
@@ -258,6 +278,26 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       return constructor.newInstance(conf);
     } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InstantiationException | IllegalArgumentException | InvocationTargetException e) {
       throw new IllegalStateException(msg + e.getMessage(), e);
+    }
+  }
+
+  //multiple clients may initialize the hook at the same time
+  synchronized private URIResolverHook loadUriResolverHook() throws IllegalStateException {
+
+    String uriResolverClassName =
+            MetastoreConf.getAsString(conf, ConfVars.URI_RESOLVER);
+    if (uriResolverClassName.equals("")) {
+      return null;
+    } else {
+      LOG.info("Loading uri resolver" + uriResolverClassName);
+      try {
+        Class<?> uriResolverClass = Class.forName(uriResolverClassName, true,
+                JavaUtils.getClassLoader());
+        return (URIResolverHook) ReflectionUtils.newInstance(uriResolverClass, null);
+      } catch (Exception e) {
+        LOG.error("Exception loading uri resolver hook" + e);
+        return null;
+      }
     }
   }
 
@@ -322,10 +362,18 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
           " at the client level.");
     } else {
       close();
-      // Swap the first element of the metastoreUris[] with a random element from the rest
-      // of the array. Rationale being that this method will generally be called when the default
-      // connection has died and the default connection is likely to be the first array element.
-      promoteRandomMetaStoreURI();
+
+      if (uriResolverHook != null) {
+        //for dynamic uris, re-lookup if there are new metastore locations
+        resolveUris();
+      }
+
+      if (MetastoreConf.getVar(conf, ConfVars.THRIFT_URI_SELECTION).equalsIgnoreCase("RANDOM")) {
+        // Swap the first element of the metastoreUris[] with a random element from the rest
+        // of the array. Rationale being that this method will generally be called when the default
+        // connection has died and the default connection is likely to be the first array element.
+        promoteRandomMetaStoreURI();
+      }
       open();
     }
   }
@@ -2166,25 +2214,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public List<BasicTxnInfo> getLastCompletedTransactionForTables(
-      List<String> dbNames, List<String> tableNames, ValidTxnList txnList)
-          throws TException {
-    TxnsSnapshot txnsSnapshot = new TxnsSnapshot();
-    txnsSnapshot.setTxn_high_water_mark(txnList.getHighWatermark());
-    txnsSnapshot.setOpen_txns(Arrays.asList(ArrayUtils.toObject(txnList.getInvalidTransactions())));
-    return client.get_last_completed_transaction_for_tables(dbNames, tableNames, txnsSnapshot);
-  }
-
-  @Override
-  public BasicTxnInfo getLastCompletedTransactionForTable(String dbName, String tableName, ValidTxnList txnList)
-      throws TException {
-    TxnsSnapshot txnsSnapshot = new TxnsSnapshot();
-    txnsSnapshot.setTxn_high_water_mark(txnList.getHighWatermark());
-    txnsSnapshot.setOpen_txns(Arrays.asList(ArrayUtils.toObject(txnList.getInvalidTransactions())));
-    return client.get_last_completed_transaction_for_table(dbName, tableName, txnsSnapshot);
-  }
-
-  @Override
   public ValidTxnList getValidTxns() throws TException {
     return TxnUtils.createValidReadTxnList(client.get_open_txns(), 0);
   }
@@ -2676,7 +2705,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public WMFullResourcePlan alterResourcePlan(String resourcePlanName, WMResourcePlan resourcePlan,
+  public WMFullResourcePlan alterResourcePlan(String resourcePlanName, WMNullableResourcePlan resourcePlan,
       boolean canActivateDisabled, boolean isForceDeactivate, boolean isReplace)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
     WMAlterResourcePlanRequest request = new WMAlterResourcePlanRequest();
@@ -2695,11 +2724,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public List<String> validateResourcePlan(String resourcePlanName)
+  public WMValidateResourcePlanResponse validateResourcePlan(String resourcePlanName)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
     WMValidateResourcePlanRequest request = new WMValidateResourcePlanRequest();
     request.setResourcePlanName(resourcePlanName);
-    return client.validate_resource_plan(request).getErrors();
+    return client.validate_resource_plan(request);
   }
 
   @Override
@@ -2744,7 +2773,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public void alterWMPool(WMPool pool, String poolPath)
+  public void alterWMPool(WMNullablePool pool, String poolPath)
       throws NoSuchObjectException, InvalidObjectException, MetaException, TException {
     WMAlterPoolRequest request = new WMAlterPoolRequest();
     request.setPool(pool);

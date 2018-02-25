@@ -255,9 +255,19 @@
   <description>Internal marker for test. Used for masking env-dependent values</description>
 </property>
 
+<property>
+  <name>hive.spark.client.connect.timeout</name>
+  <value>30000ms</value>
+</property>
+
 <!-- remove this after HIVE-18139 -->
 <property>
   <name>hive.stats.column.autogather</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>hive.query.results.cache.enabled</name>
   <value>false</value>
 </property>
 

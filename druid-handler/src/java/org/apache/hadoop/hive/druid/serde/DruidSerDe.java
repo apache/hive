@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -121,6 +121,9 @@ public class DruidSerDe extends AbstractSerDe {
     final List<PrimitiveTypeInfo> columnTypes = new ArrayList<>();
     List<ObjectInspector> inspectors = new ArrayList<>();
 
+    final TimestampLocalTZTypeInfo tsTZTypeInfo = new TimestampLocalTZTypeInfo(
+          configuration.get(HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE.varname));
+
     // Druid query
     String druidQuery = properties.getProperty(Constants.DRUID_QUERY_JSON);
     if (druidQuery == null) {
@@ -137,8 +140,9 @@ public class DruidSerDe extends AbstractSerDe {
                   "') not specified in create table; list of columns is : " +
                   properties.getProperty(serdeConstants.LIST_COLUMNS));
         }
-        columnTypes.addAll(Lists.transform(Utilities.getColumnTypes(properties),
-                type -> TypeInfoFactory.getPrimitiveTypeInfo(type)
+        columnTypes.addAll(Lists.transform(
+                Lists.transform(Utilities.getColumnTypes(properties), type -> TypeInfoFactory.getPrimitiveTypeInfo(type)),
+                e -> e instanceof TimestampLocalTZTypeInfo ? tsTZTypeInfo : e
         ));
         inspectors.addAll(Lists.transform(columnTypes,
                 (Function<PrimitiveTypeInfo, ObjectInspector>) type -> PrimitiveObjectInspectorFactory
@@ -179,7 +183,7 @@ public class DruidSerDe extends AbstractSerDe {
           if (columnInfo.getKey().equals(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)) {
             // Special handling for timestamp column
             columnNames.add(columnInfo.getKey()); // field name
-            PrimitiveTypeInfo type = TypeInfoFactory.timestampLocalTZTypeInfo; // field type
+            PrimitiveTypeInfo type = tsTZTypeInfo; // field type
             columnTypes.add(type);
             inspectors
                     .add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(type));
@@ -188,7 +192,7 @@ public class DruidSerDe extends AbstractSerDe {
           columnNames.add(columnInfo.getKey()); // field name
           PrimitiveTypeInfo type = DruidSerDeUtils.convertDruidToHiveType(
                   columnInfo.getValue().getType()); // field type
-          columnTypes.add(type);
+          columnTypes.add(type instanceof TimestampLocalTZTypeInfo ? tsTZTypeInfo : type);
           inspectors.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(type));
         }
         columns = columnNames.toArray(new String[columnNames.size()]);
@@ -211,19 +215,21 @@ public class DruidSerDe extends AbstractSerDe {
           List<String> propColumnNames = Utilities.getColumnNames(properties);
           List<String> propColumnTypes = Utilities.getColumnTypes(properties);
           for (int i = 0; i < propColumnNames.size(); i++) {
-            mapColumnNamesTypes.put(
-                    propColumnNames.get(i),
-                    TypeInfoFactory.getPrimitiveTypeInfo(propColumnTypes.get(i)));
+            PrimitiveTypeInfo type = TypeInfoFactory.getPrimitiveTypeInfo(propColumnTypes.get(i));
+            if (type instanceof TimestampLocalTZTypeInfo) {
+              type  = tsTZTypeInfo;
+            }
+            mapColumnNamesTypes.put(propColumnNames.get(i), type);
           }
         }
 
         switch (query.getType()) {
           case Query.TIMESERIES:
-            inferSchema((TimeseriesQuery) query, columnNames, columnTypes,
+            inferSchema((TimeseriesQuery) query, tsTZTypeInfo, columnNames, columnTypes,
                     mapColumnNamesTypes.build());
             break;
           case Query.TOPN:
-            inferSchema((TopNQuery) query, columnNames, columnTypes,
+            inferSchema((TopNQuery) query, tsTZTypeInfo, columnNames, columnTypes,
                     mapColumnNamesTypes.build());
             break;
           case Query.SELECT:
@@ -232,11 +238,11 @@ public class DruidSerDe extends AbstractSerDe {
             if (org.apache.commons.lang3.StringUtils.isEmpty(address)) {
               throw new SerDeException("Druid broker address not specified in configuration");
             }
-            inferSchema((SelectQuery) query, columnNames, columnTypes, address,
+            inferSchema((SelectQuery) query, tsTZTypeInfo, columnNames, columnTypes, address,
                     mapColumnNamesTypes.build());
             break;
           case Query.GROUP_BY:
-            inferSchema((GroupByQuery) query, columnNames, columnTypes,
+            inferSchema((GroupByQuery) query, tsTZTypeInfo, columnNames, columnTypes,
                     mapColumnNamesTypes.build());
             break;
           default:
@@ -299,12 +305,12 @@ public class DruidSerDe extends AbstractSerDe {
   }
 
   /* Timeseries query */
-  private void inferSchema(TimeseriesQuery query,
+  private void inferSchema(TimeseriesQuery query, TimestampLocalTZTypeInfo timeColumnTypeInfo,
           List<String> columnNames, List<PrimitiveTypeInfo> columnTypes,
           Map<String, PrimitiveTypeInfo> mapColumnNamesTypes) {
     // Timestamp column
     columnNames.add(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN);
-    columnTypes.add(TypeInfoFactory.timestampLocalTZTypeInfo);
+    columnTypes.add(timeColumnTypeInfo);
     // Aggregator columns
     for (AggregatorFactory af : query.getAggregatorSpecs()) {
       columnNames.add(af.getName());
@@ -327,12 +333,12 @@ public class DruidSerDe extends AbstractSerDe {
   }
 
   /* TopN query */
-  private void inferSchema(TopNQuery query,
+  private void inferSchema(TopNQuery query, TimestampLocalTZTypeInfo timeColumnTypeInfo,
           List<String> columnNames, List<PrimitiveTypeInfo> columnTypes,
           Map<String, PrimitiveTypeInfo> mapColumnNamesTypes) {
     // Timestamp column
     columnNames.add(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN);
-    columnTypes.add(TypeInfoFactory.timestampLocalTZTypeInfo);
+    columnTypes.add(timeColumnTypeInfo);
     // Dimension column
     columnNames.add(query.getDimensionSpec().getOutputName());
     columnTypes.add(TypeInfoFactory.stringTypeInfo);
@@ -358,13 +364,13 @@ public class DruidSerDe extends AbstractSerDe {
   }
 
   /* Select query */
-  private void inferSchema(SelectQuery query,
+  private void inferSchema(SelectQuery query, TimestampLocalTZTypeInfo timeColumnTypeInfo,
           List<String> columnNames, List<PrimitiveTypeInfo> columnTypes,
           String address, Map<String, PrimitiveTypeInfo> mapColumnNamesTypes)
                   throws SerDeException {
     // Timestamp column
     columnNames.add(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN);
-    columnTypes.add(TypeInfoFactory.timestampLocalTZTypeInfo);
+    columnTypes.add(timeColumnTypeInfo);
     // Dimension columns
     for (DimensionSpec ds : query.getDimensions()) {
       columnNames.add(ds.getOutputName());
@@ -401,12 +407,12 @@ public class DruidSerDe extends AbstractSerDe {
   }
 
   /* GroupBy query */
-  private void inferSchema(GroupByQuery query,
+  private void inferSchema(GroupByQuery query, TimestampLocalTZTypeInfo timeColumnTypeInfo,
           List<String> columnNames, List<PrimitiveTypeInfo> columnTypes,
           Map<String, PrimitiveTypeInfo> mapColumnNamesTypes) {
     // Timestamp column
     columnNames.add(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN);
-    columnTypes.add(TypeInfoFactory.timestampLocalTZTypeInfo);
+    columnTypes.add(timeColumnTypeInfo);
     // Dimension columns
     for (DimensionSpec ds : query.getDimensions()) {
       columnNames.add(ds.getOutputName());

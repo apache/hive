@@ -33,21 +33,21 @@ POSTHOOK: Output: default@t2
 PREHOOK: query: SELECT * FROM T1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM T1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 1
 PREHOOK: query: SELECT * FROM T2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM T2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 1
 1
@@ -72,23 +72,23 @@ PREHOOK: query: SELECT T1.key FROM T1 LEFT SEMI JOIN (SELECT key FROM T2 SORT BY
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT T1.key FROM T1 LEFT SEMI JOIN (SELECT key FROM T2 SORT BY key) tmp ON (T1.key=tmp.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 1
 PREHOOK: query: SELECT T1.key FROM T1 LEFT SEMI JOIN (SELECT key FROM T2 SORT BY key) tmp ON (T1.key=tmp.key)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 PREHOOK: Input: default@t2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT T1.key FROM T1 LEFT SEMI JOIN (SELECT key FROM T2 SORT BY key) tmp ON (T1.key=tmp.key)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1
 1

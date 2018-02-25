@@ -7,14 +7,14 @@ POSTHOOK: Output: database:hbaseDB
 PREHOOK: query: CREATE TABLE hbaseDB.hbase_table_0(key int, value string)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name" = "hbase_table_0")
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:hbasedb
 PREHOOK: Output: hbaseDB@hbase_table_0
 POSTHOOK: query: CREATE TABLE hbaseDB.hbase_table_0(key int, value string)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name" = "hbase_table_0")
+TBLPROPERTIES ("hbase.table.name" = "hbase_table_0")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:hbasedb
 POSTHOOK: Output: hbaseDB@hbase_table_0

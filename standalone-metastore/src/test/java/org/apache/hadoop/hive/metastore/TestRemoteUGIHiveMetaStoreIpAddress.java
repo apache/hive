@@ -18,8 +18,11 @@
 package org.apache.hadoop.hive.metastore;
 
 
+import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.junit.experimental.categories.Category;
 
+@Category(MetastoreCheckinTest.class)
 public class TestRemoteUGIHiveMetaStoreIpAddress extends TestRemoteHiveMetaStoreIpAddress {
   public TestRemoteUGIHiveMetaStoreIpAddress() {
     System.setProperty(MetastoreConf.ConfVars.EXECUTE_SET_UGI.toString(), "true");

@@ -151,7 +151,7 @@ STAGE PLANS:
                 value expressions: _col1 (type: decimal(11,0))
       Map Vectorization:
           enabled: false
-          enabledConditionsNotMet: hive.vectorized.use.row.serde.deserialize IS true AND hive.vectorized.row.serde.inputformat.excludes NOT CONTAINS org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat IS false, hive.vectorized.use.vectorized.input.format IS false
+          enabledConditionsNotMet: Row deserialization of vectorized input format not supported IS false, hive.vectorized.use.vectorized.input.format IS false
           inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
       Reduce Vectorization:
           enabled: false

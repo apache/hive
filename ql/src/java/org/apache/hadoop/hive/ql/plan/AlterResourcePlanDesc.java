@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.metastore.api.WMNullableResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -28,7 +29,7 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class AlterResourcePlanDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = -3514685833183437279L;
 
-  private WMResourcePlan resourcePlan;
+  private WMNullableResourcePlan resourcePlan;
   private String rpName;
   private boolean validate;
   private boolean isEnableActivate, isForceDeactivate, isReplace;
@@ -36,7 +37,7 @@ public class AlterResourcePlanDesc extends DDLDesc implements Serializable {
 
   public AlterResourcePlanDesc() {}
 
-  public AlterResourcePlanDesc(WMResourcePlan resourcePlan, String rpName, boolean validate,
+  public AlterResourcePlanDesc(WMNullableResourcePlan resourcePlan, String rpName, boolean validate,
       boolean isEnableActivate, boolean isForceDeactivate, boolean isReplace) {
     this.resourcePlan = resourcePlan;
     this.rpName = rpName;
@@ -48,11 +49,11 @@ public class AlterResourcePlanDesc extends DDLDesc implements Serializable {
 
   @Explain(displayName="Resource plan changed fields",
       explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public WMResourcePlan getResourcePlan() {
+  public WMNullableResourcePlan getResourcePlan() {
     return resourcePlan;
   }
 
-  public void setResourcePlan(WMResourcePlan resourcePlan) {
+  public void setResourcePlan(WMNullableResourcePlan resourcePlan) {
     this.resourcePlan = resourcePlan;
   }
 

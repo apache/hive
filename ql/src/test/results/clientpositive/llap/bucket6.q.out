@@ -130,11 +130,11 @@ POSTHOOK: Lineage: src_bucket.value SIMPLE [(srcpart)srcpart.FieldSchema(name:va
 PREHOOK: query: select * from src_bucket limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_bucket
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from src_bucket limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_bucket
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 0	val_0
 0	val_0
