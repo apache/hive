@@ -20,11 +20,14 @@ package org.apache.hadoop.hive.ql.udf.xml;
 
 import javax.xml.xpath.XPathConstants;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import static org.junit.Assert.*;
+
+import java.io.File;
 
 public class TestUDFXPathUtil {
 
@@ -78,5 +81,31 @@ public class TestUDFXPathUtil {
     assertTrue(result instanceof NodeList);
     assertEquals(5, ((NodeList)result).getLength());
   }
-  
+
+  @Test
+  public void testEmbedFailure() throws Exception {
+
+    String secretValue = String.valueOf(Math.random());
+    File tempFile = File.createTempFile("verifyembed", ".tmp");
+    tempFile.deleteOnExit();
+    String fname = tempFile.getAbsolutePath();
+
+    FileUtils.writeStringToFile(tempFile, secretValue);
+
+    String xml = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+        "<!DOCTYPE test [ \n" +
+        "    <!ENTITY embed SYSTEM \"" + fname + "\"> \n" +
+        "]>\n" +
+        "<foo>&embed;</foo>";
+
+    String evaled = null;
+    Exception caught = null;
+    try {
+      evaled = new UDFXPathUtil().evalString(xml, "/foo");
+    } catch (Exception e){
+      caught = e;
+    }
+    assertTrue(caught.getCause().getMessage()
+      .contains("\'file\' access is not allowed due to restriction set by the accessExternalDTD property"));
+  }
 }
