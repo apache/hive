@@ -79,9 +79,13 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -703,18 +707,89 @@ public class TypeCheckProcFactory {
 
   static ExprNodeDesc toExprNodeDesc(ColumnInfo colInfo) {
     ObjectInspector inspector = colInfo.getObjectInspector();
-    if (inspector instanceof ConstantObjectInspector &&
-        inspector instanceof PrimitiveObjectInspector) {
-      PrimitiveObjectInspector poi = (PrimitiveObjectInspector) inspector;
-      Object constant = ((ConstantObjectInspector) inspector).getWritableConstantValue();
-      ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), poi.getPrimitiveJavaObject(constant));
-      constantExpr.setFoldedFromCol(colInfo.getInternalName());
-      return constantExpr;
+    if (inspector instanceof ConstantObjectInspector && inspector instanceof PrimitiveObjectInspector) {
+      return toPrimitiveConstDesc(colInfo, inspector);
+    }
+    if (inspector instanceof ConstantObjectInspector && inspector instanceof ListObjectInspector) {
+      ObjectInspector listElementOI = ((ListObjectInspector)inspector).getListElementObjectInspector();
+      if (listElementOI instanceof PrimitiveObjectInspector) {
+        return toListConstDesc(colInfo, inspector, listElementOI);
+      }
+    }
+    if (inspector instanceof ConstantObjectInspector && inspector instanceof MapObjectInspector) {
+      ObjectInspector keyOI = ((MapObjectInspector)inspector).getMapKeyObjectInspector();
+      ObjectInspector valueOI = ((MapObjectInspector)inspector).getMapValueObjectInspector();
+      if (keyOI instanceof PrimitiveObjectInspector && valueOI instanceof PrimitiveObjectInspector) {
+        return toMapConstDesc(colInfo, inspector, keyOI, valueOI);
+      }
+    }
+    if (inspector instanceof ConstantObjectInspector && inspector instanceof StructObjectInspector) {
+      boolean allPrimitive = true;
+      List<? extends StructField> fields = ((StructObjectInspector)inspector).getAllStructFieldRefs();
+      for (StructField field : fields) {
+        allPrimitive &= field.getFieldObjectInspector() instanceof PrimitiveObjectInspector;
+      }
+      if (allPrimitive) {
+        return toStructConstDesc(colInfo, inspector, fields);
+      }
     }
     // non-constant or non-primitive constants
     ExprNodeColumnDesc column = new ExprNodeColumnDesc(colInfo);
     column.setSkewedCol(colInfo.isSkewedCol());
     return column;
+  }
+
+  private static ExprNodeConstantDesc toPrimitiveConstDesc(ColumnInfo colInfo, ObjectInspector inspector) {
+    PrimitiveObjectInspector poi = (PrimitiveObjectInspector) inspector;
+    Object constant = ((ConstantObjectInspector) inspector).getWritableConstantValue();
+    ExprNodeConstantDesc constantExpr =
+        new ExprNodeConstantDesc(colInfo.getType(), poi.getPrimitiveJavaObject(constant));
+    constantExpr.setFoldedFromCol(colInfo.getInternalName());
+    return constantExpr;
+  }
+  
+  private static ExprNodeConstantDesc toListConstDesc(ColumnInfo colInfo, ObjectInspector inspector,
+      ObjectInspector listElementOI) {
+    PrimitiveObjectInspector poi = (PrimitiveObjectInspector)listElementOI;
+    List<?> values = (List<?>)((ConstantObjectInspector) inspector).getWritableConstantValue();
+    List<Object> constant = new ArrayList<Object>();
+    for (Object o : values) {
+      constant.add(poi.getPrimitiveJavaObject(o));
+    }
+    
+    ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
+    constantExpr.setFoldedFromCol(colInfo.getInternalName());
+    return constantExpr;
+  }
+  
+  private static ExprNodeConstantDesc toMapConstDesc(ColumnInfo colInfo, ObjectInspector inspector,
+      ObjectInspector keyOI, ObjectInspector valueOI) {
+    PrimitiveObjectInspector keyPoi = (PrimitiveObjectInspector)keyOI;
+    PrimitiveObjectInspector valuePoi = (PrimitiveObjectInspector)valueOI;
+    Map<?,?> values = (Map<?,?>)((ConstantObjectInspector) inspector).getWritableConstantValue();
+    Map<Object, Object> constant = new HashMap<Object, Object>();
+    for (Map.Entry<?, ?> e : values.entrySet()) {
+      constant.put(keyPoi.getPrimitiveJavaObject(e.getKey()), valuePoi.getPrimitiveJavaObject(e.getValue()));
+    }
+    
+    ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
+    constantExpr.setFoldedFromCol(colInfo.getInternalName());
+    return constantExpr;
+  }
+
+  private static ExprNodeConstantDesc toStructConstDesc(ColumnInfo colInfo, ObjectInspector inspector,
+      List<? extends StructField> fields) {
+    List<?> values = (List<?>)((ConstantObjectInspector) inspector).getWritableConstantValue();
+    List<Object> constant =  new ArrayList<Object>();
+    for (int i = 0; i < values.size(); i++) {
+      Object value = values.get(i);
+      PrimitiveObjectInspector fieldPoi = (PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector();
+      constant.add(fieldPoi.getPrimitiveJavaObject(value));
+    }
+    
+    ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
+    constantExpr.setFoldedFromCol(colInfo.getInternalName());
+    return constantExpr;
   }
 
   /**
