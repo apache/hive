@@ -33,8 +33,8 @@ public class TestHiveAuthFactory {
 
   @BeforeClass
   public static void setUp() throws Exception {
+    miniHiveKdc = new MiniHiveKdc();
     hiveConf = new HiveConf();
-    miniHiveKdc = MiniHiveKdc.getMiniHiveKdc(hiveConf);
   }
 
   @AfterClass

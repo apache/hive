@@ -44,12 +44,12 @@ public class TestSSLWithMiniKdc {
   public static void beforeTest() throws Exception {
     Class.forName(MiniHS2.getJdbcDriverName());
 
+    miniHiveKdc = new MiniHiveKdc();
+
     HiveConf hiveConf = new HiveConf();
 
     SSLTestUtils.setMetastoreSslConf(hiveConf);
     hiveConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-
-    miniHiveKdc = MiniHiveKdc.getMiniHiveKdc(hiveConf);
 
     setHMSSaslConf(miniHiveKdc, hiveConf);
 
