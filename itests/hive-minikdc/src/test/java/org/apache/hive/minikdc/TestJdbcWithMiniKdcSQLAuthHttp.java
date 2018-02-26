@@ -18,7 +18,6 @@
 
 package org.apache.hive.minikdc;
 
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.junit.BeforeClass;
 
@@ -26,8 +25,7 @@ public class TestJdbcWithMiniKdcSQLAuthHttp extends JdbcWithMiniKdcSQLAuthTest {
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, MiniHS2.HS2_HTTP_MODE);
-    JdbcWithMiniKdcSQLAuthTest.beforeTestBase();
+    JdbcWithMiniKdcSQLAuthTest.beforeTestBase(MiniHS2.HS2_HTTP_MODE);
 
   }
 

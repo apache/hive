@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.minikdc.MiniKdc;
@@ -55,7 +54,6 @@ public class MiniHiveKdc {
 
   private final MiniKdc miniKdc;
   private final File workDir;
-  private final Configuration conf;
   private final Map<String, String> userPrincipals =
       new HashMap<String, String>();
   private final Properties kdcConf = MiniKdc.createConf();
@@ -79,16 +77,11 @@ public class MiniHiveKdc {
     }
   }
 
-  public static MiniHiveKdc getMiniHiveKdc (Configuration conf) throws Exception {
-    return new MiniHiveKdc(conf);
-  }
-
-  public MiniHiveKdc(Configuration conf)
+  public MiniHiveKdc()
       throws Exception {
     File baseDir =  Files.createTempDir();
     baseDir.deleteOnExit();
     workDir = new File (baseDir, "HiveMiniKdc");
-    this.conf = conf;
 
     /**
      *  Hadoop security classes read the default realm via static initialization,
@@ -107,6 +100,8 @@ public class MiniHiveKdc {
     addUserPrincipal(HIVE_TEST_USER_1);
     addUserPrincipal(HIVE_TEST_USER_2);
     addUserPrincipal(HIVE_TEST_SUPER_USER);
+
+    loginUser(HIVE_TEST_USER_1);
   }
 
   public String getKeyTabFile(String principalName) {

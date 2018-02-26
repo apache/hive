@@ -42,11 +42,13 @@ public class TestJdbcWithMiniKdcCookie {
   private static MiniHiveKdc miniHiveKdc = null;
   private Connection hs2Conn;
   File dataFile;
-  protected static HiveConf hiveConf = new HiveConf();
+  protected static HiveConf hiveConf;
   private static String HIVE_NON_EXISTENT_USER = "hive_no_exist";
 
   @BeforeClass
   public static void beforeTest() throws Exception {
+    miniHiveKdc = new MiniHiveKdc();
+    hiveConf = new HiveConf();
     hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, MiniHS2.HS2_HTTP_MODE);
     System.err.println("Testing using HS2 mode : "
       + hiveConf.getVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE));
@@ -56,7 +58,6 @@ public class TestJdbcWithMiniKdcCookie {
     hiveConf.setTimeVar(ConfVars.HIVE_SERVER2_THRIFT_HTTP_COOKIE_MAX_AGE,
       1, TimeUnit.SECONDS);
     hiveConf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    miniHiveKdc = MiniHiveKdc.getMiniHiveKdc(hiveConf);
     miniHS2 = MiniHiveKdc.getMiniHS2WithKerb(miniHiveKdc, hiveConf);
     miniHS2.start(new HashMap<String, String>());
   }
