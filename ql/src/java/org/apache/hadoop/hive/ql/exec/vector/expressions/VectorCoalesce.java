@@ -225,9 +225,14 @@ public class VectorCoalesce extends VectorExpression {
 
     // NULL out the remaining columns.
     outputColVector.noNulls = false;
-    for (int i = 0; i < unassignedColumnCount; i++) {
-      final int batchIndex = unassignedBatchIndices[i];
-      outputIsNull[batchIndex] = true;
+    if (isAllUnassigned) {
+      outputIsNull[0] = true;
+      outputColVector.isRepeating = true;
+    } else {
+      for (int i = 0; i < unassignedColumnCount; i++) {
+        final int batchIndex = unassignedBatchIndices[i];
+        outputIsNull[batchIndex] = true;
+      }
     }
   }
 
