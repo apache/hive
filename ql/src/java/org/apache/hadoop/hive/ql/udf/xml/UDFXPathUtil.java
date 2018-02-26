@@ -22,7 +22,11 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -38,9 +42,13 @@ import org.xml.sax.InputSource;
  * of this class.
  */
 public class UDFXPathUtil {
+  static final boolean DISABLE_XINCLUDE = true;
+  private DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+  private DocumentBuilder builder = null;
   private XPath xpath = XPathFactory.newInstance().newXPath();
   private ReusableStringReader reader = new ReusableStringReader();
   private InputSource inputSource = new InputSource(reader);
+
   private XPathExpression expression = null;
   private String oldPath = null;
 
@@ -66,12 +74,33 @@ public class UDFXPathUtil {
       return null;
     }
 
+    if (builder == null){
+      initializeDocumentBuilderFactory();
+      try {
+        builder = dbf.newDocumentBuilder();
+      } catch (ParserConfigurationException e) {
+        throw new RuntimeException("Error instantiating DocumentBuilder, cannot build xml parser", e);
+      }
+    }
+
     reader.set(xml);
 
     try {
-      return expression.evaluate(inputSource, qname);
+      return expression.evaluate(builder.parse(inputSource), qname);
     } catch (XPathExpressionException e) {
       throw new RuntimeException ("Invalid expression '" + oldPath + "'", e);
+    } catch (Exception e) {
+      throw new RuntimeException("Error loading expression '" + oldPath + "'", e);
+    }
+  }
+
+  private void initializeDocumentBuilderFactory() {
+
+    dbf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+    dbf.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+
+    if (DISABLE_XINCLUDE){
+      dbf.setXIncludeAware(false);
     }
   }
 
