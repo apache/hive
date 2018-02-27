@@ -20,6 +20,7 @@ package org.apache.hive.hcatalog.streaming;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -2057,7 +2058,13 @@ public class TestStreaming {
       if(!deltaDir.getName().startsWith("delta")) {
         continue;
       }
-      File[] bucketFiles = deltaDir.listFiles();
+      File[] bucketFiles = deltaDir.listFiles(new FileFilter() {
+        @Override
+        public boolean accept(File pathname) {
+          String name = pathname.getName();
+          return !name.startsWith("_") && !name.startsWith(".");
+        }
+      });
       for (File bucketFile : bucketFiles) {
         if(bucketFile.toString().endsWith("length")) {
           continue;

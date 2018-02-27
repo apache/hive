@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities.MissingBucketsContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.AcidUtils.Operation;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -264,15 +263,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
         FileUtils.mkdir(fs, finalPaths[idx].getParent(), hconf);
       }
-      // If we're updating or deleting there may be no file to close.  This can happen
-      // because the where clause strained out all of the records for a given bucket.  So
-      // before attempting the rename below, check if our file exists.  If it doesn't,
-      // then skip the rename.  If it does try it.  We could just blindly try the rename
-      // and avoid the extra stat, but that would mask other errors.
-      Operation acidOp = conf.getWriteType();
-      boolean needToRename = outPaths[idx] != null && ((acidOp != Operation.UPDATE
-          && acidOp != Operation.DELETE) || fs.exists(outPaths[idx]));
-      if (needToRename && outPaths[idx] != null) {
+      if(outPaths[idx] != null && fs.exists(outPaths[idx])) {
         if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
           Utilities.FILE_OP_LOGGER.trace("committing " + outPaths[idx] + " to "
               + finalPaths[idx] + " (" + isMmTable + ")");
