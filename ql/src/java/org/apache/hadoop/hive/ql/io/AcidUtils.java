@@ -18,17 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.regex.Pattern;
-
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -40,14 +30,15 @@ import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
-import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.hadoop.hive.ql.io.orc.Reader;
+import org.apache.hadoop.hive.ql.io.orc.Writer;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -61,7 +52,17 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import static org.apache.hadoop.hive.ql.exec.Utilities.COPY_KEYWORD;
 
@@ -1656,6 +1657,90 @@ public class AcidUtils {
         LOG.debug("isRawFormat() called on " + dataFile + " which is not an ORC file: " +
             ex.getMessage());
         return true;
+      }
+    }
+  }
+
+  /**
+   * Logic related to versioning acid data format.  An {@code ACID_FORMAT} file is written to each
+   * base/delta/delete_delta dir written by a full acid write or compaction.  This is the primary
+   * mechanism for versioning acid data.
+   *
+   * Each individual ORC file written stores the current version as a user property in ORC footer.
+   * All data files produced by Acid write should have this (starting with Hive 3.0), including
+   * those written by compactor.  This is more for sanity checking in case someone moved the files
+   * around or something like that.
+   */
+  public static final class OrcAcidVersion {
+    private static final String ACID_VERSION_KEY = "hive.acid.version";
+    private static final String ACID_FORMAT = "_orc_acid_version";
+    public static final int ORC_ACID_VERSION_DEFAULT = 0;
+    /**
+     * 2 is the version of Acid released in Hive 3.0.
+     */
+    public static final int ORC_ACID_VERSION = 2;
+    /**
+     * Inlucde current acid version in file footer.
+     * @param writer - file written
+     */
+    public static void setAcidVersionInDataFile(Writer writer) {
+      //so that we know which version wrote the file
+      ByteBuffer bf = ByteBuffer.allocate(4).putInt(ORC_ACID_VERSION);
+      bf.rewind(); //don't ask - some ByteBuffer weridness. w/o this, empty buffer is written
+      writer.addUserMetadata(ACID_VERSION_KEY, bf);
+    }
+    /**
+     * This is smart enough to handle streaming ingest where there could be a
+     * {@link OrcAcidUtils#DELTA_SIDE_FILE_SUFFIX} side file.
+     * @param dataFile - ORC acid data file
+     * @return version property from file if there,
+     *          {@link #ORC_ACID_VERSION_DEFAULT} otherwise
+     */
+    @VisibleForTesting
+    public static int getAcidVersionFromDataFile(Path dataFile, FileSystem fs) throws IOException {
+      FileStatus fileStatus = fs.getFileStatus(dataFile);
+      Reader orcReader = OrcFile.createReader(dataFile,
+          OrcFile.readerOptions(fs.getConf())
+              .filesystem(fs)
+              //make sure to check for side file in case streaming ingest died
+              .maxLength(getLogicalLength(fs, fileStatus)));
+      if(orcReader.hasMetadataValue(ACID_VERSION_KEY)) {
+        return orcReader.getMetadataValue(ACID_VERSION_KEY).getInt();
+      }
+      return ORC_ACID_VERSION_DEFAULT;
+    }
+    /**
+     * This creates a version file in {@code deltaOrBaseDir}
+     * @param deltaOrBaseDir - where to create the version file
+     */
+    public static void writeVersionFile(Path deltaOrBaseDir, FileSystem fs)  throws IOException {
+      Path formatFile = getVersionFilePath(deltaOrBaseDir);
+      if(!fs.exists(formatFile)) {
+        try (FSDataOutputStream strm = fs.create(formatFile, false)) {
+          strm.writeInt(ORC_ACID_VERSION);
+        } catch (IOException ioe) {
+          LOG.error("Failed to create " + formatFile + " due to: " + ioe.getMessage(), ioe);
+          throw ioe;
+        }
+      }
+    }
+    public static Path getVersionFilePath(Path deltaOrBase) {
+      return new Path(deltaOrBase, ACID_FORMAT);
+    }
+    @VisibleForTesting
+    public static int getAcidVersionFromMetaFile(Path deltaOrBaseDir, FileSystem fs)
+        throws IOException {
+      Path formatFile = getVersionFilePath(deltaOrBaseDir);
+      if(!fs.exists(formatFile)) {
+        LOG.debug(formatFile + " not found, returning default: " + ORC_ACID_VERSION_DEFAULT);
+        return ORC_ACID_VERSION_DEFAULT;
+      }
+      try (FSDataInputStream inputStream = fs.open(formatFile)) {
+        return inputStream.readInt();
+      }
+      catch(IOException ex) {
+        LOG.error(formatFile + " is unreadable due to: " + ex.getMessage(), ex);
+        throw ex;
       }
     }
   }
