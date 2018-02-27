@@ -487,7 +487,7 @@ STAGE PLANS:
                 Select Operator
                   expressions: str (type: string)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 4056 Data size: 352872 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4056 Data size: 705744 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=5000)
                     mode: hash
@@ -592,7 +592,7 @@ STAGE PLANS:
                       Select Operator
                         expressions: cstring (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 9174 Data size: 643900 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 9174 Data size: 1287800 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=3000)
                           mode: hash
@@ -741,7 +741,7 @@ STAGE PLANS:
                       Select Operator
                         expressions: str (type: string)
                         outputColumnNames: _col0
-                        Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 2000 Data size: 348000 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=5000)
                           mode: hash
@@ -1485,7 +1485,7 @@ STAGE PLANS:
                 Select Operator
                   expressions: _col1 (type: string)
                   outputColumnNames: _col0
-                  Statistics: Num rows: 4056 Data size: 352872 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 4056 Data size: 705744 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=5000)
                     mode: hash
@@ -1962,7 +1962,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: str (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2000 Data size: 348000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=5000)
                         mode: hash
@@ -2381,7 +2381,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: str (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2000 Data size: 348000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=5000)
                         mode: hash
@@ -2562,7 +2562,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: cstring (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 9174 Data size: 643900 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 9174 Data size: 1287800 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=3000)
                         mode: hash
@@ -2665,7 +2665,7 @@ STAGE PLANS:
                     Select Operator
                       expressions: str (type: string)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 2000 Data size: 348000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: min(_col0), max(_col0), bloom_filter(_col0, expectedEntries=5000)
                         mode: hash

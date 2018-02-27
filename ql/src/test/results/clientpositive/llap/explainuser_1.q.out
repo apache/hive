@@ -2256,9 +2256,7 @@ Stage-0
                           PartitionCols:_col0
                           Group By Operator [GBY_12] (rows=83 width=87)
                             Output:["_col0"],keys:key
-                            Filter Operator [FIL_29] (rows=166 width=87)
-                              predicate:(key > '2')
-                               Please refer to the previous TableScan [TS_2]
+                             Please refer to the previous Filter Operator [FIL_28]
 
 PREHOOK: query: explain select p_mfgr, b.p_name, p_size 
 from part b 
