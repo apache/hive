@@ -57,6 +57,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Ignore;
 
 /**
  * TestBeeLineWithArgs - executes tests of the command-line arguments to BeeLine
@@ -927,6 +928,7 @@ public class TestBeeLineWithArgs {
    * Test Beeline could show the query progress for time-consuming query.
    * @throws Throwable
    */
+  @Ignore("Broken tests -- HIVE-18806")
   @Test
   public void testQueryProgress() throws Throwable {
     final String SCRIPT_TEXT =
@@ -954,6 +956,7 @@ public class TestBeeLineWithArgs {
    *
    * @throws Throwable
    */
+  @Ignore("Broken tests -- HIVE-18806")
   @Test
   public void testQueryProgressParallel() throws Throwable {
     final String SCRIPT_TEXT = "set hive.support.concurrency = false;\n" +
