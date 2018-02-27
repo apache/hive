@@ -59,7 +59,7 @@ STAGE PLANS:
                     key expressions: 1 (type: int), 2 (type: int)
                     sort order: ++
                     Map-reduce partition columns: 1 (type: int), 2 (type: int)
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs
             Map Vectorization:
