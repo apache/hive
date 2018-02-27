@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.AcidUtils.AcidOperationalProperties;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
@@ -935,6 +934,7 @@ public class CompactorMR {
             " not found.  Assuming 0 splits.  Creating " + newDeltaDir);
         fs.mkdirs(newDeltaDir);
         createCompactorMarker(conf, newDeltaDir, fs);
+        AcidUtils.OrcAcidVersion.writeVersionFile(newDeltaDir, fs);
         return;
       }
       FileStatus[] contents = fs.listStatus(tmpLocation);//expect 1 base or delta dir in this list
@@ -943,7 +943,12 @@ public class CompactorMR {
       for (FileStatus fileStatus : contents) {
         //newPath is the base/delta dir
         Path newPath = new Path(finalLocation, fileStatus.getPath().getName());
+        /*rename(A, B) has "interesting" behavior if A and B are directories. If  B doesn't exist,
+        * it does the expected operation and everything that was in A is now in B.  If B exists,
+        * it will make A a child of B...  thus make sure the rename() is done before creating the
+        * meta files which will create base_x/ (i.e. B)...*/
         fs.rename(fileStatus.getPath(), newPath);
+        AcidUtils.OrcAcidVersion.writeVersionFile(newPath, fs);
         createCompactorMarker(conf, newPath, fs);
       }
       fs.delete(tmpLocation, true);

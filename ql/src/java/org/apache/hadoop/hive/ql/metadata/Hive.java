@@ -3648,13 +3648,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
           └── -ext-10000
             ├── HIVE_UNION_SUBDIR_1
             │   └── 000000_0
-            │       ├── _orc_acid_version
             │       └── delta_0000019_0000019_0001
+            │           ├── _orc_acid_version
             │           └── bucket_00000
             ├── HIVE_UNION_SUBDIR_2
             │   └── 000000_0
-            │       ├── _orc_acid_version
             │       └── delta_0000019_0000019_0002
+            │           ├── _orc_acid_version
             │           └── bucket_00000
            The assumption is that we either have all data in subdirs or root of srcPath
            but not both.
@@ -3713,7 +3713,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       try {
         if (!createdDeltaDirs.contains(deltaDest)) {
           try {
-            fs.mkdirs(deltaDest);
+            if(fs.mkdirs(deltaDest)) {
+              fs.rename(AcidUtils.OrcAcidVersion.getVersionFilePath(deltaStat.getPath()),
+                  AcidUtils.OrcAcidVersion.getVersionFilePath(deltaDest));
+            }
             createdDeltaDirs.add(deltaDest);
           } catch (IOException swallowIt) {
             // Don't worry about this, as it likely just means it's already been created.
