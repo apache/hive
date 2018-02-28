@@ -23,14 +23,17 @@ partitioned by (csmallint smallint)
 clustered by (cint) into 2 buckets stored as orc;
 
 insert into table orc_llap partition (csmallint = 1)
-select cint, cbigint, cfloat, cdouble from alltypesorc order by cdouble asc limit 10;
+select cint, cbigint, cfloat, cdouble from alltypesorc
+where cdouble is not null order by cdouble asc limit 10;
 insert into table orc_llap partition (csmallint = 2)
-select cint, cbigint, cfloat, cdouble from alltypesorc order by cdouble asc limit 10;
+select cint, cbigint, cfloat, cdouble from alltypesorc
+where cdouble is not null order by cdouble asc limit 10;
 
 alter table orc_llap SET TBLPROPERTIES ('transactional'='true');
 
 insert into table orc_llap partition (csmallint = 3)
-select cint, cbigint, cfloat, cdouble from alltypesorc order by cdouble desc limit 10;
+select cint, cbigint, cfloat, cdouble from alltypesorc
+where cdouble is not null order by cdouble desc limit 10;
 
 SET hive.llap.io.enabled=true;
 
