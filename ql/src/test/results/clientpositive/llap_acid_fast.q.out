@@ -25,12 +25,14 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orc_llap_acid_fast
 PREHOOK: query: insert into table orc_llap_acid_fast partition (csmallint = 1)
-select cint, cbigint, cfloat, cdouble from alltypesorc order by cdouble asc limit 10
+select cint, cbigint, cfloat, cdouble from alltypesorc
+where cdouble is not null order by cdouble asc limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: default@orc_llap_acid_fast@csmallint=1
 POSTHOOK: query: insert into table orc_llap_acid_fast partition (csmallint = 1)
-select cint, cbigint, cfloat, cdouble from alltypesorc order by cdouble asc limit 10
+select cint, cbigint, cfloat, cdouble from alltypesorc
+where cdouble is not null order by cdouble asc limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@orc_llap_acid_fast@csmallint=1
@@ -39,12 +41,14 @@ POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=1).cdouble SIMPLE [(al
 POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=1).cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=1).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 PREHOOK: query: insert into table orc_llap_acid_fast partition (csmallint = 2)
-select cint, cbigint, cfloat, cdouble from alltypesorc order by cdouble asc limit 10
+select cint, cbigint, cfloat, cdouble from alltypesorc
+where cdouble is not null order by cdouble asc limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: default@orc_llap_acid_fast@csmallint=2
 POSTHOOK: query: insert into table orc_llap_acid_fast partition (csmallint = 2)
-select cint, cbigint, cfloat, cdouble from alltypesorc order by cdouble asc limit 10
+select cint, cbigint, cfloat, cdouble from alltypesorc
+where cdouble is not null order by cdouble asc limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@orc_llap_acid_fast@csmallint=2
@@ -53,12 +57,14 @@ POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=2).cdouble SIMPLE [(al
 POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=2).cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_llap_acid_fast PARTITION(csmallint=2).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:null), ]
 PREHOOK: query: insert into table orc_llap_acid_fast partition (csmallint = 3)
-select cint, cbigint, cfloat, cdouble from alltypesorc order by cdouble desc limit 10
+select cint, cbigint, cfloat, cdouble from alltypesorc
+where cdouble is not null order by cdouble desc limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
 PREHOOK: Output: default@orc_llap_acid_fast@csmallint=3
 POSTHOOK: query: insert into table orc_llap_acid_fast partition (csmallint = 3)
-select cint, cbigint, cfloat, cdouble from alltypesorc order by cdouble desc limit 10
+select cint, cbigint, cfloat, cdouble from alltypesorc
+where cdouble is not null order by cdouble desc limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@orc_llap_acid_fast@csmallint=3
@@ -145,26 +151,26 @@ POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=1
 POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=2
 POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=3
 #### A masked pattern was here ####
--970918963	1	-588508542
--734267047	1	895807844
--548534304	1	-1900081338
--546972460	1	665899329
--469581869	1	1033373031
--101217409	1	183045850
--37908611	1	-1378658304
-274816197	1	-437339127
-371876492	1	1862746855
-927956889	1	-935575737
--970918963	2	-588508542
--734267047	2	895807844
--548534304	2	-1900081338
--546972460	2	665899329
--469581869	2	1033373031
--101217409	2	183045850
--37908611	2	-1378658304
-274816197	2	-437339127
-371876492	2	1862746855
-927956889	2	-935575737
+-894716315	1	1864027286
+206154150	1	1864027286
+253665376	1	NULL
+253665376	1	NULL
+253665376	1	NULL
+528534767	1	NULL
+528534767	1	NULL
+626923679	1	NULL
+626923679	1	NULL
+626923679	1	NULL
+-894716315	2	1864027286
+206154150	2	1864027286
+253665376	2	NULL
+253665376	2	NULL
+253665376	2	NULL
+528534767	2	NULL
+528534767	2	NULL
+626923679	2	NULL
+626923679	2	NULL
+626923679	2	NULL
 -923308739	3	-1887561756
 -3728	3	-1887561756
 762	3	-1645852809
@@ -348,27 +354,27 @@ POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=1
 POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=2
 POSTHOOK: Input: default@orc_llap_acid_fast@csmallint=3
 #### A masked pattern was here ####
--970918963	1	-588508542
--734267047	1	895807844
--548534304	1	-1900081338
--546972460	1	665899329
--469581869	1	1033373031
--101217409	1	183045850
--37908611	1	-1378658304
+-894716315	1	1864027286
 1	1	2
-274816197	1	-437339127
-371876492	1	1862746855
-927956889	1	-935575737
--970918963	2	-588508542
--734267047	2	895807844
--548534304	2	-1900081338
--546972460	2	665899329
--469581869	2	1033373031
--101217409	2	183045850
--37908611	2	-1378658304
-274816197	2	-437339127
-371876492	2	1862746855
-927956889	2	-935575737
+206154150	1	1864027286
+253665376	1	NULL
+253665376	1	NULL
+253665376	1	NULL
+528534767	1	NULL
+528534767	1	NULL
+626923679	1	NULL
+626923679	1	NULL
+626923679	1	NULL
+-894716315	2	1864027286
+206154150	2	1864027286
+253665376	2	NULL
+253665376	2	NULL
+253665376	2	NULL
+528534767	2	NULL
+528534767	2	NULL
+626923679	2	NULL
+626923679	2	NULL
+626923679	2	NULL
 -923308739	3	-1887561756
 -3728	3	-1887561756
 762	3	-1645852809
