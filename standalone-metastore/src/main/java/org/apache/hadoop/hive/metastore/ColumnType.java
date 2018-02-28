@@ -72,6 +72,8 @@ public class ColumnType {
 
   public static final String TIMESTAMPTZ_TYPE_NAME = "timestamp with time zone";
 
+  public static final String TIMESTAMPLOCALTZ_TYPE_NAME = "timestamp with local time zone";
+
   public static final String LIST_TYPE_NAME = "array";
 
   public static final String MAP_TYPE_NAME = "map";
@@ -105,7 +107,8 @@ public class ColumnType {
     INTERVAL_DAY_TIME_TYPE_NAME,
     DECIMAL_TYPE_NAME,
     BINARY_TYPE_NAME,
-    TIMESTAMPTZ_TYPE_NAME);
+    TIMESTAMPTZ_TYPE_NAME,
+    TIMESTAMPLOCALTZ_TYPE_NAME);
 
   public static final Set<String> StringTypes = StringUtils.asSet(
       STRING_TYPE_NAME,

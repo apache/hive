@@ -127,4 +127,9 @@ public class DecimalTypeInfo extends PrimitiveTypeInfo {
     this.scale = scale;
   }
 
+  @Override
+  public Object[] getParameters() {
+    return new Object[] { precision, scale };
+  }
+
 }

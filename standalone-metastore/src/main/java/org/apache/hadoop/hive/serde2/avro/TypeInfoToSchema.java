@@ -18,16 +18,15 @@
 package org.apache.hadoop.hive.serde2.avro;
 
 import org.apache.avro.Schema;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.metastore.utils.AvroSchemaUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MetastorePrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MetastoreTypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.node.JsonNodeFactory;
 
@@ -79,90 +78,89 @@ public class TypeInfoToSchema {
   private Schema createAvroSchema(TypeInfo typeInfo) {
     Schema schema = null;
     switch (typeInfo.getCategory()) {
-      case PRIMITIVE:
-        schema = createAvroPrimitive(typeInfo);
-        break;
-      case LIST:
-        schema = createAvroArray(typeInfo);
-        break;
-      case MAP:
-        schema = createAvroMap(typeInfo);
-        break;
-      case STRUCT:
-        schema = createAvroRecord(typeInfo);
-        break;
-      case UNION:
-        schema = createAvroUnion(typeInfo);
-        break;
+    case PRIMITIVE:
+      schema = createAvroPrimitive(typeInfo);
+      break;
+    case LIST:
+      schema = createAvroArray(typeInfo);
+      break;
+    case MAP:
+      schema = createAvroMap(typeInfo);
+      break;
+    case STRUCT:
+      schema = createAvroRecord(typeInfo);
+      break;
+    case UNION:
+      schema = createAvroUnion(typeInfo);
+      break;
     }
 
     return wrapInUnionWithNull(schema);
   }
 
   private Schema createAvroPrimitive(TypeInfo typeInfo) {
-    PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
     Schema schema;
-    switch (primitiveTypeInfo.getPrimitiveCategory()) {
-      case STRING:
+    String baseTypeName = MetastoreTypeInfoUtils.getBaseName(typeInfo.getTypeName());
+    switch (baseTypeName) {
+      case ColumnType.STRING_TYPE_NAME:
         schema = Schema.create(Schema.Type.STRING);
         break;
-      case CHAR:
-        schema = AvroSerdeUtils.getSchemaFor("{" +
-            "\"type\":\"" + AvroSerDe.AVRO_STRING_TYPE_NAME + "\"," +
-            "\"logicalType\":\"" + AvroSerDe.CHAR_TYPE_NAME + "\"," +
-            "\"maxLength\":" + ((CharTypeInfo) typeInfo).getLength() + "}");
+      case ColumnType.CHAR_TYPE_NAME:
+        schema = AvroSchemaUtils.getSchemaFor("{" +
+            "\"type\":\"" + AvroSerDeConstants.AVRO_STRING_TYPE_NAME + "\"," +
+            "\"logicalType\":\"" + AvroSerDeConstants.CHAR_TYPE_NAME + "\"," +
+            "\"maxLength\":" + ((MetastorePrimitiveTypeInfo) typeInfo).getParameters()[0] + "}");
         break;
-      case VARCHAR:
-        schema = AvroSerdeUtils.getSchemaFor("{" +
-            "\"type\":\"" + AvroSerDe.AVRO_STRING_TYPE_NAME + "\"," +
-            "\"logicalType\":\"" + AvroSerDe.VARCHAR_TYPE_NAME + "\"," +
-            "\"maxLength\":" + ((VarcharTypeInfo) typeInfo).getLength() + "}");
+      case ColumnType.VARCHAR_TYPE_NAME:
+        schema = AvroSchemaUtils.getSchemaFor("{" +
+            "\"type\":\"" + AvroSerDeConstants.AVRO_STRING_TYPE_NAME + "\"," +
+            "\"logicalType\":\"" + AvroSerDeConstants.VARCHAR_TYPE_NAME + "\"," +
+            "\"maxLength\":" + ((MetastorePrimitiveTypeInfo) typeInfo).getParameters()[0] + "}");
         break;
-      case BINARY:
+      case ColumnType.BINARY_TYPE_NAME:
         schema = Schema.create(Schema.Type.BYTES);
         break;
-      case BYTE:
+      case ColumnType.TINYINT_TYPE_NAME:
         schema = Schema.create(Schema.Type.INT);
         break;
-      case SHORT:
+      case ColumnType.SMALLINT_TYPE_NAME:
         schema = Schema.create(Schema.Type.INT);
         break;
-      case INT:
+      case ColumnType.INT_TYPE_NAME:
         schema = Schema.create(Schema.Type.INT);
         break;
-      case LONG:
+      case ColumnType.BIGINT_TYPE_NAME:
         schema = Schema.create(Schema.Type.LONG);
         break;
-      case FLOAT:
+      case ColumnType.FLOAT_TYPE_NAME:
         schema = Schema.create(Schema.Type.FLOAT);
         break;
-      case DOUBLE:
+      case ColumnType.DOUBLE_TYPE_NAME:
         schema = Schema.create(Schema.Type.DOUBLE);
         break;
-      case BOOLEAN:
+      case ColumnType.BOOLEAN_TYPE_NAME:
         schema = Schema.create(Schema.Type.BOOLEAN);
         break;
-      case DECIMAL:
-        DecimalTypeInfo decimalTypeInfo = (DecimalTypeInfo) typeInfo;
-        String precision = String.valueOf(decimalTypeInfo.precision());
-        String scale = String.valueOf(decimalTypeInfo.scale());
-        schema = AvroSerdeUtils.getSchemaFor("{" +
+      case ColumnType.DECIMAL_TYPE_NAME:
+        String precision = String.valueOf(((MetastorePrimitiveTypeInfo) typeInfo).getParameters()[0]);
+        String scale = String.valueOf(((MetastorePrimitiveTypeInfo) typeInfo).getParameters()[1]);
+        schema = AvroSchemaUtils.getSchemaFor("{" +
             "\"type\":\"bytes\"," +
             "\"logicalType\":\"decimal\"," +
             "\"precision\":" + precision + "," +
             "\"scale\":" + scale + "}");
         break;
-      case DATE:
-        schema = AvroSerdeUtils.getSchemaFor("{" +
-            "\"type\":\"" + AvroSerDe.AVRO_INT_TYPE_NAME + "\"," +
-            "\"logicalType\":\"" + AvroSerDe.DATE_TYPE_NAME + "\"}");
+      case ColumnType.DATE_TYPE_NAME:
+        schema = AvroSchemaUtils.getSchemaFor("{" +
+            "\"type\":\"" + AvroSerDeConstants.AVRO_INT_TYPE_NAME + "\"," +
+            "\"logicalType\":\"" + AvroSerDeConstants.DATE_TYPE_NAME + "\"}");
         break;
-      case TIMESTAMP:
-        schema = AvroSerdeUtils.getSchemaFor("{" +
-          "\"type\":\"" + AvroSerDe.AVRO_LONG_TYPE_NAME + "\"," +
-          "\"logicalType\":\"" + AvroSerDe.TIMESTAMP_TYPE_NAME + "\"}");
+      case ColumnType.TIMESTAMP_TYPE_NAME:
+        schema = AvroSchemaUtils.getSchemaFor("{" +
+          "\"type\":\"" + AvroSerDeConstants.AVRO_LONG_TYPE_NAME + "\"," +
+          "\"logicalType\":\"" + AvroSerDeConstants.AVRO_TIMESTAMP_TYPE_NAME + "\"}");
         break;
-      case VOID:
+      case ColumnType.VOID_TYPE_NAME:
         schema = Schema.create(Schema.Type.NULL);
         break;
       default:
@@ -187,9 +185,7 @@ public class TypeInfoToSchema {
 
   private Schema createAvroRecord(TypeInfo typeInfo) {
     List<Schema.Field> childFields = new ArrayList<Schema.Field>();
-
-    final List<String> allStructFieldNames =
-        ((StructTypeInfo) typeInfo).getAllStructFieldNames();
+    final List<String> allStructFieldNames = ((StructTypeInfo) typeInfo).getAllStructFieldNames();
     final List<TypeInfo> allStructFieldTypeInfos =
         ((StructTypeInfo) typeInfo).getAllStructFieldTypeInfos();
     if (allStructFieldNames.size() != allStructFieldTypeInfos.size()) {
@@ -215,8 +211,7 @@ public class TypeInfoToSchema {
 
   private Schema createAvroMap(TypeInfo typeInfo) {
     TypeInfo keyTypeInfo = ((MapTypeInfo) typeInfo).getMapKeyTypeInfo();
-    if (((PrimitiveTypeInfo) keyTypeInfo).getPrimitiveCategory()
-        != PrimitiveObjectInspector.PrimitiveCategory.STRING) {
+    if (!ColumnType.STRING_TYPE_NAME.equals(keyTypeInfo.getTypeName())) {
       throw new UnsupportedOperationException("Key of Map can only be a String");
     }
 

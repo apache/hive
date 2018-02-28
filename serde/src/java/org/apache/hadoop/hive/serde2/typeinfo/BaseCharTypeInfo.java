@@ -67,4 +67,9 @@ public abstract class BaseCharTypeInfo extends PrimitiveTypeInfo {
     // type name should already be set by subclass
     return;
   }
+
+  @Override
+  public Object[] getParameters() {
+    return new Object[] { length };
+  }
 }

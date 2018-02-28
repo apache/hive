@@ -18,16 +18,19 @@
 
 package org.apache.hadoop.hive.serde2.typeinfo;
 
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.hive.metastore.ColumnType;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+
 import java.io.Serializable;
 
-import org.apache.hadoop.hive.common.classification.InterfaceAudience;
-import org.apache.hadoop.hive.common.classification.InterfaceStability;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 /**
  * A List Type has homogeneous elements. All elements of the List has the same
  * TypeInfo which is returned by getListElementTypeInfo.
- * 
+ *
  * Always use the TypeInfoFactory to create new TypeInfo objects, instead of
  * directly creating an instance of this class.
  */
@@ -46,7 +49,7 @@ public final class ListTypeInfo extends TypeInfo implements Serializable {
 
   @Override
   public String getTypeName() {
-    return org.apache.hadoop.hive.serde.serdeConstants.LIST_TYPE_NAME + "<"
+    return ColumnType.LIST_TYPE_NAME + "<"
         + listElementTypeInfo.getTypeName() + ">";
   }
 
@@ -66,7 +69,7 @@ public final class ListTypeInfo extends TypeInfo implements Serializable {
 
   @Override
   public Category getCategory() {
-    return Category.LIST;
+    return ObjectInspector.Category.LIST;
   }
 
   public TypeInfo getListElementTypeInfo() {

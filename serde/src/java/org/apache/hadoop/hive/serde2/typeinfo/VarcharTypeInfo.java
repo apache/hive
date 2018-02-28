@@ -51,7 +51,6 @@ public class VarcharTypeInfo extends BaseCharTypeInfo {
 
     return this.getLength() == pti.getLength();
   }
-
   /**
    * Generate the hashCode for this TypeInfo.
    */

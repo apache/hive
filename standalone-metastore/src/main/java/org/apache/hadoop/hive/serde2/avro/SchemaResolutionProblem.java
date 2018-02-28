@@ -18,8 +18,11 @@
 package org.apache.hadoop.hive.serde2.avro;
 
 import org.apache.avro.Schema;
+import org.apache.hadoop.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.metastore.utils.AvroSchemaUtils;
 
-class SchemaResolutionProblem {
+@LimitedPrivate("Hive")
+public class SchemaResolutionProblem {
   static final String sentinelString = "{\n" +
         "    \"namespace\": \"org.apache.hadoop.hive\",\n" +
         "    \"name\": \"CannotDetermineSchemaSentinel\",\n" +
@@ -55,5 +58,5 @@ class SchemaResolutionProblem {
         "        }\n" +
         "    ]\n" +
         "}";
-  public final static Schema SIGNAL_BAD_SCHEMA = AvroSerdeUtils.getSchemaFor(sentinelString);
+  public final static Schema SIGNAL_BAD_SCHEMA = AvroSchemaUtils.getSchemaFor(sentinelString);
 }

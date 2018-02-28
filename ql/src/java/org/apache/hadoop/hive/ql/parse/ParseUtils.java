@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MetastoreTypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -149,7 +150,7 @@ public final class ParseUtils {
   public static ExprNodeDesc createConversionCast(ExprNodeDesc column, PrimitiveTypeInfo tableFieldTypeInfo)
       throws SemanticException {
     // Get base type, since type string may be parameterized
-    String baseType = TypeInfoUtils.getBaseName(tableFieldTypeInfo.getTypeName());
+    String baseType = MetastoreTypeInfoUtils.getBaseName(tableFieldTypeInfo.getTypeName());
 
     // If the type cast UDF is for a parameterized type, then it should implement
     // the SettableUDF interface so that we can pass in the params.
