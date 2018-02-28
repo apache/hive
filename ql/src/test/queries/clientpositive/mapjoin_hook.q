@@ -1,3 +1,4 @@
+set hive.stats.column.autogather=false;
 set hive.exec.post.hooks = org.apache.hadoop.hive.ql.hooks.MapJoinCounterHook,org.apache.hadoop.hive.ql.hooks.PrintCompletedTasksHook;
 
 drop table dest1;
@@ -11,7 +12,6 @@ SELECT /*+ MAPJOIN(x) */ x.key, count(1) FROM src1 x JOIN src y ON (x.key = y.ke
 
 FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key = src3.key)
 INSERT OVERWRITE TABLE dest1 SELECT src1.key, src3.value;
-
 
 
 set hive.mapjoin.localtask.max.memory.usage = 0.0001;
