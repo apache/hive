@@ -1,3 +1,9 @@
+-- remove these; after HIVE-18802 is fixed
+set hive.optimize.index.filter=false;
+set hive.optimize.ppd=false;
+-- remove these; after HIVE-18802 is fixed
+
+
 DROP TABLE accumulo_table_1;
 CREATE TABLE accumulo_table_1(key int, value string) 
 STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
