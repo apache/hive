@@ -13,10 +13,9 @@ PREHOOK: Input: default@src
 PREHOOK: Input: default@src1
 PREHOOK: Output: default@dest1
 [MapJoinCounter PostHook] COMMON_JOIN: 0 HINTED_MAPJOIN: 1 HINTED_MAPJOIN_LOCAL: 1 CONVERTED_MAPJOIN: 0 CONVERTED_MAPJOIN_LOCAL: 0 BACKUP_COMMON_JOIN: 0
-RUN: Stage-7:MAPREDLOCAL
+RUN: Stage-6:MAPREDLOCAL
 RUN: Stage-2:MAPRED
 RUN: Stage-0:MOVE
-RUN: Stage-4:MAPRED
 RUN: Stage-3:STATS
 PREHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key = src3.key)
 INSERT OVERWRITE TABLE dest1 SELECT src1.key, src3.value
@@ -24,10 +23,9 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1
 [MapJoinCounter PostHook] COMMON_JOIN: 0 HINTED_MAPJOIN: 1 HINTED_MAPJOIN_LOCAL: 1 CONVERTED_MAPJOIN: 0 CONVERTED_MAPJOIN_LOCAL: 0 BACKUP_COMMON_JOIN: 0
-RUN: Stage-7:MAPREDLOCAL
-RUN: Stage-6:MAPRED
+RUN: Stage-6:MAPREDLOCAL
+RUN: Stage-5:MAPRED
 RUN: Stage-0:MOVE
-RUN: Stage-3:MAPRED
 RUN: Stage-2:STATS
 PREHOOK: query: FROM srcpart src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest1 SELECT src1.key, src2.value 
@@ -40,12 +38,14 @@ PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Output: default@dest1
-[MapJoinCounter PostHook] COMMON_JOIN: 0 HINTED_MAPJOIN: 0 HINTED_MAPJOIN_LOCAL: 0 CONVERTED_MAPJOIN: 1 CONVERTED_MAPJOIN_LOCAL: 1 BACKUP_COMMON_JOIN: 0
-RUN: Stage-7:CONDITIONAL
-RUN: Stage-8:MAPREDLOCAL
-RUN: Stage-5:MAPRED
+Hive Runtime Error: Map local work exhausted memory
+FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
+ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
+[MapJoinCounter PostHook] COMMON_JOIN: 0 HINTED_MAPJOIN: 0 HINTED_MAPJOIN_LOCAL: 0 CONVERTED_MAPJOIN: 0 CONVERTED_MAPJOIN_LOCAL: 1 BACKUP_COMMON_JOIN: 1
+RUN: Stage-6:CONDITIONAL
+RUN: Stage-7:MAPREDLOCAL
+RUN: Stage-1:MAPRED
 RUN: Stage-0:MOVE
-RUN: Stage-3:MAPRED
 RUN: Stage-2:STATS
 PREHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key + src2.key = src3.key)
 INSERT OVERWRITE TABLE dest1 SELECT src1.key, src3.value
@@ -55,13 +55,15 @@ PREHOOK: Output: default@dest1
 Hive Runtime Error: Map local work exhausted memory
 FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
 ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
-[MapJoinCounter PostHook] COMMON_JOIN: 0 HINTED_MAPJOIN: 0 HINTED_MAPJOIN_LOCAL: 0 CONVERTED_MAPJOIN: 1 CONVERTED_MAPJOIN_LOCAL: 2 BACKUP_COMMON_JOIN: 1
-RUN: Stage-12:CONDITIONAL
-RUN: Stage-15:MAPREDLOCAL
+Hive Runtime Error: Map local work exhausted memory
+FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
+ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
+[MapJoinCounter PostHook] COMMON_JOIN: 0 HINTED_MAPJOIN: 0 HINTED_MAPJOIN_LOCAL: 0 CONVERTED_MAPJOIN: 0 CONVERTED_MAPJOIN_LOCAL: 2 BACKUP_COMMON_JOIN: 2
+RUN: Stage-11:CONDITIONAL
+RUN: Stage-14:MAPREDLOCAL
 RUN: Stage-1:MAPRED
-RUN: Stage-9:CONDITIONAL
-RUN: Stage-13:MAPREDLOCAL
-RUN: Stage-7:MAPRED
+RUN: Stage-8:CONDITIONAL
+RUN: Stage-12:MAPREDLOCAL
+RUN: Stage-2:MAPRED
 RUN: Stage-0:MOVE
-RUN: Stage-4:MAPRED
 RUN: Stage-3:STATS
