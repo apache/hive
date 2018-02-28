@@ -247,6 +247,10 @@ public abstract class Operation {
   }
 
   protected synchronized void cleanupOperationLog() {
+    // stop the appenders for the operation log
+    String queryId = queryState.getQueryId();
+    LogUtils.stopQueryAppender(LogDivertAppender.QUERY_ROUTING_APPENDER, queryId);
+    LogUtils.stopQueryAppender(LogDivertAppenderForTest.TEST_QUERY_ROUTING_APPENDER, queryId);
     if (isOperationLogEnabled) {
       if (opHandle == null) {
         LOG.warn("Operation seems to be in invalid state, opHandle is null");
@@ -259,11 +263,8 @@ public abstract class Operation {
       } else {
         operationLog.close();
       }
-      // stop the appenders for the operation log
-      String queryId = queryState.getQueryId();
-      LogUtils.stopQueryAppender(LogDivertAppender.QUERY_ROUTING_APPENDER, queryId);
-      LogUtils.stopQueryAppender(LogDivertAppenderForTest.TEST_QUERY_ROUTING_APPENDER, queryId);
     }
+
   }
 
   public abstract void cancel(OperationState stateAfterCancel) throws HiveSQLException;
