@@ -35,7 +35,7 @@ public class TestSchemaToTypeInfo {
   public void testDisallowRecursiveSchema()
       throws Exception {
 
-    expect.expect(AvroSerdeException.class);
+    expect.expect(Exception.class);
     expect.expectMessage("Recursive schemas are not supported");
 
     final String schemaString = "{\n"
