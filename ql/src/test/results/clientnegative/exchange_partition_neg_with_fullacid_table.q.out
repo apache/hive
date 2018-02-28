@@ -42,4 +42,4 @@ POSTHOOK: Input: default@t1
 POSTHOOK: Input: default@t1@d1=1
 #### A masked pattern was here ####
 100	1
-FAILED: SemanticException [Error 10236]: Exchange partition is not allowed with transactional tables.
+FAILED: SemanticException [Error 10236]: Exchange partition is not allowed with transactional tables. Alternatively, shall use load data or insert overwrite to move partitions.
