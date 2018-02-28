@@ -74,12 +74,14 @@ public class SSLTestUtils {
     confOverlay.put(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname, HS2_HTTP_MODE);
     confOverlay.put(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH.varname, HS2_HTTP_ENDPOINT);
     confOverlay.put(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "true");
+    confOverlay.put(HiveConf.ConfVars.HIVE_IN_TEST_SSL.varname, "true");
   }
 
   public static void setBinaryConfOverlay(Map<String, String> confOverlay) {
     confOverlay.put(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname, HS2_BINARY_MODE);
     confOverlay.put(HiveConf.ConfVars.HIVE_SERVER2_AUTHENTICATION.varname, HS2_BINARY_AUTH_MODE);
     confOverlay.put(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS.varname, "true");
+    confOverlay.put(HiveConf.ConfVars.HIVE_IN_TEST_SSL.varname, "true");
   }
 
   public static void setupTestTableWithData(String tableName, Path dataFilePath,

@@ -574,6 +574,7 @@ public class HiveConf extends Configuration {
         "If not set, defaults to the codec extension for text files (e.g. \".gz\"), or no extension otherwise."),
 
     HIVE_IN_TEST("hive.in.test", false, "internal usage only, true in test mode", true),
+    HIVE_IN_TEST_SSL("hive.in.ssl.test", false, "internal usage only, true in SSL test mode", true),
     HIVE_IN_TEST_IDE("hive.in.ide.test", false, "internal usage only, true if test running in ide",
         true),
     HIVE_TESTING_SHORT_LOGS("hive.testing.short.logs", false,

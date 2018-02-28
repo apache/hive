@@ -305,8 +305,12 @@ public class HiveServer2 extends CompositeService {
     WMFullResourcePlan resourcePlan;
     try {
       resourcePlan = sessionHive.getActiveResourcePlan();
-    } catch (HiveException e) {
-      throw new RuntimeException(e);
+    } catch (Throwable e) {
+      if (!HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_IN_TEST_SSL)) {
+        throw new RuntimeException(e);
+      } else {
+        resourcePlan = null; // Ignore errors in SSL tests where the connection is misconfigured.
+      }
     }
     if (hasQueue && resourcePlan == null
         && HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_IN_TEST)) {
