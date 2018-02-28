@@ -21,7 +21,7 @@ import java.util.List;
 
 /**
  * This would be implemented by a class that needs to be notified when there is
- * a policy change
+ * a policy change.
  */
 public interface HivePolicyChangeListener {
   /**

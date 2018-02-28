@@ -19,11 +19,20 @@ package org.apache.hadoop.hive.ql.security.authorization.plugin;
 
 import java.util.Map;
 
+/**
+ * Captures authorization policy information on a {@link HivePrivilegeObject}.
+ */
 public interface HiveResourceACLs {
+  /**
+   * Privilege types.
+   */
   enum Privilege {
     SELECT, UPDATE, CREATE, DROP, ALTER, INDEX, LOCK, READ, WRITE
   };
 
+  /**
+   * Privilege access result.
+   */
   enum AccessResult {
     ALLOWED, NOT_ALLOWED, CONDITIONAL_ALLOWED
   };
@@ -31,11 +40,11 @@ public interface HiveResourceACLs {
   /**
    * @return Returns mapping of user name to privilege-access result pairs
    */
-  public Map<String, Map<Privilege, AccessResult>> getUserPermissions();
+  Map<String, Map<Privilege, AccessResult>> getUserPermissions();
 
   /**
    * @return Returns mapping of group name to privilege-access result pairs
    */
-  public Map<String, Map<Privilege, AccessResult>> getGroupPermissions();
+  Map<String, Map<Privilege, AccessResult>> getGroupPermissions();
 
 }
