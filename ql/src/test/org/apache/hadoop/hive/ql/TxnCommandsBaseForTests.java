@@ -71,8 +71,11 @@ public abstract class TxnCommandsBaseForTests {
   public void setUp() throws Exception {
     setUpInternal();
   }
-  void setUpInternal() throws Exception {
+  void initHiveConf() {
     hiveConf = new HiveConf(this.getClass());
+  }
+  void setUpInternal() throws Exception {
+    initHiveConf();
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, getWarehouseDir());

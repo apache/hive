@@ -78,12 +78,11 @@ import static org.junit.Assert.assertNull;
 public class TestOrcRawRecordMerger {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestOrcRawRecordMerger.class);
-//todo: why is statementId -1?
   @Test
   public void testOrdering() throws Exception {
     ReaderKey left = new ReaderKey(100, 200, 1200, 300);
     ReaderKey right = new ReaderKey();
-    right.setValues(100, 200, 1000, 200,1);
+    right.setValues(100, 200, 1000, 200, false);
     assertTrue(right.compareTo(left) < 0);
     assertTrue(left.compareTo(right) > 0);
     assertEquals(false, left.equals(right));
@@ -92,16 +91,16 @@ public class TestOrcRawRecordMerger {
     assertEquals(true, right.equals(left));
     right.setRowId(2000);
     assertTrue(right.compareTo(left) > 0);
-    left.setValues(1, 2, 3, 4,-1);
-    right.setValues(100, 2, 3, 4,-1);
+    left.setValues(1, 2, 3, 4, false);
+    right.setValues(100, 2, 3, 4, false);
     assertTrue(left.compareTo(right) < 0);
     assertTrue(right.compareTo(left) > 0);
-    left.setValues(1, 2, 3, 4,-1);
-    right.setValues(1, 100, 3, 4,-1);
+    left.setValues(1, 2, 3, 4, false);
+    right.setValues(1, 100, 3, 4, false);
     assertTrue(left.compareTo(right) < 0);
     assertTrue(right.compareTo(left) > 0);
-    left.setValues(1, 2, 3, 100,-1);
-    right.setValues(1, 2, 3, 4,-1);
+    left.setValues(1, 2, 3, 100, false);
+    right.setValues(1, 2, 3, 4, false);
     assertTrue(left.compareTo(right) < 0);
     assertTrue(right.compareTo(left) > 0);
 
@@ -193,7 +192,7 @@ public class TestOrcRawRecordMerger {
     RecordIdentifier minKey = new RecordIdentifier(10, 20, 30);
     RecordIdentifier maxKey = new RecordIdentifier(40, 50, 60);
     ReaderPair pair = new OrcRawRecordMerger.ReaderPairAcid(key, reader, minKey, maxKey,
-        new Reader.Options(), 0);
+        new Reader.Options());
     RecordReader recordReader = pair.getRecordReader();
     assertEquals(10, key.getWriteId());
     assertEquals(20, key.getBucketProperty());
@@ -219,7 +218,7 @@ public class TestOrcRawRecordMerger {
     Reader reader = createMockReader();
 
     ReaderPair pair = new OrcRawRecordMerger.ReaderPairAcid(key, reader, null, null,
-        new Reader.Options(), 0);
+        new Reader.Options());
     RecordReader recordReader = pair.getRecordReader();
     assertEquals(10, key.getWriteId());
     assertEquals(20, key.getBucketProperty());
