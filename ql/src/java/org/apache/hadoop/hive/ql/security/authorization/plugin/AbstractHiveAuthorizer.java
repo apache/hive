@@ -39,10 +39,10 @@ public abstract class AbstractHiveAuthorizer implements HiveAuthorizer {
 
   /*
    * (non-Javadoc)
-   *
+   * 
    * @see
    * org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthorizer#
-   * createHivePolicyProvider()
+   * getHivePolicyProvider()
    */
   @Override
   public HivePolicyProvider getHivePolicyProvider() throws HiveAuthzPluginException {
