@@ -27,6 +27,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hive.spark.client.metrics.InputMetrics;
 import org.apache.hive.spark.client.metrics.Metrics;
+import org.apache.hive.spark.client.metrics.OutputMetrics;
 import org.apache.hive.spark.client.metrics.ShuffleReadMetrics;
 import org.apache.hive.spark.client.metrics.ShuffleWriteMetrics;
 
@@ -171,6 +172,11 @@ public class MetricsCollection {
       long shuffleWriteTime = 0L;
       long shuffleRecordsWritten = 0L;
 
+      // Input metrics.
+      boolean hasOuputMetrics = false;
+      long bytesWritten = 0L;
+      long recordsWritten = 0L;
+
       for (TaskInfo info : Collections2.filter(taskMetrics, filter)) {
         Metrics m = info.metrics;
         executorDeserializeTime += m.executorDeserializeTime;
@@ -206,6 +212,12 @@ public class MetricsCollection {
           shuffleWriteTime += m.shuffleWriteMetrics.shuffleWriteTime;
           shuffleRecordsWritten += m.shuffleWriteMetrics.shuffleRecordsWritten;
         }
+
+        if (m.outputMetrics != null) {
+          hasOuputMetrics = true;
+          bytesWritten += m.outputMetrics.bytesWritten;
+          recordsWritten += m.outputMetrics.recordsWritten;
+        }
       }
 
       InputMetrics inputMetrics = null;
@@ -233,6 +245,11 @@ public class MetricsCollection {
           shuffleRecordsWritten);
       }
 
+      OutputMetrics outputMetrics = null;
+      if (hasInputMetrics) {
+        outputMetrics = new OutputMetrics(bytesWritten, recordsWritten);
+      }
+
       return new Metrics(
         executorDeserializeTime,
         executorDeserializeCpuTime,
@@ -246,7 +263,8 @@ public class MetricsCollection {
         taskDurationTime,
         inputMetrics,
         shuffleReadMetrics,
-        shuffleWriteMetrics);
+        shuffleWriteMetrics,
+        outputMetrics);
     } finally {
         lock.readLock().unlock();
     }
