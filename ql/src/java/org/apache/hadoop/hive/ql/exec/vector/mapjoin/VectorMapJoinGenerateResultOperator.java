@@ -447,7 +447,7 @@ public abstract class VectorMapJoinGenerateResultOperator extends VectorMapJoinC
     for (int i = 0; i < projectionSize; i++) {
       int projectedColumn = projectedColumns.get(i);
       if (batch.cols[projectedColumn] != null &&
-          inputObjInspectorsTypeInfos[i].getCategory() == Category.PRIMITIVE) {
+          inputObjInspectorsTypeInfos[i].getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory()) {
         // Only columns present in the batch and non-complex types.
         typeInfoList.add(inputObjInspectorsTypeInfos[i]);
         noNullsProjectionList.add(projectedColumn);

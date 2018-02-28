@@ -33,9 +33,9 @@ public class TestSchemaToTypeInfo {
 
   @Test
   public void testDisallowRecursiveSchema()
-      throws AvroSerdeException {
+      throws Exception {
 
-    expect.expect(AvroSerdeException.class);
+    expect.expect(Exception.class);
     expect.expectMessage("Recursive schemas are not supported");
 
     final String schemaString = "{\n"
@@ -49,6 +49,7 @@ public class TestSchemaToTypeInfo {
         + "  } ]\n"
         + "}";
 
-    List<TypeInfo> types = SchemaToTypeInfo.generateColumnTypes(new Schema.Parser().parse(schemaString));
+    List<TypeInfo> types = SchemaToHiveTypeInfo.getInstance()
+        .generateColumnTypes(new Schema.Parser().parse(schemaString));
   }
 }

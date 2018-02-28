@@ -23,10 +23,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.hadoop.hive.common.classification.InterfaceAudience;
-import org.apache.hadoop.hive.common.classification.InterfaceStability;
-import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.hive.metastore.ColumnType;
 
 /**
  * StructTypeInfo represents the TypeInfo of a struct. A struct contains one or
@@ -54,7 +53,7 @@ public final class StructTypeInfo extends TypeInfo implements Serializable {
   @Override
   public String getTypeName() {
     StringBuilder sb = new StringBuilder();
-    sb.append(serdeConstants.STRUCT_TYPE_NAME + "<");
+    sb.append(ColumnType.STRUCT_TYPE_NAME + "<");
     for (int i = 0; i < allStructFieldNames.size(); i++) {
       if (i > 0) {
         sb.append(",");
@@ -91,8 +90,8 @@ public final class StructTypeInfo extends TypeInfo implements Serializable {
   }
 
   @Override
-  public Category getCategory() {
-    return Category.STRUCT;
+  public MetastoreTypeCategory getCategory() {
+    return MetastoreTypeCategory.STRUCT;
   }
 
   public ArrayList<String> getAllStructFieldNames() {

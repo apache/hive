@@ -20,9 +20,8 @@ package org.apache.hadoop.hive.serde2.typeinfo;
 
 import java.io.Serializable;
 
-import org.apache.hadoop.hive.common.classification.InterfaceAudience;
-import org.apache.hadoop.hive.common.classification.InterfaceStability;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
 
 /**
  * Stores information about a type. Always use the TypeInfoFactory to create new
@@ -39,24 +38,23 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
  * 8. Varchar objects
  */
 @InterfaceAudience.Public
-@InterfaceStability.Stable
+@InterfaceStability.Unstable
 public abstract class TypeInfo implements Serializable {
 
   private static final long serialVersionUID = 1L;
-
   protected TypeInfo() {
   }
-
-  /**
-   * The Category of this TypeInfo. Possible values are Primitive, List, Map,
-   * Struct and Union, which corresponds to the 5 sub-classes of TypeInfo.
-   */
-  public abstract Category getCategory();
 
   /**
    * A String representation of the TypeInfo.
    */
   public abstract String getTypeName();
+
+  /**
+   *
+   * @return
+   */
+  public abstract MetastoreTypeCategory getCategory();
 
   /**
    * String representing the qualified type name.
@@ -81,5 +79,4 @@ public abstract class TypeInfo implements Serializable {
   public boolean accept(TypeInfo other) {
     return this.equals(other);
   }
-
 }

@@ -58,7 +58,7 @@ public class HiveSchemaConverter {
 
   private static Type convertType(final String name, final TypeInfo typeInfo,
                                   final Repetition repetition) {
-    if (typeInfo.getCategory().equals(Category.PRIMITIVE)) {
+    if (typeInfo.getCategory().equals(Category.PRIMITIVE.toMetastoreTypeCategory())) {
       if (typeInfo.equals(TypeInfoFactory.stringTypeInfo)) {
         return Types.primitive(PrimitiveTypeName.BINARY, repetition).as(OriginalType.UTF8)
           .named(name);
@@ -107,13 +107,13 @@ public class HiveSchemaConverter {
       } else {
         throw new IllegalArgumentException("Unknown type: " + typeInfo);
       }
-    } else if (typeInfo.getCategory().equals(Category.LIST)) {
+    } else if (typeInfo.getCategory().equals(Category.LIST.toMetastoreTypeCategory())) {
       return convertArrayType(name, (ListTypeInfo) typeInfo);
-    } else if (typeInfo.getCategory().equals(Category.STRUCT)) {
+    } else if (typeInfo.getCategory().equals(Category.STRUCT.toMetastoreTypeCategory())) {
       return convertStructType(name, (StructTypeInfo) typeInfo);
-    } else if (typeInfo.getCategory().equals(Category.MAP)) {
+    } else if (typeInfo.getCategory().equals(Category.MAP.toMetastoreTypeCategory())) {
       return convertMapType(name, (MapTypeInfo) typeInfo);
-    } else if (typeInfo.getCategory().equals(Category.UNION)) {
+    } else if (typeInfo.getCategory().equals(Category.UNION.toMetastoreTypeCategory())) {
       throw new UnsupportedOperationException("Union type not implemented");
     } else {
       throw new IllegalArgumentException("Unknown type: " + typeInfo);

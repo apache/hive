@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoParser.PrimitiveParts;
 
 /**
  * TypeInfoFactory can be used to create the TypeInfo object for any types.
@@ -38,6 +39,53 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  * objects that represents the same type.
  */
 public final class TypeInfoFactory {
+
+  //if this singleton looks weird, it is. It is done to support the move of TypeInfo and its sub-classes
+  //to standalone metastore. Standalone metastore needs access to TypeInfos without depending
+  //on hive-serde. In order to create these TypeInfo, it needs the TypeInfoParser and TypeInfoFactory.
+  //We cannot move TypeInfoFactory out of hive code base since its too disruptive.
+  //ITypeInfoFactory interface in standalone-metastore abstracts out the common functionality
+  //and metastore implements its own version of TypeInfoFactory. Hive uses its original TypeInfoFactory
+  //without any changes. The singleton weird-ness is needed to keep the caching behaviour when
+  //using this TypeInfoFactory in Deserializer and TypeInfoParsers
+  private static final ITypeInfoFactory instance = new ITypeInfoFactory() {
+    @Override
+    public MetastorePrimitiveTypeInfo getPrimitiveTypeInfo(String typeName, Object... parameters) {
+      if (serdeConstants.DECIMAL_TYPE_NAME.equals(typeName)) {
+        HiveDecimalUtils.validateParameter((Integer) parameters[0], (Integer) parameters[1]);
+      } else if (serdeConstants.CHAR_TYPE_NAME.equals(typeName)) {
+        BaseCharUtils.validateCharParameter((Integer) parameters[0]);
+      } else if (serdeConstants.VARCHAR_TYPE_NAME.equals(typeName)) {
+        BaseCharUtils.validateVarcharParameter((Integer)parameters[0]);
+      }
+      return TypeInfoFactory.getPrimitiveTypeInfo(
+          MetastoreTypeInfoUtils.getQualifiedPrimitiveTypeName(typeName, parameters));
+    }
+
+    @Override
+    public MapTypeInfo getMapTypeInfo(TypeInfo keyTypeInfo, TypeInfo valueTypeInfo) {
+      return (MapTypeInfo) TypeInfoFactory.getMapTypeInfo(keyTypeInfo, valueTypeInfo);
+    }
+
+    @Override
+    public ListTypeInfo getListTypeInfo(TypeInfo listElementTypeInfo) {
+      return (ListTypeInfo) TypeInfoFactory.getListTypeInfo(listElementTypeInfo);
+    }
+
+    @Override
+    public UnionTypeInfo getUnionTypeInfo(List<TypeInfo> typeInfos) {
+      return (UnionTypeInfo) TypeInfoFactory.getUnionTypeInfo(typeInfos);
+    }
+
+    @Override
+    public StructTypeInfo getStructTypeInfo(List<String> names, List<TypeInfo> typeInfos) {
+      return (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(names, typeInfos);
+    }
+  };
+
+  public static final ITypeInfoFactory getInstance() {
+    return instance;
+  }
 
   private TypeInfoFactory() {
     // prevent instantiation
@@ -134,14 +182,14 @@ public final class TypeInfoFactory {
    * @return PrimitiveTypeInfo instance
    */
   private static PrimitiveTypeInfo createPrimitiveTypeInfo(String fullName) {
-    String baseName = TypeInfoUtils.getBaseName(fullName);
+    String baseName = MetastoreTypeInfoUtils.getBaseName(fullName);
     PrimitiveTypeEntry typeEntry =
         PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(baseName);
     if (null == typeEntry) {
       throw new RuntimeException("Unknown type " + fullName);
     }
 
-    TypeInfoUtils.PrimitiveParts parts = TypeInfoUtils.parsePrimitiveParts(fullName);
+    PrimitiveParts parts = TypeInfoUtils.parsePrimitiveParts(fullName);
     if (parts.typeParams == null || parts.typeParams.length < 1) {
       return null;
     }

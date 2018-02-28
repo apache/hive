@@ -161,7 +161,7 @@ public abstract class DeserializeRead {
     primitiveCategories = new PrimitiveCategory[count];
     for (int i = 0; i < count; i++) {
       TypeInfo typeInfo = typeInfos[i];
-      Category category = typeInfo.getCategory();
+      Category category = Category.fromMetastoreTypeCategory(typeInfo.getCategory());
       categories[i] = category;
       if (category == Category.PRIMITIVE) {
         PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;

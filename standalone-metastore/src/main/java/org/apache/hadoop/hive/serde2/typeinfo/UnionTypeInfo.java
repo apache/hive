@@ -17,14 +17,13 @@
  */
 package org.apache.hadoop.hive.serde2.typeinfo;
 
+import org.apache.hadoop.classification.InterfaceAudience;
+import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.hive.metastore.ColumnType;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.hadoop.hive.common.classification.InterfaceAudience;
-import org.apache.hadoop.hive.common.classification.InterfaceStability;
-import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 /**
  * UnionTypeInfo represents the TypeInfo of an union. A union holds only one
@@ -51,7 +50,7 @@ public class UnionTypeInfo extends TypeInfo implements Serializable {
   @Override
   public String getTypeName() {
     StringBuilder sb = new StringBuilder();
-    sb.append(serdeConstants.UNION_TYPE_NAME + "<");
+    sb.append(ColumnType.UNION_TYPE_NAME + "<");
     for (int i = 0; i < allUnionObjectTypeInfos.size(); i++) {
       if (i > 0) {
         sb.append(",");
@@ -79,8 +78,8 @@ public class UnionTypeInfo extends TypeInfo implements Serializable {
   }
 
   @Override
-  public Category getCategory() {
-    return Category.UNION;
+  public MetastoreTypeCategory getCategory() {
+    return MetastoreTypeCategory.UNION;
   }
 
   public List<TypeInfo> getAllUnionObjectTypeInfos() {

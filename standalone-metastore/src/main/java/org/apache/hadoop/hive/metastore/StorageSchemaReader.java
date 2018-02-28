@@ -32,7 +32,7 @@ import java.util.List;
  */
 @InterfaceAudience.Public
 @InterfaceStability.Evolving
-interface StorageSchemaReader {
+public interface StorageSchemaReader {
   /**
    * Read the schema from the storage representation of the table.
    * @param tbl metastore table object

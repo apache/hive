@@ -7585,7 +7585,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (!tableFieldTypeInfo.equals(rowFieldTypeInfo)) {
           // need to do some conversions here
           converted = true;
-          if (tableFieldTypeInfo.getCategory() != Category.PRIMITIVE) {
+          if (tableFieldTypeInfo.getCategory() != Category.PRIMITIVE.toMetastoreTypeCategory()) {
             // cannot convert to complex types
             column = null;
           } else {
@@ -7850,7 +7850,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       if (convert && !tableFieldTypeInfo.equals(rowFieldTypeInfo)) {
         // need to do some conversions here
-        if (tableFieldTypeInfo.getCategory() != Category.PRIMITIVE) {
+        if (tableFieldTypeInfo.getCategory() != Category.PRIMITIVE.toMetastoreTypeCategory()) {
           // cannot convert to complex types
           column = null;
         } else {

@@ -458,7 +458,7 @@ public class TestStandardObjectInspectors extends TestCase {
       assertEquals(unionTypeName.toString(), uoi1.getTypeName());
       // TypeInfo
       TypeInfo typeInfo1 = TypeInfoUtils.getTypeInfoFromObjectInspector(uoi1);
-      assertEquals(Category.UNION, typeInfo1.getCategory());
+      assertEquals(Category.UNION, Category.fromMetastoreTypeCategory(typeInfo1.getCategory()));
       assertEquals(UnionTypeInfo.class.getName(), typeInfo1.getClass().getName());
       assertEquals(typeInfo1.getTypeName(), uoi1.getTypeName());
       assertEquals(typeInfo1,

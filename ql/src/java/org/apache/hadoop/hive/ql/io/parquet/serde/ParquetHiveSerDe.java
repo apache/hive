@@ -254,7 +254,7 @@ public class ParquetHiveSerDe extends AbstractSerDe {
       this.selected = new boolean[typeInfo.getAllStructFieldTypeInfos().size()];
       for (int i = 0; i < typeInfo.getAllStructFieldTypeInfos().size(); ++i) {
         TypeInfo ti = typeInfo.getAllStructFieldTypeInfos().get(i);
-        if (ti.getCategory() == Category.STRUCT) {
+        if (ti.getCategory() == Category.STRUCT.toMetastoreTypeCategory()) {
           this.children.put(typeInfo.getAllStructFieldNames().get(i).toLowerCase(),
               new PrunedStructTypeInfo((StructTypeInfo) ti));
         }

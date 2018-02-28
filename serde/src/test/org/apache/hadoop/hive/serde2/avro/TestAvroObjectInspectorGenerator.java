@@ -27,6 +27,7 @@ import java.util.List;
 import org.apache.avro.Schema;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
@@ -403,7 +404,7 @@ public class TestAvroObjectInspectorGenerator {
     // Column types
     assertEquals(1, aoig.getColumnTypes().size());
     TypeInfo typeInfo = aoig.getColumnTypes().get(0);
-    assertEquals(ObjectInspector.Category.MAP, typeInfo.getCategory());
+    assertEquals(ObjectInspector.Category.MAP, Category.fromMetastoreTypeCategory(typeInfo.getCategory()));
     assertTrue(typeInfo instanceof MapTypeInfo);
     MapTypeInfo mapTypeInfo = (MapTypeInfo)typeInfo;
 
@@ -423,7 +424,7 @@ public class TestAvroObjectInspectorGenerator {
     // Column types
     assertEquals(1, aoig.getColumnTypes().size());
     TypeInfo typeInfo = aoig.getColumnTypes().get(0);
-    assertEquals(ObjectInspector.Category.LIST, typeInfo.getCategory());
+    assertEquals(ObjectInspector.Category.LIST, Category.fromMetastoreTypeCategory(typeInfo.getCategory()));
     assertTrue(typeInfo instanceof ListTypeInfo);
     ListTypeInfo listTypeInfo = (ListTypeInfo)typeInfo;
 
@@ -442,7 +443,7 @@ public class TestAvroObjectInspectorGenerator {
     // Column types
     assertEquals(1, aoig.getColumnTypes().size());
     TypeInfo typeInfo = aoig.getColumnTypes().get(0);
-    assertEquals(ObjectInspector.Category.STRUCT, typeInfo.getCategory());
+    assertEquals(ObjectInspector.Category.STRUCT, Category.fromMetastoreTypeCategory(typeInfo.getCategory()));
     assertTrue(typeInfo instanceof StructTypeInfo);
     StructTypeInfo structTypeInfo = (StructTypeInfo)typeInfo;
 

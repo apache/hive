@@ -634,7 +634,7 @@ public class VectorizationContext {
       case FILTER:
         // Evaluate the column as a boolean, converting if necessary.
         TypeInfo typeInfo = exprDesc.getTypeInfo();
-        if (typeInfo.getCategory() == Category.PRIMITIVE &&
+        if (typeInfo.getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory() &&
             ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory() == PrimitiveCategory.BOOLEAN) {
           expr = new SelectColumnIsTrue(columnNum);
         } else {
@@ -882,11 +882,11 @@ public class VectorizationContext {
       }
     } else if (genericUdf instanceof GenericUDFIn) {
       TypeInfo colTi = children.get(0).getTypeInfo();
-      if (colTi.getCategory() != Category.PRIMITIVE) {
+      if (colTi.getCategory() != Category.PRIMITIVE.toMetastoreTypeCategory()) {
         return colTi; // Handled later, only struct will be supported.
       }
       TypeInfo opTi = GenericUDFUtils.deriveInType(children);
-      if (opTi == null || opTi.getCategory() != Category.PRIMITIVE) {
+      if (opTi == null || opTi.getCategory() != Category.PRIMITIVE.toMetastoreTypeCategory()) {
         throw new HiveException("Cannot vectorize IN() - common type is " + opTi);
       }
       if (((PrimitiveTypeInfo)colTi).getPrimitiveCategory() !=
@@ -2162,7 +2162,7 @@ public class VectorizationContext {
     for (int f = 0; f < fieldCount; f++) {
       TypeInfo fieldTypeInfo = fieldTypeInfos.get(f);
       // Only primitive fields supports for now.
-      if (fieldTypeInfo.getCategory() != Category.PRIMITIVE) {
+      if (fieldTypeInfo.getCategory() != Category.PRIMITIVE.toMetastoreTypeCategory()) {
         return null;
       }
 
@@ -2293,7 +2293,7 @@ public class VectorizationContext {
     String colType = colExpr.getTypeString();
     colType = VectorizationContext.mapTypeNameSynonyms(colType);
     TypeInfo colTypeInfo = TypeInfoUtils.getTypeInfoFromTypeString(colType);
-    Category category = colTypeInfo.getCategory();
+    Category category = Category.fromMetastoreTypeCategory(colTypeInfo.getCategory());
     if (category == Category.STRUCT) {
       return getStructInExpression(childExpr, colExpr, colTypeInfo, inChildren, mode, returnType);
     } else if (category != Category.PRIMITIVE) {
@@ -3010,7 +3010,7 @@ public class VectorizationContext {
 
       // Is output type a BOOLEAN?
       TypeInfo resultTypeInfo = expr.getTypeInfo();
-      if (resultTypeInfo.getCategory() == Category.PRIMITIVE &&
+      if (resultTypeInfo.getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory() &&
           ((PrimitiveTypeInfo) resultTypeInfo).getPrimitiveCategory() == PrimitiveCategory.BOOLEAN) {
         isFilter = true;
       } else {
@@ -3285,13 +3285,13 @@ public class VectorizationContext {
   static String getScratchName(TypeInfo typeInfo) throws HiveException {
     // For now, leave DECIMAL precision/scale in the name so DecimalColumnVector scratch columns
     // don't need their precision/scale adjusted...
-    if (typeInfo.getCategory() == Category.PRIMITIVE &&
+    if (typeInfo.getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory() &&
         ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory() == PrimitiveCategory.DECIMAL) {
       return typeInfo.getTypeName();
     }
 
     // And, for Complex Types, also leave the children types in place...
-    if (typeInfo.getCategory() != Category.PRIMITIVE) {
+    if (typeInfo.getCategory() != Category.PRIMITIVE.toMetastoreTypeCategory()) {
       return typeInfo.getTypeName();
     }
 

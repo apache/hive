@@ -176,7 +176,7 @@ public class CheckFastRowHashMap extends CheckFastHashTable {
 
   private static void verifyRead(LazyBinaryDeserializeRead lazyBinaryDeserializeRead,
       TypeInfo typeInfo, Object expectedObject) throws IOException {
-    if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+    if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE.toMetastoreTypeCategory()) {
       VerifyFastRow.verifyDeserializeRead(lazyBinaryDeserializeRead, typeInfo, expectedObject);
     } else {
       final Object complexFieldObj =

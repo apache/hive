@@ -935,11 +935,11 @@ public class TypeCheckProcFactory {
         TypeInfo objectTypeInfo = object.getTypeInfo();
 
         // Allow accessing a field of list element structs directly from a list
-        boolean isList = (object.getTypeInfo().getCategory() == ObjectInspector.Category.LIST);
+        boolean isList = (object.getTypeInfo().getCategory() == ObjectInspector.Category.LIST.toMetastoreTypeCategory());
         if (isList) {
           objectTypeInfo = ((ListTypeInfo) objectTypeInfo).getListElementTypeInfo();
         }
-        if (objectTypeInfo.getCategory() != Category.STRUCT) {
+        if (objectTypeInfo.getCategory() != Category.STRUCT.toMetastoreTypeCategory()) {
           throw new SemanticException(ErrorMsg.INVALID_DOT.getMsg(expr));
         }
         TypeInfo t = ((StructTypeInfo) objectTypeInfo).getStructFieldTypeInfo(fieldNameString);
@@ -958,7 +958,7 @@ public class TypeCheckProcFactory {
         // Check whether this is a list or a map
         TypeInfo myt = children.get(0).getTypeInfo();
 
-        if (myt.getCategory() == Category.LIST) {
+        if (myt.getCategory() == Category.LIST.toMetastoreTypeCategory()) {
           // Only allow integer index for now
           if (!TypeInfoUtils.implicitConvertible(children.get(1).getTypeInfo(),
               TypeInfoFactory.intTypeInfo)) {
@@ -969,7 +969,7 @@ public class TypeCheckProcFactory {
           // Calculate TypeInfo
           TypeInfo t = ((ListTypeInfo) myt).getListElementTypeInfo();
           desc = new ExprNodeGenericFuncDesc(t, FunctionRegistry.getGenericUDFForIndex(), children);
-        } else if (myt.getCategory() == Category.MAP) {
+        } else if (myt.getCategory() == Category.MAP.toMetastoreTypeCategory()) {
           if (!TypeInfoUtils.implicitConvertible(children.get(1).getTypeInfo(),
               ((MapTypeInfo) myt).getMapKeyTypeInfo())) {
             throw new SemanticException(ErrorMsg.INVALID_MAPINDEX_TYPE

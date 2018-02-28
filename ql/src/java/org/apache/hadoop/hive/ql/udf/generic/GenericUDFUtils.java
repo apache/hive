@@ -253,7 +253,7 @@ public final class GenericUDFUtils {
     TypeInfo returnType = null;
     for (ExprNodeDesc node : children) {
       TypeInfo ti = node.getTypeInfo();
-      if (ti.getCategory() == Category.PRIMITIVE
+      if (ti.getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory()
         && ((PrimitiveTypeInfo)ti).getPrimitiveCategory() == PrimitiveCategory.VOID) {
         continue;
       }

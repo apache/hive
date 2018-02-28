@@ -71,7 +71,7 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
           "Exactly 2 (col + hll) or 3 (col + fm + #bitvectors) arguments are expected.");
     }
 
-    if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
+    if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE.toMetastoreTypeCategory()) {
       throw new UDFArgumentTypeException(0,
           "Only primitive type arguments are accepted but "
           + parameters[0].getTypeName() + " is passed.");

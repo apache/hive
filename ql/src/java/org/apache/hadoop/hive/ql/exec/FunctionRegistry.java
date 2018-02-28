@@ -741,7 +741,8 @@ public final class FunctionRegistry {
     if (a.equals(b)) {
       return a;
     }
-    if (a.getCategory() != Category.PRIMITIVE || b.getCategory() != Category.PRIMITIVE) {
+    if (a.getCategory() != Category.PRIMITIVE.toMetastoreTypeCategory()
+        || b.getCategory() != Category.PRIMITIVE.toMetastoreTypeCategory()) {
       return null;
     }
     PrimitiveCategory pcA = ((PrimitiveTypeInfo)a).getPrimitiveCategory();
@@ -794,7 +795,8 @@ public final class FunctionRegistry {
     if (a.equals(b)) {
       return a;
     }
-    if (a.getCategory() != Category.PRIMITIVE || b.getCategory() != Category.PRIMITIVE) {
+    if (a.getCategory() != Category.PRIMITIVE.toMetastoreTypeCategory()
+        || b.getCategory() != Category.PRIMITIVE.toMetastoreTypeCategory()) {
       return null;
     }
     PrimitiveCategory pcA = ((PrimitiveTypeInfo)a).getPrimitiveCategory();
@@ -849,7 +851,8 @@ public final class FunctionRegistry {
   }
 
   public static PrimitiveCategory getPrimitiveCommonCategory(TypeInfo a, TypeInfo b) {
-    if (a.getCategory() != Category.PRIMITIVE || b.getCategory() != Category.PRIMITIVE) {
+    if (a.getCategory() != Category.PRIMITIVE.toMetastoreTypeCategory()
+        || b.getCategory() != Category.PRIMITIVE.toMetastoreTypeCategory()) {
       return null;
     }
 
@@ -928,7 +931,8 @@ public final class FunctionRegistry {
       return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, commonCat);
     }
     // It is not primitive; check if it is a struct and we can infer a common class
-    if (a.getCategory() == Category.STRUCT && b.getCategory() == Category.STRUCT) {
+    if (a.getCategory() == Category.STRUCT.toMetastoreTypeCategory()
+        && b.getCategory() == Category.STRUCT.toMetastoreTypeCategory()) {
       return getCommonClassForStruct((StructTypeInfo)a, (StructTypeInfo)b);
     }
     return null;
@@ -1109,8 +1113,8 @@ public final class FunctionRegistry {
       // passing null matches everything
       return 0;
     }
-    if (argumentPassed.getCategory().equals(Category.LIST)
-        && argumentAccepted.getCategory().equals(Category.LIST)) {
+    if (argumentPassed.getCategory().equals(Category.LIST.toMetastoreTypeCategory())
+        && argumentAccepted.getCategory().equals(Category.LIST.toMetastoreTypeCategory())) {
       // lists are compatible if and only-if the elements are compatible
       TypeInfo argumentPassedElement = ((ListTypeInfo) argumentPassed)
           .getListElementTypeInfo();
@@ -1118,8 +1122,8 @@ public final class FunctionRegistry {
           .getListElementTypeInfo();
       return matchCost(argumentPassedElement, argumentAcceptedElement, exact);
     }
-    if (argumentPassed.getCategory().equals(Category.MAP)
-        && argumentAccepted.getCategory().equals(Category.MAP)) {
+    if (argumentPassed.getCategory().equals(Category.MAP.toMetastoreTypeCategory())
+        && argumentAccepted.getCategory().equals(Category.MAP.toMetastoreTypeCategory())) {
       // lists are compatible if and only-if the elements are compatible
       TypeInfo argumentPassedKey = ((MapTypeInfo) argumentPassed)
           .getMapKeyTypeInfo();
@@ -1173,8 +1177,8 @@ public final class FunctionRegistry {
           // Check the affinity of the argument passed in with the accepted argument,
           // based on the PrimitiveGrouping
           TypeInfo passedType = argsPassedIter.next();
-          if (acceptedType.getCategory() == Category.PRIMITIVE
-              && passedType.getCategory() == Category.PRIMITIVE) {
+          if (acceptedType.getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory()
+              && passedType.getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory()) {
             PrimitiveGrouping acceptedPg = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(
                 ((PrimitiveTypeInfo) acceptedType).getPrimitiveCategory());
             PrimitiveGrouping passedPg = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(
@@ -1306,7 +1310,7 @@ public final class FunctionRegistry {
 
           boolean acceptedIsPrimitive = false;
           PrimitiveCategory acceptedPrimCat = PrimitiveCategory.UNKNOWN;
-          if (accepted.getCategory() == Category.PRIMITIVE) {
+          if (accepted.getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory()) {
             acceptedIsPrimitive = true;
             acceptedPrimCat = ((PrimitiveTypeInfo) accepted).getPrimitiveCategory();
           }

@@ -325,7 +325,7 @@ public final class LazyFactory {
   public static ObjectInspector createLazyObjectInspector(TypeInfo typeInfo,
       int separatorIndex, LazyObjectInspectorParameters lazyParams,
       ObjectInspectorOptions option) throws SerDeException {
-    ObjectInspector.Category c = typeInfo.getCategory();
+    ObjectInspector.Category c = Category.fromMetastoreTypeCategory(typeInfo.getCategory());
     switch (c) {
     case PRIMITIVE:
       return LazyPrimitiveObjectInspectorFactory.getLazyObjectInspector(

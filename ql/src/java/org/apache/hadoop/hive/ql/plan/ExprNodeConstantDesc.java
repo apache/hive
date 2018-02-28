@@ -122,9 +122,9 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
 
   @Override
   public String getExprString() {
-    if (typeInfo.getCategory() == Category.PRIMITIVE) {
+    if (typeInfo.getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory()) {
       return getFormatted(typeInfo, value);
-    } else if (typeInfo.getCategory() == Category.STRUCT) {
+    } else if (typeInfo.getCategory() == Category.STRUCT.toMetastoreTypeCategory()) {
       StringBuilder sb = new StringBuilder();
       sb.append("const struct(");
       List<?> items = (List<?>) getWritableObjectInspector().getWritableConstantValue();

@@ -18,10 +18,14 @@
 package org.apache.hadoop.hive.serde2.avro;
 
 import java.util.Set;
+
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.assertSame;
 
+@Category(MetastoreUnitTest.class)
 public class TestInstanceCache {
   private static class Foo {
 
@@ -53,7 +57,7 @@ public class TestInstanceCache {
   }
 
   @Test
-  public void instanceCachesOnlyCreateOneInstance() throws AvroSerdeException {
+  public void instanceCachesOnlyCreateOneInstance() throws Exception {
     InstanceCache<Foo, Wrapper<Foo>> ic = new InstanceCache<Foo, Wrapper<Foo>>() {
       @Override
       protected Wrapper makeInstance(Foo hv,
@@ -74,7 +78,7 @@ public class TestInstanceCache {
   }
 
   @Test
-  public void instanceCacheReturnsCorrectInstances() throws AvroSerdeException {
+  public void instanceCacheReturnsCorrectInstances() throws Exception {
     InstanceCache<String, Wrapper<String>> ic = new InstanceCache<String, Wrapper<String>>() {
       @Override
       protected Wrapper<String> makeInstance(

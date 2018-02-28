@@ -151,7 +151,7 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
     String child = fieldAccess.getField().getName();
     TypeInfo parentType = parent.getTypeInfo();
     // Allow accessing a field of list element structs directly from a list
-    boolean isList = (parentType.getCategory() == ObjectInspector.Category.LIST);
+    boolean isList = (parentType.getCategory() == ObjectInspector.Category.LIST.toMetastoreTypeCategory());
     if (isList) {
       parentType = ((ListTypeInfo) parentType).getListElementTypeInfo();
     }

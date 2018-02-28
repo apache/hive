@@ -199,7 +199,7 @@ public class TestLazySimpleFast extends TestCase {
 
   private void verifyReadNull(LazySimpleDeserializeRead lazySimpleDeserializeRead,
       TypeInfo typeInfo) throws IOException {
-    if (typeInfo.getCategory() == Category.PRIMITIVE) {
+    if (typeInfo.getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory()) {
       VerifyFast.verifyDeserializeRead(lazySimpleDeserializeRead, typeInfo, null);
     } else {
       Object complexFieldObj = VerifyFast.deserializeReadComplexType(lazySimpleDeserializeRead, typeInfo);
@@ -211,7 +211,7 @@ public class TestLazySimpleFast extends TestCase {
 
   private void verifyRead(LazySimpleDeserializeRead lazySimpleDeserializeRead,
       TypeInfo typeInfo, Object expectedObject) throws IOException {
-    if (typeInfo.getCategory() == Category.PRIMITIVE) {
+    if (typeInfo.getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory()) {
       VerifyFast.verifyDeserializeRead(lazySimpleDeserializeRead, typeInfo, expectedObject);
     } else {
       Object complexFieldObj = VerifyFast.deserializeReadComplexType(lazySimpleDeserializeRead, typeInfo);

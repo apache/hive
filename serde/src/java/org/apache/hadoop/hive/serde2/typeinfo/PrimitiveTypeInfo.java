@@ -22,6 +22,7 @@ import java.io.Serializable;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
@@ -36,16 +37,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  */
 @InterfaceAudience.Public
 @InterfaceStability.Stable
-public class PrimitiveTypeInfo extends TypeInfo implements Serializable {
+public class PrimitiveTypeInfo extends MetastorePrimitiveTypeInfo implements Serializable {
   private static final long serialVersionUID = 1L;
-
-  // Base name (varchar vs fully qualified name such as varchar(200)).
-  protected String typeName;
 
   /**
    * For java serialization use only.
    */
   public PrimitiveTypeInfo() {
+    super();
   }
 
   /**
@@ -59,8 +58,8 @@ public class PrimitiveTypeInfo extends TypeInfo implements Serializable {
    * Returns the category of this TypeInfo.
    */
   @Override
-  public Category getCategory() {
-    return Category.PRIMITIVE;
+  public MetastoreTypeCategory getCategory() {
+    return MetastoreTypeCategory.PRIMITIVE;
   }
 
   public PrimitiveCategory getPrimitiveCategory() {
@@ -75,44 +74,7 @@ public class PrimitiveTypeInfo extends TypeInfo implements Serializable {
     return getPrimitiveTypeEntry().primitiveJavaClass;
   }
 
-  // The following 2 methods are for java serialization use only.
-  public void setTypeName(String typeName) {
-    this.typeName = typeName;
-  }
-
-  @Override
-  public String getTypeName() {
-    return typeName;
-  }
-
   public PrimitiveTypeEntry getPrimitiveTypeEntry() {
     return PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(typeName);
-  }
-
-  @Override
-  public boolean equals(Object other) {
-    if (this == other) {
-      return true;
-    }
-    if (other == null || getClass() != other.getClass()) {
-      return false;
-    }
-
-    PrimitiveTypeInfo pti = (PrimitiveTypeInfo) other;
-
-    return this.typeName.equals(pti.typeName);
-  }
-
-  /**
-   * Generate the hashCode for this TypeInfo.
-   */
-  @Override
-  public int hashCode() {
-    return typeName.hashCode();
-  }
-
-  @Override
-  public String toString() {
-    return typeName;
   }
 }

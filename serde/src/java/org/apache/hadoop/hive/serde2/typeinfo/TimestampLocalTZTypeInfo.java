@@ -101,4 +101,9 @@ public class TimestampLocalTZTypeInfo extends PrimitiveTypeInfo {
     this.timeZone = timeZone;
   }
 
+  @Override
+  public Object[] getParameters() {
+    return new Object[] { timeZone };
+  }
+
 }

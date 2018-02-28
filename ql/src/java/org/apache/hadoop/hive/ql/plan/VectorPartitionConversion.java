@@ -82,8 +82,8 @@ public class VectorPartitionConversion  {
   public static boolean isImplicitVectorColumnConversion(TypeInfo fromTypeInfo,
       TypeInfo toTypeInfo) {
 
-    if (fromTypeInfo.getCategory() == Category.PRIMITIVE &&
-        toTypeInfo.getCategory() == Category.PRIMITIVE) {
+    if (fromTypeInfo.getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory() &&
+        toTypeInfo.getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory()) {
 
       PrimitiveCategory fromPrimitiveCategory =
           ((PrimitiveTypeInfo) fromTypeInfo).getPrimitiveCategory();

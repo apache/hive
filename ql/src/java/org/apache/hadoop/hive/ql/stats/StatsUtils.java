@@ -1952,7 +1952,7 @@ public class StatsUtils {
   public static boolean hasDiscreteRange(ColStatistics colStat) {
     if (colStat.getRange() != null) {
       TypeInfo colType = TypeInfoUtils.getTypeInfoFromTypeString(colStat.getColumnType());
-      if (colType.getCategory() == Category.PRIMITIVE) {
+      if (colType.getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory()) {
         PrimitiveTypeInfo pti = (PrimitiveTypeInfo) colType;
         switch (pti.getPrimitiveCategory()) {
           case BOOLEAN:

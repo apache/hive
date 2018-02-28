@@ -69,7 +69,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
           "Exactly one argument is expected.");
     }
 
-    if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
+    if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE.toMetastoreTypeCategory()) {
       throw new UDFArgumentTypeException(0,
           "Only primitive type arguments are accepted but "
               + parameters[0].getTypeName() + " is passed.");
@@ -111,7 +111,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
   }
 
   public static PrimitiveObjectInspector.PrimitiveCategory getReturnType(TypeInfo type) {
-    if (type.getCategory() != ObjectInspector.Category.PRIMITIVE) {
+    if (type.getCategory() != ObjectInspector.Category.PRIMITIVE.toMetastoreTypeCategory()) {
       return null;
     }
     switch (((PrimitiveTypeInfo) type).getPrimitiveCategory()) {

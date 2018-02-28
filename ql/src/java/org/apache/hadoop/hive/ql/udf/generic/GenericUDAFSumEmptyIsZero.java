@@ -35,7 +35,7 @@ public class GenericUDAFSumEmptyIsZero extends GenericUDAFSum {
           "Exactly one argument is expected.");
     }
 
-    if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
+    if (parameters[0].getCategory() != ObjectInspector.Category.PRIMITIVE.toMetastoreTypeCategory()) {
       throw new UDFArgumentTypeException(0,
           "Only primitive type arguments are accepted but "
               + parameters[0].getTypeName() + " is passed.");

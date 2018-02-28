@@ -27,6 +27,10 @@ import org.apache.hadoop.hive.metastore.utils.StringUtils;
 
 import java.util.List;
 
+/**
+ * In order to use this Storage schema reader you should add the hive-serde jar in the classpath
+ * of the metastore.
+ */
 public class SerDeStorageSchemaReader implements StorageSchemaReader {
   @Override
   public List<FieldSchema> readSchema(Table tbl, EnvironmentContext envContext, Configuration conf)

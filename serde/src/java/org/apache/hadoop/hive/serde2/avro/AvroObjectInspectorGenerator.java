@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 
 /**
@@ -50,7 +51,11 @@ public class AvroObjectInspectorGenerator {
     verifySchemaIsARecord(schema);
 
     this.columnNames = AvroObjectInspectorGenerator.generateColumnNames(schema);
-    this.columnTypes = SchemaToTypeInfo.generateColumnTypes(schema);
+    try {
+      this.columnTypes = SchemaToHiveTypeInfo.getInstance().generateColumnTypes(schema);
+    } catch (Exception e) {
+      throw new AvroSerdeException(e.getMessage());
+    }
     this.columnComments = AvroObjectInspectorGenerator.generateColumnComments(schema);
     assert columnNames.size() == columnTypes.size();
     this.oi = createObjectInspector();
@@ -139,7 +144,7 @@ public class AvroObjectInspectorGenerator {
   }
 
   private boolean supportedCategories(TypeInfo ti) {
-    final ObjectInspector.Category c = ti.getCategory();
+    final Category c = Category.fromMetastoreTypeCategory(ti.getCategory());
     return c.equals(ObjectInspector.Category.PRIMITIVE) ||
            c.equals(ObjectInspector.Category.MAP)       ||
            c.equals(ObjectInspector.Category.LIST)      ||

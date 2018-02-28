@@ -201,7 +201,7 @@ public class VectorExtractRow {
       return null;
     }
 
-    final Category category = typeInfo.getCategory();
+    final Category category = Category.fromMetastoreTypeCategory(typeInfo.getCategory());
     switch (category) {
     case PRIMITIVE:
       {

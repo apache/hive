@@ -125,7 +125,7 @@ public class TypedBytesSerDe extends AbstractSerDe {
 
     // All columns have to be primitive.
     for (int c = 0; c < numColumns; c++) {
-      if (columnTypes.get(c).getCategory() != Category.PRIMITIVE) {
+      if (columnTypes.get(c).getCategory() != Category.PRIMITIVE.toMetastoreTypeCategory()) {
         throw new SerDeException(getClass().getName()
             + " only accepts primitive columns, but column[" + c + "] named "
             + columnNames.get(c) + " has category "
