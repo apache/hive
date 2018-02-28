@@ -216,6 +216,7 @@ public class VectorizedOrcAcidRowBatchReader
     }
     rowIdProjected = areRowIdsProjected(rbCtx);
     rootPath = orcSplit.getRootDir();
+    //why even compute syntheticProps if !isOriginal???
     syntheticProps = computeOffsetAndBucket(orcSplit, conf, validWriteIdList);
   }
 
@@ -233,7 +234,7 @@ public class VectorizedOrcAcidRowBatchReader
     }
   }
   /**
-   * See {@link #next(NullWritable, VectorizedRowBatch)} fist and
+   * See {@link #next(NullWritable, VectorizedRowBatch)} first and
    * {@link OrcRawRecordMerger.OriginalReaderPair}.
    * When reading a split of an "original" file and we need to decorate data with ROW__ID.
    * This requires treating multiple files that are part of the same bucket (tranche for unbucketed
@@ -265,6 +266,7 @@ public class VectorizedOrcAcidRowBatchReader
         OrcRawRecordMerger.TransactionMetaData.findWriteIDForSynthetcRowIDs(split.getPath(), split.getRootDir(), conf);
     int bucketId = AcidUtils.parseBaseOrDeltaBucketFilename(split.getPath(), conf).getBucketId();
     int bucketProperty = BucketCodec.V1.encode(new AcidOutputFormat.Options(conf)
+        //statementId is from directory name (or 0 if there is none)
       .statementId(syntheticTxnInfo.statementId).bucket(bucketId));
     AcidUtils.Directory directoryState = AcidUtils.getAcidState( syntheticTxnInfo.folder, conf,
         validWriteIdList, false, true);
