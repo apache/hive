@@ -63,10 +63,12 @@ public class Metrics implements Serializable {
   public final ShuffleReadMetrics shuffleReadMetrics;
   /** If tasks wrote to shuffle output, metrics on the written shuffle data. */
   public final ShuffleWriteMetrics shuffleWriteMetrics;
+  /** A collection of accumulators that represents metrics about writing data to external systems. */
+  public final OutputMetrics outputMetrics;
 
   private Metrics() {
     // For Serialization only.
-    this(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, null, null, null);
+    this(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, null, null, null, null);
   }
 
   public Metrics(
@@ -82,7 +84,8 @@ public class Metrics implements Serializable {
       long taskDurationTime,
       InputMetrics inputMetrics,
       ShuffleReadMetrics shuffleReadMetrics,
-      ShuffleWriteMetrics shuffleWriteMetrics) {
+      ShuffleWriteMetrics shuffleWriteMetrics,
+      OutputMetrics outputMetrics) {
     this.executorDeserializeTime = executorDeserializeTime;
     this.executorDeserializeCpuTime = executorDeserializeCpuTime;
     this.executorRunTime = executorRunTime;
@@ -96,6 +99,7 @@ public class Metrics implements Serializable {
     this.inputMetrics = inputMetrics;
     this.shuffleReadMetrics = shuffleReadMetrics;
     this.shuffleWriteMetrics = shuffleWriteMetrics;
+    this.outputMetrics = outputMetrics;
   }
 
   public Metrics(TaskMetrics metrics, TaskInfo taskInfo) {
@@ -112,7 +116,8 @@ public class Metrics implements Serializable {
       taskInfo.duration(),
       optionalInputMetric(metrics),
       optionalShuffleReadMetric(metrics),
-      optionalShuffleWriteMetrics(metrics));
+      optionalShuffleWriteMetrics(metrics),
+      optionalOutputMetrics(metrics));
   }
 
   private static InputMetrics optionalInputMetric(TaskMetrics metrics) {
@@ -125,6 +130,10 @@ public class Metrics implements Serializable {
 
   private static ShuffleWriteMetrics optionalShuffleWriteMetrics(TaskMetrics metrics) {
     return (metrics.shuffleWriteMetrics() != null) ? new ShuffleWriteMetrics(metrics) : null;
+  }
+
+  private static OutputMetrics optionalOutputMetrics(TaskMetrics metrics) {
+    return (metrics.outputMetrics() != null) ? new OutputMetrics(metrics) : null;
   }
 
   @Override
@@ -143,6 +152,7 @@ public class Metrics implements Serializable {
             ", inputMetrics=" + inputMetrics +
             ", shuffleReadMetrics=" + shuffleReadMetrics +
             ", shuffleWriteMetrics=" + shuffleWriteMetrics +
+            ", outputMetrics=" + outputMetrics +
             '}';
   }
 }

@@ -26,6 +26,7 @@ import java.util.Arrays;
 import org.apache.hive.spark.client.metrics.DataReadMethod;
 import org.apache.hive.spark.client.metrics.InputMetrics;
 import org.apache.hive.spark.client.metrics.Metrics;
+import org.apache.hive.spark.client.metrics.OutputMetrics;
 import org.apache.hive.spark.client.metrics.ShuffleReadMetrics;
 import org.apache.hive.spark.client.metrics.ShuffleWriteMetrics;
 import org.junit.Test;
@@ -67,7 +68,7 @@ public class TestMetricsCollection {
   public void testOptionalMetrics() {
     long value = taskValue(1, 1, 1L);
     Metrics metrics = new Metrics(value, value, value, value, value, value, value, value, value,
-            value, null, null, null);
+            value, null, null, null, null);
 
     MetricsCollection collection = new MetricsCollection();
     for (int i : Arrays.asList(1, 2)) {
@@ -96,9 +97,9 @@ public class TestMetricsCollection {
     long value = taskValue(1, 1, 1);
 
     Metrics metrics1 = new Metrics(value, value, value, value, value, value, value, value, value,
-            value, new InputMetrics(value, value), null, null);
+            value, new InputMetrics(value, value), null, null, null);
     Metrics metrics2 = new Metrics(value, value, value, value, value, value, value, value, value,
-            value, new InputMetrics(value, value), null, null);
+            value, new InputMetrics(value, value), null, null, null);
 
     collection.addMetrics(1, 1, 1, metrics1);
     collection.addMetrics(1, 1, 2, metrics2);
@@ -112,7 +113,8 @@ public class TestMetricsCollection {
     return new Metrics(value, value, value, value, value, value, value, value, value, value,
       new InputMetrics(value, value),
       new ShuffleReadMetrics((int) value, (int) value, value, value, value, value, value),
-      new ShuffleWriteMetrics(value, value, value));
+      new ShuffleWriteMetrics(value, value, value),
+      new OutputMetrics(value, value));
   }
 
   /**
@@ -173,6 +175,8 @@ public class TestMetricsCollection {
     assertEquals(expected, metrics.shuffleWriteMetrics.shuffleBytesWritten);
     assertEquals(expected, metrics.shuffleWriteMetrics.shuffleWriteTime);
     assertEquals(expected, metrics.shuffleWriteMetrics.shuffleRecordsWritten);
-  }
 
+    assertEquals(expected, metrics.outputMetrics.recordsWritten);
+    assertEquals(expected, metrics.outputMetrics.bytesWritten);
+  }
 }

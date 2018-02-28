@@ -68,6 +68,10 @@ public final class SparkMetricsUtils {
               allMetrics.shuffleWriteMetrics.shuffleRecordsWritten);
       results.put(SparkStatisticsNames.SHUFFLE_WRITE_TIME, allMetrics.shuffleWriteMetrics.shuffleWriteTime);
     }
+    if (allMetrics.outputMetrics != null) {
+      results.put(SparkStatisticsNames.BYTES_WRITTEN, allMetrics.outputMetrics.bytesWritten);
+      results.put(SparkStatisticsNames.RECORDS_WRITTEN, allMetrics.outputMetrics.recordsWritten);
+    }
     return results;
   }
 

@@ -54,5 +54,8 @@ public class SparkStatisticsNames {
   public static final String SHUFFLE_WRITE_TIME = "ShuffleWriteTime";
   public static final String SHUFFLE_RECORDS_WRITTEN = "ShuffleRecordsWritten";
 
+  public static final String RECORDS_WRITTEN = "RecordsWritten";
+  public static final String BYTES_WRITTEN = "BytesWritten";
+
   public static final String SPARK_GROUP_NAME = "SPARK";
 }
