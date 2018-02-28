@@ -54,12 +54,11 @@ public class TestRecordIdentifier {
     int bucketId = ThreadLocalRandom.current().nextInt(1, 512);
     long rowId = ThreadLocalRandom.current().nextLong(1, 10000000000L);
     long currTxn = origTxn + ThreadLocalRandom.current().nextLong(0, 10000000000L);
-    int stmtId = ThreadLocalRandom.current().nextInt(1, 512);
 
     RecordIdentifier left = new RecordIdentifier(origTxn, bucketId, rowId);
     RecordIdentifier right = new RecordIdentifier(origTxn, bucketId, rowId);
-    OrcRawRecordMerger.ReaderKey rkLeft = new OrcRawRecordMerger.ReaderKey(origTxn, bucketId, rowId, currTxn, stmtId);
-    OrcRawRecordMerger.ReaderKey rkRight = new OrcRawRecordMerger.ReaderKey(origTxn, bucketId, rowId, currTxn, stmtId);
+    OrcRawRecordMerger.ReaderKey rkLeft = new OrcRawRecordMerger.ReaderKey(origTxn, bucketId, rowId, currTxn);
+    OrcRawRecordMerger.ReaderKey rkRight = new OrcRawRecordMerger.ReaderKey(origTxn, bucketId, rowId, currTxn);
 
     assertEquals("RecordIdentifier.equals", left, right);
     assertEquals("RecordIdentifier.hashCode", left.hashCode(), right.hashCode());
