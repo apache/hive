@@ -263,7 +263,7 @@ public interface HiveAuthorizer {
    *
    * @throws SemanticException
    */
-  public List<HivePrivilegeObject> applyRowFilterAndColumnMasking(HiveAuthzContext context,
+  List<HivePrivilegeObject> applyRowFilterAndColumnMasking(HiveAuthzContext context,
       List<HivePrivilegeObject> privObjs) throws SemanticException;
 
   /**
@@ -273,7 +273,11 @@ public interface HiveAuthorizer {
    * @return
    * @throws SemanticException
    */
-  public boolean needTransform();
+  boolean needTransform();
 
+  /**
+   * @return HivePolicyProvider instance (expected to be a singleton)
+   * @throws HiveAuthzPluginException
+   */
+  HivePolicyProvider getHivePolicyProvider() throws HiveAuthzPluginException;
 }
-
