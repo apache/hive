@@ -27,16 +27,16 @@ import org.codehaus.jackson.annotate.JsonProperty;
 public class JSONCommitTxnMessage extends CommitTxnMessage {
 
   @JsonProperty
-  Long txnid;
+  private Long txnid;
 
   @JsonProperty
-  Long timestamp;
+  private Long timestamp;
 
   @JsonProperty
-  String server;
+  private String server;
 
   @JsonProperty
-  String servicePrincipal;
+  private String servicePrincipal;
 
   /**
    * Default constructor, needed for Jackson.
@@ -52,8 +52,9 @@ public class JSONCommitTxnMessage extends CommitTxnMessage {
   }
 
   @Override
-  public Long getTxnId() { return txnid; }
-
+  public Long getTxnId() {
+    return txnid;
+  }
 
   @Override
   public Long getTimestamp() {
@@ -83,5 +84,4 @@ public class JSONCommitTxnMessage extends CommitTxnMessage {
       throw new IllegalArgumentException("Could not serialize: ", exception);
     }
   }
-
 }

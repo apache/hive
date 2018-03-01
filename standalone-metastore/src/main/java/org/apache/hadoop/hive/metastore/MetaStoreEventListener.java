@@ -169,7 +169,6 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @throws MetaException
    */
   public void onInsert(InsertEvent insertEvent) throws MetaException {
-
   }
 
   /**
@@ -255,7 +254,6 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @throws MetaException
    */
   public void onAbortTxn(AbortTxnEvent abortTxnEvent) throws MetaException {
-
   }
 
   @Override
@@ -267,7 +265,4 @@ public abstract class MetaStoreEventListener implements Configurable {
   public void setConf(Configuration config) {
     this.conf = config;
   }
-
-
-
 }

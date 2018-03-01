@@ -348,6 +348,7 @@ import org.slf4j.LoggerFactory;
               {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list880 = iprot.readListBegin();
                 struct.triggers = new ArrayList<WMTrigger>(_list880.size);
                 WMTrigger _elem881;
@@ -359,6 +360,8 @@ import org.slf4j.LoggerFactory;
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list872 = iprot.readListBegin();
                 struct.triggers = new ArrayList<WMTrigger>(_list872.size);
@@ -412,7 +415,20 @@ import org.slf4j.LoggerFactory;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+                org.apache.thrift.protocol.TList _list864 = iprot.readListBegin();
+                struct.triggers = new ArrayList<WMTrigger>(_list864.size);
+                WMTrigger _elem865;
+                for (int _i866 = 0; _i866 < _list864.size; ++_i866)
+                {
+                  _elem865 = new WMTrigger();
+                  _elem865.read(iprot);
+                  struct.triggers.add(_elem865);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
                 }
                 iprot.readListEnd();
               }
@@ -441,12 +457,15 @@ import org.slf4j.LoggerFactory;
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.triggers.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             for (WMTrigger _iter883 : struct.triggers)
             {
               _iter883.write(oprot);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             for (WMTrigger _iter875 : struct.triggers)
             {
@@ -480,7 +499,15 @@ import org.slf4j.LoggerFactory;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            for (WMTrigger _iter867 : struct.triggers)
+            {
+              _iter867.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             oprot.writeListEnd();
           }
@@ -514,12 +541,15 @@ import org.slf4j.LoggerFactory;
           oprot.writeI32(struct.triggers.size());
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           for (WMTrigger _iter884 : struct.triggers)
           {
             _iter884.write(oprot);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           for (WMTrigger _iter876 : struct.triggers)
           {
@@ -553,7 +583,15 @@ import org.slf4j.LoggerFactory;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          for (WMTrigger _iter868 : struct.triggers)
+          {
+            _iter868.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
       }
@@ -567,6 +605,7 @@ import org.slf4j.LoggerFactory;
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           org.apache.thrift.protocol.TList _list885 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
           struct.triggers = new ArrayList<WMTrigger>(_list885.size);
           WMTrigger _elem886;
@@ -578,6 +617,8 @@ import org.slf4j.LoggerFactory;
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           org.apache.thrift.protocol.TList _list877 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
           struct.triggers = new ArrayList<WMTrigger>(_list877.size);
@@ -631,7 +672,20 @@ import org.slf4j.LoggerFactory;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          org.apache.thrift.protocol.TList _list869 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.triggers = new ArrayList<WMTrigger>(_list869.size);
+          WMTrigger _elem870;
+          for (int _i871 = 0; _i871 < _list869.size; ++_i871)
+          {
+            _elem870 = new WMTrigger();
+            _elem870.read(iprot);
+            struct.triggers.add(_elem870);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         struct.setTriggersIsSet(true);

@@ -22,6 +22,10 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 
+/**
+ * CommitTxnEvent
+ * Event generated for commit transaction operation
+ */
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public class CommitTxnEvent extends ListenerEvent {
@@ -30,8 +34,7 @@ public class CommitTxnEvent extends ListenerEvent {
 
   /**
    *
-   * @param transactionId Unique identification for the transaction just opened.
-   * @param status status of insert, true = success, false = failure
+   * @param transactionId Unique identification for the transaction just got committed.
    * @param handler handler that is firing the event
    */
   public CommitTxnEvent(Long transactionId, IHMSHandler handler) {

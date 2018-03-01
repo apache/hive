@@ -356,6 +356,7 @@ import org.slf4j.LoggerFactory;
               {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list808 = iprot.readListBegin();
                 struct.tables = new ArrayList<Table>(_list808.size);
                 Table _elem809;
@@ -367,6 +368,8 @@ import org.slf4j.LoggerFactory;
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list800 = iprot.readListBegin();
                 struct.tables = new ArrayList<Table>(_list800.size);
@@ -420,7 +423,20 @@ import org.slf4j.LoggerFactory;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+                org.apache.thrift.protocol.TList _list792 = iprot.readListBegin();
+                struct.tables = new ArrayList<Table>(_list792.size);
+                Table _elem793;
+                for (int _i794 = 0; _i794 < _list792.size; ++_i794)
+                {
+                  _elem793 = new Table();
+                  _elem793.read(iprot);
+                  struct.tables.add(_elem793);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
                 }
                 iprot.readListEnd();
               }
@@ -448,12 +464,15 @@ import org.slf4j.LoggerFactory;
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.tables.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           for (Table _iter811 : struct.tables)
           {
             _iter811.write(oprot);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           for (Table _iter803 : struct.tables)
           {
@@ -487,7 +506,15 @@ import org.slf4j.LoggerFactory;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          for (Table _iter795 : struct.tables)
+          {
+            _iter795.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
           oprot.writeListEnd();
         }
@@ -514,12 +541,15 @@ import org.slf4j.LoggerFactory;
         oprot.writeI32(struct.tables.size());
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         for (Table _iter812 : struct.tables)
         {
           _iter812.write(oprot);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
         for (Table _iter804 : struct.tables)
         {
@@ -553,7 +583,15 @@ import org.slf4j.LoggerFactory;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+        for (Table _iter796 : struct.tables)
+        {
+          _iter796.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
         }
       }
     }
@@ -562,6 +600,7 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetTablesResult struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         org.apache.thrift.protocol.TList _list813 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
@@ -575,6 +614,8 @@ import org.slf4j.LoggerFactory;
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
         org.apache.thrift.protocol.TList _list805 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
         struct.tables = new ArrayList<Table>(_list805.size);
@@ -628,7 +669,20 @@ import org.slf4j.LoggerFactory;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+        org.apache.thrift.protocol.TList _list797 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.tables = new ArrayList<Table>(_list797.size);
+        Table _elem798;
+        for (int _i799 = 0; _i799 < _list797.size; ++_i799)
+        {
+          _elem798 = new Table();
+          _elem798.read(iprot);
+          struct.tables.add(_elem798);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
         }
       }
       struct.setTablesIsSet(true);

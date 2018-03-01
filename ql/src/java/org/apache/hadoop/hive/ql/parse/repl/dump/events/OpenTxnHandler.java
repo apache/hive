@@ -18,9 +18,7 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.events;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
-
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 class OpenTxnHandler extends AbstractEventHandler {

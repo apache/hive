@@ -206,8 +206,9 @@ public class JSONMessageFactory extends MessageFactory {
     return new JSONDropCatalogMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, catalog.getName(), now());
   }
 
-  public OpenTxnMessage buildOpenTxnMessage(Iterator<Long> txnIdsItr) {
-    return new JSONOpenTxnMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, txnIdsItr, now());
+  @Override
+  public OpenTxnMessage buildOpenTxnMessage(Long fromTxnId, Long toTxnId) {
+    return new JSONOpenTxnMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, fromTxnId, toTxnId, now());
   }
 
   @Override

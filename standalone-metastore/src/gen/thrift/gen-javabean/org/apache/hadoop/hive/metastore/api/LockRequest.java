@@ -691,6 +691,7 @@ import org.slf4j.LoggerFactory;
               {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list626 = iprot.readListBegin();
                 struct.component = new ArrayList<LockComponent>(_list626.size);
                 LockComponent _elem627;
@@ -702,6 +703,8 @@ import org.slf4j.LoggerFactory;
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list618 = iprot.readListBegin();
                 struct.component = new ArrayList<LockComponent>(_list618.size);
@@ -755,7 +758,20 @@ import org.slf4j.LoggerFactory;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+                org.apache.thrift.protocol.TList _list610 = iprot.readListBegin();
+                struct.component = new ArrayList<LockComponent>(_list610.size);
+                LockComponent _elem611;
+                for (int _i612 = 0; _i612 < _list610.size; ++_i612)
+                {
+                  _elem611 = new LockComponent();
+                  _elem611.read(iprot);
+                  struct.component.add(_elem611);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
                 }
                 iprot.readListEnd();
               }
@@ -815,12 +831,15 @@ import org.slf4j.LoggerFactory;
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.component.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           for (LockComponent _iter629 : struct.component)
           {
             _iter629.write(oprot);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           for (LockComponent _iter621 : struct.component)
           {
@@ -854,7 +873,15 @@ import org.slf4j.LoggerFactory;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          for (LockComponent _iter613 : struct.component)
+          {
+            _iter613.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
           oprot.writeListEnd();
         }
@@ -903,12 +930,15 @@ import org.slf4j.LoggerFactory;
         oprot.writeI32(struct.component.size());
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         for (LockComponent _iter630 : struct.component)
         {
           _iter630.write(oprot);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
         for (LockComponent _iter622 : struct.component)
         {
@@ -942,7 +972,15 @@ import org.slf4j.LoggerFactory;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+        for (LockComponent _iter614 : struct.component)
+        {
+          _iter614.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
         }
       }
       oprot.writeString(struct.user);
@@ -969,6 +1007,7 @@ import org.slf4j.LoggerFactory;
       {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         org.apache.thrift.protocol.TList _list631 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
         struct.component = new ArrayList<LockComponent>(_list631.size);
         LockComponent _elem632;
@@ -980,6 +1019,8 @@ import org.slf4j.LoggerFactory;
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
         org.apache.thrift.protocol.TList _list623 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
         struct.component = new ArrayList<LockComponent>(_list623.size);
@@ -1033,7 +1074,20 @@ import org.slf4j.LoggerFactory;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+        org.apache.thrift.protocol.TList _list615 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.component = new ArrayList<LockComponent>(_list615.size);
+        LockComponent _elem616;
+        for (int _i617 = 0; _i617 < _list615.size; ++_i617)
+        {
+          _elem616 = new LockComponent();
+          _elem616.read(iprot);
+          struct.component.add(_elem616);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
         }
       }
       struct.setComponentIsSet(true);

@@ -1,5 +1,4 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
+/* * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
  * regarding copyright ownership.  The ASF licenses this file
@@ -9,19 +8,17 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.apache.hadoop.hive.metastore.messaging;
 
-
 /**
- * HCat message sent when an open transaction is done.
+ * HCat message sent when an abort transaction is done.
  */
 public abstract class AbortTxnMessage extends EventMessage {
 
@@ -30,7 +27,7 @@ public abstract class AbortTxnMessage extends EventMessage {
   }
 
   /**
-   * Get the table object associated with the insert
+   * Get the transaction id to be aborted.
    *
    * @return The TxnId
    */

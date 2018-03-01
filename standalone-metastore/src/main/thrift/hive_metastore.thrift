@@ -841,7 +841,7 @@ struct OpenTxnRequest {
     3: required string hostname,
     4: optional string agentInfo = "Unknown",
     5: optional string replPolicy,
-    6: optional list<i64> replSrcTxnId,
+    6: optional list<i64> replSrcTxnIds,
 }
 
 struct OpenTxnsResponse {
@@ -860,14 +860,6 @@ struct AbortTxnsRequest {
 struct CommitTxnRequest {
     1: required i64 txnid,
     2: optional string replPolicy,
-}
-
-struct GetTargetTxnIdRequest {
-    1: required i64 txnid,
-}
-
-struct GetTargetTxnIdResponse {
-    1: required i64 txnid,
 }
 
 // Request msg to get the valid write ids list for the given list of tables wrt to input validTxnList

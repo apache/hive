@@ -355,6 +355,7 @@ import org.slf4j.LoggerFactory;
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list602 = iprot.readListBegin();
                 struct.tblValidWriteIds = new ArrayList<TableValidWriteIds>(_list602.size);
                 TableValidWriteIds _elem603;
@@ -364,6 +365,8 @@ import org.slf4j.LoggerFactory;
                   _elem603.read(iprot);
                   struct.tblValidWriteIds.add(_elem603);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list594 = iprot.readListBegin();
                 struct.tblValidWriteIds = new ArrayList<TableValidWriteIds>(_list594.size);
@@ -394,7 +397,20 @@ import org.slf4j.LoggerFactory;
                   struct.tblValidWriteIds.add(_elem597);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+                org.apache.thrift.protocol.TList _list586 = iprot.readListBegin();
+                struct.tblValidWriteIds = new ArrayList<TableValidWriteIds>(_list586.size);
+                TableValidWriteIds _elem587;
+                for (int _i588 = 0; _i588 < _list586.size; ++_i588)
+                {
+                  _elem587 = new TableValidWriteIds();
+                  _elem587.read(iprot);
+                  struct.tblValidWriteIds.add(_elem587);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
                 }
                 iprot.readListEnd();
               }
@@ -421,10 +437,13 @@ import org.slf4j.LoggerFactory;
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.tblValidWriteIds.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
           for (TableValidWriteIds _iter605 : struct.tblValidWriteIds)
           {
             _iter605.write(oprot);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           for (TableValidWriteIds _iter597 : struct.tblValidWriteIds)
           {
@@ -440,7 +459,15 @@ import org.slf4j.LoggerFactory;
             _iter599.write(oprot);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+          for (TableValidWriteIds _iter589 : struct.tblValidWriteIds)
+          {
+            _iter589.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
           oprot.writeListEnd();
         }
@@ -466,10 +493,13 @@ import org.slf4j.LoggerFactory;
       {
         oprot.writeI32(struct.tblValidWriteIds.size());
 <<<<<<< HEAD
+<<<<<<< HEAD
         for (TableValidWriteIds _iter606 : struct.tblValidWriteIds)
         {
           _iter606.write(oprot);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
         for (TableValidWriteIds _iter598 : struct.tblValidWriteIds)
         {
@@ -485,7 +515,15 @@ import org.slf4j.LoggerFactory;
           _iter600.write(oprot);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+        for (TableValidWriteIds _iter590 : struct.tblValidWriteIds)
+        {
+          _iter590.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
         }
       }
     }
@@ -494,6 +532,7 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetValidWriteIdsResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
+<<<<<<< HEAD
 <<<<<<< HEAD
         org.apache.thrift.protocol.TList _list607 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
         struct.tblValidWriteIds = new ArrayList<TableValidWriteIds>(_list607.size);
@@ -504,6 +543,8 @@ import org.slf4j.LoggerFactory;
           _elem608.read(iprot);
           struct.tblValidWriteIds.add(_elem608);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
         org.apache.thrift.protocol.TList _list599 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
         struct.tblValidWriteIds = new ArrayList<TableValidWriteIds>(_list599.size);
@@ -534,7 +575,20 @@ import org.slf4j.LoggerFactory;
           struct.tblValidWriteIds.add(_elem602);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+        org.apache.thrift.protocol.TList _list591 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.tblValidWriteIds = new ArrayList<TableValidWriteIds>(_list591.size);
+        TableValidWriteIds _elem592;
+        for (int _i593 = 0; _i593 < _list591.size; ++_i593)
+        {
+          _elem592 = new TableValidWriteIds();
+          _elem592.read(iprot);
+          struct.tblValidWriteIds.add(_elem592);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
         }
       }
       struct.setTblValidWriteIdsIsSet(true);

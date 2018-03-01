@@ -15427,11 +15427,14 @@ class get_databases_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype798, _size795) = iprot.readListBegin()
           for _i799 in xrange(_size795):
             _elem800 = iprot.readString()
             self.success.append(_elem800)
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype791, _size788) = iprot.readListBegin()
           for _i792 in xrange(_size788):
@@ -15474,6 +15477,12 @@ class get_databases_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+          (_etype784, _size781) = iprot.readListBegin()
+          for _i785 in xrange(_size781):
+            _elem786 = iprot.readString()
+            self.success.append(_elem786)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -15498,9 +15507,12 @@ class get_databases_result:
       oprot.writeListBegin(TType.STRING, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter801 in self.success:
         oprot.writeString(iter801)
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter794 in self.success:
         oprot.writeString(iter794)
@@ -15527,6 +15539,10 @@ class get_databases_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+      for iter787 in self.success:
+        oprot.writeString(iter787)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -15639,6 +15655,7 @@ class get_all_databases_result:
 =======
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype798, _size795) = iprot.readListBegin()
           for _i799 in xrange(_size795):
             _elem800 = iprot.readString()
@@ -15672,7 +15689,16 @@ class get_all_databases_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype791, _size788) = iprot.readListBegin()
+          for _i792 in xrange(_size788):
+            _elem793 = iprot.readString()
+            self.success.append(_elem793)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -15701,6 +15727,7 @@ class get_all_databases_result:
 =======
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter801 in self.success:
         oprot.writeString(iter801)
 =======
@@ -15725,7 +15752,14 @@ class get_all_databases_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter794 in self.success:
+        oprot.writeString(iter794)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -16497,6 +16531,7 @@ class get_type_all_result:
           self.success = {}
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_ktype810, _vtype811, _size809 ) = iprot.readMapBegin()
           for _i813 in xrange(_size809):
             _key814 = iprot.readString()
@@ -16506,6 +16541,8 @@ class get_type_all_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_ktype803, _vtype804, _size802 ) = iprot.readMapBegin()
           for _i806 in xrange(_size802):
@@ -16551,7 +16588,18 @@ class get_type_all_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_ktype796, _vtype797, _size795 ) = iprot.readMapBegin()
+          for _i799 in xrange(_size795):
+            _key800 = iprot.readString()
+            _val801 = Type()
+            _val801.read(iprot)
+            self.success[_key800] = _val801
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -16576,12 +16624,15 @@ class get_type_all_result:
       oprot.writeMapBegin(TType.STRING, TType.STRUCT, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for kiter816,viter817 in self.success.items():
         oprot.writeString(kiter816)
         viter817.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for kiter809,viter810 in self.success.items():
         oprot.writeString(kiter809)
@@ -16615,7 +16666,15 @@ class get_type_all_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for kiter802,viter803 in self.success.items():
+        oprot.writeString(kiter802)
+        viter803.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.o2 is not None:
@@ -16760,6 +16819,7 @@ class get_fields_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype821, _size818) = iprot.readListBegin()
           for _i822 in xrange(_size818):
             _elem823 = FieldSchema()
@@ -16768,6 +16828,8 @@ class get_fields_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype814, _size811) = iprot.readListBegin()
           for _i815 in xrange(_size811):
@@ -16809,7 +16871,17 @@ class get_fields_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype807, _size804) = iprot.readListBegin()
+          for _i808 in xrange(_size804):
+            _elem809 = FieldSchema()
+            _elem809.read(iprot)
+            self.success.append(_elem809)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -16846,11 +16918,14 @@ class get_fields_result:
       oprot.writeListBegin(TType.STRUCT, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter824 in self.success:
         iter824.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter817 in self.success:
         iter817.write(oprot)
@@ -16879,7 +16954,14 @@ class get_fields_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter810 in self.success:
+        iter810.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -17048,6 +17130,7 @@ class get_fields_with_environment_context_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype828, _size825) = iprot.readListBegin()
           for _i829 in xrange(_size825):
             _elem830 = FieldSchema()
@@ -17056,6 +17139,8 @@ class get_fields_with_environment_context_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype821, _size818) = iprot.readListBegin()
           for _i822 in xrange(_size818):
@@ -17097,7 +17182,17 @@ class get_fields_with_environment_context_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype814, _size811) = iprot.readListBegin()
+          for _i815 in xrange(_size811):
+            _elem816 = FieldSchema()
+            _elem816.read(iprot)
+            self.success.append(_elem816)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -17134,11 +17229,14 @@ class get_fields_with_environment_context_result:
       oprot.writeListBegin(TType.STRUCT, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter831 in self.success:
         iter831.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter824 in self.success:
         iter824.write(oprot)
@@ -17167,7 +17265,14 @@ class get_fields_with_environment_context_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter817 in self.success:
+        iter817.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -17322,6 +17427,7 @@ class get_schema_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype835, _size832) = iprot.readListBegin()
           for _i836 in xrange(_size832):
             _elem837 = FieldSchema()
@@ -17330,6 +17436,8 @@ class get_schema_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype828, _size825) = iprot.readListBegin()
           for _i829 in xrange(_size825):
@@ -17371,7 +17479,17 @@ class get_schema_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype821, _size818) = iprot.readListBegin()
+          for _i822 in xrange(_size818):
+            _elem823 = FieldSchema()
+            _elem823.read(iprot)
+            self.success.append(_elem823)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -17408,11 +17526,14 @@ class get_schema_result:
       oprot.writeListBegin(TType.STRUCT, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter838 in self.success:
         iter838.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter831 in self.success:
         iter831.write(oprot)
@@ -17441,7 +17562,14 @@ class get_schema_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter824 in self.success:
+        iter824.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -17610,6 +17738,7 @@ class get_schema_with_environment_context_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype842, _size839) = iprot.readListBegin()
           for _i843 in xrange(_size839):
             _elem844 = FieldSchema()
@@ -17618,6 +17747,8 @@ class get_schema_with_environment_context_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype835, _size832) = iprot.readListBegin()
           for _i836 in xrange(_size832):
@@ -17659,7 +17790,17 @@ class get_schema_with_environment_context_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype828, _size825) = iprot.readListBegin()
+          for _i829 in xrange(_size825):
+            _elem830 = FieldSchema()
+            _elem830.read(iprot)
+            self.success.append(_elem830)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -17696,11 +17837,14 @@ class get_schema_with_environment_context_result:
       oprot.writeListBegin(TType.STRUCT, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter845 in self.success:
         iter845.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter838 in self.success:
         iter838.write(oprot)
@@ -17729,7 +17873,14 @@ class get_schema_with_environment_context_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter831 in self.success:
+        iter831.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -18184,6 +18335,7 @@ class create_table_with_constraints_args:
           self.primaryKeys = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype849, _size846) = iprot.readListBegin()
           for _i850 in xrange(_size846):
             _elem851 = SQLPrimaryKey()
@@ -18192,6 +18344,8 @@ class create_table_with_constraints_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype842, _size839) = iprot.readListBegin()
           for _i843 in xrange(_size839):
@@ -18233,13 +18387,24 @@ class create_table_with_constraints_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype835, _size832) = iprot.readListBegin()
+          for _i836 in xrange(_size832):
+            _elem837 = SQLPrimaryKey()
+            _elem837.read(iprot)
+            self.primaryKeys.append(_elem837)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.LIST:
           self.foreignKeys = []
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
           (_etype855, _size852) = iprot.readListBegin()
@@ -18250,6 +18415,8 @@ class create_table_with_constraints_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype848, _size845) = iprot.readListBegin()
           for _i849 in xrange(_size845):
@@ -18291,13 +18458,24 @@ class create_table_with_constraints_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype841, _size838) = iprot.readListBegin()
+          for _i842 in xrange(_size838):
+            _elem843 = SQLForeignKey()
+            _elem843.read(iprot)
+            self.foreignKeys.append(_elem843)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 4:
         if ftype == TType.LIST:
           self.uniqueConstraints = []
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
           (_etype861, _size858) = iprot.readListBegin()
@@ -18308,6 +18486,8 @@ class create_table_with_constraints_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype854, _size851) = iprot.readListBegin()
           for _i855 in xrange(_size851):
@@ -18349,13 +18529,24 @@ class create_table_with_constraints_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype847, _size844) = iprot.readListBegin()
+          for _i848 in xrange(_size844):
+            _elem849 = SQLUniqueConstraint()
+            _elem849.read(iprot)
+            self.uniqueConstraints.append(_elem849)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 5:
         if ftype == TType.LIST:
           self.notNullConstraints = []
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
           (_etype867, _size864) = iprot.readListBegin()
@@ -18366,6 +18557,8 @@ class create_table_with_constraints_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype860, _size857) = iprot.readListBegin()
           for _i861 in xrange(_size857):
@@ -18391,7 +18584,17 @@ class create_table_with_constraints_args:
             self.notNullConstraints.append(_elem850)
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+          (_etype853, _size850) = iprot.readListBegin()
+          for _i854 in xrange(_size850):
+            _elem855 = SQLNotNullConstraint()
+            _elem855.read(iprot)
+            self.notNullConstraints.append(_elem855)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -18399,12 +18602,15 @@ class create_table_with_constraints_args:
         if ftype == TType.LIST:
           self.defaultConstraints = []
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype873, _size870) = iprot.readListBegin()
           for _i874 in xrange(_size870):
             _elem875 = SQLDefaultConstraint()
             _elem875.read(iprot)
             self.defaultConstraints.append(_elem875)
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype866, _size863) = iprot.readListBegin()
           for _i867 in xrange(_size863):
@@ -18461,7 +18667,17 @@ class create_table_with_constraints_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype859, _size856) = iprot.readListBegin()
+          for _i860 in xrange(_size856):
+            _elem861 = SQLDefaultConstraint()
+            _elem861.read(iprot)
+            self.defaultConstraints.append(_elem861)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -18484,11 +18700,14 @@ class create_table_with_constraints_args:
       oprot.writeListBegin(TType.STRUCT, len(self.primaryKeys))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter882 in self.primaryKeys:
         iter882.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter875 in self.primaryKeys:
         iter875.write(oprot)
@@ -18517,7 +18736,14 @@ class create_table_with_constraints_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter862 in self.primaryKeys:
+        iter862.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.foreignKeys is not None:
@@ -18525,11 +18751,14 @@ class create_table_with_constraints_args:
       oprot.writeListBegin(TType.STRUCT, len(self.foreignKeys))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter883 in self.foreignKeys:
         iter883.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter876 in self.foreignKeys:
         iter876.write(oprot)
@@ -18558,7 +18787,14 @@ class create_table_with_constraints_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter863 in self.foreignKeys:
+        iter863.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.uniqueConstraints is not None:
@@ -18566,11 +18802,14 @@ class create_table_with_constraints_args:
       oprot.writeListBegin(TType.STRUCT, len(self.uniqueConstraints))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter884 in self.uniqueConstraints:
         iter884.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter877 in self.uniqueConstraints:
         iter877.write(oprot)
@@ -18599,7 +18838,14 @@ class create_table_with_constraints_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter864 in self.uniqueConstraints:
+        iter864.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.notNullConstraints is not None:
@@ -18607,11 +18853,14 @@ class create_table_with_constraints_args:
       oprot.writeListBegin(TType.STRUCT, len(self.notNullConstraints))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter885 in self.notNullConstraints:
         iter885.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter878 in self.notNullConstraints:
         iter878.write(oprot)
@@ -18628,16 +18877,26 @@ class create_table_with_constraints_args:
         iter860.write(oprot)
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+      for iter865 in self.notNullConstraints:
+        iter865.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.defaultConstraints is not None:
       oprot.writeFieldBegin('defaultConstraints', TType.LIST, 6)
       oprot.writeListBegin(TType.STRUCT, len(self.defaultConstraints))
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter886 in self.defaultConstraints:
         iter886.write(oprot)
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter879 in self.defaultConstraints:
         iter879.write(oprot)
@@ -18675,7 +18934,14 @@ class create_table_with_constraints_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter866 in self.defaultConstraints:
+        iter866.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -20237,6 +20503,7 @@ class truncate_table_args:
           self.partNames = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype891, _size888) = iprot.readListBegin()
           for _i892 in xrange(_size888):
             _elem893 = iprot.readString()
@@ -20244,6 +20511,8 @@ class truncate_table_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype884, _size881) = iprot.readListBegin()
           for _i885 in xrange(_size881):
@@ -20281,7 +20550,16 @@ class truncate_table_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype870, _size867) = iprot.readListBegin()
+          for _i871 in xrange(_size867):
+            _elem872 = iprot.readString()
+            self.partNames.append(_elem872)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -20308,11 +20586,14 @@ class truncate_table_args:
       oprot.writeListBegin(TType.STRING, len(self.partNames))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter894 in self.partNames:
         oprot.writeString(iter894)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter887 in self.partNames:
         oprot.writeString(iter887)
@@ -20341,7 +20622,14 @@ class truncate_table_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter873 in self.partNames:
+        oprot.writeString(iter873)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -20543,6 +20831,7 @@ class get_tables_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype898, _size895) = iprot.readListBegin()
           for _i899 in xrange(_size895):
             _elem900 = iprot.readString()
@@ -20550,6 +20839,8 @@ class get_tables_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype891, _size888) = iprot.readListBegin()
           for _i892 in xrange(_size888):
@@ -20587,7 +20878,16 @@ class get_tables_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype877, _size874) = iprot.readListBegin()
+          for _i878 in xrange(_size874):
+            _elem879 = iprot.readString()
+            self.success.append(_elem879)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -20612,11 +20912,14 @@ class get_tables_result:
       oprot.writeListBegin(TType.STRING, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter901 in self.success:
         oprot.writeString(iter901)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter894 in self.success:
         oprot.writeString(iter894)
@@ -20645,7 +20948,14 @@ class get_tables_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter880 in self.success:
+        oprot.writeString(iter880)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -20797,6 +21107,7 @@ class get_tables_by_type_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype905, _size902) = iprot.readListBegin()
           for _i906 in xrange(_size902):
             _elem907 = iprot.readString()
@@ -20804,6 +21115,8 @@ class get_tables_by_type_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype898, _size895) = iprot.readListBegin()
           for _i899 in xrange(_size895):
@@ -20841,7 +21154,16 @@ class get_tables_by_type_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype884, _size881) = iprot.readListBegin()
+          for _i885 in xrange(_size881):
+            _elem886 = iprot.readString()
+            self.success.append(_elem886)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -20866,11 +21188,14 @@ class get_tables_by_type_result:
       oprot.writeListBegin(TType.STRING, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter908 in self.success:
         oprot.writeString(iter908)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter901 in self.success:
         oprot.writeString(iter901)
@@ -20899,7 +21224,14 @@ class get_tables_by_type_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter887 in self.success:
+        oprot.writeString(iter887)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -21025,6 +21357,7 @@ class get_materialized_views_for_rewriting_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype912, _size909) = iprot.readListBegin()
           for _i913 in xrange(_size909):
             _elem914 = iprot.readString()
@@ -21032,6 +21365,8 @@ class get_materialized_views_for_rewriting_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype905, _size902) = iprot.readListBegin()
           for _i906 in xrange(_size902):
@@ -21069,7 +21404,16 @@ class get_materialized_views_for_rewriting_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype891, _size888) = iprot.readListBegin()
+          for _i892 in xrange(_size888):
+            _elem893 = iprot.readString()
+            self.success.append(_elem893)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -21094,11 +21438,14 @@ class get_materialized_views_for_rewriting_result:
       oprot.writeListBegin(TType.STRING, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter915 in self.success:
         oprot.writeString(iter915)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter908 in self.success:
         oprot.writeString(iter908)
@@ -21127,7 +21474,14 @@ class get_materialized_views_for_rewriting_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter894 in self.success:
+        oprot.writeString(iter894)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -21202,6 +21556,7 @@ class get_table_meta_args:
           self.tbl_types = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype919, _size916) = iprot.readListBegin()
           for _i920 in xrange(_size916):
             _elem921 = iprot.readString()
@@ -21209,6 +21564,8 @@ class get_table_meta_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype912, _size909) = iprot.readListBegin()
           for _i913 in xrange(_size909):
@@ -21246,7 +21603,16 @@ class get_table_meta_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype898, _size895) = iprot.readListBegin()
+          for _i899 in xrange(_size895):
+            _elem900 = iprot.readString()
+            self.tbl_types.append(_elem900)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -21273,11 +21639,14 @@ class get_table_meta_args:
       oprot.writeListBegin(TType.STRING, len(self.tbl_types))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter922 in self.tbl_types:
         oprot.writeString(iter922)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter915 in self.tbl_types:
         oprot.writeString(iter915)
@@ -21306,7 +21675,14 @@ class get_table_meta_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter901 in self.tbl_types:
+        oprot.writeString(iter901)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -21364,6 +21740,7 @@ class get_table_meta_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype926, _size923) = iprot.readListBegin()
           for _i927 in xrange(_size923):
             _elem928 = TableMeta()
@@ -21372,6 +21749,8 @@ class get_table_meta_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype919, _size916) = iprot.readListBegin()
           for _i920 in xrange(_size916):
@@ -21413,7 +21792,17 @@ class get_table_meta_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype905, _size902) = iprot.readListBegin()
+          for _i906 in xrange(_size902):
+            _elem907 = TableMeta()
+            _elem907.read(iprot)
+            self.success.append(_elem907)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -21438,11 +21827,14 @@ class get_table_meta_result:
       oprot.writeListBegin(TType.STRUCT, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter929 in self.success:
         iter929.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter922 in self.success:
         iter922.write(oprot)
@@ -21471,7 +21863,14 @@ class get_table_meta_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter908 in self.success:
+        iter908.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -21597,6 +21996,7 @@ class get_all_tables_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype933, _size930) = iprot.readListBegin()
           for _i934 in xrange(_size930):
             _elem935 = iprot.readString()
@@ -21604,6 +22004,8 @@ class get_all_tables_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype926, _size923) = iprot.readListBegin()
           for _i927 in xrange(_size923):
@@ -21641,7 +22043,16 @@ class get_all_tables_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype912, _size909) = iprot.readListBegin()
+          for _i913 in xrange(_size909):
+            _elem914 = iprot.readString()
+            self.success.append(_elem914)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -21666,11 +22077,14 @@ class get_all_tables_result:
       oprot.writeListBegin(TType.STRING, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter936 in self.success:
         oprot.writeString(iter936)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter929 in self.success:
         oprot.writeString(iter929)
@@ -21699,7 +22113,14 @@ class get_all_tables_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter915 in self.success:
+        oprot.writeString(iter915)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -21937,6 +22358,7 @@ class get_table_objects_by_name_args:
           self.tbl_names = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype940, _size937) = iprot.readListBegin()
           for _i941 in xrange(_size937):
             _elem942 = iprot.readString()
@@ -21944,6 +22366,8 @@ class get_table_objects_by_name_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype933, _size930) = iprot.readListBegin()
           for _i934 in xrange(_size930):
@@ -21981,7 +22405,16 @@ class get_table_objects_by_name_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype919, _size916) = iprot.readListBegin()
+          for _i920 in xrange(_size916):
+            _elem921 = iprot.readString()
+            self.tbl_names.append(_elem921)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -22004,11 +22437,14 @@ class get_table_objects_by_name_args:
       oprot.writeListBegin(TType.STRING, len(self.tbl_names))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter943 in self.tbl_names:
         oprot.writeString(iter943)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter936 in self.tbl_names:
         oprot.writeString(iter936)
@@ -22037,7 +22473,14 @@ class get_table_objects_by_name_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter922 in self.tbl_names:
+        oprot.writeString(iter922)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -22091,6 +22534,7 @@ class get_table_objects_by_name_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype947, _size944) = iprot.readListBegin()
           for _i948 in xrange(_size944):
             _elem949 = Table()
@@ -22099,6 +22543,8 @@ class get_table_objects_by_name_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype940, _size937) = iprot.readListBegin()
           for _i941 in xrange(_size937):
@@ -22140,7 +22586,17 @@ class get_table_objects_by_name_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype926, _size923) = iprot.readListBegin()
+          for _i927 in xrange(_size923):
+            _elem928 = Table()
+            _elem928.read(iprot)
+            self.success.append(_elem928)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -22159,11 +22615,14 @@ class get_table_objects_by_name_result:
       oprot.writeListBegin(TType.STRUCT, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter950 in self.success:
         iter950.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter943 in self.success:
         iter943.write(oprot)
@@ -22192,7 +22651,14 @@ class get_table_objects_by_name_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter929 in self.success:
+        iter929.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -22586,6 +23052,7 @@ class get_materialization_invalidation_info_args:
           self.tbl_names = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype954, _size951) = iprot.readListBegin()
           for _i955 in xrange(_size951):
             _elem956 = iprot.readString()
@@ -22593,6 +23060,8 @@ class get_materialization_invalidation_info_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype947, _size944) = iprot.readListBegin()
           for _i948 in xrange(_size944):
@@ -22630,7 +23099,16 @@ class get_materialization_invalidation_info_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype933, _size930) = iprot.readListBegin()
+          for _i934 in xrange(_size930):
+            _elem935 = iprot.readString()
+            self.tbl_names.append(_elem935)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -22653,11 +23131,14 @@ class get_materialization_invalidation_info_args:
       oprot.writeListBegin(TType.STRING, len(self.tbl_names))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter957 in self.tbl_names:
         oprot.writeString(iter957)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter950 in self.tbl_names:
         oprot.writeString(iter950)
@@ -22686,7 +23167,14 @@ class get_materialization_invalidation_info_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter936 in self.tbl_names:
+        oprot.writeString(iter936)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -22749,6 +23237,7 @@ class get_materialization_invalidation_info_result:
           self.success = {}
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_ktype959, _vtype960, _size958 ) = iprot.readMapBegin()
           for _i962 in xrange(_size958):
             _key963 = iprot.readString()
@@ -22758,6 +23247,8 @@ class get_materialization_invalidation_info_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_ktype952, _vtype953, _size951 ) = iprot.readMapBegin()
           for _i955 in xrange(_size951):
@@ -22803,7 +23294,18 @@ class get_materialization_invalidation_info_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_ktype938, _vtype939, _size937 ) = iprot.readMapBegin()
+          for _i941 in xrange(_size937):
+            _key942 = iprot.readString()
+            _val943 = Materialization()
+            _val943.read(iprot)
+            self.success[_key942] = _val943
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -22840,12 +23342,15 @@ class get_materialization_invalidation_info_result:
       oprot.writeMapBegin(TType.STRING, TType.STRUCT, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for kiter965,viter966 in self.success.items():
         oprot.writeString(kiter965)
         viter966.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for kiter958,viter959 in self.success.items():
         oprot.writeString(kiter958)
@@ -22879,7 +23384,15 @@ class get_materialization_invalidation_info_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for kiter944,viter945 in self.success.items():
+        oprot.writeString(kiter944)
+        viter945.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -23246,6 +23759,7 @@ class get_table_names_by_filter_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype970, _size967) = iprot.readListBegin()
           for _i971 in xrange(_size967):
             _elem972 = iprot.readString()
@@ -23253,6 +23767,8 @@ class get_table_names_by_filter_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype963, _size960) = iprot.readListBegin()
           for _i964 in xrange(_size960):
@@ -23290,7 +23806,16 @@ class get_table_names_by_filter_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype949, _size946) = iprot.readListBegin()
+          for _i950 in xrange(_size946):
+            _elem951 = iprot.readString()
+            self.success.append(_elem951)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -23327,11 +23852,14 @@ class get_table_names_by_filter_result:
       oprot.writeListBegin(TType.STRING, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter973 in self.success:
         oprot.writeString(iter973)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter966 in self.success:
         oprot.writeString(iter966)
@@ -23360,7 +23888,14 @@ class get_table_names_by_filter_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter952 in self.success:
+        oprot.writeString(iter952)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -24332,6 +24867,7 @@ class add_partitions_args:
           self.new_parts = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype977, _size974) = iprot.readListBegin()
           for _i978 in xrange(_size974):
             _elem979 = Partition()
@@ -24340,6 +24876,8 @@ class add_partitions_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype970, _size967) = iprot.readListBegin()
           for _i971 in xrange(_size967):
@@ -24381,7 +24919,17 @@ class add_partitions_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype956, _size953) = iprot.readListBegin()
+          for _i957 in xrange(_size953):
+            _elem958 = Partition()
+            _elem958.read(iprot)
+            self.new_parts.append(_elem958)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -24400,11 +24948,14 @@ class add_partitions_args:
       oprot.writeListBegin(TType.STRUCT, len(self.new_parts))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter980 in self.new_parts:
         iter980.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter973 in self.new_parts:
         iter973.write(oprot)
@@ -24433,7 +24984,14 @@ class add_partitions_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter959 in self.new_parts:
+        iter959.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -24593,6 +25151,7 @@ class add_partitions_pspec_args:
           self.new_parts = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype984, _size981) = iprot.readListBegin()
           for _i985 in xrange(_size981):
             _elem986 = PartitionSpec()
@@ -24601,6 +25160,8 @@ class add_partitions_pspec_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype977, _size974) = iprot.readListBegin()
           for _i978 in xrange(_size974):
@@ -24642,7 +25203,17 @@ class add_partitions_pspec_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype963, _size960) = iprot.readListBegin()
+          for _i964 in xrange(_size960):
+            _elem965 = PartitionSpec()
+            _elem965.read(iprot)
+            self.new_parts.append(_elem965)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -24661,11 +25232,14 @@ class add_partitions_pspec_args:
       oprot.writeListBegin(TType.STRUCT, len(self.new_parts))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter987 in self.new_parts:
         iter987.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter980 in self.new_parts:
         iter980.write(oprot)
@@ -24694,7 +25268,14 @@ class add_partitions_pspec_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter966 in self.new_parts:
+        iter966.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -24870,6 +25451,7 @@ class append_partition_args:
           self.part_vals = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype991, _size988) = iprot.readListBegin()
           for _i992 in xrange(_size988):
             _elem993 = iprot.readString()
@@ -24877,6 +25459,8 @@ class append_partition_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype984, _size981) = iprot.readListBegin()
           for _i985 in xrange(_size981):
@@ -24914,7 +25498,16 @@ class append_partition_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype970, _size967) = iprot.readListBegin()
+          for _i971 in xrange(_size967):
+            _elem972 = iprot.readString()
+            self.part_vals.append(_elem972)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -24941,11 +25534,14 @@ class append_partition_args:
       oprot.writeListBegin(TType.STRING, len(self.part_vals))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter994 in self.part_vals:
         oprot.writeString(iter994)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter987 in self.part_vals:
         oprot.writeString(iter987)
@@ -24974,7 +25570,14 @@ class append_partition_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter973 in self.part_vals:
+        oprot.writeString(iter973)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -25329,6 +25932,7 @@ class append_partition_with_environment_context_args:
           self.part_vals = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype998, _size995) = iprot.readListBegin()
           for _i999 in xrange(_size995):
             _elem1000 = iprot.readString()
@@ -25336,6 +25940,8 @@ class append_partition_with_environment_context_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype991, _size988) = iprot.readListBegin()
           for _i992 in xrange(_size988):
@@ -25373,7 +25979,16 @@ class append_partition_with_environment_context_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype977, _size974) = iprot.readListBegin()
+          for _i978 in xrange(_size974):
+            _elem979 = iprot.readString()
+            self.part_vals.append(_elem979)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -25406,11 +26021,14 @@ class append_partition_with_environment_context_args:
       oprot.writeListBegin(TType.STRING, len(self.part_vals))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1001 in self.part_vals:
         oprot.writeString(iter1001)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter994 in self.part_vals:
         oprot.writeString(iter994)
@@ -25439,7 +26057,14 @@ class append_partition_with_environment_context_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter980 in self.part_vals:
+        oprot.writeString(iter980)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.environment_context is not None:
@@ -26036,6 +26661,7 @@ class drop_partition_args:
           self.part_vals = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1005, _size1002) = iprot.readListBegin()
           for _i1006 in xrange(_size1002):
             _elem1007 = iprot.readString()
@@ -26043,6 +26669,8 @@ class drop_partition_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype998, _size995) = iprot.readListBegin()
           for _i999 in xrange(_size995):
@@ -26080,7 +26708,16 @@ class drop_partition_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype984, _size981) = iprot.readListBegin()
+          for _i985 in xrange(_size981):
+            _elem986 = iprot.readString()
+            self.part_vals.append(_elem986)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -26112,11 +26749,14 @@ class drop_partition_args:
       oprot.writeListBegin(TType.STRING, len(self.part_vals))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1008 in self.part_vals:
         oprot.writeString(iter1008)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1001 in self.part_vals:
         oprot.writeString(iter1001)
@@ -26145,7 +26785,14 @@ class drop_partition_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter987 in self.part_vals:
+        oprot.writeString(iter987)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.deleteData is not None:
@@ -26320,6 +26967,7 @@ class drop_partition_with_environment_context_args:
           self.part_vals = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1012, _size1009) = iprot.readListBegin()
           for _i1013 in xrange(_size1009):
             _elem1014 = iprot.readString()
@@ -26327,6 +26975,8 @@ class drop_partition_with_environment_context_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1005, _size1002) = iprot.readListBegin()
           for _i1006 in xrange(_size1002):
@@ -26364,7 +27014,16 @@ class drop_partition_with_environment_context_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype991, _size988) = iprot.readListBegin()
+          for _i992 in xrange(_size988):
+            _elem993 = iprot.readString()
+            self.part_vals.append(_elem993)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -26402,11 +27061,14 @@ class drop_partition_with_environment_context_args:
       oprot.writeListBegin(TType.STRING, len(self.part_vals))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1015 in self.part_vals:
         oprot.writeString(iter1015)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1008 in self.part_vals:
         oprot.writeString(iter1008)
@@ -26435,7 +27097,14 @@ class drop_partition_with_environment_context_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter994 in self.part_vals:
+        oprot.writeString(iter994)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.deleteData is not None:
@@ -27174,6 +27843,7 @@ class get_partition_args:
           self.part_vals = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1019, _size1016) = iprot.readListBegin()
           for _i1020 in xrange(_size1016):
             _elem1021 = iprot.readString()
@@ -27181,6 +27851,8 @@ class get_partition_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1012, _size1009) = iprot.readListBegin()
           for _i1013 in xrange(_size1009):
@@ -27218,7 +27890,16 @@ class get_partition_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype998, _size995) = iprot.readListBegin()
+          for _i999 in xrange(_size995):
+            _elem1000 = iprot.readString()
+            self.part_vals.append(_elem1000)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -27245,11 +27926,14 @@ class get_partition_args:
       oprot.writeListBegin(TType.STRING, len(self.part_vals))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1022 in self.part_vals:
         oprot.writeString(iter1022)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1015 in self.part_vals:
         oprot.writeString(iter1015)
@@ -27278,7 +27962,14 @@ class get_partition_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1001 in self.part_vals:
+        oprot.writeString(iter1001)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -27439,6 +28130,7 @@ class exchange_partition_args:
           self.partitionSpecs = {}
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_ktype1024, _vtype1025, _size1023 ) = iprot.readMapBegin()
           for _i1027 in xrange(_size1023):
             _key1028 = iprot.readString()
@@ -27447,6 +28139,8 @@ class exchange_partition_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_ktype1017, _vtype1018, _size1016 ) = iprot.readMapBegin()
           for _i1020 in xrange(_size1016):
@@ -27488,7 +28182,17 @@ class exchange_partition_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_ktype1003, _vtype1004, _size1002 ) = iprot.readMapBegin()
+          for _i1006 in xrange(_size1002):
+            _key1007 = iprot.readString()
+            _val1008 = iprot.readString()
+            self.partitionSpecs[_key1007] = _val1008
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -27527,12 +28231,15 @@ class exchange_partition_args:
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.partitionSpecs))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for kiter1030,viter1031 in self.partitionSpecs.items():
         oprot.writeString(kiter1030)
         oprot.writeString(viter1031)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for kiter1023,viter1024 in self.partitionSpecs.items():
         oprot.writeString(kiter1023)
@@ -27566,7 +28273,15 @@ class exchange_partition_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for kiter1009,viter1010 in self.partitionSpecs.items():
+        oprot.writeString(kiter1009)
+        oprot.writeString(viter1010)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.source_db is not None:
@@ -27773,6 +28488,7 @@ class exchange_partitions_args:
           self.partitionSpecs = {}
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_ktype1033, _vtype1034, _size1032 ) = iprot.readMapBegin()
           for _i1036 in xrange(_size1032):
             _key1037 = iprot.readString()
@@ -27781,6 +28497,8 @@ class exchange_partitions_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_ktype1026, _vtype1027, _size1025 ) = iprot.readMapBegin()
           for _i1029 in xrange(_size1025):
@@ -27822,7 +28540,17 @@ class exchange_partitions_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_ktype1012, _vtype1013, _size1011 ) = iprot.readMapBegin()
+          for _i1015 in xrange(_size1011):
+            _key1016 = iprot.readString()
+            _val1017 = iprot.readString()
+            self.partitionSpecs[_key1016] = _val1017
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -27861,12 +28589,15 @@ class exchange_partitions_args:
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.partitionSpecs))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for kiter1039,viter1040 in self.partitionSpecs.items():
         oprot.writeString(kiter1039)
         oprot.writeString(viter1040)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for kiter1032,viter1033 in self.partitionSpecs.items():
         oprot.writeString(kiter1032)
@@ -27900,7 +28631,15 @@ class exchange_partitions_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for kiter1018,viter1019 in self.partitionSpecs.items():
+        oprot.writeString(kiter1018)
+        oprot.writeString(viter1019)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.source_db is not None:
@@ -27985,6 +28724,7 @@ class exchange_partitions_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1044, _size1041) = iprot.readListBegin()
           for _i1045 in xrange(_size1041):
             _elem1046 = Partition()
@@ -27993,6 +28733,8 @@ class exchange_partitions_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1037, _size1034) = iprot.readListBegin()
           for _i1038 in xrange(_size1034):
@@ -28034,7 +28776,17 @@ class exchange_partitions_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1023, _size1020) = iprot.readListBegin()
+          for _i1024 in xrange(_size1020):
+            _elem1025 = Partition()
+            _elem1025.read(iprot)
+            self.success.append(_elem1025)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -28077,11 +28829,14 @@ class exchange_partitions_result:
       oprot.writeListBegin(TType.STRUCT, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1047 in self.success:
         iter1047.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1040 in self.success:
         iter1040.write(oprot)
@@ -28110,7 +28865,14 @@ class exchange_partitions_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1026 in self.success:
+        iter1026.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -28206,6 +28968,7 @@ class get_partition_with_auth_args:
           self.part_vals = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1051, _size1048) = iprot.readListBegin()
           for _i1052 in xrange(_size1048):
             _elem1053 = iprot.readString()
@@ -28213,6 +28976,8 @@ class get_partition_with_auth_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1044, _size1041) = iprot.readListBegin()
           for _i1045 in xrange(_size1041):
@@ -28250,7 +29015,16 @@ class get_partition_with_auth_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1030, _size1027) = iprot.readListBegin()
+          for _i1031 in xrange(_size1027):
+            _elem1032 = iprot.readString()
+            self.part_vals.append(_elem1032)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -28264,6 +29038,7 @@ class get_partition_with_auth_args:
           self.group_names = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1057, _size1054) = iprot.readListBegin()
           for _i1058 in xrange(_size1054):
             _elem1059 = iprot.readString()
@@ -28271,6 +29046,8 @@ class get_partition_with_auth_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1050, _size1047) = iprot.readListBegin()
           for _i1051 in xrange(_size1047):
@@ -28308,7 +29085,16 @@ class get_partition_with_auth_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1036, _size1033) = iprot.readListBegin()
+          for _i1037 in xrange(_size1033):
+            _elem1038 = iprot.readString()
+            self.group_names.append(_elem1038)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -28335,11 +29121,14 @@ class get_partition_with_auth_args:
       oprot.writeListBegin(TType.STRING, len(self.part_vals))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1060 in self.part_vals:
         oprot.writeString(iter1060)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1053 in self.part_vals:
         oprot.writeString(iter1053)
@@ -28368,7 +29157,14 @@ class get_partition_with_auth_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1039 in self.part_vals:
+        oprot.writeString(iter1039)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.user_name is not None:
@@ -28380,11 +29176,14 @@ class get_partition_with_auth_args:
       oprot.writeListBegin(TType.STRING, len(self.group_names))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1061 in self.group_names:
         oprot.writeString(iter1061)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1054 in self.group_names:
         oprot.writeString(iter1054)
@@ -28413,7 +29212,14 @@ class get_partition_with_auth_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1040 in self.group_names:
+        oprot.writeString(iter1040)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -28844,6 +29650,7 @@ class get_partitions_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1065, _size1062) = iprot.readListBegin()
           for _i1066 in xrange(_size1062):
             _elem1067 = Partition()
@@ -28852,6 +29659,8 @@ class get_partitions_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1058, _size1055) = iprot.readListBegin()
           for _i1059 in xrange(_size1055):
@@ -28893,7 +29702,17 @@ class get_partitions_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1044, _size1041) = iprot.readListBegin()
+          for _i1045 in xrange(_size1041):
+            _elem1046 = Partition()
+            _elem1046.read(iprot)
+            self.success.append(_elem1046)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -28924,11 +29743,14 @@ class get_partitions_result:
       oprot.writeListBegin(TType.STRUCT, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1068 in self.success:
         iter1068.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1061 in self.success:
         iter1061.write(oprot)
@@ -28957,7 +29779,14 @@ class get_partitions_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1047 in self.success:
+        iter1047.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -29053,6 +29882,7 @@ class get_partitions_with_auth_args:
           self.group_names = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1072, _size1069) = iprot.readListBegin()
           for _i1073 in xrange(_size1069):
             _elem1074 = iprot.readString()
@@ -29060,6 +29890,8 @@ class get_partitions_with_auth_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1065, _size1062) = iprot.readListBegin()
           for _i1066 in xrange(_size1062):
@@ -29097,7 +29929,16 @@ class get_partitions_with_auth_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1051, _size1048) = iprot.readListBegin()
+          for _i1052 in xrange(_size1048):
+            _elem1053 = iprot.readString()
+            self.group_names.append(_elem1053)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -29132,11 +29973,14 @@ class get_partitions_with_auth_args:
       oprot.writeListBegin(TType.STRING, len(self.group_names))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1075 in self.group_names:
         oprot.writeString(iter1075)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1068 in self.group_names:
         oprot.writeString(iter1068)
@@ -29165,7 +30009,14 @@ class get_partitions_with_auth_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1054 in self.group_names:
+        oprot.writeString(iter1054)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -29228,6 +30079,7 @@ class get_partitions_with_auth_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1079, _size1076) = iprot.readListBegin()
           for _i1080 in xrange(_size1076):
             _elem1081 = Partition()
@@ -29236,6 +30088,8 @@ class get_partitions_with_auth_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1072, _size1069) = iprot.readListBegin()
           for _i1073 in xrange(_size1069):
@@ -29277,7 +30131,17 @@ class get_partitions_with_auth_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1058, _size1055) = iprot.readListBegin()
+          for _i1059 in xrange(_size1055):
+            _elem1060 = Partition()
+            _elem1060.read(iprot)
+            self.success.append(_elem1060)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -29308,11 +30172,14 @@ class get_partitions_with_auth_result:
       oprot.writeListBegin(TType.STRUCT, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1082 in self.success:
         iter1082.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1075 in self.success:
         iter1075.write(oprot)
@@ -29341,7 +30208,14 @@ class get_partitions_with_auth_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1061 in self.success:
+        iter1061.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -29501,6 +30375,7 @@ class get_partitions_pspec_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1086, _size1083) = iprot.readListBegin()
           for _i1087 in xrange(_size1083):
             _elem1088 = PartitionSpec()
@@ -29509,6 +30384,8 @@ class get_partitions_pspec_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1079, _size1076) = iprot.readListBegin()
           for _i1080 in xrange(_size1076):
@@ -29550,7 +30427,17 @@ class get_partitions_pspec_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1065, _size1062) = iprot.readListBegin()
+          for _i1066 in xrange(_size1062):
+            _elem1067 = PartitionSpec()
+            _elem1067.read(iprot)
+            self.success.append(_elem1067)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -29581,11 +30468,14 @@ class get_partitions_pspec_result:
       oprot.writeListBegin(TType.STRUCT, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1089 in self.success:
         iter1089.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1082 in self.success:
         iter1082.write(oprot)
@@ -29614,7 +30504,14 @@ class get_partitions_pspec_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1068 in self.success:
+        iter1068.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -29774,6 +30671,7 @@ class get_partition_names_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1093, _size1090) = iprot.readListBegin()
           for _i1094 in xrange(_size1090):
             _elem1095 = iprot.readString()
@@ -29781,6 +30679,8 @@ class get_partition_names_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1086, _size1083) = iprot.readListBegin()
           for _i1087 in xrange(_size1083):
@@ -29818,7 +30718,16 @@ class get_partition_names_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1072, _size1069) = iprot.readListBegin()
+          for _i1073 in xrange(_size1069):
+            _elem1074 = iprot.readString()
+            self.success.append(_elem1074)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -29849,11 +30758,14 @@ class get_partition_names_result:
       oprot.writeListBegin(TType.STRING, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1096 in self.success:
         oprot.writeString(iter1096)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1089 in self.success:
         oprot.writeString(iter1089)
@@ -29882,7 +30794,14 @@ class get_partition_names_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1075 in self.success:
+        oprot.writeString(iter1075)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -30124,6 +31043,7 @@ class get_partitions_ps_args:
           self.part_vals = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1100, _size1097) = iprot.readListBegin()
           for _i1101 in xrange(_size1097):
             _elem1102 = iprot.readString()
@@ -30131,6 +31051,8 @@ class get_partitions_ps_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1093, _size1090) = iprot.readListBegin()
           for _i1094 in xrange(_size1090):
@@ -30168,7 +31090,16 @@ class get_partitions_ps_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1079, _size1076) = iprot.readListBegin()
+          for _i1080 in xrange(_size1076):
+            _elem1081 = iprot.readString()
+            self.part_vals.append(_elem1081)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -30200,11 +31131,14 @@ class get_partitions_ps_args:
       oprot.writeListBegin(TType.STRING, len(self.part_vals))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1103 in self.part_vals:
         oprot.writeString(iter1103)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1096 in self.part_vals:
         oprot.writeString(iter1096)
@@ -30233,7 +31167,14 @@ class get_partitions_ps_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1082 in self.part_vals:
+        oprot.writeString(iter1082)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.max_parts is not None:
@@ -30299,6 +31240,7 @@ class get_partitions_ps_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1107, _size1104) = iprot.readListBegin()
           for _i1108 in xrange(_size1104):
             _elem1109 = Partition()
@@ -30307,6 +31249,8 @@ class get_partitions_ps_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1100, _size1097) = iprot.readListBegin()
           for _i1101 in xrange(_size1097):
@@ -30348,7 +31292,17 @@ class get_partitions_ps_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1086, _size1083) = iprot.readListBegin()
+          for _i1087 in xrange(_size1083):
+            _elem1088 = Partition()
+            _elem1088.read(iprot)
+            self.success.append(_elem1088)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -30379,11 +31333,14 @@ class get_partitions_ps_result:
       oprot.writeListBegin(TType.STRUCT, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1110 in self.success:
         iter1110.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1103 in self.success:
         iter1103.write(oprot)
@@ -30412,7 +31369,14 @@ class get_partitions_ps_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1089 in self.success:
+        iter1089.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -30501,6 +31465,7 @@ class get_partitions_ps_with_auth_args:
           self.part_vals = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1114, _size1111) = iprot.readListBegin()
           for _i1115 in xrange(_size1111):
             _elem1116 = iprot.readString()
@@ -30508,6 +31473,8 @@ class get_partitions_ps_with_auth_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1107, _size1104) = iprot.readListBegin()
           for _i1108 in xrange(_size1104):
@@ -30545,7 +31512,16 @@ class get_partitions_ps_with_auth_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1093, _size1090) = iprot.readListBegin()
+          for _i1094 in xrange(_size1090):
+            _elem1095 = iprot.readString()
+            self.part_vals.append(_elem1095)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -30564,6 +31540,7 @@ class get_partitions_ps_with_auth_args:
           self.group_names = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1120, _size1117) = iprot.readListBegin()
           for _i1121 in xrange(_size1117):
             _elem1122 = iprot.readString()
@@ -30571,6 +31548,8 @@ class get_partitions_ps_with_auth_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1113, _size1110) = iprot.readListBegin()
           for _i1114 in xrange(_size1110):
@@ -30608,7 +31587,16 @@ class get_partitions_ps_with_auth_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1099, _size1096) = iprot.readListBegin()
+          for _i1100 in xrange(_size1096):
+            _elem1101 = iprot.readString()
+            self.group_names.append(_elem1101)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -30635,11 +31623,14 @@ class get_partitions_ps_with_auth_args:
       oprot.writeListBegin(TType.STRING, len(self.part_vals))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1123 in self.part_vals:
         oprot.writeString(iter1123)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1116 in self.part_vals:
         oprot.writeString(iter1116)
@@ -30668,7 +31659,14 @@ class get_partitions_ps_with_auth_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1102 in self.part_vals:
+        oprot.writeString(iter1102)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.max_parts is not None:
@@ -30684,11 +31682,14 @@ class get_partitions_ps_with_auth_args:
       oprot.writeListBegin(TType.STRING, len(self.group_names))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1124 in self.group_names:
         oprot.writeString(iter1124)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1117 in self.group_names:
         oprot.writeString(iter1117)
@@ -30717,7 +31718,14 @@ class get_partitions_ps_with_auth_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1103 in self.group_names:
+        oprot.writeString(iter1103)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -30781,6 +31789,7 @@ class get_partitions_ps_with_auth_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1128, _size1125) = iprot.readListBegin()
           for _i1129 in xrange(_size1125):
             _elem1130 = Partition()
@@ -30789,6 +31798,8 @@ class get_partitions_ps_with_auth_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1121, _size1118) = iprot.readListBegin()
           for _i1122 in xrange(_size1118):
@@ -30830,7 +31841,17 @@ class get_partitions_ps_with_auth_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1107, _size1104) = iprot.readListBegin()
+          for _i1108 in xrange(_size1104):
+            _elem1109 = Partition()
+            _elem1109.read(iprot)
+            self.success.append(_elem1109)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -30861,11 +31882,14 @@ class get_partitions_ps_with_auth_result:
       oprot.writeListBegin(TType.STRUCT, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1131 in self.success:
         iter1131.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1124 in self.success:
         iter1124.write(oprot)
@@ -30894,7 +31918,14 @@ class get_partitions_ps_with_auth_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1110 in self.success:
+        iter1110.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -30977,6 +32008,7 @@ class get_partition_names_ps_args:
           self.part_vals = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1135, _size1132) = iprot.readListBegin()
           for _i1136 in xrange(_size1132):
             _elem1137 = iprot.readString()
@@ -30984,6 +32016,8 @@ class get_partition_names_ps_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1128, _size1125) = iprot.readListBegin()
           for _i1129 in xrange(_size1125):
@@ -31021,7 +32055,16 @@ class get_partition_names_ps_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1114, _size1111) = iprot.readListBegin()
+          for _i1115 in xrange(_size1111):
+            _elem1116 = iprot.readString()
+            self.part_vals.append(_elem1116)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -31053,11 +32096,14 @@ class get_partition_names_ps_args:
       oprot.writeListBegin(TType.STRING, len(self.part_vals))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1138 in self.part_vals:
         oprot.writeString(iter1138)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1131 in self.part_vals:
         oprot.writeString(iter1131)
@@ -31086,7 +32132,14 @@ class get_partition_names_ps_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1117 in self.part_vals:
+        oprot.writeString(iter1117)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.max_parts is not None:
@@ -31152,6 +32205,7 @@ class get_partition_names_ps_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1142, _size1139) = iprot.readListBegin()
           for _i1143 in xrange(_size1139):
             _elem1144 = iprot.readString()
@@ -31159,6 +32213,8 @@ class get_partition_names_ps_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1135, _size1132) = iprot.readListBegin()
           for _i1136 in xrange(_size1132):
@@ -31196,7 +32252,16 @@ class get_partition_names_ps_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1121, _size1118) = iprot.readListBegin()
+          for _i1122 in xrange(_size1118):
+            _elem1123 = iprot.readString()
+            self.success.append(_elem1123)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -31227,11 +32292,14 @@ class get_partition_names_ps_result:
       oprot.writeListBegin(TType.STRING, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1145 in self.success:
         oprot.writeString(iter1145)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1138 in self.success:
         oprot.writeString(iter1138)
@@ -31260,7 +32328,14 @@ class get_partition_names_ps_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1124 in self.success:
+        oprot.writeString(iter1124)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -31433,6 +32508,7 @@ class get_partitions_by_filter_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1149, _size1146) = iprot.readListBegin()
           for _i1150 in xrange(_size1146):
             _elem1151 = Partition()
@@ -31441,6 +32517,8 @@ class get_partitions_by_filter_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1142, _size1139) = iprot.readListBegin()
           for _i1143 in xrange(_size1139):
@@ -31482,7 +32560,17 @@ class get_partitions_by_filter_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1128, _size1125) = iprot.readListBegin()
+          for _i1129 in xrange(_size1125):
+            _elem1130 = Partition()
+            _elem1130.read(iprot)
+            self.success.append(_elem1130)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -31513,11 +32601,14 @@ class get_partitions_by_filter_result:
       oprot.writeListBegin(TType.STRUCT, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1152 in self.success:
         iter1152.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1145 in self.success:
         iter1145.write(oprot)
@@ -31546,7 +32637,14 @@ class get_partitions_by_filter_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1131 in self.success:
+        iter1131.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -31719,6 +32817,7 @@ class get_part_specs_by_filter_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1156, _size1153) = iprot.readListBegin()
           for _i1157 in xrange(_size1153):
             _elem1158 = PartitionSpec()
@@ -31727,6 +32826,8 @@ class get_part_specs_by_filter_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1149, _size1146) = iprot.readListBegin()
           for _i1150 in xrange(_size1146):
@@ -31768,7 +32869,17 @@ class get_part_specs_by_filter_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1135, _size1132) = iprot.readListBegin()
+          for _i1136 in xrange(_size1132):
+            _elem1137 = PartitionSpec()
+            _elem1137.read(iprot)
+            self.success.append(_elem1137)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -31799,11 +32910,14 @@ class get_part_specs_by_filter_result:
       oprot.writeListBegin(TType.STRUCT, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1159 in self.success:
         iter1159.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1152 in self.success:
         iter1152.write(oprot)
@@ -31832,7 +32946,14 @@ class get_part_specs_by_filter_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1138 in self.success:
+        iter1138.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -32254,6 +33375,7 @@ class get_partitions_by_names_args:
           self.names = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1163, _size1160) = iprot.readListBegin()
           for _i1164 in xrange(_size1160):
             _elem1165 = iprot.readString()
@@ -32261,6 +33383,8 @@ class get_partitions_by_names_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1156, _size1153) = iprot.readListBegin()
           for _i1157 in xrange(_size1153):
@@ -32298,7 +33422,16 @@ class get_partitions_by_names_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1142, _size1139) = iprot.readListBegin()
+          for _i1143 in xrange(_size1139):
+            _elem1144 = iprot.readString()
+            self.names.append(_elem1144)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -32325,11 +33458,14 @@ class get_partitions_by_names_args:
       oprot.writeListBegin(TType.STRING, len(self.names))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1166 in self.names:
         oprot.writeString(iter1166)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1159 in self.names:
         oprot.writeString(iter1159)
@@ -32358,7 +33494,14 @@ class get_partitions_by_names_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1145 in self.names:
+        oprot.writeString(iter1145)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -32419,6 +33562,7 @@ class get_partitions_by_names_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1170, _size1167) = iprot.readListBegin()
           for _i1171 in xrange(_size1167):
             _elem1172 = Partition()
@@ -32427,6 +33571,8 @@ class get_partitions_by_names_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1163, _size1160) = iprot.readListBegin()
           for _i1164 in xrange(_size1160):
@@ -32468,7 +33614,17 @@ class get_partitions_by_names_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1149, _size1146) = iprot.readListBegin()
+          for _i1150 in xrange(_size1146):
+            _elem1151 = Partition()
+            _elem1151.read(iprot)
+            self.success.append(_elem1151)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -32499,11 +33655,14 @@ class get_partitions_by_names_result:
       oprot.writeListBegin(TType.STRUCT, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1173 in self.success:
         iter1173.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1166 in self.success:
         iter1166.write(oprot)
@@ -32532,7 +33691,14 @@ class get_partitions_by_names_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1152 in self.success:
+        iter1152.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -32784,6 +33950,7 @@ class alter_partitions_args:
           self.new_parts = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1177, _size1174) = iprot.readListBegin()
           for _i1178 in xrange(_size1174):
             _elem1179 = Partition()
@@ -32792,6 +33959,8 @@ class alter_partitions_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1170, _size1167) = iprot.readListBegin()
           for _i1171 in xrange(_size1167):
@@ -32833,7 +34002,17 @@ class alter_partitions_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1156, _size1153) = iprot.readListBegin()
+          for _i1157 in xrange(_size1153):
+            _elem1158 = Partition()
+            _elem1158.read(iprot)
+            self.new_parts.append(_elem1158)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -32860,11 +34039,14 @@ class alter_partitions_args:
       oprot.writeListBegin(TType.STRUCT, len(self.new_parts))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1180 in self.new_parts:
         iter1180.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1173 in self.new_parts:
         iter1173.write(oprot)
@@ -32893,7 +34075,14 @@ class alter_partitions_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1159 in self.new_parts:
+        iter1159.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -33048,6 +34237,7 @@ class alter_partitions_with_environment_context_args:
           self.new_parts = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1184, _size1181) = iprot.readListBegin()
           for _i1185 in xrange(_size1181):
             _elem1186 = Partition()
@@ -33056,6 +34246,8 @@ class alter_partitions_with_environment_context_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1177, _size1174) = iprot.readListBegin()
           for _i1178 in xrange(_size1174):
@@ -33097,7 +34289,17 @@ class alter_partitions_with_environment_context_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1163, _size1160) = iprot.readListBegin()
+          for _i1164 in xrange(_size1160):
+            _elem1165 = Partition()
+            _elem1165.read(iprot)
+            self.new_parts.append(_elem1165)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -33130,11 +34332,14 @@ class alter_partitions_with_environment_context_args:
       oprot.writeListBegin(TType.STRUCT, len(self.new_parts))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1187 in self.new_parts:
         iter1187.write(oprot)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1180 in self.new_parts:
         iter1180.write(oprot)
@@ -33163,7 +34368,14 @@ class alter_partitions_with_environment_context_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1166 in self.new_parts:
+        iter1166.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.environment_context is not None:
@@ -33509,6 +34721,7 @@ class rename_partition_args:
           self.part_vals = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1191, _size1188) = iprot.readListBegin()
           for _i1192 in xrange(_size1188):
             _elem1193 = iprot.readString()
@@ -33516,6 +34729,8 @@ class rename_partition_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1184, _size1181) = iprot.readListBegin()
           for _i1185 in xrange(_size1181):
@@ -33553,7 +34768,16 @@ class rename_partition_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1170, _size1167) = iprot.readListBegin()
+          for _i1171 in xrange(_size1167):
+            _elem1172 = iprot.readString()
+            self.part_vals.append(_elem1172)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -33586,11 +34810,14 @@ class rename_partition_args:
       oprot.writeListBegin(TType.STRING, len(self.part_vals))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1194 in self.part_vals:
         oprot.writeString(iter1194)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1187 in self.part_vals:
         oprot.writeString(iter1187)
@@ -33619,7 +34846,14 @@ class rename_partition_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1173 in self.part_vals:
+        oprot.writeString(iter1173)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.new_part is not None:
@@ -33763,6 +34997,7 @@ class partition_name_has_valid_characters_args:
           self.part_vals = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1198, _size1195) = iprot.readListBegin()
           for _i1199 in xrange(_size1195):
             _elem1200 = iprot.readString()
@@ -33770,6 +35005,8 @@ class partition_name_has_valid_characters_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1191, _size1188) = iprot.readListBegin()
           for _i1192 in xrange(_size1188):
@@ -33807,7 +35044,16 @@ class partition_name_has_valid_characters_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1177, _size1174) = iprot.readListBegin()
+          for _i1178 in xrange(_size1174):
+            _elem1179 = iprot.readString()
+            self.part_vals.append(_elem1179)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -33831,11 +35077,14 @@ class partition_name_has_valid_characters_args:
       oprot.writeListBegin(TType.STRING, len(self.part_vals))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1201 in self.part_vals:
         oprot.writeString(iter1201)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1194 in self.part_vals:
         oprot.writeString(iter1194)
@@ -33864,7 +35113,14 @@ class partition_name_has_valid_characters_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1180 in self.part_vals:
+        oprot.writeString(iter1180)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.throw_exception is not None:
@@ -34224,6 +35480,7 @@ class partition_name_to_vals_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1205, _size1202) = iprot.readListBegin()
           for _i1206 in xrange(_size1202):
             _elem1207 = iprot.readString()
@@ -34231,6 +35488,8 @@ class partition_name_to_vals_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1198, _size1195) = iprot.readListBegin()
           for _i1199 in xrange(_size1195):
@@ -34268,7 +35527,16 @@ class partition_name_to_vals_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1184, _size1181) = iprot.readListBegin()
+          for _i1185 in xrange(_size1181):
+            _elem1186 = iprot.readString()
+            self.success.append(_elem1186)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -34293,11 +35561,14 @@ class partition_name_to_vals_result:
       oprot.writeListBegin(TType.STRING, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter1208 in self.success:
         oprot.writeString(iter1208)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1201 in self.success:
         oprot.writeString(iter1201)
@@ -34326,7 +35597,14 @@ class partition_name_to_vals_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1187 in self.success:
+        oprot.writeString(iter1187)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -34452,6 +35730,7 @@ class partition_name_to_spec_result:
           self.success = {}
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_ktype1210, _vtype1211, _size1209 ) = iprot.readMapBegin()
           for _i1213 in xrange(_size1209):
             _key1214 = iprot.readString()
@@ -34460,6 +35739,8 @@ class partition_name_to_spec_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_ktype1203, _vtype1204, _size1202 ) = iprot.readMapBegin()
           for _i1206 in xrange(_size1202):
@@ -34501,7 +35782,17 @@ class partition_name_to_spec_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_ktype1189, _vtype1190, _size1188 ) = iprot.readMapBegin()
+          for _i1192 in xrange(_size1188):
+            _key1193 = iprot.readString()
+            _val1194 = iprot.readString()
+            self.success[_key1193] = _val1194
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -34526,12 +35817,15 @@ class partition_name_to_spec_result:
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.success))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for kiter1216,viter1217 in self.success.items():
         oprot.writeString(kiter1216)
         oprot.writeString(viter1217)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for kiter1209,viter1210 in self.success.items():
         oprot.writeString(kiter1209)
@@ -34565,7 +35859,15 @@ class partition_name_to_spec_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for kiter1195,viter1196 in self.success.items():
+        oprot.writeString(kiter1195)
+        oprot.writeString(viter1196)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -34643,6 +35945,7 @@ class markPartitionForEvent_args:
           self.part_vals = {}
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_ktype1219, _vtype1220, _size1218 ) = iprot.readMapBegin()
           for _i1222 in xrange(_size1218):
             _key1223 = iprot.readString()
@@ -34651,6 +35954,8 @@ class markPartitionForEvent_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_ktype1212, _vtype1213, _size1211 ) = iprot.readMapBegin()
           for _i1215 in xrange(_size1211):
@@ -34692,7 +35997,17 @@ class markPartitionForEvent_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_ktype1198, _vtype1199, _size1197 ) = iprot.readMapBegin()
+          for _i1201 in xrange(_size1197):
+            _key1202 = iprot.readString()
+            _val1203 = iprot.readString()
+            self.part_vals[_key1202] = _val1203
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -34724,12 +36039,15 @@ class markPartitionForEvent_args:
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.part_vals))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for kiter1225,viter1226 in self.part_vals.items():
         oprot.writeString(kiter1225)
         oprot.writeString(viter1226)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for kiter1218,viter1219 in self.part_vals.items():
         oprot.writeString(kiter1218)
@@ -34763,7 +36081,15 @@ class markPartitionForEvent_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for kiter1204,viter1205 in self.part_vals.items():
+        oprot.writeString(kiter1204)
+        oprot.writeString(viter1205)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.eventType is not None:
@@ -34979,6 +36305,7 @@ class isPartitionMarkedForEvent_args:
           self.part_vals = {}
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_ktype1228, _vtype1229, _size1227 ) = iprot.readMapBegin()
           for _i1231 in xrange(_size1227):
             _key1232 = iprot.readString()
@@ -34987,6 +36314,8 @@ class isPartitionMarkedForEvent_args:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_ktype1221, _vtype1222, _size1220 ) = iprot.readMapBegin()
           for _i1224 in xrange(_size1220):
@@ -35028,7 +36357,17 @@ class isPartitionMarkedForEvent_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_ktype1207, _vtype1208, _size1206 ) = iprot.readMapBegin()
+          for _i1210 in xrange(_size1206):
+            _key1211 = iprot.readString()
+            _val1212 = iprot.readString()
+            self.part_vals[_key1211] = _val1212
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -35060,12 +36399,15 @@ class isPartitionMarkedForEvent_args:
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.part_vals))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for kiter1234,viter1235 in self.part_vals.items():
         oprot.writeString(kiter1234)
         oprot.writeString(viter1235)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for kiter1227,viter1228 in self.part_vals.items():
         oprot.writeString(kiter1227)
@@ -35099,7 +36441,15 @@ class isPartitionMarkedForEvent_args:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for kiter1213,viter1214 in self.part_vals.items():
+        oprot.writeString(kiter1213)
+        oprot.writeString(viter1214)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.eventType is not None:
@@ -36011,35 +37361,9 @@ class get_default_constraints_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-<<<<<<< HEAD
         if ftype == TType.STRUCT:
           self.success = DefaultConstraintsResponse()
           self.success.read(iprot)
-=======
-        if ftype == TType.LIST:
-          self.success = []
-<<<<<<< HEAD
-          (_etype1213, _size1210) = iprot.readListBegin()
-          for _i1214 in xrange(_size1210):
-            _elem1215 = Index()
-            _elem1215.read(iprot)
-            self.success.append(_elem1215)
-=======
-<<<<<<< HEAD
-          (_etype1220, _size1217) = iprot.readListBegin()
-          for _i1221 in xrange(_size1217):
-            _elem1222 = iprot.readString()
-            self.success.append(_elem1222)
-=======
-          (_etype1192, _size1189) = iprot.readListBegin()
-          for _i1193 in xrange(_size1189):
-            _elem1194 = Index()
-            _elem1194.read(iprot)
-            self.success.append(_elem1194)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-          iprot.readListEnd()
->>>>>>> HIVE-18679 : create/replicate open transaction event
         else:
           iprot.skip(ftype)
       elif fid == 1:
@@ -36065,28 +37389,8 @@ class get_default_constraints_result:
       return
     oprot.writeStructBegin('get_default_constraints_result')
     if self.success is not None:
-<<<<<<< HEAD
       oprot.writeFieldBegin('success', TType.STRUCT, 0)
       self.success.write(oprot)
-=======
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-<<<<<<< HEAD
-      oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter1216 in self.success:
-        iter1216.write(oprot)
-=======
-<<<<<<< HEAD
-      oprot.writeListBegin(TType.STRING, len(self.success))
-      for iter1223 in self.success:
-        oprot.writeString(iter1223)
-=======
-      oprot.writeListBegin(TType.STRUCT, len(self.success))
-      for iter1195 in self.success:
-        iter1195.write(oprot)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-      oprot.writeListEnd()
->>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeFieldEnd()
     if self.o1 is not None:
       oprot.writeFieldBegin('o1', TType.STRUCT, 1)
@@ -36381,33 +37685,8 @@ class update_table_column_statistics_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-<<<<<<< HEAD
-<<<<<<< HEAD
         if ftype == TType.BOOL:
           self.success = iprot.readBool()
-=======
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype1220, _size1217) = iprot.readListBegin()
-          for _i1221 in xrange(_size1217):
-            _elem1222 = iprot.readString()
-            self.success.append(_elem1222)
-          iprot.readListEnd()
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-        if ftype == TType.STRUCT:
-          self.success = PrimaryKeysResponse()
-          self.success.read(iprot)
-=======
-        if ftype == TType.LIST:
-          self.success = []
-          (_etype1199, _size1196) = iprot.readListBegin()
-          for _i1200 in xrange(_size1196):
-            _elem1201 = iprot.readString()
-            self.success.append(_elem1201)
-          iprot.readListEnd()
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
         else:
           iprot.skip(ftype)
       elif fid == 1:
@@ -36445,32 +37724,12 @@ class update_table_column_statistics_result:
       return
     oprot.writeStructBegin('update_table_column_statistics_result')
     if self.success is not None:
-<<<<<<< HEAD
-<<<<<<< HEAD
       oprot.writeFieldBegin('success', TType.BOOL, 0)
       oprot.writeBool(self.success)
-=======
-      oprot.writeFieldBegin('success', TType.STRUCT, 0)
-      self.success.write(oprot)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       oprot.writeFieldEnd()
     if self.o1 is not None:
       oprot.writeFieldBegin('o1', TType.STRUCT, 1)
       self.o1.write(oprot)
-=======
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRING, len(self.success))
-<<<<<<< HEAD
-      for iter1223 in self.success:
-        oprot.writeString(iter1223)
-      oprot.writeListEnd()
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-      for iter1202 in self.success:
-        oprot.writeString(iter1202)
-      oprot.writeListEnd()
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
       oprot.writeFieldEnd()
     if self.o2 is not None:
       oprot.writeFieldBegin('o2', TType.STRUCT, 2)
@@ -38842,10 +40101,24 @@ class get_functions_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
+<<<<<<< HEAD
           (_etype1239, _size1236) = iprot.readListBegin()
           for _i1240 in xrange(_size1236):
             _elem1241 = iprot.readString()
             self.success.append(_elem1241)
+=======
+<<<<<<< HEAD
+          (_etype1232, _size1229) = iprot.readListBegin()
+          for _i1233 in xrange(_size1229):
+            _elem1234 = iprot.readString()
+            self.success.append(_elem1234)
+=======
+          (_etype1218, _size1215) = iprot.readListBegin()
+          for _i1219 in xrange(_size1215):
+            _elem1220 = iprot.readString()
+            self.success.append(_elem1220)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -38868,8 +40141,18 @@ class get_functions_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRING, len(self.success))
+<<<<<<< HEAD
       for iter1242 in self.success:
         oprot.writeString(iter1242)
+=======
+<<<<<<< HEAD
+      for iter1235 in self.success:
+        oprot.writeString(iter1235)
+=======
+      for iter1221 in self.success:
+        oprot.writeString(iter1221)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -39557,10 +40840,24 @@ class get_role_names_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
+<<<<<<< HEAD
           (_etype1246, _size1243) = iprot.readListBegin()
           for _i1247 in xrange(_size1243):
             _elem1248 = iprot.readString()
             self.success.append(_elem1248)
+=======
+<<<<<<< HEAD
+          (_etype1239, _size1236) = iprot.readListBegin()
+          for _i1240 in xrange(_size1236):
+            _elem1241 = iprot.readString()
+            self.success.append(_elem1241)
+=======
+          (_etype1225, _size1222) = iprot.readListBegin()
+          for _i1226 in xrange(_size1222):
+            _elem1227 = iprot.readString()
+            self.success.append(_elem1227)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -39583,8 +40880,18 @@ class get_role_names_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRING, len(self.success))
+<<<<<<< HEAD
       for iter1249 in self.success:
         oprot.writeString(iter1249)
+=======
+<<<<<<< HEAD
+      for iter1242 in self.success:
+        oprot.writeString(iter1242)
+=======
+      for iter1228 in self.success:
+        oprot.writeString(iter1228)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -40098,11 +41405,27 @@ class list_roles_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
+<<<<<<< HEAD
           (_etype1253, _size1250) = iprot.readListBegin()
           for _i1254 in xrange(_size1250):
             _elem1255 = Role()
             _elem1255.read(iprot)
             self.success.append(_elem1255)
+=======
+<<<<<<< HEAD
+          (_etype1246, _size1243) = iprot.readListBegin()
+          for _i1247 in xrange(_size1243):
+            _elem1248 = Role()
+            _elem1248.read(iprot)
+            self.success.append(_elem1248)
+=======
+          (_etype1232, _size1229) = iprot.readListBegin()
+          for _i1233 in xrange(_size1229):
+            _elem1234 = Role()
+            _elem1234.read(iprot)
+            self.success.append(_elem1234)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -40125,8 +41448,18 @@ class list_roles_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
+<<<<<<< HEAD
       for iter1256 in self.success:
         iter1256.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter1249 in self.success:
+        iter1249.write(oprot)
+=======
+      for iter1235 in self.success:
+        iter1235.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -40635,10 +41968,24 @@ class get_privilege_set_args:
       elif fid == 3:
         if ftype == TType.LIST:
           self.group_names = []
+<<<<<<< HEAD
           (_etype1260, _size1257) = iprot.readListBegin()
           for _i1261 in xrange(_size1257):
             _elem1262 = iprot.readString()
             self.group_names.append(_elem1262)
+=======
+<<<<<<< HEAD
+          (_etype1253, _size1250) = iprot.readListBegin()
+          for _i1254 in xrange(_size1250):
+            _elem1255 = iprot.readString()
+            self.group_names.append(_elem1255)
+=======
+          (_etype1239, _size1236) = iprot.readListBegin()
+          for _i1240 in xrange(_size1236):
+            _elem1241 = iprot.readString()
+            self.group_names.append(_elem1241)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -40663,8 +42010,18 @@ class get_privilege_set_args:
     if self.group_names is not None:
       oprot.writeFieldBegin('group_names', TType.LIST, 3)
       oprot.writeListBegin(TType.STRING, len(self.group_names))
+<<<<<<< HEAD
       for iter1263 in self.group_names:
         oprot.writeString(iter1263)
+=======
+<<<<<<< HEAD
+      for iter1256 in self.group_names:
+        oprot.writeString(iter1256)
+=======
+      for iter1242 in self.group_names:
+        oprot.writeString(iter1242)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -40893,6 +42250,7 @@ class list_privileges_result:
           self.success = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           (_etype1267, _size1264) = iprot.readListBegin()
           for _i1268 in xrange(_size1264):
             _elem1269 = HiveObjectPrivilege()
@@ -40901,6 +42259,8 @@ class list_privileges_result:
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           (_etype1260, _size1257) = iprot.readListBegin()
           for _i1261 in xrange(_size1257):
@@ -40940,7 +42300,17 @@ class list_privileges_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          (_etype1246, _size1243) = iprot.readListBegin()
+          for _i1247 in xrange(_size1243):
+            _elem1248 = HiveObjectPrivilege()
+            _elem1248.read(iprot)
+            self.success.append(_elem1248)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -40962,12 +42332,14 @@ class list_privileges_result:
     oprot.writeStructBegin('list_privileges_result')
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
-<<<<<<< HEAD
       oprot.writeListBegin(TType.STRUCT, len(self.success))
+<<<<<<< HEAD
 <<<<<<< HEAD
       for iter1270 in self.success:
         iter1270.write(oprot)
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
       for iter1263 in self.success:
         iter1263.write(oprot)
@@ -40994,7 +42366,14 @@ class list_privileges_result:
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+      for iter1249 in self.success:
+        iter1249.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -41492,10 +42871,24 @@ class set_ugi_args:
       elif fid == 2:
         if ftype == TType.LIST:
           self.group_names = []
+<<<<<<< HEAD
           (_etype1274, _size1271) = iprot.readListBegin()
           for _i1275 in xrange(_size1271):
             _elem1276 = iprot.readString()
             self.group_names.append(_elem1276)
+=======
+<<<<<<< HEAD
+          (_etype1267, _size1264) = iprot.readListBegin()
+          for _i1268 in xrange(_size1264):
+            _elem1269 = iprot.readString()
+            self.group_names.append(_elem1269)
+=======
+          (_etype1253, _size1250) = iprot.readListBegin()
+          for _i1254 in xrange(_size1250):
+            _elem1255 = iprot.readString()
+            self.group_names.append(_elem1255)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -41516,8 +42909,18 @@ class set_ugi_args:
     if self.group_names is not None:
       oprot.writeFieldBegin('group_names', TType.LIST, 2)
       oprot.writeListBegin(TType.STRING, len(self.group_names))
+<<<<<<< HEAD
       for iter1277 in self.group_names:
         oprot.writeString(iter1277)
+=======
+<<<<<<< HEAD
+      for iter1270 in self.group_names:
+        oprot.writeString(iter1270)
+=======
+      for iter1256 in self.group_names:
+        oprot.writeString(iter1256)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -41572,10 +42975,24 @@ class set_ugi_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
+<<<<<<< HEAD
           (_etype1281, _size1278) = iprot.readListBegin()
           for _i1282 in xrange(_size1278):
             _elem1283 = iprot.readString()
             self.success.append(_elem1283)
+=======
+<<<<<<< HEAD
+          (_etype1274, _size1271) = iprot.readListBegin()
+          for _i1275 in xrange(_size1271):
+            _elem1276 = iprot.readString()
+            self.success.append(_elem1276)
+=======
+          (_etype1260, _size1257) = iprot.readListBegin()
+          for _i1261 in xrange(_size1257):
+            _elem1262 = iprot.readString()
+            self.success.append(_elem1262)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -41598,8 +43015,18 @@ class set_ugi_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRING, len(self.success))
+<<<<<<< HEAD
       for iter1284 in self.success:
         oprot.writeString(iter1284)
+=======
+<<<<<<< HEAD
+      for iter1277 in self.success:
+        oprot.writeString(iter1277)
+=======
+      for iter1263 in self.success:
+        oprot.writeString(iter1263)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:
@@ -41734,25 +43161,8 @@ class get_delegation_token_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-<<<<<<< HEAD
         if ftype == TType.STRING:
           self.success = iprot.readString()
-=======
-        if ftype == TType.LIST:
-          self.success = []
-<<<<<<< HEAD
-          (_etype1234, _size1231) = iprot.readListBegin()
-          for _i1235 in xrange(_size1231):
-            _elem1236 = iprot.readString()
-            self.success.append(_elem1236)
-=======
-          (_etype1213, _size1210) = iprot.readListBegin()
-          for _i1214 in xrange(_size1210):
-            _elem1215 = iprot.readString()
-            self.success.append(_elem1215)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-          iprot.readListEnd()
->>>>>>> HIVE-18679 : create/replicate open transaction event
         else:
           iprot.skip(ftype)
       elif fid == 1:
@@ -41772,21 +43182,8 @@ class get_delegation_token_result:
       return
     oprot.writeStructBegin('get_delegation_token_result')
     if self.success is not None:
-<<<<<<< HEAD
       oprot.writeFieldBegin('success', TType.STRING, 0)
       oprot.writeString(self.success)
-=======
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRING, len(self.success))
-<<<<<<< HEAD
-      for iter1237 in self.success:
-        oprot.writeString(iter1237)
-=======
-      for iter1216 in self.success:
-        oprot.writeString(iter1216)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-      oprot.writeListEnd()
->>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeFieldEnd()
     if self.o1 is not None:
       oprot.writeFieldBegin('o1', TType.STRUCT, 1)
@@ -42191,33 +43588,8 @@ class add_token_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-<<<<<<< HEAD
         if ftype == TType.BOOL:
           self.success = iprot.readBool()
-=======
-        if ftype == TType.LIST:
-          self.success = []
-<<<<<<< HEAD
-          (_etype1241, _size1238) = iprot.readListBegin()
-          for _i1242 in xrange(_size1238):
-            _elem1243 = Role()
-            _elem1243.read(iprot)
-            self.success.append(_elem1243)
-=======
-          (_etype1220, _size1217) = iprot.readListBegin()
-          for _i1221 in xrange(_size1217):
-            _elem1222 = Role()
-            _elem1222.read(iprot)
-            self.success.append(_elem1222)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 1:
-        if ftype == TType.STRUCT:
-          self.o1 = MetaException()
-          self.o1.read(iprot)
->>>>>>> HIVE-18679 : create/replicate open transaction event
         else:
           iprot.skip(ftype)
       else:
@@ -42231,25 +43603,8 @@ class add_token_result:
       return
     oprot.writeStructBegin('add_token_result')
     if self.success is not None:
-<<<<<<< HEAD
       oprot.writeFieldBegin('success', TType.BOOL, 0)
       oprot.writeBool(self.success)
-=======
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRUCT, len(self.success))
-<<<<<<< HEAD
-      for iter1244 in self.success:
-        iter1244.write(oprot)
-=======
-      for iter1223 in self.success:
-        iter1223.write(oprot)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.o1 is not None:
-      oprot.writeFieldBegin('o1', TType.STRUCT, 1)
-      self.o1.write(oprot)
->>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -42603,10 +43958,24 @@ class get_all_token_identifiers_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
+<<<<<<< HEAD
           (_etype1288, _size1285) = iprot.readListBegin()
           for _i1289 in xrange(_size1285):
             _elem1290 = iprot.readString()
             self.success.append(_elem1290)
+=======
+<<<<<<< HEAD
+          (_etype1281, _size1278) = iprot.readListBegin()
+          for _i1282 in xrange(_size1278):
+            _elem1283 = iprot.readString()
+            self.success.append(_elem1283)
+=======
+          (_etype1267, _size1264) = iprot.readListBegin()
+          for _i1268 in xrange(_size1264):
+            _elem1269 = iprot.readString()
+            self.success.append(_elem1269)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -42623,8 +43992,18 @@ class get_all_token_identifiers_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRING, len(self.success))
+<<<<<<< HEAD
       for iter1291 in self.success:
         oprot.writeString(iter1291)
+=======
+<<<<<<< HEAD
+      for iter1284 in self.success:
+        oprot.writeString(iter1284)
+=======
+      for iter1270 in self.success:
+        oprot.writeString(iter1270)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -42675,28 +44054,7 @@ class add_master_key_args:
         break
       if fid == 1:
         if ftype == TType.STRING:
-<<<<<<< HEAD
           self.key = iprot.readString()
-=======
-          self.user_name = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.LIST:
-          self.group_names = []
-<<<<<<< HEAD
-          (_etype1248, _size1245) = iprot.readListBegin()
-          for _i1249 in xrange(_size1245):
-            _elem1250 = iprot.readString()
-            self.group_names.append(_elem1250)
-=======
-          (_etype1227, _size1224) = iprot.readListBegin()
-          for _i1228 in xrange(_size1224):
-            _elem1229 = iprot.readString()
-            self.group_names.append(_elem1229)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-          iprot.readListEnd()
->>>>>>> HIVE-18679 : create/replicate open transaction event
         else:
           iprot.skip(ftype)
       else:
@@ -42708,33 +44066,10 @@ class add_master_key_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-<<<<<<< HEAD
     oprot.writeStructBegin('add_master_key_args')
     if self.key is not None:
       oprot.writeFieldBegin('key', TType.STRING, 1)
       oprot.writeString(self.key)
-=======
-    oprot.writeStructBegin('get_privilege_set_args')
-    if self.hiveObject is not None:
-      oprot.writeFieldBegin('hiveObject', TType.STRUCT, 1)
-      self.hiveObject.write(oprot)
-      oprot.writeFieldEnd()
-    if self.user_name is not None:
-      oprot.writeFieldBegin('user_name', TType.STRING, 2)
-      oprot.writeString(self.user_name)
-      oprot.writeFieldEnd()
-    if self.group_names is not None:
-      oprot.writeFieldBegin('group_names', TType.LIST, 3)
-      oprot.writeListBegin(TType.STRING, len(self.group_names))
-<<<<<<< HEAD
-      for iter1251 in self.group_names:
-        oprot.writeString(iter1251)
-=======
-      for iter1230 in self.group_names:
-        oprot.writeString(iter1230)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-      oprot.writeListEnd()
->>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -42941,30 +44276,10 @@ class update_master_key_result:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
-<<<<<<< HEAD
       if fid == 1:
         if ftype == TType.STRUCT:
           self.o1 = NoSuchObjectException()
           self.o1.read(iprot)
-=======
-      if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-<<<<<<< HEAD
-          (_etype1255, _size1252) = iprot.readListBegin()
-          for _i1256 in xrange(_size1252):
-            _elem1257 = HiveObjectPrivilege()
-            _elem1257.read(iprot)
-            self.success.append(_elem1257)
-=======
-          (_etype1234, _size1231) = iprot.readListBegin()
-          for _i1235 in xrange(_size1231):
-            _elem1236 = HiveObjectPrivilege()
-            _elem1236.read(iprot)
-            self.success.append(_elem1236)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-          iprot.readListEnd()
->>>>>>> HIVE-18679 : create/replicate open transaction event
         else:
           iprot.skip(ftype)
       elif fid == 2:
@@ -42982,23 +44297,7 @@ class update_master_key_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-<<<<<<< HEAD
     oprot.writeStructBegin('update_master_key_result')
-=======
-    oprot.writeStructBegin('list_privileges_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRUCT, len(self.success))
-<<<<<<< HEAD
-      for iter1258 in self.success:
-        iter1258.write(oprot)
-=======
-      for iter1237 in self.success:
-        iter1237.write(oprot)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
->>>>>>> HIVE-18679 : create/replicate open transaction event
     if self.o1 is not None:
       oprot.writeFieldBegin('o1', TType.STRUCT, 1)
       self.o1.write(oprot)
@@ -43231,10 +44530,24 @@ class get_master_keys_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
+<<<<<<< HEAD
           (_etype1295, _size1292) = iprot.readListBegin()
           for _i1296 in xrange(_size1292):
             _elem1297 = iprot.readString()
             self.success.append(_elem1297)
+=======
+<<<<<<< HEAD
+          (_etype1288, _size1285) = iprot.readListBegin()
+          for _i1289 in xrange(_size1285):
+            _elem1290 = iprot.readString()
+            self.success.append(_elem1290)
+=======
+          (_etype1274, _size1271) = iprot.readListBegin()
+          for _i1275 in xrange(_size1271):
+            _elem1276 = iprot.readString()
+            self.success.append(_elem1276)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -43251,8 +44564,18 @@ class get_master_keys_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRING, len(self.success))
+<<<<<<< HEAD
       for iter1298 in self.success:
         oprot.writeString(iter1298)
+=======
+<<<<<<< HEAD
+      for iter1291 in self.success:
+        oprot.writeString(iter1291)
+=======
+      for iter1277 in self.success:
+        oprot.writeString(iter1277)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -43403,31 +44726,6 @@ class get_open_txns_info_args:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
-<<<<<<< HEAD
-=======
-      if fid == 1:
-        if ftype == TType.STRING:
-          self.user_name = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.LIST:
-          self.group_names = []
-<<<<<<< HEAD
-          (_etype1262, _size1259) = iprot.readListBegin()
-          for _i1263 in xrange(_size1259):
-            _elem1264 = iprot.readString()
-            self.group_names.append(_elem1264)
-=======
-          (_etype1241, _size1238) = iprot.readListBegin()
-          for _i1242 in xrange(_size1238):
-            _elem1243 = iprot.readString()
-            self.group_names.append(_elem1243)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
->>>>>>> HIVE-18679 : create/replicate open transaction event
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -43437,27 +44735,7 @@ class get_open_txns_info_args:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-<<<<<<< HEAD
     oprot.writeStructBegin('get_open_txns_info_args')
-=======
-    oprot.writeStructBegin('set_ugi_args')
-    if self.user_name is not None:
-      oprot.writeFieldBegin('user_name', TType.STRING, 1)
-      oprot.writeString(self.user_name)
-      oprot.writeFieldEnd()
-    if self.group_names is not None:
-      oprot.writeFieldBegin('group_names', TType.LIST, 2)
-      oprot.writeListBegin(TType.STRING, len(self.group_names))
-<<<<<<< HEAD
-      for iter1265 in self.group_names:
-        oprot.writeString(iter1265)
-=======
-      for iter1244 in self.group_names:
-        oprot.writeString(iter1244)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
->>>>>>> HIVE-18679 : create/replicate open transaction event
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -43503,26 +44781,6 @@ class get_open_txns_info_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-<<<<<<< HEAD
-=======
-        if ftype == TType.LIST:
-          self.success = []
-<<<<<<< HEAD
-          (_etype1269, _size1266) = iprot.readListBegin()
-          for _i1270 in xrange(_size1266):
-            _elem1271 = iprot.readString()
-            self.success.append(_elem1271)
-=======
-          (_etype1248, _size1245) = iprot.readListBegin()
-          for _i1249 in xrange(_size1245):
-            _elem1250 = iprot.readString()
-            self.success.append(_elem1250)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      elif fid == 1:
->>>>>>> HIVE-18679 : create/replicate open transaction event
         if ftype == TType.STRUCT:
           self.success = GetOpenTxnsInfoResponse()
           self.success.read(iprot)
@@ -43539,25 +44797,8 @@ class get_open_txns_info_result:
       return
     oprot.writeStructBegin('get_open_txns_info_result')
     if self.success is not None:
-<<<<<<< HEAD
       oprot.writeFieldBegin('success', TType.STRUCT, 0)
       self.success.write(oprot)
-=======
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRING, len(self.success))
-<<<<<<< HEAD
-      for iter1272 in self.success:
-        oprot.writeString(iter1272)
-=======
-      for iter1251 in self.success:
-        oprot.writeString(iter1251)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    if self.o1 is not None:
-      oprot.writeFieldBegin('o1', TType.STRUCT, 1)
-      self.o1.write(oprot)
->>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -44550,7 +45791,6 @@ class lock_result:
       if ftype == TType.STOP:
         break
       if fid == 0:
-<<<<<<< HEAD
         if ftype == TType.STRUCT:
           self.success = LockResponse()
           self.success.read(iprot)
@@ -44566,22 +45806,6 @@ class lock_result:
         if ftype == TType.STRUCT:
           self.o2 = TxnAbortedException()
           self.o2.read(iprot)
-=======
-        if ftype == TType.LIST:
-          self.success = []
-<<<<<<< HEAD
-          (_etype1276, _size1273) = iprot.readListBegin()
-          for _i1277 in xrange(_size1273):
-            _elem1278 = iprot.readString()
-            self.success.append(_elem1278)
-=======
-          (_etype1255, _size1252) = iprot.readListBegin()
-          for _i1256 in xrange(_size1252):
-            _elem1257 = iprot.readString()
-            self.success.append(_elem1257)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-          iprot.readListEnd()
->>>>>>> HIVE-18679 : create/replicate open transaction event
         else:
           iprot.skip(ftype)
       else:
@@ -44595,7 +45819,6 @@ class lock_result:
       return
     oprot.writeStructBegin('lock_result')
     if self.success is not None:
-<<<<<<< HEAD
       oprot.writeFieldBegin('success', TType.STRUCT, 0)
       self.success.write(oprot)
       oprot.writeFieldEnd()
@@ -44606,18 +45829,6 @@ class lock_result:
     if self.o2 is not None:
       oprot.writeFieldBegin('o2', TType.STRUCT, 2)
       self.o2.write(oprot)
-=======
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRING, len(self.success))
-<<<<<<< HEAD
-      for iter1279 in self.success:
-        oprot.writeString(iter1279)
-=======
-      for iter1258 in self.success:
-        oprot.writeString(iter1258)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-      oprot.writeListEnd()
->>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -45189,7 +46400,6 @@ class heartbeat_result:
       (fname, ftype, fid) = iprot.readFieldBegin()
       if ftype == TType.STOP:
         break
-<<<<<<< HEAD
       if fid == 1:
         if ftype == TType.STRUCT:
           self.o1 = NoSuchLockException()
@@ -45206,23 +46416,6 @@ class heartbeat_result:
         if ftype == TType.STRUCT:
           self.o3 = TxnAbortedException()
           self.o3.read(iprot)
-=======
-      if fid == 0:
-        if ftype == TType.LIST:
-          self.success = []
-<<<<<<< HEAD
-          (_etype1283, _size1280) = iprot.readListBegin()
-          for _i1284 in xrange(_size1280):
-            _elem1285 = iprot.readString()
-            self.success.append(_elem1285)
-=======
-          (_etype1262, _size1259) = iprot.readListBegin()
-          for _i1263 in xrange(_size1259):
-            _elem1264 = iprot.readString()
-            self.success.append(_elem1264)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-          iprot.readListEnd()
->>>>>>> HIVE-18679 : create/replicate open transaction event
         else:
           iprot.skip(ftype)
       else:
@@ -45234,7 +46427,6 @@ class heartbeat_result:
     if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
-<<<<<<< HEAD
     oprot.writeStructBegin('heartbeat_result')
     if self.o1 is not None:
       oprot.writeFieldBegin('o1', TType.STRUCT, 1)
@@ -45247,20 +46439,6 @@ class heartbeat_result:
     if self.o3 is not None:
       oprot.writeFieldBegin('o3', TType.STRUCT, 3)
       self.o3.write(oprot)
-=======
-    oprot.writeStructBegin('get_master_keys_result')
-    if self.success is not None:
-      oprot.writeFieldBegin('success', TType.LIST, 0)
-      oprot.writeListBegin(TType.STRING, len(self.success))
-<<<<<<< HEAD
-      for iter1286 in self.success:
-        oprot.writeString(iter1286)
-=======
-      for iter1265 in self.success:
-        oprot.writeString(iter1265)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-      oprot.writeListEnd()
->>>>>>> HIVE-18679 : create/replicate open transaction event
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
@@ -51565,11 +52743,27 @@ class get_schema_all_versions_result:
       if fid == 0:
         if ftype == TType.LIST:
           self.success = []
+<<<<<<< HEAD
           (_etype1302, _size1299) = iprot.readListBegin()
           for _i1303 in xrange(_size1299):
             _elem1304 = SchemaVersion()
             _elem1304.read(iprot)
             self.success.append(_elem1304)
+=======
+<<<<<<< HEAD
+          (_etype1295, _size1292) = iprot.readListBegin()
+          for _i1296 in xrange(_size1292):
+            _elem1297 = SchemaVersion()
+            _elem1297.read(iprot)
+            self.success.append(_elem1297)
+=======
+          (_etype1281, _size1278) = iprot.readListBegin()
+          for _i1282 in xrange(_size1278):
+            _elem1283 = SchemaVersion()
+            _elem1283.read(iprot)
+            self.success.append(_elem1283)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -51598,8 +52792,18 @@ class get_schema_all_versions_result:
     if self.success is not None:
       oprot.writeFieldBegin('success', TType.LIST, 0)
       oprot.writeListBegin(TType.STRUCT, len(self.success))
+<<<<<<< HEAD
       for iter1305 in self.success:
         iter1305.write(oprot)
+=======
+<<<<<<< HEAD
+      for iter1298 in self.success:
+        iter1298.write(oprot)
+=======
+      for iter1284 in self.success:
+        iter1284.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.o1 is not None:

@@ -438,6 +438,8 @@ CREATE TABLE IF NOT EXISTS `SEQUENCE_TABLE` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
+INSERT INTO `SEQUENCE_TABLE` (`SEQUENCE_NAME`, `NEXT_VAL`) SELECT * from (select 'org.apache.hadoop.hive.metastore.model.MNotificationLog' as `SEQUENCE_NAME`, 1 as `NEXT_VAL`) a WHERE (SELECT COUNT(*) FROM `SEQUENCE_TABLE` where SEQUENCE_NAME = 'org.apache.hadoop.hive.metastore.model.MNotificationLog') = 0;
+
 --
 -- Table structure for table `SERDES`
 --
@@ -1138,10 +1140,10 @@ CREATE TABLE `SCHEMA_VERSION` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE REPL_TXN_MAP (
-  TM_REPL_POLICY varchar(128) NOT NULL,
-  TM_SRC_TXN_ID bigint NOT NULL,
-  TM_TARGET_TXN_ID bigint NOT NULL,
-  PRIMARY KEY (TM_REPL_POLICY, TM_SRC_TXN_ID)
+  RTM_REPL_POLICY varchar(256) NOT NULL,
+  RTM_SRC_TXN_ID bigint NOT NULL,
+  RTM_TARGET_TXN_ID bigint NOT NULL,
+  PRIMARY KEY (RTM_REPL_POLICY, RTM_SRC_TXN_ID)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- -----------------------------------------------------------------

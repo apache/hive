@@ -17,24 +17,35 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
 import org.apache.hadoop.hive.ql.exec.ReplTxnWork;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * OpenTxnHandler
+ * Target(Load) side handler for open transaction event.
+ */
 public class OpenTxnHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context context)
       throws SemanticException {
+    String txnMgr = context.hiveConf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER);
+    boolean concurrency =  context.hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
+    String dbTxnMgr = "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager";
+    if (!txnMgr.equals(dbTxnMgr) || !concurrency) {
+      context.log.error("Cannot load transaction events as acid is not enabled");
+      throw new SemanticException("Cannot load transaction events as acid is not enabled");
+    }
     OpenTxnMessage msg = deserializer.getOpenTxnMessage(context.dmd.getPayload());
 
     Task<ReplTxnWork> openTxnTask = TaskFactory.get(
-        new ReplTxnWork(context.dbName, context.tableName, msg.getTxnIdItr(), ReplTxnWork.OperationType.REPL_OPEN_TXN),
+        new ReplTxnWork(context.dbName, context.tableName, msg.getTxnIds(), ReplTxnWork.OperationType.REPL_OPEN_TXN),
         context.hiveConf
     );
     updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, context.tableName, null);

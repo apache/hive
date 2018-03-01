@@ -350,6 +350,7 @@ import org.slf4j.LoggerFactory;
           case 1: // SCHEMA_VERSIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list896 = iprot.readListBegin();
                 struct.schemaVersions = new ArrayList<SchemaVersionDescriptor>(_list896.size);
                 SchemaVersionDescriptor _elem897;
@@ -358,6 +359,27 @@ import org.slf4j.LoggerFactory;
                   _elem897 = new SchemaVersionDescriptor();
                   _elem897.read(iprot);
                   struct.schemaVersions.add(_elem897);
+=======
+<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list888 = iprot.readListBegin();
+                struct.schemaVersions = new ArrayList<SchemaVersionDescriptor>(_list888.size);
+                SchemaVersionDescriptor _elem889;
+                for (int _i890 = 0; _i890 < _list888.size; ++_i890)
+                {
+                  _elem889 = new SchemaVersionDescriptor();
+                  _elem889.read(iprot);
+                  struct.schemaVersions.add(_elem889);
+=======
+                org.apache.thrift.protocol.TList _list880 = iprot.readListBegin();
+                struct.schemaVersions = new ArrayList<SchemaVersionDescriptor>(_list880.size);
+                SchemaVersionDescriptor _elem881;
+                for (int _i882 = 0; _i882 < _list880.size; ++_i882)
+                {
+                  _elem881 = new SchemaVersionDescriptor();
+                  _elem881.read(iprot);
+                  struct.schemaVersions.add(_elem881);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
                 }
                 iprot.readListEnd();
               }
@@ -383,9 +405,21 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(SCHEMA_VERSIONS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.schemaVersions.size()));
+<<<<<<< HEAD
           for (SchemaVersionDescriptor _iter899 : struct.schemaVersions)
           {
             _iter899.write(oprot);
+=======
+<<<<<<< HEAD
+          for (SchemaVersionDescriptor _iter891 : struct.schemaVersions)
+          {
+            _iter891.write(oprot);
+=======
+          for (SchemaVersionDescriptor _iter883 : struct.schemaVersions)
+          {
+            _iter883.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
           oprot.writeListEnd();
         }
@@ -416,9 +450,21 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetSchemaVersions()) {
         {
           oprot.writeI32(struct.schemaVersions.size());
+<<<<<<< HEAD
           for (SchemaVersionDescriptor _iter900 : struct.schemaVersions)
           {
             _iter900.write(oprot);
+=======
+<<<<<<< HEAD
+          for (SchemaVersionDescriptor _iter892 : struct.schemaVersions)
+          {
+            _iter892.write(oprot);
+=======
+          for (SchemaVersionDescriptor _iter884 : struct.schemaVersions)
+          {
+            _iter884.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
       }
@@ -430,6 +476,7 @@ import org.slf4j.LoggerFactory;
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
+<<<<<<< HEAD
           org.apache.thrift.protocol.TList _list901 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
           struct.schemaVersions = new ArrayList<SchemaVersionDescriptor>(_list901.size);
           SchemaVersionDescriptor _elem902;
@@ -438,6 +485,27 @@ import org.slf4j.LoggerFactory;
             _elem902 = new SchemaVersionDescriptor();
             _elem902.read(iprot);
             struct.schemaVersions.add(_elem902);
+=======
+<<<<<<< HEAD
+          org.apache.thrift.protocol.TList _list893 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.schemaVersions = new ArrayList<SchemaVersionDescriptor>(_list893.size);
+          SchemaVersionDescriptor _elem894;
+          for (int _i895 = 0; _i895 < _list893.size; ++_i895)
+          {
+            _elem894 = new SchemaVersionDescriptor();
+            _elem894.read(iprot);
+            struct.schemaVersions.add(_elem894);
+=======
+          org.apache.thrift.protocol.TList _list885 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.schemaVersions = new ArrayList<SchemaVersionDescriptor>(_list885.size);
+          SchemaVersionDescriptor _elem886;
+          for (int _i887 = 0; _i887 < _list885.size; ++_i887)
+          {
+            _elem886 = new SchemaVersionDescriptor();
+            _elem886.read(iprot);
+            struct.schemaVersions.add(_elem886);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         struct.setSchemaVersionsIsSet(true);

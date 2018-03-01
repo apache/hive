@@ -445,7 +445,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   public void onOpenTxn(OpenTxnEvent openTxnEvent) throws MetaException {
     NotificationEvent event =
             new NotificationEvent(0, now(), EventType.OPEN_TXN.toString(), msgFactory.buildOpenTxnMessage(
-                    openTxnEvent.getTxnIdItr())
+                    openTxnEvent.getTxnIds())
                     .toString());
     process(event, openTxnEvent);
   }

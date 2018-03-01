@@ -2478,7 +2478,7 @@ class OpenTxnRequest
   HOSTNAME = 3
   AGENTINFO = 4
   REPLPOLICY = 5
-  REPLSRCTXNID = 6
+  REPLSRCTXNIDS = 6
 
   FIELDS = {
     NUM_TXNS => {:type => ::Thrift::Types::I32, :name => 'num_txns'},
@@ -2486,7 +2486,7 @@ class OpenTxnRequest
     HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostname'},
     AGENTINFO => {:type => ::Thrift::Types::STRING, :name => 'agentInfo', :default => %q"Unknown", :optional => true},
     REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true},
-    REPLSRCTXNID => {:type => ::Thrift::Types::LIST, :name => 'replSrcTxnId', :element => {:type => ::Thrift::Types::I64}, :optional => true}
+    REPLSRCTXNIDS => {:type => ::Thrift::Types::LIST, :name => 'replSrcTxnIds', :element => {:type => ::Thrift::Types::I64}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2561,40 +2561,6 @@ class CommitTxnRequest
   FIELDS = {
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'},
     REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnid is unset!') unless @txnid
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class GetTargetTxnIdRequest
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  TXNID = 1
-
-  FIELDS = {
-    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnid is unset!') unless @txnid
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class GetTargetTxnIdResponse
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  TXNID = 1
-
-  FIELDS = {
-    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'}
   }
 
   def struct_fields; FIELDS; end

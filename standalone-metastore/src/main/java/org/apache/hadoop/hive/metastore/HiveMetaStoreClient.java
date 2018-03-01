@@ -2344,24 +2344,26 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public long openTxn(String user) throws TException {
-    OpenTxnsResponse txns = openTxnsIntr(user, null, null, 1);
+    OpenTxnsResponse txns = openTxnsIntr(user, 1, null, null);
     return txns.getTxn_ids().get(0);
   }
 
   @Override
-  public List<Long> replOpenTxn(String replPolicy, Iterator<Long> srcTxnIds, int numTxns) throws TException {
-    // As this is called from replication task, the user field is not used.
-    OpenTxnsResponse txns = openTxnsIntr(null, replPolicy, srcTxnIds, numTxns);
+  public List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user) throws TException {
+    // As this is called from replication task, the user is the user who has fired the repl command.
+    // This is required for standalone metastore authentication.
+    OpenTxnsResponse txns = openTxnsIntr(user, srcTxnIds.size(), replPolicy, srcTxnIds);
     return txns.getTxn_ids();
   }
 
   @Override
   public OpenTxnsResponse openTxns(String user, int numTxns) throws TException {
-    return openTxnsIntr(user, null, null, numTxns);
+    return openTxnsIntr(user, numTxns, null, null);
   }
 
-  private OpenTxnsResponse openTxnsIntr(String user, String replPolicy, Iterator<Long> srcTxnIds, int numTxns) throws TException {
-    String hostname = null;
+  private OpenTxnsResponse openTxnsIntr(String user, int numTxns, String replPolicy,
+                                        List<Long> srcTxnIds) throws TException {
+    String hostname;
     try {
       hostname = InetAddress.getLocalHost().getHostName();
     } catch (UnknownHostException e) {
@@ -2370,37 +2372,41 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     OpenTxnRequest rqst = new OpenTxnRequest(numTxns, user, hostname);
     if (replPolicy != null) {
+      assert  srcTxnIds != null;
+      assert numTxns == srcTxnIds.size();
       // need to set this only for replication tasks
       rqst.setReplPolicy(replPolicy);
-      rqst.setReplSrcTxnId(Lists.newArrayList(srcTxnIds));
+      rqst.setReplSrcTxnIds(srcTxnIds);
+    } else {
+      assert srcTxnIds == null;
     }
     return client.open_txns(rqst);
   }
 
   @Override
-  public void rollbackTxn(long txnid, String replPolicy) throws NoSuchTxnException, TException {
-    AbortTxnRequest rqst = new AbortTxnRequest(txnid);
+  public void rollbackTxn(long txnid) throws NoSuchTxnException, TException {
+    client.abort_txn(new AbortTxnRequest(txnid));
+  }
+
+  @Override
+  public void replRollbackTxn(long srcTxnId, String replPolicy) throws NoSuchTxnException, TException {
+    AbortTxnRequest rqst = new AbortTxnRequest(srcTxnId);
     rqst.setReplPolicy(replPolicy);
     client.abort_txn(rqst);
   }
 
   @Override
-  public void rollbackTxn(long txnid) throws NoSuchTxnException, TException {
-    rollbackTxn(txnid, null);
+  public void commitTxn(long txnid)
+          throws NoSuchTxnException, TxnAbortedException, TException {
+    client.commit_txn(new CommitTxnRequest(txnid));
   }
 
   @Override
-  public void commitTxn(long txnid, String replPolicy)
+  public void replCommitTxn(long srcTxnId, String replPolicy)
           throws NoSuchTxnException, TxnAbortedException, TException {
-    CommitTxnRequest rqst = new CommitTxnRequest(txnid);
+    CommitTxnRequest rqst = new CommitTxnRequest(srcTxnId);
     rqst.setReplPolicy(replPolicy);
     client.commit_txn(rqst);
-  }
-
-  @Override
-  public void commitTxn(long txnid)
-      throws NoSuchTxnException, TxnAbortedException, TException {
-    commitTxn(txnid, null);
   }
 
   @Override

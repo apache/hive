@@ -446,6 +446,7 @@ import org.slf4j.LoggerFactory;
               {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TMap _map724 = iprot.readMapBegin();
                 struct.metadata = new HashMap<Long,MetadataPpdResult>(2*_map724.size);
                 long _key725;
@@ -459,6 +460,8 @@ import org.slf4j.LoggerFactory;
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
                 org.apache.thrift.protocol.TMap _map716 = iprot.readMapBegin();
                 struct.metadata = new HashMap<Long,MetadataPpdResult>(2*_map716.size);
@@ -520,7 +523,22 @@ import org.slf4j.LoggerFactory;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+                org.apache.thrift.protocol.TMap _map708 = iprot.readMapBegin();
+                struct.metadata = new HashMap<Long,MetadataPpdResult>(2*_map708.size);
+                long _key709;
+                MetadataPpdResult _val710;
+                for (int _i711 = 0; _i711 < _map708.size; ++_i711)
+                {
+                  _key709 = iprot.readI64();
+                  _val710 = new MetadataPpdResult();
+                  _val710.read(iprot);
+                  struct.metadata.put(_key709, _val710);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
                 }
                 iprot.readMapEnd();
               }
@@ -556,6 +574,7 @@ import org.slf4j.LoggerFactory;
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRUCT, struct.metadata.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           for (Map.Entry<Long, MetadataPpdResult> _iter728 : struct.metadata.entrySet())
           {
             oprot.writeI64(_iter728.getKey());
@@ -563,6 +582,8 @@ import org.slf4j.LoggerFactory;
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           for (Map.Entry<Long, MetadataPpdResult> _iter720 : struct.metadata.entrySet())
           {
@@ -600,7 +621,16 @@ import org.slf4j.LoggerFactory;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          for (Map.Entry<Long, MetadataPpdResult> _iter712 : struct.metadata.entrySet())
+          {
+            oprot.writeI64(_iter712.getKey());
+            _iter712.getValue().write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
           oprot.writeMapEnd();
         }
@@ -630,6 +660,7 @@ import org.slf4j.LoggerFactory;
         oprot.writeI32(struct.metadata.size());
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
         for (Map.Entry<Long, MetadataPpdResult> _iter729 : struct.metadata.entrySet())
         {
           oprot.writeI64(_iter729.getKey());
@@ -637,6 +668,8 @@ import org.slf4j.LoggerFactory;
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
         for (Map.Entry<Long, MetadataPpdResult> _iter721 : struct.metadata.entrySet())
         {
@@ -674,7 +707,16 @@ import org.slf4j.LoggerFactory;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+        for (Map.Entry<Long, MetadataPpdResult> _iter713 : struct.metadata.entrySet())
+        {
+          oprot.writeI64(_iter713.getKey());
+          _iter713.getValue().write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
         }
       }
       oprot.writeBool(struct.isSupported);
@@ -684,6 +726,7 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetFileMetadataByExprResult struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         org.apache.thrift.protocol.TMap _map730 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
@@ -699,6 +742,8 @@ import org.slf4j.LoggerFactory;
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
         org.apache.thrift.protocol.TMap _map722 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
         struct.metadata = new HashMap<Long,MetadataPpdResult>(2*_map722.size);
@@ -760,7 +805,22 @@ import org.slf4j.LoggerFactory;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+        org.apache.thrift.protocol.TMap _map714 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.metadata = new HashMap<Long,MetadataPpdResult>(2*_map714.size);
+        long _key715;
+        MetadataPpdResult _val716;
+        for (int _i717 = 0; _i717 < _map714.size; ++_i717)
+        {
+          _key715 = iprot.readI64();
+          _val716 = new MetadataPpdResult();
+          _val716.read(iprot);
+          struct.metadata.put(_key715, _val716);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
         }
       }
       struct.setMetadataIsSet(true);

@@ -50,7 +50,7 @@ public class DatabaseAndTableFilter extends BasicFilter {
   @Override
   boolean shouldAccept(final NotificationEvent event) {
     if ((dbPattern == null) || isTxnRelatedEvent(event)) {
-      return true; // if our dbName is null or its of open txn type, we're interested in all wh events
+      return true;
     }
     if (dbPattern.matcher(event.getDbName()).matches()) {
       if ((tableName == null)

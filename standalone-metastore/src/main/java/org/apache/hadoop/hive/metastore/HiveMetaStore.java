@@ -137,7 +137,6 @@ import org.apache.hadoop.hive.metastore.events.PreReadDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.PreReadISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.PreReadTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreReadhSchemaVersionEvent;
-import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.JvmPauseMonitor;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
@@ -6952,38 +6951,40 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public OpenTxnsResponse open_txns(OpenTxnRequest rqst) throws TException {
       OpenTxnsResponse response = getTxnHandler().openTxns(rqst);
       List<Long> txnIds = response.getTxn_ids();
-      if (!listeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(listeners,EventType.OPEN_TXN,
-            new OpenTxnEvent(txnIds.iterator(),this));
+      if (txnIds != null && listeners != null && !listeners.isEmpty()) {
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.OPEN_TXN,
+            new OpenTxnEvent(txnIds, this));
       }
-      if (!transactionalListeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyEvent(transactionalListeners, EventType.OPEN_TXN,
-            new OpenTxnEvent(txnIds.iterator(),this));
-      }
-
       return response;
     }
 
     @Override
     public void abort_txn(AbortTxnRequest rqst) throws TException {
       getTxnHandler().abortTxn(rqst);
-      MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-          EventType.ABORT_TXN,
-          new AbortTxnEvent(rqst.getTxnid(), true, this));
+      if (listeners != null && !listeners.isEmpty()) {
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ABORT_TXN,
+                new AbortTxnEvent(rqst.getTxnid(), this));
+      }
     }
 
     @Override
     public void abort_txns(AbortTxnsRequest rqst) throws TException {
       getTxnHandler().abortTxns(rqst);
+      if (listeners != null && !listeners.isEmpty()) {
+        for (Long txnId : rqst.getTxn_ids()) {
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ABORT_TXN,
+                  new AbortTxnEvent(txnId, this));
+        }
+      }
     }
 
     @Override
     public void commit_txn(CommitTxnRequest rqst) throws TException {
       getTxnHandler().commitTxn(rqst);
-      MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-              EventType.COMMIT_TXN,
-              new CommitTxnEvent(rqst.getTxnid(), this));
-
+      if (listeners != null && !listeners.isEmpty()) {
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.COMMIT_TXN,
+                new CommitTxnEvent(rqst.getTxnid(), this));
+      }
     }
 
     @Override

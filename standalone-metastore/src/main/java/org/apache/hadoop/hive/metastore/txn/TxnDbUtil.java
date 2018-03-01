@@ -180,6 +180,27 @@ public final class TxnDbUtil {
         " WS_COMMIT_ID bigint NOT NULL," +
         " WS_OPERATION_TYPE char(1) NOT NULL)"
       );
+
+      stmt.execute("CREATE TABLE REPL_TXN_MAP (" +
+          " RTM_REPL_POLICY varchar(256) NOT NULL, " +
+          " RTM_SRC_TXN_ID bigint NOT NULL, " +
+          " RTM_TARGET_TXN_ID bigint NOT NULL, " +
+          " PRIMARY KEY (RTM_REPL_POLICY, RTM_SRC_TXN_ID))"
+      );
+
+      stmt.execute("CREATE TABLE \"APP\".\"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\" VARCHAR(256) NOT " +
+              "NULL, \"NEXT_VAL\" BIGINT NOT NULL)"
+      );
+
+      stmt.execute("CREATE TABLE \"APP\".\"NOTIFICATION_SEQUENCE\" (\"NNI_ID\" BIGINT NOT NULL, " +
+              "\"NEXT_EVENT_ID\" BIGINT NOT NULL)"
+      );
+
+      stmt.execute("CREATE TABLE \"APP\".\"NOTIFICATION_LOG\" (\"NL_ID\" BIGINT NOT NULL, " +
+              "\"DB_NAME\" VARCHAR(128), \"EVENT_ID\" BIGINT NOT NULL, \"EVENT_TIME\" INTEGER NOT" +
+              " NULL, \"EVENT_TYPE\" VARCHAR(32) NOT NULL, \"MESSAGE\" CLOB, \"TBL_NAME\" VARCHAR" +
+              "(256), \"MESSAGE_FORMAT\" VARCHAR(16))"
+      );
     } catch (SQLException e) {
       try {
         conn.rollback();
@@ -201,6 +222,15 @@ public final class TxnDbUtil {
         throw e;
       }
     } finally {
+      stmt.execute("INSERT INTO \"APP\".\"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\", \"NEXT_VAL\") " +
+              "SELECT * FROM (VALUES ('org.apache.hadoop.hive.metastore.model.MNotificationLog', " +
+              "1)) tmp_table WHERE NOT EXISTS ( SELECT \"NEXT_VAL\" FROM \"APP\"" +
+              ".\"SEQUENCE_TABLE\" WHERE \"SEQUENCE_NAME\" = 'org.apache.hadoop.hive.metastore" +
+              ".model.MNotificationLog')");
+
+      stmt.execute("INSERT INTO \"APP\".\"NOTIFICATION_SEQUENCE\" (\"NNI_ID\", \"NEXT_EVENT_ID\")" +
+              " SELECT * FROM (VALUES (1,1)) tmp_table WHERE NOT EXISTS ( SELECT " +
+              "\"NEXT_EVENT_ID\" FROM \"APP\".\"NOTIFICATION_SEQUENCE\")");
       deadlockCnt = 0;
       closeResources(conn, stmt, null);
     }
@@ -241,6 +271,7 @@ public final class TxnDbUtil {
         success &= dropTable(stmt, "COMPLETED_COMPACTIONS", retryCount);
         success &= dropTable(stmt, "AUX_TABLE", retryCount);
         success &= dropTable(stmt, "WRITE_SET", retryCount);
+        success &= dropTable(stmt, "REPL_TXN_MAP", retryCount);
       } finally {
         closeResources(conn, stmt, null);
       }

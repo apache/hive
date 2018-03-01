@@ -38,10 +38,6 @@ import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
-import com.google.common.collect.Lists;
-
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * An implementation HiveTxnManager that includes internal methods that all

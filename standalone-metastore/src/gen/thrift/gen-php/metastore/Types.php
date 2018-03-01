@@ -15908,7 +15908,7 @@ class OpenTxnRequest {
   /**
    * @var int[]
    */
-  public $replSrcTxnId = null;
+  public $replSrcTxnIds = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -15934,7 +15934,7 @@ class OpenTxnRequest {
           'type' => TType::STRING,
           ),
         6 => array(
-          'var' => 'replSrcTxnId',
+          'var' => 'replSrcTxnIds',
           'type' => TType::LST,
           'etype' => TType::I64,
           'elem' => array(
@@ -15959,8 +15959,8 @@ class OpenTxnRequest {
       if (isset($vals['replPolicy'])) {
         $this->replPolicy = $vals['replPolicy'];
       }
-      if (isset($vals['replSrcTxnId'])) {
-        $this->replSrcTxnId = $vals['replSrcTxnId'];
+      if (isset($vals['replSrcTxnIds'])) {
+        $this->replSrcTxnIds = $vals['replSrcTxnIds'];
       }
     }
   }
@@ -16021,15 +16021,15 @@ class OpenTxnRequest {
           break;
         case 6:
           if ($ftype == TType::LST) {
-            $this->replSrcTxnId = array();
-            $_size490 = 0;
-            $_etype493 = 0;
-            $xfer += $input->readListBegin($_etype493, $_size490);
-            for ($_i494 = 0; $_i494 < $_size490; ++$_i494)
+            $this->replSrcTxnIds = array();
+            $_size481 = 0;
+            $_etype484 = 0;
+            $xfer += $input->readListBegin($_etype484, $_size481);
+            for ($_i485 = 0; $_i485 < $_size481; ++$_i485)
             {
-              $elem495 = null;
-              $xfer += $input->readI64($elem495);
-              $this->replSrcTxnId []= $elem495;
+              $elem486 = null;
+              $xfer += $input->readI64($elem486);
+              $this->replSrcTxnIds []= $elem486;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -16074,17 +16074,17 @@ class OpenTxnRequest {
       $xfer += $output->writeString($this->replPolicy);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->replSrcTxnId !== null) {
-      if (!is_array($this->replSrcTxnId)) {
+    if ($this->replSrcTxnIds !== null) {
+      if (!is_array($this->replSrcTxnIds)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('replSrcTxnId', TType::LST, 6);
+      $xfer += $output->writeFieldBegin('replSrcTxnIds', TType::LST, 6);
       {
-        $output->writeListBegin(TType::I64, count($this->replSrcTxnId));
+        $output->writeListBegin(TType::I64, count($this->replSrcTxnIds));
         {
-          foreach ($this->replSrcTxnId as $iter496)
+          foreach ($this->replSrcTxnIds as $iter487)
           {
-            $xfer += $output->writeI64($iter496);
+            $xfer += $output->writeI64($iter487);
           }
         }
         $output->writeListEnd();
@@ -16149,6 +16149,7 @@ class OpenTxnsResponse {
           if ($ftype == TType::LST) {
             $this->txn_ids = array();
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size502 = 0;
             $_etype505 = 0;
             $xfer += $input->readListBegin($_etype505, $_size502);
@@ -16158,6 +16159,8 @@ class OpenTxnsResponse {
               $xfer += $input->readI64($elem507);
               $this->txn_ids []= $elem507;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size495 = 0;
             $_etype498 = 0;
@@ -16188,7 +16191,20 @@ class OpenTxnsResponse {
               $this->txn_ids []= $elem502;
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+            $_size488 = 0;
+            $_etype491 = 0;
+            $xfer += $input->readListBegin($_etype491, $_size488);
+            for ($_i492 = 0; $_i492 < $_size488; ++$_i492)
+            {
+              $elem493 = null;
+              $xfer += $input->readI64($elem493);
+              $this->txn_ids []= $elem493;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -16217,10 +16233,13 @@ class OpenTxnsResponse {
         $output->writeListBegin(TType::I64, count($this->txn_ids));
         {
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->txn_ids as $iter508)
           {
             $xfer += $output->writeI64($iter508);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->txn_ids as $iter501)
           {
@@ -16236,7 +16255,15 @@ class OpenTxnsResponse {
             $xfer += $output->writeI64($iter503);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+          foreach ($this->txn_ids as $iter494)
+          {
+            $xfer += $output->writeI64($iter494);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -16399,6 +16426,7 @@ class AbortTxnsRequest {
           if ($ftype == TType::LST) {
             $this->txn_ids = array();
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size509 = 0;
             $_etype512 = 0;
             $xfer += $input->readListBegin($_etype512, $_size509);
@@ -16408,6 +16436,8 @@ class AbortTxnsRequest {
               $xfer += $input->readI64($elem514);
               $this->txn_ids []= $elem514;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size502 = 0;
             $_etype505 = 0;
@@ -16438,7 +16468,20 @@ class AbortTxnsRequest {
               $this->txn_ids []= $elem509;
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+            $_size495 = 0;
+            $_etype498 = 0;
+            $xfer += $input->readListBegin($_etype498, $_size495);
+            for ($_i499 = 0; $_i499 < $_size495; ++$_i499)
+            {
+              $elem500 = null;
+              $xfer += $input->readI64($elem500);
+              $this->txn_ids []= $elem500;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -16467,10 +16510,13 @@ class AbortTxnsRequest {
         $output->writeListBegin(TType::I64, count($this->txn_ids));
         {
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->txn_ids as $iter515)
           {
             $xfer += $output->writeI64($iter515);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->txn_ids as $iter508)
           {
@@ -16486,7 +16532,15 @@ class AbortTxnsRequest {
             $xfer += $output->writeI64($iter510);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+          foreach ($this->txn_ids as $iter501)
+          {
+            $xfer += $output->writeI64($iter501);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -16598,156 +16652,6 @@ class CommitTxnRequest {
 
 }
 
-class GetTargetTxnIdRequest {
-  static $_TSPEC;
-
-  /**
-   * @var int
-   */
-  public $txnid = null;
-
-  public function __construct($vals=null) {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        1 => array(
-          'var' => 'txnid',
-          'type' => TType::I64,
-          ),
-        );
-    }
-    if (is_array($vals)) {
-      if (isset($vals['txnid'])) {
-        $this->txnid = $vals['txnid'];
-      }
-    }
-  }
-
-  public function getName() {
-    return 'GetTargetTxnIdRequest';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        case 1:
-          if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->txnid);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('GetTargetTxnIdRequest');
-    if ($this->txnid !== null) {
-      $xfer += $output->writeFieldBegin('txnid', TType::I64, 1);
-      $xfer += $output->writeI64($this->txnid);
-      $xfer += $output->writeFieldEnd();
-    }
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class GetTargetTxnIdResponse {
-  static $_TSPEC;
-
-  /**
-   * @var int
-   */
-  public $txnid = null;
-
-  public function __construct($vals=null) {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        1 => array(
-          'var' => 'txnid',
-          'type' => TType::I64,
-          ),
-        );
-    }
-    if (is_array($vals)) {
-      if (isset($vals['txnid'])) {
-        $this->txnid = $vals['txnid'];
-      }
-    }
-  }
-
-  public function getName() {
-    return 'GetTargetTxnIdResponse';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        case 1:
-          if ($ftype == TType::I64) {
-            $xfer += $input->readI64($this->txnid);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('GetTargetTxnIdResponse');
-    if ($this->txnid !== null) {
-      $xfer += $output->writeFieldBegin('txnid', TType::I64, 1);
-      $xfer += $output->writeI64($this->txnid);
-      $xfer += $output->writeFieldEnd();
-    }
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
 class GetValidWriteIdsRequest {
   static $_TSPEC;
 
@@ -16810,6 +16714,7 @@ class GetValidWriteIdsRequest {
           if ($ftype == TType::LST) {
             $this->fullTableNames = array();
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size516 = 0;
             $_etype519 = 0;
             $xfer += $input->readListBegin($_etype519, $_size516);
@@ -16819,6 +16724,8 @@ class GetValidWriteIdsRequest {
               $xfer += $input->readString($elem521);
               $this->fullTableNames []= $elem521;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size509 = 0;
             $_etype512 = 0;
@@ -16849,7 +16756,20 @@ class GetValidWriteIdsRequest {
               $this->fullTableNames []= $elem516;
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+            $_size502 = 0;
+            $_etype505 = 0;
+            $xfer += $input->readListBegin($_etype505, $_size502);
+            for ($_i506 = 0; $_i506 < $_size502; ++$_i506)
+            {
+              $elem507 = null;
+              $xfer += $input->readString($elem507);
+              $this->fullTableNames []= $elem507;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -16885,10 +16805,13 @@ class GetValidWriteIdsRequest {
         $output->writeListBegin(TType::STRING, count($this->fullTableNames));
         {
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->fullTableNames as $iter522)
           {
             $xfer += $output->writeString($iter522);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->fullTableNames as $iter515)
           {
@@ -16904,7 +16827,15 @@ class GetValidWriteIdsRequest {
             $xfer += $output->writeString($iter517);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+          foreach ($this->fullTableNames as $iter508)
+          {
+            $xfer += $output->writeString($iter508);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -17032,6 +16963,7 @@ class TableValidWriteIds {
           if ($ftype == TType::LST) {
             $this->invalidWriteIds = array();
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size523 = 0;
             $_etype526 = 0;
             $xfer += $input->readListBegin($_etype526, $_size523);
@@ -17041,6 +16973,8 @@ class TableValidWriteIds {
               $xfer += $input->readI64($elem528);
               $this->invalidWriteIds []= $elem528;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size516 = 0;
             $_etype519 = 0;
@@ -17071,7 +17005,20 @@ class TableValidWriteIds {
               $this->invalidWriteIds []= $elem523;
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+            $_size509 = 0;
+            $_etype512 = 0;
+            $xfer += $input->readListBegin($_etype512, $_size509);
+            for ($_i513 = 0; $_i513 < $_size509; ++$_i513)
+            {
+              $elem514 = null;
+              $xfer += $input->readI64($elem514);
+              $this->invalidWriteIds []= $elem514;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -17124,10 +17071,13 @@ class TableValidWriteIds {
         $output->writeListBegin(TType::I64, count($this->invalidWriteIds));
         {
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->invalidWriteIds as $iter529)
           {
             $xfer += $output->writeI64($iter529);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->invalidWriteIds as $iter522)
           {
@@ -17143,7 +17093,15 @@ class TableValidWriteIds {
             $xfer += $output->writeI64($iter524);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+          foreach ($this->invalidWriteIds as $iter515)
+          {
+            $xfer += $output->writeI64($iter515);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -17220,6 +17178,7 @@ class GetValidWriteIdsResponse {
             $this->tblValidWriteIds = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size530 = 0;
             $_etype533 = 0;
             $xfer += $input->readListBegin($_etype533, $_size530);
@@ -17232,6 +17191,8 @@ class GetValidWriteIdsResponse {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size523 = 0;
             $_etype526 = 0;
@@ -17289,7 +17250,21 @@ class GetValidWriteIdsResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size516 = 0;
+            $_etype519 = 0;
+            $xfer += $input->readListBegin($_etype519, $_size516);
+            for ($_i520 = 0; $_i520 < $_size516; ++$_i520)
+            {
+              $elem521 = null;
+              $elem521 = new \metastore\TableValidWriteIds();
+              $xfer += $elem521->read($input);
+              $this->tblValidWriteIds []= $elem521;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -17319,12 +17294,15 @@ class GetValidWriteIdsResponse {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->tblValidWriteIds as $iter536)
           {
             $xfer += $iter536->write($output);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->tblValidWriteIds as $iter529)
           {
@@ -17358,7 +17336,15 @@ class GetValidWriteIdsResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->tblValidWriteIds as $iter522)
+          {
+            $xfer += $iter522->write($output);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -17445,6 +17431,7 @@ class AllocateTableWriteIdsRequest {
           if ($ftype == TType::LST) {
             $this->txnIds = array();
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size537 = 0;
             $_etype540 = 0;
             $xfer += $input->readListBegin($_etype540, $_size537);
@@ -17454,6 +17441,8 @@ class AllocateTableWriteIdsRequest {
               $xfer += $input->readI64($elem542);
               $this->txnIds []= $elem542;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size530 = 0;
             $_etype533 = 0;
@@ -17484,7 +17473,20 @@ class AllocateTableWriteIdsRequest {
               $this->txnIds []= $elem537;
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+            $_size523 = 0;
+            $_etype526 = 0;
+            $xfer += $input->readListBegin($_etype526, $_size523);
+            for ($_i527 = 0; $_i527 < $_size523; ++$_i527)
+            {
+              $elem528 = null;
+              $xfer += $input->readI64($elem528);
+              $this->txnIds []= $elem528;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -17527,10 +17529,13 @@ class AllocateTableWriteIdsRequest {
         $output->writeListBegin(TType::I64, count($this->txnIds));
         {
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->txnIds as $iter543)
           {
             $xfer += $output->writeI64($iter543);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->txnIds as $iter536)
           {
@@ -17546,7 +17551,15 @@ class AllocateTableWriteIdsRequest {
             $xfer += $output->writeI64($iter538);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+          foreach ($this->txnIds as $iter529)
+          {
+            $xfer += $output->writeI64($iter529);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -17720,6 +17733,7 @@ class AllocateTableWriteIdsResponse {
           if ($ftype == TType::LST) {
             $this->txnToWriteIds = array();
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size544 = 0;
             $_etype547 = 0;
             $xfer += $input->readListBegin($_etype547, $_size544);
@@ -17730,6 +17744,8 @@ class AllocateTableWriteIdsResponse {
               $xfer += $elem549->read($input);
               $this->txnToWriteIds []= $elem549;
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size537 = 0;
             $_etype540 = 0;
@@ -17763,7 +17779,21 @@ class AllocateTableWriteIdsResponse {
               $this->txnToWriteIds []= $elem544;
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+            $_size530 = 0;
+            $_etype533 = 0;
+            $xfer += $input->readListBegin($_etype533, $_size530);
+            for ($_i534 = 0; $_i534 < $_size530; ++$_i534)
+            {
+              $elem535 = null;
+              $elem535 = new \metastore\TxnToWriteId();
+              $xfer += $elem535->read($input);
+              $this->txnToWriteIds []= $elem535;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -17792,10 +17822,13 @@ class AllocateTableWriteIdsResponse {
         $output->writeListBegin(TType::STRUCT, count($this->txnToWriteIds));
         {
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->txnToWriteIds as $iter550)
           {
             $xfer += $iter550->write($output);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->txnToWriteIds as $iter543)
           {
@@ -17811,7 +17844,15 @@ class AllocateTableWriteIdsResponse {
             $xfer += $iter545->write($output);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+          foreach ($this->txnToWriteIds as $iter536)
+          {
+            $xfer += $iter536->write($output);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -18158,6 +18199,7 @@ class LockRequest {
             $this->component = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size551 = 0;
             $_etype554 = 0;
             $xfer += $input->readListBegin($_etype554, $_size551);
@@ -18170,6 +18212,8 @@ class LockRequest {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size544 = 0;
             $_etype547 = 0;
@@ -18227,7 +18271,21 @@ class LockRequest {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size537 = 0;
+            $_etype540 = 0;
+            $xfer += $input->readListBegin($_etype540, $_size537);
+            for ($_i541 = 0; $_i541 < $_size537; ++$_i541)
+            {
+              $elem542 = null;
+              $elem542 = new \metastore\LockComponent();
+              $xfer += $elem542->read($input);
+              $this->component []= $elem542;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -18285,12 +18343,15 @@ class LockRequest {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->component as $iter557)
           {
             $xfer += $iter557->write($output);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->component as $iter550)
           {
@@ -18324,7 +18385,15 @@ class LockRequest {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->component as $iter543)
+          {
+            $xfer += $iter543->write($output);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -19269,6 +19338,7 @@ class ShowLocksResponse {
             $this->locks = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size558 = 0;
             $_etype561 = 0;
             $xfer += $input->readListBegin($_etype561, $_size558);
@@ -19281,6 +19351,8 @@ class ShowLocksResponse {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size551 = 0;
             $_etype554 = 0;
@@ -19338,7 +19410,21 @@ class ShowLocksResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size544 = 0;
+            $_etype547 = 0;
+            $xfer += $input->readListBegin($_etype547, $_size544);
+            for ($_i548 = 0; $_i548 < $_size544; ++$_i548)
+            {
+              $elem549 = null;
+              $elem549 = new \metastore\ShowLocksResponseElement();
+              $xfer += $elem549->read($input);
+              $this->locks []= $elem549;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -19368,12 +19454,15 @@ class ShowLocksResponse {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->locks as $iter564)
           {
             $xfer += $iter564->write($output);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->locks as $iter557)
           {
@@ -19407,7 +19496,15 @@ class ShowLocksResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->locks as $iter550)
+          {
+            $xfer += $iter550->write($output);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -19684,6 +19781,7 @@ class HeartbeatTxnRangeResponse {
             $this->aborted = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size565 = 0;
             $_etype568 = 0;
             $xfer += $input->readSetBegin($_etype568, $_size565);
@@ -19691,6 +19789,8 @@ class HeartbeatTxnRangeResponse {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size558 = 0;
             $_etype561 = 0;
@@ -19757,7 +19857,23 @@ class HeartbeatTxnRangeResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size551 = 0;
+            $_etype554 = 0;
+            $xfer += $input->readSetBegin($_etype554, $_size551);
+            for ($_i555 = 0; $_i555 < $_size551; ++$_i555)
+            {
+              $elem556 = null;
+              $xfer += $input->readI64($elem556);
+              if (is_scalar($elem556)) {
+                $this->aborted[$elem556] = true;
+              } else {
+                $this->aborted []= $elem556;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
               }
             }
             $xfer += $input->readSetEnd();
@@ -19770,6 +19886,7 @@ class HeartbeatTxnRangeResponse {
             $this->nosuch = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size571 = 0;
             $_etype574 = 0;
             $xfer += $input->readSetBegin($_etype574, $_size571);
@@ -19777,6 +19894,8 @@ class HeartbeatTxnRangeResponse {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size564 = 0;
             $_etype567 = 0;
@@ -19833,17 +19952,30 @@ class HeartbeatTxnRangeResponse {
             $_etype555 = 0;
             $xfer += $input->readSetBegin($_etype555, $_size552);
             for ($_i556 = 0; $_i556 < $_size552; ++$_i556)
+=======
+            $_size557 = 0;
+            $_etype560 = 0;
+            $xfer += $input->readSetBegin($_etype560, $_size557);
+            for ($_i561 = 0; $_i561 < $_size557; ++$_i561)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             {
-              $elem557 = null;
-              $xfer += $input->readI64($elem557);
-              if (is_scalar($elem557)) {
-                $this->nosuch[$elem557] = true;
+              $elem562 = null;
+              $xfer += $input->readI64($elem562);
+              if (is_scalar($elem562)) {
+                $this->nosuch[$elem562] = true;
               } else {
+<<<<<<< HEAD
                 $this->nosuch []= $elem557;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+                $this->nosuch []= $elem562;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
               }
             }
             $xfer += $input->readSetEnd();
@@ -19874,10 +20006,13 @@ class HeartbeatTxnRangeResponse {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->aborted as $iter577 => $iter578)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->aborted as $iter570 => $iter571)
 =======
@@ -19926,7 +20061,18 @@ class HeartbeatTxnRangeResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->aborted as $iter563 => $iter564)
+          {
+            if (is_scalar($iter564)) {
+            $xfer += $output->writeI64($iter563);
+            } else {
+            $xfer += $output->writeI64($iter564);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
           }
         }
@@ -19944,10 +20090,13 @@ class HeartbeatTxnRangeResponse {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->nosuch as $iter579 => $iter580)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->nosuch as $iter572 => $iter573)
 =======
@@ -19975,10 +20124,14 @@ class HeartbeatTxnRangeResponse {
 =======
           foreach ($this->nosuch as $iter560 => $iter561)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+          foreach ($this->nosuch as $iter565 => $iter566)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           {
-            if (is_scalar($iter575)) {
-            $xfer += $output->writeI64($iter574);
+            if (is_scalar($iter566)) {
+            $xfer += $output->writeI64($iter565);
             } else {
+<<<<<<< HEAD
 <<<<<<< HEAD
             $xfer += $output->writeI64($iter575);
 <<<<<<< HEAD
@@ -19995,7 +20148,13 @@ class HeartbeatTxnRangeResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $xfer += $output->writeI64($iter566);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
           }
         }
@@ -20156,6 +20315,7 @@ class CompactionRequest {
             $this->properties = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size581 = 0;
             $_ktype582 = 0;
             $_vtype583 = 0;
@@ -20170,6 +20330,8 @@ class CompactionRequest {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size574 = 0;
             $_ktype575 = 0;
@@ -20235,7 +20397,23 @@ class CompactionRequest {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size567 = 0;
+            $_ktype568 = 0;
+            $_vtype569 = 0;
+            $xfer += $input->readMapBegin($_ktype568, $_vtype569, $_size567);
+            for ($_i571 = 0; $_i571 < $_size567; ++$_i571)
+            {
+              $key572 = '';
+              $val573 = '';
+              $xfer += $input->readString($key572);
+              $xfer += $input->readString($val573);
+              $this->properties[$key572] = $val573;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -20290,6 +20468,7 @@ class CompactionRequest {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->properties as $kiter588 => $viter589)
           {
             $xfer += $output->writeString($kiter588);
@@ -20297,6 +20476,8 @@ class CompactionRequest {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->properties as $kiter581 => $viter582)
           {
@@ -20334,7 +20515,16 @@ class CompactionRequest {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->properties as $kiter574 => $viter575)
+          {
+            $xfer += $output->writeString($kiter574);
+            $xfer += $output->writeString($viter575);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeMapEnd();
@@ -20923,6 +21113,7 @@ class ShowCompactResponse {
             $this->compacts = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size590 = 0;
             $_etype593 = 0;
             $xfer += $input->readListBegin($_etype593, $_size590);
@@ -20935,6 +21126,8 @@ class ShowCompactResponse {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size583 = 0;
             $_etype586 = 0;
@@ -20992,7 +21185,21 @@ class ShowCompactResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size576 = 0;
+            $_etype579 = 0;
+            $xfer += $input->readListBegin($_etype579, $_size576);
+            for ($_i580 = 0; $_i580 < $_size576; ++$_i580)
+            {
+              $elem581 = null;
+              $elem581 = new \metastore\ShowCompactResponseElement();
+              $xfer += $elem581->read($input);
+              $this->compacts []= $elem581;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -21022,12 +21229,15 @@ class ShowCompactResponse {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->compacts as $iter596)
           {
             $xfer += $iter596->write($output);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->compacts as $iter589)
           {
@@ -21061,7 +21271,15 @@ class ShowCompactResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->compacts as $iter582)
+          {
+            $xfer += $iter582->write($output);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -21210,6 +21428,7 @@ class AddDynamicPartitions {
             $this->partitionnames = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size597 = 0;
             $_etype600 = 0;
             $xfer += $input->readListBegin($_etype600, $_size597);
@@ -21221,6 +21440,8 @@ class AddDynamicPartitions {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size590 = 0;
             $_etype593 = 0;
@@ -21274,7 +21495,20 @@ class AddDynamicPartitions {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size583 = 0;
+            $_etype586 = 0;
+            $xfer += $input->readListBegin($_etype586, $_size583);
+            for ($_i587 = 0; $_i587 < $_size583; ++$_i587)
+            {
+              $elem588 = null;
+              $xfer += $input->readString($elem588);
+              $this->partitionnames []= $elem588;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -21331,12 +21565,15 @@ class AddDynamicPartitions {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->partitionnames as $iter603)
           {
             $xfer += $output->writeString($iter603);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->partitionnames as $iter596)
           {
@@ -21370,7 +21607,15 @@ class AddDynamicPartitions {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->partitionnames as $iter589)
+          {
+            $xfer += $output->writeString($iter589);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -21696,6 +21941,7 @@ class CreationMetadata {
             $this->tablesUsed = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size604 = 0;
             $_etype607 = 0;
             $xfer += $input->readSetBegin($_etype607, $_size604);
@@ -21703,6 +21949,8 @@ class CreationMetadata {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size597 = 0;
             $_etype600 = 0;
@@ -21759,17 +22007,30 @@ class CreationMetadata {
             $_etype588 = 0;
             $xfer += $input->readSetBegin($_etype588, $_size585);
             for ($_i589 = 0; $_i589 < $_size585; ++$_i589)
+=======
+            $_size590 = 0;
+            $_etype593 = 0;
+            $xfer += $input->readSetBegin($_etype593, $_size590);
+            for ($_i594 = 0; $_i594 < $_size590; ++$_i594)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             {
-              $elem590 = null;
-              $xfer += $input->readString($elem590);
-              if (is_scalar($elem590)) {
-                $this->tablesUsed[$elem590] = true;
+              $elem595 = null;
+              $xfer += $input->readString($elem595);
+              if (is_scalar($elem595)) {
+                $this->tablesUsed[$elem595] = true;
               } else {
+<<<<<<< HEAD
                 $this->tablesUsed []= $elem590;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+                $this->tablesUsed []= $elem595;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
               }
             }
             $xfer += $input->readSetEnd();
@@ -21822,10 +22083,13 @@ class CreationMetadata {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->tablesUsed as $iter610 => $iter611)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->tablesUsed as $iter603 => $iter604)
 =======
@@ -21850,10 +22114,14 @@ class CreationMetadata {
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
           foreach ($this->tablesUsed as $iter605 => $iter606)
+=======
+          foreach ($this->tablesUsed as $iter596 => $iter597)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           {
-            if (is_scalar($iter606)) {
-            $xfer += $output->writeString($iter605);
+            if (is_scalar($iter597)) {
+            $xfer += $output->writeString($iter596);
             } else {
+<<<<<<< HEAD
             $xfer += $output->writeString($iter606);
 <<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
@@ -21874,7 +22142,13 @@ class CreationMetadata {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $xfer += $output->writeString($iter597);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
           }
         }
@@ -22281,6 +22555,7 @@ class NotificationEventResponse {
             $this->events = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size612 = 0;
             $_etype615 = 0;
             $xfer += $input->readListBegin($_etype615, $_size612);
@@ -22293,6 +22568,8 @@ class NotificationEventResponse {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size605 = 0;
             $_etype608 = 0;
@@ -22350,7 +22627,21 @@ class NotificationEventResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size598 = 0;
+            $_etype601 = 0;
+            $xfer += $input->readListBegin($_etype601, $_size598);
+            for ($_i602 = 0; $_i602 < $_size598; ++$_i602)
+            {
+              $elem603 = null;
+              $elem603 = new \metastore\NotificationEvent();
+              $xfer += $elem603->read($input);
+              $this->events []= $elem603;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -22380,12 +22671,15 @@ class NotificationEventResponse {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->events as $iter618)
           {
             $xfer += $iter618->write($output);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->events as $iter611)
           {
@@ -22419,7 +22713,15 @@ class NotificationEventResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->events as $iter604)
+          {
+            $xfer += $iter604->write($output);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -22789,6 +23091,7 @@ class InsertEventRequestData {
             $this->filesAdded = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size619 = 0;
             $_etype622 = 0;
             $xfer += $input->readListBegin($_etype622, $_size619);
@@ -22800,6 +23103,8 @@ class InsertEventRequestData {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size612 = 0;
             $_etype615 = 0;
@@ -22853,7 +23158,20 @@ class InsertEventRequestData {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size605 = 0;
+            $_etype608 = 0;
+            $xfer += $input->readListBegin($_etype608, $_size605);
+            for ($_i609 = 0; $_i609 < $_size605; ++$_i609)
+            {
+              $elem610 = null;
+              $xfer += $input->readString($elem610);
+              $this->filesAdded []= $elem610;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -22863,6 +23181,7 @@ class InsertEventRequestData {
         case 3:
           if ($ftype == TType::LST) {
             $this->filesAddedChecksum = array();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             $_size625 = 0;
@@ -22876,6 +23195,8 @@ class InsertEventRequestData {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size618 = 0;
             $_etype621 = 0;
@@ -22929,7 +23250,20 @@ class InsertEventRequestData {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size611 = 0;
+            $_etype614 = 0;
+            $xfer += $input->readListBegin($_etype614, $_size611);
+            for ($_i615 = 0; $_i615 < $_size611; ++$_i615)
+            {
+              $elem616 = null;
+              $xfer += $input->readString($elem616);
+              $this->filesAddedChecksum []= $elem616;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -22964,12 +23298,15 @@ class InsertEventRequestData {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->filesAdded as $iter631)
           {
             $xfer += $output->writeString($iter631);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->filesAdded as $iter624)
           {
@@ -23003,7 +23340,15 @@ class InsertEventRequestData {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->filesAdded as $iter617)
+          {
+            $xfer += $output->writeString($iter617);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -23020,12 +23365,15 @@ class InsertEventRequestData {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->filesAddedChecksum as $iter632)
           {
             $xfer += $output->writeString($iter632);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->filesAddedChecksum as $iter625)
           {
@@ -23059,7 +23407,15 @@ class InsertEventRequestData {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->filesAddedChecksum as $iter618)
+          {
+            $xfer += $output->writeString($iter618);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -23290,6 +23646,7 @@ class FireEventRequest {
             $this->partitionVals = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size633 = 0;
             $_etype636 = 0;
             $xfer += $input->readListBegin($_etype636, $_size633);
@@ -23301,6 +23658,8 @@ class FireEventRequest {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size626 = 0;
             $_etype629 = 0;
@@ -23354,7 +23713,20 @@ class FireEventRequest {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size619 = 0;
+            $_etype622 = 0;
+            $xfer += $input->readListBegin($_etype622, $_size619);
+            for ($_i623 = 0; $_i623 < $_size619; ++$_i623)
+            {
+              $elem624 = null;
+              $xfer += $input->readString($elem624);
+              $this->partitionVals []= $elem624;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -23414,12 +23786,15 @@ class FireEventRequest {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->partitionVals as $iter639)
           {
             $xfer += $output->writeString($iter639);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->partitionVals as $iter632)
           {
@@ -23453,7 +23828,15 @@ class FireEventRequest {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->partitionVals as $iter625)
+          {
+            $xfer += $output->writeString($iter625);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -23688,6 +24071,7 @@ class GetFileMetadataByExprResult {
             $this->metadata = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size640 = 0;
             $_ktype641 = 0;
             $_vtype642 = 0;
@@ -23703,6 +24087,8 @@ class GetFileMetadataByExprResult {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size633 = 0;
             $_ktype634 = 0;
@@ -23772,7 +24158,24 @@ class GetFileMetadataByExprResult {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size626 = 0;
+            $_ktype627 = 0;
+            $_vtype628 = 0;
+            $xfer += $input->readMapBegin($_ktype627, $_vtype628, $_size626);
+            for ($_i630 = 0; $_i630 < $_size626; ++$_i630)
+            {
+              $key631 = 0;
+              $val632 = new \metastore\MetadataPpdResult();
+              $xfer += $input->readI64($key631);
+              $val632 = new \metastore\MetadataPpdResult();
+              $xfer += $val632->read($input);
+              $this->metadata[$key631] = $val632;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -23809,6 +24212,7 @@ class GetFileMetadataByExprResult {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->metadata as $kiter647 => $viter648)
           {
             $xfer += $output->writeI64($kiter647);
@@ -23816,6 +24220,8 @@ class GetFileMetadataByExprResult {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->metadata as $kiter640 => $viter641)
           {
@@ -23853,7 +24259,16 @@ class GetFileMetadataByExprResult {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->metadata as $kiter633 => $viter634)
+          {
+            $xfer += $output->writeI64($kiter633);
+            $xfer += $viter634->write($output);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeMapEnd();
@@ -23957,6 +24372,7 @@ class GetFileMetadataByExprRequest {
             $this->fileIds = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size649 = 0;
             $_etype652 = 0;
             $xfer += $input->readListBegin($_etype652, $_size649);
@@ -23968,6 +24384,8 @@ class GetFileMetadataByExprRequest {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size642 = 0;
             $_etype645 = 0;
@@ -24021,7 +24439,20 @@ class GetFileMetadataByExprRequest {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size635 = 0;
+            $_etype638 = 0;
+            $xfer += $input->readListBegin($_etype638, $_size635);
+            for ($_i639 = 0; $_i639 < $_size635; ++$_i639)
+            {
+              $elem640 = null;
+              $xfer += $input->readI64($elem640);
+              $this->fileIds []= $elem640;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -24072,12 +24503,15 @@ class GetFileMetadataByExprRequest {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->fileIds as $iter655)
           {
             $xfer += $output->writeI64($iter655);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->fileIds as $iter648)
           {
@@ -24111,7 +24545,15 @@ class GetFileMetadataByExprRequest {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->fileIds as $iter641)
+          {
+            $xfer += $output->writeI64($iter641);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -24207,6 +24649,7 @@ class GetFileMetadataResult {
             $this->metadata = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size656 = 0;
             $_ktype657 = 0;
             $_vtype658 = 0;
@@ -24221,6 +24664,8 @@ class GetFileMetadataResult {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size649 = 0;
             $_ktype650 = 0;
@@ -24286,7 +24731,23 @@ class GetFileMetadataResult {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size642 = 0;
+            $_ktype643 = 0;
+            $_vtype644 = 0;
+            $xfer += $input->readMapBegin($_ktype643, $_vtype644, $_size642);
+            for ($_i646 = 0; $_i646 < $_size642; ++$_i646)
+            {
+              $key647 = 0;
+              $val648 = '';
+              $xfer += $input->readI64($key647);
+              $xfer += $input->readString($val648);
+              $this->metadata[$key647] = $val648;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -24323,6 +24784,7 @@ class GetFileMetadataResult {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->metadata as $kiter663 => $viter664)
           {
             $xfer += $output->writeI64($kiter663);
@@ -24330,6 +24792,8 @@ class GetFileMetadataResult {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->metadata as $kiter656 => $viter657)
           {
@@ -24367,7 +24831,16 @@ class GetFileMetadataResult {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->metadata as $kiter649 => $viter650)
+          {
+            $xfer += $output->writeI64($kiter649);
+            $xfer += $output->writeString($viter650);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeMapEnd();
@@ -24438,6 +24911,7 @@ class GetFileMetadataRequest {
             $this->fileIds = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size665 = 0;
             $_etype668 = 0;
             $xfer += $input->readListBegin($_etype668, $_size665);
@@ -24449,6 +24923,8 @@ class GetFileMetadataRequest {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size658 = 0;
             $_etype661 = 0;
@@ -24502,7 +24978,20 @@ class GetFileMetadataRequest {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size651 = 0;
+            $_etype654 = 0;
+            $xfer += $input->readListBegin($_etype654, $_size651);
+            for ($_i655 = 0; $_i655 < $_size651; ++$_i655)
+            {
+              $elem656 = null;
+              $xfer += $input->readI64($elem656);
+              $this->fileIds []= $elem656;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -24532,12 +25021,15 @@ class GetFileMetadataRequest {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->fileIds as $iter671)
           {
             $xfer += $output->writeI64($iter671);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->fileIds as $iter664)
           {
@@ -24571,7 +25063,15 @@ class GetFileMetadataRequest {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->fileIds as $iter657)
+          {
+            $xfer += $output->writeI64($iter657);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -24713,6 +25213,7 @@ class PutFileMetadataRequest {
             $this->fileIds = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size672 = 0;
             $_etype675 = 0;
             $xfer += $input->readListBegin($_etype675, $_size672);
@@ -24724,6 +25225,8 @@ class PutFileMetadataRequest {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size665 = 0;
             $_etype668 = 0;
@@ -24777,7 +25280,20 @@ class PutFileMetadataRequest {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size658 = 0;
+            $_etype661 = 0;
+            $xfer += $input->readListBegin($_etype661, $_size658);
+            for ($_i662 = 0; $_i662 < $_size658; ++$_i662)
+            {
+              $elem663 = null;
+              $xfer += $input->readI64($elem663);
+              $this->fileIds []= $elem663;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -24787,6 +25303,7 @@ class PutFileMetadataRequest {
         case 2:
           if ($ftype == TType::LST) {
             $this->metadata = array();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             $_size678 = 0;
@@ -24800,6 +25317,8 @@ class PutFileMetadataRequest {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size671 = 0;
             $_etype674 = 0;
@@ -24853,7 +25372,20 @@ class PutFileMetadataRequest {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size664 = 0;
+            $_etype667 = 0;
+            $xfer += $input->readListBegin($_etype667, $_size664);
+            for ($_i668 = 0; $_i668 < $_size664; ++$_i668)
+            {
+              $elem669 = null;
+              $xfer += $input->readString($elem669);
+              $this->metadata []= $elem669;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -24890,12 +25422,15 @@ class PutFileMetadataRequest {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->fileIds as $iter684)
           {
             $xfer += $output->writeI64($iter684);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->fileIds as $iter677)
           {
@@ -24929,7 +25464,15 @@ class PutFileMetadataRequest {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->fileIds as $iter670)
+          {
+            $xfer += $output->writeI64($iter670);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -24946,12 +25489,15 @@ class PutFileMetadataRequest {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->metadata as $iter685)
           {
             $xfer += $output->writeString($iter685);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->metadata as $iter678)
           {
@@ -24985,7 +25531,15 @@ class PutFileMetadataRequest {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->metadata as $iter671)
+          {
+            $xfer += $output->writeString($iter671);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -25106,6 +25660,7 @@ class ClearFileMetadataRequest {
             $this->fileIds = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size686 = 0;
             $_etype689 = 0;
             $xfer += $input->readListBegin($_etype689, $_size686);
@@ -25117,6 +25672,8 @@ class ClearFileMetadataRequest {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size679 = 0;
             $_etype682 = 0;
@@ -25170,7 +25727,20 @@ class ClearFileMetadataRequest {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size672 = 0;
+            $_etype675 = 0;
+            $xfer += $input->readListBegin($_etype675, $_size672);
+            for ($_i676 = 0; $_i676 < $_size672; ++$_i676)
+            {
+              $elem677 = null;
+              $xfer += $input->readI64($elem677);
+              $this->fileIds []= $elem677;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -25200,12 +25770,15 @@ class ClearFileMetadataRequest {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->fileIds as $iter692)
           {
             $xfer += $output->writeI64($iter692);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->fileIds as $iter685)
           {
@@ -25239,7 +25812,15 @@ class ClearFileMetadataRequest {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->fileIds as $iter678)
+          {
+            $xfer += $output->writeI64($iter678);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -25525,6 +26106,7 @@ class GetAllFunctionsResponse {
             $this->functions = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size693 = 0;
             $_etype696 = 0;
             $xfer += $input->readListBegin($_etype696, $_size693);
@@ -25537,6 +26119,8 @@ class GetAllFunctionsResponse {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size686 = 0;
             $_etype689 = 0;
@@ -25594,7 +26178,21 @@ class GetAllFunctionsResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size679 = 0;
+            $_etype682 = 0;
+            $xfer += $input->readListBegin($_etype682, $_size679);
+            for ($_i683 = 0; $_i683 < $_size679; ++$_i683)
+            {
+              $elem684 = null;
+              $elem684 = new \metastore\Function();
+              $xfer += $elem684->read($input);
+              $this->functions []= $elem684;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -25624,12 +26222,15 @@ class GetAllFunctionsResponse {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->functions as $iter699)
           {
             $xfer += $iter699->write($output);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->functions as $iter692)
           {
@@ -25663,7 +26264,15 @@ class GetAllFunctionsResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->functions as $iter685)
+          {
+            $xfer += $iter685->write($output);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -25729,6 +26338,7 @@ class ClientCapabilities {
             $this->values = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size700 = 0;
             $_etype703 = 0;
             $xfer += $input->readListBegin($_etype703, $_size700);
@@ -25740,6 +26350,8 @@ class ClientCapabilities {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size693 = 0;
             $_etype696 = 0;
@@ -25793,7 +26405,20 @@ class ClientCapabilities {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size686 = 0;
+            $_etype689 = 0;
+            $xfer += $input->readListBegin($_etype689, $_size686);
+            for ($_i690 = 0; $_i690 < $_size686; ++$_i690)
+            {
+              $elem691 = null;
+              $xfer += $input->readI32($elem691);
+              $this->values []= $elem691;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -25823,12 +26448,15 @@ class ClientCapabilities {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->values as $iter706)
           {
             $xfer += $output->writeI32($iter706);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->values as $iter699)
           {
@@ -25863,7 +26491,15 @@ class ClientCapabilities {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->values as $iter692)
+          {
+            $xfer += $output->writeI32($iter692);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -26199,6 +26835,7 @@ class GetTablesRequest {
             $this->tblNames = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size707 = 0;
             $_etype710 = 0;
             $xfer += $input->readListBegin($_etype710, $_size707);
@@ -26210,6 +26847,8 @@ class GetTablesRequest {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size700 = 0;
             $_etype703 = 0;
@@ -26263,7 +26902,20 @@ class GetTablesRequest {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size693 = 0;
+            $_etype696 = 0;
+            $xfer += $input->readListBegin($_etype696, $_size693);
+            for ($_i697 = 0; $_i697 < $_size693; ++$_i697)
+            {
+              $elem698 = null;
+              $xfer += $input->readString($elem698);
+              $this->tblNames []= $elem698;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -26313,12 +26965,15 @@ class GetTablesRequest {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->tblNames as $iter713)
           {
             $xfer += $output->writeString($iter713);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->tblNames as $iter706)
           {
@@ -26352,7 +27007,15 @@ class GetTablesRequest {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->tblNames as $iter699)
+          {
+            $xfer += $output->writeString($iter699);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -26432,6 +27095,7 @@ class GetTablesResult {
             $this->tables = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size714 = 0;
             $_etype717 = 0;
             $xfer += $input->readListBegin($_etype717, $_size714);
@@ -26444,6 +27108,8 @@ class GetTablesResult {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size707 = 0;
             $_etype710 = 0;
@@ -26501,7 +27167,21 @@ class GetTablesResult {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size700 = 0;
+            $_etype703 = 0;
+            $xfer += $input->readListBegin($_etype703, $_size700);
+            for ($_i704 = 0; $_i704 < $_size700; ++$_i704)
+            {
+              $elem705 = null;
+              $elem705 = new \metastore\Table();
+              $xfer += $elem705->read($input);
+              $this->tables []= $elem705;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -26531,12 +27211,15 @@ class GetTablesResult {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->tables as $iter720)
           {
             $xfer += $iter720->write($output);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->tables as $iter713)
           {
@@ -26570,7 +27253,15 @@ class GetTablesResult {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->tables as $iter706)
+          {
+            $xfer += $iter706->write($output);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -26973,6 +27664,7 @@ class Materialization {
             $this->tablesUsed = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size721 = 0;
             $_etype724 = 0;
             $xfer += $input->readSetBegin($_etype724, $_size721);
@@ -26980,6 +27672,8 @@ class Materialization {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size714 = 0;
             $_etype717 = 0;
@@ -27036,17 +27730,30 @@ class Materialization {
             $_etype705 = 0;
             $xfer += $input->readSetBegin($_etype705, $_size702);
             for ($_i706 = 0; $_i706 < $_size702; ++$_i706)
+=======
+            $_size707 = 0;
+            $_etype710 = 0;
+            $xfer += $input->readSetBegin($_etype710, $_size707);
+            for ($_i711 = 0; $_i711 < $_size707; ++$_i711)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             {
-              $elem707 = null;
-              $xfer += $input->readString($elem707);
-              if (is_scalar($elem707)) {
-                $this->tablesUsed[$elem707] = true;
+              $elem712 = null;
+              $xfer += $input->readString($elem712);
+              if (is_scalar($elem712)) {
+                $this->tablesUsed[$elem712] = true;
               } else {
+<<<<<<< HEAD
                 $this->tablesUsed []= $elem707;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+                $this->tablesUsed []= $elem712;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
               }
             }
             $xfer += $input->readSetEnd();
@@ -27091,10 +27798,13 @@ class Materialization {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->tablesUsed as $iter727 => $iter728)
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->tablesUsed as $iter720 => $iter721)
 =======
@@ -27135,15 +27845,25 @@ class Materialization {
 =======
 =======
           foreach ($this->tablesUsed as $iter708 => $iter709)
+=======
+          foreach ($this->tablesUsed as $iter713 => $iter714)
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           {
-            if (is_scalar($iter709)) {
-            $xfer += $output->writeString($iter708);
+            if (is_scalar($iter714)) {
+            $xfer += $output->writeString($iter713);
             } else {
+<<<<<<< HEAD
             $xfer += $output->writeString($iter709);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $xfer += $output->writeString($iter714);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
           }
         }
@@ -28412,6 +29132,7 @@ class WMFullResourcePlan {
             $this->pools = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size729 = 0;
             $_etype732 = 0;
             $xfer += $input->readListBegin($_etype732, $_size729);
@@ -28424,6 +29145,8 @@ class WMFullResourcePlan {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size722 = 0;
             $_etype725 = 0;
@@ -28481,7 +29204,21 @@ class WMFullResourcePlan {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size715 = 0;
+            $_etype718 = 0;
+            $xfer += $input->readListBegin($_etype718, $_size715);
+            for ($_i719 = 0; $_i719 < $_size715; ++$_i719)
+            {
+              $elem720 = null;
+              $elem720 = new \metastore\WMPool();
+              $xfer += $elem720->read($input);
+              $this->pools []= $elem720;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -28491,6 +29228,7 @@ class WMFullResourcePlan {
         case 3:
           if ($ftype == TType::LST) {
             $this->mappings = array();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             $_size735 = 0;
@@ -28505,6 +29243,8 @@ class WMFullResourcePlan {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size728 = 0;
             $_etype731 = 0;
@@ -28562,7 +29302,21 @@ class WMFullResourcePlan {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size721 = 0;
+            $_etype724 = 0;
+            $xfer += $input->readListBegin($_etype724, $_size721);
+            for ($_i725 = 0; $_i725 < $_size721; ++$_i725)
+            {
+              $elem726 = null;
+              $elem726 = new \metastore\WMMapping();
+              $xfer += $elem726->read($input);
+              $this->mappings []= $elem726;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -28572,6 +29326,7 @@ class WMFullResourcePlan {
         case 4:
           if ($ftype == TType::LST) {
             $this->triggers = array();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             $_size741 = 0;
@@ -28586,6 +29341,8 @@ class WMFullResourcePlan {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size734 = 0;
             $_etype737 = 0;
@@ -28643,7 +29400,21 @@ class WMFullResourcePlan {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size727 = 0;
+            $_etype730 = 0;
+            $xfer += $input->readListBegin($_etype730, $_size727);
+            for ($_i731 = 0; $_i731 < $_size727; ++$_i731)
+            {
+              $elem732 = null;
+              $elem732 = new \metastore\WMTrigger();
+              $xfer += $elem732->read($input);
+              $this->triggers []= $elem732;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -28653,6 +29424,7 @@ class WMFullResourcePlan {
         case 5:
           if ($ftype == TType::LST) {
             $this->poolTriggers = array();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             $_size747 = 0;
@@ -28667,6 +29439,8 @@ class WMFullResourcePlan {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size740 = 0;
             $_etype743 = 0;
@@ -28724,7 +29498,21 @@ class WMFullResourcePlan {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size733 = 0;
+            $_etype736 = 0;
+            $xfer += $input->readListBegin($_etype736, $_size733);
+            for ($_i737 = 0; $_i737 < $_size733; ++$_i737)
+            {
+              $elem738 = null;
+              $elem738 = new \metastore\WMPoolTrigger();
+              $xfer += $elem738->read($input);
+              $this->poolTriggers []= $elem738;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -28762,12 +29550,15 @@ class WMFullResourcePlan {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->pools as $iter753)
           {
             $xfer += $iter753->write($output);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->pools as $iter746)
           {
@@ -28801,7 +29592,15 @@ class WMFullResourcePlan {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->pools as $iter739)
+          {
+            $xfer += $iter739->write($output);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -28818,12 +29617,15 @@ class WMFullResourcePlan {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->mappings as $iter754)
           {
             $xfer += $iter754->write($output);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->mappings as $iter747)
           {
@@ -28857,7 +29659,15 @@ class WMFullResourcePlan {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->mappings as $iter740)
+          {
+            $xfer += $iter740->write($output);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -28874,12 +29684,15 @@ class WMFullResourcePlan {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->triggers as $iter755)
           {
             $xfer += $iter755->write($output);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->triggers as $iter748)
           {
@@ -28913,7 +29726,15 @@ class WMFullResourcePlan {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->triggers as $iter741)
+          {
+            $xfer += $iter741->write($output);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -28930,12 +29751,15 @@ class WMFullResourcePlan {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->poolTriggers as $iter756)
           {
             $xfer += $iter756->write($output);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->poolTriggers as $iter749)
           {
@@ -28969,7 +29793,15 @@ class WMFullResourcePlan {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->poolTriggers as $iter742)
+          {
+            $xfer += $iter742->write($output);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -29524,6 +30356,7 @@ class WMGetAllResourcePlanResponse {
             $this->resourcePlans = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size757 = 0;
             $_etype760 = 0;
             $xfer += $input->readListBegin($_etype760, $_size757);
@@ -29536,6 +30369,8 @@ class WMGetAllResourcePlanResponse {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size750 = 0;
             $_etype753 = 0;
@@ -29593,7 +30428,21 @@ class WMGetAllResourcePlanResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size743 = 0;
+            $_etype746 = 0;
+            $xfer += $input->readListBegin($_etype746, $_size743);
+            for ($_i747 = 0; $_i747 < $_size743; ++$_i747)
+            {
+              $elem748 = null;
+              $elem748 = new \metastore\WMResourcePlan();
+              $xfer += $elem748->read($input);
+              $this->resourcePlans []= $elem748;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -29623,12 +30472,15 @@ class WMGetAllResourcePlanResponse {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->resourcePlans as $iter763)
           {
             $xfer += $iter763->write($output);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->resourcePlans as $iter756)
           {
@@ -29662,7 +30514,15 @@ class WMGetAllResourcePlanResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->resourcePlans as $iter749)
+          {
+            $xfer += $iter749->write($output);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -30070,6 +30930,7 @@ class WMValidateResourcePlanResponse {
             $this->errors = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size764 = 0;
             $_etype767 = 0;
             $xfer += $input->readListBegin($_etype767, $_size764);
@@ -30081,6 +30942,8 @@ class WMValidateResourcePlanResponse {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size757 = 0;
             $_etype760 = 0;
@@ -30134,7 +30997,20 @@ class WMValidateResourcePlanResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size750 = 0;
+            $_etype753 = 0;
+            $xfer += $input->readListBegin($_etype753, $_size750);
+            for ($_i754 = 0; $_i754 < $_size750; ++$_i754)
+            {
+              $elem755 = null;
+              $xfer += $input->readString($elem755);
+              $this->errors []= $elem755;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -30144,6 +31020,7 @@ class WMValidateResourcePlanResponse {
         case 2:
           if ($ftype == TType::LST) {
             $this->warnings = array();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             $_size770 = 0;
@@ -30157,6 +31034,8 @@ class WMValidateResourcePlanResponse {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size763 = 0;
             $_etype766 = 0;
@@ -30210,7 +31089,20 @@ class WMValidateResourcePlanResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size756 = 0;
+            $_etype759 = 0;
+            $xfer += $input->readListBegin($_etype759, $_size756);
+            for ($_i760 = 0; $_i760 < $_size756; ++$_i760)
+            {
+              $elem761 = null;
+              $xfer += $input->readString($elem761);
+              $this->warnings []= $elem761;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -30240,12 +31132,15 @@ class WMValidateResourcePlanResponse {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->errors as $iter776)
           {
             $xfer += $output->writeString($iter776);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->errors as $iter769)
           {
@@ -30279,7 +31174,15 @@ class WMValidateResourcePlanResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->errors as $iter762)
+          {
+            $xfer += $output->writeString($iter762);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -30296,12 +31199,15 @@ class WMValidateResourcePlanResponse {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->warnings as $iter777)
           {
             $xfer += $output->writeString($iter777);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->warnings as $iter770)
           {
@@ -30335,7 +31241,15 @@ class WMValidateResourcePlanResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->warnings as $iter763)
+          {
+            $xfer += $output->writeString($iter763);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -31010,6 +31924,7 @@ class WMGetTriggersForResourePlanResponse {
             $this->triggers = array();
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             $_size778 = 0;
             $_etype781 = 0;
             $xfer += $input->readListBegin($_etype781, $_size778);
@@ -31022,6 +31937,8 @@ class WMGetTriggersForResourePlanResponse {
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
             $_size771 = 0;
             $_etype774 = 0;
@@ -31079,7 +31996,21 @@ class WMGetTriggersForResourePlanResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+            $_size764 = 0;
+            $_etype767 = 0;
+            $xfer += $input->readListBegin($_etype767, $_size764);
+            for ($_i768 = 0; $_i768 < $_size764; ++$_i768)
+            {
+              $elem769 = null;
+              $elem769 = new \metastore\WMTrigger();
+              $xfer += $elem769->read($input);
+              $this->triggers []= $elem769;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -31109,12 +32040,15 @@ class WMGetTriggersForResourePlanResponse {
         {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           foreach ($this->triggers as $iter784)
           {
             $xfer += $iter784->write($output);
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           foreach ($this->triggers as $iter777)
           {
@@ -31148,7 +32082,15 @@ class WMGetTriggersForResourePlanResponse {
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+<<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+=======
+          foreach ($this->triggers as $iter770)
+          {
+            $xfer += $iter770->write($output);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -32732,6 +33674,7 @@ class SchemaVersion {
         case 4:
           if ($ftype == TType::LST) {
             $this->cols = array();
+<<<<<<< HEAD
             $_size785 = 0;
             $_etype788 = 0;
             $xfer += $input->readListBegin($_etype788, $_size785);
@@ -32741,6 +33684,29 @@ class SchemaVersion {
               $elem790 = new \metastore\FieldSchema();
               $xfer += $elem790->read($input);
               $this->cols []= $elem790;
+=======
+<<<<<<< HEAD
+            $_size778 = 0;
+            $_etype781 = 0;
+            $xfer += $input->readListBegin($_etype781, $_size778);
+            for ($_i782 = 0; $_i782 < $_size778; ++$_i782)
+            {
+              $elem783 = null;
+              $elem783 = new \metastore\FieldSchema();
+              $xfer += $elem783->read($input);
+              $this->cols []= $elem783;
+=======
+            $_size771 = 0;
+            $_etype774 = 0;
+            $xfer += $input->readListBegin($_etype774, $_size771);
+            for ($_i775 = 0; $_i775 < $_size771; ++$_i775)
+            {
+              $elem776 = null;
+              $elem776 = new \metastore\FieldSchema();
+              $xfer += $elem776->read($input);
+              $this->cols []= $elem776;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -32829,9 +33795,21 @@ class SchemaVersion {
       {
         $output->writeListBegin(TType::STRUCT, count($this->cols));
         {
+<<<<<<< HEAD
           foreach ($this->cols as $iter791)
           {
             $xfer += $iter791->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->cols as $iter784)
+          {
+            $xfer += $iter784->write($output);
+=======
+          foreach ($this->cols as $iter777)
+          {
+            $xfer += $iter777->write($output);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();
@@ -33153,6 +34131,7 @@ class FindSchemasByColsResp {
         case 1:
           if ($ftype == TType::LST) {
             $this->schemaVersions = array();
+<<<<<<< HEAD
             $_size792 = 0;
             $_etype795 = 0;
             $xfer += $input->readListBegin($_etype795, $_size792);
@@ -33162,6 +34141,29 @@ class FindSchemasByColsResp {
               $elem797 = new \metastore\SchemaVersionDescriptor();
               $xfer += $elem797->read($input);
               $this->schemaVersions []= $elem797;
+=======
+<<<<<<< HEAD
+            $_size785 = 0;
+            $_etype788 = 0;
+            $xfer += $input->readListBegin($_etype788, $_size785);
+            for ($_i789 = 0; $_i789 < $_size785; ++$_i789)
+            {
+              $elem790 = null;
+              $elem790 = new \metastore\SchemaVersionDescriptor();
+              $xfer += $elem790->read($input);
+              $this->schemaVersions []= $elem790;
+=======
+            $_size778 = 0;
+            $_etype781 = 0;
+            $xfer += $input->readListBegin($_etype781, $_size778);
+            for ($_i782 = 0; $_i782 < $_size778; ++$_i782)
+            {
+              $elem783 = null;
+              $elem783 = new \metastore\SchemaVersionDescriptor();
+              $xfer += $elem783->read($input);
+              $this->schemaVersions []= $elem783;
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
             }
             $xfer += $input->readListEnd();
           } else {
@@ -33189,9 +34191,21 @@ class FindSchemasByColsResp {
       {
         $output->writeListBegin(TType::STRUCT, count($this->schemaVersions));
         {
+<<<<<<< HEAD
           foreach ($this->schemaVersions as $iter798)
           {
             $xfer += $iter798->write($output);
+=======
+<<<<<<< HEAD
+          foreach ($this->schemaVersions as $iter791)
+          {
+            $xfer += $iter791->write($output);
+=======
+          foreach ($this->schemaVersions as $iter784)
+          {
+            $xfer += $iter784->write($output);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
         }
         $output->writeListEnd();

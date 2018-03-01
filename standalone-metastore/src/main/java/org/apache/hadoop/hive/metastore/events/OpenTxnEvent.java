@@ -22,30 +22,31 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import com.google.common.collect.Lists;
-
-import java.util.Iterator;
 import java.util.List;
 
+/**
+ * OpenTxnEvent
+ * Event generated for open transaction event.
+ */
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public class OpenTxnEvent extends ListenerEvent {
+  private List<Long> txnIds;
 
-  private final List<Long> txnIds;
-  
   /**
    *
-   * @param txnIdsItr List of unique identification for the transaction just opened.
+   * @param txnIds List of unique identification for the transaction just opened.
    * @param handler handler that is firing the event
    */
-  public OpenTxnEvent(Iterator<Long> txnIdsItr, IHMSHandler handler) {
+  public OpenTxnEvent(List<Long> txnIds, IHMSHandler handler) {
     super(true, handler);
-    txnIds = Lists.newArrayList(txnIdsItr);
+    this.txnIds = Lists.newArrayList(txnIds);
   }
 
   /**
-   * @return Iterator<Long> txnIds
+   * @return List<Long> txnIds
    */
-  public Iterator<Long> getTxnIdItr() {
-    return txnIds.iterator();
+  public List<Long> getTxnIds() {
+    return txnIds;
   }
 }

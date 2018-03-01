@@ -355,6 +355,7 @@ import org.slf4j.LoggerFactory;
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
 <<<<<<< HEAD
+<<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list618 = iprot.readListBegin();
                 struct.txnToWriteIds = new ArrayList<TxnToWriteId>(_list618.size);
                 TxnToWriteId _elem619;
@@ -364,6 +365,8 @@ import org.slf4j.LoggerFactory;
                   _elem619.read(iprot);
                   struct.txnToWriteIds.add(_elem619);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
                 org.apache.thrift.protocol.TList _list610 = iprot.readListBegin();
                 struct.txnToWriteIds = new ArrayList<TxnToWriteId>(_list610.size);
@@ -394,7 +397,20 @@ import org.slf4j.LoggerFactory;
                   struct.txnToWriteIds.add(_elem613);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+                org.apache.thrift.protocol.TList _list602 = iprot.readListBegin();
+                struct.txnToWriteIds = new ArrayList<TxnToWriteId>(_list602.size);
+                TxnToWriteId _elem603;
+                for (int _i604 = 0; _i604 < _list602.size; ++_i604)
+                {
+                  _elem603 = new TxnToWriteId();
+                  _elem603.read(iprot);
+                  struct.txnToWriteIds.add(_elem603);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
                 }
                 iprot.readListEnd();
               }
@@ -421,10 +437,13 @@ import org.slf4j.LoggerFactory;
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.txnToWriteIds.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
           for (TxnToWriteId _iter621 : struct.txnToWriteIds)
           {
             _iter621.write(oprot);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
           for (TxnToWriteId _iter613 : struct.txnToWriteIds)
           {
@@ -440,7 +459,15 @@ import org.slf4j.LoggerFactory;
             _iter615.write(oprot);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+          for (TxnToWriteId _iter605 : struct.txnToWriteIds)
+          {
+            _iter605.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           }
           oprot.writeListEnd();
         }
@@ -466,10 +493,13 @@ import org.slf4j.LoggerFactory;
       {
         oprot.writeI32(struct.txnToWriteIds.size());
 <<<<<<< HEAD
+<<<<<<< HEAD
         for (TxnToWriteId _iter622 : struct.txnToWriteIds)
         {
           _iter622.write(oprot);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
         for (TxnToWriteId _iter614 : struct.txnToWriteIds)
         {
@@ -485,7 +515,15 @@ import org.slf4j.LoggerFactory;
           _iter616.write(oprot);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+        for (TxnToWriteId _iter606 : struct.txnToWriteIds)
+        {
+          _iter606.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
         }
       }
     }
@@ -494,6 +532,7 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, AllocateTableWriteIdsResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
+<<<<<<< HEAD
 <<<<<<< HEAD
         org.apache.thrift.protocol.TList _list623 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
         struct.txnToWriteIds = new ArrayList<TxnToWriteId>(_list623.size);
@@ -504,6 +543,8 @@ import org.slf4j.LoggerFactory;
           _elem624.read(iprot);
           struct.txnToWriteIds.add(_elem624);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
         org.apache.thrift.protocol.TList _list615 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
         struct.txnToWriteIds = new ArrayList<TxnToWriteId>(_list615.size);
@@ -534,7 +575,20 @@ import org.slf4j.LoggerFactory;
           struct.txnToWriteIds.add(_elem618);
 >>>>>>> HIVE-18679 : create/replicate open transaction event
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+<<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
+=======
+=======
+        org.apache.thrift.protocol.TList _list607 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.txnToWriteIds = new ArrayList<TxnToWriteId>(_list607.size);
+        TxnToWriteId _elem608;
+        for (int _i609 = 0; _i609 < _list607.size; ++_i609)
+        {
+          _elem608 = new TxnToWriteId();
+          _elem608.read(iprot);
+          struct.txnToWriteIds.add(_elem608);
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+>>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
         }
       }
       struct.setTxnToWriteIdsIsSet(true);

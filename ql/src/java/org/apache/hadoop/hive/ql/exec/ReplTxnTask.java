@@ -19,13 +19,16 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
-import com.google.common.collect.Lists;
-
-import java.util.Iterator;
 import java.util.List;
 
+/**
+ * ReplTxnTask.
+ * Used for replaying the transaction related events.
+ */
 public class ReplTxnTask extends Task<ReplTxnWork> {
 
   private static final long serialVersionUID = 1L;
@@ -36,28 +39,36 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
 
   @Override
   public int execute(DriverContext driverContext) {
+    String replPolicy = work.getReplPolicy();
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-      Utilities.FILE_OP_LOGGER.trace("Executing ReplTxnTask for " + work.getTxnIds());
+      Utilities.FILE_OP_LOGGER.trace("Executing ReplTxnTask " + work.getOperationType().toString() +
+              " for txn ids : " + work.getTxnIds().toString() + " replPolicy : " + replPolicy);
     }
-
     try {
-      if (work.getOperationType() ==  ReplTxnWork.OperationType.REPL_OPEN_TXN) {
-        List<Long> txnIdsItr = driverContext.getCtx().getHiveTxnManager()
-            .replOpenTxn(work.getReplPolicy(), work.getTxnIds(), work.getNumTxns());
-        for (int i = 0; i < txnIdsItr.size(); i++) {
-          LOG.info(
-              "Replayed OpenTxn Event for policy " + work.getReplPolicy() + " with srcTxn " + work
-                  .getTxnId(i) + " and target txn id " + txnIdsItr.get(i));
-        }
-      } else if (work.getOperationType() ==  ReplTxnWork.OperationType.REPL_COMMI_TXN) {
-        driverContext.getCtx().getHiveTxnManager().replCommitTxn(work.getReplPolicy(), work.getTxnId(0));
-        LOG.info("Replayed CommitTxn Event for policy " + work.getReplPolicy() +
+      HiveTxnManager txnManager = driverContext.getCtx().getHiveTxnManager();
+      String user = UserGroupInformation.getCurrentUser().getUserName();
+      LOG.debug("Replaying " + work.getOperationType().toString() + " Event for policy " +
+              replPolicy + " with srcTxn " + work.getTxnIds().toString());
+      switch(work.getOperationType()) {
+      case REPL_OPEN_TXN:
+        List<Long> txnIds = txnManager.replOpenTxn(replPolicy, work.getTxnIds(), user);
+        assert txnIds.size() == work.getTxnIds().size();
+        LOG.info("Replayed OpenTxn Event for policy " + replPolicy + " with srcTxn " +
+                work.getTxnIds().toString() + " and target txn id " + txnIds.toString());
+        return 0;
+      case REPL_ABORT_TXN:
+        txnManager.replRollbackTxn(replPolicy, work.getTxnId(0));
+        LOG.info("Replayed AbortTxn Event for policy " + replPolicy + " with srcTxn " + work.getTxnId(0));
+        return 0;
+      case REPL_COMMIT_TXN:
+        txnManager.replCommitTxn(replPolicy, work.getTxnId(0));
+        LOG.info("Replayed CommitTxn Event for policy " + replPolicy +
                 " with srcTxn " + work.getTxnId(0) + " and target txn id " + work.getTxnId(0));
-      } else if (work.getOperationType() ==  ReplTxnWork.OperationType.REPL_ABORT_TXN) {
-        driverContext.getCtx().getHiveTxnManager().replRollbackTxn(work.getReplPolicy(), work.getTxnId(0));
-        LOG.info("Replayed AbortTxn Event for policy " + work.getReplPolicy() + " with srcTxn " + work.getTxnId(0));
+        return 0;
+      default:
+        LOG.error("Operation Type " + work.getOperationType() + " is not supported ");
+        return 1;
       }
-      return 0;
     } catch (Exception e) {
       console.printError("Failed with exception " + e.getMessage(), "\n"
           + StringUtils.stringifyException(e));
@@ -68,11 +79,11 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
 
   @Override
   public StageType getType() {
-    return StageType.MOVE; // TODO: Need to check the stage for open txn.
+    return StageType.REPL_TXN;
   }
 
   @Override
   public String getName() {
-    return "OPEN_TRANSACTION";
+    return "REPL_TRANSACTION";
   }
 }

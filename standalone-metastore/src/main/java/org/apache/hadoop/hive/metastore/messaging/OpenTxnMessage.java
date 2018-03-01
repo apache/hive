@@ -19,7 +19,6 @@
 
 package org.apache.hadoop.hive.metastore.messaging;
 
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -32,9 +31,8 @@ public abstract class OpenTxnMessage extends EventMessage {
   }
 
   /**
-   * Get the list of transactios opened
-   *
+   * Get the list of txns opened
    * @return The lists of TxnIds
    */
-  abstract public Iterator<Long> getTxnIdItr();
+  public abstract List<Long> getTxnIds();
 }

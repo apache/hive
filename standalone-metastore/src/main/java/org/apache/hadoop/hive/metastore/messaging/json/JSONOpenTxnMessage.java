@@ -20,11 +20,9 @@
 package org.apache.hadoop.hive.metastore.messaging.json;
 import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
 import org.codehaus.jackson.annotate.JsonProperty;
-
-import com.google.common.collect.Lists;
-
-import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 /**
  * JSON implementation of OpenTxnMessage
@@ -32,16 +30,16 @@ import java.util.List;
 public class JSONOpenTxnMessage extends OpenTxnMessage {
 
   @JsonProperty
-  List<Long> txnIds;
+  private List<Long> txnIds;
 
   @JsonProperty
-  Long timestamp;
+  private Long timestamp, fromTxnId, toTxnId;
 
   @JsonProperty
-  String server;
+  private String server;
 
   @JsonProperty
-  String servicePrincipal;
+  private String servicePrincipal;
 
   /**
    * Default constructor, needed for Jackson.
@@ -49,15 +47,30 @@ public class JSONOpenTxnMessage extends OpenTxnMessage {
   public JSONOpenTxnMessage() {
   }
 
-  public JSONOpenTxnMessage(String server, String servicePrincipal, Iterator<Long> txnIdsItr, Long timestamp) {
+  public JSONOpenTxnMessage(String server, String servicePrincipal, List<Long> txnIds, Long timestamp) {
     this.timestamp = timestamp;
-    this.txnIds = Lists.newArrayList(txnIdsItr);
+    this.txnIds = txnIds;
     this.server = server;
     this.servicePrincipal = servicePrincipal;
   }
 
+  public JSONOpenTxnMessage(String server, String servicePrincipal, Long fromTxnId, Long toTxnId, Long timestamp) {
+    this.timestamp = timestamp;
+    this.txnIds = null;
+    this.server = server;
+    this.servicePrincipal = servicePrincipal;
+    this.fromTxnId = fromTxnId;
+    this.toTxnId = toTxnId;
+  }
+
   @Override
-  public Iterator<Long> getTxnIdItr() { return txnIds.iterator(); }
+  public List<Long> getTxnIds() {
+    if (txnIds != null) {
+      return txnIds;
+    }
+    return LongStream.rangeClosed(fromTxnId, toTxnId)
+            .boxed().collect(Collectors.toList());
+  }
 
   @Override
   public Long getTimestamp() {
@@ -88,3 +101,4 @@ public class JSONOpenTxnMessage extends OpenTxnMessage {
     }
   }
 }
+

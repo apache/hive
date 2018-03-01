@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField HOSTNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("hostname", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField AGENT_INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("agentInfo", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField REPL_POLICY_FIELD_DESC = new org.apache.thrift.protocol.TField("replPolicy", org.apache.thrift.protocol.TType.STRING, (short)5);
-  private static final org.apache.thrift.protocol.TField REPL_SRC_TXN_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("replSrcTxnId", org.apache.thrift.protocol.TType.LIST, (short)6);
+  private static final org.apache.thrift.protocol.TField REPL_SRC_TXN_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("replSrcTxnIds", org.apache.thrift.protocol.TType.LIST, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
   private String hostname; // required
   private String agentInfo; // optional
   private String replPolicy; // optional
-  private List<Long> replSrcTxnId; // optional
+  private List<Long> replSrcTxnIds; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -65,7 +65,7 @@ import org.slf4j.LoggerFactory;
     HOSTNAME((short)3, "hostname"),
     AGENT_INFO((short)4, "agentInfo"),
     REPL_POLICY((short)5, "replPolicy"),
-    REPL_SRC_TXN_ID((short)6, "replSrcTxnId");
+    REPL_SRC_TXN_IDS((short)6, "replSrcTxnIds");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -90,8 +90,8 @@ import org.slf4j.LoggerFactory;
           return AGENT_INFO;
         case 5: // REPL_POLICY
           return REPL_POLICY;
-        case 6: // REPL_SRC_TXN_ID
-          return REPL_SRC_TXN_ID;
+        case 6: // REPL_SRC_TXN_IDS
+          return REPL_SRC_TXN_IDS;
         default:
           return null;
       }
@@ -134,7 +134,7 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __NUM_TXNS_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.AGENT_INFO,_Fields.REPL_POLICY,_Fields.REPL_SRC_TXN_ID};
+  private static final _Fields optionals[] = {_Fields.AGENT_INFO,_Fields.REPL_POLICY,_Fields.REPL_SRC_TXN_IDS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -148,7 +148,7 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.REPL_POLICY, new org.apache.thrift.meta_data.FieldMetaData("replPolicy", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.REPL_SRC_TXN_ID, new org.apache.thrift.meta_data.FieldMetaData("replSrcTxnId", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.REPL_SRC_TXN_IDS, new org.apache.thrift.meta_data.FieldMetaData("replSrcTxnIds", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -190,9 +190,9 @@ import org.slf4j.LoggerFactory;
     if (other.isSetReplPolicy()) {
       this.replPolicy = other.replPolicy;
     }
-    if (other.isSetReplSrcTxnId()) {
-      List<Long> __this__replSrcTxnId = new ArrayList<Long>(other.replSrcTxnId);
-      this.replSrcTxnId = __this__replSrcTxnId;
+    if (other.isSetReplSrcTxnIds()) {
+      List<Long> __this__replSrcTxnIds = new ArrayList<Long>(other.replSrcTxnIds);
+      this.replSrcTxnIds = __this__replSrcTxnIds;
     }
   }
 
@@ -209,7 +209,7 @@ import org.slf4j.LoggerFactory;
     this.agentInfo = "Unknown";
 
     this.replPolicy = null;
-    this.replSrcTxnId = null;
+    this.replSrcTxnIds = null;
   }
 
   public int getNum_txns() {
@@ -326,41 +326,41 @@ import org.slf4j.LoggerFactory;
     }
   }
 
-  public int getReplSrcTxnIdSize() {
-    return (this.replSrcTxnId == null) ? 0 : this.replSrcTxnId.size();
+  public int getReplSrcTxnIdsSize() {
+    return (this.replSrcTxnIds == null) ? 0 : this.replSrcTxnIds.size();
   }
 
-  public java.util.Iterator<Long> getReplSrcTxnIdIterator() {
-    return (this.replSrcTxnId == null) ? null : this.replSrcTxnId.iterator();
+  public java.util.Iterator<Long> getReplSrcTxnIdsIterator() {
+    return (this.replSrcTxnIds == null) ? null : this.replSrcTxnIds.iterator();
   }
 
-  public void addToReplSrcTxnId(long elem) {
-    if (this.replSrcTxnId == null) {
-      this.replSrcTxnId = new ArrayList<Long>();
+  public void addToReplSrcTxnIds(long elem) {
+    if (this.replSrcTxnIds == null) {
+      this.replSrcTxnIds = new ArrayList<Long>();
     }
-    this.replSrcTxnId.add(elem);
+    this.replSrcTxnIds.add(elem);
   }
 
-  public List<Long> getReplSrcTxnId() {
-    return this.replSrcTxnId;
+  public List<Long> getReplSrcTxnIds() {
+    return this.replSrcTxnIds;
   }
 
-  public void setReplSrcTxnId(List<Long> replSrcTxnId) {
-    this.replSrcTxnId = replSrcTxnId;
+  public void setReplSrcTxnIds(List<Long> replSrcTxnIds) {
+    this.replSrcTxnIds = replSrcTxnIds;
   }
 
-  public void unsetReplSrcTxnId() {
-    this.replSrcTxnId = null;
+  public void unsetReplSrcTxnIds() {
+    this.replSrcTxnIds = null;
   }
 
-  /** Returns true if field replSrcTxnId is set (has been assigned a value) and false otherwise */
-  public boolean isSetReplSrcTxnId() {
-    return this.replSrcTxnId != null;
+  /** Returns true if field replSrcTxnIds is set (has been assigned a value) and false otherwise */
+  public boolean isSetReplSrcTxnIds() {
+    return this.replSrcTxnIds != null;
   }
 
-  public void setReplSrcTxnIdIsSet(boolean value) {
+  public void setReplSrcTxnIdsIsSet(boolean value) {
     if (!value) {
-      this.replSrcTxnId = null;
+      this.replSrcTxnIds = null;
     }
   }
 
@@ -406,11 +406,11 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
-    case REPL_SRC_TXN_ID:
+    case REPL_SRC_TXN_IDS:
       if (value == null) {
-        unsetReplSrcTxnId();
+        unsetReplSrcTxnIds();
       } else {
-        setReplSrcTxnId((List<Long>)value);
+        setReplSrcTxnIds((List<Long>)value);
       }
       break;
 
@@ -434,8 +434,8 @@ import org.slf4j.LoggerFactory;
     case REPL_POLICY:
       return getReplPolicy();
 
-    case REPL_SRC_TXN_ID:
-      return getReplSrcTxnId();
+    case REPL_SRC_TXN_IDS:
+      return getReplSrcTxnIds();
 
     }
     throw new IllegalStateException();
@@ -458,8 +458,8 @@ import org.slf4j.LoggerFactory;
       return isSetAgentInfo();
     case REPL_POLICY:
       return isSetReplPolicy();
-    case REPL_SRC_TXN_ID:
-      return isSetReplSrcTxnId();
+    case REPL_SRC_TXN_IDS:
+      return isSetReplSrcTxnIds();
     }
     throw new IllegalStateException();
   }
@@ -522,12 +522,12 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
-    boolean this_present_replSrcTxnId = true && this.isSetReplSrcTxnId();
-    boolean that_present_replSrcTxnId = true && that.isSetReplSrcTxnId();
-    if (this_present_replSrcTxnId || that_present_replSrcTxnId) {
-      if (!(this_present_replSrcTxnId && that_present_replSrcTxnId))
+    boolean this_present_replSrcTxnIds = true && this.isSetReplSrcTxnIds();
+    boolean that_present_replSrcTxnIds = true && that.isSetReplSrcTxnIds();
+    if (this_present_replSrcTxnIds || that_present_replSrcTxnIds) {
+      if (!(this_present_replSrcTxnIds && that_present_replSrcTxnIds))
         return false;
-      if (!this.replSrcTxnId.equals(that.replSrcTxnId))
+      if (!this.replSrcTxnIds.equals(that.replSrcTxnIds))
         return false;
     }
 
@@ -563,10 +563,10 @@ import org.slf4j.LoggerFactory;
     if (present_replPolicy)
       list.add(replPolicy);
 
-    boolean present_replSrcTxnId = true && (isSetReplSrcTxnId());
-    list.add(present_replSrcTxnId);
-    if (present_replSrcTxnId)
-      list.add(replSrcTxnId);
+    boolean present_replSrcTxnIds = true && (isSetReplSrcTxnIds());
+    list.add(present_replSrcTxnIds);
+    if (present_replSrcTxnIds)
+      list.add(replSrcTxnIds);
 
     return list.hashCode();
   }
@@ -629,12 +629,12 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetReplSrcTxnId()).compareTo(other.isSetReplSrcTxnId());
+    lastComparison = Boolean.valueOf(isSetReplSrcTxnIds()).compareTo(other.isSetReplSrcTxnIds());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetReplSrcTxnId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.replSrcTxnId, other.replSrcTxnId);
+    if (isSetReplSrcTxnIds()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.replSrcTxnIds, other.replSrcTxnIds);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -698,13 +698,13 @@ import org.slf4j.LoggerFactory;
       }
       first = false;
     }
-    if (isSetReplSrcTxnId()) {
+    if (isSetReplSrcTxnIds()) {
       if (!first) sb.append(", ");
-      sb.append("replSrcTxnId:");
-      if (this.replSrcTxnId == null) {
+      sb.append("replSrcTxnIds:");
+      if (this.replSrcTxnIds == null) {
         sb.append("null");
       } else {
-        sb.append(this.replSrcTxnId);
+        sb.append(this.replSrcTxnIds);
       }
       first = false;
     }
@@ -805,25 +805,20 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 6: // REPL_SRC_TXN_ID
+          case 6: // REPL_SRC_TXN_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list556 = iprot.readListBegin();
-                struct.replSrcTxnId = new ArrayList<Long>(_list556.size);
-                long _elem557;
-                for (int _i558 = 0; _i558 < _list556.size; ++_i558)
+                org.apache.thrift.protocol.TList _list546 = iprot.readListBegin();
+                struct.replSrcTxnIds = new ArrayList<Long>(_list546.size);
+                long _elem547;
+                for (int _i548 = 0; _i548 < _list546.size; ++_i548)
                 {
-<<<<<<< HEAD
-                  _elem557 = iprot.readI64();
-                  struct.replSrcTxnId.add(_elem557);
-=======
-                  _elem541 = iprot.readI64();
-                  struct.replSrcTxnId.add(_elem541);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+                  _elem547 = iprot.readI64();
+                  struct.replSrcTxnIds.add(_elem547);
                 }
                 iprot.readListEnd();
               }
-              struct.setReplSrcTxnIdIsSet(true);
+              struct.setReplSrcTxnIdsIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -868,14 +863,14 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
-      if (struct.replSrcTxnId != null) {
-        if (struct.isSetReplSrcTxnId()) {
-          oprot.writeFieldBegin(REPL_SRC_TXN_ID_FIELD_DESC);
+      if (struct.replSrcTxnIds != null) {
+        if (struct.isSetReplSrcTxnIds()) {
+          oprot.writeFieldBegin(REPL_SRC_TXN_IDS_FIELD_DESC);
           {
-            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.replSrcTxnId.size()));
-            for (long _iter559 : struct.replSrcTxnId)
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.replSrcTxnIds.size()));
+            for (long _iter549 : struct.replSrcTxnIds)
             {
-              oprot.writeI64(_iter559);
+              oprot.writeI64(_iter549);
             }
             oprot.writeListEnd();
           }
@@ -909,7 +904,7 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetReplPolicy()) {
         optionals.set(1);
       }
-      if (struct.isSetReplSrcTxnId()) {
+      if (struct.isSetReplSrcTxnIds()) {
         optionals.set(2);
       }
       oprot.writeBitSet(optionals, 3);
@@ -919,18 +914,12 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetReplPolicy()) {
         oprot.writeString(struct.replPolicy);
       }
-      if (struct.isSetReplSrcTxnId()) {
+      if (struct.isSetReplSrcTxnIds()) {
         {
-          oprot.writeI32(struct.replSrcTxnId.size());
-<<<<<<< HEAD
-          for (long _iter560 : struct.replSrcTxnId)
+          oprot.writeI32(struct.replSrcTxnIds.size());
+          for (long _iter550 : struct.replSrcTxnIds)
           {
-            oprot.writeI64(_iter560);
-=======
-          for (long _iter544 : struct.replSrcTxnId)
-          {
-            oprot.writeI64(_iter544);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+            oprot.writeI64(_iter550);
           }
         }
       }
@@ -956,16 +945,16 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list561 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-          struct.replSrcTxnId = new ArrayList<Long>(_list561.size);
-          long _elem562;
-          for (int _i563 = 0; _i563 < _list561.size; ++_i563)
+          org.apache.thrift.protocol.TList _list551 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+          struct.replSrcTxnIds = new ArrayList<Long>(_list551.size);
+          long _elem552;
+          for (int _i553 = 0; _i553 < _list551.size; ++_i553)
           {
-            _elem562 = iprot.readI64();
-            struct.replSrcTxnId.add(_elem562);
+            _elem552 = iprot.readI64();
+            struct.replSrcTxnIds.add(_elem552);
           }
         }
-        struct.setReplSrcTxnIdIsSet(true);
+        struct.setReplSrcTxnIdsIsSet(true);
       }
     }
   }

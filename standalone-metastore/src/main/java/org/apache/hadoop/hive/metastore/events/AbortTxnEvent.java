@@ -22,6 +22,10 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 
+/**
+ * AbortTxnEvent
+ * Event generated for roll backing a transaction
+ */
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public class AbortTxnEvent extends ListenerEvent {
@@ -30,12 +34,11 @@ public class AbortTxnEvent extends ListenerEvent {
 
   /**
    *
-   * @param transactionId Unique identification for the transaction just opened.
-   * @param status status of insert, true = success, false = failure
+   * @param transactionId Unique identification for the transaction that got rolledback.
    * @param handler handler that is firing the event
    */
-  public AbortTxnEvent(Long transactionId, boolean status, IHMSHandler handler) {
-    super(status, handler);
+  public AbortTxnEvent(Long transactionId, IHMSHandler handler) {
+    super(true, handler);
     txnId = transactionId;
   }
 

@@ -17,25 +17,37 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
 import org.apache.hadoop.hive.ql.exec.ReplTxnWork;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * CommitTxnHandler
+ * Target(Load) side handler for commit transaction event.
+ */
 public class CommitTxnHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context context)
       throws SemanticException {
+    String txnMgr = context.hiveConf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER);
+    boolean concurrency =  context.hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
+    String dbTxnMgr = "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager";
+    if (!txnMgr.equals(dbTxnMgr) || !concurrency) {
+      context.log.error("Cannot load transaction events as acid is not enabled");
+      throw new SemanticException("Cannot load transaction events as acid is not enabled");
+    }
+
     CommitTxnMessage msg = deserializer.getCommitTxnMessage(context.dmd.getPayload());
 
     Task<ReplTxnWork> commitTxnTask = TaskFactory.get(
         new ReplTxnWork(context.dbName, context.tableName, msg.getTxnId(),
-                ReplTxnWork.OperationType.REPL_COMMI_TXN), context.hiveConf
+                ReplTxnWork.OperationType.REPL_COMMIT_TXN), context.hiveConf
     );
     updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, context.tableName, null);
     context.log.debug("Added Commit txn task : {}", commitTxnTask.getId());
