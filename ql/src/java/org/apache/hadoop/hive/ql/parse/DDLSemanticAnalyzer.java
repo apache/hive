@@ -818,6 +818,18 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!sameColumns || !samePartitions) {
       throw new SemanticException(ErrorMsg.TABLES_INCOMPATIBLE_SCHEMAS.getMsg());
     }
+
+    // Exchange partition is not allowed with transactional tables.
+    // If only source is transactional table, then target will see deleted rows too as no snapshot
+    // isolation applicable for non-acid tables.
+    // If only target is transactional table, then data would be visible to all ongoing transactions
+    // affecting the snapshot isolation.
+    // If both source and targets are transactional tables, then target partition may have delta/base
+    // files with write IDs may not be valid. It may affect snapshot isolation for on-going txns as well.
+    if (AcidUtils.isTransactionalTable(sourceTable) || AcidUtils.isTransactionalTable(destTable)) {
+      throw new SemanticException(ErrorMsg.EXCHANGE_PARTITION_NOT_ALLOWED_WITH_TRANSACTIONAL_TABLES.getMsg());
+    }
+
     // check if source partition exists
     getPartitions(sourceTable, partSpecs, true);
 

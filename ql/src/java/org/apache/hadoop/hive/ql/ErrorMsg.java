@@ -324,6 +324,8 @@ public enum ErrorMsg {
             " A subpartition value is specified without specifying the parent partition's value"),
   TABLES_INCOMPATIBLE_SCHEMAS(10235, "Tables have incompatible schemas and their partitions " +
             " cannot be exchanged."),
+  EXCHANGE_PARTITION_NOT_ALLOWED_WITH_TRANSACTIONAL_TABLES(10236, "Exchange partition is not allowed with "
+          + "transactional tables. Alternatively, shall use load data or insert overwrite to move partitions."),
 
   TRUNCATE_COLUMN_NOT_RC(10237, "Only RCFileFormat supports column truncation."),
   TRUNCATE_COLUMN_ARCHIVED(10238, "Column truncation cannot be performed on archived partitions."),
