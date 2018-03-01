@@ -130,6 +130,7 @@ class EncodedReaderImpl implements EncodedReader {
   private boolean isDataReaderOpen = false;
   private final CompressionCodec codec;
   private final boolean isCodecFromPool;
+  private boolean isCodecFailure = false;
   private final boolean isCompressed;
   private final org.apache.orc.CompressionKind compressionKind;
   private final int bufferSize;
@@ -677,12 +678,17 @@ class EncodedReaderImpl implements EncodedReader {
 
   @Override
   public void close() throws IOException {
-    if (isCodecFromPool) {
-      OrcCodecPool.returnCodec(compressionKind, codec);
-    } else {
-      codec.close();
+    try {
+      if (isCodecFromPool && !isCodecFailure) {
+        OrcCodecPool.returnCodec(compressionKind, codec);
+      } else {
+        codec.close();
+      }
+    } catch (Exception ex) {
+      LOG.error("Ignoring error from codec", ex);
+    } finally {
+      dataReader.close();
     }
-    dataReader.close();
   }
 
   /**
@@ -870,7 +876,15 @@ class EncodedReaderImpl implements EncodedReader {
     for (ProcCacheChunk chunk : toDecompress) {
       ByteBuffer dest = chunk.getBuffer().getByteBufferRaw();
       if (chunk.isOriginalDataCompressed) {
-        decompressChunk(chunk.originalData, codec, dest);
+        boolean isOk = false;
+        try {
+          decompressChunk(chunk.originalData, codec, dest);
+          isOk = true;
+        } finally {
+          if (!isOk) {
+            isCodecFailure = true;
+          }
+        }
       } else {
         copyUncompressedChunk(chunk.originalData, dest);
       }
