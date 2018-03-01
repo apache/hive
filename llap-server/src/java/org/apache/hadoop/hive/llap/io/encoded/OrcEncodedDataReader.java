@@ -752,14 +752,21 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     CompressionKind kind = orcReader.getCompressionKind();
     boolean isPool = useCodecPool;
     CompressionCodec codec = isPool ? OrcCodecPool.getCodec(kind) : WriterImpl.createCodec(kind);
+    boolean isCodecError = true;
     try {
-      return buildStripeFooter(Lists.<DiskRange>newArrayList(new BufferChunk(bb, 0)),
-          bb.remaining(), codec, orcReader.getCompressionSize());
+      OrcProto.StripeFooter result = buildStripeFooter(Lists.<DiskRange>newArrayList(
+          new BufferChunk(bb, 0)), bb.remaining(), codec, orcReader.getCompressionSize());
+      isCodecError = false;
+      return result;
     } finally {
-      if (isPool) {
-        OrcCodecPool.returnCodec(kind, codec);
-      } else {
-        codec.close();
+      try {
+        if (isPool && !isCodecError) {
+          OrcCodecPool.returnCodec(kind, codec);
+        } else {
+          codec.close();
+        }
+      } catch (Exception ex) {
+        LOG.error("Ignoring codec cleanup error", ex);
       }
     }
   }
