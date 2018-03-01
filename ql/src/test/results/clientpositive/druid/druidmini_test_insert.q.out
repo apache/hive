@@ -52,11 +52,11 @@ POSTHOOK: Lineage: druid_alltypesorc.ctinyint SIMPLE [(alltypesorc)alltypesorc.F
 PREHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 6057
 PREHOOK: query: INSERT INTO TABLE druid_alltypesorc
 SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
@@ -93,11 +93,11 @@ POSTHOOK: Output: default@druid_alltypesorc
 PREHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 12162
 PREHOOK: query: INSERT OVERWRITE TABLE druid_alltypesorc
 SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
@@ -134,11 +134,11 @@ POSTHOOK: Output: default@druid_alltypesorc
 PREHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_alltypesorc
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT COUNT(*) FROM druid_alltypesorc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_alltypesorc
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 6105
 PREHOOK: query: DROP TABLE druid_alltypesorc
 PREHOOK: type: DROPTABLE

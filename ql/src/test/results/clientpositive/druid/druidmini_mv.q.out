@@ -70,11 +70,11 @@ POSTHOOK: Output: default@cmv_mat_view
 PREHOOK: query: SELECT a, b, c FROM cmv_mat_view
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT a, b, c FROM cmv_mat_view
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_mat_view
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	bob	3.140000104904175
 2	bonnie	172342.203125
 PREHOOK: query: SHOW TBLPROPERTIES cmv_mat_view
@@ -115,11 +115,11 @@ POSTHOOK: Output: default@cmv_mat_view2
 PREHOOK: query: SELECT a, c FROM cmv_mat_view2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_mat_view2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT a, c FROM cmv_mat_view2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_mat_view2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	978.760009765625
 6	25.600000381469727
 PREHOOK: query: SHOW TBLPROPERTIES cmv_mat_view2
@@ -146,53 +146,38 @@ FROM cmv_basetable
 WHERE a = 3
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-0 depends on stages: Stage-1
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: cmv_basetable
-            Statistics: Num rows: 6 Data size: 10770 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (a = 3) (type: boolean)
-              Statistics: Num rows: 3 Data size: 5385 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: 3 (type: int), c (type: double)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 3 Data size: 5385 Basic stats: COMPLETE Column stats: NONE
-                File Output Operator
-                  compressed: false
-                  Statistics: Num rows: 3 Data size: 5385 Basic stats: COMPLETE Column stats: NONE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: cmv_basetable
+          Filter Operator
+            predicate: (a = 3) (type: boolean)
+            Select Operator
+              expressions: 3 (type: int), c (type: double)
+              outputColumnNames: _col0, _col1
+              ListSink
 
 PREHOOK: query: SELECT a, c
 FROM cmv_basetable
 WHERE a = 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT a, c
 FROM cmv_basetable
 WHERE a = 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	15.8
 3	9.8
 3	978.76
-Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT * FROM (
   (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
@@ -213,56 +198,65 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: cmv_basetable
-            Statistics: Num rows: 6 Data size: 10770 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (a = 3) (type: boolean)
-              Statistics: Num rows: 3 Data size: 5385 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: c (type: double)
-                outputColumnNames: _col0
-                Statistics: Num rows: 3 Data size: 5385 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 3 Data size: 5385 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: double)
-          TableScan
-            alias: cmv_basetable
-            Statistics: Num rows: 6 Data size: 10770 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: ((3 = a) and (d = 3)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 1795 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: c (type: double)
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 1795 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 1795 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: double)
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Inner Join 0 to 1
-          keys:
-            0 
-            1 
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 3 Data size: 10773 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: 3 (type: int), _col0 (type: double), 3 (type: int), _col1 (type: double)
-            outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 3 Data size: 10773 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 3 Data size: 10773 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 3 (XPROD_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: cmv_basetable
+                  Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (a = 3) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: c (type: double)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: double)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: cmv_basetable
+                  Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((3 = a) and (d = 3)) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: c (type: double)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: double)
+        Reducer 2 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 36 Data size: 1044 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 3 (type: int), _col0 (type: double), 3 (type: int), _col1 (type: double)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 36 Data size: 1044 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 36 Data size: 1044 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -270,7 +264,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT * FROM (
   (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
   JOIN
@@ -278,7 +272,7 @@ PREHOOK: query: SELECT * FROM (
   ON table1.a = table2.a)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM (
   (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
   JOIN
@@ -286,7 +280,7 @@ POSTHOOK: query: SELECT * FROM (
   ON table1.a = table2.a)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	15.8	3	978.76
 3	9.8	3	978.76
 3	978.76	3	978.76
@@ -305,7 +299,7 @@ POSTHOOK: Lineage: cmv_basetable.b SCRIPT []
 POSTHOOK: Lineage: cmv_basetable.c SCRIPT []
 POSTHOOK: Lineage: cmv_basetable.d SCRIPT []
 POSTHOOK: Lineage: cmv_basetable.t SCRIPT []
-Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT * FROM (
   (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
@@ -326,56 +320,65 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: cmv_basetable
-            Statistics: Num rows: 6 Data size: 20240 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (a = 3) (type: boolean)
-              Statistics: Num rows: 3 Data size: 10120 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: c (type: double)
-                outputColumnNames: _col0
-                Statistics: Num rows: 3 Data size: 10120 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 3 Data size: 10120 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: double)
-          TableScan
-            alias: cmv_basetable
-            Statistics: Num rows: 6 Data size: 20240 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: ((3 = a) and (d = 3)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 3373 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: c (type: double)
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 3373 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 3373 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: double)
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Inner Join 0 to 1
-          keys:
-            0 
-            1 
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 3 Data size: 20242 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: 3 (type: int), _col0 (type: double), 3 (type: int), _col1 (type: double)
-            outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 3 Data size: 20242 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 3 Data size: 20242 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 3 (XPROD_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: cmv_basetable
+                  Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (a = 3) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: c (type: double)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: double)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: cmv_basetable
+                  Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((3 = a) and (d = 3)) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: c (type: double)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: double)
+        Reducer 2 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 36 Data size: 1044 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 3 (type: int), _col0 (type: double), 3 (type: int), _col1 (type: double)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 36 Data size: 1044 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 36 Data size: 1044 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -383,7 +386,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT * FROM (
   (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
   JOIN
@@ -391,7 +394,7 @@ PREHOOK: query: SELECT * FROM (
   ON table1.a = table2.a)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM (
   (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
   JOIN
@@ -399,7 +402,7 @@ POSTHOOK: query: SELECT * FROM (
   ON table1.a = table2.a)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3	15.8	3	978.76
 3	15.8	3	978.76
 3	9.8	3	978.76
@@ -413,7 +416,7 @@ POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
   Stage-2
-  Stage-4 depends on stages: Stage-2, Stage-1, Stage-3
+  Stage-5 depends on stages: Stage-2, Stage-1, Stage-3
   Stage-1 is a root stage
   Stage-3 is a root stage
 
@@ -430,7 +433,7 @@ STAGE PLANS:
       Insert operator:
         Insert
 
-  Stage: Stage-4
+  Stage: Stage-5
     Materialized View Work
 
   Stage: Stage-1
@@ -438,42 +441,49 @@ STAGE PLANS:
         Pre-Insert task
 
   Stage: Stage-3
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: cmv_basetable
-            Statistics: Num rows: 6 Data size: 20240 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: (a = 3) (type: boolean)
-              Statistics: Num rows: 3 Data size: 10120 Basic stats: COMPLETE Column stats: NONE
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: cmv_basetable
+                  Statistics: Num rows: 6 Data size: 2352 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (a = 3) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 2352 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: CAST( t AS timestamp with local time zone) (type: timestamp with local time zone), 3 (type: int), b (type: varchar(256)), c (type: double)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 6 Data size: 2352 Basic stats: COMPLETE Column stats: NONE
+                      Select Operator
+                        expressions: _col0 (type: timestamp with local time zone), _col1 (type: int), _col2 (type: varchar(256)), _col3 (type: double), floor_hour(CAST( GenericUDFEpochMilli(_col0) AS TIMESTAMP)) (type: timestamp)
+                        outputColumnNames: _col0, _col1, _col2, _col3, __time_granularity
+                        Statistics: Num rows: 6 Data size: 2352 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: __time_granularity (type: timestamp)
+                          sort order: +
+                          Map-reduce partition columns: __time_granularity (type: timestamp)
+                          Statistics: Num rows: 6 Data size: 2352 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: timestamp with local time zone), _col1 (type: int), _col2 (type: varchar(256)), _col3 (type: double)
+        Reducer 2 
+            Reduce Operator Tree:
               Select Operator
-                expressions: CAST( t AS timestamp with local time zone) (type: timestamp with local time zone), 3 (type: int), b (type: varchar(256)), c (type: double)
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 3 Data size: 10120 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: _col0 (type: timestamp with local time zone), _col1 (type: int), _col2 (type: varchar(256)), _col3 (type: double), floor_hour(CAST( GenericUDFEpochMilli(_col0) AS TIMESTAMP)) (type: timestamp)
-                  outputColumnNames: _col0, _col1, _col2, _col3, __time_granularity
-                  Statistics: Num rows: 3 Data size: 10120 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    key expressions: __time_granularity (type: timestamp)
-                    sort order: +
-                    Map-reduce partition columns: __time_granularity (type: timestamp)
-                    Statistics: Num rows: 3 Data size: 10120 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: timestamp with local time zone), _col1 (type: int), _col2 (type: varchar(256)), _col3 (type: double)
-      Reduce Operator Tree:
-        Select Operator
-          expressions: VALUE._col0 (type: timestamp with local time zone), VALUE._col1 (type: int), VALUE._col2 (type: varchar(256)), VALUE._col3 (type: double), KEY.__time_granularity (type: timestamp)
-          outputColumnNames: _col0, _col1, _col2, _col3, __time_granularity
-          Statistics: Num rows: 3 Data size: 10120 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Dp Sort State: PARTITION_SORTED
-            Statistics: Num rows: 3 Data size: 10120 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
-                output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
-                serde: org.apache.hadoop.hive.druid.serde.DruidSerDe
-                name: default.cmv_mat_view2
+                expressions: VALUE._col0 (type: timestamp with local time zone), VALUE._col1 (type: int), VALUE._col2 (type: varchar(256)), VALUE._col3 (type: double), KEY.__time_granularity (type: timestamp)
+                outputColumnNames: _col0, _col1, _col2, _col3, __time_granularity
+                Statistics: Num rows: 6 Data size: 2352 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Dp Sort State: PARTITION_SORTED
+                  Statistics: Num rows: 6 Data size: 2352 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat
+                      output format: org.apache.hadoop.hive.druid.io.DruidOutputFormat
+                      serde: org.apache.hadoop.hive.druid.serde.DruidSerDe
+                      name: default.cmv_mat_view2
 
 PREHOOK: query: ALTER MATERIALIZED VIEW cmv_mat_view2 REBUILD
 PREHOOK: type: QUERY
@@ -496,7 +506,7 @@ rawDataSize	0
 storage_handler	org.apache.hadoop.hive.druid.DruidStorageHandler
 totalSize	0
 #### A masked pattern was here ####
-Warning: Shuffle Join JOIN[6][tables = [cmv_mat_view2, $hdt$_0]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN
 SELECT * FROM (
   (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
@@ -517,52 +527,65 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: cmv_basetable
-            Statistics: Num rows: 6 Data size: 20240 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: ((3 = a) and (d = 3)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 3373 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: c (type: double)
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 3373 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 3373 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: double)
-          TableScan
-            alias: cmv_mat_view2
-            properties:
-              druid.query.json {"queryType":"select","dataSource":"default.cmv_mat_view2","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":[],"metrics":["c"],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
-              druid.query.type select
-            Statistics: Num rows: 3 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            Reduce Output Operator
-              sort order: 
-              Statistics: Num rows: 3 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              value expressions: c (type: double)
-      Reduce Operator Tree:
-        Join Operator
-          condition map:
-               Inner Join 0 to 1
-          keys:
-            0 
-            1 
-          outputColumnNames: _col1, _col5
-          Statistics: Num rows: 3 Data size: 10122 Basic stats: PARTIAL Column stats: NONE
-          Select Operator
-            expressions: 3 (type: int), _col1 (type: double), 3 (type: int), _col5 (type: double)
-            outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 3 Data size: 10122 Basic stats: PARTIAL Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 3 Data size: 10122 Basic stats: PARTIAL Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 3 (XPROD_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: cmv_basetable
+                  Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (a = 3) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: c (type: double)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 6 Data size: 72 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: double)
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: cmv_basetable
+                  Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((3 = a) and (d = 3)) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: c (type: double)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        sort order: 
+                        Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: NONE
+                        value expressions: _col0 (type: double)
+        Reducer 2 
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 36 Data size: 1044 Basic stats: COMPLETE Column stats: NONE
+                Select Operator
+                  expressions: 3 (type: int), _col0 (type: double), 3 (type: int), _col1 (type: double)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 36 Data size: 1044 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 36 Data size: 1044 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -570,7 +593,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[6][tables = [cmv_mat_view2, $hdt$_0]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT * FROM (
   (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
   JOIN
@@ -578,8 +601,7 @@ PREHOOK: query: SELECT * FROM (
   ON table1.a = table2.a)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable
-PREHOOK: Input: default@cmv_mat_view2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT * FROM (
   (SELECT a, c FROM cmv_basetable WHERE a = 3) table1
   JOIN
@@ -587,11 +609,11 @@ POSTHOOK: query: SELECT * FROM (
   ON table1.a = table2.a)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable
-POSTHOOK: Input: default@cmv_mat_view2
-#### A masked pattern was here ####
-3	15.800000190734863	3	978.76
-3	25.600000381469727	3	978.76
-3	978.760009765625	3	978.76
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+3	15.8	3	978.76
+3	15.8	3	978.76
+3	9.8	3	978.76
+3	978.76	3	978.76
 PREHOOK: query: DROP MATERIALIZED VIEW cmv_mat_view
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: default@cmv_mat_view

@@ -66,21 +66,19 @@ STAGE PLANS:
           properties:
             druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":"all","aggregations":[{"type":"count","name":"$f0"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
             druid.query.type timeseries
-          Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: $f0 (type: bigint)
             outputColumnNames: _col0
-            Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT count(*) FROM druid_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT count(*) FROM druid_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 6105
 PREHOOK: query: EXPLAIN SELECT floor_year(`__time`), SUM(cfloat), SUM(cdouble), SUM(ctinyint), SUM(csmallint),SUM(cint), SUM(cbigint)
 FROM druid_table GROUP BY floor_year(`__time`)
@@ -101,23 +99,21 @@ STAGE PLANS:
           properties:
             druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":"year","aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"cfloat"},{"type":"doubleSum","name":"$f2","fieldName":"cdouble"},{"type":"longSum","name":"$f3","fieldName":"ctinyint"},{"type":"longSum","name":"$f4","fieldName":"csmallint"},{"type":"longSum","name":"$f5","fieldName":"cint"},{"type":"longSum","name":"$f6","fieldName":"cbigint"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
             druid.query.type timeseries
-          Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: __time (type: timestamp with local time zone), $f1 (type: float), $f2 (type: float), $f3 (type: bigint), $f4 (type: bigint), $f5 (type: bigint), $f6 (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-            Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT floor_year(`__time`), SUM(cfloat), SUM(cdouble), SUM(ctinyint), SUM(csmallint),SUM(cint), SUM(cbigint)
 FROM druid_table GROUP BY floor_year(`__time`)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT floor_year(`__time`), SUM(cfloat), SUM(cdouble), SUM(ctinyint), SUM(csmallint),SUM(cint), SUM(cbigint)
 FROM druid_table GROUP BY floor_year(`__time`)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1968-12-31 16:00:00.0 US/Pacific	-4532.57	3660538.8	-4611	3658030	688783835691	8060200254
 1969-12-31 16:00:00.0 US/Pacific	-35057.676	2.3648124E7	-35356	4123059	719285966109	2932345033
 PREHOOK: query: EXPLAIN SELECT floor_year(`__time`), MIN(cfloat), MIN(cdouble), MIN(ctinyint), MIN(csmallint),MIN(cint), MIN(cbigint)
@@ -139,23 +135,21 @@ STAGE PLANS:
           properties:
             druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":"year","aggregations":[{"type":"doubleMin","name":"$f1","fieldName":"cfloat"},{"type":"doubleMin","name":"$f2","fieldName":"cdouble"},{"type":"longMin","name":"$f3","fieldName":"ctinyint"},{"type":"longMin","name":"$f4","fieldName":"csmallint"},{"type":"longMin","name":"$f5","fieldName":"cint"},{"type":"longMin","name":"$f6","fieldName":"cbigint"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
             druid.query.type timeseries
-          Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: __time (type: timestamp with local time zone), $f1 (type: float), $f2 (type: float), $f3 (type: bigint), $f4 (type: bigint), $f5 (type: bigint), $f6 (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-            Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT floor_year(`__time`), MIN(cfloat), MIN(cdouble), MIN(ctinyint), MIN(csmallint),MIN(cint), MIN(cbigint)
 FROM druid_table GROUP BY floor_year(`__time`)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT floor_year(`__time`), MIN(cfloat), MIN(cdouble), MIN(ctinyint), MIN(csmallint),MIN(cint), MIN(cbigint)
 FROM druid_table GROUP BY floor_year(`__time`)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1968-12-31 16:00:00.0 US/Pacific	-1790.778	-308691.84	-1790	-313425	0	-8577981133
 1969-12-31 16:00:00.0 US/Pacific	-964.719	-287404.84	-1051	-292138	-1073279343	-2147311592
 PREHOOK: query: EXPLAIN SELECT floor_year(`__time`), MAX(cfloat), MAX(cdouble), MAX(ctinyint), MAX(csmallint),MAX(cint), MAX(cbigint)
@@ -177,23 +171,21 @@ STAGE PLANS:
           properties:
             druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":"year","aggregations":[{"type":"doubleMax","name":"$f1","fieldName":"cfloat"},{"type":"doubleMax","name":"$f2","fieldName":"cdouble"},{"type":"longMax","name":"$f3","fieldName":"ctinyint"},{"type":"longMax","name":"$f4","fieldName":"csmallint"},{"type":"longMax","name":"$f5","fieldName":"cint"},{"type":"longMax","name":"$f6","fieldName":"cbigint"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
             druid.query.type timeseries
-          Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: __time (type: timestamp with local time zone), $f1 (type: float), $f2 (type: float), $f3 (type: bigint), $f4 (type: bigint), $f5 (type: bigint), $f6 (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-            Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT floor_year(`__time`), MAX(cfloat), MAX(cdouble), MAX(ctinyint), MAX(csmallint),MAX(cint), MAX(cbigint)
 FROM druid_table GROUP BY floor_year(`__time`)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT floor_year(`__time`), MAX(cfloat), MAX(cdouble), MAX(ctinyint), MAX(csmallint),MAX(cint), MAX(cbigint)
 FROM druid_table GROUP BY floor_year(`__time`)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1968-12-31 16:00:00.0 US/Pacific	62.0	57235.0	62	57235	314088763179	2144274348
 1969-12-31 16:00:00.0 US/Pacific	769.164	1.9565518E7	723	57435	319104152611	4923772860
 PREHOOK: query: EXPLAIN SELECT cstring1, SUM(cdouble) as s FROM druid_table GROUP BY cstring1 ORDER BY s ASC LIMIT 10
@@ -213,21 +205,19 @@ STAGE PLANS:
           properties:
             druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table","granularity":"all","dimensions":[{"type":"default","dimension":"cstring1"}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"$f1","direction":"ascending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"cdouble"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
-          Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: cstring1 (type: string), $f1 (type: float)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT cstring1, SUM(cdouble) as s FROM druid_table GROUP BY cstring1 ORDER BY s ASC LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT cstring1, SUM(cdouble) as s FROM druid_table GROUP BY cstring1 ORDER BY s ASC LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1cGVWH7n1QU	-596096.7
 821UdmGbkEf4j	-14161.827
 00iT08	0.0
@@ -255,21 +245,19 @@ STAGE PLANS:
           properties:
             druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table","granularity":"all","dimensions":[{"type":"default","dimension":"cstring2"}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"cstring2","direction":"ascending","dimensionOrder":"alphanumeric"}]},"aggregations":[{"type":"doubleMax","name":"$f1","fieldName":"cdouble"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
-          Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Select Operator
             expressions: cstring2 (type: string), $f1 (type: float)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             ListSink
 
 PREHOOK: query: SELECT cstring2, MAX(cdouble) FROM druid_table GROUP BY cstring2 ORDER BY cstring2 ASC LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT cstring2, MAX(cdouble) FROM druid_table GROUP BY cstring2 ORDER BY cstring2 ASC LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 NULL	1.9565518E7
 0AAE3daA78MISbsRsHJrp2PI	0.0
 0amu3m60U20Xa3	-200.0
@@ -294,38 +282,45 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: druid_table
-            properties:
-              druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
-              druid.query.type select
-            Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            Select Operator
-              expressions: __time (type: timestamp with local time zone)
-              outputColumnNames: _col0
-              Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: timestamp with local time zone)
-                sort order: +
-                Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                TopN Hash Memory Usage: 0.1
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: timestamp with local time zone)
-          outputColumnNames: _col0
-          Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-          Limit
-            Number of rows: 10
-            Statistics: Num rows: 10 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 10 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table
+                  properties:
+                    druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+                    druid.query.type select
+                  Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: __time (type: timestamp with local time zone)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: timestamp with local time zone)
+                      sort order: +
+                      Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp with local time zone)
+                outputColumnNames: _col0
+                Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -337,12 +332,12 @@ PREHOOK: query: SELECT `__time`
 FROM druid_table ORDER BY `__time` ASC LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT `__time`
 FROM druid_table ORDER BY `__time` ASC LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1969-12-31 15:59:00.0 US/Pacific
 1969-12-31 15:59:00.0 US/Pacific
 1969-12-31 15:59:00.0 US/Pacific
@@ -369,38 +364,45 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: druid_table
-            properties:
-              druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1900-01-01T00:00:00.000Z/1970-03-01T08:00:00.000Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
-              druid.query.type select
-            Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            Select Operator
-              expressions: __time (type: timestamp with local time zone)
-              outputColumnNames: _col0
-              Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: timestamp with local time zone)
-                sort order: +
-                Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                TopN Hash Memory Usage: 0.1
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: timestamp with local time zone)
-          outputColumnNames: _col0
-          Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-          Limit
-            Number of rows: 10
-            Statistics: Num rows: 10 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 10 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table
+                  properties:
+                    druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1900-01-01T00:00:00.000Z/1970-03-01T08:00:00.000Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+                    druid.query.type select
+                  Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: __time (type: timestamp with local time zone)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: timestamp with local time zone)
+                      sort order: +
+                      Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp with local time zone)
+                outputColumnNames: _col0
+                Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -413,13 +415,13 @@ FROM druid_table
 WHERE `__time` < '1970-03-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT `__time`
 FROM druid_table
 WHERE `__time` < '1970-03-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1969-12-31 15:59:00.0 US/Pacific
 1969-12-31 15:59:00.0 US/Pacific
 1969-12-31 15:59:00.0 US/Pacific
@@ -446,38 +448,45 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: druid_table
-            properties:
-              druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1968-01-01T08:00:00.000Z/1970-03-01T08:00:00.001Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
-              druid.query.type select
-            Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            Select Operator
-              expressions: __time (type: timestamp with local time zone)
-              outputColumnNames: _col0
-              Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: timestamp with local time zone)
-                sort order: +
-                Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                TopN Hash Memory Usage: 0.1
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: timestamp with local time zone)
-          outputColumnNames: _col0
-          Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-          Limit
-            Number of rows: 10
-            Statistics: Num rows: 10 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 10 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table
+                  properties:
+                    druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1968-01-01T08:00:00.000Z/1970-03-01T08:00:00.001Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+                    druid.query.type select
+                  Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: __time (type: timestamp with local time zone)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: timestamp with local time zone)
+                      sort order: +
+                      Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp with local time zone)
+                outputColumnNames: _col0
+                Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -490,13 +499,13 @@ FROM druid_table
 WHERE `__time` >= '1968-01-01 00:00:00' AND `__time` <= '1970-03-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT `__time`
 FROM druid_table
 WHERE `__time` >= '1968-01-01 00:00:00' AND `__time` <= '1970-03-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1969-12-31 15:59:00.0 US/Pacific
 1969-12-31 15:59:00.0 US/Pacific
 1969-12-31 15:59:00.0 US/Pacific
@@ -525,38 +534,45 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: druid_table
-            properties:
-              druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1968-01-01T08:00:00.000Z/1970-03-01T08:00:00.001Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
-              druid.query.type select
-            Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            Select Operator
-              expressions: __time (type: timestamp with local time zone)
-              outputColumnNames: _col0
-              Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: timestamp with local time zone)
-                sort order: +
-                Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                TopN Hash Memory Usage: 0.1
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: timestamp with local time zone)
-          outputColumnNames: _col0
-          Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-          Limit
-            Number of rows: 10
-            Statistics: Num rows: 10 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 10 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table
+                  properties:
+                    druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1968-01-01T08:00:00.000Z/1970-03-01T08:00:00.001Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+                    druid.query.type select
+                  Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: __time (type: timestamp with local time zone)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: timestamp with local time zone)
+                      sort order: +
+                      Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp with local time zone)
+                outputColumnNames: _col0
+                Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -570,14 +586,14 @@ WHERE `__time` >= '1968-01-01 00:00:00' AND `__time` <= '1970-03-01 00:00:00'
     AND `__time` < '2011-01-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT `__time`
 FROM druid_table
 WHERE `__time` >= '1968-01-01 00:00:00' AND `__time` <= '1970-03-01 00:00:00'
     AND `__time` < '2011-01-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1969-12-31 15:59:00.0 US/Pacific
 1969-12-31 15:59:00.0 US/Pacific
 1969-12-31 15:59:00.0 US/Pacific
@@ -604,38 +620,45 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: druid_table
-            properties:
-              druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1968-01-01T08:00:00.000Z/1970-01-01T08:00:00.001Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
-              druid.query.type select
-            Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            Select Operator
-              expressions: __time (type: timestamp with local time zone)
-              outputColumnNames: _col0
-              Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: timestamp with local time zone)
-                sort order: +
-                Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                TopN Hash Memory Usage: 0.1
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: timestamp with local time zone)
-          outputColumnNames: _col0
-          Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-          Limit
-            Number of rows: 10
-            Statistics: Num rows: 10 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 10 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table
+                  properties:
+                    druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1968-01-01T08:00:00.000Z/1970-01-01T08:00:00.001Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+                    druid.query.type select
+                  Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: __time (type: timestamp with local time zone)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: timestamp with local time zone)
+                      sort order: +
+                      Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp with local time zone)
+                outputColumnNames: _col0
+                Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -648,13 +671,13 @@ FROM druid_table
 WHERE `__time` BETWEEN '1968-01-01 00:00:00' AND '1970-01-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT `__time`
 FROM druid_table
 WHERE `__time` BETWEEN '1968-01-01 00:00:00' AND '1970-01-01 00:00:00' ORDER BY `__time` ASC LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1969-12-31 15:59:00.0 US/Pacific
 1969-12-31 15:59:00.0 US/Pacific
 1969-12-31 15:59:00.0 US/Pacific
@@ -683,38 +706,45 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-1
-    Map Reduce
-      Map Operator Tree:
-          TableScan
-            alias: druid_table
-            properties:
-              druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1968-01-01T08:00:00.000Z/1970-04-01T08:00:00.001Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
-              druid.query.type select
-            Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            Select Operator
-              expressions: __time (type: timestamp with local time zone)
-              outputColumnNames: _col0
-              Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              Reduce Output Operator
-                key expressions: _col0 (type: timestamp with local time zone)
-                sort order: +
-                Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-                TopN Hash Memory Usage: 0.1
-      Reduce Operator Tree:
-        Select Operator
-          expressions: KEY.reducesinkkey0 (type: timestamp with local time zone)
-          outputColumnNames: _col0
-          Statistics: Num rows: 9173 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-          Limit
-            Number of rows: 10
-            Statistics: Num rows: 10 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-            File Output Operator
-              compressed: false
-              Statistics: Num rows: 10 Data size: 0 Basic stats: PARTIAL Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: druid_table
+                  properties:
+                    druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1968-01-01T08:00:00.000Z/1970-04-01T08:00:00.001Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
+                    druid.query.type select
+                  Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: __time (type: timestamp with local time zone)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: timestamp with local time zone)
+                      sort order: +
+                      Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                      TopN Hash Memory Usage: 0.1
+        Reducer 2 
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: timestamp with local time zone)
+                outputColumnNames: _col0
+                Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
+                Limit
+                  Number of rows: 10
+                  Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 10 Data size: 380 Basic stats: COMPLETE Column stats: NONE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -728,14 +758,14 @@ WHERE (`__time` BETWEEN '1968-01-01 00:00:00' AND '1970-01-01 00:00:00')
     OR (`__time` BETWEEN '1968-02-01 00:00:00' AND '1970-04-01 00:00:00') ORDER BY `__time` ASC LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT `__time`
 FROM druid_table
 WHERE (`__time` BETWEEN '1968-01-01 00:00:00' AND '1970-01-01 00:00:00')
     OR (`__time` BETWEEN '1968-02-01 00:00:00' AND '1970-04-01 00:00:00') ORDER BY `__time` ASC LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1969-12-31 15:59:00.0 US/Pacific
 1969-12-31 15:59:00.0 US/Pacific
 1969-12-31 15:59:00.0 US/Pacific
