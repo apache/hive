@@ -43,9 +43,9 @@ public abstract class AbstractCliConfig {
 
   public static final String HIVE_ROOT = HiveTestEnvSetup.HIVE_ROOT;
 
-  public static enum MetastoreType {
+  enum MetastoreType {
     sql
-  };
+  }
 
   private MetastoreType metastoreType = MetastoreType.sql;
   private String queryFile;
