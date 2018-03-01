@@ -27,54 +27,54 @@ POSTHOOK: Output: default@tstz1
 PREHOOK: query: select `__time` from tstz1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstz1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select `__time` from tstz1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstz1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 12:26:34.0 US/Pacific
 PREHOOK: query: select cast(`__time` as timestamp) from tstz1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstz1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select cast(`__time` as timestamp) from tstz1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstz1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 12:26:34
 PREHOOK: query: select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstz1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstz1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 12:26:34
 PREHOOK: query: select `__time` from tstz1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstz1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select `__time` from tstz1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstz1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 20:26:34.0 UTC
 PREHOOK: query: select cast(`__time` as timestamp) from tstz1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstz1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select cast(`__time` as timestamp) from tstz1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstz1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 20:26:34
 PREHOOK: query: select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tstz1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select cast(`__time` as timestamp) from tstz1 where `__time` >= cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tstz1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2016-01-03 20:26:34

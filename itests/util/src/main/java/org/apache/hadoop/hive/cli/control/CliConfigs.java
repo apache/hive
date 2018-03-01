@@ -177,7 +177,7 @@ public class CliConfigs {
 
         setInitScript("q_test_druid_init.sql");
         setCleanupScript("q_test_cleanup_druid.sql");
-        setHiveConfDir("");
+        setHiveConfDir("data/conf/llap");
         setClusterType(MiniClusterType.druid);
         setMetastoreType(MetastoreType.sql);
         setFsType(QTestUtil.FsType.hdfs);
