@@ -2387,7 +2387,7 @@ STAGE PLANS:
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Select Operator
-              expressions: key (type: string), (UDFToDouble(key) + 1.0) (type: double)
+              expressions: key (type: string), (UDFToDouble(key) + 1.0D) (type: double)
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
@@ -7118,7 +7118,7 @@ STAGE PLANS:
             alias: t2
             Statistics: Num rows: 6 Data size: 24 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) = 8.0) (type: boolean)
+              predicate: (UDFToDouble(key) = 8.0D) (type: boolean)
               Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)

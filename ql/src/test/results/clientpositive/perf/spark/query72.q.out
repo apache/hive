@@ -358,7 +358,7 @@ STAGE PLANS:
                 outputColumnNames: _col4, _col6, _col7, _col9, _col10, _col16, _col18, _col20
                 Statistics: Num rows: 510191624 Data size: 69090195216 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: (UDFToDouble(_col20) > (UDFToDouble(_col9) + 5.0)) (type: boolean)
+                  predicate: (UDFToDouble(_col20) > (UDFToDouble(_col9) + 5.0D)) (type: boolean)
                   Statistics: Num rows: 170063874 Data size: 23030064981 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col18 (type: string), _col4 (type: int), _col6 (type: int), _col7 (type: int), _col10 (type: int), _col16 (type: int)

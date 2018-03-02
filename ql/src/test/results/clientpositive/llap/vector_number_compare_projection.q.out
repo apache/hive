@@ -131,13 +131,13 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: hash(t,si,i,(t < 0),(si <= 0),(i = 0)) (type: int)
+                    expressions: hash(t,si,i,(t < 0Y),(si <= 0S),(i = 0)) (type: int)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [11]
-                        selectExpressions: VectorUDFAdaptor(hash(t,si,i,(t < 0),(si <= 0),(i = 0)))(children: LongColLessLongScalar(col 0:tinyint, val 0) -> 8:boolean, LongColLessEqualLongScalar(col 1:smallint, val 0) -> 9:boolean, LongColEqualLongScalar(col 2:int, val 0) -> 10:boolean) -> 11:int
+                        selectExpressions: VectorUDFAdaptor(hash(t,si,i,(t < 0Y),(si <= 0S),(i = 0)))(children: LongColLessLongScalar(col 0:tinyint, val 0) -> 8:boolean, LongColLessEqualLongScalar(col 1:smallint, val 0) -> 9:boolean, LongColEqualLongScalar(col 2:int, val 0) -> 10:boolean) -> 11:int
                     Statistics: Num rows: 2001 Data size: 22824 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(_col0)
@@ -257,13 +257,13 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: hash(t,si,i,b,(t > 0),(si >= 0),(i <> 0),(b > 0)) (type: int)
+                    expressions: hash(t,si,i,b,(t > 0Y),(si >= 0S),(i <> 0),(b > 0L)) (type: int)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [12]
-                        selectExpressions: VectorUDFAdaptor(hash(t,si,i,b,(t > 0),(si >= 0),(i <> 0),(b > 0)))(children: LongColGreaterLongScalar(col 0:tinyint, val 0) -> 8:boolean, LongColGreaterEqualLongScalar(col 1:smallint, val 0) -> 9:boolean, LongColNotEqualLongScalar(col 2:int, val 0) -> 10:boolean, LongColGreaterLongScalar(col 3:bigint, val 0) -> 11:boolean) -> 12:int
+                        selectExpressions: VectorUDFAdaptor(hash(t,si,i,b,(t > 0Y),(si >= 0S),(i <> 0),(b > 0L)))(children: LongColGreaterLongScalar(col 0:tinyint, val 0) -> 8:boolean, LongColGreaterEqualLongScalar(col 1:smallint, val 0) -> 9:boolean, LongColNotEqualLongScalar(col 2:int, val 0) -> 10:boolean, LongColGreaterLongScalar(col 3:bigint, val 0) -> 11:boolean) -> 12:int
                     Statistics: Num rows: 2001 Data size: 38040 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(_col0)

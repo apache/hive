@@ -76,7 +76,7 @@ STAGE PLANS:
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0, 1]
-                      keys: category (type: int), 0 (type: bigint)
+                      keys: category (type: int), 0L (type: bigint)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 3 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE

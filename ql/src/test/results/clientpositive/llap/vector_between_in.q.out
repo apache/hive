@@ -56,7 +56,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterLongColumnInList(col 3:date, values [-67, -171])
-                    predicate: (cdate) IN (1969-10-26, 1969-07-14) (type: boolean)
+                    predicate: (cdate) IN (DATE'1969-10-26', DATE'1969-07-14') (type: boolean)
                     Statistics: Num rows: 10 Data size: 532 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdate (type: date)
@@ -151,7 +151,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: SelectColumnIsFalse(col 5:boolean)(children: LongColumnInList(col 3, values [-67, -171, 20]) -> 5:boolean)
-                    predicate: (not (cdate) IN (1969-10-26, 1969-07-14, 1970-01-21)) (type: boolean)
+                    predicate: (not (cdate) IN (DATE'1969-10-26', DATE'1969-07-14', DATE'1970-01-21')) (type: boolean)
                     Statistics: Num rows: 12274 Data size: 653057 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Select Vectorization:
@@ -464,7 +464,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterLongColumnBetween(col 3:date, left -2, right 1)
-                    predicate: cdate BETWEEN 1969-12-30 AND 1970-01-02 (type: boolean)
+                    predicate: cdate BETWEEN DATE'1969-12-30' AND DATE'1970-01-02' (type: boolean)
                     Statistics: Num rows: 1365 Data size: 72627 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdate (type: date)
@@ -559,7 +559,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterLongColumnNotBetween(col 3:date, left -610, right 608)
-                    predicate: cdate NOT BETWEEN 1968-05-01 AND 1971-09-01 (type: boolean)
+                    predicate: cdate NOT BETWEEN DATE'1968-05-01' AND DATE'1971-09-01' (type: boolean)
                     Statistics: Num rows: 10924 Data size: 581228 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdate (type: date)
@@ -1100,7 +1100,7 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: (cdate) IN (1969-10-26, 1969-07-14) (type: boolean)
+                    expressions: (cdate) IN (DATE'1969-10-26', DATE'1969-07-14') (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -1376,13 +1376,13 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: cdate BETWEEN 1969-12-30 AND 1970-01-02 (type: boolean)
+                    expressions: cdate BETWEEN DATE'1969-12-30' AND DATE'1970-01-02' (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [5]
-                        selectExpressions: VectorUDFAdaptor(cdate BETWEEN 1969-12-30 AND 1970-01-02) -> 5:boolean
+                        selectExpressions: VectorUDFAdaptor(cdate BETWEEN DATE'1969-12-30' AND DATE'1970-01-02') -> 5:boolean
                     Statistics: Num rows: 12289 Data size: 653856 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()

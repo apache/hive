@@ -191,7 +191,7 @@ Stage-0
     Select Operator [SEL_2]
       Output:["_col0"]
       Filter Operator [FIL_4]
-        predicate:(UDFToDouble(value) < 10.0)
+        predicate:(UDFToDouble(value) < 10.0D)
         TableScan [TS_0]
           Output:["key","value"]
 
@@ -215,7 +215,7 @@ Stage-0
     Select Operator [SEL_2]
       Output:["_col0"]
       Filter Operator [FIL_4]
-        predicate:(UDFToDouble(key) < 10.0)
+        predicate:(UDFToDouble(key) < 10.0D)
         TableScan [TS_0]
           Output:["key"]
 
@@ -306,7 +306,7 @@ Stage-0
                 Select Operator [SEL_2] (rows=166/497 width=87)
                   Output:["_col0"]
                   Filter Operator [FIL_16] (rows=166/497 width=87)
-                    predicate:(UDFToDouble(key) > 0.0)
+                    predicate:(UDFToDouble(key) > 0.0D)
                     TableScan [TS_0] (rows=500/500 width=87)
                       default@src,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
             <-Map 4 [SIMPLE_EDGE]
@@ -315,7 +315,7 @@ Stage-0
                 Select Operator [SEL_5] (rows=166/0 width=91)
                   Output:["_col0"]
                   Filter Operator [FIL_17] (rows=166/0 width=91)
-                    predicate:(UDFToDouble(value) > 0.0)
+                    predicate:(UDFToDouble(value) > 0.0D)
                     TableScan [TS_3] (rows=500/500 width=91)
                       default@src,b,Tbl:COMPLETE,Col:COMPLETE,Output:["value"]
 
@@ -355,7 +355,7 @@ Stage-0
                 Select Operator [SEL_2] (rows=166/497 width=87)
                   Output:["_col0"]
                   Filter Operator [FIL_16] (rows=166/497 width=87)
-                    predicate:(UDFToDouble(key) > 0.0)
+                    predicate:(UDFToDouble(key) > 0.0D)
                     TableScan [TS_0] (rows=500/500 width=87)
                       default@src,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
             <-Map 4 [SIMPLE_EDGE]
@@ -364,7 +364,7 @@ Stage-0
                 Select Operator [SEL_5] (rows=166/497 width=87)
                   Output:["_col0"]
                   Filter Operator [FIL_17] (rows=166/497 width=87)
-                    predicate:(UDFToDouble(key) > 0.0)
+                    predicate:(UDFToDouble(key) > 0.0D)
                     TableScan [TS_3] (rows=500/500 width=87)
                       default@src,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 

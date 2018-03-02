@@ -20,7 +20,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(key) = 100.0) and (rand() <= 0.1)) (type: boolean)
+              predicate: ((UDFToDouble(key) = 100.0D) and (rand() <= 0.1D)) (type: boolean)
               Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), rand() (type: double)
@@ -66,7 +66,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(key) = 100.0) and (rand() <= 0.1) and (rand() > 0.1)) (type: boolean)
+              predicate: ((UDFToDouble(key) = 100.0D) and (rand() <= 0.1D) and (rand() > 0.1D)) (type: boolean)
               Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), rand() (type: double)
@@ -153,10 +153,10 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((UDFToDouble(value) * 10.0) <= 200.0) and (UDFToDouble(key) = 100.0)) (type: boolean)
+              predicate: (((UDFToDouble(value) * 10.0D) <= 200.0D) and (UDFToDouble(key) = 100.0D)) (type: boolean)
               Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: key (type: string), rand() (type: double), (UDFToDouble(value) * 10.0) (type: double)
+                expressions: key (type: string), rand() (type: double), (UDFToDouble(value) * 10.0D) (type: double)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
@@ -195,7 +195,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(key) = 100.0) and (rand() <= 0.1)) (type: boolean)
+              predicate: ((UDFToDouble(key) = 100.0D) and (rand() <= 0.1D)) (type: boolean)
               Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), rand() (type: double)
@@ -241,7 +241,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(key) = 100.0) and (rand() <= 0.1) and (rand() > 0.1)) (type: boolean)
+              predicate: ((UDFToDouble(key) = 100.0D) and (rand() <= 0.1D) and (rand() > 0.1D)) (type: boolean)
               Statistics: Num rows: 27 Data size: 286 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), rand() (type: double)
@@ -328,10 +328,10 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((UDFToDouble(value) * 10.0) <= 200.0) and (UDFToDouble(key) = 100.0)) (type: boolean)
+              predicate: (((UDFToDouble(value) * 10.0D) <= 200.0D) and (UDFToDouble(key) = 100.0D)) (type: boolean)
               Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: key (type: string), rand() (type: double), (UDFToDouble(value) * 10.0) (type: double)
+                expressions: key (type: string), rand() (type: double), (UDFToDouble(value) * 10.0D) (type: double)
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator

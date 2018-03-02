@@ -78,7 +78,7 @@ STAGE PLANS:
             alias: tmptab
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) = 0.0) (type: boolean)
+              predicate: (UDFToDouble(key) = 0.0D) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
@@ -167,7 +167,7 @@ STAGE PLANS:
             alias: rct
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) = 0.0) (type: boolean)
+              predicate: (UDFToDouble(key) = 0.0D) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
@@ -258,7 +258,7 @@ STAGE PLANS:
             alias: rct_part
             Statistics: Num rows: 500 Data size: 10812 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(key) = 0.0) and (ds = '2008-04-08')) (type: boolean)
+              predicate: ((UDFToDouble(key) = 0.0D) and (ds = '2008-04-08')) (type: boolean)
               Statistics: Num rows: 125 Data size: 2703 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 Statistics: Num rows: 125 Data size: 2703 Basic stats: COMPLETE Column stats: NONE

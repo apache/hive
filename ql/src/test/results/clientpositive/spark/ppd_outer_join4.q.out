@@ -39,7 +39,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0)) (type: boolean)
+                    predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -57,7 +57,7 @@ STAGE PLANS:
                   alias: c
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0)) (type: boolean)
+                    predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
@@ -74,7 +74,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0)) (type: boolean)
+                    predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -413,7 +413,7 @@ STAGE PLANS:
                   alias: a
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0)) (type: boolean)
+                    predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -431,7 +431,7 @@ STAGE PLANS:
                   alias: c
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0)) (type: boolean)
+                    predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string)
@@ -448,7 +448,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0)) (type: boolean)
+                    predicate: ((key < '20') and (key > '15') and (sqrt(key) <> 13.0D)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)

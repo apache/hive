@@ -231,7 +231,7 @@ STAGE PLANS:
                   className: VectorFilterOperator
                   native: true
                   predicateExpression: FilterTimestampColumnInList(col 0:timestamp, values [0001-01-01 00:00:00.0, 0002-02-02 00:00:00.0])
-              predicate: (ts) IN (0001-01-01 00:00:00.0, 0002-02-02 00:00:00.0) (type: boolean)
+              predicate: (ts) IN (TIMESTAMP'0001-01-01 00:00:00.0', TIMESTAMP'0002-02-02 00:00:00.0') (type: boolean)
               Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ts (type: timestamp)

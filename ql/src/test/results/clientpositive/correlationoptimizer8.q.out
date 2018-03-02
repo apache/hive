@@ -30,7 +30,7 @@ STAGE PLANS:
             alias: x
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) < 20.0) (type: boolean)
+              predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
@@ -83,7 +83,7 @@ STAGE PLANS:
             alias: x
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((UDFToDouble(key) < 20.0) or (UDFToDouble(key) > 100.0)) and key is not null) (type: boolean)
+              predicate: (((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) and key is not null) (type: boolean)
               Statistics: Num rows: 16 Data size: 122 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -123,7 +123,7 @@ STAGE PLANS:
             alias: x1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) > 100.0) (type: boolean)
+              predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
@@ -222,7 +222,7 @@ STAGE PLANS:
             alias: x
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) < 20.0) (type: boolean)
+              predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
@@ -240,7 +240,7 @@ STAGE PLANS:
             alias: x1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) > 100.0) (type: boolean)
+              predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
@@ -258,7 +258,7 @@ STAGE PLANS:
             alias: x
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((UDFToDouble(key) < 20.0) or (UDFToDouble(key) > 100.0)) and key is not null) (type: boolean)
+              predicate: (((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) and key is not null) (type: boolean)
               Statistics: Num rows: 16 Data size: 122 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -426,7 +426,7 @@ STAGE PLANS:
             alias: x
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) < 20.0) (type: boolean)
+              predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
@@ -512,7 +512,7 @@ STAGE PLANS:
             alias: x1
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) > 100.0) (type: boolean)
+              predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
               Statistics: Num rows: 8 Data size: 61 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string)
@@ -635,7 +635,7 @@ STAGE PLANS:
             alias: x
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) < 20.0) (type: boolean)
+              predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
@@ -653,7 +653,7 @@ STAGE PLANS:
             alias: x1
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) > 100.0) (type: boolean)
+              predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
               Statistics: Num rows: 8 Data size: 61 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string)
@@ -848,7 +848,7 @@ STAGE PLANS:
             alias: x
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) < 20.0) (type: boolean)
+              predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
@@ -901,7 +901,7 @@ STAGE PLANS:
             alias: x
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (((UDFToDouble(key) < 20.0) or (UDFToDouble(key) > 100.0)) and key is not null) (type: boolean)
+              predicate: (((UDFToDouble(key) < 20.0D) or (UDFToDouble(key) > 100.0D)) and key is not null) (type: boolean)
               Statistics: Num rows: 16 Data size: 122 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -941,7 +941,7 @@ STAGE PLANS:
             alias: x1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) > 100.0) (type: boolean)
+              predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
@@ -1012,7 +1012,7 @@ STAGE PLANS:
             alias: x
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) < 20.0) (type: boolean)
+              predicate: (UDFToDouble(key) < 20.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()
@@ -1102,7 +1102,7 @@ STAGE PLANS:
             alias: x1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) > 100.0) (type: boolean)
+              predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
                 aggregations: count()

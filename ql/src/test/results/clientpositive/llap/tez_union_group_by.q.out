@@ -162,7 +162,7 @@ STAGE PLANS:
                   alias: x
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: ((date < '2014-09-02') and (u <> 0)) (type: boolean)
+                    predicate: ((date < '2014-09-02') and (u <> 0L)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: u (type: bigint), date (type: string)
@@ -203,7 +203,7 @@ STAGE PLANS:
                   alias: y
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: ((date < '2014-09-02') and (u <> 0)) (type: boolean)
+                    predicate: ((date < '2014-09-02') and (u <> 0L)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: u (type: bigint), date (type: string)
@@ -229,7 +229,7 @@ STAGE PLANS:
                   alias: z
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: ((date < '2014-09-02') and (u <> 0)) (type: boolean)
+                    predicate: ((date < '2014-09-02') and (u <> 0L)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: PARTIAL
                     Select Operator
                       expressions: u (type: bigint), date (type: string)
@@ -255,7 +255,7 @@ STAGE PLANS:
                   alias: x
                   Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
-                    predicate: ((date < '2014-09-03') and (date >= '2014-03-04') and (u <> 0) and t is not null) (type: boolean)
+                    predicate: ((date < '2014-09-03') and (date >= '2014-03-04') and (u <> 0L) and t is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: PARTIAL
                     Reduce Output Operator
                       key expressions: t (type: string), st (type: string)

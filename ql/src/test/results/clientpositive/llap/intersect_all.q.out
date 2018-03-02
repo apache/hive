@@ -232,7 +232,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (_col3 = 2) (type: boolean)
+                  predicate: (_col3 = 2L) (type: boolean)
                   Statistics: Num rows: 1 Data size: 194 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: bigint), _col0 (type: string), _col1 (type: string)
@@ -954,7 +954,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 500 Data size: 97000 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (_col3 = 4) (type: boolean)
+                  predicate: (_col3 = 4L) (type: boolean)
                   Statistics: Num rows: 1 Data size: 194 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: bigint), _col0 (type: string), _col1 (type: string)
@@ -1629,7 +1629,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (_col2 = 2) (type: boolean)
+                  predicate: (_col2 = 2L) (type: boolean)
                   Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col1 (type: bigint), _col0 (type: int)

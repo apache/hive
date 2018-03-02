@@ -95,7 +95,7 @@ Stage-0
             XPROD_EDGE [RS_6]
               Select Operator [SEL_2] (rows=1 width=4)
                 Filter Operator [FIL_11] (rows=1 width=4)
-                  predicate:(UDFToDouble(colnum) = 5.0)
+                  predicate:(UDFToDouble(colnum) = 5.0D)
                   TableScan [TS_0] (rows=1 width=4)
                     mydb@q1,a,Tbl:COMPLETE,Col:COMPLETE,Output:["colnum"]
           <-Map 3 [XPROD_EDGE] llap

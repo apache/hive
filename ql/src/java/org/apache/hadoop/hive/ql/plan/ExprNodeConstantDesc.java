@@ -116,11 +116,36 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
         hexChars[j * 2 + 1] = hexArray[v & 0x0F];
       }
       return new String(hexChars);
+    } else if(typeInfo.getTypeName().equals(serdeConstants.DATE_TYPE_NAME)) {
+      return "DATE'" + value.toString() + "'";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
+      return "TIMESTAMP'" + value.toString() + "'";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.TIMESTAMPLOCALTZ_TYPE_NAME)) {
+      return "TIMESTAMPLOCALTZ'" + value.toString() + "'";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.TINYINT_TYPE_NAME)) {
+      return value.toString() + "Y";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.SMALLINT_TYPE_NAME)) {
+      return value.toString() + "S";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.BIGINT_TYPE_NAME)) {
+      return value.toString() + "L";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.DOUBLE_TYPE_NAME)) {
+      return value.toString() + "D";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.DECIMAL_TYPE_NAME)) {
+      return value.toString() + "BD";
+    } else if(typeInfo.getTypeName().equals(serdeConstants.INTERVAL_DAY_TIME_TYPE_NAME)
+        || typeInfo.getTypeName().equals(serdeConstants.INTERVAL_YEAR_MONTH_TYPE_NAME)) {
+      return "INTERVAL'" + value.toString() + "'";
     }
     return value.toString();
   }
 
   @Override
+  /**
+   * Return string representation of constant expression
+   * Beside ExplainPlan task Default constraint also make use it to deserialize constant expression
+   * to store it in metastore, which is later reparsed to generate appropriate constant expression
+   * Therefore it is necessary for this method to qualify the intervals with appropriate qualifiers
+   */
   public String getExprString() {
     if (typeInfo.getCategory() == Category.PRIMITIVE) {
       return getFormatted(typeInfo, value);

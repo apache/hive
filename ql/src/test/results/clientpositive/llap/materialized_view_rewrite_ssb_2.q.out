@@ -692,7 +692,7 @@ STAGE PLANS:
                   alias: default.ssb_mv
                   Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToDouble(lo_quantity) < 25.0) and (UDFToInteger(d_year) = 1993) and UDFToDouble(lo_discount) BETWEEN 1.0 AND 3.0) (type: boolean)
+                    predicate: ((UDFToDouble(lo_quantity) < 25.0D) and (UDFToInteger(d_year) = 1993) and UDFToDouble(lo_discount) BETWEEN 1.0D AND 3.0D) (type: boolean)
                     Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: discounted_price (type: double)
@@ -771,7 +771,7 @@ STAGE PLANS:
                   alias: default.ssb_mv
                   Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToInteger(d_yearmonthnum) = 199401) and UDFToDouble(lo_discount) BETWEEN 4.0 AND 6.0 and UDFToDouble(lo_quantity) BETWEEN 26.0 AND 35.0) (type: boolean)
+                    predicate: ((UDFToInteger(d_yearmonthnum) = 199401) and UDFToDouble(lo_discount) BETWEEN 4.0D AND 6.0D and UDFToDouble(lo_quantity) BETWEEN 26.0D AND 35.0D) (type: boolean)
                     Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: discounted_price (type: double)
@@ -852,7 +852,7 @@ STAGE PLANS:
                   alias: default.ssb_mv
                   Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToInteger(d_weeknuminyear) = 6) and (UDFToInteger(d_year) = 1994) and UDFToDouble(lo_discount) BETWEEN 5.0 AND 7.0 and UDFToDouble(lo_quantity) BETWEEN 26.0 AND 35.0) (type: boolean)
+                    predicate: ((UDFToInteger(d_weeknuminyear) = 6) and (UDFToInteger(d_year) = 1994) and UDFToDouble(lo_discount) BETWEEN 5.0D AND 7.0D and UDFToDouble(lo_quantity) BETWEEN 26.0D AND 35.0D) (type: boolean)
                     Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: discounted_price (type: double)

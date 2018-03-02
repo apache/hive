@@ -71,7 +71,7 @@ STAGE PLANS:
             alias: date_dim
             Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (d_date > 1900-01-02) (type: boolean)
+              predicate: (d_date > DATE'1900-01-02') (type: boolean)
               Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 Statistics: Num rows: 1 Data size: 56 Basic stats: COMPLETE Column stats: COMPLETE

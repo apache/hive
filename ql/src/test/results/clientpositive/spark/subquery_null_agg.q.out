@@ -134,7 +134,7 @@ STAGE PLANS:
                 outputColumnNames: _col1, _col2
                 Statistics: Num rows: 1 Data size: 10 Basic stats: PARTIAL Column stats: NONE
                 Filter Operator
-                  predicate: ((_col1 = 0) or _col2 is null) (type: boolean)
+                  predicate: ((_col1 = 0L) or _col2 is null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 10 Basic stats: PARTIAL Column stats: NONE
                   Select Operator
                     expressions: null (type: void)

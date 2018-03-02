@@ -71,7 +71,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterDoubleColumnInList(col 2:double, values [1.0E8, 2.0E8])(children: CastDecimalToDouble(col 0:decimal(18,0)) -> 2:double)
-                    predicate: (UDFToDouble(id)) IN (1.0E8, 2.0E8) (type: boolean)
+                    predicate: (UDFToDouble(id)) IN (1.0E8D, 2.0E8D) (type: boolean)
                     Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: id (type: decimal(18,0))

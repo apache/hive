@@ -320,7 +320,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: (UDFToDouble(key) + (UDFToDouble(value) / 2.0)) (type: double)
+                    expressions: (UDFToDouble(key) + (UDFToDouble(value) / 2.0D)) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -437,7 +437,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: (UDFToDouble(key) + 1.0) (type: double)
+                    expressions: (UDFToDouble(key) + 1.0D) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -788,7 +788,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: (UDFToDouble(key) - (UDFToDouble(value) / 2.0)) (type: double)
+                    expressions: (UDFToDouble(key) - (UDFToDouble(value) / 2.0D)) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -905,7 +905,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: (UDFToDouble(key) - 1.0) (type: double)
+                    expressions: (UDFToDouble(key) - 1.0D) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -1363,7 +1363,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: (UDFToDouble(key) * (UDFToDouble(value) / 2.0)) (type: double)
+                    expressions: (UDFToDouble(key) * (UDFToDouble(value) / 2.0D)) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -1480,7 +1480,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: (UDFToDouble(key) * 2.0) (type: double)
+                    expressions: (UDFToDouble(key) * 2.0D) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -1949,7 +1949,7 @@ STAGE PLANS:
                     predicate: (value <> 0) (type: boolean)
                     Statistics: Num rows: 39 Data size: 4412 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: (UDFToDouble(key) / (UDFToDouble(value) / 2.0)) (type: double)
+                      expressions: (UDFToDouble(key) / (UDFToDouble(value) / 2.0D)) (type: double)
                       outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
@@ -2051,7 +2051,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(20,10), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: (1.0 + (UDFToDouble(key) / 2.0)) (type: double)
+                    expressions: (1.0D + (UDFToDouble(key) / 2.0D)) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -4241,7 +4241,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(15,3), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: (UDFToDouble(key) + (UDFToDouble(value) / 2.0)) (type: double)
+                    expressions: (UDFToDouble(key) + (UDFToDouble(value) / 2.0D)) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -4359,7 +4359,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(15,3), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: (UDFToDouble(key) + 1.0) (type: double)
+                    expressions: (UDFToDouble(key) + 1.0D) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -4713,7 +4713,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(15,3), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: (UDFToDouble(key) - (UDFToDouble(value) / 2.0)) (type: double)
+                    expressions: (UDFToDouble(key) - (UDFToDouble(value) / 2.0D)) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -4831,7 +4831,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(15,3), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: (UDFToDouble(key) - 1.0) (type: double)
+                    expressions: (UDFToDouble(key) - 1.0D) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -5293,7 +5293,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(15,3), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: (UDFToDouble(key) * (UDFToDouble(value) / 2.0)) (type: double)
+                    expressions: (UDFToDouble(key) * (UDFToDouble(value) / 2.0D)) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -5411,7 +5411,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(15,3), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: (UDFToDouble(key) * 2.0) (type: double)
+                    expressions: (UDFToDouble(key) * 2.0D) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
@@ -5884,7 +5884,7 @@ STAGE PLANS:
                     predicate: (value <> 0) (type: boolean)
                     Statistics: Num rows: 1 Data size: 116 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
-                      expressions: (UDFToDouble(key) / (UDFToDouble(value) / 2.0)) (type: double)
+                      expressions: (UDFToDouble(key) / (UDFToDouble(value) / 2.0D)) (type: double)
                       outputColumnNames: _col0
                       Select Vectorization:
                           className: VectorSelectOperator
@@ -5987,7 +5987,7 @@ STAGE PLANS:
                       native: true
                       vectorizationSchemaColumns: [0:key:decimal(15,3), 1:value:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
-                    expressions: (1.0 + (UDFToDouble(key) / 2.0)) (type: double)
+                    expressions: (1.0D + (UDFToDouble(key) / 2.0D)) (type: double)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator

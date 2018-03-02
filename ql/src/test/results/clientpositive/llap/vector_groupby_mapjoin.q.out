@@ -157,7 +157,7 @@ STAGE PLANS:
                     1 Reducer 6
                   Statistics: Num rows: 500 Data size: 98620 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((_col2 = 0) or (_col5 is null and _col0 is not null and (_col3 >= _col2))) (type: boolean)
+                    predicate: ((_col2 = 0L) or (_col5 is null and _col0 is not null and (_col3 >= _col2))) (type: boolean)
                     Statistics: Num rows: 500 Data size: 98620 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: _col0 (type: string), _col1 (type: string)

@@ -273,7 +273,7 @@ Stage-0
                   Select Operator [SEL_17] (rows=8 width=175)
                     Output:["_col1"]
                     Filter Operator [FIL_38] (rows=8 width=175)
-                      predicate:((UDFToDouble(key) < 0.0) and value is not null)
+                      predicate:((UDFToDouble(key) < 0.0D) and value is not null)
                       TableScan [TS_15] (rows=25 width=175)
                         default@src1,c,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
               <-Reducer 2 [SIMPLE_EDGE]

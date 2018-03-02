@@ -339,7 +339,7 @@ STAGE PLANS:
                   Statistics: Num rows: 766650239 Data size: 67634106676 Basic stats: COMPLETE Column stats: NONE
                   Group By Operator
                     aggregations: sum(_col2)
-                    keys: _col0 (type: string), _col1 (type: string), 0 (type: bigint)
+                    keys: _col0 (type: string), _col1 (type: string), 0L (type: bigint)
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 2299950717 Data size: 202902320028 Basic stats: COMPLETE Column stats: NONE

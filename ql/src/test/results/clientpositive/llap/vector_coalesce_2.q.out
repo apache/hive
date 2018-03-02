@@ -129,7 +129,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: string), round((UDFToDouble(_col1) / 60.0), 2) (type: double)
+                  expressions: _col0 (type: string), round((UDFToDouble(_col1) / 60.0D), 2) (type: double)
                   outputColumnNames: _col0, _col1
                   Select Vectorization:
                       className: VectorSelectOperator
@@ -354,7 +354,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 2 Data size: 186 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: string), round((UDFToDouble(_col1) / 60.0), 2) (type: double)
+                  expressions: _col0 (type: string), round((UDFToDouble(_col1) / 60.0D), 2) (type: double)
                   outputColumnNames: _col0, _col1
                   Select Vectorization:
                       className: VectorSelectOperator
