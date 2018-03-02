@@ -122,7 +122,7 @@ public class ASTConverter {
      * 3. convert filterNode
      */
     if (where != null) {
-      ASTNode cond = where.getCondition().accept(new RexVisitor(schema));
+      ASTNode cond = where.getCondition().accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder()));
       hiveAST.where = ASTBuilder.where(cond);
     }
 
@@ -155,13 +155,13 @@ public class ASTConverter {
       for (int pos : hiveAgg.getAggregateColumnsOrder()) {
         RexInputRef iRef = new RexInputRef(groupBy.getGroupSet().nth(pos),
             groupBy.getCluster().getTypeFactory().createSqlType(SqlTypeName.ANY));
-        b.add(iRef.accept(new RexVisitor(schema)));
+        b.add(iRef.accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder())));
       }
       for (int pos = 0; pos < groupBy.getGroupCount(); pos++) {
         if (!hiveAgg.getAggregateColumnsOrder().contains(pos)) {
           RexInputRef iRef = new RexInputRef(groupBy.getGroupSet().nth(pos),
               groupBy.getCluster().getTypeFactory().createSqlType(SqlTypeName.ANY));
-          b.add(iRef.accept(new RexVisitor(schema)));
+          b.add(iRef.accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder())));
         }
       }
 
@@ -173,7 +173,7 @@ public class ASTConverter {
           for (int i : groupSet) {
             RexInputRef iRef = new RexInputRef(i, groupBy.getCluster().getTypeFactory()
                 .createSqlType(SqlTypeName.ANY));
-            expression.add(iRef.accept(new RexVisitor(schema)));
+            expression.add(iRef.accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder())));
           }
           b.add(expression);
         }
@@ -190,7 +190,7 @@ public class ASTConverter {
      * 5. Having
      */
     if (having != null) {
-      ASTNode cond = having.getCondition().accept(new RexVisitor(schema));
+      ASTNode cond = having.getCondition().accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder()));
       hiveAST.having = ASTBuilder.having(cond);
     }
 
@@ -300,7 +300,7 @@ public class ASTConverter {
             obExpr = obRefToCallMap.get(c.getFieldIndex());
 
           if (obExpr != null) {
-            astCol = obExpr.accept(new RexVisitor(schema));
+            astCol = obExpr.accept(new RexVisitor(schema, false, order.getCluster().getRexBuilder()));
           } else {
             ColumnInfo cI = schema.get(c.getFieldIndex());
             /*
@@ -353,7 +353,7 @@ public class ASTConverter {
       QueryBlockInfo left = convertSource(join.getLeft());
       QueryBlockInfo right = convertSource(join.getRight());
       s = new Schema(left.schema, right.schema);
-      ASTNode cond = join.getCondition().accept(new RexVisitor(s));
+      ASTNode cond = join.getCondition().accept(new RexVisitor(s, false, r.getCluster().getRexBuilder()));
       boolean semiJoin = join instanceof SemiJoin;
       if (join.getRight() instanceof Join && !semiJoin) {
           // should not be done for semijoin since it will change the semantics
@@ -670,30 +670,54 @@ public class ASTConverter {
 
       SqlOperator op = call.getOperator();
       List<ASTNode> astNodeLst = new LinkedList<ASTNode>();
-      if (op.kind == SqlKind.CAST) {
+      switch (op.kind) {
+      case EQUALS:
+      case NOT_EQUALS:
+      case LESS_THAN:
+      case GREATER_THAN:
+      case LESS_THAN_OR_EQUAL:
+      case GREATER_THAN_OR_EQUAL:
+        if (rexBuilder != null && RexUtil.isReferenceOrAccess(call.operands.get(1), true) &&
+            RexUtil.isLiteral(call.operands.get(0), true)) {
+          // Swap to get reference on the left side
+          return visitCall((RexCall) RexUtil.invert(rexBuilder, call));
+        } else {
+          for (RexNode operand : call.operands) {
+            astNodeLst.add(operand.accept(this));
+          }
+        }
+        break;
+      case CAST:
         HiveToken ht = TypeConverter.hiveToken(call.getType());
         ASTBuilder astBldr = ASTBuilder.construct(ht.type, ht.text);
         if (ht.args != null) {
-          for (String castArg : ht.args)
+          for (String castArg : ht.args) {
             astBldr.add(HiveParser.Identifier, castArg);
+          }
         }
         astNodeLst.add(astBldr.node());
-      }
-
-      if (op.kind == SqlKind.EXTRACT) {
+        for (RexNode operand : call.operands) {
+          astNodeLst.add(operand.accept(this));
+        }
+        break;
+      case EXTRACT:
         // Extract on date: special handling since function in Hive does
         // include <time_unit>. Observe that <time_unit> information
         // is implicit in the function name, thus translation will
         // proceed correctly if we just ignore the <time_unit>
         astNodeLst.add(call.operands.get(1).accept(this));
-      } else if (op.kind == SqlKind.FLOOR &&
-              call.operands.size() == 2) {
-        // Floor on date: special handling since function in Hive does
-        // include <time_unit>. Observe that <time_unit> information
-        // is implicit in the function name, thus translation will
-        // proceed correctly if we just ignore the <time_unit>
-        astNodeLst.add(call.operands.get(0).accept(this));
-      } else {
+        break;
+      case FLOOR:
+        if (call.operands.size() == 2) {
+          // Floor on date: special handling since function in Hive does
+          // include <time_unit>. Observe that <time_unit> information
+          // is implicit in the function name, thus translation will
+          // proceed correctly if we just ignore the <time_unit>
+          astNodeLst.add(call.operands.get(0).accept(this));
+          break;
+        }
+        // fall-through
+      default:
         for (RexNode operand : call.operands) {
           astNodeLst.add(operand.accept(this));
         }
@@ -784,7 +808,7 @@ public class ASTConverter {
         for (int i : agg.getArgList()) {
           RexInputRef iRef = new RexInputRef(i, gBy.getCluster().getTypeFactory()
               .createSqlType(SqlTypeName.ANY));
-          b.add(iRef.accept(new RexVisitor(src)));
+          b.add(iRef.accept(new RexVisitor(src, false, gBy.getCluster().getRexBuilder())));
         }
         add(new ColumnInfo(null, b.node()));
       }

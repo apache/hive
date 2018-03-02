@@ -181,7 +181,7 @@ STAGE PLANS:
                   alias: t3
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-                    predicate: (20 = id) (type: boolean)
+                    predicate: (id = 20) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: 20 (type: int), key (type: string), value (type: string)
@@ -289,7 +289,7 @@ STAGE PLANS:
                   alias: t3
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   Filter Operator
-                    predicate: (20 = id) (type: boolean)
+                    predicate: (id = 20) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: 20 (type: int), key (type: string), value (type: string)
