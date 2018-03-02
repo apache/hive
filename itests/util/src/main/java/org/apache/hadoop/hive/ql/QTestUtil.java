@@ -1149,15 +1149,17 @@ public class QTestUtil {
       createRemoteDirs();
     }
 
-    // Create views registry
-    HiveMaterializedViewsRegistry.get().init();
-
     testWarehouse = conf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE);
     String execEngine = conf.get("hive.execution.engine");
     conf.set("hive.execution.engine", "mr");
     SessionState.start(conf);
     conf.set("hive.execution.engine", execEngine);
     db = Hive.get(conf);
+    // Create views registry
+    String registryImpl = db.getConf().get("hive.server2.materializedviews.registry.impl");
+    db.getConf().set("hive.server2.materializedviews.registry.impl", "DUMMY");
+    HiveMaterializedViewsRegistry.get().init(db);
+    db.getConf().set("hive.server2.materializedviews.registry.impl", registryImpl);
     drv = DriverFactory.newDriver(conf);
     pd = new ParseDriver();
     sem = new SemanticAnalyzer(queryState);
