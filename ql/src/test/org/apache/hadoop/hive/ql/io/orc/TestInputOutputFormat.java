@@ -48,6 +48,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -68,6 +69,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -115,7 +117,9 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
 import org.apache.orc.OrcConf;
 import org.apache.orc.OrcProto;
+import org.apache.orc.StripeInformation;
 import org.apache.orc.TypeDescription;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -2473,14 +2477,14 @@ public class TestInputOutputFormat {
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00000",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(663, split.getLength());
+    assertEquals(679, split.getLength());
     split = (HiveInputFormat.HiveInputSplit) splits[1];
     assertEquals("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat",
         split.inputFormatClassName());
     assertEquals("mock:/combinationAcid/p=0/base_0000010/bucket_00001",
         split.getPath().toString());
     assertEquals(0, split.getStart());
-    assertEquals(690, split.getLength());
+    assertEquals(705, split.getLength());
     CombineHiveInputFormat.CombineHiveInputSplit combineSplit =
         (CombineHiveInputFormat.CombineHiveInputSplit) splits[2];
     assertEquals(BUCKETS, combineSplit.getNumPaths());
@@ -3949,6 +3953,121 @@ public class TestInputOutputFormat {
       record += 1;
     }
     assertEquals(1000, record);
+    reader.close();
+  }
+
+  @Test
+  public void testAcidReadPastLastStripeOffset() throws Exception {
+    Path baseDir = new Path(workDir, "base_00100");
+    testFilePath = new Path(baseDir, "bucket_00000");
+    fs.mkdirs(baseDir);
+    fs.delete(testFilePath, true);
+    TypeDescription fileSchema =
+        TypeDescription.fromString("struct<operation:int," +
+            "originalTransaction:bigint,bucket:int,rowId:bigint," +
+            "currentTransaction:bigint," +
+            "row:struct<a:int,b:struct<c:int>,d:string>>");
+
+    OrcRecordUpdater.KeyIndexBuilder indexBuilder = new OrcRecordUpdater.KeyIndexBuilder("test");
+    OrcFile.WriterOptions options = OrcFile.writerOptions(conf)
+        .fileSystem(fs)
+        .setSchema(fileSchema)
+        .compress(org.apache.orc.CompressionKind.NONE)
+        .callback(indexBuilder)
+        .stripeSize(128);
+    // Create ORC file with small stripe size so we can write multiple stripes.
+    Writer writer = OrcFile.createWriter(testFilePath, options);
+    VectorizedRowBatch batch = fileSchema.createRowBatch(1000);
+    batch.size = 1000;
+    StructColumnVector scv = (StructColumnVector)batch.cols[5];
+    // operation
+    batch.cols[0].isRepeating = true;
+    ((LongColumnVector) batch.cols[0]).vector[0] = OrcRecordUpdater.INSERT_OPERATION;
+    // original transaction
+    batch.cols[1].isRepeating = true;
+    ((LongColumnVector) batch.cols[1]).vector[0] = 1;
+    // bucket
+    batch.cols[2].isRepeating = true;
+    ((LongColumnVector) batch.cols[2]).vector[0] = BucketCodec.V1.encode(new AcidOutputFormat
+        .Options(conf).bucket(0).statementId(0));
+    // current transaction
+    batch.cols[4].isRepeating = true;
+    ((LongColumnVector) batch.cols[4]).vector[0] = 1;
+
+    LongColumnVector lcv = (LongColumnVector)
+        ((StructColumnVector) scv.fields[1]).fields[0];
+    for(int r=0; r < 1000; r++) {
+      // row id
+      ((LongColumnVector) batch.cols[3]).vector[r] = r;
+      // a
+      ((LongColumnVector) scv.fields[0]).vector[r] = r * 42;
+      // b.c
+      lcv.vector[r] = r * 10001;
+      // d
+      ((BytesColumnVector) scv.fields[2]).setVal(r,
+          Integer.toHexString(r).getBytes(StandardCharsets.UTF_8));
+      indexBuilder.addKey(OrcRecordUpdater.INSERT_OPERATION,
+          1, (int)(((LongColumnVector) batch.cols[2]).vector[0]), r);
+    }
+
+    // Minimum 5000 rows per stripe.
+    for (int idx = 0; idx < 8; ++idx) {
+      writer.addRowBatch(batch);
+      // bucket
+      batch.cols[2].isRepeating = true;
+      ((LongColumnVector) batch.cols[2]).vector[0] = BucketCodec.V1.encode(new AcidOutputFormat
+          .Options(conf).bucket(0).statementId(idx + 1));
+      for(long row_id : ((LongColumnVector) batch.cols[3]).vector) {
+        indexBuilder.addKey(OrcRecordUpdater.INSERT_OPERATION,
+            1, (int)(((LongColumnVector) batch.cols[2]).vector[0]), row_id);
+      }
+    }
+    writer.close();
+    long fileLength = fs.getFileStatus(testFilePath).getLen();
+
+    // Find the last stripe.
+    Reader orcReader = OrcFile.createReader(fs, testFilePath);
+    List<StripeInformation> stripes = orcReader.getStripes();
+    StripeInformation lastStripe = stripes.get(stripes.size() - 1);
+    long lastStripeOffset = lastStripe.getOffset();
+    long lastStripeLength = lastStripe.getLength();
+
+    RecordIdentifier[] keyIndex = OrcRecordUpdater.parseKeyIndex(orcReader);
+    Assert.assertEquals("Index length doesn't match number of stripes",
+        stripes.size(), keyIndex.length);
+    Assert.assertEquals("1st Index entry mismatch",
+        new RecordIdentifier(1, 536870916, 999), keyIndex[0]);
+    Assert.assertEquals("2nd Index entry mismatch",
+        new RecordIdentifier(1, 536870920, 999), keyIndex[1]);
+
+    // test with same schema with include
+    conf.set(ValidTxnList.VALID_TXNS_KEY, "100:99:");
+    conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS, "a,b,d");
+    conf.set(IOConstants.SCHEMA_EVOLUTION_COLUMNS_TYPES, "int,struct<c:int>,string");
+    conf.set(ColumnProjectionUtils.READ_ALL_COLUMNS, "false");
+    conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0,2");
+
+    LOG.info("Last stripe " + stripes.size() +
+        ", offset " + lastStripeOffset + ", length " + lastStripeLength);
+    // Specify an OrcSplit that starts beyond the offset of the last stripe.
+    OrcSplit split = new OrcSplit(testFilePath, null, lastStripeOffset + 1, lastStripeLength,
+        new String[0], null, false, true,
+        new ArrayList<AcidInputFormat.DeltaMetaData>(), fileLength, fileLength, workDir);
+    OrcInputFormat inputFormat = new OrcInputFormat();
+    AcidInputFormat.RowReader<OrcStruct> reader = inputFormat.getReader(split,
+        new AcidInputFormat.Options(conf));
+
+    int record = 0;
+    RecordIdentifier id = reader.createKey();
+    OrcStruct struct = reader.createValue();
+    // Iterate through any records.
+    // Because our read offset was past the stripe offset, the rows from the last stripe will
+    // not be read. Thus 0 records.
+    while (reader.next(id, struct)) {
+      record += 1;
+    }
+    assertEquals(0, record);
+
     reader.close();
   }
 }
