@@ -1525,7 +1525,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 13 Data size: 1625 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (100 < _col1) (type: boolean)
+                  predicate: (_col1 > 100) (type: boolean)
                   Statistics: Num rows: 4 Data size: 500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string)
@@ -6349,7 +6349,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (0.0D = _col1) (type: boolean)
+                  predicate: (_col1 = 0.0D) (type: boolean)
                   Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int)
@@ -6599,7 +6599,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: (0 = _col1) (type: boolean)
+                  predicate: (_col1 = 0) (type: boolean)
                   Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: _col0 (type: int)

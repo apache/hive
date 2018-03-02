@@ -593,10 +593,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: d1
-                  filterExpr: (1 = id) (type: boolean)
+                  filterExpr: (id = 1) (type: boolean)
                   Statistics: Num rows: 3 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (1 = id) (type: boolean)
+                    predicate: (id = 1) (type: boolean)
                     Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 1 Data size: 5 Basic stats: COMPLETE Column stats: NONE

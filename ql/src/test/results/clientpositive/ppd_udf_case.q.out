@@ -52,7 +52,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (('27' = key) and (ds = '2008-04-08')) (type: boolean)
+              predicate: ((ds = '2008-04-08') and (key = '27')) (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string), hr (type: string)
@@ -200,7 +200,7 @@ STAGE PLANS:
             alias: b
             Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ('27' = key) (type: boolean)
+              predicate: (key = '27') (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: value (type: string), hr (type: string)

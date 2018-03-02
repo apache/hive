@@ -87,7 +87,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (5 = key) (type: boolean)
+                    predicate: (key = 5) (type: boolean)
                     Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
@@ -113,7 +113,7 @@ STAGE PLANS:
                   alias: d
                   Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (5 = key) (type: boolean)
+                    predicate: (key = 5) (type: boolean)
                     Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
@@ -197,7 +197,7 @@ STAGE PLANS:
                   alias: b
                   Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (5 = key) (type: boolean)
+                    predicate: (key = 5) (type: boolean)
                     Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 1 Data size: 2060 Basic stats: COMPLETE Column stats: NONE
@@ -264,7 +264,7 @@ STAGE PLANS:
                   alias: d
                   Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (5 = key) (type: boolean)
+                    predicate: (key = 5) (type: boolean)
                     Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 1 Data size: 2220 Basic stats: COMPLETE Column stats: NONE
