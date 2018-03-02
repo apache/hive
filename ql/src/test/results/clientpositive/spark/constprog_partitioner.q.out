@@ -37,7 +37,7 @@ STAGE PLANS:
                   alias: src2
                   Statistics: Num rows: 1000 Data size: 10603 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (100 = key) (type: boolean)
+                    predicate: (key = 100) (type: boolean)
                     Statistics: Num rows: 500 Data size: 5301 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: value (type: string)

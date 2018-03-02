@@ -226,7 +226,7 @@ STAGE PLANS:
                   alias: cmv_basetable
                   Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((3 = a) and (d = 3)) (type: boolean)
+                    predicate: ((a = 3) and (d = 3)) (type: boolean)
                     Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: c (type: double)
@@ -348,7 +348,7 @@ STAGE PLANS:
                   alias: cmv_basetable
                   Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((3 = a) and (d = 3)) (type: boolean)
+                    predicate: ((a = 3) and (d = 3)) (type: boolean)
                     Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: c (type: double)
@@ -555,7 +555,7 @@ STAGE PLANS:
                   alias: cmv_basetable
                   Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((3 = a) and (d = 3)) (type: boolean)
+                    predicate: ((a = 3) and (d = 3)) (type: boolean)
                     Statistics: Num rows: 6 Data size: 96 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: c (type: double)
