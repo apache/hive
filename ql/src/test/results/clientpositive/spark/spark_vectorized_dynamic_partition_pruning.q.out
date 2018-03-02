@@ -1878,7 +1878,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 344 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -1888,7 +1888,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:string))
-                    predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)
@@ -2048,7 +2048,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 344 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -2058,7 +2058,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:string))
-                    predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)
@@ -2330,7 +2330,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 344 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -2340,7 +2340,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:string))
-                    predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)
@@ -2519,7 +2519,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour
-                  filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -2529,7 +2529,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
-                    predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -2661,7 +2661,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour
-                  filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -2671,7 +2671,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
-                    predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -2864,7 +2864,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour
-                  filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -2874,7 +2874,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
-                    predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -3515,7 +3515,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -3525,7 +3525,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:double))
-                    predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: double)
@@ -3536,7 +3536,7 @@ STAGE PLANS:
                           projectedOutputColumnNums: [0]
                       Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                       Select Operator
-                        expressions: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
                         outputColumnNames: _col0
                         Select Vectorization:
                             className: VectorSelectOperator
@@ -3635,7 +3635,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -3645,7 +3645,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:double))
-                    predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: double)
@@ -3656,9 +3656,9 @@ STAGE PLANS:
                           projectedOutputColumnNums: [0]
                       Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
                             keyColumnNums: [3]
@@ -3695,7 +3695,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 UDFToDouble(_col0) (type: double)
-                  1 UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                  1 UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -3792,7 +3792,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -3802,7 +3802,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:double))
-                    predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: double)
@@ -3834,7 +3834,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
                             Target column: [1:hr (string)]
-                            partition key expr: [(UDFToDouble(hr) * 2.0)]
+                            partition key expr: [(UDFToDouble(hr) * 2.0D)]
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                             target works: [Map 1]
             Execution mode: vectorized
@@ -3879,9 +3879,9 @@ STAGE PLANS:
                         projectedOutputColumnNums: [3]
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: (UDFToDouble(_col0) * 2.0) (type: double)
+                      key expressions: (UDFToDouble(_col0) * 2.0D) (type: double)
                       sort order: +
-                      Map-reduce partition columns: (UDFToDouble(_col0) * 2.0) (type: double)
+                      Map-reduce partition columns: (UDFToDouble(_col0) * 2.0D) (type: double)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkMultiKeyOperator
                           keyColumnNums: [6]
@@ -3911,7 +3911,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -3921,7 +3921,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:double))
-                    predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: double)
@@ -3969,7 +3969,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 (UDFToDouble(_col0) * 2.0) (type: double)
+                  0 (UDFToDouble(_col0) * 2.0D) (type: double)
                   1 _col0 (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
@@ -4115,7 +4115,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -4125,7 +4125,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:double))
-                    predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: double)
@@ -4136,9 +4136,9 @@ STAGE PLANS:
                           projectedOutputColumnNums: [0]
                       Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        key expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
                         sort order: +
-                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        Map-reduce partition columns: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkMultiKeyOperator
                             keyColumnNums: [3]
@@ -4175,7 +4175,7 @@ STAGE PLANS:
                      Inner Join 0 to 1
                 keys:
                   0 UDFToDouble(_col0) (type: double)
-                  1 UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                  1 UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
                   aggregations: count()
@@ -4288,9 +4288,9 @@ STAGE PLANS:
                         projectedOutputColumnNums: [3]
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: (UDFToDouble(_col0) * 2.0) (type: double)
+                      key expressions: (UDFToDouble(_col0) * 2.0D) (type: double)
                       sort order: +
-                      Map-reduce partition columns: (UDFToDouble(_col0) * 2.0) (type: double)
+                      Map-reduce partition columns: (UDFToDouble(_col0) * 2.0D) (type: double)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkMultiKeyOperator
                           keyColumnNums: [6]
@@ -4320,7 +4320,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -4330,7 +4330,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:double))
-                    predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: double)
@@ -4378,7 +4378,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 (UDFToDouble(_col0) * 2.0) (type: double)
+                  0 (UDFToDouble(_col0) * 2.0D) (type: double)
                   1 _col0 (type: double)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
@@ -4485,7 +4485,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -4495,7 +4495,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:double))
-                    predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: double)
@@ -4528,7 +4528,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
                             Target column: [1:hr (string)]
-                            partition key expr: [UDFToString((UDFToDouble(hr) * 2.0))]
+                            partition key expr: [UDFToString((UDFToDouble(hr) * 2.0D))]
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                             target works: [Map 1]
             Execution mode: vectorized
@@ -4573,9 +4573,9 @@ STAGE PLANS:
                         projectedOutputColumnNums: [3]
                     Statistics: Num rows: 2000 Data size: 21248 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
-                      key expressions: UDFToString((UDFToDouble(_col0) * 2.0)) (type: string)
+                      key expressions: UDFToString((UDFToDouble(_col0) * 2.0D)) (type: string)
                       sort order: +
-                      Map-reduce partition columns: UDFToString((UDFToDouble(_col0) * 2.0)) (type: string)
+                      Map-reduce partition columns: UDFToString((UDFToDouble(_col0) * 2.0D)) (type: string)
                       Reduce Sink Vectorization:
                           className: VectorReduceSinkStringOperator
                           keyColumnNums: [7]
@@ -4605,7 +4605,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -4615,7 +4615,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:double))
-                    predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: double)
@@ -4664,7 +4664,7 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 UDFToString((UDFToDouble(_col0) * 2.0)) (type: string)
+                  0 UDFToString((UDFToDouble(_col0) * 2.0D)) (type: string)
                   1 UDFToString(_col0) (type: string)
                 Statistics: Num rows: 2200 Data size: 23372 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator
@@ -5069,7 +5069,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour
-                  filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0)) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0D)) (type: boolean)
                   Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -5079,7 +5079,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double))
-                    predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08')) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and (date = '2008-04-08')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -5231,7 +5231,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour
-                  filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -5241,7 +5241,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
-                    predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -5373,7 +5373,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour
-                  filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -5383,7 +5383,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
-                    predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -6359,7 +6359,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and (UDFToDouble(hr) = 11.0)) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and (UDFToDouble(hr) = 11.0D)) (type: boolean)
                   Statistics: Num rows: 2 Data size: 344 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -6369,7 +6369,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 0:string) -> 3:double))
-                    predicate: ((UDFToDouble(hour) = 11.0) and (UDFToDouble(hr) = 11.0)) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and (UDFToDouble(hr) = 11.0D)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)
@@ -6529,7 +6529,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and (UDFToDouble(hr) = 11.0)) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and (UDFToDouble(hr) = 11.0D)) (type: boolean)
                   Statistics: Num rows: 2 Data size: 344 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -6539,7 +6539,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 0:string) -> 3:double))
-                    predicate: ((UDFToDouble(hour) = 11.0) and (UDFToDouble(hr) = 11.0)) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and (UDFToDouble(hr) = 11.0D)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)
@@ -6710,7 +6710,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour
-                  filterExpr: (UDFToDouble(hr) = 13.0) (type: boolean)
+                  filterExpr: (UDFToDouble(hr) = 13.0D) (type: boolean)
                   Statistics: Num rows: 2 Data size: 344 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -6720,7 +6720,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterDoubleColEqualDoubleScalar(col 3:double, val 13.0)(children: CastStringToDouble(col 0:string) -> 3:double)
-                    predicate: (UDFToDouble(hr) = 13.0) (type: boolean)
+                    predicate: (UDFToDouble(hr) = 13.0D) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)
@@ -6761,7 +6761,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ((UDFToDouble(hr) = 13.0) and ds is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hr) = 13.0D) and ds is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -6771,7 +6771,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 5:double, val 13.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 2:string))
-                    predicate: ((UDFToDouble(hr) = 13.0) and ds is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hr) = 13.0D) and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -9473,7 +9473,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 344 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -9483,7 +9483,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:string))
-                    predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)
@@ -9738,7 +9738,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_date_hour
-                  filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0) and ds is not null and hr is not null) (type: boolean)
+                  filterExpr: ((date = '2008-04-08') and (UDFToDouble(hour) = 11.0D) and ds is not null and hr is not null) (type: boolean)
                   Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -9748,7 +9748,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterStringGroupColEqualStringScalar(col 1:string, val 2008-04-08), FilterDoubleColEqualDoubleScalar(col 5:double, val 11.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 0:string), SelectColumnIsNotNull(col 2:string))
-                    predicate: ((UDFToDouble(hour) = 11.0) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and (date = '2008-04-08') and ds is not null and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -10241,7 +10241,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -10251,7 +10251,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:double))
-                    predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: double)
@@ -10267,9 +10267,9 @@ STAGE PLANS:
                             native: true
                         keys:
                           0 UDFToDouble(_col0) (type: double)
-                          1 UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                          1 UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
                       Select Operator
-                        expressions: UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        expressions: UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
                         outputColumnNames: _col0
                         Select Vectorization:
                             className: VectorSelectOperator
@@ -10341,7 +10341,7 @@ STAGE PLANS:
                            Inner Join 0 to 1
                       keys:
                         0 UDFToDouble(_col0) (type: double)
-                        1 UDFToDouble(UDFToInteger((_col0 / 2.0))) (type: double)
+                        1 UDFToDouble(UDFToInteger((_col0 / 2.0D))) (type: double)
                       Map Join Vectorization:
                           bigTableKeyColumnNums: [5]
                           bigTableKeyExpressions: CastStringToDouble(col 3:string) -> 5:double
@@ -10478,7 +10478,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_double_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -10488,7 +10488,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), SelectColumnIsNotNull(col 0:double))
-                    predicate: ((UDFToDouble(hour) = 11.0) and hr is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and hr is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: double)
@@ -10503,7 +10503,7 @@ STAGE PLANS:
                             className: VectorSparkHashTableSinkOperator
                             native: true
                         keys:
-                          0 (UDFToDouble(_col0) * 2.0) (type: double)
+                          0 (UDFToDouble(_col0) * 2.0D) (type: double)
                           1 _col0 (type: double)
                       Select Operator
                         expressions: _col0 (type: double)
@@ -10527,7 +10527,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
                             Target column: [1:hr (string)]
-                            partition key expr: [(UDFToDouble(hr) * 2.0)]
+                            partition key expr: [(UDFToDouble(hr) * 2.0D)]
                             Statistics: Num rows: 1 Data size: 94 Basic stats: COMPLETE Column stats: NONE
                             target works: [Map 1]
             Execution mode: vectorized
@@ -10576,7 +10576,7 @@ STAGE PLANS:
                       condition map:
                            Inner Join 0 to 1
                       keys:
-                        0 (UDFToDouble(_col0) * 2.0) (type: double)
+                        0 (UDFToDouble(_col0) * 2.0D) (type: double)
                         1 _col0 (type: double)
                       Map Join Vectorization:
                           bigTableKeyColumnNums: [6]
@@ -11658,7 +11658,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour
-                  filterExpr: ((UDFToDouble(hour) = 11.0) and (UDFToDouble(hr) = 11.0)) (type: boolean)
+                  filterExpr: ((UDFToDouble(hour) = 11.0D) and (UDFToDouble(hr) = 11.0D)) (type: boolean)
                   Statistics: Num rows: 2 Data size: 344 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -11668,7 +11668,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 1:string) -> 3:double), FilterDoubleColEqualDoubleScalar(col 3:double, val 11.0)(children: CastStringToDouble(col 0:string) -> 3:double))
-                    predicate: ((UDFToDouble(hour) = 11.0) and (UDFToDouble(hr) = 11.0)) (type: boolean)
+                    predicate: ((UDFToDouble(hour) = 11.0D) and (UDFToDouble(hr) = 11.0D)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)
@@ -11912,7 +11912,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ((UDFToDouble(hr) = 13.0) and ds is not null) (type: boolean)
+                  filterExpr: ((UDFToDouble(hr) = 13.0D) and ds is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -11922,7 +11922,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterDoubleColEqualDoubleScalar(col 5:double, val 13.0)(children: CastStringToDouble(col 3:string) -> 5:double), SelectColumnIsNotNull(col 2:string))
-                    predicate: ((UDFToDouble(hr) = 13.0) and ds is not null) (type: boolean)
+                    predicate: ((UDFToDouble(hr) = 13.0D) and ds is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                     Select Operator
                       expressions: ds (type: string), hr (type: string)
@@ -12015,7 +12015,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart_hour
-                  filterExpr: (UDFToDouble(hr) = 13.0) (type: boolean)
+                  filterExpr: (UDFToDouble(hr) = 13.0D) (type: boolean)
                   Statistics: Num rows: 2 Data size: 344 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -12025,7 +12025,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterDoubleColEqualDoubleScalar(col 3:double, val 13.0)(children: CastStringToDouble(col 0:string) -> 3:double)
-                    predicate: (UDFToDouble(hr) = 13.0) (type: boolean)
+                    predicate: (UDFToDouble(hr) = 13.0D) (type: boolean)
                     Statistics: Num rows: 1 Data size: 172 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hr (type: string)

@@ -132,7 +132,7 @@ STAGE PLANS:
             alias: ss
             Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: PARTIAL
             Filter Operator
-              predicate: (UDFToDouble((((year * 10000) + (month * 100)) + day)) = 2015010.0) (type: boolean)
+              predicate: (UDFToDouble((((year * 10000) + (month * 100)) + day)) = 2015010.0D) (type: boolean)
               Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: order_amount (type: float)
@@ -231,7 +231,7 @@ STAGE PLANS:
             alias: ss
             Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (UDFToDouble(((201500 + (month * 10)) + day)) > 201511.0) (type: boolean)
+              predicate: (UDFToDouble(((201500 + (month * 10)) + day)) > 201511.0D) (type: boolean)
               Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: order_amount (type: float)
@@ -282,7 +282,7 @@ STAGE PLANS:
           alias: ss
           Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
-            predicate: (UDFToDouble(((201500 + (month * 10)) + day)) > 201511.0) (type: boolean)
+            predicate: (UDFToDouble(((201500 + (month * 10)) + day)) > 201511.0D) (type: boolean)
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: '1' (type: string)

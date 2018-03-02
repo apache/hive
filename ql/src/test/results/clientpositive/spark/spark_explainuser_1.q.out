@@ -445,7 +445,7 @@ Stage-0
                     Select Operator [SEL_26] (rows=1 width=20)
                       Output:["_col1","_col4"]
                       Filter Operator [FIL_23] (rows=1 width=20)
-                        predicate:(((UDFToLong(_col1) + _col4) >= 0) and ((_col1 >= 1) or (_col4 >= 1)) and ((_col3 + _col6) >= 0))
+                        predicate:(((UDFToLong(_col1) + _col4) >= 0) and ((_col1 >= 1) or (_col4 >= 1L)) and ((_col3 + _col6) >= 0))
                         Join Operator [JOIN_22] (rows=3 width=18)
                           Output:["_col1","_col3","_col4","_col6"],condition map:[{"":"{\"type\":\"Inner\",\"left\":0,\"right\":1}"},{"":"{\"type\":\"Inner\",\"left\":1,\"right\":2}"}],keys:{"0":"_col0","1":"_col0","2":"_col0"}
                         <-Map 1 [PARTITION-LEVEL SORT]
@@ -596,7 +596,7 @@ Stage-0
                   Select Operator [SEL_26] (rows=1 width=20)
                     Output:["_col1","_col4"]
                     Filter Operator [FIL_23] (rows=1 width=20)
-                      predicate:(((UDFToLong(_col1) + _col4) >= 0) and ((_col1 >= 1) or (_col4 >= 1)) and ((_col3 + _col6) >= 0))
+                      predicate:(((UDFToLong(_col1) + _col4) >= 0) and ((_col1 >= 1) or (_col4 >= 1L)) and ((_col3 + _col6) >= 0))
                       Join Operator [JOIN_22] (rows=3 width=18)
                         Output:["_col1","_col3","_col4","_col6"],condition map:[{"":"{\"type\":\"Inner\",\"left\":0,\"right\":1}"},{"":"{\"type\":\"Inner\",\"left\":1,\"right\":2}"}],keys:{"0":"_col0","1":"_col0","2":"_col0"}
                       <-Map 1 [PARTITION-LEVEL SORT]
@@ -903,7 +903,7 @@ Stage-0
             Select Operator [SEL_2] (rows=6 width=85)
               Output:["_col0"]
               Filter Operator [FIL_11] (rows=6 width=85)
-                predicate:(UDFToDouble(key) >= 1.0)
+                predicate:(UDFToDouble(key) >= 1.0D)
                 TableScan [TS_0] (rows=20 width=80)
                   default@cbo_t1,cbo_t1,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
         <-Map 3 [PARTITION-LEVEL SORT]
@@ -912,7 +912,7 @@ Stage-0
             Select Operator [SEL_5] (rows=6 width=85)
               Output:["_col0"]
               Filter Operator [FIL_12] (rows=6 width=85)
-                predicate:(UDFToDouble(key) >= 1.0)
+                predicate:(UDFToDouble(key) >= 1.0D)
                 TableScan [TS_3] (rows=20 width=80)
                   default@cbo_t3,cbo_t3,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 
@@ -1545,7 +1545,7 @@ Stage-0
                           Select Operator [SEL_19] (rows=6 width=85)
                             Output:["_col0"]
                             Filter Operator [FIL_38] (rows=6 width=85)
-                              predicate:(UDFToDouble(key) > 0.0)
+                              predicate:(UDFToDouble(key) > 0.0D)
                               TableScan [TS_17] (rows=20 width=80)
                                 default@cbo_t3,cbo_t3,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
                     <-Reducer 2 [PARTITION-LEVEL SORT]
@@ -1554,7 +1554,7 @@ Stage-0
                         Select Operator [SEL_8] (rows=1 width=93)
                           Output:["_col0","_col1"]
                           Filter Operator [FIL_7] (rows=1 width=101)
-                            predicate:(((UDFToDouble(_col2) + UDFToDouble(_col3)) >= 0.0) and ((UDFToDouble(_col2) >= 1.0) or (_col3 >= 1)))
+                            predicate:(((UDFToDouble(_col2) + UDFToDouble(_col3)) >= 0.0D) and ((UDFToDouble(_col2) >= 1.0D) or (_col3 >= 1L)))
                             Select Operator [SEL_6] (rows=1 width=101)
                               Output:["_col2","_col3"]
                               Group By Operator [GBY_5] (rows=1 width=101)
@@ -1565,7 +1565,7 @@ Stage-0
                                   Group By Operator [GBY_3] (rows=1 width=101)
                                     Output:["_col0","_col1","_col2","_col3"],aggregations:["sum(c_int)"],keys:key, c_int, c_float
                                     Filter Operator [FIL_36] (rows=1 width=93)
-                                      predicate:((((c_int + 1) + 1) >= 0) and (((c_int + 1) > 0) or (UDFToDouble(key) >= 0.0)) and ((UDFToFloat(c_int) + c_float) >= 0) and ((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0)) and ((c_int >= 1) or (c_float >= 1)) and (UDFToDouble(key) > 0.0) and (c_float > 0))
+                                      predicate:((((c_int + 1) + 1) >= 0) and (((c_int + 1) > 0) or (UDFToDouble(key) >= 0.0D)) and ((UDFToFloat(c_int) + c_float) >= 0) and ((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0)) and ((c_int >= 1) or (c_float >= 1)) and (UDFToDouble(key) > 0.0D) and (c_float > 0))
                                       TableScan [TS_0] (rows=20 width=88)
                                         default@cbo_t1,cbo_t1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int","c_float"]
                     <-Reducer 7 [PARTITION-LEVEL SORT]
@@ -1583,7 +1583,7 @@ Stage-0
                                 Group By Operator [GBY_12] (rows=1 width=93)
                                   Output:["_col0","_col1","_col2"],keys:key, c_int, c_float
                                   Filter Operator [FIL_37] (rows=1 width=93)
-                                    predicate:(((UDFToFloat(c_int) + c_float) >= 0) and ((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0)) and ((c_int >= 1) or (c_float >= 1)) and (UDFToDouble(key) > 0.0) and (c_float > 0))
+                                    predicate:(((UDFToFloat(c_int) + c_float) >= 0) and ((c_int + 1) >= 0) and ((c_int > 0) or (c_float >= 0)) and ((c_int >= 1) or (c_float >= 1)) and (UDFToDouble(key) > 0.0D) and (c_float > 0))
                                     TableScan [TS_9] (rows=20 width=88)
                                       default@cbo_t2,cbo_t2,Tbl:COMPLETE,Col:COMPLETE,Output:["key","c_int","c_float"]
 
@@ -2201,7 +2201,7 @@ Stage-0
             Select Operator [SEL_23] (rows=500 width=178)
               Output:["_col0","_col1"]
               Filter Operator [FIL_22] (rows=500 width=195)
-                predicate:((_col2 = 0) or (_col5 is null and _col0 is not null and (_col3 >= _col2)))
+                predicate:((_col2 = 0L) or (_col5 is null and _col0 is not null and (_col3 >= _col2)))
                 Join Operator [JOIN_21] (rows=500 width=195)
                   Output:["_col0","_col1","_col2","_col3","_col5"],condition map:[{"":"{\"type\":\"Left Outer\",\"left\":0,\"right\":1}"}],keys:{"0":"_col0","1":"_col0"}
                 <-Reducer 2 [PARTITION-LEVEL SORT]
@@ -2277,7 +2277,7 @@ Stage-0
         Select Operator [SEL_25] (rows=13 width=223)
           Output:["_col0","_col1","_col2"]
           Filter Operator [FIL_24] (rows=13 width=231)
-            predicate:(not CASE WHEN ((_col4 = 0)) THEN (false) WHEN (_col4 is null) THEN (false) WHEN (_col8 is not null) THEN (true) WHEN (_col0 is null) THEN (null) WHEN ((_col5 < _col4)) THEN (true) ELSE (false) END)
+            predicate:(not CASE WHEN ((_col4 = 0L)) THEN (false) WHEN (_col4 is null) THEN (false) WHEN (_col8 is not null) THEN (true) WHEN (_col0 is null) THEN (null) WHEN ((_col5 < _col4)) THEN (true) ELSE (false) END)
             Join Operator [JOIN_23] (rows=26 width=230)
               Output:["_col0","_col1","_col2","_col4","_col5","_col8"],condition map:[{"":"{\"type\":\"Left Outer\",\"left\":0,\"right\":1}"}],keys:{"0":"_col0, _col1","1":"_col0, _col1"}
             <-Reducer 2 [PARTITION-LEVEL SORT]
@@ -2367,7 +2367,7 @@ Stage-0
             Select Operator [SEL_28] (rows=26 width=125)
               Output:["_col0","_col1"]
               Filter Operator [FIL_27] (rows=26 width=141)
-                predicate:((_col2 = 0) or (_col5 is null and _col1 is not null and (_col3 >= _col2)))
+                predicate:((_col2 = 0L) or (_col5 is null and _col1 is not null and (_col3 >= _col2)))
                 Join Operator [JOIN_26] (rows=26 width=141)
                   Output:["_col0","_col1","_col2","_col3","_col5"],condition map:[{"":"{\"type\":\"Left Outer\",\"left\":0,\"right\":1}"}],keys:{"0":"UDFToDouble(_col1)","1":"_col0"}
                 <-Reducer 2 [PARTITION-LEVEL SORT]
@@ -2448,7 +2448,7 @@ Stage-0
             Select Operator [SEL_34] (rows=3 width=106)
               Output:["_col0","_col1"]
               Filter Operator [FIL_33] (rows=3 width=119)
-                predicate:(not CASE WHEN ((_col3 = 0)) THEN (false) WHEN (_col3 is null) THEN (false) WHEN (_col7 is not null) THEN (true) WHEN (_col0 is null) THEN (null) WHEN ((_col4 < _col3)) THEN (true) ELSE (false) END)
+                predicate:(not CASE WHEN ((_col3 = 0L)) THEN (false) WHEN (_col3 is null) THEN (false) WHEN (_col7 is not null) THEN (true) WHEN (_col0 is null) THEN (null) WHEN ((_col4 < _col3)) THEN (true) ELSE (false) END)
                 Join Operator [JOIN_32] (rows=5 width=114)
                   Output:["_col0","_col1","_col3","_col4","_col7"],condition map:[{"":"{\"type\":\"Left Outer\",\"left\":0,\"right\":1}"}],keys:{"0":"_col0, _col1","1":"_col0, _col1"}
                 <-Reducer 10 [PARTITION-LEVEL SORT]
@@ -2461,7 +2461,7 @@ Stage-0
                         Select Operator [SEL_24] (rows=1 width=110)
                           Output:["_col0","_col1"]
                           Filter Operator [FIL_23] (rows=1 width=114)
-                            predicate:(((_col2 - _col1) > 600.0) and _col1 is not null)
+                            predicate:(((_col2 - _col1) > 600.0D) and _col1 is not null)
                             Group By Operator [GBY_22] (rows=5 width=114)
                               Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)"],keys:KEY._col0
                             <-Map 6 [GROUP]
@@ -2505,7 +2505,7 @@ Stage-0
                               Select Operator [SEL_12] (rows=1 width=114)
                                 Output:["_col0","_col1"]
                                 Filter Operator [FIL_11] (rows=1 width=114)
-                                  predicate:(((_col2 - _col1) > 600.0) and _col1 is not null)
+                                  predicate:(((_col2 - _col1) > 600.0D) and _col1 is not null)
                                   Group By Operator [GBY_10] (rows=5 width=114)
                                     Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)"],keys:KEY._col0
                                   <- Please refer to the previous Map 6 [GROUP]
@@ -5447,7 +5447,7 @@ Stage-0
                 Select Operator [SEL_9] (rows=550 width=87)
                   Output:["_col0","_col1","_col2"]
                   Map Join Operator [MAPJOIN_19] (rows=550 width=87)
-                    Conds:SEL_5.UDFToDouble(_col0)=SEL_5.(UDFToDouble(_col0) + 1.0)(Inner),Output:["_col0","_col1","_col2"]
+                    Conds:SEL_5.UDFToDouble(_col0)=SEL_5.(UDFToDouble(_col0) + 1.0D)(Inner),Output:["_col0","_col1","_col2"]
                   <-Select Operator [SEL_5] (rows=500 width=87)
                       Output:["_col0"]
                       Filter Operator [FIL_18] (rows=500 width=87)
@@ -5458,7 +5458,7 @@ Stage-0
         Stage-2
           Map 1
           keys: [HASHTABLESINK_21]
-            0UDFToDouble(_col0),1(UDFToDouble(_col0) + 1.0)
+            0UDFToDouble(_col0),1(UDFToDouble(_col0) + 1.0D)
             Select Operator [SEL_2] (rows=1 width=368)
               Output:["_col0","_col1"]
               Filter Operator [FIL_17] (rows=1 width=368)
@@ -5711,7 +5711,7 @@ Stage-0
                 Select Operator [SEL_7] (rows=1 width=404)
                   Output:["_col0","_col1","_col2"]
                   Map Join Operator [MAPJOIN_15] (rows=1 width=404)
-                    Conds:SEL_1.UDFToDouble(_col0)=SEL_1.(UDFToDouble(_col0) + 1.0)(Left Outer),Output:["_col0","_col1","_col2"]
+                    Conds:SEL_1.UDFToDouble(_col0)=SEL_1.(UDFToDouble(_col0) + 1.0D)(Left Outer),Output:["_col0","_col1","_col2"]
                   <-Select Operator [SEL_1] (rows=1 width=368)
                       Output:["_col0","_col1"]
                       TableScan [TS_0] (rows=1 width=368)
@@ -5720,7 +5720,7 @@ Stage-0
         Stage-2
           Map 4
           keys: [HASHTABLESINK_17]
-            0UDFToDouble(_col0),1(UDFToDouble(_col0) + 1.0)
+            0UDFToDouble(_col0),1(UDFToDouble(_col0) + 1.0D)
             Select Operator [SEL_3] (rows=1 width=184)
               Output:["_col0"]
               TableScan [TS_2] (rows=1 width=184)
@@ -5755,7 +5755,7 @@ Stage-0
                 Select Operator [SEL_7] (rows=1 width=404)
                   Output:["_col0","_col1","_col2"]
                   Map Join Operator [MAPJOIN_15] (rows=1 width=404)
-                    Conds:SEL_3.UDFToDouble(_col0)=SEL_3.(UDFToDouble(_col0) + 1.0)(Right Outer),Output:["_col0","_col1","_col2"]
+                    Conds:SEL_3.UDFToDouble(_col0)=SEL_3.(UDFToDouble(_col0) + 1.0D)(Right Outer),Output:["_col0","_col1","_col2"]
                   <-Select Operator [SEL_3] (rows=1 width=184)
                       Output:["_col0"]
                       TableScan [TS_2] (rows=1 width=184)
@@ -5764,7 +5764,7 @@ Stage-0
         Stage-2
           Map 1
           keys: [HASHTABLESINK_17]
-            0UDFToDouble(_col0),1(UDFToDouble(_col0) + 1.0)
+            0UDFToDouble(_col0),1(UDFToDouble(_col0) + 1.0D)
             Select Operator [SEL_1] (rows=1 width=368)
               Output:["_col0","_col1"]
               TableScan [TS_0] (rows=1 width=368)
@@ -5800,7 +5800,7 @@ Stage-0
                 Select Operator [SEL_7] (rows=1 width=404)
                   Output:["_col0","_col1","_col2"]
                   Join Operator [JOIN_6] (rows=1 width=404)
-                    Output:["_col0","_col1","_col2"],condition map:[{"":"{\"type\":\"Outer\",\"left\":0,\"right\":1}"}],keys:{"0":"UDFToDouble(_col0)","1":"(UDFToDouble(_col0) + 1.0)"}
+                    Output:["_col0","_col1","_col2"],condition map:[{"":"{\"type\":\"Outer\",\"left\":0,\"right\":1}"}],keys:{"0":"UDFToDouble(_col0)","1":"(UDFToDouble(_col0) + 1.0D)"}
                   <-Map 1 [PARTITION-LEVEL SORT]
                     PARTITION-LEVEL SORT [RS_4]
                       PartitionCols:UDFToDouble(_col0)
@@ -5810,7 +5810,7 @@ Stage-0
                           default@t1,a,Tbl:COMPLETE,Col:NONE,Output:["key","val"]
                   <-Map 5 [PARTITION-LEVEL SORT]
                     PARTITION-LEVEL SORT [RS_5]
-                      PartitionCols:(UDFToDouble(_col0) + 1.0)
+                      PartitionCols:(UDFToDouble(_col0) + 1.0D)
                       Select Operator [SEL_3] (rows=1 width=184)
                         Output:["_col0"]
                         TableScan [TS_2] (rows=1 width=184)
@@ -5844,7 +5844,7 @@ Stage-0
                 Select Operator [SEL_7] (rows=1 width=202)
                   Output:["_col0","_col1"]
                   Map Join Operator [MAPJOIN_15] (rows=1 width=202)
-                    Conds:SEL_1.(UDFToDouble(_col0) + 1.0)=SEL_1.UDFToDouble(_col0)(Left Outer),Output:["_col0","_col2"]
+                    Conds:SEL_1.(UDFToDouble(_col0) + 1.0D)=SEL_1.UDFToDouble(_col0)(Left Outer),Output:["_col0","_col2"]
                   <-Select Operator [SEL_1] (rows=1 width=184)
                       Output:["_col0"]
                       TableScan [TS_0] (rows=1 width=184)
@@ -5853,7 +5853,7 @@ Stage-0
         Stage-2
           Map 4
           keys: [HASHTABLESINK_17]
-            0(UDFToDouble(_col0) + 1.0),1UDFToDouble(_col0)
+            0(UDFToDouble(_col0) + 1.0D),1UDFToDouble(_col0)
             Select Operator [SEL_3] (rows=1 width=368)
               Output:["_col0","_col1"]
               TableScan [TS_2] (rows=1 width=368)

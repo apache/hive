@@ -28,7 +28,7 @@ STAGE PLANS:
             alias: implicit_test1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (a <> 0) (type: boolean)
+              predicate: (a <> 0L) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: a (type: bigint), b (type: string)

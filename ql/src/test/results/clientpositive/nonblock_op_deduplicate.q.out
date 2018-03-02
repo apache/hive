@@ -14,7 +14,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: (UDFToDouble(key) + 1.0) (type: double), ((UDFToDouble(key) + 1.0) + 1.0) (type: double)
+              expressions: (UDFToDouble(key) + 1.0D) (type: double), ((UDFToDouble(key) + 1.0D) + 1.0D) (type: double)
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               File Output Operator

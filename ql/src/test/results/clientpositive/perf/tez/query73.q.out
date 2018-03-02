@@ -121,7 +121,7 @@ Stage-0
                                     Select Operator [SEL_11] (rows=1200 width=107)
                                       Output:["_col0"]
                                       Filter Operator [FIL_55] (rows=1200 width=107)
-                                        predicate:(((hd_buy_potential = '>10000') or (hd_buy_potential = 'unknown')) and (hd_vehicle_count > 0) and CASE WHEN ((hd_vehicle_count > 0)) THEN (((UDFToDouble(hd_dep_count) / UDFToDouble(hd_vehicle_count)) > 1.0)) ELSE (null) END and hd_demo_sk is not null)
+                                        predicate:(((hd_buy_potential = '>10000') or (hd_buy_potential = 'unknown')) and (hd_vehicle_count > 0) and CASE WHEN ((hd_vehicle_count > 0)) THEN (((UDFToDouble(hd_dep_count) / UDFToDouble(hd_vehicle_count)) > 1.0D)) ELSE (null) END and hd_demo_sk is not null)
                                         TableScan [TS_9] (rows=7200 width=107)
                                           default@household_demographics,household_demographics,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_buy_potential","hd_dep_count","hd_vehicle_count"]
                                 <-Reducer 5 [SIMPLE_EDGE]

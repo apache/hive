@@ -94,7 +94,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ((11.0 = 11.0) and ds is not null) (type: boolean)
+                  filterExpr: ((11.0D = 11.0D) and ds is not null) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
@@ -110,10 +110,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart2
-                  filterExpr: (UDFToDouble(hr) = 11.0) (type: boolean)
+                  filterExpr: (UDFToDouble(hr) = 11.0D) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 49248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(hr) = 11.0) (type: boolean)
+                    predicate: (UDFToDouble(hr) = 11.0D) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
@@ -194,10 +194,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart2
-                  filterExpr: (UDFToDouble(hr) = 11.0) (type: boolean)
+                  filterExpr: (UDFToDouble(hr) = 11.0D) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 49248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(hr) = 11.0) (type: boolean)
+                    predicate: (UDFToDouble(hr) = 11.0D) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
@@ -281,10 +281,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart2
-                  filterExpr: (UDFToDouble(hr) = 11.0) (type: boolean)
+                  filterExpr: (UDFToDouble(hr) = 11.0D) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 49248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(hr) = 11.0) (type: boolean)
+                    predicate: (UDFToDouble(hr) = 11.0D) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
@@ -419,10 +419,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart2
-                  filterExpr: (UDFToDouble(hr) = 11.0) (type: boolean)
+                  filterExpr: (UDFToDouble(hr) = 11.0D) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 49248 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(hr) = 11.0) (type: boolean)
+                    predicate: (UDFToDouble(hr) = 11.0D) (type: boolean)
                     Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)

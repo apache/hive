@@ -33,7 +33,7 @@ STAGE PLANS:
               predicate: cdouble is null (type: boolean)
               Statistics: Num rows: 6144 Data size: 1320982 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: null (type: double), 100.0 (type: double)
+                expressions: null (type: double), 100.0D (type: double)
                 outputColumnNames: _col0, _col1
                 Select Vectorization:
                     className: VectorSelectOperator

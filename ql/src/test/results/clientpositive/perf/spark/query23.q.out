@@ -824,7 +824,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col3
                   Statistics: Num rows: 348477374 Data size: 30742775095 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (_col3 > 4) (type: boolean)
+                    predicate: (_col3 > 4L) (type: boolean)
                     Statistics: Num rows: 116159124 Data size: 10247591639 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: _col0 (type: int)

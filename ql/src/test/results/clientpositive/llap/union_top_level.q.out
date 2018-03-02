@@ -32,7 +32,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) % 3.0) = 0.0) (type: boolean)
+                    predicate: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -54,7 +54,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) % 3.0) = 1.0) (type: boolean)
+                    predicate: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -76,7 +76,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) % 3.0) = 2.0) (type: boolean)
+                    predicate: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -420,7 +420,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) % 3.0) = 0.0) (type: boolean)
+                    predicate: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -442,7 +442,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) % 3.0) = 1.0) (type: boolean)
+                    predicate: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -464,7 +464,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) % 3.0) = 2.0) (type: boolean)
+                    predicate: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -655,7 +655,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) % 3.0) = 0.0) (type: boolean)
+                    predicate: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -676,7 +676,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) % 3.0) = 1.0) (type: boolean)
+                    predicate: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -697,7 +697,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) % 3.0) = 2.0) (type: boolean)
+                    predicate: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -932,7 +932,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) % 3.0) = 0.0) (type: boolean)
+                    predicate: ((UDFToDouble(key) % 3.0D) = 0.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -953,7 +953,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) % 3.0) = 1.0) (type: boolean)
+                    predicate: ((UDFToDouble(key) % 3.0D) = 1.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -974,7 +974,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) % 3.0) = 2.0) (type: boolean)
+                    predicate: ((UDFToDouble(key) % 3.0D) = 2.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)

@@ -141,7 +141,7 @@ STAGE PLANS:
                         projectedOutputColumnNums: [2]
                     Statistics: Num rows: 1049 Data size: 311170 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: avg(50), avg(50.0), avg(50)
+                      aggregations: avg(50), avg(50.0D), avg(50)
                       Group By Vectorization:
                           aggregators: VectorUDAFAvgLong(ConstantVectorExpression(val 50) -> 12:int) -> struct<count:bigint,sum:double,input:int>, VectorUDAFAvgDouble(ConstantVectorExpression(val 50.0) -> 13:double) -> struct<count:bigint,sum:double,input:double>, VectorUDAFAvgDecimal(ConstantVectorExpression(val 50) -> 14:decimal(10,0)) -> struct<count:bigint,sum:decimal(20,0),input:decimal(10,0)>
                           className: VectorGroupByOperator

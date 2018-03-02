@@ -184,7 +184,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: (_col1 > 1) (type: boolean)
+                  predicate: (_col1 > 1L) (type: boolean)
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: cardinality_violation(_col0) (type: int)

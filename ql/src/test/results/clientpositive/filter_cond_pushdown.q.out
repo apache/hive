@@ -275,7 +275,7 @@ STAGE PLANS:
             alias: t2
             Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) = 1.0) (type: boolean)
+              predicate: (UDFToDouble(key) = 1.0D) (type: boolean)
               Statistics: Num rows: 10 Data size: 131 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), c_int (type: int), c_float (type: float)
@@ -291,7 +291,7 @@ STAGE PLANS:
             alias: t3
             Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(key) = 1.0) and (c_int = 1)) (type: boolean)
+              predicate: ((UDFToDouble(key) = 1.0D) and (c_int = 1)) (type: boolean)
               Statistics: Num rows: 5 Data size: 65 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), c_float (type: float)
@@ -333,7 +333,7 @@ STAGE PLANS:
             alias: t1
             Statistics: Num rows: 20 Data size: 262 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) = 1.0) (type: boolean)
+              predicate: (UDFToDouble(key) = 1.0D) (type: boolean)
               Statistics: Num rows: 10 Data size: 131 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)

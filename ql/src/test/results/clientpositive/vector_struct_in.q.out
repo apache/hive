@@ -819,7 +819,7 @@ STAGE PLANS:
                   className: VectorFilterOperator
                   native: true
                   predicateExpression: FilterStructColumnInList(structExpressions [col 0:bigint, col 1:string, col 2:double], fieldVectorColumnTypes [LONG, BYTES, DOUBLE], structColumnMap [0, 1, 2])
-              predicate: (struct(my_bigint,my_string,my_double)) IN (const struct(1,'a',1.5), const struct(1,'b',-0.5), const struct(3,'b',1.5), const struct(1,'d',1.5), const struct(1,'c',1.5), const struct(1,'b',2.5), const struct(1,'b',0.5), const struct(5,'b',1.5), const struct(1,'a',0.5), const struct(3,'b',1.5)) (type: boolean)
+              predicate: (struct(my_bigint,my_string,my_double)) IN (const struct(1L,'a',1.5D), const struct(1L,'b',-0.5D), const struct(3L,'b',1.5D), const struct(1L,'d',1.5D), const struct(1L,'c',1.5D), const struct(1L,'b',2.5D), const struct(1L,'b',0.5D), const struct(5L,'b',1.5D), const struct(1L,'a',0.5D), const struct(3L,'b',1.5D)) (type: boolean)
               Statistics: Num rows: 1 Data size: 101 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: my_bigint (type: bigint), my_string (type: string), my_double (type: double)
@@ -937,7 +937,7 @@ STAGE PLANS:
             TableScan Vectorization:
                 native: true
             Select Operator
-              expressions: my_bigint (type: bigint), my_string (type: string), my_double (type: double), (struct(my_bigint,my_string,my_double)) IN (const struct(1,'a',1.5), const struct(1,'b',-0.5), const struct(3,'b',1.5), const struct(1,'d',1.5), const struct(1,'c',1.5), const struct(1,'b',2.5), const struct(1,'b',0.5), const struct(5,'b',1.5), const struct(1,'a',0.5), const struct(3,'b',1.5)) (type: boolean)
+              expressions: my_bigint (type: bigint), my_string (type: string), my_double (type: double), (struct(my_bigint,my_string,my_double)) IN (const struct(1L,'a',1.5D), const struct(1L,'b',-0.5D), const struct(3L,'b',1.5D), const struct(1L,'d',1.5D), const struct(1L,'c',1.5D), const struct(1L,'b',2.5D), const struct(1L,'b',0.5D), const struct(5L,'b',1.5D), const struct(1L,'a',0.5D), const struct(3L,'b',1.5D)) (type: boolean)
               outputColumnNames: _col0, _col1, _col2, _col3
               Select Vectorization:
                   className: VectorSelectOperator

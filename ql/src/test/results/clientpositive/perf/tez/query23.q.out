@@ -293,7 +293,7 @@ Stage-0
                               Select Operator [SEL_27] (rows=116159124 width=88)
                                 Output:["_col1"]
                                 Filter Operator [FIL_26] (rows=116159124 width=88)
-                                  predicate:(_col3 > 4)
+                                  predicate:(_col3 > 4L)
                                   Select Operator [SEL_347] (rows=348477374 width=88)
                                     Output:["_col0","_col3"]
                                     Group By Operator [GBY_25] (rows=348477374 width=88)

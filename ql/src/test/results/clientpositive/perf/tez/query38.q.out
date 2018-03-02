@@ -73,7 +73,7 @@ Stage-0
                 Output:["_col0"],aggregations:["count()"]
                 Select Operator [SEL_82] (rows=1 width=108)
                   Filter Operator [FIL_81] (rows=1 width=108)
-                    predicate:(_col3 = 3)
+                    predicate:(_col3 = 3L)
                     Select Operator [SEL_114] (rows=152458212 width=108)
                       Output:["_col3"]
                       Group By Operator [GBY_80] (rows=152458212 width=108)

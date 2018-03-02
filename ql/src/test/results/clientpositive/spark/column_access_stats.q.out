@@ -493,7 +493,7 @@ STAGE PLANS:
                   alias: t1
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToDouble(val) = 3.0) and key is not null) (type: boolean)
+                    predicate: ((UDFToDouble(val) = 3.0D) and key is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), val (type: string)
@@ -511,7 +511,7 @@ STAGE PLANS:
                   alias: t2
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToDouble(val) = 3.0) and key is not null) (type: boolean)
+                    predicate: ((UDFToDouble(val) = 3.0D) and key is not null) (type: boolean)
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), val (type: string)
@@ -589,7 +589,7 @@ STAGE PLANS:
                   alias: t1
                   Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) = 5.0) and val is not null) (type: boolean)
+                    predicate: ((UDFToDouble(key) = 5.0D) and val is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: val (type: string)
@@ -606,7 +606,7 @@ STAGE PLANS:
                   alias: t2
                   Statistics: Num rows: 5 Data size: 15 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) = 6.0) and val is not null) (type: boolean)
+                    predicate: ((UDFToDouble(key) = 6.0D) and val is not null) (type: boolean)
                     Statistics: Num rows: 2 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: val (type: string)

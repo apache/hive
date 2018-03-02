@@ -14,7 +14,7 @@ STAGE PLANS:
           alias: src
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: 0 (type: bigint)
+            expressions: 0L (type: bigint)
             outputColumnNames: _col0
             Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
             Limit
@@ -47,7 +47,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: 0 (type: bigint)
+              expressions: 0L (type: bigint)
               outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
@@ -60,7 +60,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
-              expressions: 9223372036854775807 (type: bigint)
+              expressions: 9223372036854775807L (type: bigint)
               outputColumnNames: _col0
               Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
               Union
@@ -1120,7 +1120,7 @@ STAGE PLANS:
           alias: t1
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
-            predicate: (a > 2) (type: boolean)
+            predicate: (a > 2Y) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: a (type: tinyint), b (type: smallint)
@@ -1144,7 +1144,7 @@ STAGE PLANS:
           alias: t1
           Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
-            predicate: (b < 2) (type: boolean)
+            predicate: (b < 2S) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: a (type: tinyint), b (type: smallint)

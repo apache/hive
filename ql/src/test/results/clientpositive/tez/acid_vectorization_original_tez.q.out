@@ -446,10 +446,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over10k_orc_bucketed
-                  filterExpr: ((b = 4294967363) and (t < 100)) (type: boolean)
+                  filterExpr: ((b = 4294967363L) and (t < 100Y)) (type: boolean)
                   Statistics: Num rows: 2098 Data size: 41920 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((b = 4294967363) and (t < 100)) (type: boolean)
+                    predicate: ((b = 4294967363L) and (t < 100Y)) (type: boolean)
                     Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: t (type: tinyint), si (type: smallint), i (type: int)
@@ -515,10 +515,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over10k_orc_bucketed
-                  filterExpr: ((b = 4294967363) and (t < 100)) (type: boolean)
+                  filterExpr: ((b = 4294967363L) and (t < 100Y)) (type: boolean)
                   Statistics: Num rows: 2098 Data size: 41920 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((b = 4294967363) and (t < 100)) (type: boolean)
+                    predicate: ((b = 4294967363L) and (t < 100Y)) (type: boolean)
                     Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), t (type: tinyint), si (type: smallint), i (type: int)
@@ -587,10 +587,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: over10k_orc_bucketed
-                  filterExpr: ((b = 4294967363) and (t < 100)) (type: boolean)
+                  filterExpr: ((b = 4294967363L) and (t < 100Y)) (type: boolean)
                   Statistics: Num rows: 2098 Data size: 706986 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((b = 4294967363) and (t < 100)) (type: boolean)
+                    predicate: ((b = 4294967363L) and (t < 100Y)) (type: boolean)
                     Statistics: Num rows: 2 Data size: 674 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), t (type: tinyint), si (type: smallint), f (type: float), d (type: double), bo (type: boolean), s (type: string), ts (type: timestamp), dec (type: decimal(4,2)), bin (type: binary)
@@ -607,7 +607,7 @@ STAGE PLANS:
             Execution mode: vectorized
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), 0 (type: int), 4294967363 (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: double), VALUE._col5 (type: boolean), VALUE._col6 (type: string), VALUE._col7 (type: timestamp), VALUE._col8 (type: decimal(4,2)), VALUE._col9 (type: binary)
+                expressions: KEY.reducesinkkey0 (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>), VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), 0 (type: int), 4294967363L (type: bigint), VALUE._col3 (type: float), VALUE._col4 (type: double), VALUE._col5 (type: boolean), VALUE._col6 (type: string), VALUE._col7 (type: timestamp), VALUE._col8 (type: decimal(4,2)), VALUE._col9 (type: binary)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
                 Statistics: Num rows: 2 Data size: 834 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
@@ -706,7 +706,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1049 Data size: 88116 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (_col1 > 1) (type: boolean)
+                  predicate: (_col1 > 1L) (type: boolean)
                   Statistics: Num rows: 349 Data size: 29316 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false

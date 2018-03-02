@@ -174,7 +174,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (UDFToDouble(key) + (UDFToDouble(value) / 2.0)) (type: double)
+            expressions: (UDFToDouble(key) + (UDFToDouble(value) / 2.0D)) (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -241,7 +241,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (UDFToDouble(key) + 1.0) (type: double)
+            expressions: (UDFToDouble(key) + 1.0D) (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -442,7 +442,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (UDFToDouble(key) - (UDFToDouble(value) / 2.0)) (type: double)
+            expressions: (UDFToDouble(key) - (UDFToDouble(value) / 2.0D)) (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -509,7 +509,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (UDFToDouble(key) - 1.0) (type: double)
+            expressions: (UDFToDouble(key) - 1.0D) (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -765,7 +765,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (UDFToDouble(key) * (UDFToDouble(value) / 2.0)) (type: double)
+            expressions: (UDFToDouble(key) * (UDFToDouble(value) / 2.0D)) (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -832,7 +832,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (UDFToDouble(key) * 2.0) (type: double)
+            expressions: (UDFToDouble(key) * 2.0D) (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink
@@ -1090,7 +1090,7 @@ STAGE PLANS:
             predicate: (value <> 0) (type: boolean)
             Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: (UDFToDouble(key) / (UDFToDouble(value) / 2.0)) (type: double)
+              expressions: (UDFToDouble(key) / (UDFToDouble(value) / 2.0D)) (type: double)
               outputColumnNames: _col0
               Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
               ListSink
@@ -1143,7 +1143,7 @@ STAGE PLANS:
           alias: decimal_udf
           Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: (1.0 + (UDFToDouble(key) / 2.0)) (type: double)
+            expressions: (1.0D + (UDFToDouble(key) / 2.0D)) (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             ListSink

@@ -92,7 +92,7 @@ STAGE PLANS:
                   alias: date_dim
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (CAST( d_date AS TIMESTAMP) BETWEEN 1998-03-08 23:00:00.0 AND 1998-05-08 00:00:00.0 and d_date_sk is not null) (type: boolean)
+                    predicate: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-03-08 23:00:00.0' AND TIMESTAMP'1998-05-08 00:00:00.0' and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int), d_date (type: string)
@@ -219,7 +219,7 @@ STAGE PLANS:
                     1 Map 9
                   Statistics: Num rows: 421645953 Data size: 57099332415 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: _col14 (type: string), _col11 (type: string), CASE WHEN ((CAST( _col9 AS DATE) < 1998-04-08)) THEN ((_col4 - COALESCE(_col7,0))) ELSE (0) END (type: decimal(13,2)), CASE WHEN ((CAST( _col9 AS DATE) >= 1998-04-08)) THEN ((_col4 - COALESCE(_col7,0))) ELSE (0) END (type: decimal(13,2))
+                    expressions: _col14 (type: string), _col11 (type: string), CASE WHEN ((CAST( _col9 AS DATE) < DATE'1998-04-08')) THEN ((_col4 - COALESCE(_col7,0))) ELSE (0) END (type: decimal(13,2)), CASE WHEN ((CAST( _col9 AS DATE) >= DATE'1998-04-08')) THEN ((_col4 - COALESCE(_col7,0))) ELSE (0) END (type: decimal(13,2))
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 421645953 Data size: 57099332415 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator

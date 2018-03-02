@@ -158,7 +158,7 @@ STAGE PLANS:
             alias: src
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) = 4.0) (type: boolean)
+              predicate: (UDFToDouble(key) = 4.0D) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -235,7 +235,7 @@ STAGE PLANS:
             alias: y
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) = 3.0) (type: boolean)
+              predicate: (UDFToDouble(key) = 3.0D) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -251,7 +251,7 @@ STAGE PLANS:
             alias: x
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(key) = 3.0) and value is not null) (type: boolean)
+              predicate: ((UDFToDouble(key) = 3.0D) and value is not null) (type: boolean)
               Statistics: Num rows: 12 Data size: 91 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -293,7 +293,7 @@ STAGE PLANS:
             alias: z
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(hr) = 14.0) and (ds = '2008-04-08') and value is not null) (type: boolean)
+              predicate: ((UDFToDouble(hr) = 14.0D) and (ds = '2008-04-08') and value is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: value (type: string)

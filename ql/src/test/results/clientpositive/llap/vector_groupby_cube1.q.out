@@ -47,7 +47,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
-                      keys: key (type: string), val (type: string), 0 (type: bigint)
+                      keys: key (type: string), val (type: string), 0L (type: bigint)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
@@ -120,7 +120,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
-                      keys: key (type: string), val (type: string), 0 (type: bigint)
+                      keys: key (type: string), val (type: string), 0L (type: bigint)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
@@ -219,7 +219,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
-                      keys: _col0 (type: string), _col1 (type: string), 0 (type: bigint)
+                      keys: _col0 (type: string), _col1 (type: string), 0L (type: bigint)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
@@ -317,7 +317,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(DISTINCT val)
-                      keys: key (type: string), 0 (type: bigint), val (type: string)
+                      keys: key (type: string), 0L (type: bigint), val (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
@@ -404,7 +404,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
-                      keys: key (type: string), val (type: string), 0 (type: bigint)
+                      keys: key (type: string), val (type: string), 0L (type: bigint)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
@@ -519,7 +519,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(DISTINCT val)
-                      keys: key (type: string), 0 (type: bigint), val (type: string)
+                      keys: key (type: string), 0L (type: bigint), val (type: string)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
@@ -649,7 +649,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count(1)
-                      keys: key (type: string), val (type: string), 0 (type: bigint)
+                      keys: key (type: string), val (type: string), 0L (type: bigint)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
@@ -665,7 +665,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: sum(1)
-                      keys: key (type: string), val (type: string), 0 (type: bigint)
+                      keys: key (type: string), val (type: string), 0L (type: bigint)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE

@@ -86,7 +86,7 @@ STAGE PLANS:
                   alias: household_demographics
                   Statistics: Num rows: 7200 Data size: 770400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((hd_buy_potential = '>10000') or (hd_buy_potential = 'unknown')) and (hd_vehicle_count > 0) and CASE WHEN ((hd_vehicle_count > 0)) THEN (((UDFToDouble(hd_dep_count) / UDFToDouble(hd_vehicle_count)) > 1.0)) ELSE (null) END and hd_demo_sk is not null) (type: boolean)
+                    predicate: (((hd_buy_potential = '>10000') or (hd_buy_potential = 'unknown')) and (hd_vehicle_count > 0) and CASE WHEN ((hd_vehicle_count > 0)) THEN (((UDFToDouble(hd_dep_count) / UDFToDouble(hd_vehicle_count)) > 1.0D)) ELSE (null) END and hd_demo_sk is not null) (type: boolean)
                     Statistics: Num rows: 1200 Data size: 128400 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: hd_demo_sk (type: int)

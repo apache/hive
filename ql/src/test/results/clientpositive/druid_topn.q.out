@@ -360,13 +360,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: druid_table_1
-            filterExpr: floor_hour(__time) BETWEEN 2010-01-01 00:00:00.0 US/Pacific AND 2014-01-01 00:00:00.0 US/Pacific (type: boolean)
+            filterExpr: floor_hour(__time) BETWEEN TIMESTAMPLOCALTZ'2010-01-01 00:00:00.0 US/Pacific' AND TIMESTAMPLOCALTZ'2014-01-01 00:00:00.0 US/Pacific' (type: boolean)
             properties:
               druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":["robot"],"metrics":["added","variation"],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
               druid.query.type select
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: floor_hour(__time) BETWEEN 2010-01-01 00:00:00.0 US/Pacific AND 2014-01-01 00:00:00.0 US/Pacific (type: boolean)
+              predicate: floor_hour(__time) BETWEEN TIMESTAMPLOCALTZ'2010-01-01 00:00:00.0 US/Pacific' AND TIMESTAMPLOCALTZ'2014-01-01 00:00:00.0 US/Pacific' (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: robot (type: string), floor_hour(__time) (type: timestamp with local time zone), added (type: float), variation (type: float)

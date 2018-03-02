@@ -86,7 +86,7 @@ Stage-0
                           SHUFFLE [RS_18]
                             PartitionCols:_col0, _col1, _col2
                             Group By Operator [GBY_17] (rows=522729705 width=135)
-                              Output:["_col0","_col1","_col2","_col3"],aggregations:["sum(_col2)"],keys:_col0, _col1, 0
+                              Output:["_col0","_col1","_col2","_col3"],aggregations:["sum(_col2)"],keys:_col0, _col1, 0L
                               Select Operator [SEL_15] (rows=174243235 width=135)
                                 Output:["_col0","_col1","_col2"]
                                 Merge Join Operator [MERGEJOIN_40] (rows=174243235 width=135)

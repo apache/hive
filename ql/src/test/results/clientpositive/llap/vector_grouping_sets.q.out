@@ -172,7 +172,7 @@ STAGE PLANS:
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
-                      keys: s_store_id (type: string), 0 (type: bigint)
+                      keys: s_store_id (type: string), 0L (type: bigint)
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 24 Data size: 4416 Basic stats: COMPLETE Column stats: NONE
@@ -303,7 +303,7 @@ STAGE PLANS:
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
-                      keys: _col0 (type: string), 0 (type: bigint)
+                      keys: _col0 (type: string), 0L (type: bigint)
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 24 Data size: 4416 Basic stats: COMPLETE Column stats: NONE
@@ -424,7 +424,7 @@ STAGE PLANS:
                     outputColumnNames: _col0
                     Statistics: Num rows: 12 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      keys: _col0 (type: string), 0 (type: bigint)
+                      keys: _col0 (type: string), 0L (type: bigint)
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 24 Data size: 4416 Basic stats: COMPLETE Column stats: NONE
