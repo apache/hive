@@ -33,6 +33,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.io.filters.BloomFilterIO;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
@@ -161,7 +162,8 @@ public final class OrcFile {
     BLOCK_PADDING("orc.block.padding"),
     ENCODING_STRATEGY("orc.encoding.strategy"),
     BLOOM_FILTER_COLUMNS("orc.bloom.filter.columns"),
-    BLOOM_FILTER_FPP("orc.bloom.filter.fpp");
+    BLOOM_FILTER_FPP("orc.bloom.filter.fpp"),
+    ENFORCE_BUFFER_SIZE("orc.buffer.size.enforce");
 
     private final String propName;
 
@@ -312,6 +314,12 @@ public final class OrcFile {
           : tableProperties.getProperty(OrcTableProperties.COMPRESSION.propName);
       compressValue = propValue == null ? CompressionKind.valueOf(HiveConf.getVar(conf, HIVE_ORC_DEFAULT_COMPRESS))
           : CompressionKind.valueOf(propValue.toUpperCase());
+
+      propValue = tableProperties == null ? null
+          : tableProperties.getProperty(OrcTableProperties.ENFORCE_BUFFER_SIZE.propName);
+      enforceBufferSize = propValue == null ? HiveConf.getBoolVar(conf, ConfVars.ORC_ENFORCE_COMPRESSION_BUFFER_SIZE)
+          : Boolean.parseBoolean(propValue);
+
 
       propValue = tableProperties == null ? null
           : tableProperties.getProperty(OrcTableProperties.BLOOM_FILTER_COLUMNS.propName);

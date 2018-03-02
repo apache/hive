@@ -2174,6 +2174,10 @@ public class HiveConf extends Configuration {
     HIVEOPTLISTBUCKETING("hive.optimize.listbucketing", false,
         "Enable list bucketing optimizer. Default value is false so that we disable it by default."),
 
+    ORC_ENFORCE_COMPRESSION_BUFFER_SIZE("hive.exec.orc.buffer.size.enforce", false,
+      "Defines whether to enforce ORC compression buffer size."),
+
+
     // Allow TCP Keep alive socket option for for HiveServer or a maximum timeout for the socket.
     SERVER_READ_SOCKET_TIMEOUT("hive.server.read.socket.timeout", "10s",
         new TimeValidator(TimeUnit.SECONDS),

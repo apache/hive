@@ -210,6 +210,7 @@ public class WriterImpl implements Writer, MemoryManager.Callback {
       allColumns = getColumnNamesFromInspector(inspector);
     }
     if (enforceBufferSize) {
+      OutStream.assertBufferSizeValid(bufferSize);
       this.bufferSize = bufferSize;
     } else {
       this.bufferSize = getEstimatedBufferSize(defaultStripeSize,
