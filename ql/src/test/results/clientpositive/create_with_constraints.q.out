@@ -2550,3 +2550,92 @@ Storage Desc Params:
 Table:              	default.table23     	 
 Constraint Name:    	pk23_1              	 
 Column Names:       	b                   	 
+PREHOOK: query: CREATE TABLE numericDataType(a TINYINT, b SMALLINT NOT NULL ENABLE, c INT,
+ d BIGINT , e DOUBLE , f DECIMAL(9,2))
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@numericDataType
+POSTHOOK: query: CREATE TABLE numericDataType(a TINYINT, b SMALLINT NOT NULL ENABLE, c INT,
+ d BIGINT , e DOUBLE , f DECIMAL(9,2))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@numericDataType
+PREHOOK: query: INSERT INTO numericDataType values(2,45,5667,67890,5.6,678.5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@numericdatatype
+POSTHOOK: query: INSERT INTO numericDataType values(2,45,5667,67890,5.6,678.5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@numericdatatype
+POSTHOOK: Lineage: numericdatatype.a SCRIPT []
+POSTHOOK: Lineage: numericdatatype.b SCRIPT []
+POSTHOOK: Lineage: numericdatatype.c SCRIPT []
+POSTHOOK: Lineage: numericdatatype.d SCRIPT []
+POSTHOOK: Lineage: numericdatatype.e SCRIPT []
+POSTHOOK: Lineage: numericdatatype.f SCRIPT []
+PREHOOK: query: ALTER TABLE numericDataType ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: ALTER TABLE numericDataType ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: DESC FORMATTED numericDataType
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@numericdatatype
+POSTHOOK: query: DESC FORMATTED numericDataType
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@numericdatatype
+# col_name            	data_type           	comment             
+a                   	tinyint             	                    
+b                   	smallint            	                    
+c                   	int                 	                    
+d                   	bigint              	                    
+e                   	double              	                    
+f                   	decimal(9,2)        	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\",\"d\":\"true\",\"e\":\"true\",\"f\":\"true\"}}
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	26                  
+	totalSize           	27                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+	 	 
+# Constraints	 	 
+	 	 
+# Unique Constraints	 	 
+Table:              	default.numericdatatype	 
+Constraint Name:    	uk1                 	 
+Column Name:a       	Key Sequence:1      	 
+Column Name:b       	Key Sequence:2      	 
+	 	 
+	 	 
+# Not Null Constraints	 	 
+Table:              	default.numericdatatype	 
+Constraint Name:    	#### A masked pattern was here ####	 
+Column Name:        	b                   	 
+	 	 
+PREHOOK: query: DROP TABLE numericDataType
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@numericdatatype
+PREHOOK: Output: default@numericdatatype
+POSTHOOK: query: DROP TABLE numericDataType
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@numericdatatype
+POSTHOOK: Output: default@numericdatatype
