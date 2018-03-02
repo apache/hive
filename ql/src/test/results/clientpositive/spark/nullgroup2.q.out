@@ -22,7 +22,7 @@ STAGE PLANS:
                   alias: x
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) > 9999.0) (type: boolean)
+                    predicate: (UDFToDouble(key) > 9999.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -103,7 +103,7 @@ STAGE PLANS:
                   alias: x
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) > 9999.0) (type: boolean)
+                    predicate: (UDFToDouble(key) > 9999.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -171,7 +171,7 @@ STAGE PLANS:
                   alias: x
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) > 9999.0) (type: boolean)
+                    predicate: (UDFToDouble(key) > 9999.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)
@@ -245,7 +245,7 @@ STAGE PLANS:
                   alias: x
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) > 9999.0) (type: boolean)
+                    predicate: (UDFToDouble(key) > 9999.0D) (type: boolean)
                     Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: key (type: string)

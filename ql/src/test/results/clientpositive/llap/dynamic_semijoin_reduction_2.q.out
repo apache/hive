@@ -582,10 +582,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  filterExpr: ((UDFToDouble(key) < 0.0) and value is not null and (value BETWEEN DynamicValue(RS_21_x__col1_min) AND DynamicValue(RS_21_x__col1_max) and in_bloom_filter(value, DynamicValue(RS_21_x__col1_bloom_filter)))) (type: boolean)
+                  filterExpr: ((UDFToDouble(key) < 0.0D) and value is not null and (value BETWEEN DynamicValue(RS_21_x__col1_min) AND DynamicValue(RS_21_x__col1_max) and in_bloom_filter(value, DynamicValue(RS_21_x__col1_bloom_filter)))) (type: boolean)
                   Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) < 0.0) and (value BETWEEN DynamicValue(RS_21_x__col1_min) AND DynamicValue(RS_21_x__col1_max) and in_bloom_filter(value, DynamicValue(RS_21_x__col1_bloom_filter))) and value is not null) (type: boolean)
+                    predicate: ((UDFToDouble(key) < 0.0D) and (value BETWEEN DynamicValue(RS_21_x__col1_min) AND DynamicValue(RS_21_x__col1_max) and in_bloom_filter(value, DynamicValue(RS_21_x__col1_bloom_filter))) and value is not null) (type: boolean)
                     Statistics: Num rows: 8 Data size: 1400 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: value (type: string)

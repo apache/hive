@@ -167,7 +167,7 @@ STAGE PLANS:
             alias: t1
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) < 100.0) (type: boolean)
+              predicate: (UDFToDouble(key) < 100.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -182,7 +182,7 @@ STAGE PLANS:
             alias: t2
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(key) < 100.0) (type: boolean)
+              predicate: (UDFToDouble(key) < 100.0D) (type: boolean)
               Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint)

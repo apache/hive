@@ -398,7 +398,7 @@ STAGE PLANS:
                   outputColumnNames: _col3
                   Statistics: Num rows: 152458212 Data size: 16545889939 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (_col3 = 3) (type: boolean)
+                    predicate: (_col3 = 3L) (type: boolean)
                     Statistics: Num rows: 1 Data size: 108 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 1 Data size: 108 Basic stats: COMPLETE Column stats: NONE

@@ -48,7 +48,7 @@ STAGE PLANS:
                   alias: src2
                   Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) > 10.0) (type: boolean)
+                    predicate: (UDFToDouble(key) > 10.0D) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -133,7 +133,7 @@ STAGE PLANS:
                   alias: src2
                   Statistics: Num rows: 3 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) > 10.0) (type: boolean)
+                    predicate: (UDFToDouble(key) > 10.0D) (type: boolean)
                     Statistics: Num rows: 1 Data size: 7 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: key (type: string), value (type: string)

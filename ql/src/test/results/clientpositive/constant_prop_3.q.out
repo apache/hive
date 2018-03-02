@@ -275,7 +275,7 @@ STAGE PLANS:
           outputColumnNames: _col1, _col3, _col4, _col5, _col6, _col7, _col9
           Statistics: Num rows: 1 Data size: 18 Basic stats: PARTIAL Column stats: NONE
           Filter Operator
-            predicate: ((_col6 = 0) or (_col9 is null and _col1 is not null and (_col7 >= _col6))) (type: boolean)
+            predicate: ((_col6 = 0L) or (_col9 is null and _col1 is not null and (_col7 >= _col6))) (type: boolean)
             Statistics: Num rows: 1 Data size: 18 Basic stats: PARTIAL Column stats: NONE
             Select Operator
               expressions: _col1 (type: int), _col3 (type: string), _col4 (type: string), _col5 (type: int)

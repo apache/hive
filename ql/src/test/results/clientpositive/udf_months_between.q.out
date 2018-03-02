@@ -32,7 +32,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: 1.03225806 (type: double)
+            expressions: 1.03225806D (type: double)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink

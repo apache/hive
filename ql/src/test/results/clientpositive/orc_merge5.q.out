@@ -37,10 +37,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: orc_merge5
-            filterExpr: (userid <= 13) (type: boolean)
+            filterExpr: (userid <= 13L) (type: boolean)
             Statistics: Num rows: 1 Data size: 2464020 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (userid <= 13) (type: boolean)
+              predicate: (userid <= 13L) (type: boolean)
               Statistics: Num rows: 1 Data size: 2464020 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: userid (type: bigint), string1 (type: string), subtype (type: double), decimal1 (type: decimal(10,0)), ts (type: timestamp)
@@ -153,10 +153,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: orc_merge5
-            filterExpr: (userid <= 13) (type: boolean)
+            filterExpr: (userid <= 13L) (type: boolean)
             Statistics: Num rows: 1 Data size: 2464020 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (userid <= 13) (type: boolean)
+              predicate: (userid <= 13L) (type: boolean)
               Statistics: Num rows: 1 Data size: 2464020 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: userid (type: bigint), string1 (type: string), subtype (type: double), decimal1 (type: decimal(10,0)), ts (type: timestamp)

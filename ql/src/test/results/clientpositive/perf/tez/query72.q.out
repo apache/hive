@@ -135,7 +135,7 @@ Stage-0
                                       Select Operator [SEL_45] (rows=170063874 width=135)
                                         Output:["_col3","_col8","_col10","_col11","_col14","_col20"]
                                         Filter Operator [FIL_44] (rows=170063874 width=135)
-                                          predicate:(UDFToDouble(_col20) > (UDFToDouble(_col9) + 5.0))
+                                          predicate:(UDFToDouble(_col20) > (UDFToDouble(_col9) + 5.0D))
                                           Merge Join Operator [MERGEJOIN_138] (rows=510191624 width=135)
                                             Conds:RS_41._col1=RS_42._col0(Inner),Output:["_col4","_col6","_col7","_col9","_col10","_col16","_col18","_col20"]
                                           <-Map 21 [SIMPLE_EDGE]

@@ -22,10 +22,10 @@ STAGE PLANS:
             alias: t1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (ts_field = 2016-01-23 00:00:00.0) (type: boolean)
+              predicate: (ts_field = TIMESTAMP'2016-01-23 00:00:00.0') (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
-                expressions: 2016-01-23 00:00:00.0 (type: timestamp), date_field (type: date)
+                expressions: TIMESTAMP'2016-01-23 00:00:00.0' (type: timestamp), date_field (type: date)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
@@ -58,10 +58,10 @@ STAGE PLANS:
             alias: t1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (date_field = 2016-01-23) (type: boolean)
+              predicate: (date_field = DATE'2016-01-23') (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
-                expressions: ts_field (type: timestamp), 2016-01-23 (type: date)
+                expressions: ts_field (type: timestamp), DATE'2016-01-23' (type: date)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
@@ -94,10 +94,10 @@ STAGE PLANS:
             alias: t1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (ts_field = 2016-01-23 00:00:00.0) (type: boolean)
+              predicate: (ts_field = TIMESTAMP'2016-01-23 00:00:00.0') (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
-                expressions: 2016-01-23 00:00:00.0 (type: timestamp), date_field (type: date)
+                expressions: TIMESTAMP'2016-01-23 00:00:00.0' (type: timestamp), date_field (type: date)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator
@@ -130,10 +130,10 @@ STAGE PLANS:
             alias: t1
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (date_field = 2016-01-23) (type: boolean)
+              predicate: (date_field = DATE'2016-01-23') (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
-                expressions: ts_field (type: timestamp), 2016-01-23 (type: date)
+                expressions: ts_field (type: timestamp), DATE'2016-01-23' (type: date)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
                 File Output Operator

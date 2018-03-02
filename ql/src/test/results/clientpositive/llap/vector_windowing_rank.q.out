@@ -1638,7 +1638,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: FilterLongColLessLongScalar(col 0:tinyint, val 10), SelectColumnIsNotNull(col 3:bigint))
-                    predicate: ((t < 10) and b is not null) (type: boolean)
+                    predicate: ((t < 10Y) and b is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 164 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: b (type: bigint), ts (type: timestamp), dec (type: decimal(4,2))

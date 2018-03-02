@@ -96,7 +96,7 @@ STAGE PLANS:
                   alias: date_dim
                   Statistics: Num rows: 73049 Data size: 81741831 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (CAST( d_date AS TIMESTAMP) BETWEEN 1998-03-08 23:00:00.0 AND 1998-05-08 00:00:00.0 and d_date_sk is not null) (type: boolean)
+                    predicate: (CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-03-08 23:00:00.0' AND TIMESTAMP'1998-05-08 00:00:00.0' and d_date_sk is not null) (type: boolean)
                     Statistics: Num rows: 8116 Data size: 9081804 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: d_date_sk (type: int), d_date (type: string)
@@ -188,7 +188,7 @@ STAGE PLANS:
                     1 Map 7
                   Statistics: Num rows: 50024305 Data size: 790375939 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: _col10 (type: string), _col7 (type: string), CASE WHEN ((CAST( _col5 AS DATE) < 1998-04-08)) THEN (_col3) ELSE (0) END (type: int), CASE WHEN ((CAST( _col5 AS DATE) >= 1998-04-08)) THEN (_col3) ELSE (0) END (type: int)
+                    expressions: _col10 (type: string), _col7 (type: string), CASE WHEN ((CAST( _col5 AS DATE) < DATE'1998-04-08')) THEN (_col3) ELSE (0) END (type: int), CASE WHEN ((CAST( _col5 AS DATE) >= DATE'1998-04-08')) THEN (_col3) ELSE (0) END (type: int)
                     outputColumnNames: _col0, _col1, _col2, _col3
                     Statistics: Num rows: 50024305 Data size: 790375939 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
@@ -212,7 +212,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 25012152 Data size: 395187961 Basic stats: COMPLETE Column stats: NONE
                 Filter Operator
-                  predicate: CASE WHEN ((_col2 > 0)) THEN ((UDFToDouble(_col3) / UDFToDouble(_col2)) BETWEEN 0.666667 AND 1.5) ELSE (null) END (type: boolean)
+                  predicate: CASE WHEN ((_col2 > 0L)) THEN ((UDFToDouble(_col3) / UDFToDouble(_col2)) BETWEEN 0.666667D AND 1.5D) ELSE (null) END (type: boolean)
                   Statistics: Num rows: 12506076 Data size: 197593980 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
                     key expressions: _col0 (type: string), _col1 (type: string)

@@ -431,7 +431,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterLongColLessLongScalar(col 0:tinyint, val 5)
-                    predicate: (t < 5) (type: boolean)
+                    predicate: (t < 5Y) (type: boolean)
                     Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: t (type: tinyint), f (type: float)

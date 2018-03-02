@@ -723,13 +723,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: druid_table_1
-            filterExpr: floor_day(__time) BETWEEN 1999-11-01 00:00:00.0 US/Pacific AND 1999-11-10 00:00:00.0 US/Pacific (type: boolean)
+            filterExpr: floor_day(__time) BETWEEN TIMESTAMPLOCALTZ'1999-11-01 00:00:00.0 US/Pacific' AND TIMESTAMPLOCALTZ'1999-11-10 00:00:00.0 US/Pacific' (type: boolean)
             properties:
               druid.query.json {"queryType":"select","dataSource":"wikipedia","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":["robot"],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
               druid.query.type select
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: floor_day(__time) BETWEEN 1999-11-01 00:00:00.0 US/Pacific AND 1999-11-10 00:00:00.0 US/Pacific (type: boolean)
+              predicate: floor_day(__time) BETWEEN TIMESTAMPLOCALTZ'1999-11-01 00:00:00.0 US/Pacific' AND TIMESTAMPLOCALTZ'1999-11-10 00:00:00.0 US/Pacific' (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: robot (type: string), floor_day(__time) (type: timestamp with local time zone)
@@ -817,13 +817,13 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: druid_table_1
-            filterExpr: floor_day(extract) BETWEEN 1999-11-01 00:00:00.0 US/Pacific AND 1999-11-10 00:00:00.0 US/Pacific (type: boolean)
+            filterExpr: floor_day(extract) BETWEEN TIMESTAMPLOCALTZ'1999-11-01 00:00:00.0 US/Pacific' AND TIMESTAMPLOCALTZ'1999-11-10 00:00:00.0 US/Pacific' (type: boolean)
             properties:
               druid.query.json {"queryType":"groupBy","dataSource":"wikipedia","granularity":"all","dimensions":[{"type":"extraction","dimension":"__time","outputName":"extract","extractionFn":{"type":"timeFormat","format":"yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","timeZone":"US/Pacific"}},{"type":"default","dimension":"robot"}],"limitSpec":{"type":"default"},"aggregations":[{"type":"longSum","name":"dummy_agg","fieldName":"dummy_agg"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
               druid.query.type groupBy
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: floor_day(extract) BETWEEN 1999-11-01 00:00:00.0 US/Pacific AND 1999-11-10 00:00:00.0 US/Pacific (type: boolean)
+              predicate: floor_day(extract) BETWEEN TIMESTAMPLOCALTZ'1999-11-01 00:00:00.0 US/Pacific' AND TIMESTAMPLOCALTZ'1999-11-10 00:00:00.0 US/Pacific' (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: robot (type: string), extract (type: timestamp with local time zone)

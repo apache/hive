@@ -197,7 +197,7 @@ STAGE PLANS:
               druid.query.type groupBy
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              expressions: language (type: string), ($f1 + 100.0) (type: double)
+              expressions: language (type: string), ($f1 + 100.0D) (type: double)
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Reduce Output Operator
@@ -255,7 +255,7 @@ STAGE PLANS:
               druid.query.type groupBy
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              expressions: language (type: string), (-1.0 * ((($f1 - $f2) / UDFToDouble(($f3 * 3))) + $f4)) (type: double)
+              expressions: language (type: string), (-1.0D * ((($f1 - $f2) / UDFToDouble(($f3 * 3L))) + $f4)) (type: double)
               outputColumnNames: _col0, _col1
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Reduce Output Operator
@@ -457,7 +457,7 @@ STAGE PLANS:
               druid.query.type groupBy
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Select Operator
-              expressions: language (type: string), ($f1 + 100.0) (type: double), (($f1 + 100.0) - $f2) (type: double)
+              expressions: language (type: string), ($f1 + 100.0D) (type: double), (($f1 + 100.0D) - $f2) (type: double)
               outputColumnNames: _col0, _col1, _col2
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Reduce Output Operator

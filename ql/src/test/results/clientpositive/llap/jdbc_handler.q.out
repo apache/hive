@@ -144,7 +144,7 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) - 1.0) = 1.0) (type: boolean)
+                    predicate: ((UDFToDouble(key) - 1.0D) = 1.0D) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: key (type: string)

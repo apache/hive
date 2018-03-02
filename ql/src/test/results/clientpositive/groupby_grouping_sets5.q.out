@@ -56,7 +56,7 @@ STAGE PLANS:
           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
             aggregations: count()
-            keys: _col0 (type: string), _col1 (type: string), 0 (type: bigint)
+            keys: _col0 (type: string), _col1 (type: string), 0L (type: bigint)
             mode: hash
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
@@ -145,7 +145,7 @@ STAGE PLANS:
           Statistics: Num rows: 1 Data size: 360 Basic stats: COMPLETE Column stats: NONE
           Group By Operator
             aggregations: count()
-            keys: _col0 (type: string), _col1 (type: string), 0 (type: bigint)
+            keys: _col0 (type: string), _col1 (type: string), 0L (type: bigint)
             mode: hash
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
@@ -284,7 +284,7 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations: count(VALUE._col0)
-          keys: KEY._col0 (type: string), KEY._col1 (type: string), 0 (type: bigint)
+          keys: KEY._col0 (type: string), KEY._col1 (type: string), 0L (type: bigint)
           mode: partials
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE

@@ -304,7 +304,7 @@ STAGE PLANS:
           alias: alltypes_orc
           Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: 11 (type: bigint)
+            expressions: 11L (type: bigint)
             outputColumnNames: _col0
             Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
@@ -430,7 +430,7 @@ STAGE PLANS:
           alias: alltypes_orc
           Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: 1 (type: tinyint), 20 (type: smallint)
+            expressions: 1Y (type: tinyint), 20S (type: smallint)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
@@ -451,7 +451,7 @@ STAGE PLANS:
           alias: alltypes_orc
           Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: 1970-12-31 15:59:58.174 (type: timestamp)
+            expressions: TIMESTAMP'1970-12-31 15:59:58.174' (type: timestamp)
             outputColumnNames: _col0
             Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
@@ -472,7 +472,7 @@ STAGE PLANS:
           alias: alltypes_orc
           Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: 1970-12-31 (type: date)
+            expressions: DATE'1970-12-31' (type: date)
             outputColumnNames: _col0
             Statistics: Num rows: 2 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink

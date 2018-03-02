@@ -18,7 +18,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (BLOCK__OFFSET__INSIDE__FILE < 100) (type: boolean)
+              predicate: (BLOCK__OFFSET__INSIDE__FILE < 100L) (type: boolean)
               Statistics: Num rows: 666 Data size: 7075 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), ds (type: string), hr (type: string)
@@ -350,7 +350,7 @@ STAGE PLANS:
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: ((BLOCK__OFFSET__INSIDE__FILE < 50) and key is not null) (type: boolean)
+              predicate: ((BLOCK__OFFSET__INSIDE__FILE < 50L) and key is not null) (type: boolean)
               Statistics: Num rows: 666 Data size: 7075 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string), ds (type: string), hr (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint)

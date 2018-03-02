@@ -68,7 +68,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterDoubleColEqualDoubleScalar(col 4:double, val 5.0)(children: CastStringToDouble(col 0:string) -> 4:double)
-                    predicate: (UDFToDouble(a) = 5.0) (type: boolean)
+                    predicate: (UDFToDouble(a) = 5.0D) (type: boolean)
                     Statistics: Num rows: 3 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       Group By Vectorization:
@@ -78,7 +78,7 @@ STAGE PLANS:
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
-                      keys: a (type: string), b (type: string), 0 (type: bigint)
+                      keys: a (type: string), b (type: string), 0L (type: bigint)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
@@ -211,7 +211,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterDoubleColEqualDoubleScalar(col 4:double, val 5.0)(children: CastStringToDouble(col 0:string) -> 4:double)
-                    predicate: (UDFToDouble(a) = 5.0) (type: boolean)
+                    predicate: (UDFToDouble(a) = 5.0D) (type: boolean)
                     Statistics: Num rows: 3 Data size: 1104 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       Group By Vectorization:
@@ -221,7 +221,7 @@ STAGE PLANS:
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
-                      keys: a (type: string), b (type: string), 0 (type: bigint)
+                      keys: a (type: string), b (type: string), 0L (type: bigint)
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 6 Data size: 2208 Basic stats: COMPLETE Column stats: NONE

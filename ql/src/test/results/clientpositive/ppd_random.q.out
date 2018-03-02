@@ -65,7 +65,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col2
           Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (rand() > 0.5) (type: boolean)
+            predicate: (rand() > 0.5D) (type: boolean)
             Statistics: Num rows: 60 Data size: 639 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), _col2 (type: string)
@@ -152,7 +152,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col2
           Statistics: Num rows: 182 Data size: 1939 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (rand() > 0.5) (type: boolean)
+            predicate: (rand() > 0.5D) (type: boolean)
             Statistics: Num rows: 60 Data size: 639 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: _col0 (type: string), _col2 (type: string)

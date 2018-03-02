@@ -79,7 +79,7 @@ STAGE PLANS:
             alias: s/c
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((UDFToDouble(key) < 100.0) and (UDFToDouble(key) > 80.0)) (type: boolean)
+              predicate: ((UDFToDouble(key) < 100.0D) and (UDFToDouble(key) > 80.0D)) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)

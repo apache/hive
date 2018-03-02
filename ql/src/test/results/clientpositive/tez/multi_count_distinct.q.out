@@ -51,7 +51,7 @@ Stage-0
                   SHUFFLE [RS_4]
                     PartitionCols:_col0, _col1, _col2, _col3
                     Group By Operator [GBY_3] (rows=13 width=101)
-                      Output:["_col0","_col1","_col2","_col3"],keys:_col0, _col1, _col2, 0
+                      Output:["_col0","_col1","_col2","_col3"],keys:_col0, _col1, _col2, 0L
                       Select Operator [SEL_1] (rows=9 width=93)
                         Output:["_col0","_col1","_col2"]
                         TableScan [TS_0] (rows=9 width=93)
@@ -131,7 +131,7 @@ Stage-0
                     SHUFFLE [RS_4]
                       PartitionCols:_col0, _col1, _col2, _col3
                       Group By Operator [GBY_3] (rows=22 width=101)
-                        Output:["_col0","_col1","_col2","_col3"],keys:_col0, _col1, _col2, 0
+                        Output:["_col0","_col1","_col2","_col3"],keys:_col0, _col1, _col2, 0L
                         Select Operator [SEL_1] (rows=9 width=93)
                           Output:["_col0","_col1","_col2"]
                           TableScan [TS_0] (rows=9 width=93)
