@@ -25,6 +25,7 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -1244,15 +1245,18 @@ public class Driver implements IDriver {
 
   // Make the list of transactional tables list which are getting read or written by current txn
   private List<String> getTransactionalTableList(QueryPlan plan) {
-    List<String> tableList = new ArrayList<>();
+    Set<String> tableList = new HashSet<>();
 
     for (ReadEntity input : plan.getInputs()) {
       addTableFromEntity(input, tableList);
     }
-    return tableList;
+    for (WriteEntity output : plan.getOutputs()) {
+      addTableFromEntity(output, tableList);
+    }
+    return new ArrayList<String>(tableList);
   }
 
-  private void addTableFromEntity(Entity entity, List<String> tableList) {
+  private void addTableFromEntity(Entity entity, Collection<String> tableList) {
     Table tbl;
     switch (entity.getType()) {
       case TABLE: {
@@ -1268,10 +1272,9 @@ public class Driver implements IDriver {
         return;
       }
     }
+    if (!AcidUtils.isTransactionalTable(tbl)) return;
     String fullTableName = AcidUtils.getFullTableName(tbl.getDbName(), tbl.getTableName());
-    if (AcidUtils.isTransactionalTable(tbl) && !tableList.contains(fullTableName)) {
-      tableList.add(fullTableName);
-    }
+    tableList.add(fullTableName);
   }
 
   private String getUserFromUGI() {
