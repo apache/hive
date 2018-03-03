@@ -68,8 +68,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [1, 16, 17]
-                          selectExpressions: IfExprStringScalarStringGroupColumn(col 13:boolean, val acol 15:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 13:boolean, IfExprStringScalarStringScalar(col 14:boolean, val b, val c)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 14:boolean) -> 15:string) -> 16:string, IfExprStringScalarStringGroupColumn(col 13:boolean, val acol 15:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 13:boolean, IfExprStringScalarStringScalar(col 14:boolean, val b, val c)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 14:boolean) -> 15:string) -> 17:string
+                          projectedOutputColumnNums: [1, 17, 21]
+                          selectExpressions: IfExprColumnCondExpr(col 13:boolean, col 14:stringcol 16:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 13:boolean, ConstantVectorExpression(val a) -> 14:string, IfExprStringScalarStringScalar(col 15:boolean, val b, val c)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 15:boolean) -> 16:string) -> 17:string, IfExprColumnCondExpr(col 15:boolean, col 18:stringcol 20:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 15:boolean, ConstantVectorExpression(val a) -> 18:string, IfExprStringScalarStringScalar(col 19:boolean, val b, val c)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 19:boolean) -> 20:string) -> 21:string
                       Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -96,7 +96,7 @@ STAGE PLANS:
                     includeColumns: [1]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, string, string, string]
+                    scratchColumnTypeNames: [bigint, string, bigint, string, string, string, bigint, string, string]
 
   Stage: Stage-0
     Fetch Operator
@@ -216,8 +216,8 @@ STAGE PLANS:
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [1, 17, 20]
-                          selectExpressions: IfExprStringScalarStringGroupColumn(col 13:boolean, val acol 16:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 13:boolean, IfExprColumnNull(col 14:boolean, col 15:string, null)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 14:boolean, ConstantVectorExpression(val b) -> 15:string) -> 16:string) -> 17:string, IfExprStringScalarStringGroupColumn(col 13:boolean, val acol 19:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 13:boolean, IfExprNullColumn(col 18:boolean, null, col 16)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 18:boolean, ConstantVectorExpression(val c) -> 16:string) -> 19:string) -> 20:string
+                          projectedOutputColumnNums: [1, 18, 24]
+                          selectExpressions: IfExprColumnCondExpr(col 13:boolean, col 14:stringcol 17:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 13:boolean, ConstantVectorExpression(val a) -> 14:string, IfExprColumnNull(col 15:boolean, col 16:string, null)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 15:boolean, ConstantVectorExpression(val b) -> 16:string) -> 17:string) -> 18:string, IfExprColumnCondExpr(col 19:boolean, col 20:stringcol 23:string)(children: LongColEqualLongScalar(col 1:smallint, val 418) -> 19:boolean, ConstantVectorExpression(val a) -> 20:string, IfExprNullColumn(col 21:boolean, null, col 22)(children: LongColEqualLongScalar(col 1:smallint, val 12205) -> 21:boolean, ConstantVectorExpression(val c) -> 22:string) -> 23:string) -> 24:string
                       Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -244,7 +244,7 @@ STAGE PLANS:
                     includeColumns: [1]
                     dataColumns: ctinyint:tinyint, csmallint:smallint, cint:int, cbigint:bigint, cfloat:float, cdouble:double, cstring1:string, cstring2:string, ctimestamp1:timestamp, ctimestamp2:timestamp, cboolean1:boolean, cboolean2:boolean
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, bigint, string, string, string, bigint, string, string]
+                    scratchColumnTypeNames: [bigint, string, bigint, string, string, string, bigint, string, bigint, string, string, string]
 
   Stage: Stage-0
     Fetch Operator
@@ -588,7 +588,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [6]
-                        selectExpressions: VectorUDFAdaptor(if((member = 1), (attr + 1), (attr + 2)))(children: VectorUDFAdaptor((member = 1)) -> 3:boolean, DecimalColAddDecimalScalar(col 1:decimal(10,0), val 1) -> 4:decimal(11,0), DecimalColAddDecimalScalar(col 1:decimal(10,0), val 2) -> 5:decimal(11,0)) -> 6:decimal(11,0)
+                        selectExpressions: IfExprCondExprCondExpr(col 3:boolean, col 4:decimal(11,0)col 5:decimal(11,0))(children: VectorUDFAdaptor((member = 1)) -> 3:boolean, DecimalColAddDecimalScalar(col 1:decimal(10,0), val 1) -> 4:decimal(11,0), DecimalColAddDecimalScalar(col 1:decimal(10,0), val 2) -> 5:decimal(11,0)) -> 6:decimal(11,0)
                     Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -667,8 +667,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: VectorUDFAdaptor(if((member = 1), 1, (attr + 2)))(children: VectorUDFAdaptor((member = 1)) -> 3:boolean, DecimalColAddDecimalScalar(col 1:decimal(10,0), val 2) -> 4:decimal(11,0)) -> 5:decimal(11,0)
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: IfExprColumnCondExpr(col 3:boolean, col 4:decimal(1,0)col 5:decimal(11,0))(children: VectorUDFAdaptor((member = 1)) -> 3:boolean, ConstantVectorExpression(val 1) -> 4:decimal(1,0), DecimalColAddDecimalScalar(col 1:decimal(10,0), val 2) -> 5:decimal(11,0)) -> 6:decimal(11,0)
                     Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -695,7 +695,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: member:decimal(10,0), attr:decimal(10,0)
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, decimal(11,0), decimal(11,0)]
+                    scratchColumnTypeNames: [bigint, decimal(1,0), decimal(11,0), decimal(11,0)]
 
   Stage: Stage-0
     Fetch Operator
@@ -747,8 +747,8 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: VectorUDFAdaptor(if((member = 1), (attr + 1), 2))(children: VectorUDFAdaptor((member = 1)) -> 3:boolean, DecimalColAddDecimalScalar(col 1:decimal(10,0), val 1) -> 4:decimal(11,0)) -> 5:decimal(11,0)
+                        projectedOutputColumnNums: [6]
+                        selectExpressions: IfExprCondExprColumn(col 3:boolean, col 4:decimal(11,0), col 5:decimal(1,0))(children: VectorUDFAdaptor((member = 1)) -> 3:boolean, DecimalColAddDecimalScalar(col 1:decimal(10,0), val 1) -> 4:decimal(11,0), ConstantVectorExpression(val 2) -> 5:decimal(1,0)) -> 6:decimal(11,0)
                     Statistics: Num rows: 3 Data size: 672 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -775,7 +775,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: member:decimal(10,0), attr:decimal(10,0)
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [bigint, decimal(11,0), decimal(11,0)]
+                    scratchColumnTypeNames: [bigint, decimal(11,0), decimal(1,0), decimal(11,0)]
 
   Stage: Stage-0
     Fetch Operator
@@ -846,7 +846,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [6]
-                        selectExpressions: IfExprLongColumnLongColumn(col 3:boolean, col 4:bigint, col 5:bigint)(children: LongColEqualLongScalar(col 0:bigint, val 1) -> 3:boolean, LongColAddLongScalar(col 1:bigint, val 1) -> 4:bigint, LongColAddLongScalar(col 1:bigint, val 2) -> 5:bigint) -> 6:bigint
+                        selectExpressions: IfExprCondExprCondExpr(col 3:boolean, col 4:bigintcol 5:bigint)(children: LongColEqualLongScalar(col 0:bigint, val 1) -> 3:boolean, LongColAddLongScalar(col 1:bigint, val 1) -> 4:bigint, LongColAddLongScalar(col 1:bigint, val 2) -> 5:bigint) -> 6:bigint
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -926,7 +926,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [5]
-                        selectExpressions: IfExprNullColumn(col 3:boolean, null, col 4)(children: LongColEqualLongScalar(col 0:bigint, val 1) -> 3:boolean, LongColAddLongScalar(col 1:bigint, val 2) -> 4:bigint) -> 5:bigint
+                        selectExpressions: IfExprNullCondExpr(col 3:boolean, null, col 4:bigint)(children: LongColEqualLongScalar(col 0:bigint, val 1) -> 3:boolean, LongColAddLongScalar(col 1:bigint, val 2) -> 4:bigint) -> 5:bigint
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
@@ -1006,7 +1006,7 @@ STAGE PLANS:
                         className: VectorSelectOperator
                         native: true
                         projectedOutputColumnNums: [5]
-                        selectExpressions: IfExprColumnNull(col 3:boolean, col 4:bigint, null)(children: LongColEqualLongScalar(col 0:bigint, val 1) -> 3:boolean, LongColAddLongScalar(col 1:bigint, val 1) -> 4:bigint) -> 5:bigint
+                        selectExpressions: IfExprCondExprNull(col 3:boolean, col 4:bigint, null)(children: LongColEqualLongScalar(col 0:bigint, val 1) -> 3:boolean, LongColAddLongScalar(col 1:bigint, val 1) -> 4:bigint) -> 5:bigint
                     Statistics: Num rows: 3 Data size: 48 Basic stats: COMPLETE Column stats: NONE
                     File Output Operator
                       compressed: false
