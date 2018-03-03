@@ -51,13 +51,13 @@ STAGE PLANS:
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [0, 6]
-                        selectExpressions: IfExprLongScalarLongColumn(col 1:boolean, val 1, col 5:int)(children: IfExprColumnNull(col 3:boolean, col 4:int, null)(children: NotCol(col 1:boolean) -> 3:boolean, ConstantVectorExpression(val 0) -> 4:int) -> 5:int) -> 6:int
+                        projectedOutputColumnNums: [0, 7]
+                        selectExpressions: IfExprColumnCondExpr(col 1:boolean, col 3:intcol 6:int)(children: col 1:boolean, ConstantVectorExpression(val 1) -> 3:int, IfExprColumnNull(col 4:boolean, col 5:int, null)(children: NotCol(col 1:boolean) -> 4:boolean, ConstantVectorExpression(val 0) -> 5:int) -> 6:int) -> 7:int
                     Statistics: Num rows: 5 Data size: 456 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count(_col1)
                       Group By Vectorization:
-                          aggregators: VectorUDAFCount(col 6:int) -> bigint
+                          aggregators: VectorUDAFCount(col 7:int) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
                           keyExpressions: col 0:string
