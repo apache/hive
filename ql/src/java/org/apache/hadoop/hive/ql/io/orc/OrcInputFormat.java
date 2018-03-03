@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import org.apache.hadoop.hive.ql.plan.DynamicValue.NoDynamicValuesException;
-
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 
@@ -30,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -342,10 +342,15 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     return false;
   }
 
-
+  
   public static boolean[] genIncludedColumns(TypeDescription readerSchema,
                                              List<Integer> included) {
+    return genIncludedColumns(readerSchema, included, null);
+  }
 
+  public static boolean[] genIncludedColumns(TypeDescription readerSchema,
+                                             List<Integer> included,
+                                             Integer recursiveStruct) {
     boolean[] result = new boolean[readerSchema.getMaximumId() + 1];
     if (included == null) {
       Arrays.fill(result, true);
@@ -355,13 +360,51 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     List<TypeDescription> children = readerSchema.getChildren();
     for (int columnNumber = 0; columnNumber < children.size(); ++columnNumber) {
       if (included.contains(columnNumber)) {
-        TypeDescription child = children.get(columnNumber);
-        for(int col = child.getId(); col <= child.getMaximumId(); ++col) {
-          result[col] = true;
+        addColumnToIncludes(children.get(columnNumber), result);
+      } else if (recursiveStruct != null && recursiveStruct == columnNumber) {
+        // This assumes all struct cols immediately follow struct
+        List<TypeDescription> nestedChildren = children.get(columnNumber).getChildren();
+        for (int columnNumberDelta = 0; columnNumberDelta < nestedChildren.size(); ++columnNumberDelta) {
+          int columnNumberNested = columnNumber + 1 + columnNumberDelta;
+          if (included.contains(columnNumberNested)) {
+            addColumnToIncludes(nestedChildren.get(columnNumberDelta), result);
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  // Mostly dup of genIncludedColumns
+  public static TypeDescription[] genIncludedTypes(TypeDescription fileSchema,
+      List<Integer> included, Integer recursiveStruct) {
+    TypeDescription[] result = new TypeDescription[included.size()];
+    List<TypeDescription> children = fileSchema.getChildren();
+    for (int columnNumber = 0; columnNumber < children.size(); ++columnNumber) {
+      int indexInBatchCols = included.indexOf(columnNumber);
+      if (indexInBatchCols >= 0) {
+        result[indexInBatchCols] = children.get(columnNumber);
+      } else if (recursiveStruct != null && recursiveStruct == columnNumber) {
+        // This assumes all struct cols immediately follow struct
+        List<TypeDescription> nestedChildren = children.get(columnNumber).getChildren();
+        for (int columnNumberDelta = 0; columnNumberDelta < nestedChildren.size(); ++columnNumberDelta) {
+          int columnNumberNested = columnNumber + 1 + columnNumberDelta;
+          int nestedIxInBatchCols = included.indexOf(columnNumberNested);
+          if (nestedIxInBatchCols >= 0) {
+            result[nestedIxInBatchCols] = nestedChildren.get(columnNumberDelta);
+          }
         }
       }
     }
     return result;
+  }
+
+
+  private static void addColumnToIncludes(TypeDescription child, boolean[] result) {
+    for(int col = child.getId(); col <= child.getMaximumId(); ++col) {
+      result[col] = true;
+    }
   }
 
   /**

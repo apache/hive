@@ -72,6 +72,7 @@ public class VectorizedOrcAcidRowBatchReader
   protected float progress = 0.0f;
   protected Object[] partitionValues;
   private boolean addPartitionCols = true;
+  private final boolean isFlatPayload;
   private final ValidWriteIdList validWriteIdList;
   private final DeleteEventRegistry deleteEventRegistry;
   /**
@@ -104,7 +105,8 @@ public class VectorizedOrcAcidRowBatchReader
   @VisibleForTesting
   VectorizedOrcAcidRowBatchReader(OrcSplit inputSplit, JobConf conf,
         Reporter reporter, VectorizedRowBatchCtx rbCtx) throws IOException {
-    this(conf, inputSplit, reporter, rbCtx == null ? Utilities.getVectorizedRowBatchCtx(conf) : rbCtx);
+    this(conf, inputSplit, reporter,
+        rbCtx == null ? Utilities.getVectorizedRowBatchCtx(conf) : rbCtx, false);
 
     final Reader reader = OrcInputFormat.createOrcReaderForSplit(conf, (OrcSplit) inputSplit);
     // Careful with the range here now, we do not want to read the whole base file like deltas.
@@ -143,20 +145,22 @@ public class VectorizedOrcAcidRowBatchReader
     };
     this.vectorizedRowBatchBase = ((RecordReaderImpl) innerReader).createRowBatch();
   }
+
   /**
    * LLAP IO c'tor
    */
   public VectorizedOrcAcidRowBatchReader(OrcSplit inputSplit, JobConf conf, Reporter reporter,
       org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch> baseReader,
-      VectorizedRowBatchCtx rbCtx) throws IOException {
-    this(conf, inputSplit, reporter, rbCtx);
+      VectorizedRowBatchCtx rbCtx, boolean isFlatPayload) throws IOException {
+    this(conf, inputSplit, reporter, rbCtx, isFlatPayload);
     this.baseReader = baseReader;
     this.innerReader = null;
     this.vectorizedRowBatchBase = baseReader.createValue();
   }
 
   private VectorizedOrcAcidRowBatchReader(JobConf conf, OrcSplit orcSplit, Reporter reporter,
-      VectorizedRowBatchCtx rowBatchCtx) throws IOException {
+      VectorizedRowBatchCtx rowBatchCtx, boolean isFlatPayload) throws IOException {
+    this.isFlatPayload = isFlatPayload;
     this.rbCtx = rowBatchCtx;
     final boolean isAcidRead = AcidUtils.isFullAcidScan(conf);
     final AcidUtils.AcidOperationalProperties acidOperationalProperties
@@ -206,13 +210,13 @@ public class VectorizedOrcAcidRowBatchReader
     }
     this.deleteEventRegistry = der;
     isOriginal = orcSplit.isOriginal();
-    if(isOriginal) {
+    if (isOriginal) {
       recordIdColumnVector = new StructColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
         new LongColumnVector(), new LongColumnVector(), new LongColumnVector());
-    }
-    else {
-      //will swap in the Vectors from underlying row batch
-      recordIdColumnVector = new StructColumnVector(VectorizedRowBatch.DEFAULT_SIZE, null, null, null);
+    } else {
+      // Will swap in the Vectors from underlying row batch.
+      recordIdColumnVector = new StructColumnVector(
+          VectorizedRowBatch.DEFAULT_SIZE, null, null, null);
     }
     rowIdProjected = areRowIdsProjected(rbCtx);
     rootPath = orcSplit.getRootDir();
@@ -412,73 +416,10 @@ public class VectorizedOrcAcidRowBatchReader
       selectedBitSet.set(0, vectorizedRowBatchBase.size, true);
     }
     ColumnVector[] innerRecordIdColumnVector = vectorizedRowBatchBase.cols;
-    if(isOriginal) {
-      /*
-       * If there are deletes and reading original file, we must produce synthetic ROW_IDs in order
-       * to see if any deletes apply
-       */
-      boolean needSyntheticRowId =
-          needSyntheticRowIds(true, !deleteEventRegistry.isEmpty(), rowIdProjected);
-      if(needSyntheticRowId) {
-        assert syntheticProps != null && syntheticProps.rowIdOffset >= 0 : "" + syntheticProps;
-        assert syntheticProps != null && syntheticProps.bucketProperty >= 0 : "" + syntheticProps;
-        if(innerReader == null) {
-          throw new IllegalStateException(getClass().getName() + " requires " +
-            org.apache.orc.RecordReader.class +
-            " to handle original files that require ROW__IDs: " + rootPath);
-        }
-        /**
-         * {@link RecordIdentifier#getWriteId()}
-         */
-        recordIdColumnVector.fields[0].noNulls = true;
-        recordIdColumnVector.fields[0].isRepeating = true;
-        ((LongColumnVector)recordIdColumnVector.fields[0]).vector[0] = syntheticProps.syntheticTxnId;
-        /**
-         * This is {@link RecordIdentifier#getBucketProperty()}
-         * Also see {@link BucketCodec}
-         */
-        recordIdColumnVector.fields[1].noNulls = true;
-        recordIdColumnVector.fields[1].isRepeating = true;
-        ((LongColumnVector)recordIdColumnVector.fields[1]).vector[0] = syntheticProps.bucketProperty;
-        /**
-         * {@link RecordIdentifier#getRowId()}
-         */
-        recordIdColumnVector.fields[2].noNulls = true;
-        recordIdColumnVector.fields[2].isRepeating = false;
-        long[] rowIdVector = ((LongColumnVector)recordIdColumnVector.fields[2]).vector;
-        for(int i = 0; i < vectorizedRowBatchBase.size; i++) {
-          //baseReader.getRowNumber() seems to point at the start of the batch todo: validate
-          rowIdVector[i] = syntheticProps.rowIdOffset + innerReader.getRowNumber() + i;
-        }
-        //Now populate a structure to use to apply delete events
-        innerRecordIdColumnVector = new ColumnVector[OrcRecordUpdater.FIELDS];
-        innerRecordIdColumnVector[OrcRecordUpdater.ORIGINAL_WRITEID] = recordIdColumnVector.fields[0];
-        innerRecordIdColumnVector[OrcRecordUpdater.BUCKET] = recordIdColumnVector.fields[1];
-        innerRecordIdColumnVector[OrcRecordUpdater.ROW_ID] = recordIdColumnVector.fields[2];
-        //these are insert events so (original txn == current) txn for all rows
-        innerRecordIdColumnVector[OrcRecordUpdater.CURRENT_WRITEID] = recordIdColumnVector.fields[0];
-      }
-      if(syntheticProps.syntheticTxnId > 0) {
-        //"originals" (written before table was converted to acid) is considered written by
-        // txnid:0 which is always committed so there is no need to check wrt invalid transactions
-        //But originals written by Load Data for example can be in base_x or delta_x_x so we must
-        //check if 'x' is committed or not evn if ROW_ID is not needed in the Operator pipeline.
-        if (needSyntheticRowId) {
-          findRecordsWithInvalidTransactionIds(innerRecordIdColumnVector,
-              vectorizedRowBatchBase.size, selectedBitSet);
-        } else {
-          /*since ROW_IDs are not needed we didn't create the ColumnVectors to hold them but we
-          * still have to check if the data being read is committed as far as current
-          * reader (transactions) is concerned.  Since here we are reading 'original' schema file,
-          * all rows in it have been created by the same txn, namely 'syntheticProps.syntheticTxnId'
-          */
-          if (!validWriteIdList.isWriteIdValid(syntheticProps.syntheticTxnId)) {
-            selectedBitSet.clear(0, vectorizedRowBatchBase.size);
-          }
-        }
-      }
-    }
-    else {
+    if (isOriginal) {
+      // Handle synthetic row IDs for the original files.
+      innerRecordIdColumnVector = handleOriginalFile(selectedBitSet, innerRecordIdColumnVector);
+    } else {
       // Case 1- find rows which belong to transactions that are not valid.
       findRecordsWithInvalidTransactionIds(vectorizedRowBatchBase, selectedBitSet);
     }
@@ -505,27 +446,101 @@ public class VectorizedOrcAcidRowBatchReader
       }
     }
 
-    if(isOriginal) {
-     /*Just copy the payload.  {@link recordIdColumnVector} has already been populated*/
-      System.arraycopy(vectorizedRowBatchBase.cols, 0, value.cols, 0,
-        value.getDataColumnCount());
-    }
-    else {
-      // Finally, link up the columnVector from the base VectorizedRowBatch to outgoing batch.
-      StructColumnVector payloadStruct = (StructColumnVector) vectorizedRowBatchBase.cols[OrcRecordUpdater.ROW];
-      // Transfer columnVector objects from base batch to outgoing batch.
-      System.arraycopy(payloadStruct.fields, 0, value.cols, 0, value.getDataColumnCount());
-      if(rowIdProjected) {
+    if (isOriginal) {
+     /* Just copy the payload.  {@link recordIdColumnVector} has already been populated */
+      System.arraycopy(vectorizedRowBatchBase.cols, 0, value.cols, 0, value.getDataColumnCount());
+    } else {
+      int payloadCol = OrcRecordUpdater.ROW;
+      if (isFlatPayload) {
+        // Ignore the struct column and just copy all the following data columns.
+        System.arraycopy(vectorizedRowBatchBase.cols, payloadCol + 1, value.cols, 0,
+            vectorizedRowBatchBase.cols.length - payloadCol - 1);
+      } else {
+        StructColumnVector payloadStruct =
+            (StructColumnVector) vectorizedRowBatchBase.cols[payloadCol];
+        // Transfer columnVector objects from base batch to outgoing batch.
+        System.arraycopy(payloadStruct.fields, 0, value.cols, 0, value.getDataColumnCount());
+      }
+      if (rowIdProjected) {
         recordIdColumnVector.fields[0] = vectorizedRowBatchBase.cols[OrcRecordUpdater.ORIGINAL_WRITEID];
         recordIdColumnVector.fields[1] = vectorizedRowBatchBase.cols[OrcRecordUpdater.BUCKET];
         recordIdColumnVector.fields[2] = vectorizedRowBatchBase.cols[OrcRecordUpdater.ROW_ID];
       }
     }
-    if(rowIdProjected) {
+    if (rowIdProjected) {
       rbCtx.setRecordIdColumnVector(recordIdColumnVector);
     }
     progress = baseReader.getProgress();
     return true;
+  }
+
+  private ColumnVector[] handleOriginalFile(
+      BitSet selectedBitSet, ColumnVector[] innerRecordIdColumnVector) throws IOException {
+    /*
+     * If there are deletes and reading original file, we must produce synthetic ROW_IDs in order
+     * to see if any deletes apply
+     */
+    boolean needSyntheticRowId =
+        needSyntheticRowIds(true, !deleteEventRegistry.isEmpty(), rowIdProjected);
+    if(needSyntheticRowId) {
+      assert syntheticProps != null && syntheticProps.rowIdOffset >= 0 : "" + syntheticProps;
+      assert syntheticProps != null && syntheticProps.bucketProperty >= 0 : "" + syntheticProps;
+      if(innerReader == null) {
+        throw new IllegalStateException(getClass().getName() + " requires " +
+          org.apache.orc.RecordReader.class +
+          " to handle original files that require ROW__IDs: " + rootPath);
+      }
+      /**
+       * {@link RecordIdentifier#getWriteId()}
+       */
+      recordIdColumnVector.fields[0].noNulls = true;
+      recordIdColumnVector.fields[0].isRepeating = true;
+      ((LongColumnVector)recordIdColumnVector.fields[0]).vector[0] = syntheticProps.syntheticTxnId;
+      /**
+       * This is {@link RecordIdentifier#getBucketProperty()}
+       * Also see {@link BucketCodec}
+       */
+      recordIdColumnVector.fields[1].noNulls = true;
+      recordIdColumnVector.fields[1].isRepeating = true;
+      ((LongColumnVector)recordIdColumnVector.fields[1]).vector[0] = syntheticProps.bucketProperty;
+      /**
+       * {@link RecordIdentifier#getRowId()}
+       */
+      recordIdColumnVector.fields[2].noNulls = true;
+      recordIdColumnVector.fields[2].isRepeating = false;
+      long[] rowIdVector = ((LongColumnVector)recordIdColumnVector.fields[2]).vector;
+      for(int i = 0; i < vectorizedRowBatchBase.size; i++) {
+        //baseReader.getRowNumber() seems to point at the start of the batch todo: validate
+        rowIdVector[i] = syntheticProps.rowIdOffset + innerReader.getRowNumber() + i;
+      }
+      //Now populate a structure to use to apply delete events
+      innerRecordIdColumnVector = new ColumnVector[OrcRecordUpdater.FIELDS];
+      innerRecordIdColumnVector[OrcRecordUpdater.ORIGINAL_WRITEID] = recordIdColumnVector.fields[0];
+      innerRecordIdColumnVector[OrcRecordUpdater.BUCKET] = recordIdColumnVector.fields[1];
+      innerRecordIdColumnVector[OrcRecordUpdater.ROW_ID] = recordIdColumnVector.fields[2];
+      //these are insert events so (original txn == current) txn for all rows
+      innerRecordIdColumnVector[OrcRecordUpdater.CURRENT_WRITEID] = recordIdColumnVector.fields[0];
+    }
+    if(syntheticProps.syntheticTxnId > 0) {
+      //"originals" (written before table was converted to acid) is considered written by
+      // txnid:0 which is always committed so there is no need to check wrt invalid transactions
+      //But originals written by Load Data for example can be in base_x or delta_x_x so we must
+      //check if 'x' is committed or not evn if ROW_ID is not needed in the Operator pipeline.
+      if (needSyntheticRowId) {
+        findRecordsWithInvalidTransactionIds(innerRecordIdColumnVector,
+            vectorizedRowBatchBase.size, selectedBitSet);
+      } else {
+        /*since ROW_IDs are not needed we didn't create the ColumnVectors to hold them but we
+        * still have to check if the data being read is committed as far as current
+        * reader (transactions) is concerned.  Since here we are reading 'original' schema file,
+        * all rows in it have been created by the same txn, namely 'syntheticProps.syntheticTxnId'
+        */
+        if (!validWriteIdList.isWriteIdValid(syntheticProps.syntheticTxnId)) {
+          selectedBitSet.clear(0, vectorizedRowBatchBase.size);
+        }
+      }
+    }
+    return innerRecordIdColumnVector;
   }
 
   private void findRecordsWithInvalidTransactionIds(VectorizedRowBatch batch, BitSet selectedBitSet) {

@@ -948,7 +948,8 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
 
     OrcEncodedColumnBatch ecb = ECB_POOL.take();
     ecb.init(fileKey, metadata.getStripeIx(), OrcEncodedColumnBatch.ALL_RGS, writerIncludes.length);
-    for (int colIx = 0; colIx < writerIncludes.length; ++colIx) {
+    // Skip the 0th column that is the root structure.
+    for (int colIx = 1; colIx < writerIncludes.length; ++colIx) {
       if (!writerIncludes[colIx]) continue;
       ecb.initColumn(colIx, OrcEncodedColumnBatch.MAX_DATA_STREAMS);
       if (!hasAllData && splitIncludes[colIx]) {
@@ -1035,18 +1036,15 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     ecb.init(fileKey, metadata.getStripeIx(), OrcEncodedColumnBatch.ALL_RGS, writerIncludes.length);
     int vectorsIx = 0;
     for (int colIx = 0; colIx < writerIncludes.length; ++colIx) {
+      // Skip the 0-th column, since it won't have a vector after reading the text source.
+      if (colIx == 0) continue;
       if (!writerIncludes[colIx]) continue;
       if (splitIncludes[colIx]) {
-        // Skip the 0-th column, since it won't have a vector after reading the text source.
-        if (colIx != 0 ) {
-          List<ColumnVector> vectors = diskData.getVectors(vectorsIx++);
-          if (LlapIoImpl.LOG.isTraceEnabled()) {
-            LlapIoImpl.LOG.trace("Processing vectors for column " + colIx + ": " + vectors);
-          }
-          ecb.initColumnWithVectors(colIx, vectors);
-        } else {
-          ecb.initColumn(0, OrcEncodedColumnBatch.MAX_DATA_STREAMS);
+        List<ColumnVector> vectors = diskData.getVectors(vectorsIx++);
+        if (LlapIoImpl.LOG.isTraceEnabled()) {
+          LlapIoImpl.LOG.trace("Processing vectors for column " + colIx + ": " + vectors);
         }
+        ecb.initColumnWithVectors(colIx, vectors);
       } else {
         ecb.initColumn(colIx, OrcEncodedColumnBatch.MAX_DATA_STREAMS);
         processColumnCacheData(cacheBuffers, ecb, colIx);

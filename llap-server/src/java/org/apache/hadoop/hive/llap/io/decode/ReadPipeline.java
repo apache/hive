@@ -27,5 +27,4 @@ import org.apache.orc.impl.SchemaEvolution;
 public interface ReadPipeline extends ConsumerFeedback<ColumnVectorBatch> {
   public Callable<Void> getReadCallable();
   SchemaEvolution getSchemaEvolution();
-  boolean[] getIncludedColumns();
 }

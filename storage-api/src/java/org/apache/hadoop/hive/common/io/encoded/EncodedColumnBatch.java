@@ -97,7 +97,10 @@ public class EncodedColumnBatch<BatchKey> {
    * For each column, streams are indexed by kind (for ORC), with missing elements being null.
    */
   protected ColumnStreamData[][] columnData;
-  /** Indicates which columns have data. Correspond to columnData elements. */
+  /**
+   * Indicates which columns have data. This is indexed by the column ID in ORC file schema;
+   * the indices that are not included will not have data. Correspond to columnData elements.
+   */
   protected boolean[] hasData;
 
   public void reset() {
@@ -143,9 +146,9 @@ public class EncodedColumnBatch<BatchKey> {
   protected void resetColumnArrays(int columnCount) {
     if (hasData != null && columnCount == hasData.length) {
       Arrays.fill(hasData, false);
-      return;
+    } else {
+      hasData = new boolean[columnCount];
     }
-    hasData = new boolean[columnCount];
     ColumnStreamData[][] columnData = new ColumnStreamData[columnCount][];
     if (this.columnData != null) {
       for (int i = 0; i < Math.min(columnData.length, this.columnData.length); ++i) {

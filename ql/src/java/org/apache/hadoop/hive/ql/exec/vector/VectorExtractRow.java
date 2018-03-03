@@ -65,6 +65,7 @@ import org.apache.hadoop.io.Writable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 
 /**
@@ -112,7 +113,6 @@ public class VectorExtractRow {
    */
   public void init(StructObjectInspector structObjectInspector, List<Integer> projectedColumns)
       throws HiveException {
-
     List<? extends StructField> fields = structObjectInspector.getAllStructFieldRefs();
     final int count = fields.size();
     allocateArrays(count);
@@ -125,7 +125,6 @@ public class VectorExtractRow {
       ObjectInspector fieldInspector = field.getFieldObjectInspector();
       TypeInfo typeInfo =
           TypeInfoUtils.getTypeInfoFromTypeString(fieldInspector.getTypeName());
-
       initEntry(i, projectionColumnNum, typeInfo);
     }
   }
@@ -148,7 +147,8 @@ public class VectorExtractRow {
    * Initialize using data type names.
    * No projection -- the column range 0 .. types.size()-1
    */
-  public void init(List<String> typeNames) throws HiveException {
+  @VisibleForTesting
+  void init(List<String> typeNames) throws HiveException {
 
     final int count = typeNames.size();
     allocateArrays(count);

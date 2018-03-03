@@ -34,14 +34,14 @@ public interface EncodedReader {
    * @param index Externally provided metadata (from metadata reader or external cache).
    * @param encodings Externally provided metadata (from metadata reader or external cache).
    * @param streams Externally provided metadata (from metadata reader or external cache).
-   * @param included The array of booleans indicating whether each column should be read.
+   * @param physicalFileIncludes The array of booleans indicating whether each column should be read.
    * @param colRgs Arrays of rgs, per column set to true in included, that are to be read.
    *               null in each respective position means all rgs for this column need to be read.
    * @param consumer The sink for data that has been read.
    */
   void readEncodedColumns(int stripeIx, StripeInformation stripe,
       OrcProto.RowIndex[] index, List<OrcProto.ColumnEncoding> encodings,
-      List<OrcProto.Stream> streams, boolean[] included, boolean[] rgs,
+      List<OrcProto.Stream> streams, boolean[] physicalFileIncludes, boolean[] rgs,
       Consumer<OrcEncodedColumnBatch> consumer) throws IOException;
 
   /**
