@@ -764,8 +764,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [0, 1, 2, 8]
-                      selectExpressions: IfExprStringScalarStringGroupColumn(col 3:boolean, val 0col 7:string)(children: LongColEqualLongScalar(col 2:bigint, val 0) -> 3:boolean, IfExprStringScalarStringGroupColumn(col 4:boolean, val 1col 8:string)(children: LongColEqualLongScalar(col 2:bigint, val 1) -> 4:boolean, IfExprStringScalarStringGroupColumn(col 5:boolean, val 2col 7:string)(children: LongColEqualLongScalar(col 2:bigint, val 2) -> 5:boolean, IfExprStringScalarStringScalar(col 6:boolean, val 3, val nothing)(children: LongColEqualLongScalar(col 2:bigint, val 3) -> 6:boolean) -> 7:string) -> 8:string) -> 7:string) -> 8:string
+                      projectedOutputColumnNums: [0, 1, 2, 13]
+                      selectExpressions: IfExprColumnCondExpr(col 3:boolean, col 4:stringcol 12:string)(children: LongColEqualLongScalar(col 2:bigint, val 0) -> 3:boolean, ConstantVectorExpression(val 0) -> 4:string, IfExprColumnCondExpr(col 5:boolean, col 6:stringcol 11:string)(children: LongColEqualLongScalar(col 2:bigint, val 1) -> 5:boolean, ConstantVectorExpression(val 1) -> 6:string, IfExprColumnCondExpr(col 7:boolean, col 8:stringcol 10:string)(children: LongColEqualLongScalar(col 2:bigint, val 2) -> 7:boolean, ConstantVectorExpression(val 2) -> 8:string, IfExprStringScalarStringScalar(col 9:boolean, val 3, val nothing)(children: LongColEqualLongScalar(col 2:bigint, val 3) -> 9:boolean) -> 10:string) -> 11:string) -> 12:string) -> 13:string
                   Statistics: Num rows: 12 Data size: 4416 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false
@@ -924,8 +924,8 @@ STAGE PLANS:
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [0, 1, 2, 8]
-                      selectExpressions: IfExprStringScalarStringGroupColumn(col 3:boolean, val 0col 7:string)(children: LongColEqualLongScalar(col 2:bigint, val 0) -> 3:boolean, IfExprStringScalarStringGroupColumn(col 4:boolean, val 1col 8:string)(children: LongColEqualLongScalar(col 2:bigint, val 1) -> 4:boolean, IfExprStringScalarStringGroupColumn(col 5:boolean, val 2col 7:string)(children: LongColEqualLongScalar(col 2:bigint, val 2) -> 5:boolean, IfExprStringScalarStringScalar(col 6:boolean, val 3, val nothing)(children: LongColEqualLongScalar(col 2:bigint, val 3) -> 6:boolean) -> 7:string) -> 8:string) -> 7:string) -> 8:string
+                      projectedOutputColumnNums: [0, 1, 2, 13]
+                      selectExpressions: IfExprColumnCondExpr(col 3:boolean, col 4:stringcol 12:string)(children: LongColEqualLongScalar(col 2:bigint, val 0) -> 3:boolean, ConstantVectorExpression(val 0) -> 4:string, IfExprColumnCondExpr(col 5:boolean, col 6:stringcol 11:string)(children: LongColEqualLongScalar(col 2:bigint, val 1) -> 5:boolean, ConstantVectorExpression(val 1) -> 6:string, IfExprColumnCondExpr(col 7:boolean, col 8:stringcol 10:string)(children: LongColEqualLongScalar(col 2:bigint, val 2) -> 7:boolean, ConstantVectorExpression(val 2) -> 8:string, IfExprStringScalarStringScalar(col 9:boolean, val 3, val nothing)(children: LongColEqualLongScalar(col 2:bigint, val 3) -> 9:boolean) -> 10:string) -> 11:string) -> 12:string) -> 13:string
                   Statistics: Num rows: 12 Data size: 4416 Basic stats: COMPLETE Column stats: NONE
                   File Output Operator
                     compressed: false

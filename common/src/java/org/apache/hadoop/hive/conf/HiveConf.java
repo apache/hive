@@ -2978,7 +2978,12 @@ public class HiveConf extends Configuration {
         "Which vectorized input format support features are enabled for vectorization.\n" +
         "That is, if a VectorizedInputFormat input format does support \"decimal_64\" for example\n" +
         "this variable must enable that to be used in vectorization"),
-
+    HIVE_VECTORIZED_IF_EXPR_MODE("hive.vectorized.if.expr.mode", "better", new StringSet("adaptor", "good", "better"),
+        "Specifies the extent to which SQL IF statements will be vectorized.\n" +
+        "0. adaptor: only use the VectorUDFAdaptor to vectorize IF statements\n" +
+        "1. good   : use regular vectorized IF expression classes that get good performance\n" +
+        "2. better : use vectorized IF expression classes that conditionally execute THEN/ELSE\n" +
+        "            expressions for better performance.\n"),
     HIVE_TEST_VECTORIZATION_ENABLED_OVERRIDE("hive.test.vectorized.execution.enabled.override",
         "none", new StringSet("none", "enable", "disable"),
         "internal use only, used to override the hive.vectorized.execution.enabled setting and\n" +

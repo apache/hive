@@ -133,6 +133,21 @@ public class VectorizationContext {
   }
 
   private HiveVectorAdaptorUsageMode hiveVectorAdaptorUsageMode;
+
+  public enum HiveVectorIfStmtMode {
+    ADAPTOR,
+    GOOD,
+    BETTER;
+
+    public static HiveVectorIfStmtMode getHiveConfValue(HiveConf hiveConf) {
+      String string = HiveConf.getVar(hiveConf,
+          HiveConf.ConfVars.HIVE_VECTORIZED_IF_EXPR_MODE);
+      return valueOf(string.toUpperCase());
+    }
+  }
+
+  private HiveVectorIfStmtMode hiveVectorIfStmtMode;
+
   //when set to true use the overflow checked vector expressions
   private boolean useCheckedVectorExpressions;
 
@@ -141,6 +156,7 @@ public class VectorizationContext {
 
   private void setHiveConfVars(HiveConf hiveConf) {
     hiveVectorAdaptorUsageMode = HiveVectorAdaptorUsageMode.getHiveConfValue(hiveConf);
+    hiveVectorIfStmtMode = HiveVectorIfStmtMode.getHiveConfValue(hiveConf);
     this.reuseScratchColumns =
         HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_VECTORIZATION_TESTING_REUSE_SCRATCH_COLUMNS);
     this.ocm.setReuseColumns(reuseScratchColumns);
@@ -150,6 +166,7 @@ public class VectorizationContext {
 
   private void copyHiveConfVars(VectorizationContext vContextEnvironment) {
     hiveVectorAdaptorUsageMode = vContextEnvironment.hiveVectorAdaptorUsageMode;
+    hiveVectorIfStmtMode = vContextEnvironment.hiveVectorIfStmtMode;
     this.reuseScratchColumns = vContextEnvironment.reuseScratchColumns;
     this.ocm.setReuseColumns(reuseScratchColumns);
   }
@@ -765,7 +782,7 @@ public class VectorizationContext {
       // and that would require converting their data types to evaluate the udf.
       // For example decimal column added to an integer column would require integer column to be
       // cast to decimal.
-	  // Note: this is a no-op for custom UDFs
+      // Note: this is a no-op for custom UDFs
       List<ExprNodeDesc> childExpressions = getChildExpressionsWithImplicitCast(expr.getGenericUDF(),
           exprDesc.getChildren(), exprDesc.getTypeInfo());
       ve = getGenericUdfVectorExpression(expr.getGenericUDF(),
@@ -1978,6 +1995,8 @@ public class VectorizationContext {
       ve = getBetweenFilterExpression(childExpr, mode, returnType);
     } else if (udf instanceof GenericUDFIn) {
       ve = getInExpression(childExpr, mode, returnType);
+    } else if (udf instanceof GenericUDFIf) {
+      ve = getIfExpression((GenericUDFIf) udf, childExpr, mode, returnType);
     } else if (udf instanceof GenericUDFWhen) {
       ve = getWhenExpression(childExpr, mode, returnType);
     } else if (udf instanceof GenericUDFOPPositive) {
@@ -2911,13 +2930,206 @@ public class VectorizationContext {
     return createVectorExpression(cl, childrenAfterNot, VectorExpressionDescriptor.Mode.PROJECTION, returnType);
   }
 
+  private boolean isCondExpr(ExprNodeDesc exprNodeDesc) {
+    if (exprNodeDesc instanceof ExprNodeConstantDesc ||
+        exprNodeDesc instanceof ExprNodeColumnDesc) {
+      return false;
+    }
+    return true;   // Requires conditional evaluation for good performance.
+  }
+
   private boolean isNullConst(ExprNodeDesc exprNodeDesc) {
     //null constant could be typed so we need to check the value
     if (exprNodeDesc instanceof ExprNodeConstantDesc &&
         ((ExprNodeConstantDesc) exprNodeDesc).getValue() == null) {
-        return true;
+      return true;
     }
     return false;
+  }
+
+  private VectorExpression getIfExpression(GenericUDFIf genericUDFIf, List<ExprNodeDesc> childExpr,
+      VectorExpressionDescriptor.Mode mode, TypeInfo returnType) throws HiveException {
+
+    if (mode != VectorExpressionDescriptor.Mode.PROJECTION) {
+      return null;
+    }
+
+    // Add HiveConf variable with 3 modes:
+    //   1) adaptor: Always use VectorUDFAdaptor for IF statements.
+    //
+    //   2) good: Vectorize but don't optimize conditional expressions
+    //
+    //   3) better: Vectorize and Optimize conditional expressions.
+    //
+
+    if (hiveVectorIfStmtMode == HiveVectorIfStmtMode.ADAPTOR) {
+      return null;
+    }
+
+    // Align the THEN/ELSE types.
+    childExpr =
+        getChildExpressionsWithImplicitCast(
+            genericUDFIf,
+            childExpr,
+            returnType);
+
+    final ExprNodeDesc ifDesc = childExpr.get(0);
+    final ExprNodeDesc thenDesc = childExpr.get(1);
+    final ExprNodeDesc elseDesc = childExpr.get(2);
+
+    final boolean isThenNullConst = isNullConst(thenDesc);
+    final boolean isElseNullConst = isNullConst(elseDesc);
+    if (isThenNullConst && isElseNullConst) {
+
+      // THEN NULL ELSE NULL: An unusual "case", but possible.
+      final int outputColumnNum = ocm.allocateOutputColumn(returnType);
+
+      final VectorExpression resultExpr =
+          new IfExprNullNull(
+            outputColumnNum);
+
+      resultExpr.setOutputTypeInfo(returnType);
+      resultExpr.setOutputDataTypePhysicalVariation(DataTypePhysicalVariation.NONE);
+
+      return resultExpr;
+    }
+
+    final boolean isThenCondExpr = isCondExpr(thenDesc);
+    final boolean isElseCondExpr = isCondExpr(elseDesc);
+
+    final boolean isOnlyGood = (hiveVectorIfStmtMode == HiveVectorIfStmtMode.GOOD);
+
+    if (isThenNullConst) {
+      final VectorExpression whenExpr = getVectorExpression(ifDesc, mode);
+      final VectorExpression elseExpr = getVectorExpression(elseDesc, mode);
+
+      final int outputColumnNum = ocm.allocateOutputColumn(returnType);
+
+      final VectorExpression resultExpr;
+      if (!isElseCondExpr || isOnlyGood) {
+        resultExpr =
+            new IfExprNullColumn(
+              whenExpr.getOutputColumnNum(),
+              elseExpr.getOutputColumnNum(),
+              outputColumnNum);
+      } else {
+        resultExpr =
+            new IfExprNullCondExpr(
+              whenExpr.getOutputColumnNum(),
+              elseExpr.getOutputColumnNum(),
+              outputColumnNum);
+      }
+
+      resultExpr.setChildExpressions(new VectorExpression[] {whenExpr, elseExpr});
+
+      resultExpr.setInputTypeInfos(
+          whenExpr.getOutputTypeInfo(),
+          TypeInfoFactory.voidTypeInfo,
+          elseExpr.getOutputTypeInfo());
+      resultExpr.setInputDataTypePhysicalVariations(
+          whenExpr.getOutputDataTypePhysicalVariation(),
+          DataTypePhysicalVariation.NONE,
+          elseExpr.getOutputDataTypePhysicalVariation());
+
+      resultExpr.setOutputTypeInfo(returnType);
+      resultExpr.setOutputDataTypePhysicalVariation(DataTypePhysicalVariation.NONE);
+
+      return resultExpr;
+    }
+
+    if (isElseNullConst) {
+      final VectorExpression whenExpr = getVectorExpression(ifDesc, mode);
+      final VectorExpression thenExpr = getVectorExpression(thenDesc, mode);
+
+      final int outputColumnNum = ocm.allocateOutputColumn(returnType);
+
+      final VectorExpression resultExpr;
+      if (!isThenCondExpr || isOnlyGood) {
+        resultExpr =
+            new IfExprColumnNull(
+              whenExpr.getOutputColumnNum(),
+              thenExpr.getOutputColumnNum(),
+              outputColumnNum);
+      } else {
+        resultExpr =
+            new IfExprCondExprNull(
+              whenExpr.getOutputColumnNum(),
+              thenExpr.getOutputColumnNum(),
+              outputColumnNum);
+      }
+
+      resultExpr.setChildExpressions(new VectorExpression[] {whenExpr, thenExpr});
+
+      resultExpr.setInputTypeInfos(
+          whenExpr.getOutputTypeInfo(),
+          thenExpr.getOutputTypeInfo(),
+          TypeInfoFactory.voidTypeInfo);
+      resultExpr.setInputDataTypePhysicalVariations(
+          whenExpr.getOutputDataTypePhysicalVariation(),
+          thenExpr.getOutputDataTypePhysicalVariation(),
+          DataTypePhysicalVariation.NONE);
+
+      resultExpr.setOutputTypeInfo(returnType);
+      resultExpr.setOutputDataTypePhysicalVariation(DataTypePhysicalVariation.NONE);
+
+      return resultExpr;
+    }
+
+    if ((isThenCondExpr || isElseCondExpr) && !isOnlyGood) {
+      final VectorExpression whenExpr = getVectorExpression(ifDesc, mode);
+      final VectorExpression thenExpr = getVectorExpression(thenDesc, mode);
+      final VectorExpression elseExpr = getVectorExpression(elseDesc, mode);
+
+      // Only proceed if the THEN/ELSE types were aligned.
+      if (thenExpr.getOutputColumnVectorType() == elseExpr.getOutputColumnVectorType()) {
+
+        final int outputColumnNum = ocm.allocateOutputColumn(returnType);
+
+        final VectorExpression resultExpr;
+        if (isThenCondExpr && isElseCondExpr) {
+          resultExpr =
+              new IfExprCondExprCondExpr(
+                whenExpr.getOutputColumnNum(),
+                thenExpr.getOutputColumnNum(),
+                elseExpr.getOutputColumnNum(),
+                outputColumnNum);
+        } else if (isThenCondExpr) {
+          resultExpr =
+              new IfExprCondExprColumn(
+                whenExpr.getOutputColumnNum(),
+                thenExpr.getOutputColumnNum(),
+                elseExpr.getOutputColumnNum(),
+                outputColumnNum);
+        } else {
+          resultExpr =
+              new IfExprColumnCondExpr(
+                whenExpr.getOutputColumnNum(),
+                thenExpr.getOutputColumnNum(),
+                elseExpr.getOutputColumnNum(),
+                outputColumnNum);
+        }
+
+        resultExpr.setChildExpressions(new VectorExpression[] {whenExpr, thenExpr, elseExpr});
+
+        resultExpr.setInputTypeInfos(
+            whenExpr.getOutputTypeInfo(),
+            thenExpr.getOutputTypeInfo(),
+            elseExpr.getOutputTypeInfo());
+        resultExpr.setInputDataTypePhysicalVariations(
+            whenExpr.getOutputDataTypePhysicalVariation(),
+            thenExpr.getOutputDataTypePhysicalVariation(),
+            elseExpr.getOutputDataTypePhysicalVariation());
+
+        resultExpr.setOutputTypeInfo(returnType);
+        resultExpr.setOutputDataTypePhysicalVariation(DataTypePhysicalVariation.NONE);
+
+        return resultExpr;
+      }
+    }
+
+    Class<?> udfClass = genericUDFIf.getClass();
+    return getVectorExpressionForUdf(
+        genericUDFIf, udfClass, childExpr, mode, returnType);
   }
 
   private VectorExpression getWhenExpression(List<ExprNodeDesc> childExpr,
@@ -2942,81 +3154,11 @@ public class VectorizationContext {
           childExpr.subList(2, childExpr.size()));
     }
 
-    if (isNullConst(thenDesc) && isNullConst(elseDesc)) {
-
-      // THEN NULL ELSE NULL: An unusual "case", but possible.
-      final int outputColumnNum = ocm.allocateOutputColumn(returnType);
-
-      final VectorExpression resultExpr =
-          new IfExprNullNull(
-            outputColumnNum);
-
-      resultExpr.setOutputTypeInfo(returnType);
-      resultExpr.setOutputDataTypePhysicalVariation(DataTypePhysicalVariation.NONE);
-
-      return resultExpr;
-    }
-    if (isNullConst(thenDesc)) {
-      final VectorExpression whenExpr = getVectorExpression(whenDesc, mode);
-      final VectorExpression elseExpr = getVectorExpression(elseDesc, mode);
-
-      final int outputColumnNum = ocm.allocateOutputColumn(returnType);
-
-      final VectorExpression resultExpr =
-          new IfExprNullColumn(
-            whenExpr.getOutputColumnNum(),
-            elseExpr.getOutputColumnNum(),
-            outputColumnNum);
-
-      resultExpr.setChildExpressions(new VectorExpression[] {whenExpr, elseExpr});
-
-      resultExpr.setInputTypeInfos(
-          whenExpr.getOutputTypeInfo(),
-          TypeInfoFactory.voidTypeInfo,
-          elseExpr.getOutputTypeInfo());
-      resultExpr.setInputDataTypePhysicalVariations(
-          whenExpr.getOutputDataTypePhysicalVariation(),
-          DataTypePhysicalVariation.NONE,
-          elseExpr.getOutputDataTypePhysicalVariation());
-
-      resultExpr.setOutputTypeInfo(returnType);
-      resultExpr.setOutputDataTypePhysicalVariation(DataTypePhysicalVariation.NONE);
-
-      return resultExpr;
-    }
-    if (isNullConst(elseDesc)) {
-      final VectorExpression whenExpr = getVectorExpression(whenDesc, mode);
-      final VectorExpression thenExpr = getVectorExpression(thenDesc, mode);
-
-      final int outputColumnNum = ocm.allocateOutputColumn(returnType);
-
-      final VectorExpression resultExpr =
-          new IfExprColumnNull(
-            whenExpr.getOutputColumnNum(),
-            thenExpr.getOutputColumnNum(),
-            outputColumnNum);
-
-      resultExpr.setChildExpressions(new VectorExpression[] {whenExpr, thenExpr});
-
-      resultExpr.setInputTypeInfos(
-          whenExpr.getOutputTypeInfo(),
-          thenExpr.getOutputTypeInfo(),
-          TypeInfoFactory.voidTypeInfo);
-      resultExpr.setInputDataTypePhysicalVariations(
-          whenExpr.getOutputDataTypePhysicalVariation(),
-          thenExpr.getOutputDataTypePhysicalVariation(),
-          DataTypePhysicalVariation.NONE);
-
-      resultExpr.setOutputTypeInfo(returnType);
-      resultExpr.setOutputDataTypePhysicalVariation(DataTypePhysicalVariation.NONE);
-
-      return resultExpr;
-    }
+    // Transform CASE WHEN with just a THEN/ELSE into an IF statement.
     final GenericUDFIf genericUDFIf = new GenericUDFIf();
-    final List<ExprNodeDesc> ifChildExpr = Arrays.<ExprNodeDesc>asList(whenDesc, thenDesc, elseDesc);
-    final ExprNodeGenericFuncDesc exprNodeDesc =
-        new ExprNodeGenericFuncDesc(returnType, genericUDFIf, "if", ifChildExpr);
-    return getVectorExpression(exprNodeDesc, mode);
+    final List<ExprNodeDesc> ifChildExpr =
+        Arrays.<ExprNodeDesc>asList(whenDesc, thenDesc, elseDesc);
+    return getIfExpression(genericUDFIf, ifChildExpr, mode, returnType);
   }
 
   /*
