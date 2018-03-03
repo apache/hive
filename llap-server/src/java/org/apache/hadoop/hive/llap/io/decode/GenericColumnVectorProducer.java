@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.ColumnVectorBatch;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
+import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
 import org.apache.hadoop.hive.llap.io.encoded.SerDeEncodedDataReader;
 import org.apache.hadoop.hive.llap.io.metadata.ConsumerFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.ConsumerStripeMetadata;
@@ -81,13 +82,12 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
 
   @Override
   public ReadPipeline createReadPipeline(Consumer<ColumnVectorBatch> consumer, FileSplit split,
-      List<Integer> columnIds, SearchArgument sarg, String[] columnNames,
-      QueryFragmentCounters counters, TypeDescription schema, InputFormat<?, ?> sourceInputFormat,
-      Deserializer sourceSerDe, Reporter reporter, JobConf job, Map<Path, PartitionDesc> parts)
-          throws IOException {
+      Includes includes, SearchArgument sarg, QueryFragmentCounters counters,
+      SchemaEvolutionFactory sef, InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
+      Reporter reporter, JobConf job, Map<Path, PartitionDesc> parts) throws IOException {
     cacheMetrics.incrCacheReadRequests();
     OrcEncodedDataConsumer edc = new OrcEncodedDataConsumer(
-        consumer, columnIds.size(), false, counters, ioMetrics);
+        consumer, includes, false, counters, ioMetrics);
     SerDeFileMetadata fm;
     try {
       fm = new SerDeFileMetadata(sourceSerDe);
@@ -97,13 +97,10 @@ public class GenericColumnVectorProducer implements ColumnVectorProducer {
     edc.setFileMetadata(fm);
     // Note that we pass job config to the record reader, but use global config for LLAP IO.
     // TODO: add tracing to serde reader
-    SerDeEncodedDataReader reader = new SerDeEncodedDataReader(cache,
-        bufferManager, conf, split, columnIds, edc, job, reporter, sourceInputFormat,
+    SerDeEncodedDataReader reader = new SerDeEncodedDataReader(cache, bufferManager, conf,
+        split, includes.getPhysicalColumnIds(), edc, job, reporter, sourceInputFormat,
         sourceSerDe, counters, fm.getSchema(), parts);
     edc.init(reader, reader, new IoTrace(0, false));
-    if (LlapIoImpl.LOG.isDebugEnabled()) {
-      LlapIoImpl.LOG.debug("Ignoring schema: " + schema);
-    }
     return edc;
   }
 

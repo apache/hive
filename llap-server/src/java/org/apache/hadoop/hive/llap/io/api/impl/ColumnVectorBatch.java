@@ -43,4 +43,46 @@ public class ColumnVectorBatch {
     other[otherIx] = cols[ix];
     cols[ix] = old;
   }
+
+  
+  @Override
+  public String toString() {
+    if (size == 0) {
+      return "";
+    }
+    StringBuilder b = new StringBuilder();
+    b.append("Column vector types: ");
+    for (int k = 0; k < cols.length; k++) {
+      ColumnVector cv = cols[k];
+      b.append(k);
+      b.append(":");
+      b.append(cv == null ? "null" : cv.getClass().getSimpleName().replace("ColumnVector", ""));
+    }
+    b.append('\n');
+
+
+    for (int i = 0; i < size; i++) {
+      b.append('[');
+      for (int k = 0; k < cols.length; k++) {
+        ColumnVector cv = cols[k];
+        if (k > 0) {
+          b.append(", ");
+        }
+        if (cv == null) continue;
+        if (cv != null) {
+          try {
+            cv.stringifyValue(b, i);
+          } catch (Exception ex) {
+            b.append("invalid");
+          }
+        }
+      }
+      b.append(']');
+      if (i < size - 1) {
+        b.append('\n');
+      }
+    }
+
+    return b.toString();
+  }
 }

@@ -34,14 +34,25 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.orc.TypeDescription;
+import org.apache.orc.impl.SchemaEvolution;
 
 /**
  * Entry point used by LlapInputFormat to create read pipeline to get data.
  */
 public interface ColumnVectorProducer {
+  public interface SchemaEvolutionFactory {
+    SchemaEvolution createSchemaEvolution(TypeDescription fileSchema);
+  }
+
+  public interface Includes {
+    boolean[] generateFileIncludes(TypeDescription fileSchema);
+    List<Integer> getPhysicalColumnIds();
+    List<Integer> getReaderLogicalColumnIds();
+    TypeDescription[] getBatchReaderTypes(TypeDescription fileSchema);
+  }
+
   ReadPipeline createReadPipeline(Consumer<ColumnVectorBatch> consumer, FileSplit split,
-      List<Integer> columnIds, SearchArgument sarg, String[] columnNames,
-      QueryFragmentCounters counters, TypeDescription readerSchema,
-      InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe, Reporter reporter,
-      JobConf job, Map<Path, PartitionDesc> parts) throws IOException;
+      Includes includes, SearchArgument sarg, QueryFragmentCounters counters,
+      SchemaEvolutionFactory sef, InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe,
+      Reporter reporter, JobConf job, Map<Path, PartitionDesc> parts) throws IOException;
 }

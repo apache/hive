@@ -67,6 +67,8 @@ import org.apache.hadoop.hive.llap.cache.LowLevelCache;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
+import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.Includes;
+import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer.SchemaEvolutionFactory;
 import org.apache.hadoop.hive.llap.io.decode.OrcEncodedDataConsumer;
 import org.apache.hadoop.hive.llap.io.metadata.OrcFileMetadata;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
@@ -79,6 +81,7 @@ import org.apache.orc.CompressionKind;
 import org.apache.orc.DataReader;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.ReaderOptions;
+import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.orc.OrcConf;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
@@ -154,9 +157,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private final BufferUsageManager bufferManager;
   private final Configuration daemonConf, jobConf;
   private final FileSplit split;
-  private List<Integer> includedColumnIds;
   private final SearchArgument sarg;
-  private final String[] columnNames;
   private final OrcEncodedDataConsumer consumer;
   private final QueryFragmentCounters counters;
   private final UserGroupInformation ugi;
@@ -184,27 +185,21 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   @SuppressWarnings("unused")
   private volatile boolean isPaused = false;
 
-  boolean[] readerIncludes = null, sargColumns = null, fileIncludes = null;
+  boolean[] sargColumns = null, fileIncludes = null;
   private final IoTrace trace;
   private Pool<IoTrace> tracePool;
 
   public OrcEncodedDataReader(LowLevelCache lowLevelCache, BufferUsageManager bufferManager,
       MetadataCache metadataCache, Configuration daemonConf, Configuration jobConf,
-      FileSplit split, List<Integer> columnIds, SearchArgument sarg, String[] columnNames,
-      OrcEncodedDataConsumer consumer, QueryFragmentCounters counters,
-      TypeDescription readerSchema, Pool<IoTrace> tracePool)
+      FileSplit split, Includes includes, SearchArgument sarg, OrcEncodedDataConsumer consumer,
+      QueryFragmentCounters counters, SchemaEvolutionFactory sef, Pool<IoTrace> tracePool)
           throws IOException {
     this.lowLevelCache = lowLevelCache;
     this.metadataCache = metadataCache;
     this.bufferManager = bufferManager;
     this.daemonConf = daemonConf;
     this.split = split;
-    this.includedColumnIds = columnIds;
-    if (this.includedColumnIds != null) {
-      Collections.sort(this.includedColumnIds);
-    }
     this.sarg = sarg;
-    this.columnNames = columnNames;
     this.consumer = consumer;
     this.counters = counters;
     this.trace = tracePool.take();
@@ -216,8 +211,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     }
     this.useCodecPool = HiveConf.getBoolVar(daemonConf, ConfVars.HIVE_ORC_CODEC_POOL);
 
-    // moved this part of code from performDataRead as LlapInputFormat need to know the file schema
-    // to decide if schema evolution is supported or not.
+    // LlapInputFormat needs to know the file schema to decide if schema evolution is supported.
     orcReader = null;
     // 1. Get file metadata from cache, or create the reader and read it.
     // Don't cache the filesystem object for now; Tez closes it and FS cache will fix all that
@@ -227,15 +221,12 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID));
     fileMetadata = getFileFooterFromCacheOrDisk();
     final TypeDescription fileSchema = fileMetadata.getSchema();
-    if (readerSchema == null) {
-      readerSchema = fileMetadata.getSchema();
+
+    fileIncludes = includes.generateFileIncludes(fileSchema);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("From {}, the file includes are {}", includes, DebugUtils.toString(fileIncludes));
     }
-    readerIncludes = OrcInputFormat.genIncludedColumns(readerSchema, includedColumnIds);
-    if (AcidUtils.isFullAcidScan(jobConf)) {
-      fileIncludes = OrcInputFormat.shiftReaderIncludedForAcid(readerIncludes);
-    } else {
-      fileIncludes = OrcInputFormat.genIncludedColumns(fileSchema, includedColumnIds);
-    }
+
     // Do not allow users to override zero-copy setting. The rest can be taken from user config.
     boolean useZeroCopy = OrcConf.USE_ZEROCOPY.getBoolean(daemonConf);
     if (useZeroCopy != OrcConf.USE_ZEROCOPY.getBoolean(jobConf)) {
@@ -243,10 +234,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       jobConf.setBoolean(OrcConf.USE_ZEROCOPY.getAttribute(), useZeroCopy);
     }
     this.jobConf = jobConf;
-    Reader.Options options = new Reader.Options(jobConf).include(readerIncludes);
-    evolution = new SchemaEvolution(fileMetadata.getSchema(), readerSchema, options);
+    // TODO: setFileMetadata could just create schema. Called in two places; clean up later.
+    this.evolution = sef.createSchemaEvolution(fileMetadata.getSchema());
     consumer.setFileMetadata(fileMetadata);
-    consumer.setIncludedColumns(readerIncludes);
     consumer.setSchemaEvolution(evolution);
   }
 
@@ -290,9 +280,6 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
         + (fileKey == null ? "" : " (" + fileKey + ")"));
     try {
       validateFileMetadata();
-      if (includedColumnIds == null) {
-        includedColumnIds = getAllColumnIds(fileMetadata);
-      }
 
       // 2. Determine which stripes to read based on the split.
       determineStripesToRead();
@@ -316,12 +303,14 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     try {
       if (sarg != null && stride != 0) {
         // TODO: move this to a common method
+        // Note: this gets IDs by name, so we assume indices don't need to be adjusted for ACID.
         int[] filterColumns = RecordReaderImpl.mapSargColumnsToOrcInternalColIdx(
           sarg.getLeaves(), evolution);
         // included will not be null, row options will fill the array with trues if null
         sargColumns = new boolean[evolution.getFileSchema().getMaximumId() + 1];
         for (int i : filterColumns) {
           // filter columns may have -1 as index which could be partition column in SARG.
+          // TODO: should this then be >=?
           if (i > 0) {
             sargColumns[i] = true;
           }
@@ -332,7 +321,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       }
 
       // Now, apply SARG if any; w/o sarg, this will just initialize stripeRgs.
-      boolean hasData = determineRgsToRead(fileIncludes, stride, stripeMetadatas);
+      boolean hasData = determineRgsToRead(stride, stripeMetadatas);
       if (!hasData) {
         consumer.setDone();
         recordReaderTime(startTime);
@@ -527,19 +516,6 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     }
     LOG.warn("Split for " + split.getPath() + " (" + split.getClass() + ") does not have file ID");
     return HdfsUtils.getFileId(fs, split.getPath(), allowSynthetic, checkDefaultFs);
-  }
-
-  /**
-   * Puts all column indexes from metadata to make a column list to read all column.
-   */
-  private static List<Integer> getAllColumnIds(OrcFileMetadata metadata) {
-    int rootColumn = OrcInputFormat.getRootColumn(true);
-    List<Integer> types = metadata.getTypes().get(rootColumn).getSubtypesList();
-    List<Integer> columnIds = new ArrayList<Integer>(types.size());
-    for (int i = 0; i < types.size(); ++i) {
-      columnIds.add(i);
-    }
-    return columnIds;
   }
 
   /**
@@ -822,7 +798,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
    * Determines which RGs need to be read, after stripes have been determined.
    * SARG is applied, and readState is populated for each stripe accordingly.
    */
-  private boolean determineRgsToRead(boolean[] globalIncludes, int rowIndexStride,
+  private boolean determineRgsToRead(int rowIndexStride,
       ArrayList<OrcStripeMetadata> metadata) throws IOException {
     RecordReaderImpl.SargApplier sargApp = null;
     if (sarg != null && rowIndexStride != 0) {
