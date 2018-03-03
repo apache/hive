@@ -20,8 +20,10 @@ package org.apache.hadoop.hive.ql.io.orc.encoded;
 import org.apache.orc.impl.RunLengthByteReader;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
+import org.apache.curator.shaded.com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
@@ -2099,35 +2101,27 @@ public class EncodedTreeReaderFactory extends TreeReaderFactory {
     }
   }
 
-  public static StructTreeReader createRootTreeReader(TypeDescription schema,
+  public static StructTreeReader createRootTreeReader(TypeDescription[] batchSchemas,
        List<OrcProto.ColumnEncoding> encodings, OrcEncodedColumnBatch batch,
-       CompressionCodec codec, TreeReaderFactory.Context context, int[] columnMapping)
-           throws IOException {
-    if (schema.getCategory() != Category.STRUCT) {
-      throw new AssertionError("Schema is not a struct: " + schema);
+       CompressionCodec codec, TreeReaderFactory.Context context) throws IOException {
+    // Note: we only look at the schema here to deal with complex types. Somebody has set up the
+    //       reader with whatever ideas they had to the schema and we just trust the reader to
+    //       produce the CVBs that was asked for. However, we only need to look at top level columns.
+    int includedCount = batch.getColumnsWithDataCount();
+    if (batchSchemas.length > includedCount) {
+      throw new AssertionError("For " + Arrays.toString(batchSchemas) + ", only received "
+          + includedCount + " columns");
     }
-    // Some child types may be excluded. Note that this can only happen at root level.
-    List<TypeDescription> children = schema.getChildren();
-    int childCount = children.size(), includedCount = 0;
-    for (int childIx = 0; childIx < childCount; ++childIx) {
-      int batchColIx = children.get(childIx).getId();
+    TreeReader[] childReaders = new TreeReader[batchSchemas.length];
+    for (int i = 0; i < batchSchemas.length; ++i) {
+      int batchColIx = batchSchemas[i].getId();
       if (!batch.hasData(batchColIx) && !batch.hasVectors(batchColIx)) {
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Column at " + childIx + " " + children.get(childIx).getId()
-              + ":" + children.get(childIx).toString() + " has no data");
-        }
-        continue;
+        throw new AssertionError("No data for column " + batchColIx + ": " + batchSchemas[i]);
       }
-      ++includedCount;
+      childReaders[i] = createEncodedTreeReader(batchSchemas[i], encodings, batch, codec, context);
     }
-    TreeReader[] childReaders = new TreeReader[includedCount];
-    for (int schemaChildIx = 0, inclChildIx = -1; schemaChildIx < childCount; ++schemaChildIx) {
-      int batchColIx = children.get(schemaChildIx).getId();
-      if (!batch.hasData(batchColIx) && !batch.hasVectors(batchColIx)) continue;
-      childReaders[++inclChildIx] = createEncodedTreeReader(
-          schema.getChildren().get(schemaChildIx), encodings, batch, codec, context);
-      columnMapping[inclChildIx] = schemaChildIx;
-    }
+
+    // TODO: do we actually need this reader? the caller just extracts child readers.
     return StructStreamReader.builder()
         .setColumnIndex(0)
         .setCompressionCodec(codec)
