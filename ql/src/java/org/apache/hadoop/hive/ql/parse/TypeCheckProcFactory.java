@@ -638,6 +638,10 @@ public class TypeCheckProcFactory {
       ASTNode expr = (ASTNode) nd;
       ASTNode parent = stack.size() > 1 ? (ASTNode) stack.get(stack.size() - 2) : null;
       RowResolver input = ctx.getInputRR();
+      if(input == null) {
+        ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr), expr);
+        return null;
+      }
 
       if (expr.getType() != HiveParser.TOK_TABLE_OR_COL) {
         ctx.setError(ErrorMsg.INVALID_COLUMN.getMsg(expr), expr);

@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -948,10 +949,17 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public List<SQLDefaultConstraint> getDefaultConstraints(String db_name, String tbl_name)
+      throws MetaException {
+    return null;
+  }
+
+  @Override
   public List<String> createTableWithConstraints(Table tbl,
                                          List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
                                          List<SQLUniqueConstraint> uniqueConstraints,
-                                         List<SQLNotNullConstraint> notNullConstraints)
+                                         List<SQLNotNullConstraint> notNullConstraints,
+                                         List<SQLDefaultConstraint> defaultConstraints)
       throws InvalidObjectException, MetaException {
     return null;
   }
@@ -981,6 +989,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
 
   @Override
   public List<String> addNotNullConstraints(List<SQLNotNullConstraint> nns)
+      throws InvalidObjectException, MetaException {
+    return null;
+  }
+
+  @Override
+  public List<String> addDefaultConstraints(List<SQLDefaultConstraint> nns)
       throws InvalidObjectException, MetaException {
     return null;
   }

@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -86,6 +87,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.lockmgr.TxnManagerFactory;
+import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
@@ -1652,9 +1654,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private boolean hasConstraintsEnabled(final String tblName) throws SemanticException{
 
     NotNullConstraint nnc = null;
+    DefaultConstraint dc = null;
     try {
       // retrieve enabled NOT NULL constraint from metastore
       nnc = Hive.get().getEnabledNotNullConstraints(
+          db.getDatabaseCurrent().getName(), tblName);
+      dc = Hive.get().getEnabledDefaultConstraints(
           db.getDatabaseCurrent().getName(), tblName);
     } catch (Exception e) {
       if (e instanceof SemanticException) {
@@ -1663,7 +1668,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         throw (new RuntimeException(e));
       }
     }
-    if(nnc != null  && !nnc.getNotNullConstraints().isEmpty()) {
+    if((nnc != null  && !nnc.getNotNullConstraints().isEmpty())
+        || (dc != null && !dc.getDefaultConstraints().isEmpty())) {
       return true;
     }
     return false;
@@ -3109,32 +3115,38 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     List<SQLForeignKey> foreignKeys = null;
     List<SQLUniqueConstraint> uniqueConstraints = null;
     List<SQLNotNullConstraint> notNullConstraints = null;
+    List<SQLDefaultConstraint> defaultConstraints= null;
     if (constraintChild != null) {
       // Process column constraint
       switch (constraintChild.getToken().getType()) {
-        case HiveParser.TOK_NOT_NULL:
-          notNullConstraints = new ArrayList<>();
-          processNotNullConstraints(qualified[0], qualified[1], constraintChild,
-                  ImmutableList.of(newColName), notNullConstraints);
-          break;
-        case HiveParser.TOK_UNIQUE:
-          uniqueConstraints = new ArrayList<>();
-          processUniqueConstraints(qualified[0], qualified[1], constraintChild,
-                  ImmutableList.of(newColName), uniqueConstraints);
-          break;
-        case HiveParser.TOK_PRIMARY_KEY:
-          primaryKeys = new ArrayList<>();
-          processPrimaryKeys(qualified[0], qualified[1], constraintChild,
-                  ImmutableList.of(newColName), primaryKeys);
-          break;
-        case HiveParser.TOK_FOREIGN_KEY:
-          foreignKeys = new ArrayList<>();
-          processForeignKeys(qualified[0], qualified[1], constraintChild,
-                  foreignKeys);
-          break;
-        default:
-          throw new SemanticException(ErrorMsg.NOT_RECOGNIZED_CONSTRAINT.getMsg(
-              constraintChild.getToken().getText()));
+      case HiveParser.TOK_DEFAULT_VALUE:
+        defaultConstraints = new ArrayList<>();
+        processDefaultConstraints(qualified[0], qualified[1], constraintChild,
+                                  ImmutableList.of(newColName), defaultConstraints, (ASTNode)ast.getChild(2));
+        break;
+      case HiveParser.TOK_NOT_NULL:
+        notNullConstraints = new ArrayList<>();
+        processNotNullConstraints(qualified[0], qualified[1], constraintChild,
+                                  ImmutableList.of(newColName), notNullConstraints);
+        break;
+      case HiveParser.TOK_UNIQUE:
+        uniqueConstraints = new ArrayList<>();
+        processUniqueConstraints(qualified[0], qualified[1], constraintChild,
+                                 ImmutableList.of(newColName), uniqueConstraints);
+        break;
+      case HiveParser.TOK_PRIMARY_KEY:
+        primaryKeys = new ArrayList<>();
+        processPrimaryKeys(qualified[0], qualified[1], constraintChild,
+                           ImmutableList.of(newColName), primaryKeys);
+        break;
+      case HiveParser.TOK_FOREIGN_KEY:
+        foreignKeys = new ArrayList<>();
+        processForeignKeys(qualified[0], qualified[1], constraintChild,
+                           foreignKeys);
+        break;
+      default:
+        throw new SemanticException(ErrorMsg.NOT_RECOGNIZED_CONSTRAINT.getMsg(
+            constraintChild.getToken().getText()));
       }
     }
 
@@ -3142,7 +3154,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     Table tab = getTable(qualified);
 
     if(tab.getTableType() == TableType.EXTERNAL_TABLE
-        && hasEnabledOrValidatedConstraints(notNullConstraints)){
+        && hasEnabledOrValidatedConstraints(notNullConstraints, defaultConstraints)){
       throw new SemanticException(
           ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Constraints are disallowed with External tables. "
               + "Only RELY is allowed."));
@@ -3159,7 +3171,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String tblName = getDotName(qualified);
     AlterTableDesc alterTblDesc;
     if (primaryKeys == null && foreignKeys == null
-            && uniqueConstraints == null && notNullConstraints == null) {
+            && uniqueConstraints == null && notNullConstraints == null && defaultConstraints == null) {
       alterTblDesc = new AlterTableDesc(tblName, partSpec,
           unescapeIdentifier(oldColName), unescapeIdentifier(newColName),
           newType, newComment, first, flagCol, isCascade);
@@ -3167,7 +3179,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       alterTblDesc = new AlterTableDesc(tblName, partSpec,
           unescapeIdentifier(oldColName), unescapeIdentifier(newColName),
           newType, newComment, first, flagCol, isCascade,
-          primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints);
+          primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints);
     }
     addInputsOutputsAlterTable(tblName, partSpec, alterTblDesc);
 

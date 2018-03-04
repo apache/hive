@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -58,6 +59,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -76,6 +78,7 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
@@ -83,6 +86,10 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentDate;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentTimestamp;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCurrentUser;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -643,7 +650,8 @@ public abstract class BaseSemanticAnalyzer {
    */
   public static List<FieldSchema> getColumns(ASTNode ast, boolean lowerCase) throws SemanticException {
     return getColumns(ast, lowerCase, new ArrayList<SQLPrimaryKey>(), new ArrayList<SQLForeignKey>(),
-            new ArrayList<SQLUniqueConstraint>(), new ArrayList<SQLNotNullConstraint>());
+            new ArrayList<SQLUniqueConstraint>(), new ArrayList<SQLNotNullConstraint>(),
+        new ArrayList<SQLDefaultConstraint>());
   }
 
   private static class ConstraintInfo {
@@ -652,6 +660,7 @@ public abstract class BaseSemanticAnalyzer {
     final boolean enable;
     final boolean validate;
     final boolean rely;
+    final String defaultValue;
 
     ConstraintInfo(String colName, String constraintName,
         boolean enable, boolean validate, boolean rely) {
@@ -660,6 +669,16 @@ public abstract class BaseSemanticAnalyzer {
       this.enable = enable;
       this.validate = validate;
       this.rely = rely;
+      this.defaultValue = null;
+    }
+    ConstraintInfo(String colName, String constraintName,
+                   boolean enable, boolean validate, boolean rely, String defaultValue) {
+      this.colName = colName;
+      this.constraintName = constraintName;
+      this.enable = enable;
+      this.validate = validate;
+      this.rely = rely;
+      this.defaultValue = defaultValue;
     }
   }
 
@@ -677,7 +696,7 @@ public abstract class BaseSemanticAnalyzer {
       ASTNode child, List<String> columnNames, List<SQLPrimaryKey> primaryKeys)
           throws SemanticException {
     List<ConstraintInfo> primaryKeyInfos = new ArrayList<ConstraintInfo>();
-    generateConstraintInfos(child, columnNames, primaryKeyInfos);
+    generateConstraintInfos(child, columnNames, primaryKeyInfos, null);
     constraintInfosToPrimaryKeys(databaseName, tableName, primaryKeyInfos, primaryKeys);
   }
 
@@ -705,7 +724,7 @@ public abstract class BaseSemanticAnalyzer {
       ASTNode child, List<String> columnNames, List<SQLUniqueConstraint> uniqueConstraints)
           throws SemanticException {
     List<ConstraintInfo> uniqueInfos = new ArrayList<ConstraintInfo>();
-    generateConstraintInfos(child, columnNames, uniqueInfos);
+    generateConstraintInfos(child, columnNames, uniqueInfos, null);
     constraintInfosToUniqueConstraints(databaseName, tableName, uniqueInfos, uniqueConstraints);
   }
 
@@ -718,11 +737,28 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
+  protected static void processDefaultConstraints(String databaseName, String tableName,
+      ASTNode child, List<String> columnNames, List<SQLDefaultConstraint> defaultConstraints, final ASTNode typeChild)
+      throws SemanticException {
+    List<ConstraintInfo> defaultInfos = new ArrayList<ConstraintInfo>();
+    generateConstraintInfos(child, columnNames, defaultInfos, typeChild);
+    constraintInfosToDefaultConstraints(databaseName, tableName, defaultInfos, defaultConstraints);
+  }
+
+  private static void constraintInfosToDefaultConstraints(String databaseName, String tableName,
+     List<ConstraintInfo> defaultInfos, List<SQLDefaultConstraint> defaultConstraints) {
+    for (ConstraintInfo defaultInfo : defaultInfos) {
+      defaultConstraints.add(new SQLDefaultConstraint(databaseName, tableName, defaultInfo.colName,
+          defaultInfo.defaultValue, defaultInfo.constraintName, defaultInfo.enable,
+          defaultInfo.validate, defaultInfo.rely));
+    }
+  }
+
   protected static void processNotNullConstraints(String databaseName, String tableName,
       ASTNode child, List<String> columnNames, List<SQLNotNullConstraint> notNullConstraints)
           throws SemanticException {
     List<ConstraintInfo> notNullInfos = new ArrayList<ConstraintInfo>();
-    generateConstraintInfos(child, columnNames, notNullInfos);
+    generateConstraintInfos(child, columnNames, notNullInfos, null);
     constraintInfosToNotNullConstraints(databaseName, tableName, notNullInfos, notNullConstraints);
   }
 
@@ -749,8 +785,75 @@ public abstract class BaseSemanticAnalyzer {
       checkColumnName(columnName.getText());
       columnNames.add(unescapeIdentifier(columnName.getText().toLowerCase()));
     }
-    generateConstraintInfos(child, columnNames.build(), cstrInfos);
+    generateConstraintInfos(child, columnNames.build(), cstrInfos, null);
   }
+
+  private static boolean isDefaultValueAllowed(final ExprNodeDesc defaultValExpr) {
+    if(defaultValExpr instanceof ExprNodeConstantDesc) {
+      return true;
+    }
+    else if(FunctionRegistry.isOpCast(defaultValExpr)) {
+      return isDefaultValueAllowed(defaultValExpr.getChildren().get(0));
+    }
+    else if(defaultValExpr instanceof ExprNodeGenericFuncDesc){
+      ExprNodeGenericFuncDesc defFunc = (ExprNodeGenericFuncDesc)defaultValExpr;
+      if(defFunc.getGenericUDF() instanceof GenericUDFOPNull
+          || defFunc.getGenericUDF() instanceof GenericUDFCurrentTimestamp
+          || defFunc.getGenericUDF() instanceof GenericUDFCurrentDate
+          || defFunc.getGenericUDF() instanceof GenericUDFCurrentUser){
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Validate and get the default value from the AST
+   * @param defaultValueAST AST node corresponding to default value
+   * @return retrieve the default value and return it as string
+   * @throws SemanticException
+   */
+  private static String getDefaultValue(ASTNode defaultValueAST, ASTNode typeChild) throws SemanticException{
+    // first create expression from defaultValueAST
+    TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);
+    ExprNodeDesc defaultValExpr = TypeCheckProcFactory
+        .genExprNode(defaultValueAST, typeCheckCtx).get(defaultValueAST);
+
+    if(defaultValExpr == null) {
+      throw new SemanticException(
+          ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Invalid Default value!"));
+    }
+
+    //get default value to be be stored in metastore
+    String defaultValueText  = defaultValExpr.getExprString();
+    final int DEFAULT_MAX_LEN = 255;
+    if(defaultValueText.length() > DEFAULT_MAX_LEN) {
+      throw new SemanticException(
+          ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Invalid Default value:  " + defaultValueText +
+                                                  " .Maximum character length allowed is " + DEFAULT_MAX_LEN +" ."));
+    }
+
+    // Make sure the default value expression type is exactly same as column's type.
+    TypeInfo defaultValTypeInfo = defaultValExpr.getTypeInfo();
+    TypeInfo colTypeInfo = TypeInfoUtils.getTypeInfoFromTypeString(getTypeStringFromAST(typeChild));
+    if(!defaultValTypeInfo.equals(colTypeInfo)) {
+      throw new SemanticException(
+          ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Invalid type: " + defaultValTypeInfo.getTypeName()
+                                                  + " for default value: "
+                                                  + defaultValueText
+                                                  + ". Please make sure that the type is compatible with column type: "
+                                                  + colTypeInfo.getTypeName()));
+    }
+
+    // throw an error if default value isn't what hive allows
+    if(!isDefaultValueAllowed(defaultValExpr)) {
+      throw new SemanticException(
+          ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Invalid Default value: " + defaultValueText
+                                                  + ". DEFAULT only allows constant or function expressions"));
+    }
+    return defaultValueText;
+  }
+
 
   /**
    * Get the constraint from the AST and populate the cstrInfos with the required
@@ -758,10 +861,11 @@ public abstract class BaseSemanticAnalyzer {
    * @param child  The node with the constraint token
    * @param columnNames The name of the columns for the primary key
    * @param cstrInfos Constraint information
+   * @param typeChildForDefault type of column used for default value type check
    * @throws SemanticException
    */
   private static void generateConstraintInfos(ASTNode child, List<String> columnNames,
-      List<ConstraintInfo> cstrInfos) throws SemanticException {
+      List<ConstraintInfo> cstrInfos, ASTNode typeChildForDefault) throws SemanticException {
     // The ANTLR grammar looks like :
     // 1. KW_CONSTRAINT idfr=identifier KW_PRIMARY KW_KEY pkCols=columnParenthesesList
     //  constraintOptsCreate?
@@ -773,9 +877,12 @@ public abstract class BaseSemanticAnalyzer {
     // when the user does not specify the constraint name.
     // Default values
     String constraintName = null;
+    //by default if user hasn't provided any optional constraint properties
+    // it will be considered ENABLE and NOVALIDATE and RELY=false
     boolean enable = true;
-    boolean validate = true;
+    boolean validate = false;
     boolean rely = false;
+    String defaultValue = null;
     for (int i = 0; i < child.getChildCount(); i++) {
       ASTNode grandChild = (ASTNode) child.getChild(i);
       int type = grandChild.getToken().getType();
@@ -797,12 +904,25 @@ public abstract class BaseSemanticAnalyzer {
         validate = false;
       } else if (type == HiveParser.TOK_RELY) {
         rely = true;
+      } else if( type == HiveParser.TOK_NORELY) {
+        rely = false;
+      } else if( child.getToken().getType() == HiveParser.TOK_DEFAULT_VALUE){
+        // try to get default value only if this is DEFAULT constraint
+        defaultValue = getDefaultValue(grandChild, typeChildForDefault);
       }
     }
 
+    // metastore schema only allows maximum 255 for constraint name column
+    final int CONSTRAINT_NAME_MAX_LENGTH = 255;
+    if(constraintName != null && constraintName.length() > CONSTRAINT_NAME_MAX_LENGTH) {
+      throw new SemanticException(
+          ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Constraint name: " + constraintName + " exceeded maximum allowed "
+                                              + "length: " + CONSTRAINT_NAME_MAX_LENGTH ));
+    }
+
     // NOT NULL constraint could be enforced/enabled
-    if (child.getToken().getType() != HiveParser.TOK_NOT_NULL
-        && enable) {
+    if (enable && child.getToken().getType() != HiveParser.TOK_NOT_NULL
+        && child.getToken().getType() != HiveParser.TOK_DEFAULT_VALUE) {
       throw new SemanticException(
           ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("ENABLE/ENFORCED feature not supported yet. "
               + "Please use DISABLE/NOT ENFORCED instead."));
@@ -815,13 +935,12 @@ public abstract class BaseSemanticAnalyzer {
 
     for (String columnName : columnNames) {
       cstrInfos.add(new ConstraintInfo(columnName, constraintName,
-          enable, validate, rely));
+          enable, validate, rely, defaultValue));
     }
   }
 
   /**
    * Process the foreign keys from the AST and populate the foreign keys in the SQLForeignKey list
-   * @param parent  Parent of the foreign key token node
    * @param child Foreign Key token node
    * @param foreignKeys SQLForeignKey list
    * @throws SemanticException
@@ -906,9 +1025,17 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  protected boolean hasEnabledOrValidatedConstraints(List<SQLNotNullConstraint> notNullConstraints){
+  protected boolean hasEnabledOrValidatedConstraints(List<SQLNotNullConstraint> notNullConstraints,
+                                                     List<SQLDefaultConstraint> defaultConstraints){
     if(notNullConstraints != null) {
       for (SQLNotNullConstraint nnC : notNullConstraints) {
+        if (nnC.isEnable_cstr() || nnC.isValidate_cstr()) {
+          return true;
+        }
+      }
+    }
+    if(defaultConstraints!= null) {
+      for (SQLDefaultConstraint nnC : defaultConstraints) {
         if (nnC.isEnable_cstr() || nnC.isValidate_cstr()) {
           return true;
         }
@@ -929,7 +1056,8 @@ public abstract class BaseSemanticAnalyzer {
    */
   public static List<FieldSchema> getColumns(ASTNode ast, boolean lowerCase,
     List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
-    List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints)
+    List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
+                                           List<SQLDefaultConstraint> defaultConstraints)
         throws SemanticException {
     List<FieldSchema> colList = new ArrayList<FieldSchema>();
     Tree parent = ast.getParent();
@@ -987,6 +1115,10 @@ public abstract class BaseSemanticAnalyzer {
               String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
               // Process column constraint
               switch (constraintChild.getToken().getType()) {
+              case HiveParser.TOK_DEFAULT_VALUE:
+                processDefaultConstraints(qualifiedTabName[0], qualifiedTabName[1], constraintChild,
+                    ImmutableList.of(col.getName()), defaultConstraints, typeChild);
+                break;
                 case HiveParser.TOK_NOT_NULL:
                   processNotNullConstraints(qualifiedTabName[0], qualifiedTabName[1], constraintChild,
                           ImmutableList.of(col.getName()), notNullConstraints);
