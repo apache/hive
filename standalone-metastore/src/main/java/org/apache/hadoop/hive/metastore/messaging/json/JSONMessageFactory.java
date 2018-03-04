@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.messaging.PartitionFiles;
+import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TException;
@@ -180,6 +181,11 @@ public class JSONMessageFactory extends MessageFactory {
                                           boolean replace, Iterator<String> fileIter) {
     return new JSONInsertMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
                                 tableObj, partObj, replace, fileIter, now());
+  }
+
+  @Override
+  public OpenTxnMessage buildOpenTxnMessage(Iterator<Long> txnIdsItr) {
+    return new JSONOpenTxnMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, txnIdsItr, now());
   }
 
   @Override

@@ -62,6 +62,11 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.google.common.collect.Lists;
+
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * An implementation of HiveTxnManager that stores the transactions in the metastore database.
  * There should be 1 instance o {@link DbTxnManager} per {@link org.apache.hadoop.hive.ql.session.SessionState}
@@ -199,6 +204,15 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     super.setHiveConf(conf);
     if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY)) {
       throw new RuntimeException(ErrorMsg.DBTXNMGR_REQUIRES_CONCURRENCY.getMsg());
+    }
+  }
+
+  @Override
+  public List<Long> replOpenTxn(String replPolicy, Iterator<Long> srcTxnIds, int numTxns)  throws LockException {
+    try {
+      return getMS().replOpenTxn(replPolicy, srcTxnIds, numTxns);
+    } catch (TException e) {
+      throw new LockException(e, ErrorMsg.METASTORE_COMMUNICATION_FAILED);
     }
   }
 

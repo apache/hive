@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
+import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
@@ -469,6 +470,16 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     event.setDbName(tableObj.getDbName());
     event.setTableName(tableObj.getTableName());
     process(event, insertEvent);
+  }
+
+  @Override
+  public void onOpenTxn(OpenTxnEvent openTxnEvent) throws MetaException {
+    NotificationEvent event =
+            new NotificationEvent(0, now(), EventType.OPEN_TXN.toString(), msgFactory.buildOpenTxnMessage(
+                    openTxnEvent.getTxnIdItr())
+                    .toString());
+
+    process(event, openTxnEvent);
   }
 
   /**

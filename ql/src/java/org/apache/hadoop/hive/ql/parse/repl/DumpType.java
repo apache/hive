@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.parse.repl.load.message.RenameTableHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.TableHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.TruncatePartitionHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.TruncateTableHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.OpenTxnHandler;
 
 public enum DumpType {
 
@@ -182,6 +183,12 @@ public enum DumpType {
     @Override
     public MessageHandler handler() {
       return new DropDatabaseHandler();
+    }
+  },
+  EVENT_OPEN_TXN("EVENT_OPEN_TXN") {
+    @Override
+    public MessageHandler handler() {
+      return new OpenTxnHandler();
     }
   };
 

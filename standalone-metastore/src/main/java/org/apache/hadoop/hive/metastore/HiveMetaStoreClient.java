@@ -2247,12 +2247,23 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public long openTxn(String user) throws TException {
-    OpenTxnsResponse txns = openTxns(user, 1);
+    OpenTxnsResponse txns = openTxnsIntr(user, null, null, 1);
     return txns.getTxn_ids().get(0);
   }
 
   @Override
+  public List<Long> replOpenTxn(String replPolicy, Iterator<Long> srcTxnIds, int numTxns) throws TException {
+    // As this is called from replication task, the user field is not used.
+    OpenTxnsResponse txns = openTxnsIntr(null, replPolicy, srcTxnIds, numTxns);
+    return txns.getTxn_ids();
+  }
+
+  @Override
   public OpenTxnsResponse openTxns(String user, int numTxns) throws TException {
+    return openTxnsIntr(user, null, null, numTxns);
+  }
+
+  private OpenTxnsResponse openTxnsIntr(String user, String replPolicy, Iterator<Long> srcTxnIds, int numTxns) throws TException {
     String hostname = null;
     try {
       hostname = InetAddress.getLocalHost().getHostName();
@@ -2260,7 +2271,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       LOG.error("Unable to resolve my host name " + e.getMessage());
       throw new RuntimeException(e);
     }
-    return client.open_txns(new OpenTxnRequest(numTxns, user, hostname));
+    OpenTxnRequest rqst = new OpenTxnRequest(numTxns, user, hostname);
+    if (replPolicy != null) {
+      // need to set this only for replication tasks
+      rqst.setReplPolicy(replPolicy);
+      rqst.setReplSrcTxnId(Lists.newArrayList(srcTxnIds));
+    }
+    return client.open_txns(rqst);
   }
 
   @Override

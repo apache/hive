@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
+import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
@@ -251,6 +252,15 @@ public class JSONMessageDeserializer extends MessageDeserializer {
       return mapper.readValue(messageBody, JSONDropConstraintMessage.class);
     } catch (Exception e) {
       throw new IllegalArgumentException("Could not construct DropConstraintMessage", e);
+    }
+  }
+
+  @Override
+  public OpenTxnMessage getOpenTxnMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONOpenTxnMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct OpenTxnMessage", e);
     }
   }
 }

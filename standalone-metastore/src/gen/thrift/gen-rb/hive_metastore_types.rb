@@ -2133,12 +2133,16 @@ class OpenTxnRequest
   USER = 2
   HOSTNAME = 3
   AGENTINFO = 4
+  REPLPOLICY = 5
+  REPLSRCTXNID = 6
 
   FIELDS = {
     NUM_TXNS => {:type => ::Thrift::Types::I32, :name => 'num_txns'},
     USER => {:type => ::Thrift::Types::STRING, :name => 'user'},
     HOSTNAME => {:type => ::Thrift::Types::STRING, :name => 'hostname'},
-    AGENTINFO => {:type => ::Thrift::Types::STRING, :name => 'agentInfo', :default => %q"Unknown", :optional => true}
+    AGENTINFO => {:type => ::Thrift::Types::STRING, :name => 'agentInfo', :default => %q"Unknown", :optional => true},
+    REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true},
+    REPLSRCTXNID => {:type => ::Thrift::Types::LIST, :name => 'replSrcTxnId', :element => {:type => ::Thrift::Types::I64}, :optional => true}
   }
 
   def struct_fields; FIELDS; end

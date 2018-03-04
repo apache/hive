@@ -544,6 +544,12 @@ CREATE TABLE NEXT_WRITE_ID (
 
 CREATE UNIQUE INDEX NEXT_WRITE_ID_IDX ON NEXT_WRITE_ID (NWI_DATABASE, NWI_TABLE);
 
+CREATE TABLE REPL_TXN_MAP (
+  REPL_POLICY varchar(128) NOT NULL,
+  SRC_TXN_ID bigint NOT NULL,
+  TARGET_TXN_ID bigint NOT NULL,
+  PRIMARY KEY (REPL_POLICY, SRC_TXN_ID)
+);
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
 -- -----------------------------------------------------------------
