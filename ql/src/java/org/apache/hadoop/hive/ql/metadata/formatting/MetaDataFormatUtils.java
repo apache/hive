@@ -41,15 +41,16 @@ import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
+import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
-import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -133,7 +134,7 @@ public final class MetaDataFormatUtils {
   }
 
   public static String getConstraintsInformation(PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
-          UniqueConstraint ukInfo, NotNullConstraint nnInfo) {
+          UniqueConstraint ukInfo, NotNullConstraint nnInfo, DefaultConstraint dInfo) {
     StringBuilder constraintsInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
 
     constraintsInfo.append(LINE_DELIM).append("# Constraints").append(LINE_DELIM);
@@ -152,6 +153,10 @@ public final class MetaDataFormatUtils {
     if (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty()) {
       constraintsInfo.append(LINE_DELIM).append("# Not Null Constraints").append(LINE_DELIM);
       getNotNullConstraintsInformation(constraintsInfo, nnInfo);
+    }
+    if (dInfo != null && !dInfo.getDefaultConstraints().isEmpty()) {
+      constraintsInfo.append(LINE_DELIM).append("# Default Constraints").append(LINE_DELIM);
+      getDefaultConstraintsInformation(constraintsInfo, dInfo);
     }
     return constraintsInfo.toString();
   }
@@ -252,6 +257,40 @@ public final class MetaDataFormatUtils {
       }
     }
   }
+
+  private static void getDefaultConstraintColInformation(StringBuilder constraintsInfo,
+                                                        DefaultConstraint.DefaultConstraintCol ukCol) {
+    String[] fkcFields = new String[2];
+    fkcFields[0] = "Column Name:" + ukCol.colName;
+    fkcFields[1] = "Default Value:" + ukCol.defaultVal;
+    formatOutput(fkcFields, constraintsInfo);
+  }
+  private static void getDefaultConstraintRelInformation(
+      StringBuilder constraintsInfo,
+      String constraintName,
+      List<DefaultConstraint.DefaultConstraintCol> ukRel) {
+    formatOutput("Constraint Name:", constraintName, constraintsInfo);
+    if (ukRel != null && ukRel.size() > 0) {
+      for (DefaultConstraint.DefaultConstraintCol ukc : ukRel) {
+        getDefaultConstraintColInformation(constraintsInfo, ukc);
+      }
+    }
+    constraintsInfo.append(LINE_DELIM);
+  }
+
+  private static void getDefaultConstraintsInformation(StringBuilder constraintsInfo,
+                                                        DefaultConstraint dInfo) {
+    formatOutput("Table:",
+        dInfo.getDatabaseName() + "." + dInfo.getTableName(),
+        constraintsInfo);
+    Map<String, List<DefaultConstraint.DefaultConstraintCol>> defaultConstraints = dInfo.getDefaultConstraints();
+    if (defaultConstraints != null && defaultConstraints.size() > 0) {
+      for (Map.Entry<String, List<DefaultConstraint.DefaultConstraintCol>> me : defaultConstraints.entrySet()) {
+        getDefaultConstraintRelInformation(constraintsInfo, me.getKey(), me.getValue());
+      }
+    }
+  }
+
 
   public static String getPartitionInformation(Partition part) {
     StringBuilder tableInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);

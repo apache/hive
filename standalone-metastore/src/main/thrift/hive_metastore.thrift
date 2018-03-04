@@ -90,6 +90,17 @@ struct SQLNotNullConstraint {
   7: bool rely_cstr      // Rely/No Rely
 }
 
+struct SQLDefaultConstraint {
+  1: string table_db,    // table schema
+  2: string table_name,  // table name
+  3: string column_name, // column name
+  4: string default_value,// default value
+  5: string dc_name,     // default name
+  6: bool enable_cstr,   // Enable/Disable
+  7: bool validate_cstr, // Validate/No validate
+  8: bool rely_cstr      // Rely/No Rely
+}
+
 struct Type {
   1: string          name,             // one of the types in PrimitiveTypes or CollectionTypes or User defined types
   2: optional string type1,            // object type if the name is 'list' (LIST_TYPE), key type if the name is 'map' (MAP_TYPE)
@@ -537,6 +548,16 @@ struct NotNullConstraintsResponse {
   1: required list<SQLNotNullConstraint> notNullConstraints
 }
 
+struct DefaultConstraintsRequest {
+  1: required string db_name,
+  2: required string tbl_name
+}
+
+struct DefaultConstraintsResponse {
+  1: required list<SQLDefaultConstraint> defaultConstraints
+}
+
+
 struct DropConstraintRequest {
   1: required string dbname, 
   2: required string tablename,
@@ -557,6 +578,10 @@ struct AddUniqueConstraintRequest {
 
 struct AddNotNullConstraintRequest {
   1: required list<SQLNotNullConstraint> notNullConstraintCols
+}
+
+struct AddDefaultConstraintRequest {
+  1: required list<SQLDefaultConstraint> defaultConstraintCols
 }
 
 // Return type for get_partitions_by_expr
@@ -1419,7 +1444,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
               2:InvalidObjectException o2, 3:MetaException o3,
               4:NoSuchObjectException o4)
   void create_table_with_constraints(1:Table tbl, 2: list<SQLPrimaryKey> primaryKeys, 3: list<SQLForeignKey> foreignKeys,
-  4: list<SQLUniqueConstraint> uniqueConstraints, 5: list<SQLNotNullConstraint> notNullConstraints)
+  4: list<SQLUniqueConstraint> uniqueConstraints, 5: list<SQLNotNullConstraint> notNullConstraints,
+  6: list<SQLDefaultConstraint> defaultConstraints)
       throws (1:AlreadyExistsException o1,
               2:InvalidObjectException o2, 3:MetaException o3,
               4:NoSuchObjectException o4)
@@ -1432,6 +1458,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void add_unique_constraint(1:AddUniqueConstraintRequest req)
       throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void add_not_null_constraint(1:AddNotNullConstraintRequest req)
+      throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  void add_default_constraint(1:AddDefaultConstraintRequest req)
       throws(1:NoSuchObjectException o1, 2:MetaException o2)
 
   // drops the table and all the partitions associated with it if the table has partitions
@@ -1695,6 +1723,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   UniqueConstraintsResponse get_unique_constraints(1:UniqueConstraintsRequest request)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
   NotNullConstraintsResponse get_not_null_constraints(1:NotNullConstraintsRequest request)
+                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  DefaultConstraintsResponse get_default_constraints(1:DefaultConstraintsRequest request)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // column statistics interfaces
