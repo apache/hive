@@ -1584,7 +1584,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
   private int archive(Hive db, AlterTableSimpleDesc simpleDesc,
       DriverContext driverContext)
-          throws HiveException {
+      throws HiveException {
 
     Table tbl = db.getTable(simpleDesc.getTableName());
 
