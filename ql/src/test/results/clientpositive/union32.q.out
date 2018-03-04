@@ -488,7 +488,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: UDFToDouble(UDFToLong(_col0)) (type: double), UDFToString(CAST( _col1 AS CHAR(20)) (type: string)
+            expressions: UDFToDouble(UDFToLong(_col0)) (type: double), UDFToString(CAST( _col1 AS CHAR(20))) (type: string)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -643,7 +643,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: UDFToDouble(UDFToLong(_col0)) (type: double), UDFToString(CAST( _col1 AS CHAR(20)) (type: string)
+            expressions: UDFToDouble(UDFToLong(_col0)) (type: double), UDFToString(CAST( _col1 AS CHAR(20))) (type: string)
             outputColumnNames: _col0, _col1
             Statistics: Num rows: 11 Data size: 77 Basic stats: COMPLETE Column stats: NONE
             File Output Operator

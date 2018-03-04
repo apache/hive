@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -90,6 +91,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -1811,11 +1813,15 @@ public interface IMetaStoreClient {
   List<SQLNotNullConstraint> getNotNullConstraints(NotNullConstraintsRequest request) throws MetaException,
     NoSuchObjectException, TException;
 
+  List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest request) throws MetaException,
+      NoSuchObjectException, TException;
+
   void createTableWithConstraints(
     org.apache.hadoop.hive.metastore.api.Table tTbl,
     List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
     List<SQLUniqueConstraint> uniqueConstraints,
-    List<SQLNotNullConstraint> notNullConstraints)
+    List<SQLNotNullConstraint> notNullConstraints,
+    List<SQLDefaultConstraint> defaultConstraints)
     throws AlreadyExistsException, InvalidObjectException, MetaException, NoSuchObjectException, TException;
 
   void dropConstraint(String dbName, String tableName, String constraintName) throws
@@ -1832,6 +1838,9 @@ public interface IMetaStoreClient {
 
   void addNotNullConstraint(List<SQLNotNullConstraint> notNullConstraintCols) throws
   MetaException, NoSuchObjectException, TException;
+
+  void addDefaultConstraint(List<SQLDefaultConstraint> defaultConstraints) throws
+      MetaException, NoSuchObjectException, TException;
 
   /**
    * Gets the unique id of the backing database instance used for storing metadata

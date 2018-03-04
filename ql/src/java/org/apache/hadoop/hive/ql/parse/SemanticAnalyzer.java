@@ -76,6 +76,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -131,6 +132,7 @@ import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
@@ -4354,6 +4356,70 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return output;
   }
 
+  private RowResolver getColForInsertStmtSpec(Map<String, ExprNodeDesc> targetCol2Projection, final Table target,
+                                              Map<String, ColumnInfo> targetCol2ColumnInfo, int colListPos,
+                                              List<TypeInfo> targetTableColTypes, ArrayList<ExprNodeDesc> new_col_list,
+                                              List<String> targetTableColNames)
+      throws SemanticException {
+    RowResolver newOutputRR = new RowResolver();
+    Map<String, String> colNameToDefaultVal = null;
+
+    // see if we need to fetch default constraints from metastore
+    if(targetCol2Projection.size() < targetTableColNames.size()) {
+      try {
+          DefaultConstraint dc = Hive.get().getEnabledDefaultConstraints(target.getDbName(), target.getTableName());
+          colNameToDefaultVal = dc.getColNameToDefaultValueMap();
+      } catch (Exception e) {
+        if (e instanceof SemanticException) {
+          throw (SemanticException) e;
+        } else {
+          throw (new RuntimeException(e));
+        }
+      }
+
+    }
+    boolean defaultConstraintsFetch = true;
+    for (int i = 0; i < targetTableColNames.size(); i++) {
+      String f = targetTableColNames.get(i);
+      if(targetCol2Projection.containsKey(f)) {
+        //put existing column in new list to make sure it is in the right position
+        new_col_list.add(targetCol2Projection.get(f));
+        ColumnInfo ci = targetCol2ColumnInfo.get(f);
+        ci.setInternalName(getColumnInternalName(colListPos));
+        newOutputRR.put(ci.getTabAlias(), ci.getInternalName(), ci);
+      }
+      else {
+        //add new 'synthetic' columns for projections not provided by Select
+        assert(colNameToDefaultVal != null);
+        ExprNodeDesc exp = null;
+        if(colNameToDefaultVal.containsKey(f)) {
+          // make an expression for default value
+          String defaultValue = colNameToDefaultVal.get(f);
+          ParseDriver parseDriver = new ParseDriver();
+          try {
+            ASTNode defValAst = parseDriver.parseExpression(defaultValue);
+
+            exp = TypeCheckProcFactory.genExprNode(defValAst, new TypeCheckCtx(null)).get(defValAst);
+          } catch(Exception e) {
+            throw new SemanticException("Error while parsing default value: " + defaultValue
+              + ". Error message: " + e.getMessage());
+          }
+          LOG.debug("Added default value from metastore: " + exp);
+        }
+        else {
+          exp = new ExprNodeConstantDesc(targetTableColTypes.get(i), null);
+        }
+        new_col_list.add(exp);
+        final String tableAlias = null;//this column doesn't come from any table
+        ColumnInfo colInfo = new ColumnInfo(getColumnInternalName(colListPos),
+                                            exp.getWritableObjectInspector(), tableAlias, false);
+        newOutputRR.put(colInfo.getTabAlias(), colInfo.getInternalName(), colInfo);
+      }
+      colListPos++;
+    }
+    return newOutputRR;
+  }
+
   /**
    * This modifies the Select projections when the Select is part of an insert statement and
    * the insert statement specifies a column list for the target table, e.g.
@@ -4422,29 +4488,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
     }
-    RowResolver newOutputRR = new RowResolver();
+
     //now make the select produce <regular columns>,<dynamic partition columns> with
     //where missing columns are NULL-filled
-    for (int i = 0; i < targetTableColNames.size(); i++) {
-      String f = targetTableColNames.get(i);
-      if(targetCol2Projection.containsKey(f)) {
-        //put existing column in new list to make sure it is in the right position
-        new_col_list.add(targetCol2Projection.get(f));
-        ColumnInfo ci = targetCol2ColumnInfo.get(f);//todo: is this OK?
-        ci.setInternalName(getColumnInternalName(colListPos));
-        newOutputRR.put(ci.getTabAlias(), ci.getInternalName(), ci);
-      }
-      else {
-        //add new 'synthetic' columns for projections not provided by Select
-        ExprNodeDesc exp = new ExprNodeConstantDesc(targetTableColTypes.get(i), null);
-        new_col_list.add(exp);
-        final String tableAlias = null;//this column doesn't come from any table
-        ColumnInfo colInfo = new ColumnInfo(getColumnInternalName(colListPos),
-            exp.getWritableObjectInspector(), tableAlias, false);
-        newOutputRR.put(colInfo.getTabAlias(), colInfo.getInternalName(), colInfo);
-      }
-      colListPos++;
-    }
+    Table tbl = target == null? partition.getTable() : target;
+    RowResolver newOutputRR =  getColForInsertStmtSpec(targetCol2Projection, tbl, targetCol2ColumnInfo, colListPos,
+                                                       targetTableColTypes, new_col_list, targetTableColNames);
     col_list.clear();
     col_list.addAll(new_col_list);
     return newOutputRR;
@@ -12420,6 +12469,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
+   * Checks to see if given partition columns has DEFAULT constraints (whether ENABLED or DISABLED)
+   *  Or has NOT NULL constraints (only ENABLED)
+   * @param partCols partition columns
+   * @param defConstraints default constraints
+   * @param notNullConstraints not null constraints
+   * @return
+   */
+  boolean hasConstraints(final List<FieldSchema> partCols, final List<SQLDefaultConstraint> defConstraints,
+                         final List<SQLNotNullConstraint> notNullConstraints) {
+    for(FieldSchema partFS: partCols) {
+      for(SQLDefaultConstraint dc:defConstraints) {
+        if(dc.getColumn_name().equals(partFS.getName())) {
+          return true;
+        }
+      }
+      for(SQLNotNullConstraint nc:notNullConstraints) {
+        if(nc.getColumn_name().equals(partFS.getName()) && nc.isEnable_cstr()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+  /**
    * Analyze the create table command. If it is a regular create-table or
    * create-table-like statements, we create a DDLWork and return true. If it is
    * a create-table-as-select, we get the necessary info such as the SerDe and
@@ -12440,6 +12513,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<SQLForeignKey> foreignKeys = new ArrayList<SQLForeignKey>();
     List<SQLUniqueConstraint> uniqueConstraints = new ArrayList<>();
     List<SQLNotNullConstraint> notNullConstraints = new ArrayList<>();
+    List<SQLDefaultConstraint> defaultConstraints= new ArrayList<>();
     List<Order> sortCols = new ArrayList<Order>();
     int numBuckets = -1;
     String comment = null;
@@ -12533,14 +12607,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       case HiveParser.TOK_TABCOLLIST:
         cols = getColumns(child, true, primaryKeys, foreignKeys,
-            uniqueConstraints, notNullConstraints);
+            uniqueConstraints, notNullConstraints, defaultConstraints);
         break;
       case HiveParser.TOK_TABLECOMMENT:
         comment = unescapeSQLString(child.getChild(0).getText());
         break;
       case HiveParser.TOK_TABLEPARTCOLS:
         partCols = getColumns(child, false, primaryKeys, foreignKeys,
-            uniqueConstraints, notNullConstraints);
+            uniqueConstraints, notNullConstraints, defaultConstraints);
+        if(hasConstraints(partCols, defaultConstraints, notNullConstraints)) {
+          //TODO: these constraints should be supported for partition columns
+          throw new SemanticException(
+              ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("NOT NULL and Default Constraints are not allowed with " +
+                                                      "partition columns. "));
+        }
         break;
       case HiveParser.TOK_ALTERTABLE_BUCKETS:
         bucketCols = getColumnNames((ASTNode) child.getChild(0));
@@ -12598,7 +12678,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Unrecognized command.");
     }
 
-    if(isExt && hasEnabledOrValidatedConstraints(notNullConstraints)){
+    if(isExt && hasEnabledOrValidatedConstraints(notNullConstraints, defaultConstraints)){
       throw new SemanticException(
           ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Constraints are disallowed with External tables. "
               + "Only RELY is allowed."));
@@ -12656,7 +12736,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           comment,
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(), location, storageFormat.getSerde(),
           storageFormat.getStorageHandler(), storageFormat.getSerdeProps(), tblProps, ifNotExists, skewedColNames,
-          skewedValues, primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints);
+          skewedValues, primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints);
       crtTblDesc.setStoredAsSubDirectories(storedAsDirs);
       crtTblDesc.setNullFormat(rowFormatParams.nullFormat);
 
@@ -12755,7 +12835,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           storageFormat.getOutputFormat(), location, storageFormat.getSerde(),
           storageFormat.getStorageHandler(), storageFormat.getSerdeProps(), tblProps, ifNotExists,
           skewedColNames, skewedValues, true, primaryKeys, foreignKeys,
-          uniqueConstraints, notNullConstraints);
+          uniqueConstraints, notNullConstraints, defaultConstraints);
       tableDesc.setMaterialization(isMaterialization);
       tableDesc.setStoredAsSubDirectories(storedAsDirs);
       tableDesc.setNullFormat(rowFormatParams.nullFormat);

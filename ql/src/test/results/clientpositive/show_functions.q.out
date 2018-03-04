@@ -254,6 +254,14 @@ translate
 trim
 trunc
 ucase
+udftoboolean
+udftobyte
+udftodouble
+udftofloat
+udftointeger
+udftolong
+udftoshort
+udftostring
 unbase64
 unhex
 unix_timestamp
@@ -355,6 +363,8 @@ space
 to_date
 translate
 ucase
+udftobyte
+udftodouble
 variance
 xpath_double
 PREHOOK: query: SHOW FUNCTIONS 'log.*'

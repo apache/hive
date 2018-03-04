@@ -93,6 +93,7 @@ public class GenericUDFToChar extends GenericUDF implements SettableUDF, Seriali
     sb.append(" AS CHAR(");
     sb.append("" + typeInfo.getLength());
     sb.append(")");
+    sb.append(")");
     return sb.toString();
   }
 

@@ -308,6 +308,36 @@ class SQLNotNullConstraint
   ::Thrift::Struct.generate_accessors self
 end
 
+class SQLDefaultConstraint
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  TABLE_DB = 1
+  TABLE_NAME = 2
+  COLUMN_NAME = 3
+  DEFAULT_VALUE = 4
+  DC_NAME = 5
+  ENABLE_CSTR = 6
+  VALIDATE_CSTR = 7
+  RELY_CSTR = 8
+
+  FIELDS = {
+    TABLE_DB => {:type => ::Thrift::Types::STRING, :name => 'table_db'},
+    TABLE_NAME => {:type => ::Thrift::Types::STRING, :name => 'table_name'},
+    COLUMN_NAME => {:type => ::Thrift::Types::STRING, :name => 'column_name'},
+    DEFAULT_VALUE => {:type => ::Thrift::Types::STRING, :name => 'default_value'},
+    DC_NAME => {:type => ::Thrift::Types::STRING, :name => 'dc_name'},
+    ENABLE_CSTR => {:type => ::Thrift::Types::BOOL, :name => 'enable_cstr'},
+    VALIDATE_CSTR => {:type => ::Thrift::Types::BOOL, :name => 'validate_cstr'},
+    RELY_CSTR => {:type => ::Thrift::Types::BOOL, :name => 'rely_cstr'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class Type
   include ::Thrift::Struct, ::Thrift::Struct_Union
   NAME = 1
@@ -1557,6 +1587,43 @@ class NotNullConstraintsResponse
   ::Thrift::Struct.generate_accessors self
 end
 
+class DefaultConstraintsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DB_NAME = 1
+  TBL_NAME = 2
+
+  FIELDS = {
+    DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+    TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field db_name is unset!') unless @db_name
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tbl_name is unset!') unless @tbl_name
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class DefaultConstraintsResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DEFAULTCONSTRAINTS = 1
+
+  FIELDS = {
+    DEFAULTCONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'defaultConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLDefaultConstraint}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field defaultConstraints is unset!') unless @defaultConstraints
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class DropConstraintRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   DBNAME = 1
@@ -1643,6 +1710,23 @@ class AddNotNullConstraintRequest
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field notNullConstraintCols is unset!') unless @notNullConstraintCols
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class AddDefaultConstraintRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DEFAULTCONSTRAINTCOLS = 1
+
+  FIELDS = {
+    DEFAULTCONSTRAINTCOLS => {:type => ::Thrift::Types::LIST, :name => 'defaultConstraintCols', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLDefaultConstraint}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field defaultConstraintCols is unset!') unless @defaultConstraintCols
   end
 
   ::Thrift::Struct.generate_accessors self

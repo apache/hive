@@ -198,6 +198,8 @@ class SQLUniqueConstraint;
 
 class SQLNotNullConstraint;
 
+class SQLDefaultConstraint;
+
 class Type;
 
 class HiveObjectRef;
@@ -304,6 +306,10 @@ class NotNullConstraintsRequest;
 
 class NotNullConstraintsResponse;
 
+class DefaultConstraintsRequest;
+
+class DefaultConstraintsResponse;
+
 class DropConstraintRequest;
 
 class AddPrimaryKeyRequest;
@@ -313,6 +319,8 @@ class AddForeignKeyRequest;
 class AddUniqueConstraintRequest;
 
 class AddNotNullConstraintRequest;
+
+class AddDefaultConstraintRequest;
 
 class PartitionsByExprResult;
 
@@ -1079,6 +1087,94 @@ class SQLNotNullConstraint {
 void swap(SQLNotNullConstraint &a, SQLNotNullConstraint &b);
 
 inline std::ostream& operator<<(std::ostream& out, const SQLNotNullConstraint& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _SQLDefaultConstraint__isset {
+  _SQLDefaultConstraint__isset() : table_db(false), table_name(false), column_name(false), default_value(false), dc_name(false), enable_cstr(false), validate_cstr(false), rely_cstr(false) {}
+  bool table_db :1;
+  bool table_name :1;
+  bool column_name :1;
+  bool default_value :1;
+  bool dc_name :1;
+  bool enable_cstr :1;
+  bool validate_cstr :1;
+  bool rely_cstr :1;
+} _SQLDefaultConstraint__isset;
+
+class SQLDefaultConstraint {
+ public:
+
+  SQLDefaultConstraint(const SQLDefaultConstraint&);
+  SQLDefaultConstraint& operator=(const SQLDefaultConstraint&);
+  SQLDefaultConstraint() : table_db(), table_name(), column_name(), default_value(), dc_name(), enable_cstr(0), validate_cstr(0), rely_cstr(0) {
+  }
+
+  virtual ~SQLDefaultConstraint() throw();
+  std::string table_db;
+  std::string table_name;
+  std::string column_name;
+  std::string default_value;
+  std::string dc_name;
+  bool enable_cstr;
+  bool validate_cstr;
+  bool rely_cstr;
+
+  _SQLDefaultConstraint__isset __isset;
+
+  void __set_table_db(const std::string& val);
+
+  void __set_table_name(const std::string& val);
+
+  void __set_column_name(const std::string& val);
+
+  void __set_default_value(const std::string& val);
+
+  void __set_dc_name(const std::string& val);
+
+  void __set_enable_cstr(const bool val);
+
+  void __set_validate_cstr(const bool val);
+
+  void __set_rely_cstr(const bool val);
+
+  bool operator == (const SQLDefaultConstraint & rhs) const
+  {
+    if (!(table_db == rhs.table_db))
+      return false;
+    if (!(table_name == rhs.table_name))
+      return false;
+    if (!(column_name == rhs.column_name))
+      return false;
+    if (!(default_value == rhs.default_value))
+      return false;
+    if (!(dc_name == rhs.dc_name))
+      return false;
+    if (!(enable_cstr == rhs.enable_cstr))
+      return false;
+    if (!(validate_cstr == rhs.validate_cstr))
+      return false;
+    if (!(rely_cstr == rhs.rely_cstr))
+      return false;
+    return true;
+  }
+  bool operator != (const SQLDefaultConstraint &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SQLDefaultConstraint & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SQLDefaultConstraint &a, SQLDefaultConstraint &b);
+
+inline std::ostream& operator<<(std::ostream& out, const SQLDefaultConstraint& obj)
 {
   obj.printTo(out);
   return out;
@@ -4346,6 +4442,91 @@ inline std::ostream& operator<<(std::ostream& out, const NotNullConstraintsRespo
 }
 
 
+class DefaultConstraintsRequest {
+ public:
+
+  DefaultConstraintsRequest(const DefaultConstraintsRequest&);
+  DefaultConstraintsRequest& operator=(const DefaultConstraintsRequest&);
+  DefaultConstraintsRequest() : db_name(), tbl_name() {
+  }
+
+  virtual ~DefaultConstraintsRequest() throw();
+  std::string db_name;
+  std::string tbl_name;
+
+  void __set_db_name(const std::string& val);
+
+  void __set_tbl_name(const std::string& val);
+
+  bool operator == (const DefaultConstraintsRequest & rhs) const
+  {
+    if (!(db_name == rhs.db_name))
+      return false;
+    if (!(tbl_name == rhs.tbl_name))
+      return false;
+    return true;
+  }
+  bool operator != (const DefaultConstraintsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DefaultConstraintsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(DefaultConstraintsRequest &a, DefaultConstraintsRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const DefaultConstraintsRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class DefaultConstraintsResponse {
+ public:
+
+  DefaultConstraintsResponse(const DefaultConstraintsResponse&);
+  DefaultConstraintsResponse& operator=(const DefaultConstraintsResponse&);
+  DefaultConstraintsResponse() {
+  }
+
+  virtual ~DefaultConstraintsResponse() throw();
+  std::vector<SQLDefaultConstraint>  defaultConstraints;
+
+  void __set_defaultConstraints(const std::vector<SQLDefaultConstraint> & val);
+
+  bool operator == (const DefaultConstraintsResponse & rhs) const
+  {
+    if (!(defaultConstraints == rhs.defaultConstraints))
+      return false;
+    return true;
+  }
+  bool operator != (const DefaultConstraintsResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DefaultConstraintsResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(DefaultConstraintsResponse &a, DefaultConstraintsResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const DefaultConstraintsResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
 class DropConstraintRequest {
  public:
 
@@ -4550,6 +4731,46 @@ class AddNotNullConstraintRequest {
 void swap(AddNotNullConstraintRequest &a, AddNotNullConstraintRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const AddNotNullConstraintRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class AddDefaultConstraintRequest {
+ public:
+
+  AddDefaultConstraintRequest(const AddDefaultConstraintRequest&);
+  AddDefaultConstraintRequest& operator=(const AddDefaultConstraintRequest&);
+  AddDefaultConstraintRequest() {
+  }
+
+  virtual ~AddDefaultConstraintRequest() throw();
+  std::vector<SQLDefaultConstraint>  defaultConstraintCols;
+
+  void __set_defaultConstraintCols(const std::vector<SQLDefaultConstraint> & val);
+
+  bool operator == (const AddDefaultConstraintRequest & rhs) const
+  {
+    if (!(defaultConstraintCols == rhs.defaultConstraintCols))
+      return false;
+    return true;
+  }
+  bool operator != (const AddDefaultConstraintRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AddDefaultConstraintRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AddDefaultConstraintRequest &a, AddDefaultConstraintRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const AddDefaultConstraintRequest& obj)
 {
   obj.printTo(out);
   return out;

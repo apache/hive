@@ -107,7 +107,7 @@ insert overwrite table src_multi2 select * where key > 10 and key < 20;
 set hive.exec.dynamic.partition.mode=nonstrict;
 -- Table with partition
 CREATE TABLE tablePartitioned (a STRING NOT NULL ENFORCED, b STRING, c STRING NOT NULL ENFORCED)
-    PARTITIONED BY (p1 STRING, p2 INT NOT NULL ENABLE);
+    PARTITIONED BY (p1 STRING, p2 INT NOT NULL DISABLE);
 
 -- Insert into
 explain INSERT INTO tablePartitioned partition(p1='today', p2=10) values('not', 'null', 'constraint');

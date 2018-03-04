@@ -87,6 +87,7 @@ import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -2424,12 +2425,20 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
+  public List<SQLDefaultConstraint> getDefaultConstraints(String db_name, String tbl_name)
+      throws MetaException {
+    // TODO constraintCache
+    return rawStore.getDefaultConstraints(db_name, tbl_name);
+  }
+
+  @Override
   public List<String> createTableWithConstraints(Table tbl, List<SQLPrimaryKey> primaryKeys,
       List<SQLForeignKey> foreignKeys, List<SQLUniqueConstraint> uniqueConstraints,
-      List<SQLNotNullConstraint> notNullConstraints) throws InvalidObjectException, MetaException {
+      List<SQLNotNullConstraint> notNullConstraints,
+      List<SQLDefaultConstraint> defaultConstraints) throws InvalidObjectException, MetaException {
     // TODO constraintCache
     List<String> constraintNames = rawStore.createTableWithConstraints(tbl, primaryKeys,
-        foreignKeys, uniqueConstraints, notNullConstraints);
+        foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints);
     String dbName = StringUtils.normalizeIdentifier(tbl.getDbName());
     String tblName = StringUtils.normalizeIdentifier(tbl.getTableName());
     if (!shouldCacheTable(dbName, tblName)) {
@@ -2475,6 +2484,13 @@ public class CachedStore implements RawStore, Configurable {
       throws InvalidObjectException, MetaException {
     // TODO constraintCache
     return rawStore.addNotNullConstraints(nns);
+  }
+
+  @Override
+  public List<String> addDefaultConstraints(List<SQLDefaultConstraint> nns)
+      throws InvalidObjectException, MetaException {
+    // TODO constraintCache
+    return rawStore.addDefaultConstraints(nns);
   }
 
   @Override

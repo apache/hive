@@ -174,3 +174,7 @@ EXEC SP_RENAME 'COMPLETED_COMPACTIONS.CC_HIGHEST_TXN_ID', 'CC_HIGHEST_WRITE_ID',
 -- Modify txn_components/completed_txn_components tables to add write id.
 ALTER TABLE TXN_COMPONENTS ADD TC_WRITEID bigint;
 ALTER TABLE COMPLETED_TXN_COMPONENTS ADD CTC_WRITEID bigint;
+  
+-- HIVE-18726
+  -- add a new column to support default value for DEFAULT constraint
+ ALTER TABLE KEY_CONSTRAINTS ADD DEFAULT_VALUE VARCHAR(400);

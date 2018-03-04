@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
+import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -114,7 +115,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       boolean isFormatted, boolean isExt,
       boolean isOutputPadded, List<ColumnStatisticsObj> colStats,
       PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
-      UniqueConstraint ukInfo, NotNullConstraint nnInfo) throws HiveException {
+      UniqueConstraint ukInfo, NotNullConstraint nnInfo, DefaultConstraint dInfo) throws HiveException {
     MapBuilder builder = MapBuilder.create();
     builder.put("columns", makeColsUnformatted(cols));
 
@@ -136,6 +137,9 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       }
       if (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty()) {
         builder.put("notNullConstraintInfo", nnInfo);
+      }
+      if (dInfo != null && !dInfo.getDefaultConstraints().isEmpty()) {
+        builder.put("defaultConstraintInfo", dInfo);
       }
     }
 

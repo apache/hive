@@ -801,7 +801,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public void createTableWithConstraints(Table tbl,
     List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
     List<SQLUniqueConstraint> uniqueConstraints,
-    List<SQLNotNullConstraint> notNullConstraints)
+    List<SQLNotNullConstraint> notNullConstraints,
+    List<SQLDefaultConstraint> defaultConstraints)
         throws AlreadyExistsException, InvalidObjectException,
         MetaException, NoSuchObjectException, TException {
     HiveMetaHook hook = getHook(tbl);
@@ -812,7 +813,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       // Subclasses can override this step (for example, for temporary tables)
       client.create_table_with_constraints(tbl, primaryKeys, foreignKeys,
-          uniqueConstraints, notNullConstraints);
+          uniqueConstraints, notNullConstraints, defaultConstraints);
       if (hook != null) {
         hook.commitCreateTable(tbl);
       }
@@ -852,6 +853,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public void addNotNullConstraint(List<SQLNotNullConstraint> notNullConstraintCols) throws
     NoSuchObjectException, MetaException, TException {
     client.add_not_null_constraint(new AddNotNullConstraintRequest(notNullConstraintCols));
+  }
+
+  @Override
+  public void addDefaultConstraint(List<SQLDefaultConstraint> defaultConstraints) throws
+      NoSuchObjectException, MetaException, TException {
+    client.add_default_constraint(new AddDefaultConstraintRequest(defaultConstraints));
   }
 
   /**
@@ -1763,6 +1770,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return client.get_not_null_constraints(req).getNotNullConstraints();
   }
 
+  @Override
+  public List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest req)
+      throws MetaException, NoSuchObjectException, TException {
+    return client.get_default_constraints(req).getDefaultConstraints();
+  }
 
   /** {@inheritDoc} */
   @Override
