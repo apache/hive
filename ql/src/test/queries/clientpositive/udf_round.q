@@ -1,5 +1,4 @@
 set hive.fetch.task.conversion=more;
-
 DESCRIBE FUNCTION round;
 DESCRIBE FUNCTION EXTENDED round;
 
@@ -44,3 +43,10 @@ FROM src tablesample (1 rows);
 
 SELECT round(1809242.3151111344, 9), round(-1809242.3151111344, 9), round(1809242.3151111344BD, 9), round(-1809242.3151111344BD, 9)
 FROM src tablesample (1 rows);
+
+select round(cast(l_suppkey as bigint), l_linenumber * -1 ),
+       round(l_extendedprice, cast(l_orderkey % 2 as tinyint)),
+       round(cast(l_suppkey as smallint), (cast(l_linenumber * -1  as tinyint)) %3),
+       round(cast(l_discount as float), cast(l_partkey % 2 as smallint)),
+       round(l_suppkey, cast(l_orderkey as bigint) * -1)
+from lineitem limit 5;
