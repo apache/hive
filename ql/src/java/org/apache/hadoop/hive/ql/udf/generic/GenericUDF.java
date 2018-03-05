@@ -504,7 +504,7 @@ public abstract class GenericUDF implements Closeable {
       try {
         date = DateUtils.getDateFormat().parse(dateStr);
       } catch (ParseException e) {
-        return null;
+        throw new UDFArgumentException("Unparsable date: " + dateStr);
       }
       break;
     case TIMESTAMP:

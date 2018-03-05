@@ -50,10 +50,6 @@ public class TestGenericUDFAddMonths extends TestCase {
     runAndVerify("2016-02-29", -12, "2015-02-28", udf);
     runAndVerify("2016-01-29", 1, "2016-02-29", udf);
     runAndVerify("2016-02-29", -1, "2016-01-31", udf);
-    // wrong date str
-    runAndVerify("2014-02-30", 1, "2014-04-02", udf);
-    runAndVerify("2014-02-32", 1, "2014-04-04", udf);
-    runAndVerify("2014-01", 1, null, udf);
 
     // ts str
     runAndVerify("2014-01-14 10:30:00", 1, "2014-02-14", udf);
@@ -65,11 +61,44 @@ public class TestGenericUDFAddMonths extends TestCase {
     runAndVerify("2016-02-29 10:30:00", -12, "2015-02-28", udf);
     runAndVerify("2016-01-29 10:30:00", 1, "2016-02-29", udf);
     runAndVerify("2016-02-29 10:30:00", -1, "2016-01-31", udf);
-    // wrong ts str
-    runAndVerify("2014-02-30 10:30:00", 1, "2014-04-02", udf);
-    runAndVerify("2014-02-32 10:30:00", 1, "2014-04-04", udf);
-    runAndVerify("2014/01/31 10:30:00", 1, null, udf);
-    runAndVerify("2014-01-31T10:30:00", 1, "2014-02-28", udf);
+  }
+
+  public void testWrongDateStr() throws HiveException {
+    boolean caught = false;
+    try {
+      GenericUDFAddMonths udf = new GenericUDFAddMonths();
+      ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+      ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
+      ObjectInspector[] arguments = { valueOI0, valueOI1 };
+
+      udf.initialize(arguments);
+      runAndVerify("2014-02-30", 1, "2014-04-02", udf);
+      runAndVerify("2014-02-32", 1, "2014-04-04", udf);
+      runAndVerify("2014-01", 1, null, udf);
+    } catch (HiveException e) {
+      caught = true;
+    }
+    assertTrue(caught);
+  }
+
+  public void testWrongTsStr() throws HiveException {
+    boolean caught = false;
+    try {
+      GenericUDFAddMonths udf = new GenericUDFAddMonths();
+      ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+      ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
+      ObjectInspector[] arguments = { valueOI0, valueOI1 };
+
+      udf.initialize(arguments);
+
+      runAndVerify("2014-02-30 10:30:00", 1, "2014-04-02", udf);
+      runAndVerify("2014-02-32 10:30:00", 1, "2014-04-04", udf);
+      runAndVerify("2014/01/31 10:30:00", 1, null, udf);
+      runAndVerify("2014-01-31T10:30:00", 1, "2014-02-28", udf);
+    } catch (HiveException e) {
+      caught = true;
+    }
+    assertTrue(caught);
   }
 
   public void testAddMonthsShort() throws HiveException {
@@ -109,6 +138,8 @@ public class TestGenericUDFAddMonths extends TestCase {
           "add_months only takes INT/SHORT/BYTE types as 2nd argument, got LONG", e.getMessage());
     }
   }
+
+
 
   private void runAndVerify(String str, int months, String expResult, GenericUDF udf)
       throws HiveException {
