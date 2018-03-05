@@ -69,7 +69,7 @@ STAGE PLANS:
                   Statistics: Num rows: 100 Data size: 18816 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:name:string, 1:age:int, 2:gpa:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:name:string, 1:age:int, 2:gpa:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: name (type: string), age (type: int), gpa (type: double)
                     outputColumnNames: name, age, gpa

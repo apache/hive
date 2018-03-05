@@ -108,18 +108,18 @@ public class StreamingAssert {
     assertExpectedFileCount(0);
   }
 
-  public void assertMinTransactionId(long expectedMinTransactionId) {
+  public void assertMinWriteId(long expectedMinWriteId) {
     if (currentDeltas.isEmpty()) {
       throw new AssertionError("No data");
     }
-    assertEquals(expectedMinTransactionId, min);
+    assertEquals(expectedMinWriteId, min);
   }
 
-  public void assertMaxTransactionId(long expectedMaxTransactionId) {
+  public void assertMaxWriteId(long expectedMaxWriteId) {
     if (currentDeltas.isEmpty()) {
       throw new AssertionError("No data");
     }
-    assertEquals(expectedMaxTransactionId, max);
+    assertEquals(expectedMaxWriteId, max);
   }
 
   List<Record> readRecords() throws Exception {

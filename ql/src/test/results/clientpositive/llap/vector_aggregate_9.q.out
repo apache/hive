@@ -130,7 +130,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 212912 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:dc:decimal(38,18), 7:bo:boolean, 8:s:string, 9:s2:string, 10:ts:timestamp, 11:ts2:timestamp, 12:dt:date, 13:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:dc:decimal(38,18), 7:bo:boolean, 8:s:string, 9:s2:string, 10:ts:timestamp, 11:ts2:timestamp, 12:dt:date, 13:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: dc (type: decimal(38,18))
                     outputColumnNames: dc
@@ -261,7 +261,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 15208 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:dc:decimal(38,18), 7:bo:boolean, 8:s:string, 9:s2:string, 10:ts:timestamp, 11:ts2:timestamp, 12:dt:date, 13:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:dc:decimal(38,18), 7:bo:boolean, 8:s:string, 9:s2:string, 10:ts:timestamp, 11:ts2:timestamp, 12:dt:date, 13:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: d (type: double)
                     outputColumnNames: d
@@ -392,7 +392,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2000 Data size: 76040 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:dc:decimal(38,18), 7:bo:boolean, 8:s:string, 9:s2:string, 10:ts:timestamp, 11:ts2:timestamp, 12:dt:date, 13:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:t:tinyint, 1:si:smallint, 2:i:int, 3:b:bigint, 4:f:float, 5:d:double, 6:dc:decimal(38,18), 7:bo:boolean, 8:s:string, 9:s2:string, 10:ts:timestamp, 11:ts2:timestamp, 12:dt:date, 13:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: ts (type: timestamp)
                     outputColumnNames: ts

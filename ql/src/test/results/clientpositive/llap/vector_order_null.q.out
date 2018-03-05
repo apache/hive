@@ -102,7 +102,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: a (type: int), b (type: string)
                     outputColumnNames: _col0, _col1
@@ -225,7 +225,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: a (type: int), b (type: string)
                     outputColumnNames: _col0, _col1
@@ -348,7 +348,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: a (type: int), b (type: string)
                     outputColumnNames: _col0, _col1
@@ -471,7 +471,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: a (type: int), b (type: string)
                     outputColumnNames: _col0, _col1
@@ -594,7 +594,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: a (type: int), b (type: string)
                     outputColumnNames: _col0, _col1
@@ -717,7 +717,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: a (type: int), b (type: string)
                     outputColumnNames: _col0, _col1
@@ -840,7 +840,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: a (type: int), b (type: string)
                     outputColumnNames: _col0, _col1
@@ -963,7 +963,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: a (type: int), b (type: string)
                     outputColumnNames: _col0, _col1
@@ -1086,7 +1086,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: a (type: int), b (type: string)
                     outputColumnNames: _col0, _col1
@@ -1209,7 +1209,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: a (type: int), b (type: string)
                     outputColumnNames: _col0, _col1
@@ -1332,7 +1332,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 364 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:int, 1:b:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: a (type: int), b (type: string)
                     outputColumnNames: _col0, _col1

@@ -19,7 +19,7 @@ set hive.llap.io.encode.enabled=true;
 --
 -- FILE VARIATION: ORC, ACID Vectorized, MapWork, Table
 -- *IMPORTANT NOTE* We set hive.exec.schema.evolution=false above since schema evolution is always used for ACID.
--- Also, we don't do EXPLAINs on ACID files because the transaction id causes Q file statistics differences...
+-- Also, we don't do EXPLAINs on ACID files because the write id causes Q file statistics differences...
 --
 
 CREATE TABLE schema_evolution_data(insert_num int, boolean1 boolean, tinyint1 tinyint, smallint1 smallint, int1 int, bigint1 bigint, decimal1 decimal(38,18), float1 float, double1 double, string1 string, string2 string, date1 date, timestamp1 timestamp, boolean_str string, tinyint_str string, smallint_str string, int_str string, bigint_str string, decimal_str string, float_str string, double_str string, date_str string, timestamp_str string, filler string)

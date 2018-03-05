@@ -1740,17 +1740,17 @@ public class Hive {
    * Load Data commands for fullAcid tables write to base_x (if there is overwrite clause) or
    * delta_x_x directory - same as any other Acid write.  This method modifies the destPath to add
    * this path component.
-   * @param txnId - id of current transaction (in which this operation is running)
+   * @param writeId - write id of the operated table from current transaction (in which this operation is running)
    * @param stmtId - see {@link DbTxnManager#getStmtIdAndIncrement()}
    * @return appropriately modified path
    */
-  private Path fixFullAcidPathForLoadData(LoadFileType loadFileType, Path destPath, long txnId, int stmtId, Table tbl) throws HiveException {
+  private Path fixFullAcidPathForLoadData(LoadFileType loadFileType, Path destPath, long writeId, int stmtId, Table tbl) throws HiveException {
     switch (loadFileType) {
       case REPLACE_ALL:
-        destPath = new Path(destPath, AcidUtils.baseDir(txnId));
+        destPath = new Path(destPath, AcidUtils.baseDir(writeId));
         break;
       case KEEP_EXISTING:
-        destPath = new Path(destPath, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
+        destPath = new Path(destPath, AcidUtils.deltaSubdir(writeId, writeId, stmtId));
         break;
       case OVERWRITE_EXISTING:
         //should not happen here - this is for replication
@@ -1772,9 +1772,9 @@ public class Hive {
     return conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary() && oldPart != null;
   }
 
-  private List<Path> listFilesCreatedByQuery(Path loadPath, long txnId, int stmtId) throws HiveException {
+  private List<Path> listFilesCreatedByQuery(Path loadPath, long writeId, int stmtId) throws HiveException {
     List<Path> newFiles = new ArrayList<Path>();
-    final String filePrefix = AcidUtils.deltaSubdir(txnId, txnId, stmtId);
+    final String filePrefix = AcidUtils.deltaSubdir(writeId, writeId, stmtId);
     FileStatus[] srcs;
     FileSystem srcFs;
     try {
@@ -1940,7 +1940,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws HiveException
    */
   private Set<Path> getValidPartitionsInPath(
-      int numDP, int numLB, Path loadPath, Long txnId, int stmtId,
+      int numDP, int numLB, Path loadPath, Long writeId, int stmtId,
       boolean isMmTable, boolean isInsertOverwrite) throws HiveException {
     Set<Path> validPartitions = new HashSet<Path>();
     try {
@@ -1964,7 +1964,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         Utilities.FILE_OP_LOGGER.trace(
             "Looking for dynamic partitions in {} ({} levels)", loadPath, numDP);
         Path[] leafStatus = Utilities.getMmDirectoryCandidates(
-            fs, loadPath, numDP, numLB, null, txnId, -1, conf, isInsertOverwrite);
+            fs, loadPath, numDP, numLB, null, writeId, -1, conf, isInsertOverwrite);
         for (Path p : leafStatus) {
           Path dpPath = p.getParent(); // Skip the MM directory that we have found.
           for (int i = 0; i < numLB; ++i) {

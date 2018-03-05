@@ -171,7 +171,7 @@ public final class JavaUtils {
     String fileName = file.getName();
     String[] parts = fileName.split("_", 4);  // e.g. delta_0000001_0000001_0000 or base_0000022
     if (parts.length < 2 || !(DELTA_PREFIX.equals(parts[0]) || BASE_PREFIX.equals(parts[0]))) {
-      LOG.debug("Cannot extract transaction ID for a MM table: " + file
+      LOG.debug("Cannot extract write ID for a MM table: " + file
           + " (" + Arrays.toString(parts) + ")");
       return null;
     }
@@ -179,7 +179,7 @@ public final class JavaUtils {
     try {
       writeId = Long.parseLong(parts[1]);
     } catch (NumberFormatException ex) {
-      LOG.debug("Cannot extract transaction ID for a MM table: " + file
+      LOG.debug("Cannot extract write ID for a MM table: " + file
           + "; parsing " + parts[1] + " got " + ex.getMessage());
       return null;
     }
