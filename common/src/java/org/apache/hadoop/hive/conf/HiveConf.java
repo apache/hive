@@ -3038,7 +3038,7 @@ public class HiveConf extends Configuration {
         "Enable (configurable) deprecated behaviors by setting desired level of backward compatibility.\n" +
         "Setting to 0.12:\n" +
         "  Maintains division behavior: int / int = double"),
-    HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ("hive.convert.join.bucket.mapjoin.tez", false,
+    HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ("hive.convert.join.bucket.mapjoin.tez", true,
         "Whether joins can be automatically converted to bucket map joins in hive \n" +
         "when tez is used as the execution engine."),
     HIVE_TEZ_BMJ_USE_SUBCACHE("hive.tez.bmj.use.subcache", true,

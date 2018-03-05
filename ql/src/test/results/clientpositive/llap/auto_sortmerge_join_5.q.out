@@ -509,103 +509,10 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Map 1 <- Map 3 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
-            Map Operator Tree:
-                TableScan
-                  alias: a
-                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                  GatherStats: false
-                  Filter Operator
-                    isSamplingPred: false
-                    predicate: key is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: key (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                      Map Join Operator
-                        condition map:
-                             Inner Join 0 to 1
-                        Estimated key counts: Map 3 => 1
-                        keys:
-                          0 _col0 (type: string)
-                          1 _col0 (type: string)
-                        input vertices:
-                          1 Map 3
-                        Position of Big Table: 0
-                        Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
-                        Group By Operator
-                          aggregations: count()
-                          mode: hash
-                          outputColumnNames: _col0
-                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                          Reduce Output Operator
-                            null sort order: 
-                            sort order: 
-                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
-                            tag: -1
-                            value expressions: _col0 (type: bigint)
-                            auto parallelism: false
-            Execution mode: llap
-            LLAP IO: no inputs
-            Path -> Alias:
-#### A masked pattern was here ####
-            Path -> Partition:
-#### A masked pattern was here ####
-                Partition
-                  base file name: bucket_big
-                  input format: org.apache.hadoop.mapred.TextInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                  properties:
-                    SORTBUCKETCOLSPREFIX TRUE
-                    bucket_count 2
-                    bucket_field_name key
-                    column.name.delimiter ,
-                    columns key,value
-                    columns.comments 
-                    columns.types string:string
-#### A masked pattern was here ####
-                    name default.bucket_big
-                    numFiles 2
-                    numRows 0
-                    rawDataSize 0
-                    serialization.ddl struct bucket_big { string key, string value}
-                    serialization.format 1
-                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    totalSize 2750
-#### A masked pattern was here ####
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    properties:
-                      SORTBUCKETCOLSPREFIX TRUE
-                      bucket_count 2
-                      bucket_field_name key
-                      column.name.delimiter ,
-                      columns key,value
-                      columns.comments 
-                      columns.types string:string
-#### A masked pattern was here ####
-                      name default.bucket_big
-                      numFiles 2
-                      numRows 0
-                      rawDataSize 0
-                      serialization.ddl struct bucket_big { string key, string value}
-                      serialization.format 1
-                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 2750
-#### A masked pattern was here ####
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                    name: default.bucket_big
-                  name: default.bucket_big
-            Truncated Path -> Alias:
-              /bucket_big [a]
-        Map 3 
             Map Operator Tree:
                 TableScan
                   alias: b
@@ -619,22 +526,11 @@ STAGE PLANS:
                       expressions: key (type: string)
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: a
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                        tag: 1
-                        auto parallelism: true
-            Execution mode: llap
-            LLAP IO: no inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
 #### A masked pattern was here ####
                 Partition
-                  base file name: bucket_small
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
@@ -682,6 +578,92 @@ STAGE PLANS:
                   name: default.bucket_small
             Truncated Path -> Alias:
               /bucket_small [b]
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: key is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Merge Join Operator
+                        condition map:
+                             Inner Join 0 to 1
+                        keys:
+                          0 _col0 (type: string)
+                          1 _col0 (type: string)
+                        Position of Big Table: 0
+                        Statistics: Num rows: 1 Data size: 202 Basic stats: COMPLETE Column stats: NONE
+                        Group By Operator
+                          aggregations: count()
+                          mode: hash
+                          outputColumnNames: _col0
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          Reduce Output Operator
+                            null sort order: 
+                            sort order: 
+                            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                            tag: -1
+                            value expressions: _col0 (type: bigint)
+                            auto parallelism: false
+            Execution mode: llap
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    SORTBUCKETCOLSPREFIX TRUE
+                    bucket_count 2
+                    bucket_field_name key
+                    column.name.delimiter ,
+                    columns key,value
+                    columns.comments 
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.bucket_big
+                    numFiles 2
+                    numRows 0
+                    rawDataSize 0
+                    serialization.ddl struct bucket_big { string key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 2750
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      SORTBUCKETCOLSPREFIX TRUE
+                      bucket_count 2
+                      bucket_field_name key
+                      column.name.delimiter ,
+                      columns key,value
+                      columns.comments 
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.bucket_big
+                      numFiles 2
+                      numRows 0
+                      rawDataSize 0
+                      serialization.ddl struct bucket_big { string key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 2750
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.bucket_big
+                  name: default.bucket_big
+            Truncated Path -> Alias:
+              /bucket_big [a]
         Reducer 2 
             Execution mode: llap
             Needs Tagging: false
