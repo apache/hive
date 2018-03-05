@@ -48,10 +48,6 @@ quarter('2016-10-29'),
 quarter('2016-11-29'),
 quarter('2016-12-29'),
 
-quarter('2016-03-35'),
-quarter('2014-01-32'),
-quarter('01/14/2014'),
-
 quarter(cast(null as string)),
 
 quarter('1966-01-01'),
@@ -75,10 +71,6 @@ quarter('2016-10-29'),
 quarter('2016-11-29'),
 quarter('2016-12-29'),
 
-quarter('2016-03-35'),
-quarter('2014-01-32'),
-quarter('01/14/2014'),
-
 quarter(cast(null as string)),
 
 quarter('1966-01-01'),
@@ -88,7 +80,7 @@ quarter('1966-12-31')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-1	1	1	2	2	2	3	3	3	4	4	4	2	1	NULL	NULL	1	1	2	4
+1	1	1	2	2	2	3	3	3	4	4	4	NULL	1	1	2	4
 PREHOOK: query: select
 quarter('2014-01-10 00:00:00'),
 quarter('2014-02-10 15:23:00'),
@@ -102,10 +94,6 @@ quarter('2016-09-29 15:23:00'),
 quarter('2016-10-29 15:23:00'),
 quarter('2016-11-29 15:23:00'),
 quarter('2016-12-29 15:23:00'),
-
-quarter('2016-03-35 15:23:00'),
-quarter('2014-01-32 15:23:00'),
-quarter('01/14/2014 15:23:00'),
 
 quarter(null),
 
@@ -130,10 +118,6 @@ quarter('2016-10-29 15:23:00'),
 quarter('2016-11-29 15:23:00'),
 quarter('2016-12-29 15:23:00'),
 
-quarter('2016-03-35 15:23:00'),
-quarter('2014-01-32 15:23:00'),
-quarter('01/14/2014 15:23:00'),
-
 quarter(null),
 
 quarter('1966-01-01 00:00:00'),
@@ -143,7 +127,7 @@ quarter('1966-12-31 23:59:59.999')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-1	1	1	2	2	2	3	3	3	4	4	4	2	1	NULL	NULL	1	1	2	4
+1	1	1	2	2	2	3	3	3	4	4	4	NULL	1	1	2	4
 PREHOOK: query: select
 quarter(cast('2014-01-10' as date)),
 quarter(cast('2014-02-10' as date)),

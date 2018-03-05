@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.Text;
+import org.junit.Assume;
 
 public class TestGenericUDFDateFormat extends TestCase {
 
@@ -53,11 +54,6 @@ public class TestGenericUDFDateFormat extends TestCase {
     runAndVerifyStr("2015-04-10", fmtText, "Friday", udf);
     runAndVerifyStr("2015-04-11", fmtText, "Saturday", udf);
     runAndVerifyStr("2015-04-12", fmtText, "Sunday", udf);
-    // wrong date str
-    runAndVerifyStr("2016-02-30", fmtText, "Tuesday", udf);
-    runAndVerifyStr("2014-01-32", fmtText, "Saturday", udf);
-    runAndVerifyStr("01/14/2014", fmtText, null, udf);
-    runAndVerifyStr(null, fmtText, null, udf);
 
     // ts str
     runAndVerifyStr("2015-04-05 10:30:45", fmtText, "Sunday", udf);
@@ -68,11 +64,27 @@ public class TestGenericUDFDateFormat extends TestCase {
     runAndVerifyStr("2015-04-10 10:30:45.123", fmtText, "Friday", udf);
     runAndVerifyStr("2015-04-11T10:30:45", fmtText, "Saturday", udf);
     runAndVerifyStr("2015-04-12 10", fmtText, "Sunday", udf);
-    // wrong ts str
-    runAndVerifyStr("2016-02-30 10:30:45", fmtText, "Tuesday", udf);
-    runAndVerifyStr("2014-01-32 10:30:45", fmtText, "Saturday", udf);
-    runAndVerifyStr("01/14/2014 10:30:45", fmtText, null, udf);
-    runAndVerifyStr("2016-02-28T10:30:45", fmtText, "Sunday", udf);
+  }
+
+  public void testWrongDateStr() throws HiveException {
+    boolean caught = false;
+    try {
+      GenericUDFDateFormat udf = new GenericUDFDateFormat();
+      ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+      Text fmtText = new Text("EEEE");
+      ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory
+              .getPrimitiveWritableConstantObjectInspector(TypeInfoFactory.stringTypeInfo, fmtText);
+      ObjectInspector[] arguments = { valueOI0, valueOI1 };
+
+      udf.initialize(arguments);
+      runAndVerifyStr("2016-02-30 10:30:45", fmtText, "Tuesday", udf);
+      runAndVerifyStr("2014-01-32", fmtText, "Saturday", udf);
+      runAndVerifyStr("01/14/2014", fmtText, null, udf);
+      runAndVerifyStr(null, fmtText, null, udf);
+    } catch (HiveException e) {
+      caught = true;
+    }
+    assertTrue(caught);
   }
 
   public void testDateFormatDate() throws HiveException {

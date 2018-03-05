@@ -10,9 +10,7 @@ select
   months_between('2001-06-30', '2000-05-31'),
   months_between('2000-06-01', '2004-07-01'),
   months_between('2002-02-28', '2002-03-01'),
-  months_between('2002-02-31', '2002-03-01'),
   months_between('2012-02-29', '2012-03-01'),
-  months_between('2012-02-31', '2012-03-01'),
   months_between('1976-01-01 00:00:00', '1975-12-31 23:59:59'),
   months_between('1976-01-01', '1975-12-31 23:59:59'),
   months_between('1997-02-28 10:30:00', '1996-10-30'),
@@ -42,9 +40,7 @@ select
   months_between(cast('2001-06-30 00:00:00' as timestamp), cast('2000-05-31 00:00:00' as timestamp)),
   months_between(cast('2000-06-01 00:00:00' as timestamp), cast('2004-07-01 00:00:00' as timestamp)),
   months_between(cast('2002-02-28 00:00:00' as timestamp), cast('2002-03-01 00:00:00' as timestamp)),
-  months_between(cast('2002-02-31 00:00:00' as timestamp), cast('2002-03-01 00:00:00' as timestamp)),
   months_between(cast('2012-02-29 00:00:00' as timestamp), cast('2012-03-01 00:00:00' as timestamp)),
-  months_between(cast('2012-02-31 00:00:00' as timestamp), cast('2012-03-01 00:00:00' as timestamp)),
   months_between(cast('1976-01-01 00:00:00' as timestamp), cast('1975-12-31 23:59:59' as timestamp)),
   months_between(cast('1976-01-01' as date), cast('1975-12-31 23:59:59' as timestamp)),
   months_between(cast('1997-02-28 10:30:00' as timestamp), cast('1996-10-30' as date)),
@@ -64,25 +60,19 @@ select
   months_between(cast('2001-06-30' as date), cast('2000-05-31' as date)),
   months_between(cast('2000-06-01' as date), cast('2004-07-01' as date)),
   months_between(cast('2002-02-28' as date), cast('2002-03-01' as date)),
-  months_between(cast('2002-02-31' as date), cast('2002-03-01' as date)),
-  months_between(cast('2012-02-29' as date), cast('2012-03-01' as date)),
-  months_between(cast('2012-02-31' as date), cast('2012-03-01' as date));
+  months_between(cast('2012-02-29' as date), cast('2012-03-01' as date));
+
 
 --test misc with null
 select
   months_between(cast(null as string), '2012-03-01'),
-  months_between('2012-02-31', cast(null as timestamp)),
   months_between(cast(null as timestamp), cast(null as date)),
   months_between(cast(null as string), cast('2012-03-01 00:00:00' as timestamp)),
-  months_between(cast('2012-02-31 00:00:00' as timestamp), cast(null as string)),
   months_between(cast(null as timestamp), cast('2012-03-01' as string)),
-  months_between(cast('2012-02-31' as date), cast(null as string)),
   months_between('2012-02-10', cast(null as string)),
   months_between(cast(null as string), '2012-02-10'),
   months_between(cast(null as string), cast(null as string)),
   months_between('2012-02-10', cast(null as timestamp)),
   months_between(cast(null as timestamp), '2012-02-10'),
-  months_between(cast(null as timestamp), cast(null as timestamp)),
-  -- string dates without day should be parsed to null
-  months_between('2012-03', '2012-02-24'),
-  months_between('2012-03-24', '2012-02');
+  months_between(cast(null as timestamp), cast(null as timestamp));
+
