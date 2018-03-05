@@ -59,6 +59,23 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     testMonthsBetweenForString(udf);
   }
 
+  public void testWrongDateStr() throws HiveException {
+    boolean caught = false;
+    try {
+      GenericUDFMonthsBetween udf = new GenericUDFMonthsBetween();
+      ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+      ObjectInspector valueOI2 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+      ObjectInspector[] arguments = { valueOI1, valueOI2 };
+      udf.initialize(arguments);
+
+      runTestStr("2002-03", "2002-02-24", null, udf);
+      runTestStr("2002-03-24", "2002-02", null, udf);
+    } catch (HiveException e) {
+      caught = true;
+    }
+    assertTrue(caught);
+  }
+
   public void testMonthsBetweenForString(GenericUDFMonthsBetween udf) throws HiveException {
     // test month diff with fraction considering time components
     runTestStr("1995-02-02", "1995-01-01", 1.03225806, udf);
@@ -111,12 +128,10 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     runTestStr("2002-02-28", null, null, udf);
     runTestStr(null, null, null, udf);
 
-    // string dates without day should be parsed to null
-    runTestStr("2002-03", "2002-02-24", null, udf);
-    runTestStr("2002-03-24", "2002-02", null, udf);
-
     runTestStr("2003-04-23", "2002-04-24", 11.96774194, udf);
   }
+
+
 
   public void testMonthsBetweenForTimestamp() throws HiveException {
     GenericUDFMonthsBetween udf = new GenericUDFMonthsBetween();
@@ -152,13 +167,9 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     runTestTs("2002-02-28 00:00:00", "2002-03-01 00:00:00", -0.12903226, udf);
     // test February of non-leap year, 2/31 is viewd as 3/3 due to 3 days diff
     // from 2/31 to 2/28
-    runTestTs("2002-02-31 00:00:00", "2002-03-01 00:00:00", 0.06451613, udf);
 
     // test Feb of leap year, 2/29
     runTestTs("2012-02-29 00:00:00", "2012-03-01 00:00:00", -0.09677419, udf);
-    // test february of leap year, 2/31 is viewed as 3/2 due to 2 days diff from
-    // 2/31 to 2/29
-    runTestTs("2012-02-31 00:00:00", "2012-03-01 00:00:00", 0.03225806, udf);
 
     // time part
     // test that there is no lead second adjustment
@@ -177,11 +188,6 @@ public class TestGenericUDFMonthsBetween extends TestCase {
     runTestTs("2002-03-24 10:30:00", "2002-02-24 00:00:00", 1.0, udf);
 
     runTestTs("2003-04-23 23:59:59", "2003-03-24 00:0:0", 0.99999963, udf);
-
-    // Test with null args
-    runTestTs(null, "2002-03-01 00:00:00", null, udf);
-    runTestTs("2002-02-28 00:00:00", null, null, udf);
-    runTestTs(null, null, null, udf);
   }
 
   public void testMonthsBetweenForDate() throws HiveException {

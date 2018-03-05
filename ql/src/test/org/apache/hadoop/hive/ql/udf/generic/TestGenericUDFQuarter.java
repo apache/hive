@@ -54,11 +54,7 @@ public class TestGenericUDFQuarter extends TestCase {
     runAndVerifyStr("2016-10-29", 4, udf);
     runAndVerifyStr("2016-11-29", 4, udf);
     runAndVerifyStr("2016-12-29", 4, udf);
-    // wrong date str
-    runAndVerifyStr("2016-03-35", 2, udf);
-    runAndVerifyStr("2014-01-32", 1, udf);
-    runAndVerifyStr("01/14/2014", null, udf);
-    runAndVerifyStr(null, null, udf);
+
     // negative Unix time
     runAndVerifyStr("1966-01-01", 1, udf);
     runAndVerifyStr("1966-03-31", 1, udf);
@@ -78,16 +74,31 @@ public class TestGenericUDFQuarter extends TestCase {
     runAndVerifyStr("2016-10-29 15:23:00", 4, udf);
     runAndVerifyStr("2016-11-29 15:23:00", 4, udf);
     runAndVerifyStr("2016-12-31 23:59:59.999", 4, udf);
-    // wrong date str
-    runAndVerifyStr("2016-03-35 15:23:00", 2, udf);
-    runAndVerifyStr("2014-01-32 15:23:00", 1, udf);
-    runAndVerifyStr("01/14/2014 15:23:00", null, udf);
-    runAndVerifyStr(null, null, udf);
+
     // negative Unix time
     runAndVerifyStr("1966-01-01 00:00:00", 1, udf);
     runAndVerifyStr("1966-03-31 23:59:59.999", 1, udf);
     runAndVerifyStr("1966-04-01 00:00:00", 2, udf);
     runAndVerifyStr("1966-12-31 23:59:59.999", 4, udf);
+  }
+
+  public void testWrongDateStr() throws HiveException {
+    boolean caught = false;
+    try {
+      GenericUDFQuarter udf = new GenericUDFQuarter();
+      ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+      ObjectInspector[] arguments = { valueOI0 };
+
+      udf.initialize(arguments);
+
+      runAndVerifyStr("2016-03-35", 2, udf);
+      runAndVerifyStr("2014-01-32", 1, udf);
+      runAndVerifyStr("01/14/2014", null, udf);
+      runAndVerifyStr(null, null, udf);
+    } catch (HiveException e) {
+      caught = true;
+    }
+    assertTrue(caught);
   }
 
   public void testQuarterDt() throws HiveException {
