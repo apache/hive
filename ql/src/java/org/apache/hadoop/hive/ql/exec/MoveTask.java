@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -210,34 +211,36 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   private void releaseLocks(LoadTableDesc ltd) throws HiveException {
     // nothing needs to be done
     if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY)) {
+      LOG.debug("No locks to release because Hive concurrency support is not enabled");
       return;
     }
 
     Context ctx = driverContext.getCtx();
-    if(ctx.getHiveTxnManager().supportsAcid()) {
+    if (ctx.getHiveTxnManager().supportsAcid()) {
       //Acid LM doesn't maintain getOutputLockObjects(); this 'if' just makes logic more explicit
       return;
     }
+
     HiveLockManager lockMgr = ctx.getHiveTxnManager().getLockManager();
     WriteEntity output = ctx.getLoadTableOutputMap().get(ltd);
     List<HiveLockObj> lockObjects = ctx.getOutputLockObjects().get(output);
-    if (lockObjects == null) {
+    if (CollectionUtils.isEmpty(lockObjects)) {
+      LOG.debug("No locks found to release");
       return;
     }
 
+    LOG.info("Releasing {} locks", lockObjects.size());
     for (HiveLockObj lockObj : lockObjects) {
       List<HiveLock> locks = lockMgr.getLocks(lockObj.getObj(), false, true);
       for (HiveLock lock : locks) {
         if (lock.getHiveLockMode() == lockObj.getMode()) {
           if (ctx.getHiveLocks().remove(lock)) {
-            LOG.info("about to release lock for output: {} lock: {}", output,
-              lock.getHiveLockObject().getName());
             try {
               lockMgr.unlock(lock);
             } catch (LockException le) {
               // should be OK since the lock is ephemeral and will eventually be deleted
               // when the query finishes and zookeeper session is closed.
-              LOG.warn("Could not release lock {}", lock.getHiveLockObject().getName());
+              LOG.warn("Could not release lock {}", lock.getHiveLockObject().getName(), le);
             }
           }
         }
