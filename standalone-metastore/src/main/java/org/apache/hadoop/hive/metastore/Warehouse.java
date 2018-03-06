@@ -220,7 +220,11 @@ public class Warehouse {
   }
 
   void addToChangeManagement(Path file) throws MetaException {
-    cm.recycle(file, RecycleType.COPY, true);
+    try {
+      cm.recycle(file, RecycleType.COPY, true);
+    } catch (IOException e) {
+      throw new MetaException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+    }
   }
 
   public boolean deleteDir(Path f, boolean recursive) throws MetaException {
@@ -234,15 +238,23 @@ public class Warehouse {
   public boolean deleteDir(Path f, boolean recursive, boolean ifPurge, boolean needCmRecycle) throws MetaException {
     // no need to create the CM recycle file for temporary tables
     if (needCmRecycle) {
-      cm.recycle(f, RecycleType.MOVE, ifPurge);
+
+      try {
+        cm.recycle(f, RecycleType.MOVE, ifPurge);
+      } catch (IOException e) {
+        throw new MetaException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      }
     }
     FileSystem fs = getFs(f);
     return fsHandler.deleteDir(fs, f, recursive, ifPurge, conf);
   }
 
   public void recycleDirToCmPath(Path f, boolean ifPurge) throws MetaException {
-    cm.recycle(f, RecycleType.MOVE, ifPurge);
-    return;
+    try {
+      cm.recycle(f, RecycleType.MOVE, ifPurge);
+    } catch (IOException e) {
+      throw new MetaException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+    }
   }
 
   public boolean isEmpty(Path path) throws IOException, MetaException {
