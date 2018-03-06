@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.cli.control;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+
 import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
 import org.apache.hadoop.hive.hbase.HBaseTestSetup;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
@@ -95,7 +97,7 @@ public class CoreHBaseNegativeCliDriver extends CliAdapter {
         return;
       }
 
-      qt.cliInit(fname);
+      qt.cliInit(new File(fpath));
       qt.clearTestSideEffects();
       int ecode = qt.executeClient(fname);
       if (ecode == 0) {

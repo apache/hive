@@ -22,7 +22,6 @@ import static org.junit.Assert.fail;
 import java.io.Serializable;
 import java.util.List;
 
-import com.google.common.base.Strings;
 import org.apache.hadoop.hive.cli.control.AbstractCliConfig;
 import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
@@ -33,6 +32,8 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+
+import com.google.common.base.Strings;
 
 public class CoreParseNegative extends CliAdapter{
 
