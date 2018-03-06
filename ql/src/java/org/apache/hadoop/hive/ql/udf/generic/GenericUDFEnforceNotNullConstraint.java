@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
+import org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
@@ -57,7 +58,7 @@ public class GenericUDFEnforceNotNullConstraint extends GenericUDF {
     boolean result = boi.get(a);
 
     if(!result) {
-      throw new UDFArgumentLengthException(
+      throw new DataConstraintViolationError(
           "NOT NULL constraint violated!");
     }
     resultBool.set(true);
