@@ -65,7 +65,7 @@ STAGE PLANS:
             Statistics: Num rows: 12289 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:cdouble:double, 1:cdecimal1:decimal(20,10), 2:cdecimal2:decimal(23,14), 3:cint:int, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:cdouble:double, 1:cdecimal1:decimal(20,10), 2:cdecimal2:decimal(23,14), 3:cint:int, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: cdecimal1 (type: decimal(20,10)), cdecimal2 (type: decimal(23,14)), cint (type: int)
               outputColumnNames: cdecimal1, cdecimal2, cint
@@ -206,7 +206,7 @@ STAGE PLANS:
             Statistics: Num rows: 12289 Data size: 2165060 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:cdouble:double, 1:cdecimal1:decimal(20,10), 2:cdecimal2:decimal(23,14), 3:cint:int, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:cdouble:double, 1:cdecimal1:decimal(20,10), 2:cdecimal2:decimal(23,14), 3:cint:int, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: cdecimal1 (type: decimal(20,10)), cdecimal2 (type: decimal(23,14)), cint (type: int)
               outputColumnNames: cdecimal1, cdecimal2, cint
@@ -381,7 +381,7 @@ STAGE PLANS:
             Statistics: Num rows: 12289 Data size: 346472 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:cdouble:double, 1:cdecimal1:decimal(11,5)/DECIMAL_64, 2:cdecimal2:decimal(16,0)/DECIMAL_64, 3:cint:int, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:cdouble:double, 1:cdecimal1:decimal(11,5)/DECIMAL_64, 2:cdecimal2:decimal(16,0)/DECIMAL_64, 3:cint:int, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: cdecimal1 (type: decimal(11,5)), cdecimal2 (type: decimal(16,0)), cint (type: int)
               outputColumnNames: cdecimal1, cdecimal2, cint
@@ -541,7 +541,7 @@ STAGE PLANS:
             Statistics: Num rows: 12289 Data size: 346472 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:cdouble:double, 1:cdecimal1:decimal(11,5)/DECIMAL_64, 2:cdecimal2:decimal(16,0)/DECIMAL_64, 3:cint:int, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:cdouble:double, 1:cdecimal1:decimal(11,5)/DECIMAL_64, 2:cdecimal2:decimal(16,0)/DECIMAL_64, 3:cint:int, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: cdecimal1 (type: decimal(11,5)), cdecimal2 (type: decimal(16,0)), cint (type: int)
               outputColumnNames: cdecimal1, cdecimal2, cint

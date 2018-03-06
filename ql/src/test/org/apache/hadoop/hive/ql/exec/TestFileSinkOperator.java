@@ -264,7 +264,7 @@ public class TestFileSinkOperator {
 
   private FileSinkOperator getFileSink(AcidUtils.Operation writeType,
                                        boolean dynamic,
-                                       long txnId) throws IOException, HiveException {
+                                       long writeId) throws IOException, HiveException {
     TableDesc tableDesc = null;
     switch (writeType) {
       case DELETE:
@@ -292,8 +292,8 @@ public class TestFileSinkOperator {
     }
     desc.setWriteType(writeType);
     desc.setGatherStats(true);
-    if (txnId > 0) {
-      desc.setTableWriteId(txnId);
+    if (writeId > 0) {
+      desc.setTableWriteId(writeId);
     }
     if (writeType != AcidUtils.Operation.NOT_ACID) {
       desc.setTableWriteId(1L);

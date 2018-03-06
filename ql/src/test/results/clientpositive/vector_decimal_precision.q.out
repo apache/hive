@@ -570,7 +570,7 @@ STAGE PLANS:
             Statistics: Num rows: 75 Data size: 3472 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:dec:decimal(20,10), 1:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:dec:decimal(20,10), 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: dec (type: decimal(20,10))
               outputColumnNames: dec
@@ -1151,7 +1151,7 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 26610 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:dec:decimal(20,10), 1:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:dec:decimal(20,10), 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: dec (type: decimal(20,10))
               outputColumnNames: dec

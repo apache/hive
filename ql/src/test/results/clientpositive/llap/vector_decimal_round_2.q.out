@@ -63,7 +63,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:dec:decimal(38,18), 1:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:dec:decimal(38,18), 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: round(dec) (type: decimal(21,0)), round(dec, 0) (type: decimal(21,0)), round(dec, 1) (type: decimal(22,1)), round(dec, 2) (type: decimal(23,2)), round(dec, 3) (type: decimal(24,3)), round(dec, -1) (type: decimal(21,0)), round(dec, -2) (type: decimal(21,0)), round(dec, -3) (type: decimal(21,0)), round(dec, -4) (type: decimal(21,0)), round(dec, -5) (type: decimal(21,0)), round(dec, -6) (type: decimal(21,0)), round(dec, -7) (type: decimal(21,0)), round(dec, -8) (type: decimal(21,0))
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
@@ -231,7 +231,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:pos:decimal(38,18), 1:neg:decimal(38,18), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:pos:decimal(38,18), 1:neg:decimal(38,18), 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: round(pos) (type: decimal(21,0)), round(pos, 0) (type: decimal(21,0)), round(pos, 1) (type: decimal(22,1)), round(pos, 2) (type: decimal(23,2)), round(pos, 3) (type: decimal(24,3)), round(pos, 4) (type: decimal(25,4)), round(pos, -1) (type: decimal(21,0)), round(pos, -2) (type: decimal(21,0)), round(pos, -3) (type: decimal(21,0)), round(pos, -4) (type: decimal(21,0)), round(neg) (type: decimal(21,0)), round(neg, 0) (type: decimal(21,0)), round(neg, 1) (type: decimal(22,1)), round(neg, 2) (type: decimal(23,2)), round(neg, 3) (type: decimal(24,3)), round(neg, 4) (type: decimal(25,4)), round(neg, -1) (type: decimal(21,0)), round(neg, -2) (type: decimal(21,0)), round(neg, -3) (type: decimal(21,0)), round(neg, -4) (type: decimal(21,0))
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19
@@ -426,7 +426,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:dec:decimal(38,18), 1:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:dec:decimal(38,18), 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: round(dec, -15) (type: decimal(21,0)), round(dec, -16) (type: decimal(21,0)), round(dec, -13) (type: decimal(21,0)), round(dec, -14) (type: decimal(21,0)), round(dec, -11) (type: decimal(21,0)), round(dec, -12) (type: decimal(21,0)), round(dec, -9) (type: decimal(21,0)), round(dec, -10) (type: decimal(21,0)), round(dec, -7) (type: decimal(21,0)), round(dec, -8) (type: decimal(21,0)), round(dec, -5) (type: decimal(21,0)), round(dec, -6) (type: decimal(21,0)), round(dec, -3) (type: decimal(21,0)), round(dec, -4) (type: decimal(21,0)), round(dec, -1) (type: decimal(21,0)), round(dec, -2) (type: decimal(21,0)), round(dec, 0) (type: decimal(21,0)), round(dec, 1) (type: decimal(22,1)), round(dec, 2) (type: decimal(23,2)), round(dec, 3) (type: decimal(24,3)), round(dec, 4) (type: decimal(25,4)), round(dec, 5) (type: decimal(26,5)), round(dec, 6) (type: decimal(27,6)), round(dec, 7) (type: decimal(28,7)), round(dec, 8) (type: decimal(29,8)), round(dec, 9) (type: decimal(30,9)), round(dec, 10) (type: decimal(31,10)), round(dec, 11) (type: decimal(32,11)), round(dec, 12) (type: decimal(33,12)), round(dec, 13) (type: decimal(34,13)), round(dec, 14) (type: decimal(35,14)), round(dec, 15) (type: decimal(36,15)), round(dec, 16) (type: decimal(37,16))
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col31, _col32, _col33
@@ -610,7 +610,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:pos:decimal(38,18), 1:neg:decimal(38,18), 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:pos:decimal(38,18), 1:neg:decimal(38,18), 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: round(pos, 9) (type: decimal(30,9)), round(neg, 9) (type: decimal(30,9))
                     outputColumnNames: _col0, _col1

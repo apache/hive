@@ -508,7 +508,7 @@ public class TestOrcRawRecordMerger {
       return "col1,ROW__ID";
     }
     static String getColumnTypesProperty() {
-      return "string:struct<transactionId:bigint,bucketId:int,rowId:bigint>";
+      return "string:struct<writeId:bigint,bucketId:int,rowId:bigint>";
     }
 
   }
@@ -1050,7 +1050,7 @@ public class TestOrcRawRecordMerger {
       return "myint,mylong,mytext,myfloat,mydouble,ROW__ID";
     }
     static String getColumnTypesProperty() {
-      return "int:bigint:string:float:double:struct<transactionId:bigint,bucketId:int,rowId:bigint>";
+      return "int:bigint:string:float:double:struct<writeId:bigint,bucketId:int,rowId:bigint>";
     }
   }
 

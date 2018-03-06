@@ -149,8 +149,8 @@ import com.google.protobuf.CodedInputStream;
  *   }
  * </pre>
  * Each AcidEvent object corresponds to an update event. The
- * originalTransaction, bucket, and rowId are the unique identifier for the row.
- * The operation and currentTransaction are the operation and the transaction
+ * originalWriteId, bucket, and rowId are the unique identifier for the row.
+ * The operation and currentWriteId are the operation and the table write id within current txn
  * that added this event. Insert and update events include the entire row, while
  * delete events have null for row.
  */

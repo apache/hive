@@ -57,7 +57,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:category:int, 1:live:int, 2:comments:int, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:category:int, 1:live:int, 2:comments:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: category (type: int), live (type: int), comments (type: int)
                     outputColumnNames: category, live, comments

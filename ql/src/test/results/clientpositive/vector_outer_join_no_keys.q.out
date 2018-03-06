@@ -69,7 +69,7 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:x:int, 1:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:x:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               Select Vectorization:
                   className: VectorSelectOperator
@@ -217,7 +217,7 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:x:int, 1:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:x:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               Select Vectorization:
                   className: VectorSelectOperator

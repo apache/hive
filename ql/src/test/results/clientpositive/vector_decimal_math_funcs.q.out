@@ -115,7 +115,7 @@ STAGE PLANS:
             Statistics: Num rows: 12289 Data size: 2201752 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:cbigint:bigint, 1:cdouble:double, 2:cdecimal1:decimal(20,10), 3:cdecimal2:decimal(23,14), 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:cbigint:bigint, 1:cdouble:double, 2:cdecimal1:decimal(20,10), 3:cdecimal2:decimal(23,14), 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator
@@ -357,7 +357,7 @@ STAGE PLANS:
             Statistics: Num rows: 12288 Data size: 2201192 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:cbigint:bigint, 1:cdouble:double, 2:cdecimal1:decimal(12,4), 3:cdecimal2:decimal(14,8), 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:cbigint:bigint, 1:cdouble:double, 2:cdecimal1:decimal(12,4), 3:cdecimal2:decimal(14,8), 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator

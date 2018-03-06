@@ -973,7 +973,7 @@ public class HiveEndPoint {
             msClient.rollbackTxn(txnToWriteIds.get(currentTxnIndex).getTxnId());
             txnStatus[currentTxnIndex] = TxnState.ABORTED;
           }
-          currentTxnIndex--;//since the loop left it == txnId.size()
+          currentTxnIndex--;//since the loop left it == txnToWriteIds.size()
         }
         else {
           if (getCurrentTxnId() > 0) {

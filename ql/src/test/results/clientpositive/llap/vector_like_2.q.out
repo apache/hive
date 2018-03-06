@@ -48,7 +48,7 @@ STAGE PLANS:
                   Statistics: Num rows: 3 Data size: 267 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: a (type: string), (a like '%bar') (type: boolean)
                     outputColumnNames: _col0, _col1

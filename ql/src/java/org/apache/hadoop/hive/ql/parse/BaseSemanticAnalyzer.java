@@ -126,7 +126,7 @@ public abstract class BaseSemanticAnalyzer {
 
   /**
    * A set of FileSinkOperators being written to in an ACID compliant way.  We need to remember
-   * them here because when we build them we don't yet know the transaction id.  We need to go
+   * them here because when we build them we don't yet know the write id.  We need to go
    * back and set it once we actually start running the query.
    * This also contains insert-only sinks.
    */

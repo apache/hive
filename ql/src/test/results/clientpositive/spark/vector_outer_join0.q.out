@@ -89,7 +89,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 550 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c:int, 1:v2:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c:int, 1:v2:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: c (type: int), v2 (type: string)
                     outputColumnNames: _col0, _col1
@@ -135,7 +135,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 544 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:v1:string, 1:a:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:v1:string, 1:a:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: v1 (type: string), a (type: int)
                     outputColumnNames: _col0, _col1
@@ -242,7 +242,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 544 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:v1:string, 1:a:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:v1:string, 1:a:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: v1 (type: string), a (type: int)
                     outputColumnNames: _col0, _col1
@@ -288,7 +288,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 550 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:c:int, 1:v2:string, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:c:int, 1:v2:string, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: c (type: int), v2 (type: string)
                     outputColumnNames: _col0, _col1

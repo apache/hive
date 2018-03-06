@@ -31,7 +31,7 @@ STAGE PLANS:
               predicate: (((key % 2) = 0) and (key < 10)) (type: boolean)
               Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: ROW__ID (type: struct<transactionid:bigint,bucketid:int,rowid:bigint>)
+                expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>)
                 outputColumnNames: _col0
                 Statistics: Num rows: 83 Data size: 881 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
