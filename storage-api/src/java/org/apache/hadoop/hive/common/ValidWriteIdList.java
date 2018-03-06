@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.common;
 
 /**
  * Models the list of transactions that should be included in a snapshot.
- * It is modelled as a high water mark, which is the largest transaction id that
- * has been committed and a list of transactions that are not included.
+ * It is modelled as a high water mark, which is the largest write id that
+ * has been committed and a list of write ids that are not included.
  */
 public interface ValidWriteIdList {
 

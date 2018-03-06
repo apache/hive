@@ -42,14 +42,14 @@ import org.slf4j.LoggerFactory;
  * Orchestrates the application of an ordered sequence of mutation events to a given ACID table. Events must be grouped
  * by partition, then bucket and ordered by origTxnId, then rowId. Ordering is enforced by the {@link SequenceValidator}
  * and grouping is by the {@link GroupingValidator}. An acid delta file is created for each combination partition, and
- * bucket id (a single transaction id is implied). Once a delta file has been closed it cannot be reopened. Therefore
+ * bucket id (a single write id is implied). Once a delta file has been closed it cannot be reopened. Therefore
  * care is needed as to group the data correctly otherwise failures will occur if a delta belonging to group has been
  * previously closed. The {@link MutatorCoordinator} will seamlessly handle transitions between groups, creating and
  * closing {@link Mutator Mutators} as needed to write to the appropriate partition and bucket. New partitions will be
  * created in the meta store if {@link AcidTable#createPartitions()} is set.
  * <p/>
  * {@link #insert(List, Object) Insert} events must be artificially assigned appropriate bucket ids in the preceding
- * grouping phase so that they are grouped correctly. Note that any transaction id or row id assigned to the
+ * grouping phase so that they are grouped correctly. Note that any write id or row id assigned to the
  * {@link RecordIdentifier RecordIdentifier} of such events will be ignored by both the coordinator and the underlying
  * {@link RecordUpdater}.
  */

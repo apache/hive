@@ -98,7 +98,7 @@ STAGE PLANS:
             Statistics: Num rows: 5 Data size: 32 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:member:bigint, 1:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:member:bigint, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: member (type: bigint)
               outputColumnNames: _col0

@@ -2504,7 +2504,7 @@ public class TestInputOutputFormat {
     List<OrcProto.Type> types = new ArrayList<OrcProto.Type>();
     OrcProto.Type.Builder builder = OrcProto.Type.newBuilder();
     builder.setKind(OrcProto.Type.Kind.STRUCT)
-        .addAllFieldNames(Arrays.asList("op", "otid", "bucket", "rowid", "ctid",
+        .addAllFieldNames(Arrays.asList("op", "owid", "bucket", "rowid", "cwid",
             "row"))
         .addAllSubtypes(Arrays.asList(1,2,3,4,5,6));
     types.add(builder.build());

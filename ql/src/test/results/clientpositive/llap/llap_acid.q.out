@@ -104,7 +104,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
@@ -248,7 +248,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
@@ -295,7 +295,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 4
-                    dataColumns: KEY.reducesinkkey0:struct<transactionid:bigint,bucketid:int,rowid:bigint>, VALUE._col1:float, VALUE._col2:double, VALUE._col3:smallint
+                    dataColumns: KEY.reducesinkkey0:struct<writeid:bigint,bucketid:int,rowid:bigint>, VALUE._col1:float, VALUE._col2:double, VALUE._col3:smallint
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [bigint, bigint]
             Reduce Operator Tree:
@@ -358,7 +358,7 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true

@@ -57,8 +57,8 @@ import org.junit.Test;
  */
 public class TestVectorizedOrcAcidRowBatchReader {
 
-  private static final long NUM_ROWID_PER_OTID = 15000L;
-  private static final long NUM_OTID = 10L;
+  private static final long NUM_ROWID_PER_OWID = 15000L;
+  private static final long NUM_OWID = 10L;
   private JobConf conf;
   private FileSystem fs;
   private Path root;
@@ -118,16 +118,16 @@ public class TestVectorizedOrcAcidRowBatchReader {
         .bucket(bucket)
         .writingBase(false)
         .minimumWriteId(1)
-        .maximumWriteId(NUM_OTID)
+        .maximumWriteId(NUM_OWID)
         .inspector(inspector)
         .reporter(Reporter.NULL)
         .recordIdColumn(1)
         .finalDestination(root);
     RecordUpdater updater = new OrcRecordUpdater(root, options);
     // Create a single insert delta with 150,000 rows, with 15000 rowIds per original transaction id.
-    for (long i = 1; i <= NUM_OTID; ++i) {
-      for (long j = 0; j < NUM_ROWID_PER_OTID; ++j) {
-        long payload = (i-1) * NUM_ROWID_PER_OTID + j;
+    for (long i = 1; i <= NUM_OWID; ++i) {
+      for (long j = 0; j < NUM_ROWID_PER_OWID; ++j) {
+        long payload = (i-1) * NUM_ROWID_PER_OWID + j;
         updater.insert(i, new DummyRow(payload, j, i, bucket));
       }
     }
@@ -140,11 +140,11 @@ public class TestVectorizedOrcAcidRowBatchReader {
 
     // Create a delete delta that has rowIds divisible by 2 but not by 3. This will produce
     // a delete delta file with 50,000 delete events.
-    long currTxnId = NUM_OTID + 1;
+    long currTxnId = NUM_OWID + 1;
     options.minimumWriteId(currTxnId).maximumWriteId(currTxnId);
     updater = new OrcRecordUpdater(root, options);
-    for (long i = 1; i <= NUM_OTID; ++i) {
-      for (long j = 0; j < NUM_ROWID_PER_OTID; j += 1) {
+    for (long i = 1; i <= NUM_OWID; ++i) {
+      for (long j = 0; j < NUM_ROWID_PER_OWID; j += 1) {
         if (j % 2 == 0 && j % 3 != 0) {
           updater.delete(currTxnId, new DummyRow(-1, j, i, bucket));
         }
@@ -153,11 +153,11 @@ public class TestVectorizedOrcAcidRowBatchReader {
     updater.close(false);
     // Now, create a delete delta that has rowIds divisible by 3 but not by 2. This will produce
     // a delete delta file with 25,000 delete events.
-    currTxnId = NUM_OTID + 2;
+    currTxnId = NUM_OWID + 2;
     options.minimumWriteId(currTxnId).maximumWriteId(currTxnId);
     updater = new OrcRecordUpdater(root, options);
-    for (long i = 1; i <= NUM_OTID; ++i) {
-      for (long j = 0; j < NUM_ROWID_PER_OTID; j += 1) {
+    for (long i = 1; i <= NUM_OWID; ++i) {
+      for (long j = 0; j < NUM_ROWID_PER_OWID; j += 1) {
         if (j % 2 != 0 && j % 3 == 0) {
           updater.delete(currTxnId, new DummyRow(-1, j, i, bucket));
         }
@@ -166,11 +166,11 @@ public class TestVectorizedOrcAcidRowBatchReader {
     updater.close(false);
     // Now, create a delete delta that has rowIds divisible by both 3 and 2. This will produce
     // a delete delta file with 25,000 delete events.
-    currTxnId = NUM_OTID + 3;
+    currTxnId = NUM_OWID + 3;
     options.minimumWriteId(currTxnId).maximumWriteId(currTxnId);
     updater = new OrcRecordUpdater(root, options);
-    for (long i = 1; i <= NUM_OTID; ++i) {
-      for (long j = 0; j < NUM_ROWID_PER_OTID; j += 1) {
+    for (long i = 1; i <= NUM_OWID; ++i) {
+      for (long j = 0; j < NUM_ROWID_PER_OWID; j += 1) {
         if (j % 2 == 0 && j % 3 == 0) {
           updater.delete(currTxnId, new DummyRow(-1, j, i, bucket));
         }
@@ -235,10 +235,10 @@ public class TestVectorizedOrcAcidRowBatchReader {
       for (int i = 0; i < vectorizedRowBatch.size; ++i) {
         int idx = vectorizedRowBatch.selected[i];
         long payload = col.vector[idx];
-        long otid = (payload / NUM_ROWID_PER_OTID) + 1;
-        long rowId = payload % NUM_ROWID_PER_OTID;
+        long owid = (payload / NUM_ROWID_PER_OWID) + 1;
+        long rowId = payload % NUM_ROWID_PER_OWID;
         assertFalse(rowId % 2 == 0 || rowId % 3 == 0);
-        assertTrue(otid != 5); // Check that txn#5 has been excluded.
+        assertTrue(owid != 5); // Check that writeid#5 has been excluded.
         assertTrue(payload > previousPayload); // Check that the data is in sorted order.
         previousPayload = payload;
       }

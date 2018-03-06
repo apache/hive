@@ -396,7 +396,7 @@ unpartitioned table you should simply pass an empty list as the
 partition value. For inserts specifically, only the bucket id will be
 extracted from the
 <code>RecordIdentifier</code>
-, the transactionId and rowId will be ignored and replaced by
+, the writeId and rowId will be ignored and replaced by
 appropriate values in the
 <code>RecordUpdater</code>
 . Additionally, in the case of deletes, everything but the
@@ -409,7 +409,7 @@ submit the original record.
 <b>Caution:</b> As mentioned previously, mutations must arrive in
 specific order for the resultant table data to be consistent.
 Coordinators will verify a naturally ordered sequence of
-(lastTransactionId, rowId) and will throw an exception if this sequence
+(writeId, rowId) and will throw an exception if this sequence
 is broken. This exception should almost certainly be escalated so that
 the transaction is aborted. This, along with the correct ordering of the
 data, is the responsibility of the client using the API.

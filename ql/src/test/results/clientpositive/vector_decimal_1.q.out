@@ -66,7 +66,7 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 336 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: UDFToBoolean(t) (type: boolean)
               outputColumnNames: _col0
@@ -157,7 +157,7 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 336 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: UDFToByte(t) (type: tinyint)
               outputColumnNames: _col0
@@ -248,7 +248,7 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 336 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: UDFToShort(t) (type: smallint)
               outputColumnNames: _col0
@@ -339,7 +339,7 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 336 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: UDFToInteger(t) (type: int)
               outputColumnNames: _col0
@@ -430,7 +430,7 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 336 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: UDFToLong(t) (type: bigint)
               outputColumnNames: _col0
@@ -521,7 +521,7 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 336 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: UDFToFloat(t) (type: float)
               outputColumnNames: _col0
@@ -612,7 +612,7 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 336 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: UDFToDouble(t) (type: double)
               outputColumnNames: _col0
@@ -703,7 +703,7 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 336 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: UDFToString(t) (type: string)
               outputColumnNames: _col0
@@ -794,7 +794,7 @@ STAGE PLANS:
             Statistics: Num rows: 2 Data size: 336 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:t:decimal(4,2), 1:u:decimal(5,0), 2:v:decimal(10,0), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: CAST( t AS TIMESTAMP) (type: timestamp)
               outputColumnNames: _col0

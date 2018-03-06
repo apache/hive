@@ -69,7 +69,7 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:one:int, 1:two:int, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:one:int, 1:two:int, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Filter Operator
               Filter Vectorization:
                   className: VectorFilterOperator

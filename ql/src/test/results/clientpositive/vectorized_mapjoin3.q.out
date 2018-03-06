@@ -117,7 +117,7 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:int_col_0:int, 1:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:int_col_0:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: int_col_0 (type: int)
               outputColumnNames: int_col_0
@@ -291,7 +291,7 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:int_col_0:int, 1:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:int_col_0:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: int_col_0 (type: int)
               outputColumnNames: int_col_0
@@ -465,7 +465,7 @@ STAGE PLANS:
             Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:int_col_0:int, 1:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:int_col_0:int, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: int_col_0 (type: int)
               outputColumnNames: int_col_0

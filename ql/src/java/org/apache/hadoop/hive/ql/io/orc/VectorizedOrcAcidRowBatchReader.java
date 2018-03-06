@@ -230,11 +230,11 @@ public class VectorizedOrcAcidRowBatchReader
   private static final class OffsetAndBucketProperty {
     private final long rowIdOffset;
     private final int bucketProperty;
-    private final long syntheticTxnId;
-    private OffsetAndBucketProperty(long rowIdOffset, int bucketProperty, long syntheticTxnId) {
+    private final long syntheticWriteId;
+    private OffsetAndBucketProperty(long rowIdOffset, int bucketProperty, long syntheticWriteId) {
       this.rowIdOffset = rowIdOffset;
       this.bucketProperty = bucketProperty;
-      this.syntheticTxnId = syntheticTxnId;
+      this.syntheticWriteId = syntheticWriteId;
     }
   }
   /**
@@ -253,7 +253,7 @@ public class VectorizedOrcAcidRowBatchReader
     if (!needSyntheticRowIds(split.isOriginal(), !deleteEventRegistry.isEmpty(), rowIdProjected)) {
       if(split.isOriginal()) {
         /**
-         * Even if we don't need to project ROW_IDs, we still need to check the transaction ID that
+         * Even if we don't need to project ROW_IDs, we still need to check the write ID that
          * created the file to see if it's committed.  See more in
          * {@link #next(NullWritable, VectorizedRowBatch)}.  (In practice getAcidState() should
          * filter out base/delta files but this makes fewer dependencies)
@@ -352,7 +352,7 @@ public class VectorizedOrcAcidRowBatchReader
   /**
    * There are 2 types of schema from the {@link #baseReader} that this handles.  In the case
    * the data was written to a transactional table from the start, every row is decorated with
-   * transaction related info and looks like <op, otid, writerId, rowid, ctid, <f1, ... fn>>.
+   * transaction related info and looks like <op, owid, writerId, rowid, cwid, <f1, ... fn>>.
    *
    * The other case is when data was written to non-transactional table and thus only has the user
    * data: <f1, ... fn>.  Then this table was then converted to a transactional table but the data
@@ -360,7 +360,7 @@ public class VectorizedOrcAcidRowBatchReader
    *
    * In this case we may need to decorate the outgoing data with transactional column values at
    * read time.  (It's done somewhat out of band via VectorizedRowBatchCtx - ask Teddy Choi).
-   * The "otid, writerId, rowid" columns represent {@link RecordIdentifier}.  They are assigned
+   * The "owid, writerId, rowid" columns represent {@link RecordIdentifier}.  They are assigned
    * each time the table is read in a way that needs to project {@link VirtualColumn#ROWID}.
    * Major compaction will attach these values to each row permanently.
    * It's critical that these generated column values are assigned exactly the same way by each
@@ -420,8 +420,8 @@ public class VectorizedOrcAcidRowBatchReader
       // Handle synthetic row IDs for the original files.
       innerRecordIdColumnVector = handleOriginalFile(selectedBitSet, innerRecordIdColumnVector);
     } else {
-      // Case 1- find rows which belong to transactions that are not valid.
-      findRecordsWithInvalidTransactionIds(vectorizedRowBatchBase, selectedBitSet);
+      // Case 1- find rows which belong to write Ids that are not valid.
+      findRecordsWithInvalidWriteIds(vectorizedRowBatchBase, selectedBitSet);
     }
 
     // Case 2- find rows which have been deleted.
@@ -495,7 +495,7 @@ public class VectorizedOrcAcidRowBatchReader
        */
       recordIdColumnVector.fields[0].noNulls = true;
       recordIdColumnVector.fields[0].isRepeating = true;
-      ((LongColumnVector)recordIdColumnVector.fields[0]).vector[0] = syntheticProps.syntheticTxnId;
+      ((LongColumnVector)recordIdColumnVector.fields[0]).vector[0] = syntheticProps.syntheticWriteId;
       /**
        * This is {@link RecordIdentifier#getBucketProperty()}
        * Also see {@link BucketCodec}
@@ -521,21 +521,21 @@ public class VectorizedOrcAcidRowBatchReader
       //these are insert events so (original txn == current) txn for all rows
       innerRecordIdColumnVector[OrcRecordUpdater.CURRENT_WRITEID] = recordIdColumnVector.fields[0];
     }
-    if(syntheticProps.syntheticTxnId > 0) {
+    if(syntheticProps.syntheticWriteId > 0) {
       //"originals" (written before table was converted to acid) is considered written by
-      // txnid:0 which is always committed so there is no need to check wrt invalid transactions
+      // writeid:0 which is always committed so there is no need to check wrt invalid write Ids
       //But originals written by Load Data for example can be in base_x or delta_x_x so we must
       //check if 'x' is committed or not evn if ROW_ID is not needed in the Operator pipeline.
       if (needSyntheticRowId) {
-        findRecordsWithInvalidTransactionIds(innerRecordIdColumnVector,
+        findRecordsWithInvalidWriteIds(innerRecordIdColumnVector,
             vectorizedRowBatchBase.size, selectedBitSet);
       } else {
         /*since ROW_IDs are not needed we didn't create the ColumnVectors to hold them but we
         * still have to check if the data being read is committed as far as current
         * reader (transactions) is concerned.  Since here we are reading 'original' schema file,
-        * all rows in it have been created by the same txn, namely 'syntheticProps.syntheticTxnId'
+        * all rows in it have been created by the same txn, namely 'syntheticProps.syntheticWriteId'
         */
-        if (!validWriteIdList.isWriteIdValid(syntheticProps.syntheticTxnId)) {
+        if (!validWriteIdList.isWriteIdValid(syntheticProps.syntheticWriteId)) {
           selectedBitSet.clear(0, vectorizedRowBatchBase.size);
         }
       }
@@ -543,29 +543,29 @@ public class VectorizedOrcAcidRowBatchReader
     return innerRecordIdColumnVector;
   }
 
-  private void findRecordsWithInvalidTransactionIds(VectorizedRowBatch batch, BitSet selectedBitSet) {
-    findRecordsWithInvalidTransactionIds(batch.cols, batch.size, selectedBitSet);
+  private void findRecordsWithInvalidWriteIds(VectorizedRowBatch batch, BitSet selectedBitSet) {
+    findRecordsWithInvalidWriteIds(batch.cols, batch.size, selectedBitSet);
   }
 
-  private void findRecordsWithInvalidTransactionIds(ColumnVector[] cols, int size, BitSet selectedBitSet) {
+  private void findRecordsWithInvalidWriteIds(ColumnVector[] cols, int size, BitSet selectedBitSet) {
     if (cols[OrcRecordUpdater.CURRENT_WRITEID].isRepeating) {
       // When we have repeating values, we can unset the whole bitset at once
-      // if the repeating value is not a valid transaction.
-      long currentTransactionIdForBatch = ((LongColumnVector)
+      // if the repeating value is not a valid write id.
+      long currentWriteIdForBatch = ((LongColumnVector)
           cols[OrcRecordUpdater.CURRENT_WRITEID]).vector[0];
-      if (!validWriteIdList.isWriteIdValid(currentTransactionIdForBatch)) {
+      if (!validWriteIdList.isWriteIdValid(currentWriteIdForBatch)) {
         selectedBitSet.clear(0, size);
       }
       return;
     }
-    long[] currentTransactionVector =
+    long[] currentWriteIdVector =
         ((LongColumnVector) cols[OrcRecordUpdater.CURRENT_WRITEID]).vector;
     // Loop through the bits that are set to true and mark those rows as false, if their
-    // current transactions are not valid.
+    // current write ids are not valid.
     for (int setBitIndex = selectedBitSet.nextSetBit(0);
         setBitIndex >= 0;
         setBitIndex = selectedBitSet.nextSetBit(setBitIndex+1)) {
-      if (!validWriteIdList.isWriteIdValid(currentTransactionVector[setBitIndex])) {
+      if (!validWriteIdList.isWriteIdValid(currentWriteIdVector[setBitIndex])) {
         selectedBitSet.clear(setBitIndex);
       }
    }
@@ -690,7 +690,7 @@ public class VectorizedOrcAcidRowBatchReader
         return;
       }
 
-      long[] originalTransaction =
+      long[] originalWriteId =
           cols[OrcRecordUpdater.ORIGINAL_WRITEID].isRepeating ? null
               : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector;
       long[] bucket =
@@ -701,7 +701,7 @@ public class VectorizedOrcAcidRowBatchReader
               : ((LongColumnVector) cols[OrcRecordUpdater.ROW_ID]).vector;
 
       // The following repeatedX values will be set, if any of the columns are repeating.
-      long repeatedOriginalTransaction = (originalTransaction != null) ? -1
+      long repeatedOriginalWriteId = (originalWriteId != null) ? -1
           : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector[0];
       long repeatedBucket = (bucket != null) ? -1
           : ((LongColumnVector) cols[OrcRecordUpdater.BUCKET]).vector[0];
@@ -716,7 +716,7 @@ public class VectorizedOrcAcidRowBatchReader
       }
       RecordIdentifier firstRecordIdInBatch =
           new RecordIdentifier(
-              originalTransaction != null ? originalTransaction[firstValidIndex] : repeatedOriginalTransaction,
+              originalWriteId != null ? originalWriteId[firstValidIndex] : repeatedOriginalWriteId,
               bucket != null ? (int) bucket[firstValidIndex] : (int) repeatedBucket,
               rowId != null ? (int)  rowId[firstValidIndex] : repeatedRowId);
 
@@ -724,7 +724,7 @@ public class VectorizedOrcAcidRowBatchReader
       int lastValidIndex = selectedBitSet.previousSetBit(size - 1);
       RecordIdentifier lastRecordIdInBatch =
           new RecordIdentifier(
-              originalTransaction != null ? originalTransaction[lastValidIndex] : repeatedOriginalTransaction,
+              originalWriteId != null ? originalWriteId[lastValidIndex] : repeatedOriginalWriteId,
               bucket != null ? (int) bucket[lastValidIndex] : (int) repeatedBucket,
               rowId != null ? (int)  rowId[lastValidIndex] : repeatedRowId);
 
@@ -743,7 +743,7 @@ public class VectorizedOrcAcidRowBatchReader
       RecordIdentifier currRecordIdInBatch = new RecordIdentifier();
       while (isDeleteRecordAvailable && currIndex != -1 && currIndex <= lastValidIndex) {
         currRecordIdInBatch.setValues(
-            (originalTransaction != null) ? originalTransaction[currIndex] : repeatedOriginalTransaction,
+            (originalWriteId != null) ? originalWriteId[currIndex] : repeatedOriginalWriteId,
             (bucket != null) ? (int) bucket[currIndex] : (int) repeatedBucket,
             (rowId != null) ? rowId[currIndex] : repeatedRowId);
 
@@ -780,34 +780,34 @@ public class VectorizedOrcAcidRowBatchReader
    * An implementation for DeleteEventRegistry that optimizes for performance by loading
    * all the delete events into memory at once from all the delete delta files.
    * It starts by reading all the delete events through a regular sort merge logic
-   * into 3 vectors- one for original transaction id (otid), one for bucket property and one for
+   * into 3 vectors- one for original Write id (owid), one for bucket property and one for
    * row id.  See {@link BucketCodec} for more about bucket property.
-   * The otids are likely to be repeated very often, as a single transaction
-   * often deletes thousands of rows. Hence, the otid vector is compressed to only store the
+   * The owids are likely to be repeated very often, as a single transaction
+   * often deletes thousands of rows. Hence, the owid vector is compressed to only store the
    * toIndex and fromIndex ranges in the larger row id vector. Now, querying whether a
    * record id is deleted or not, is done by performing a binary search on the
-   * compressed otid range. If a match is found, then a binary search is then performed on
+   * compressed owid range. If a match is found, then a binary search is then performed on
    * the larger rowId vector between the given toIndex and fromIndex. Of course, there is rough
    * heuristic that prevents creation of an instance of this class if the memory pressure is high.
    * The SortMergedDeleteEventRegistry is then the fallback method for such scenarios.
    */
    static class ColumnizedDeleteEventRegistry implements DeleteEventRegistry {
     /**
-     * A simple wrapper class to hold the (otid, bucketProperty, rowId) pair.
+     * A simple wrapper class to hold the (owid, bucketProperty, rowId) pair.
      */
     static class DeleteRecordKey implements Comparable<DeleteRecordKey> {
-      private long originalTransactionId;
+      private long originalWriteId;
       /**
        * see {@link BucketCodec}
        */
       private int bucketProperty; 
       private long rowId;
       DeleteRecordKey() {
-        this.originalTransactionId = -1;
+        this.originalWriteId = -1;
         this.rowId = -1;
       }
-      public void set(long otid, int bucketProperty, long rowId) {
-        this.originalTransactionId = otid;
+      public void set(long owid, int bucketProperty, long rowId) {
+        this.originalWriteId = owid;
         this.bucketProperty = bucketProperty;
         this.rowId = rowId;
       }
@@ -817,8 +817,8 @@ public class VectorizedOrcAcidRowBatchReader
         if (other == null) {
           return -1;
         }
-        if (originalTransactionId != other.originalTransactionId) {
-          return originalTransactionId < other.originalTransactionId ? -1 : 1;
+        if (originalWriteId != other.originalWriteId) {
+          return originalWriteId < other.originalWriteId ? -1 : 1;
         }
         if(bucketProperty != other.bucketProperty) {
           return bucketProperty < other.bucketProperty ? -1 : 1;
@@ -830,7 +830,7 @@ public class VectorizedOrcAcidRowBatchReader
       }
       @Override
       public String toString() {
-        return "otid: " + originalTransactionId + " bucketP:" + bucketProperty + " rowid: " + rowId;
+        return "owid: " + originalWriteId + " bucketP:" + bucketProperty + " rowid: " + rowId;
       }
     }
 
@@ -881,12 +881,12 @@ public class VectorizedOrcAcidRowBatchReader
               return false; // no more batches to read, exhausted the reader.
             }
           }
-          long currentTransaction = setCurrentDeleteKey(deleteRecordKey);
+          long currentWriteId = setCurrentDeleteKey(deleteRecordKey);
           if(!isBucketPropertyRepeating) {
             checkBucketId(deleteRecordKey.bucketProperty);
           }
           ++indexPtrInBatch;
-          if (validWriteIdList.isWriteIdValid(currentTransaction)) {
+          if (validWriteIdList.isWriteIdValid(currentWriteId)) {
             isValidNext = true;
           }
         }
@@ -897,20 +897,20 @@ public class VectorizedOrcAcidRowBatchReader
         this.recordReader.close();
       }
       private long setCurrentDeleteKey(DeleteRecordKey deleteRecordKey) {
-        int originalTransactionIndex =
+        int originalWriteIdIndex =
           batch.cols[OrcRecordUpdater.ORIGINAL_WRITEID].isRepeating ? 0 : indexPtrInBatch;
-        long originalTransaction
-                = ((LongColumnVector) batch.cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector[originalTransactionIndex];
+        long originalWriteId
+                = ((LongColumnVector) batch.cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector[originalWriteIdIndex];
         int bucketPropertyIndex =
           batch.cols[OrcRecordUpdater.BUCKET].isRepeating ? 0 : indexPtrInBatch;
         int bucketProperty = (int)((LongColumnVector)batch.cols[OrcRecordUpdater.BUCKET]).vector[bucketPropertyIndex];
         long rowId = ((LongColumnVector) batch.cols[OrcRecordUpdater.ROW_ID]).vector[indexPtrInBatch];
-        int currentTransactionIndex
+        int currentWriteIdIndex
                 = batch.cols[OrcRecordUpdater.CURRENT_WRITEID].isRepeating ? 0 : indexPtrInBatch;
-        long currentTransaction
-                = ((LongColumnVector) batch.cols[OrcRecordUpdater.CURRENT_WRITEID]).vector[currentTransactionIndex];
-        deleteRecordKey.set(originalTransaction, bucketProperty, rowId);
-        return currentTransaction;
+        long currentWriteId
+                = ((LongColumnVector) batch.cols[OrcRecordUpdater.CURRENT_WRITEID]).vector[currentWriteIdIndex];
+        deleteRecordKey.set(originalWriteId, bucketProperty, rowId);
+        return currentWriteId;
       }
       private void checkBucketId() throws IOException {
         isBucketPropertyRepeating = batch.cols[OrcRecordUpdater.BUCKET].isRepeating;
@@ -949,31 +949,31 @@ public class VectorizedOrcAcidRowBatchReader
       }
     }
     /**
-     * A CompressedOtid class stores a compressed representation of the original
-     * transaction ids (otids) read from the delete delta files. Since the record ids
-     * are sorted by (otid, rowId) and otids are highly likely to be repetitive, it is
-     * efficient to compress them as a CompressedOtid that stores the fromIndex and
+     * A CompressedOwid class stores a compressed representation of the original
+     * write ids (owids) read from the delete delta files. Since the record ids
+     * are sorted by (owid, rowId) and owids are highly likely to be repetitive, it is
+     * efficient to compress them as a CompressedOwid that stores the fromIndex and
      * the toIndex. These fromIndex and toIndex reference the larger vector formed by
      * concatenating the correspondingly ordered rowIds.
      */
-    private final class CompressedOtid implements Comparable<CompressedOtid> {
-      final long originalTransactionId;
+    private final class CompressedOwid implements Comparable<CompressedOwid> {
+      final long originalWriteId;
       final int bucketProperty;
       final int fromIndex; // inclusive
       final int toIndex; // exclusive
 
-      CompressedOtid(long otid, int bucketProperty, int fromIndex, int toIndex) {
-        this.originalTransactionId = otid;
+      CompressedOwid(long owid, int bucketProperty, int fromIndex, int toIndex) {
+        this.originalWriteId = owid;
         this.bucketProperty = bucketProperty;
         this.fromIndex = fromIndex;
         this.toIndex = toIndex;
       }
 
       @Override
-      public int compareTo(CompressedOtid other) {
-        // When comparing the CompressedOtid, the one with the lesser value is smaller.
-        if (originalTransactionId != other.originalTransactionId) {
-          return originalTransactionId < other.originalTransactionId ? -1 : 1;
+      public int compareTo(CompressedOwid other) {
+        // When comparing the CompressedOwid, the one with the lesser value is smaller.
+        if (originalWriteId != other.originalWriteId) {
+          return originalWriteId < other.originalWriteId ? -1 : 1;
         }
         if(bucketProperty != other.bucketProperty) {
           return bucketProperty < other.bucketProperty ? -1 : 1;
@@ -988,14 +988,14 @@ public class VectorizedOrcAcidRowBatchReader
      * all delete deltas at once - possibly causing OOM same as for {@link SortMergedDeleteEventRegistry}
      * which uses {@link OrcRawRecordMerger}.  Why not load all delete_delta sequentially.  Each
      * dd is sorted by {@link RecordIdentifier} so we could create a BTree like structure where the
-     * 1st level is an array of originalTransactionId where each entry points at an array
+     * 1st level is an array of originalWriteId where each entry points at an array
      * of bucketIds where each entry points at an array of rowIds.  We could probably use ArrayList
      * to manage insertion as the structure is built (LinkedList?).  This should reduce memory
      * footprint (as far as OrcReader to a single reader) - probably bad for LLAP IO
      */
     private TreeMap<DeleteRecordKey, DeleteReaderValue> sortMerger;
     private long rowIds[];
-    private CompressedOtid compressedOtids[];
+    private CompressedOwid compressedOwids[];
     private ValidWriteIdList validWriteIdList;
     private Boolean isEmpty = null;
 
@@ -1009,7 +1009,7 @@ public class VectorizedOrcAcidRowBatchReader
               + " isFullAcidTable: " + AcidUtils.isFullAcidScan(conf));
       this.sortMerger = new TreeMap<DeleteRecordKey, DeleteReaderValue>();
       this.rowIds = null;
-      this.compressedOtids = null;
+      this.compressedOwids = null;
       int maxEventsInMemory = HiveConf.getIntVar(conf, ConfVars.HIVE_TRANSACTIONAL_NUM_EVENTS_IN_MEMORY);
       final boolean isBucketedTable  = conf.getInt(hive_metastoreConstants.BUCKET_COUNT, 0) > 0;
 
@@ -1064,7 +1064,7 @@ public class VectorizedOrcAcidRowBatchReader
             readAllDeleteEventsFromDeleteDeltas();
           }
         }
-        isEmpty = compressedOtids == null || rowIds == null;
+        isEmpty = compressedOwids == null || rowIds == null;
       } catch(IOException|DeleteEventsOverflowMemoryException e) {
         close(); // close any open readers, if there was some exception during initialization.
         throw e; // rethrow the exception so that the caller can handle.
@@ -1072,19 +1072,19 @@ public class VectorizedOrcAcidRowBatchReader
     }
 
     /**
-     * This is not done quite right.  The intent of {@link CompressedOtid} is a hedge against
+     * This is not done quite right.  The intent of {@link CompressedOwid} is a hedge against
      * "delete from T" that generates a huge number of delete events possibly even 2G - max array
      * size.  (assuming no one txn inserts > 2G rows (in a bucket)).  As implemented, the algorithm
-     * first loads all data into one array otid[] and rowIds[] which defeats the purpose.
+     * first loads all data into one array owid[] and rowIds[] which defeats the purpose.
      * In practice we should be filtering delete evens by min/max ROW_ID from the split.  The later
      * is also not yet implemented: HIVE-16812.
      */
     private void readAllDeleteEventsFromDeleteDeltas() throws IOException {
       if (sortMerger == null || sortMerger.isEmpty()) return; // trivial case, nothing to read.
-      int distinctOtids = 0;
-      long lastSeenOtid = -1;
+      int distinctOwids = 0;
+      long lastSeenOwid = -1;
       int lastSeenBucketProperty = -1;
-      long otids[] = new long[rowIds.length];
+      long owids[] = new long[rowIds.length];
       int[] bucketProperties = new int [rowIds.length];
       
       int index = 0;
@@ -1101,14 +1101,14 @@ public class VectorizedOrcAcidRowBatchReader
         Entry<DeleteRecordKey, DeleteReaderValue> entry = sortMerger.pollFirstEntry();
         DeleteRecordKey deleteRecordKey = entry.getKey();
         DeleteReaderValue deleteReaderValue = entry.getValue();
-        otids[index] = deleteRecordKey.originalTransactionId;
+        owids[index] = deleteRecordKey.originalWriteId;
         bucketProperties[index] = deleteRecordKey.bucketProperty;
         rowIds[index] = deleteRecordKey.rowId;
         ++index;
-        if (lastSeenOtid != deleteRecordKey.originalTransactionId ||
+        if (lastSeenOwid != deleteRecordKey.originalWriteId ||
           lastSeenBucketProperty != deleteRecordKey.bucketProperty) {
-          ++distinctOtids;
-          lastSeenOtid = deleteRecordKey.originalTransactionId;
+          ++distinctOwids;
+          lastSeenOwid = deleteRecordKey.originalWriteId;
           lastSeenBucketProperty = deleteRecordKey.bucketProperty;
         }
         if (deleteReaderValue.next(deleteRecordKey)) {
@@ -1118,49 +1118,49 @@ public class VectorizedOrcAcidRowBatchReader
         }
       }
 
-      // Once we have processed all the delete events and seen all the distinct otids,
-      // we compress the otids into CompressedOtid data structure that records
-      // the fromIndex(inclusive) and toIndex(exclusive) for each unique otid.
-      this.compressedOtids = new CompressedOtid[distinctOtids];
-      lastSeenOtid = otids[0];
+      // Once we have processed all the delete events and seen all the distinct owids,
+      // we compress the owids into CompressedOwid data structure that records
+      // the fromIndex(inclusive) and toIndex(exclusive) for each unique owid.
+      this.compressedOwids = new CompressedOwid[distinctOwids];
+      lastSeenOwid = owids[0];
       lastSeenBucketProperty = bucketProperties[0];
       int fromIndex = 0, pos = 0;
-      for (int i = 1; i < otids.length; ++i) {
-        if (otids[i] != lastSeenOtid || lastSeenBucketProperty != bucketProperties[i]) {
-          compressedOtids[pos] = 
-            new CompressedOtid(lastSeenOtid, lastSeenBucketProperty, fromIndex, i);
-          lastSeenOtid = otids[i];
+      for (int i = 1; i < owids.length; ++i) {
+        if (owids[i] != lastSeenOwid || lastSeenBucketProperty != bucketProperties[i]) {
+          compressedOwids[pos] =
+            new CompressedOwid(lastSeenOwid, lastSeenBucketProperty, fromIndex, i);
+          lastSeenOwid = owids[i];
           lastSeenBucketProperty = bucketProperties[i];
           fromIndex = i;
           ++pos;
         }
       }
-      // account for the last distinct otid
-      compressedOtids[pos] =
-        new CompressedOtid(lastSeenOtid, lastSeenBucketProperty, fromIndex, otids.length);
+      // account for the last distinct owid
+      compressedOwids[pos] =
+        new CompressedOwid(lastSeenOwid, lastSeenBucketProperty, fromIndex, owids.length);
     }
 
-    private boolean isDeleted(long otid, int bucketProperty, long rowId) {
-      if (compressedOtids == null || rowIds == null) {
+    private boolean isDeleted(long owid, int bucketProperty, long rowId) {
+      if (compressedOwids == null || rowIds == null) {
         return false;
       }
-      // To find if a given (otid, rowId) pair is deleted or not, we perform
+      // To find if a given (owid, rowId) pair is deleted or not, we perform
       // two binary searches at most. The first binary search is on the
-      // compressed otids. If a match is found, only then we do the next
+      // compressed owids. If a match is found, only then we do the next
       // binary search in the larger rowId vector between the given toIndex & fromIndex.
 
-      // Check if otid is outside the range of all otids present.
-      if (otid < compressedOtids[0].originalTransactionId
-          || otid > compressedOtids[compressedOtids.length - 1].originalTransactionId) {
+      // Check if owid is outside the range of all owids present.
+      if (owid < compressedOwids[0].originalWriteId
+          || owid > compressedOwids[compressedOwids.length - 1].originalWriteId) {
         return false;
       }
-      // Create a dummy key for searching the otid/bucket in the compressed otid ranges.
-      CompressedOtid key = new CompressedOtid(otid, bucketProperty, -1, -1);
-      int pos = Arrays.binarySearch(compressedOtids, key);
+      // Create a dummy key for searching the owid/bucket in the compressed owid ranges.
+      CompressedOwid key = new CompressedOwid(owid, bucketProperty, -1, -1);
+      int pos = Arrays.binarySearch(compressedOwids, key);
       if (pos >= 0) {
-        // Otid with the given value found! Searching now for rowId...
-        key = compressedOtids[pos]; // Retrieve the actual CompressedOtid that matched.
-        // Check if rowId is outside the range of all rowIds present for this otid.
+        // Owid with the given value found! Searching now for rowId...
+        key = compressedOwids[pos]; // Retrieve the actual CompressedOwid that matched.
+        // Check if rowId is outside the range of all rowIds present for this owid.
         if (rowId < rowIds[key.fromIndex]
             || rowId > rowIds[key.toIndex - 1]) {
           return false;
@@ -1181,16 +1181,16 @@ public class VectorizedOrcAcidRowBatchReader
     @Override
     public void findDeletedRecords(ColumnVector[] cols, int size, BitSet selectedBitSet)
         throws IOException {
-      if (rowIds == null || compressedOtids == null) {
+      if (rowIds == null || compressedOwids == null) {
         return;
       }
-      // Iterate through the batch and for each (otid, rowid) in the batch
+      // Iterate through the batch and for each (owid, rowid) in the batch
       // check if it is deleted or not.
 
-      long[] originalTransactionVector =
+      long[] originalWriteIdVector =
           cols[OrcRecordUpdater.ORIGINAL_WRITEID].isRepeating ? null
               : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector;
-      long repeatedOriginalTransaction = (originalTransactionVector != null) ? -1
+      long repeatedOriginalWriteId = (originalWriteIdVector != null) ? -1
           : ((LongColumnVector) cols[OrcRecordUpdater.ORIGINAL_WRITEID]).vector[0];
 
       long[] bucketProperties =
@@ -1205,12 +1205,12 @@ public class VectorizedOrcAcidRowBatchReader
       for (int setBitIndex = selectedBitSet.nextSetBit(0);
           setBitIndex >= 0;
           setBitIndex = selectedBitSet.nextSetBit(setBitIndex+1)) {
-        long otid = originalTransactionVector != null ? originalTransactionVector[setBitIndex]
-                                                    : repeatedOriginalTransaction ;
+        long owid = originalWriteIdVector != null ? originalWriteIdVector[setBitIndex]
+                                                    : repeatedOriginalWriteId ;
         int bucketProperty = bucketProperties != null ? (int)bucketProperties[setBitIndex]
           : repeatedBucketProperty;
         long rowId = rowIdVector[setBitIndex];
-        if (isDeleted(otid, bucketProperty, rowId)) {
+        if (isDeleted(owid, bucketProperty, rowId)) {
           selectedBitSet.clear(setBitIndex);
         }
      }

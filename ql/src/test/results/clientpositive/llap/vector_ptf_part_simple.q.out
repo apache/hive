@@ -135,7 +135,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string)
                     sort order: +
@@ -395,7 +395,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string)
                     sort order: +
@@ -624,7 +624,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string)
                     sort order: +
@@ -853,7 +853,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
@@ -1115,7 +1115,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
@@ -1345,7 +1345,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
@@ -1575,7 +1575,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: 0 (type: int), p_name (type: string)
                     sort order: ++
@@ -1838,7 +1838,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: 0 (type: int), p_name (type: string)
                     sort order: ++
@@ -2069,7 +2069,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: 0 (type: int), p_name (type: string)
                     sort order: ++
@@ -2294,7 +2294,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string)
                     sort order: +
@@ -2522,7 +2522,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string)
                     sort order: +
@@ -2750,7 +2750,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string)
                     sort order: +
@@ -2947,7 +2947,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
@@ -3177,7 +3177,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
@@ -3407,7 +3407,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
@@ -3605,7 +3605,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: 0 (type: int), p_name (type: string)
                     sort order: ++
@@ -3836,7 +3836,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: 0 (type: int), p_name (type: string)
                     sort order: ++
@@ -4067,7 +4067,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: 0 (type: int), p_name (type: string)
                     sort order: ++
@@ -4308,7 +4308,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12944 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:decimal(38,18), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:decimal(38,18), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string)
                     sort order: +
@@ -4536,7 +4536,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 12944 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:decimal(38,18), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:decimal(38,18), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
@@ -4786,7 +4786,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_bigint:bigint, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_bigint:bigint, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string)
                     sort order: +
@@ -5014,7 +5014,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_bigint:bigint, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_bigint:bigint, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
@@ -5238,7 +5238,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 4216 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string)
                     sort order: +
@@ -5437,7 +5437,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
@@ -5638,7 +5638,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00.0') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
                     sort order: ++
@@ -5807,7 +5807,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00.0') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp), p_name (type: string)
                     sort order: +++
@@ -6139,7 +6139,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 4216 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string)
                     sort order: +
@@ -6338,7 +6338,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), p_name (type: string)
                     sort order: ++
@@ -6539,7 +6539,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00.0') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp), p_name (type: string)
                     sort order: +++
@@ -6741,7 +6741,7 @@ STAGE PLANS:
                   Statistics: Num rows: 40 Data size: 9096 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:p_mfgr:string, 1:p_name:string, 2:p_retailprice:double, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Reduce Output Operator
                     key expressions: p_mfgr (type: string), CASE WHEN ((p_mfgr = 'Manufacturer#2')) THEN (TIMESTAMP'2000-01-01 00:00:00.0') ELSE (CAST( null AS TIMESTAMP)) END (type: timestamp)
                     sort order: ++
