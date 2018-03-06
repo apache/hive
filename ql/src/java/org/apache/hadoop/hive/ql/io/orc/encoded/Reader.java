@@ -50,7 +50,6 @@ public interface Reader extends org.apache.hadoop.hive.ql.io.orc.Reader {
 
   /** The factory that can create (or return) the pools used by encoded reader. */
   public interface PoolFactory {
-    <T> Pool<T> createPool(int size, PoolObjectHelper<T> helper);
     Pool<OrcEncodedColumnBatch> createEncodedColumnBatchPool();
     Pool<ColumnStreamData> createColumnStreamDataPool();
   }

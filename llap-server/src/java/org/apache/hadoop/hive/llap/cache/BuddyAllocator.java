@@ -45,7 +45,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
-import org.apache.hive.common.util.FixedSizedObjectPool;
 
 public final class BuddyAllocator
   implements EvictionAwareAllocator, BuddyAllocatorMXBean, LlapOomDebugDump {
@@ -81,8 +80,15 @@ public final class BuddyAllocator
       .asFileAttribute(PosixFilePermissions.fromString("rwx------"));
   private final AtomicLong[] defragCounters;
   private final boolean doUseFreeListDiscard, doUseBruteDiscard;
-  private final FixedSizedObjectPool<DiscardContext> ctxPool;
   private final static boolean assertsEnabled = areAssertsEnabled();
+  // Discard context that is cached for reuse per thread to avoid allocating lots of arrays,
+  // and then resizing them down the line if we need a bigger size.
+  // Only the IO threads need this, so there'd be at most few dozen objects.
+  private final static ThreadLocal<DiscardContext> threadCtx = new ThreadLocal<DiscardContext>() {
+    protected DiscardContext initialValue() {
+      return new DiscardContext();
+    };
+  };
 
   public BuddyAllocator(Configuration conf, MemoryManager mm, LlapDaemonCacheMetrics metrics) {
     this(HiveConf.getBoolVar(conf, ConfVars.LLAP_ALLOCATOR_DIRECT),
@@ -158,17 +164,7 @@ public final class BuddyAllocator
     boolean isBoth = null == discardMethod || "both".equalsIgnoreCase(discardMethod);
     doUseFreeListDiscard = isBoth || "freelist".equalsIgnoreCase(discardMethod);
     doUseBruteDiscard = isBoth || "brute".equalsIgnoreCase(discardMethod);
-    ctxPool = new FixedSizedObjectPool<DiscardContext>(32,
-        new FixedSizedObjectPool.PoolObjectHelper<DiscardContext>() {
-          @Override
-          public DiscardContext create() {
-            return new DiscardContext();
-          }
-          @Override
-          public void resetBeforeOffer(DiscardContext t) {
-          }
-      });
- }
+  }
 
   public long determineMaxMmSize(long defragHeadroom, long maxMmSize) {
     if (defragHeadroom > 0) {
@@ -302,35 +298,32 @@ public final class BuddyAllocator
 
         // Try to force-evict the fragments of the requisite size.
         boolean hasDiscardedAny = false;
-        DiscardContext ctx = ctxPool.take();
-        try {
-          // Brute force may discard up to twice as many buffers.
-          int maxListSize = 1 << (doUseBruteDiscard ? freeListIx : (freeListIx - 1));
-          int requiredBlocks = dest.length - destAllocIx;
-          ctx.init(maxListSize, requiredBlocks);
-          // First, try to use the blocks of half size in every arena.
-          if (doUseFreeListDiscard && freeListIx > 0) {
-            discardBlocksBasedOnFreeLists(freeListIx, startArenaIx, arenaCount, ctx);
-            memoryForceReleased += ctx.memoryReleased;
-            hasDiscardedAny = ctx.resultCount > 0;
-            destAllocIx = allocateFromDiscardResult(
-                dest, destAllocIx, freeListIx, allocationSize, ctx);
-            if (destAllocIx == dest.length) return;
-          }
-          // Then, try the brute force search for something to throw away.
-          if (doUseBruteDiscard) {
-            ctx.resetResults();
-            discardBlocksBruteForce(freeListIx, startArenaIx, arenaCount, ctx);
-            memoryForceReleased += ctx.memoryReleased;
-            hasDiscardedAny = hasDiscardedAny || (ctx.resultCount > 0);
-            destAllocIx = allocateFromDiscardResult(
-                dest, destAllocIx, freeListIx, allocationSize, ctx);
-
-            if (destAllocIx == dest.length) return;
-          }
-        } finally {
-          ctxPool.offer(ctx);
+        DiscardContext ctx = threadCtx.get();
+        // Brute force may discard up to twice as many buffers.
+        int maxListSize = 1 << (doUseBruteDiscard ? freeListIx : (freeListIx - 1));
+        int requiredBlocks = dest.length - destAllocIx;
+        ctx.init(maxListSize, requiredBlocks);
+        // First, try to use the blocks of half size in every arena.
+        if (doUseFreeListDiscard && freeListIx > 0) {
+          discardBlocksBasedOnFreeLists(freeListIx, startArenaIx, arenaCount, ctx);
+          memoryForceReleased += ctx.memoryReleased;
+          hasDiscardedAny = ctx.resultCount > 0;
+          destAllocIx = allocateFromDiscardResult(
+              dest, destAllocIx, freeListIx, allocationSize, ctx);
+          if (destAllocIx == dest.length) return;
         }
+        // Then, try the brute force search for something to throw away.
+        if (doUseBruteDiscard) {
+          ctx.resetResults();
+          discardBlocksBruteForce(freeListIx, startArenaIx, arenaCount, ctx);
+          memoryForceReleased += ctx.memoryReleased;
+          hasDiscardedAny = hasDiscardedAny || (ctx.resultCount > 0);
+          destAllocIx = allocateFromDiscardResult(
+              dest, destAllocIx, freeListIx, allocationSize, ctx);
+
+          if (destAllocIx == dest.length) return;
+        }
+
         if (hasDiscardedAny) {
           discardFailed = 0;
         } else if (++discardFailed > MAX_DISCARD_ATTEMPTS) {

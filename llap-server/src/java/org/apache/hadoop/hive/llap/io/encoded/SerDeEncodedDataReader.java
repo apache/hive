@@ -46,8 +46,6 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
-import org.apache.hadoop.hive.llap.cache.EvictionDispatcher;
-import org.apache.hadoop.hive.llap.cache.LlapAllocatorBuffer;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl;
 import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl.FileData;
@@ -58,7 +56,6 @@ import org.apache.hadoop.hive.llap.counters.QueryFragmentCounters;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 import org.apache.hadoop.hive.llap.io.decode.GenericColumnVectorProducer.SerDeStripeMetadata;
 import org.apache.hadoop.hive.llap.io.decode.OrcEncodedDataConsumer;
-import org.apache.hadoop.hive.llap.io.encoded.SerDeEncodedDataReader.CacheWriter;
 import org.apache.hadoop.hive.llap.io.encoded.VectorDeserializeOrcWriter.AsyncCallback;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -160,6 +157,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   private final int allocSize;
   private final int targetSliceRowCount;
   private final boolean isLrrEnabled;
+  private final boolean useObjectPools;
 
   private final boolean[] writerIncludes;
   private FileReaderYieldReturn currentFileRead = null;
@@ -198,6 +196,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     this.targetSliceRowCount = HiveConf.getIntVar(
         sliceConf, ConfVars.LLAP_IO_ENCODE_SLICE_ROW_COUNT);
     this.isLrrEnabled = HiveConf.getBoolVar(sliceConf, ConfVars.LLAP_IO_ENCODE_SLICE_LRR);
+    this.useObjectPools = HiveConf.getBoolVar(sliceConf, ConfVars.LLAP_IO_SHARE_OBJECT_POOLS);
     if (this.columnIds != null) {
       Collections.sort(this.columnIds);
     }
@@ -946,7 +945,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
     consumer.setStripeMetadata(metadata);
 
-    OrcEncodedColumnBatch ecb = ECB_POOL.take();
+    OrcEncodedColumnBatch ecb = useObjectPools ? ECB_POOL.take() : new OrcEncodedColumnBatch();
     ecb.init(fileKey, metadata.getStripeIx(), OrcEncodedColumnBatch.ALL_RGS, writerIncludes.length);
     // Skip the 0th column that is the root structure.
     for (int colIx = 1; colIx < writerIncludes.length; ++colIx) {
@@ -969,7 +968,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
             continue;
           }
           int streamIx = setStreamDataToCache(newCacheDataForCol, stream);
-          ColumnStreamData cb = CSD_POOL.take();
+          ColumnStreamData cb = useObjectPools ? CSD_POOL.take() : new ColumnStreamData();
           cb.incRef();
           cb.setCacheBuffers(stream.data);
           ecb.setStreamData(colIx, streamIx, cb);
@@ -1032,7 +1031,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
     consumer.setStripeMetadata(metadata);
 
-    OrcEncodedColumnBatch ecb = ECB_POOL.take();
+    OrcEncodedColumnBatch ecb = useObjectPools ? ECB_POOL.take() : new OrcEncodedColumnBatch();
     ecb.init(fileKey, metadata.getStripeIx(), OrcEncodedColumnBatch.ALL_RGS, writerIncludes.length);
     int vectorsIx = 0;
     for (int colIx = 0; colIx < writerIncludes.length; ++colIx) {
@@ -1149,7 +1148,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
     for (int streamIx = 0; streamIx < colData.length; ++streamIx) {
       if (colData[streamIx] == null) continue;
-      ColumnStreamData cb = CSD_POOL.take();
+      ColumnStreamData cb = useObjectPools ? CSD_POOL.take() : new ColumnStreamData();
       cb.incRef();
       cb.setCacheBuffers(Lists.<MemoryBuffer>newArrayList(colData[streamIx]));
       ecb.setStreamData(colIx, streamIx, cb);
@@ -1678,11 +1677,15 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
           }
         }
         bufferManager.decRefBuffers(data.getCacheBuffers());
-        CSD_POOL.offer(data);
+        if (useObjectPools) {
+          CSD_POOL.offer(data);
+        }
       }
     }
     // We can offer ECB even with some streams not discarded; reset() will clear the arrays.
-    ECB_POOL.offer(ecb);
+    if (useObjectPools) {
+      ECB_POOL.offer(ecb);
+    }
   }
 
   @Override
