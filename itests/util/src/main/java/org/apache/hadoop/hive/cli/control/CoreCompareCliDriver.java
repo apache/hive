@@ -137,7 +137,7 @@ public class CoreCompareCliDriver extends CliAdapter{
       for (String versionFile : versionFiles) {
         // 1 for "_" after tname; 3 for ".qv" at the end. Version is in between.
         String versionStr = versionFile.substring(tname.length() + 1, versionFile.length() - 3);
-        outputs.add(qt.cliInit(tname + "." + versionStr, false));
+        outputs.add(qt.cliInit(new File(queryDirectory, tname + "." + versionStr), false));
         // TODO: will this work?
         ecode = qt.executeClient(versionFile, fname);
         if (ecode != 0) {

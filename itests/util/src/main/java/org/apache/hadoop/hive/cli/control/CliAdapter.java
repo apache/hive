@@ -48,18 +48,18 @@ public abstract class CliAdapter {
     return ret;
   }
 
-  abstract public void beforeClass() throws Exception;
+  public abstract void beforeClass() throws Exception;
 
   // HIVE-14444 pending rename: before
-  abstract public void setUp();
+  public abstract void setUp();
 
   // HIVE-14444 pending rename: after
-  abstract public void tearDown();
+  public abstract void tearDown();
 
   // HIVE-14444 pending rename: afterClass
-  abstract public void shutdown() throws Exception;
+  public abstract void shutdown() throws Exception;
 
-  abstract public void runTest(String name, String name2, String absolutePath) throws Exception;
+  public abstract void runTest(String name, String fileName, String absolutePath) throws Exception;
 
   public final TestRule buildClassRule() {
     return new TestRule() {
