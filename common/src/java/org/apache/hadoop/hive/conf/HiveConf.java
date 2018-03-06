@@ -3236,6 +3236,8 @@ public class HiveConf extends Configuration {
     LLAP_IO_VRB_QUEUE_LIMIT_MIN("hive.llap.io.vrb.queue.limit.min", 10,
         "The minimum queue size for VRBs produced by a LLAP IO thread when the processing is\n" +
         "slower than the IO (used when determining the size from base size)."),
+    LLAP_IO_SHARE_OBJECT_POOLS("hive.llap.io.share.object.pools", false,
+        "Whether to used shared object pools in LLAP IO. A safety flag."),
     LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", false,
         "Whether or not to allow the planner to run vertices in the AM."),
     LLAP_AUTO_ENFORCE_TREE("hive.llap.auto.enforce.tree", true,

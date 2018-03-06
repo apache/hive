@@ -137,11 +137,6 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       });
   private static final PoolFactory POOL_FACTORY = new PoolFactory() {
     @Override
-    public <T> Pool<T> createPool(int size, PoolObjectHelper<T> helper) {
-      return new FixedSizedObjectPool<>(size, helper);
-    }
-
-    @Override
     public Pool<ColumnStreamData> createColumnStreamDataPool() {
       return CSD_POOL;
     }
@@ -162,7 +157,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private final QueryFragmentCounters counters;
   private final UserGroupInformation ugi;
   private final SchemaEvolution evolution;
-  private final boolean useCodecPool;
+  private final boolean useCodecPool, useObjectPools;
 
   // Read state.
   private int stripeIxFrom;
@@ -210,6 +205,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       throw new RuntimeException(e);
     }
     this.useCodecPool = HiveConf.getBoolVar(daemonConf, ConfVars.HIVE_ORC_CODEC_POOL);
+    this.useObjectPools = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_SHARE_OBJECT_POOLS);
 
     // LlapInputFormat needs to know the file schema to decide if schema evolution is supported.
     orcReader = null;
@@ -435,8 +431,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     ensureOrcReader();
     // Reader creation updates HDFS counters, don't do it here.
     DataWrapperForOrc dw = new DataWrapperForOrc();
-    stripeReader = orcReader.encodedReader(fileKey, dw, dw, POOL_FACTORY, trace,
-        HiveConf.getBoolVar(daemonConf, ConfVars.HIVE_ORC_CODEC_POOL));
+    stripeReader = orcReader.encodedReader(
+        fileKey, dw, dw, useObjectPools ? POOL_FACTORY : null, trace, useCodecPool);
     stripeReader.setTracing(LlapIoImpl.ORC_LOGGER.isTraceEnabled());
   }
 
@@ -787,11 +783,15 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
           }
         }
         bufferManager.decRefBuffers(data.getCacheBuffers());
-        CSD_POOL.offer(data);
+        if (useObjectPools) {
+          CSD_POOL.offer(data);
+        }
       }
     }
     // We can offer ECB even with some streams not discarded; reset() will clear the arrays.
-    ECB_POOL.offer(ecb);
+    if (useObjectPools) {
+      ECB_POOL.offer(ecb);
+    }
   }
 
   /**
