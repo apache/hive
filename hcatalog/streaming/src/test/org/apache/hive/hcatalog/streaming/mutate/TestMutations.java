@@ -241,8 +241,8 @@ public class TestMutations {
     transaction.commit();
 
     StreamingAssert streamingAssertions = assertionFactory.newStreamingAssert(table, ASIA_INDIA);
-    streamingAssertions.assertMinTransactionId(1L);
-    streamingAssertions.assertMaxTransactionId(1L);
+    streamingAssertions.assertMinWriteId(1L);
+    streamingAssertions.assertMaxWriteId(1L);
     streamingAssertions.assertExpectedFileCount(1);
 
     List<Record> readRecords = streamingAssertions.readRecords();
@@ -299,8 +299,8 @@ public class TestMutations {
 
     // ASIA_INDIA
     StreamingAssert streamingAssertions = assertionFactory.newStreamingAssert(table, ASIA_INDIA);
-    streamingAssertions.assertMinTransactionId(1L);
-    streamingAssertions.assertMaxTransactionId(1L);
+    streamingAssertions.assertMinWriteId(1L);
+    streamingAssertions.assertMaxWriteId(1L);
     streamingAssertions.assertExpectedFileCount(1);
 
     List<Record> readRecords = streamingAssertions.readRecords();
@@ -311,8 +311,8 @@ public class TestMutations {
 
     // EUROPE_UK
     streamingAssertions = assertionFactory.newStreamingAssert(table, EUROPE_UK);
-    streamingAssertions.assertMinTransactionId(1L);
-    streamingAssertions.assertMaxTransactionId(1L);
+    streamingAssertions.assertMinWriteId(1L);
+    streamingAssertions.assertMaxWriteId(1L);
     streamingAssertions.assertExpectedFileCount(1);
 
     readRecords = streamingAssertions.readRecords();
@@ -323,8 +323,8 @@ public class TestMutations {
 
     // EUROPE_FRANCE
     streamingAssertions = assertionFactory.newStreamingAssert(table, EUROPE_FRANCE);
-    streamingAssertions.assertMinTransactionId(1L);
-    streamingAssertions.assertMaxTransactionId(1L);
+    streamingAssertions.assertMinWriteId(1L);
+    streamingAssertions.assertMaxWriteId(1L);
     streamingAssertions.assertExpectedFileCount(1);
 
     readRecords = streamingAssertions.readRecords();
@@ -373,8 +373,8 @@ public class TestMutations {
     transaction.commit();
 
     StreamingAssert streamingAssertions = assertionFactory.newStreamingAssert(table);
-    streamingAssertions.assertMinTransactionId(1L);
-    streamingAssertions.assertMaxTransactionId(1L);
+    streamingAssertions.assertMinWriteId(1L);
+    streamingAssertions.assertMaxWriteId(1L);
     streamingAssertions.assertExpectedFileCount(1);
 
     List<Record> readRecords = streamingAssertions.readRecords();
@@ -527,8 +527,8 @@ public class TestMutations {
     assertThat(mutateTransaction.getState(), is(COMMITTED));
 
     StreamingAssert indiaAssertions = assertionFactory.newStreamingAssert(table, ASIA_INDIA);
-    indiaAssertions.assertMinTransactionId(1L);
-    indiaAssertions.assertMaxTransactionId(2L);
+    indiaAssertions.assertMinWriteId(1L);
+    indiaAssertions.assertMaxWriteId(2L);
     List<Record> indiaRecords = indiaAssertions.readRecords(2);
     assertThat(indiaRecords.size(), is(3));
     assertThat(indiaRecords.get(0).getRow(), is("{1, Namaste streaming 1}"));
@@ -542,8 +542,8 @@ public class TestMutations {
       encodeBucket(0), 1L)));
 
     StreamingAssert ukAssertions = assertionFactory.newStreamingAssert(table, EUROPE_UK);
-    ukAssertions.assertMinTransactionId(1L);
-    ukAssertions.assertMaxTransactionId(2L);
+    ukAssertions.assertMinWriteId(1L);
+    ukAssertions.assertMaxWriteId(2L);
     //1 split since mutateTransaction txn just does deletes
     List<Record> ukRecords = ukAssertions.readRecords(1);
     assertThat(ukRecords.size(), is(1));
@@ -552,8 +552,8 @@ public class TestMutations {
       encodeBucket(0), 1L)));
 
     StreamingAssert franceAssertions = assertionFactory.newStreamingAssert(table, EUROPE_FRANCE);
-    franceAssertions.assertMinTransactionId(1L);
-    franceAssertions.assertMaxTransactionId(2L);
+    franceAssertions.assertMinWriteId(1L);
+    franceAssertions.assertMaxWriteId(2L);
     List<Record> franceRecords = franceAssertions.readRecords(2);
     assertThat(franceRecords.size(), is(1));
     assertThat(franceRecords.get(0).getRow(), is("{6, UPDATED: Bonjour streaming 2}"));

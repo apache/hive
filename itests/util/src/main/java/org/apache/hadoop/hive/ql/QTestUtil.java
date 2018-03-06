@@ -1730,7 +1730,7 @@ public class QTestUtil {
   });
   /**
    * Pattern to match and (partial) replacement text.
-   * For example, {"transaction":76,"bucketid":8249877}.  We just want to mask 76 but a regex that
+   * For example, {"writeid":76,"bucketid":8249877}.  We just want to mask 76 but a regex that
    * matches just 76 will match a lot of other things.
    */
   private final static class PatternReplacementPair {
@@ -1744,8 +1744,8 @@ public class QTestUtil {
   private final PatternReplacementPair[] partialPlanMask;
   {
     ArrayList<PatternReplacementPair> ppm = new ArrayList<>();
-    ppm.add(new PatternReplacementPair(Pattern.compile("\\{\"transactionid\":[1-9][0-9]*,\"bucketid\":"),
-      "{\"transactionid\":### Masked txnid ###,\"bucketid\":"));
+    ppm.add(new PatternReplacementPair(Pattern.compile("\\{\"writeid\":[1-9][0-9]*,\"bucketid\":"),
+      "{\"writeid\":### Masked writeid ###,\"bucketid\":"));
 
     ppm.add(new PatternReplacementPair(Pattern.compile("attempt_[0-9]+"), "attempt_#ID#"));
     ppm.add(new PatternReplacementPair(Pattern.compile("vertex_[0-9_]+"), "vertex_#ID#"));

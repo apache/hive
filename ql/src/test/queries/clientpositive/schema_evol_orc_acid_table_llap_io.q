@@ -19,7 +19,7 @@ set hive.llap.io.encode.enabled=true;
 --
 -- FILE VARIATION: ORC, ACID Non-Vectorized, MapWork, Table
 -- *IMPORTANT NOTE* We set hive.exec.schema.evolution=false above since schema evolution is always used for ACID.
--- Also, we don't do regular EXPLAINs on ACID files because the transaction id causes Q file statistics differences...
+-- Also, we don't do regular EXPLAINs on ACID files because the write id causes Q file statistics differences...
 -- Instead just one explain vectorization only detail
 --
 

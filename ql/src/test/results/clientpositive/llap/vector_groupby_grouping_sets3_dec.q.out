@@ -66,7 +66,7 @@ STAGE PLANS:
                   Statistics: Num rows: 12 Data size: 5760 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c_dec:decimal(10,2), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c_dec:decimal(10,2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: a (type: string), b (type: string), c_dec (type: decimal(10,2))
                     outputColumnNames: a, b, c_dec
@@ -204,7 +204,7 @@ STAGE PLANS:
                   Statistics: Num rows: 12 Data size: 5760 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c_dec:decimal(10,2), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c_dec:decimal(10,2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: a (type: string), b (type: string), c_dec (type: decimal(10,2))
                     outputColumnNames: a, b, c_dec
@@ -368,7 +368,7 @@ STAGE PLANS:
                   Statistics: Num rows: 12 Data size: 5760 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c_dec:decimal(10,2), 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:a:string, 1:b:string, 2:c_dec:decimal(10,2), 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: a (type: string), b (type: string), c_dec (type: decimal(10,2))
                     outputColumnNames: a, b, c_dec

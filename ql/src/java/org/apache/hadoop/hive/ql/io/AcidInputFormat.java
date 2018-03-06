@@ -56,9 +56,9 @@ import java.util.List;
  * online transactions systems.
  * <p>
  * The design changes the layout of data within a partition from being in files
- * at the top level to having base and delta directories. Each write operation
- * will be assigned a sequential global transaction id and each read operation
- * will request the list of valid transaction ids.
+ * at the top level to having base and delta directories. Each write operation in a table
+ * will be assigned a sequential table write id and each read operation
+ * will request the list of valid transactions/write ids.
  * <ul>
  *   <li>Old format -
  *     <pre>
@@ -66,28 +66,28 @@ import java.util.List;
  *     </pre></li>
  *   <li>New format -
  *     <pre>
- *        $partition/base_$tid/$bucket
- *                   delta_$tid_$tid_$stid/$bucket
+ *        $partition/base_$wid/$bucket
+ *                   delta_$wid_$wid_$stid/$bucket
  *     </pre></li>
  * </ul>
  * <p>
  * With each new write operation a new delta directory is created with events
  * that correspond to inserted, updated, or deleted rows. Each of the files is
- * stored sorted by the original transaction id (ascending), bucket (ascending),
- * row id (ascending), and current transaction id (descending). Thus the files
+ * stored sorted by the original write id (ascending), bucket (ascending),
+ * row id (ascending), and current write id (descending). Thus the files
  * can be merged by advancing through the files in parallel.
  * The stid is unique id (within the transaction) of the statement that created
  * this delta file.
  * <p>
  * The base files include all transactions from the beginning of time
- * (transaction id 0) to the transaction in the directory name. Delta
- * directories include transactions (inclusive) between the two transaction ids.
+ * (write id 0) to the write id in the directory name. Delta
+ * directories include transactions (inclusive) between the two write ids.
  * <p>
- * Because read operations get the list of valid transactions when they start,
+ * Because read operations get the list of valid transactions/write ids when they start,
  * all reads are performed on that snapshot, regardless of any transactions that
  * are committed afterwards.
  * <p>
- * The base and the delta directories have the transaction ids so that major
+ * The base and the delta directories have the write ids so that major
  * (merge all deltas into the base) and minor (merge several deltas together)
  * compactions can happen while readers continue their processing.
  * <p>
@@ -204,7 +204,7 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
   /**
    * Get a record reader that provides the user-facing view of the data after
    * it has been merged together. The key provides information about the
-   * record's identifier (transaction, bucket, record id).
+   * record's identifier (write id, bucket, record id).
    * @param split the split to read
    * @param options the options to read with
    * @return a record reader

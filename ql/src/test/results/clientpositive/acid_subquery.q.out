@@ -99,4 +99,4 @@ POSTHOOK: Output: default@target@p=1/q=3
 POSTHOOK: Output: default@target@p=1/q=3
 POSTHOOK: Output: default@target@p=2/q=2
 POSTHOOK: Output: default@target@p=2/q=2
-POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(target)t.FieldSchema(name:ROW__ID, type:struct<transactionId:bigint,bucketId:int,rowId:bigint>, comment:), (target)t.FieldSchema(name:p, type:int, comment:null), (target)t.FieldSchema(name:q, type:int, comment:null), ]
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(target)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), (target)t.FieldSchema(name:p, type:int, comment:null), (target)t.FieldSchema(name:q, type:int, comment:null), ]

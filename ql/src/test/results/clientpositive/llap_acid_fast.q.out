@@ -94,7 +94,7 @@ STAGE PLANS:
       Map Operator Tree:
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
@@ -214,7 +214,7 @@ STAGE PLANS:
       Map Operator Tree:
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
@@ -297,7 +297,7 @@ STAGE PLANS:
       Map Operator Tree:
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:cint:int, 1:cbigint:bigint, 2:cfloat:float, 3:cdouble:double, 4:csmallint:smallint, 5:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
