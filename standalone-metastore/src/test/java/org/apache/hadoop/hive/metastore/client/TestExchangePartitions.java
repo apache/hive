@@ -691,8 +691,6 @@ public class TestExchangePartitions extends MetaStoreClientTest {
   @Test(expected = MetaException.class)
   public void testExchangePartitionsNoPartExists() throws Exception {
 
-    // TODO: FileNotFoundException will occur. This use case could be handled in a better way like
-    // checking if the partitionsToExchange is empty and throw an exception if it is.
     Map<String, String> partitionSpecs =
         getPartitionSpec(Lists.newArrayList("2017", "march", "25"));
     client.exchange_partitions(partitionSpecs, sourceTable.getDbName(),
@@ -1284,8 +1282,6 @@ public class TestExchangePartitions extends MetaStoreClientTest {
   @Test(expected = MetaException.class)
   public void testExchangePartitionNoPartExists() throws Exception {
 
-    // TODO: FileNotFoundException will occur. This use case could be handled in a better way like
-    // checking if the partitionsToExchange is empty and throw an exception if it is.
     Map<String, String> partitionSpecs =
         getPartitionSpec(Lists.newArrayList("2017", "march", "25"));
     client.exchange_partition(partitionSpecs, sourceTable.getDbName(),

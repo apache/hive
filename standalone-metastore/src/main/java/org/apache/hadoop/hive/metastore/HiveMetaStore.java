@@ -3410,6 +3410,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       List<Partition> partitionsToExchange = get_partitions_ps(sourceDbName, sourceTableName,
           partVals, (short)-1);
+      if (partitionsToExchange == null || partitionsToExchange.isEmpty()) {
+        throw new MetaException("No partition is found with the values " + partitionSpecs
+            + " for the table " + sourceTableName);
+      }
       boolean sameColumns = MetaStoreUtils.compareFieldColumns(
           sourceTable.getSd().getCols(), destinationTable.getSd().getCols());
       boolean samePartitions = MetaStoreUtils.compareFieldColumns(
