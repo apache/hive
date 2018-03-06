@@ -935,20 +935,41 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       // shouldn't read any data
       long writeIdHwm = 0;
       List<Long> invalidWriteIdList = new ArrayList<>();
+      long minOpenWriteId = Long.MAX_VALUE;
+      BitSet abortedBits = new BitSet();
       long txnHwm = validTxnList.getHighWatermark();
 
-      // The output includes all the txns which are under the high water mark. It includes
+      // Find the writeId high water mark based upon txnId high water mark. If found, then, need to
+      // traverse through all write Ids less than writeId HWM to make exceptions list.
+      String s = "select max(t2w_writeid) from TXN_TO_WRITE_ID where t2w_txnid <= " + txnHwm
+              + " and t2w_database = " + quoteString(names[0])
+              + " and t2w_table = " + quoteString(names[1]);
+      LOG.debug("Going to execute query<" + s + ">");
+      rs = stmt.executeQuery(s);
+      if (rs.next()) {
+        writeIdHwm = rs.getLong(1);
+      }
+
+      // The output of below query includes all the txns which are under the high water mark. It includes
       // the committed transactions as well. The results should be sorted in ascending order based
       // on write id. The sorting is needed as exceptions list in ValidWriteIdList would be looked-up
       // using binary search.
-      String s = "select t2w_txnid, t2w_writeid from TXN_TO_WRITE_ID where t2w_txnid <= " + txnHwm
-              + " and t2w_database = " + quoteString(names[0])
-              + " and t2w_table = " + quoteString(names[1])
-              + " order by t2w_writeid asc";
+      if (writeIdHwm > 0) {
+        // If writeIdHwm is known, then query all writeIds under the writeId HWM.
+        // If any writeId under HWM is allocated by txn > txnId HWM, then will be added to invalid list.
+        s = "select t2w_txnid, t2w_writeid from TXN_TO_WRITE_ID where t2w_writeid <= " + writeIdHwm
+                + " and t2w_database = " + quoteString(names[0])
+                + " and t2w_table = " + quoteString(names[1])
+                + " order by t2w_writeid asc";
+      } else {
+        // If writeIdHwm is unknown, then query all writeIds allocated by txns under txns HWM.
+        s = "select t2w_txnid, t2w_writeid from TXN_TO_WRITE_ID where t2w_txnid <= " + txnHwm
+                + " and t2w_database = " + quoteString(names[0])
+                + " and t2w_table = " + quoteString(names[1])
+                + " order by t2w_writeid asc";
+      }
       LOG.debug("Going to execute query<" + s + ">");
       rs = stmt.executeQuery(s);
-      long minOpenWriteId = Long.MAX_VALUE;
-      BitSet abortedBits = new BitSet();
       while (rs.next()) {
         long txnId = rs.getLong(1);
         long writeId = rs.getLong(2);
@@ -960,11 +981,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         // The current txn is either in open or aborted state.
         // Mark the write ids state as per the txn state.
+        invalidWriteIdList.add(writeId);
         if (validTxnList.isTxnAborted(txnId)) {
-          invalidWriteIdList.add(writeId);
           abortedBits.set(invalidWriteIdList.size() - 1);
         } else {
-          invalidWriteIdList.add(writeId);
           minOpenWriteId = Math.min(minOpenWriteId, writeId);
         }
       }
