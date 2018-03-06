@@ -84,7 +84,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:a:int, 2:b:string, 3:c:int, 4:part:int, 5:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:a:int, 2:b:string, 3:c:int, 4:part:int, 5:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), a (type: int), b (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3
@@ -243,7 +243,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 198 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:a:int, 2:b:string, 3:c:int, 4:d:string, 5:part:int, 6:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:a:int, 2:b:string, 3:c:int, 4:d:string, 5:part:int, 6:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), a (type: int), b (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3
@@ -456,7 +456,7 @@ STAGE PLANS:
                   Statistics: Num rows: 5 Data size: 500 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:double, 2:c2:double, 3:c3:double, 4:b:string, 5:part:int, 6:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:double, 2:c2:double, 3:c3:double, 4:b:string, 5:part:int, 6:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: double), c2 (type: double), c3 (type: double), b (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -608,7 +608,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 12449 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:char(50), 3:c3:char(15), 4:c4:varchar(50), 5:c5:varchar(15), 6:c6:string, 7:c7:char(50), 8:c8:char(15), 9:c9:varchar(50), 10:c10:varchar(15), 11:b:string, 12:part:int, 13:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:char(50), 3:c3:char(15), 4:c4:varchar(50), 5:c5:varchar(15), 6:c6:string, 7:c7:char(50), 8:c8:char(15), 9:c9:varchar(50), 10:c10:varchar(15), 11:b:string, 12:part:int, 13:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: string), c2 (type: char(50)), c3 (type: char(15)), c4 (type: varchar(50)), c5 (type: varchar(15)), c6 (type: string), c7 (type: char(50)), c8 (type: char(15)), c9 (type: varchar(50)), c10 (type: varchar(15)), b (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
@@ -829,7 +829,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 1140 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:string, 3:c3:string, 4:c4:string, 5:c5:char(50), 6:c6:char(50), 7:c7:char(50), 8:c8:char(50), 9:c9:char(5), 10:c10:char(5), 11:c11:char(5), 12:c12:char(5), 13:c13:varchar(50), 14:c14:varchar(50), 15:c15:varchar(50), 16:c16:varchar(50), 17:c17:varchar(5), 18:c18:varchar(5), 19:c19:varchar(5), 20:c20:varchar(5), 21:b:string, 22:part:int, 23:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:string, 3:c3:string, 4:c4:string, 5:c5:char(50), 6:c6:char(50), 7:c7:char(50), 8:c8:char(50), 9:c9:char(5), 10:c10:char(5), 11:c11:char(5), 12:c12:char(5), 13:c13:varchar(50), 14:c14:varchar(50), 15:c15:varchar(50), 16:c16:varchar(50), 17:c17:varchar(5), 18:c18:varchar(5), 19:c19:varchar(5), 20:c20:varchar(5), 21:b:string, 22:part:int, 23:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: string), c2 (type: string), c3 (type: string), c4 (type: string), c5 (type: char(50)), c6 (type: char(50)), c7 (type: char(50)), c8 (type: char(50)), c9 (type: char(5)), c10 (type: char(5)), c11 (type: char(5)), c12 (type: char(5)), c13 (type: varchar(50)), c14 (type: varchar(50)), c15 (type: varchar(50)), c16 (type: varchar(50)), c17 (type: varchar(5)), c18 (type: varchar(5)), c19 (type: varchar(5)), c20 (type: varchar(5)), b (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22
@@ -1040,7 +1040,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 3300 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:string, 3:c3:string, 4:c4:char(50), 5:c5:char(50), 6:c6:char(50), 7:c7:char(7), 8:c8:char(7), 9:c9:char(7), 10:c10:varchar(50), 11:c11:varchar(50), 12:c12:varchar(50), 13:c13:varchar(7), 14:c14:varchar(7), 15:c15:varchar(7), 16:b:string, 17:part:int, 18:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:string, 3:c3:string, 4:c4:char(50), 5:c5:char(50), 6:c6:char(50), 7:c7:char(7), 8:c8:char(7), 9:c9:char(7), 10:c10:varchar(50), 11:c11:varchar(50), 12:c12:varchar(50), 13:c13:varchar(7), 14:c14:varchar(7), 15:c15:varchar(7), 16:b:string, 17:part:int, 18:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: string), c2 (type: string), c3 (type: string), c4 (type: char(50)), c5 (type: char(50)), c6 (type: char(50)), c7 (type: char(7)), c8 (type: char(7)), c9 (type: char(7)), c10 (type: varchar(50)), c11 (type: varchar(50)), c12 (type: varchar(50)), c13 (type: varchar(7)), c14 (type: varchar(7)), c15 (type: varchar(7)), b (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
@@ -1237,7 +1237,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 2712 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:char(50), 2:c2:char(9), 3:c3:varchar(50), 4:c4:char(9), 5:c5:varchar(50), 6:c6:varchar(9), 7:c7:string, 8:c8:char(50), 9:c9:char(9), 10:c10:string, 11:b:string, 12:part:int, 13:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:char(50), 2:c2:char(9), 3:c3:varchar(50), 4:c4:char(9), 5:c5:varchar(50), 6:c6:varchar(9), 7:c7:string, 8:c8:char(50), 9:c9:char(9), 10:c10:string, 11:b:string, 12:part:int, 13:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: char(50)), c2 (type: char(9)), c3 (type: varchar(50)), c4 (type: char(9)), c5 (type: varchar(50)), c6 (type: varchar(9)), c7 (type: string), c8 (type: char(50)), c9 (type: char(9)), c10 (type: string), b (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
@@ -1462,7 +1462,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 1060 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:smallint, 2:c2:int, 3:c3:bigint, 4:c4:decimal(38,18), 5:c5:float, 6:c6:double, 7:c7:int, 8:c8:bigint, 9:c9:decimal(38,18), 10:c10:float, 11:c11:double, 12:c12:bigint, 13:c13:decimal(38,18), 14:c14:float, 15:c15:double, 16:c16:decimal(38,18), 17:c17:float, 18:c18:double, 19:b:string, 20:part:int, 21:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:smallint, 2:c2:int, 3:c3:bigint, 4:c4:decimal(38,18), 5:c5:float, 6:c6:double, 7:c7:int, 8:c8:bigint, 9:c9:decimal(38,18), 10:c10:float, 11:c11:double, 12:c12:bigint, 13:c13:decimal(38,18), 14:c14:float, 15:c15:double, 16:c16:decimal(38,18), 17:c17:float, 18:c18:double, 19:b:string, 20:part:int, 21:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: smallint), c2 (type: int), c3 (type: bigint), c4 (type: decimal(38,18)), c5 (type: float), c6 (type: double), c7 (type: int), c8 (type: bigint), c9 (type: decimal(38,18)), c10 (type: float), c11 (type: double), c12 (type: bigint), c13 (type: decimal(38,18)), c14 (type: float), c15 (type: double), c16 (type: decimal(38,18)), c17 (type: float), c18 (type: double), b (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20
@@ -1629,7 +1629,7 @@ STAGE PLANS:
                   Statistics: Num rows: 6 Data size: 648 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:float, 2:c2:double, 3:c3:double, 4:b:string, 5:part:int, 6:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:float, 2:c2:double, 3:c3:double, 4:b:string, 5:part:int, 6:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), c1 (type: float), c2 (type: double), c3 (type: double), b (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5

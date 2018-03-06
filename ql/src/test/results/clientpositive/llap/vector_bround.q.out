@@ -70,7 +70,7 @@ STAGE PLANS:
                   Statistics: Num rows: 9 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:v0:double, 1:v1:double, 2:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:v0:double, 1:v1:double, 2:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: bround(v0) (type: double), bround(v1, 1) (type: double)
                     outputColumnNames: _col0, _col1

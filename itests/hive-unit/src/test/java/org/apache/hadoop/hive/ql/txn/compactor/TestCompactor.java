@@ -1376,12 +1376,12 @@ public class TestCompactor {
         return new long[0];
       }
       @Override
-      public boolean isValidBase(long txnid) {
+      public boolean isValidBase(long writeid) {
         return true;
       }
 
       @Override
-      public boolean isWriteIdAborted(long txnid) {
+      public boolean isWriteIdAborted(long writeid) {
         return true;
       }
 

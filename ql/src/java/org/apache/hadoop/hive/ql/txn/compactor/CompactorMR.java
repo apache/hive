@@ -281,7 +281,7 @@ public class CompactorMR {
       String minOpenInfo = ".";
       if(writeIds.getMinOpenWriteId() != null) {
         minOpenInfo = " with min Open " + JavaUtils.writeIdToString(writeIds.getMinOpenWriteId()) +
-          ".  Compaction cannot compact above this txnid";
+          ".  Compaction cannot compact above this writeId";
       }
       LOG.error("No delta files or original files found to compact in " + sd.getLocation() +
         " for compactionId=" + ci.id + minOpenInfo);

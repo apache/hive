@@ -623,7 +623,7 @@ public class AcidUtils {
 
     /**
      * Get the list of obsolete directories. After filtering out bases and
-     * deltas that are not selected by the valid transaction list, return the
+     * deltas that are not selected by the valid transaction/write ids list, return the
      * list of original files, bases, and deltas that have been replaced by
      * more up to date ones.  Not {@code null}.
      */
@@ -695,7 +695,7 @@ public class AcidUtils {
     /**
      * Compactions (Major/Minor) merge deltas/bases but delete of old files
      * happens in a different process; thus it's possible to have bases/deltas with
-     * overlapping txnId boundaries.  The sort order helps figure out the "best" set of files
+     * overlapping writeId boundaries.  The sort order helps figure out the "best" set of files
      * to use to get data.
      * This sorts "wider" delta before "narrower" i.e. delta_5_20 sorts before delta_5_10 (and delta_11_20)
      */
@@ -718,7 +718,7 @@ public class AcidUtils {
         /**
          * We want deltas after minor compaction (w/o statementId) to sort
          * earlier so that getAcidState() considers compacted files (into larger ones) obsolete
-         * Before compaction, include deltas with all statementIds for a given txnId
+         * Before compaction, include deltas with all statementIds for a given writeId
          * in a {@link org.apache.hadoop.hive.ql.io.AcidUtils.Directory}
          */
         if(statementId < parsedDelta.statementId) {
@@ -749,9 +749,9 @@ public class AcidUtils {
 
   /**
    * Convert the list of deltas into an equivalent list of begin/end
-   * transaction id pairs.  Assumes {@code deltas} is sorted.
+   * write id pairs.  Assumes {@code deltas} is sorted.
    * @param deltas
-   * @return the list of transaction ids to serialize
+   * @return the list of write ids to serialize
    */
   public static List<AcidInputFormat.DeltaMetaData> serializeDeltas(List<ParsedDelta> deltas) {
     List<AcidInputFormat.DeltaMetaData> result = new ArrayList<>(deltas.size());
@@ -774,12 +774,12 @@ public class AcidUtils {
   }
 
   /**
-   * Convert the list of begin/end transaction id pairs to a list of delete delta
+   * Convert the list of begin/end write id pairs to a list of delete delta
    * directories.  Note that there may be multiple delete_delta files for the exact same txn range starting
    * with 2.2.x;
    * see {@link org.apache.hadoop.hive.ql.io.AcidUtils#deltaSubdir(long, long, int)}
    * @param root the root directory
-   * @param deleteDeltas list of begin/end transaction id pairs
+   * @param deleteDeltas list of begin/end write id pairs
    * @return the list of delta paths
    */
   public static Path[] deserializeDeleteDeltas(Path root, final List<AcidInputFormat.DeltaMetaData> deleteDeltas) throws IOException {
@@ -879,7 +879,7 @@ public class AcidUtils {
    * Get the ACID state of the given directory. It finds the minimal set of
    * base and diff directories. Note that because major compactions don't
    * preserve the history, we can't use a base directory that includes a
-   * transaction id that we must exclude.
+   * write id that we must exclude.
    * @param directory the partition directory to analyze
    * @param conf the configuration
    * @param writeIdList the list of write ids that we are reading
@@ -1075,7 +1075,7 @@ public class AcidUtils {
    * files within the snapshot.
    * A base produced by Insert Overwrite is different.  Logically it's a delta file but one that
    * causes anything written previously is ignored (hence the overwrite).  In this case, base_x
-   * is visible if txnid:x is committed for current reader.
+   * is visible if writeid:x is committed for current reader.
    */
   private static boolean isValidBase(long baseWriteId, ValidWriteIdList writeIdList, Path baseDir,
             FileSystem fs) throws IOException {
@@ -1645,7 +1645,7 @@ public class AcidUtils {
       try {
         Reader reader = OrcFile.createReader(dataFile, OrcFile.readerOptions(fs.getConf()));
         /*
-          acid file would have schema like <op, otid, writerId, rowid, ctid, <f1, ... fn>> so could
+          acid file would have schema like <op, owid, writerId, rowid, cwid, <f1, ... fn>> so could
           check it this way once/if OrcRecordUpdater.ACID_KEY_INDEX_NAME is removed
           TypeDescription schema = reader.getSchema();
           List<String> columns = schema.getFieldNames();

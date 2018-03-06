@@ -67,7 +67,7 @@ STAGE PLANS:
                   Statistics: Num rows: 4 Data size: 4423 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:s1:struct<c1:boolean,c2:tinyint,c3:smallint,c4:int,c5:bigint,c6:float,c7:double,c8:decimal(38,18),c9:char(25),c10:varchar(25),c11:timestamp,c12:date,c13:binary>, 2:b:string, 3:part:int, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:s1:struct<c1:boolean,c2:tinyint,c3:smallint,c4:int,c5:bigint,c6:float,c7:double,c8:decimal(38,18),c9:char(25),c10:varchar(25),c11:timestamp,c12:date,c13:binary>, 2:b:string, 3:part:int, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), s1 (type: struct<c1:boolean,c2:tinyint,c3:smallint,c4:int,c5:bigint,c6:float,c7:double,c8:decimal(38,18),c9:char(25),c10:varchar(25),c11:timestamp,c12:date,c13:binary>), b (type: string)
                     outputColumnNames: _col0, _col1, _col2, _col3
@@ -185,7 +185,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 200 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:b:string, 2:part:int, 3:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:b:string, 2:part:int, 3:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), b (type: string)
                     outputColumnNames: _col0, _col1, _col2
@@ -320,7 +320,7 @@ STAGE PLANS:
                   Statistics: Num rows: 2 Data size: 654 Basic stats: COMPLETE Column stats: PARTIAL
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:insert_num:int, 1:b:string, 2:s3:struct<c1:boolean,c2:tinyint,c3:smallint,c4:int,c5:bigint>, 3:part:int, 4:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:b:string, 2:s3:struct<c1:boolean,c2:tinyint,c3:smallint,c4:int,c5:bigint>, 3:part:int, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: insert_num (type: int), part (type: int), b (type: string), s3 (type: struct<c1:boolean,c2:tinyint,c3:smallint,c4:int,c5:bigint>)
                     outputColumnNames: _col0, _col1, _col2, _col3
