@@ -317,6 +317,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       }
       String validWriteIdString = driverConf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
       if (validWriteIdString != null) {
+        assert  validTxnString != null;
         jc.set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, validWriteIdString);
       }
 
