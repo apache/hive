@@ -20,11 +20,9 @@ package org.apache.hadoop.hive.cli.control;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
 import java.util.concurrent.TimeUnit;
 
-import com.google.common.base.Stopwatch;
-import com.google.common.base.Strings;
-import org.apache.hadoop.hive.cli.control.AbstractCliConfig.MetastoreType;
 import org.apache.hadoop.hive.ql.QTestProcessExecResult;
 import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
@@ -35,6 +33,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
 
 public class CoreCliDriver extends CliAdapter {
 
@@ -55,6 +56,7 @@ public class CoreCliDriver extends CliAdapter {
     final String hiveConfDir = cliConfig.getHiveConfDir();
     final String initScript = cliConfig.getInitScript();
     final String cleanupScript = cliConfig.getCleanupScript();
+
     try {
       final String hadoopVer = cliConfig.getHadoopVersion();
 
@@ -148,11 +150,13 @@ public class CoreCliDriver extends CliAdapter {
     }
   }
 
-  static String debugHint = "\nSee ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
-     + "or check ./ql/target/surefire-reports or ./itests/qtest/target/surefire-reports/ for specific test cases logs.";
+  private static String debugHint =
+      "\nSee ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
+          + "or check ./ql/target/surefire-reports "
+          + "or ./itests/qtest/target/surefire-reports/ for specific test cases logs.";
 
   @Override
-  public void runTest(String tname, String fname, String fpath) throws Exception {
+  public void runTest(String testName, String fname, String fpath) throws Exception {
     Stopwatch sw = Stopwatch.createStarted();
     boolean skipped = false;
     boolean failed = false;
@@ -169,7 +173,7 @@ public class CoreCliDriver extends CliAdapter {
         return;
       }
 
-      qt.cliInit(fname, false);
+      qt.cliInit(new File(fpath), false);
       int ecode = qt.executeClient(fname);
       if (ecode != 0) {
         failed = true;
@@ -178,8 +182,8 @@ public class CoreCliDriver extends CliAdapter {
       QTestProcessExecResult result = qt.checkCliDriverResults(fname);
       if (result.getReturnCode() != 0) {
         failed = true;
-        String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ?
-            debugHint : "\r\n" + result.getCapturedOutput();
+        String message = Strings.isNullOrEmpty(result.getCapturedOutput()) ? debugHint
+            : "\r\n" + result.getCapturedOutput();
         qt.failedDiff(result.getReturnCode(), fname, message);
       }
     }
@@ -187,7 +191,7 @@ public class CoreCliDriver extends CliAdapter {
       failed = true;
       qt.failed(e, fname, debugHint);
     } finally {
-      String message = "Done query" + fname + ". succeeded=" + !failed + ", skipped=" + skipped +
+      String message = "Done query " + fname + ". succeeded=" + !failed + ", skipped=" + skipped +
           ". ElapsedTime(ms)=" + sw.stop().elapsed(TimeUnit.MILLISECONDS);
       LOG.info(message);
       System.err.println(message);

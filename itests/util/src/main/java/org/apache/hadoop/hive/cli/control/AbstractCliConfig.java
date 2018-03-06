@@ -71,7 +71,7 @@ public abstract class AbstractCliConfig {
   private Class<? extends CliAdapter> cliAdapter;
 
   public AbstractCliConfig(Class<? extends CliAdapter> adapter) {
-    cliAdapter=adapter;
+    cliAdapter = adapter;
     clusterType = MiniClusterType.none;
     queryFile = getSysPropValue("qfile");
     queryFileRegex = getSysPropValue("qfile_regex");
@@ -134,7 +134,6 @@ public abstract class AbstractCliConfig {
   protected void excludeQuery(String qFile) {
     excludedQueryFileNames.add(qFile);
   }
-
 
   private static final Splitter TEST_SPLITTER =
       Splitter.onPattern("[, ]").trimResults().omitEmptyStrings();
