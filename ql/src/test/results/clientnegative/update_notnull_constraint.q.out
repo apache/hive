@@ -21,4 +21,4 @@ POSTHOOK: Output: default@acid_uami
 POSTHOOK: Lineage: acid_uami.de SCRIPT []
 POSTHOOK: Lineage: acid_uami.i SCRIPT []
 POSTHOOK: Lineage: acid_uami.vc SCRIPT []
-FAILED: UDFArgumentException org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException: NOT NULL constraint violated!
+FAILED: DataConstraintViolationError org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: NOT NULL constraint violated!

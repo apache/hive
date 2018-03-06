@@ -24,4 +24,4 @@ POSTHOOK: query: alter table t1 change j j int constraint nn0 not null enforced
 POSTHOOK: type: ALTERTABLE_RENAMECOL
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: default@t1
-FAILED: UDFArgumentException org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException: NOT NULL constraint violated!
+FAILED: DataConstraintViolationError org.apache.hadoop.hive.ql.exec.errors.DataConstraintViolationError: NOT NULL constraint violated!
