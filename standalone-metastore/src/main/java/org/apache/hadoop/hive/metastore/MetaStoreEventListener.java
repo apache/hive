@@ -24,12 +24,10 @@ import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
-import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
@@ -40,7 +38,6 @@ import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
-import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
@@ -137,27 +134,6 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @throws MetaException
    */
   public void onLoadPartitionDone(LoadPartitionDoneEvent partSetDoneEvent) throws MetaException {
-  }
-
-  /**
-   * @param indexEvent index event
-   * @throws MetaException
-   */
-  public void onAddIndex(AddIndexEvent indexEvent) throws MetaException {
-  }
-
-  /**
-   * @param indexEvent index event
-   * @throws MetaException
-   */
-  public void onDropIndex(DropIndexEvent indexEvent) throws MetaException {
-  }
-
-  /**
-   * @param indexEvent index event
-   * @throws MetaException
-   */
-  public void onAlterIndex(AlterIndexEvent indexEvent) throws MetaException {
   }
 
   /**

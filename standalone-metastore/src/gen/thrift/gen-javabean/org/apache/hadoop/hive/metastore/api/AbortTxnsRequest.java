@@ -351,13 +351,13 @@ import org.slf4j.LoggerFactory;
           case 1: // TXN_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list564 = iprot.readListBegin();
-                struct.txn_ids = new ArrayList<Long>(_list564.size);
-                long _elem565;
-                for (int _i566 = 0; _i566 < _list564.size; ++_i566)
+                org.apache.thrift.protocol.TList _list554 = iprot.readListBegin();
+                struct.txn_ids = new ArrayList<Long>(_list554.size);
+                long _elem555;
+                for (int _i556 = 0; _i556 < _list554.size; ++_i556)
                 {
-                  _elem565 = iprot.readI64();
-                  struct.txn_ids.add(_elem565);
+                  _elem555 = iprot.readI64();
+                  struct.txn_ids.add(_elem555);
                 }
                 iprot.readListEnd();
               }
@@ -383,9 +383,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(TXN_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.txn_ids.size()));
-          for (long _iter567 : struct.txn_ids)
+          for (long _iter557 : struct.txn_ids)
           {
-            oprot.writeI64(_iter567);
+            oprot.writeI64(_iter557);
           }
           oprot.writeListEnd();
         }
@@ -410,9 +410,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.txn_ids.size());
-        for (long _iter568 : struct.txn_ids)
+        for (long _iter558 : struct.txn_ids)
         {
-          oprot.writeI64(_iter568);
+          oprot.writeI64(_iter558);
         }
       }
     }
@@ -421,13 +421,13 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, AbortTxnsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list569 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.txn_ids = new ArrayList<Long>(_list569.size);
-        long _elem570;
-        for (int _i571 = 0; _i571 < _list569.size; ++_i571)
+        org.apache.thrift.protocol.TList _list559 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.txn_ids = new ArrayList<Long>(_list559.size);
+        long _elem560;
+        for (int _i561 = 0; _i561 < _list559.size; ++_i561)
         {
-          _elem570 = iprot.readI64();
-          struct.txn_ids.add(_elem570);
+          _elem560 = iprot.readI64();
+          struct.txn_ids.add(_elem560);
         }
       }
       struct.setTxn_idsIsSet(true);

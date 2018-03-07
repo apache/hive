@@ -22,7 +22,6 @@ package org.apache.hadoop.hive.metastore.messaging;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -55,9 +54,6 @@ public abstract class MessageFactory {
   public static final String INSERT_EVENT = "INSERT";
   public static final String CREATE_FUNCTION_EVENT = "CREATE_FUNCTION";
   public static final String DROP_FUNCTION_EVENT = "DROP_FUNCTION";
-  public static final String CREATE_INDEX_EVENT = "CREATE_INDEX";
-  public static final String DROP_INDEX_EVENT = "DROP_INDEX";
-  public static final String ALTER_INDEX_EVENT = "ALTER_INDEX";
   public static final String ADD_PRIMARYKEY_EVENT = "ADD_PRIMARYKEY";
   public static final String ADD_FOREIGNKEY_EVENT = "ADD_FOREIGNKEY";
   public static final String ADD_UNIQUECONSTRAINT_EVENT = "ADD_UNIQUECONSTRAINT";
@@ -218,28 +214,6 @@ public abstract class MessageFactory {
    * @return DropFunctionMessage instance.
    */
   public abstract DropFunctionMessage buildDropFunctionMessage(Function fn);
-
-  /**
-   * Factory method for CreateIndexMessage.
-   * @param idx The Index being added.
-   * @return CreateIndexMessage instance.
-   */
-  public abstract CreateIndexMessage buildCreateIndexMessage(Index idx);
-
-  /**
-   * Factory method for DropIndexMessage.
-   * @param idx The Index being dropped.
-   * @return DropIndexMessage instance.
-   */
-  public abstract DropIndexMessage buildDropIndexMessage(Index idx);
-
-  /**
-   * Factory method for AlterIndexMessage.
-   * @param before The index before the alter
-   * @param after The index after the alter
-   * @return AlterIndexMessage
-   */
-  public abstract AlterIndexMessage buildAlterIndexMessage(Index before, Index after);
 
   /**
    * Factory method for building insert message

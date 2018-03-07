@@ -354,14 +354,14 @@ import org.slf4j.LoggerFactory;
           case 1: // NOT_NULL_CONSTRAINTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list346 = iprot.readListBegin();
-                struct.notNullConstraints = new ArrayList<SQLNotNullConstraint>(_list346.size);
-                SQLNotNullConstraint _elem347;
-                for (int _i348 = 0; _i348 < _list346.size; ++_i348)
+                org.apache.thrift.protocol.TList _list336 = iprot.readListBegin();
+                struct.notNullConstraints = new ArrayList<SQLNotNullConstraint>(_list336.size);
+                SQLNotNullConstraint _elem337;
+                for (int _i338 = 0; _i338 < _list336.size; ++_i338)
                 {
-                  _elem347 = new SQLNotNullConstraint();
-                  _elem347.read(iprot);
-                  struct.notNullConstraints.add(_elem347);
+                  _elem337 = new SQLNotNullConstraint();
+                  _elem337.read(iprot);
+                  struct.notNullConstraints.add(_elem337);
                 }
                 iprot.readListEnd();
               }
@@ -387,9 +387,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(NOT_NULL_CONSTRAINTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.notNullConstraints.size()));
-          for (SQLNotNullConstraint _iter349 : struct.notNullConstraints)
+          for (SQLNotNullConstraint _iter339 : struct.notNullConstraints)
           {
-            _iter349.write(oprot);
+            _iter339.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -414,9 +414,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.notNullConstraints.size());
-        for (SQLNotNullConstraint _iter350 : struct.notNullConstraints)
+        for (SQLNotNullConstraint _iter340 : struct.notNullConstraints)
         {
-          _iter350.write(oprot);
+          _iter340.write(oprot);
         }
       }
     }
@@ -425,14 +425,14 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, NotNullConstraintsResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list351 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.notNullConstraints = new ArrayList<SQLNotNullConstraint>(_list351.size);
-        SQLNotNullConstraint _elem352;
-        for (int _i353 = 0; _i353 < _list351.size; ++_i353)
+        org.apache.thrift.protocol.TList _list341 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.notNullConstraints = new ArrayList<SQLNotNullConstraint>(_list341.size);
+        SQLNotNullConstraint _elem342;
+        for (int _i343 = 0; _i343 < _list341.size; ++_i343)
         {
-          _elem352 = new SQLNotNullConstraint();
-          _elem352.read(iprot);
-          struct.notNullConstraints.add(_elem352);
+          _elem342 = new SQLNotNullConstraint();
+          _elem342.read(iprot);
+          struct.notNullConstraints.add(_elem342);
         }
       }
       struct.setNotNullConstraintsIsSet(true);

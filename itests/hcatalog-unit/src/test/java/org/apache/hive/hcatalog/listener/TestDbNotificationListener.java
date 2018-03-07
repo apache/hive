@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -49,12 +48,10 @@ import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.FireEventRequestData;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.FunctionType;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
-import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
@@ -62,9 +59,7 @@ import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
-import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
@@ -72,22 +67,18 @@ import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
-import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
-import org.apache.hadoop.hive.metastore.messaging.AlterIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
-import org.apache.hadoop.hive.metastore.messaging.CreateIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropFunctionMessage;
-import org.apache.hadoop.hive.metastore.messaging.DropIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
@@ -102,7 +93,6 @@ import org.apache.hive.hcatalog.data.Pair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -174,58 +164,57 @@ public class TestDbNotificationListener {
       super(config);
     }
 
+    @Override
     public void onCreateTable (CreateTableEvent tableEvent) throws MetaException {
       pushEventId(EventType.CREATE_TABLE, tableEvent);
     }
 
+    @Override
     public void onDropTable (DropTableEvent tableEvent)  throws MetaException {
       pushEventId(EventType.DROP_TABLE, tableEvent);
     }
 
+    @Override
     public void onAlterTable (AlterTableEvent tableEvent) throws MetaException {
       pushEventId(EventType.ALTER_TABLE, tableEvent);
     }
 
+    @Override
     public void onAddPartition (AddPartitionEvent partitionEvent) throws MetaException {
       pushEventId(EventType.ADD_PARTITION, partitionEvent);
     }
 
+    @Override
     public void onDropPartition (DropPartitionEvent partitionEvent)  throws MetaException {
       pushEventId(EventType.DROP_PARTITION, partitionEvent);
     }
 
+    @Override
     public void onAlterPartition (AlterPartitionEvent partitionEvent)  throws MetaException {
       pushEventId(EventType.ALTER_PARTITION, partitionEvent);
     }
 
+    @Override
     public void onCreateDatabase (CreateDatabaseEvent dbEvent) throws MetaException {
       pushEventId(EventType.CREATE_DATABASE, dbEvent);
     }
 
+    @Override
     public void onDropDatabase (DropDatabaseEvent dbEvent) throws MetaException {
       pushEventId(EventType.DROP_DATABASE, dbEvent);
     }
 
-    public void onAddIndex(AddIndexEvent indexEvent) throws MetaException {
-      pushEventId(EventType.CREATE_INDEX, indexEvent);
-    }
-
-    public void onDropIndex(DropIndexEvent indexEvent) throws MetaException {
-      pushEventId(EventType.DROP_INDEX, indexEvent);
-    }
-
-    public void onAlterIndex(AlterIndexEvent indexEvent) throws MetaException {
-      pushEventId(EventType.ALTER_INDEX, indexEvent);
-    }
-
+    @Override
     public void onCreateFunction (CreateFunctionEvent fnEvent) throws MetaException {
       pushEventId(EventType.CREATE_FUNCTION, fnEvent);
     }
 
+    @Override
     public void onDropFunction (DropFunctionEvent fnEvent) throws MetaException {
       pushEventId(EventType.DROP_FUNCTION, fnEvent);
     }
 
+    @Override
     public void onInsert(InsertEvent insertEvent) throws MetaException {
       pushEventId(EventType.INSERT, insertEvent);
     }
@@ -960,226 +949,6 @@ public class TestDbNotificationListener {
     }
     rsp = msClient.getNextNotification(firstEventId, 0, null);
     assertEquals(3, rsp.getEventsSize());
-  }
-
-  @Test
-  @Ignore("HIVE-18715")
-  public void createIndex() throws Exception {
-    String indexName = "createIndex";
-    String dbName = "default";
-    String tableName = "createIndexTable";
-    String indexTableName = tableName + "__" + indexName + "__";
-    int startTime = (int) (System.currentTimeMillis() / 1000);
-    List<FieldSchema> cols = new ArrayList<FieldSchema>();
-    cols.add(new FieldSchema("col1", "int", ""));
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
-    Map<String, String> params = new HashMap<String, String>();
-    params.put("key", "value");
-    StorageDescriptor sd =
-        new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 17, serde,
-            Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1)), params);
-    Table table =
-        new Table(tableName, dbName, "me", startTime, startTime, 0, sd, null, emptyParameters,
-            null, null, null);
-    // Event 1
-    msClient.createTable(table);
-    Index index =
-        new Index(indexName, null, "default", tableName, startTime, startTime, indexTableName, sd,
-            emptyParameters, false);
-    Table indexTable =
-        new Table(indexTableName, dbName, "me", startTime, startTime, 0, sd, null, emptyParameters,
-            null, null, null);
-    // Event 2, 3 (index table and index)
-    msClient.createIndex(index, indexTable);
-
-    // Get notifications from metastore
-    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
-    assertEquals(3, rsp.getEventsSize());
-    NotificationEvent event = rsp.getEvents().get(2);
-    assertEquals(firstEventId + 3, event.getEventId());
-    assertTrue(event.getEventTime() >= startTime);
-    assertEquals(EventType.CREATE_INDEX.toString(), event.getEventType());
-    assertEquals(dbName, event.getDbName());
-
-    // Parse the message field
-    CreateIndexMessage createIdxMessage = md.getCreateIndexMessage(event.getMessage());
-    assertEquals(dbName, createIdxMessage.getDB());
-    Index indexObj = createIdxMessage.getIndexObj();
-    assertEquals(dbName, indexObj.getDbName());
-    assertEquals(indexName, indexObj.getIndexName());
-    assertEquals(tableName, indexObj.getOrigTableName());
-    assertEquals(indexTableName, indexObj.getIndexTableName());
-
-    // Verify the eventID was passed to the non-transactional listener
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_INDEX, firstEventId + 3);
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 2);
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
-
-    // When hive.metastore.transactional.event.listeners is set,
-    // a failed event should not create a new notification
-    DummyRawStoreFailEvent.setEventSucceed(false);
-    index =
-        new Index("createIndexTable2", null, "default", tableName, startTime, startTime,
-            "createIndexTable2__createIndexTable2__", sd, emptyParameters, false);
-    Table indexTable2 =
-        new Table("createIndexTable2__createIndexTable2__", dbName, "me", startTime, startTime, 0,
-            sd, null, emptyParameters, null, null, null);
-    try {
-      msClient.createIndex(index, indexTable2);
-      fail("Error: create index should've failed");
-    } catch (Exception ex) {
-      // expected
-    }
-    rsp = msClient.getNextNotification(firstEventId, 0, null);
-    assertEquals(3, rsp.getEventsSize());
-  }
-
-  @Test
-  @Ignore("HIVE-18715")
-  public void dropIndex() throws Exception {
-    String indexName = "dropIndex";
-    String dbName = "default";
-    String tableName = "dropIndexTable";
-    String indexTableName = tableName + "__" + indexName + "__";
-    int startTime = (int) (System.currentTimeMillis() / 1000);
-    List<FieldSchema> cols = new ArrayList<FieldSchema>();
-    cols.add(new FieldSchema("col1", "int", ""));
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
-    Map<String, String> params = new HashMap<String, String>();
-    params.put("key", "value");
-    StorageDescriptor sd =
-        new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 17, serde,
-            Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1)), params);
-    Table table =
-        new Table(tableName, dbName, "me", startTime, startTime, 0, sd, null, emptyParameters,
-            null, null, null);
-    // Event 1
-    msClient.createTable(table);
-    Index index =
-        new Index(indexName, null, "default", tableName, startTime, startTime, indexTableName, sd,
-            emptyParameters, false);
-    Table indexTable =
-        new Table(indexTableName, dbName, "me", startTime, startTime, 0, sd, null, emptyParameters,
-            null, null, null);
-    // Event 2, 3 (index table and index)
-    msClient.createIndex(index, indexTable);
-    // Event 4 (drops index and indexTable)
-    msClient.dropIndex(dbName, tableName, indexName, true);
-
-    // Get notifications from metastore
-    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
-    assertEquals(4, rsp.getEventsSize());
-    NotificationEvent event = rsp.getEvents().get(3);
-    assertEquals(firstEventId + 4, event.getEventId());
-    assertTrue(event.getEventTime() >= startTime);
-    assertEquals(EventType.DROP_INDEX.toString(), event.getEventType());
-    assertEquals(dbName, event.getDbName());
-
-    // Parse the message field
-    DropIndexMessage dropIdxMsg = md.getDropIndexMessage(event.getMessage());
-    assertEquals(dbName, dropIdxMsg.getDB());
-    assertEquals(indexName.toLowerCase(), dropIdxMsg.getIndexName());
-    assertEquals(indexTableName.toLowerCase(), dropIdxMsg.getIndexTableName());
-    assertEquals(tableName.toLowerCase(), dropIdxMsg.getOrigTableName());
-
-    // Verify the eventID was passed to the non-transactional listener
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.DROP_INDEX, firstEventId + 4);
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_INDEX, firstEventId + 3);
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 2);
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
-
-    // When hive.metastore.transactional.event.listeners is set,
-    // a failed event should not create a new notification
-    index =
-        new Index("dropIndexTable2", null, "default", tableName, startTime, startTime,
-            "dropIndexTable__dropIndexTable2__", sd, emptyParameters, false);
-    Table indexTable2 =
-        new Table("dropIndexTable__dropIndexTable2__", dbName, "me", startTime, startTime, 0, sd,
-            null, emptyParameters, null, null, null);
-    msClient.createIndex(index, indexTable2);
-    DummyRawStoreFailEvent.setEventSucceed(false);
-    try {
-      // drops index and indexTable
-      msClient.dropIndex(dbName, tableName, "dropIndex2", true);
-      fail("Error: drop index should've failed");
-    } catch (Exception ex) {
-      // expected
-    }
-
-    rsp = msClient.getNextNotification(firstEventId, 0, null);
-    assertEquals(6, rsp.getEventsSize());
-  }
-
-  @Test
-  @Ignore("HIVE-18715")
-  public void alterIndex() throws Exception {
-    String indexName = "alterIndex";
-    String dbName = "default";
-    String tableName = "alterIndexTable";
-    String indexTableName = tableName + "__" + indexName + "__";
-    int startTime = (int) (System.currentTimeMillis() / 1000);
-    List<FieldSchema> cols = new ArrayList<FieldSchema>();
-    cols.add(new FieldSchema("col1", "int", ""));
-    SerDeInfo serde = new SerDeInfo("serde", "seriallib", null);
-    Map<String, String> params = new HashMap<String, String>();
-    params.put("key", "value");
-    StorageDescriptor sd =
-        new StorageDescriptor(cols, "file:/tmp", "input", "output", false, 17, serde,
-            Arrays.asList("bucketcol"), Arrays.asList(new Order("sortcol", 1)), params);
-    Table table =
-        new Table(tableName, dbName, "me", startTime, startTime, 0, sd, null, emptyParameters,
-            null, null, null);
-    // Event 1
-    msClient.createTable(table);
-    Index oldIndex =
-        new Index(indexName, null, "default", tableName, startTime, startTime, indexTableName, sd,
-            emptyParameters, false);
-    Table oldIndexTable =
-        new Table(indexTableName, dbName, "me", startTime, startTime, 0, sd, null, emptyParameters,
-            null, null, null);
-    // Event 2, 3
-    msClient.createIndex(oldIndex, oldIndexTable); // creates index and index table
-    Index newIndex =
-        new Index(indexName, null, "default", tableName, startTime, startTime + 1, indexTableName,
-            sd, emptyParameters, false);
-    // Event 4
-    msClient.alter_index(dbName, tableName, indexName, newIndex);
-
-    // Get notifications from metastore
-    NotificationEventResponse rsp = msClient.getNextNotification(firstEventId, 0, null);
-    assertEquals(4, rsp.getEventsSize());
-    NotificationEvent event = rsp.getEvents().get(3);
-    assertEquals(firstEventId + 4, event.getEventId());
-    assertTrue(event.getEventTime() >= startTime);
-    assertEquals(EventType.ALTER_INDEX.toString(), event.getEventType());
-    assertEquals(dbName, event.getDbName());
-
-    // Parse the message field
-    AlterIndexMessage alterIdxMsg = md.getAlterIndexMessage(event.getMessage());
-    Index indexObj = alterIdxMsg.getIndexObjAfter();
-    assertEquals(dbName, indexObj.getDbName());
-    assertEquals(indexName, indexObj.getIndexName());
-    assertEquals(tableName, indexObj.getOrigTableName());
-    assertEquals(indexTableName, indexObj.getIndexTableName());
-    assertTrue(indexObj.getCreateTime() < indexObj.getLastAccessTime());
-
-    // Verify the eventID was passed to the non-transactional listener
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.ALTER_INDEX, firstEventId + 4);
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_INDEX, firstEventId + 3);
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 2);
-    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
-
-    // When hive.metastore.transactional.event.listeners is set,
-    // a failed event should not create a new notification
-    DummyRawStoreFailEvent.setEventSucceed(false);
-    try {
-      msClient.alter_index(dbName, tableName, indexName, newIndex);
-      fail("Error: alter index should've failed");
-    } catch (Exception ex) {
-      // expected
-    }
-    rsp = msClient.getNextNotification(firstEventId, 0, null);
-    assertEquals(4, rsp.getEventsSize());
   }
 
   @Test

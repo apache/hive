@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -397,12 +396,6 @@ public class TestObjectStore {
       List<String> dbs = store.getAllDatabases();
       for (String db : dbs) {
         List<String> tbls = store.getAllTables(db);
-        for (String tbl : tbls) {
-          List<Index> indexes = store.getIndexes(db, tbl, 100);
-          for (Index index : indexes) {
-            store.dropIndex(db, tbl, index.getIndexName());
-          }
-        }
         for (String tbl : tbls) {
           Deadline.startTimer("getPartition");
           List<Partition> parts = store.getPartitions(db, tbl, 100);

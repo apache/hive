@@ -378,19 +378,6 @@ struct PartitionSpec {
   5: optional PartitionListComposingSpec partitionList
 }
 
-struct Index {
-  1: string       indexName, // unique with in the whole database namespace
-  2: string       indexHandlerClass, // reserved
-  3: string       dbName,
-  4: string       origTableName,
-  5: i32          createTime,
-  6: i32          lastAccessTime,
-  7: string       indexTableName,
-  8: StorageDescriptor   sd,
-  9: map<string, string> parameters,
-  10: bool         deferredRebuild
-}
-
 // column statistics
 struct BooleanColumnStatsData {
 1: required i64 numTrues,
@@ -1365,10 +1352,6 @@ exception NoSuchObjectException {
   1: string message
 }
 
-exception IndexAlreadyExistsException {
-  1: string message
-}
-
 exception InvalidOperationException {
   1: string message
 }
@@ -1698,21 +1681,6 @@ service ThriftHiveMetastore extends fb303.FacebookService
                   4: PartitionEventType eventType) throws (1: MetaException o1, 2:NoSuchObjectException o2,
                   3: UnknownDBException o3, 4: UnknownTableException o4, 5: UnknownPartitionException o5,
                   6: InvalidPartitionException o6)
-
-  //index
-  Index add_index(1:Index new_index, 2: Table index_table)
-                       throws(1:InvalidObjectException o1, 2:AlreadyExistsException o2, 3:MetaException o3)
-  void alter_index(1:string dbname, 2:string base_tbl_name, 3:string idx_name, 4:Index new_idx)
-                       throws (1:InvalidOperationException o1, 2:MetaException o2)
-  bool drop_index_by_name(1:string db_name, 2:string tbl_name, 3:string index_name, 4:bool deleteData)
-                       throws(1:NoSuchObjectException o1, 2:MetaException o2)
-  Index get_index_by_name(1:string db_name 2:string tbl_name, 3:string index_name)
-                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
-
-  list<Index> get_indexes(1:string db_name, 2:string tbl_name, 3:i16 max_indexes=-1)
-                       throws(1:NoSuchObjectException o1, 2:MetaException o2)
-  list<string> get_index_names(1:string db_name, 2:string tbl_name, 3:i16 max_indexes=-1)
-                       throws(1:MetaException o2)
 
   //primary keys and foreign keys
   PrimaryKeysResponse get_primary_keys(1:PrimaryKeysRequest request)

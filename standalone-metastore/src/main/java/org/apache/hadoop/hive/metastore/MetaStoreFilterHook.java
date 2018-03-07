@@ -23,7 +23,6 @@ import java.util.List;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -110,23 +109,6 @@ public interface MetaStoreFilterHook {
   public List<String> filterPartitionNames(String dbName, String tblName,
       List<String> partitionNames) throws MetaException;
 
-  public Index filterIndex(Index index) throws MetaException, NoSuchObjectException;
 
-  /**
-   * Filter given list of index names
-   * @param dbName
-   * @param tblName
-   * @param indexList
-   * @return
-   */
-  public List<String> filterIndexNames(String dbName, String tblName,
-      List<String> indexList) throws MetaException;
-
-  /**
-   * Filter given list of index objects
-   * @param indexeList
-   * @return
-   */
-  public List<Index> filterIndexes(List<Index> indexeList) throws MetaException;
 }
 

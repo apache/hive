@@ -2517,10 +2517,6 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     showCreateTblDesc = new ShowCreateTableDesc(tableName, ctx.getResFile().toString());
 
     Table tab = getTable(tableName);
-    if (tab.getTableType() == org.apache.hadoop.hive.metastore.TableType.INDEX_TABLE) {
-      throw new SemanticException(ErrorMsg.SHOW_CREATETABLE_INDEX.getMsg(tableName
-          + " has table type INDEX_TABLE"));
-    }
     inputs.add(new ReadEntity(tab));
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         showCreateTblDesc), conf));
