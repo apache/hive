@@ -17,6 +17,8 @@
  */
 package org.apache.hive.benchmark.vectorization;
 
+import java.nio.charset.StandardCharsets;
+
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterStringColLikeStringScalar;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
@@ -24,8 +26,6 @@ import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
-
-import java.nio.charset.StandardCharsets;
 
 /**
  * This test measures the performance for vectorization.

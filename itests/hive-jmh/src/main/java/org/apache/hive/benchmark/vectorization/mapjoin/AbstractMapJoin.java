@@ -13,31 +13,26 @@
  */
 package org.apache.hive.benchmark.vectorization.mapjoin;
 
+import java.util.concurrent.TimeUnit;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.tez.ObjectCache;
 import org.apache.hadoop.hive.ql.exec.util.collectoroperator.CountCollectorTestOperator;
 import org.apache.hadoop.hive.ql.exec.util.collectoroperator.CountVectorCollectorTestOperator;
-import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExtractRow;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.util.batchgen.VectorBatchGenerateStream;
-import org.apache.hadoop.hive.ql.exec.vector.util.batchgen.VectorBatchGenerateUtil;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.MapJoinTestConfig;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.MapJoinTestConfig.MapJoinTestImplementation;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.MapJoinTestData;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.MapJoinTestDescription;
-import org.apache.hadoop.hive.ql.exec.vector.mapjoin.MapJoinTestConfig.MapJoinTestImplementation;
 import org.apache.hadoop.hive.ql.exec.vector.mapjoin.MapJoinTestDescription.SmallTableGenerationParameters;
+import org.apache.hadoop.hive.ql.exec.vector.util.batchgen.VectorBatchGenerateUtil;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.VectorMapJoinVariation;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.tez.runtime.common.objectregistry.ObjectRegistryImpl;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -45,15 +40,12 @@ import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-
-// UNDONE: For now, just run once cold.
-@BenchmarkMode(Mode.SingleShotTime)
+@BenchmarkMode(Mode.AverageTime)
+@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
 @Fork(1)
 @State(Scope.Thread)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -72,7 +64,6 @@ public abstract class AbstractMapJoin {
   protected VectorizedRowBatch[] bigTableBatches;
 
   @Benchmark
-  // @Warmup(iterations = 0, time = 1, timeUnit = TimeUnit.MILLISECONDS)
   @Measurement(iterations = 1, time = 1, timeUnit = TimeUnit.MILLISECONDS)
   public void bench() throws Exception {
     if (!isVectorOutput) {
@@ -103,6 +94,9 @@ public abstract class AbstractMapJoin {
 
     // Prepare data.  Good for ANY implementation variation.
     testData = new MapJoinTestData(rowCount, testDesc, seed, seed * 10);
+
+    ObjectRegistryImpl objectRegistry = new ObjectRegistryImpl();
+    ObjectCache.setupObjectRegistry(objectRegistry);
   
     operator = setupBenchmarkImplementation(
         mapJoinImplementation, testDesc, testData);

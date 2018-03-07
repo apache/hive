@@ -32,7 +32,7 @@
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jmh.version>1.4.1</jmh.version>
+    <jmh.version>1.19</jmh.version>
     <uberjar.name>benchmarks</uberjar.name>
   </properties>
 
@@ -52,6 +52,16 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-serde</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-api</artifactId>
+       <version>${tez.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-runtime-internals</artifactId>
+       <version>${tez.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -91,6 +101,7 @@
             <configuration>
               <finalName>${uberjar.name}</finalName>
               <transformers>
+                <transformer implementation="com.github.edwgiz.mavenShadePlugin.log4j2CacheTransformer.PluginsCacheFileTransformer"/>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <mainClass>org.openjdk.jmh.Main</mainClass>
                 </transformer>
@@ -112,6 +123,13 @@
             </configuration>
           </execution>
         </executions>
+        <dependencies>
+          <dependency>
+            <groupId>com.github.edwgiz</groupId>
+            <artifactId>maven-shade-plugin.log4j2-cachefile-transformer</artifactId>
+            <version>2.1</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>

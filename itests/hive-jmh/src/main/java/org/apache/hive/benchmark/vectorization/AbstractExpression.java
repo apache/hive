@@ -13,6 +13,9 @@
  */
 package org.apache.hive.benchmark.vectorization;
 
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
@@ -29,9 +32,6 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
-
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
 @Fork(1)
