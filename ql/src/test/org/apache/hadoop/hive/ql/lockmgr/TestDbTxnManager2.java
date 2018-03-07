@@ -2343,7 +2343,8 @@ public class TestDbTxnManager2 {
     dropTable(new String[] {"temp.T7"});
     CommandProcessorResponse cpr = driver.run("create database if not exists temp");
     checkCmdOnDriver(cpr);
-    cpr = driver.run("create table if not exists temp.T7(a int, b int) clustered by(b) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')");
+    cpr = driver.run("create table if not exists temp.T7(a int, b int) clustered by(b) into 2 buckets stored as orc "
+            + "TBLPROPERTIES ('transactional'='true')");
     checkCmdOnDriver(cpr);
 
     // Open a base txn which allocates write ID and then committed.
@@ -2355,13 +2356,14 @@ public class TestDbTxnManager2 {
     // Open a txn with no writes.
     HiveTxnManager txnMgr1 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     long underHwmOpenTxnId = txnMgr1.openTxn(ctx, "u1");
-    Assert.assertTrue("Invalid txn ID",underHwmOpenTxnId > baseTxnId);
+    Assert.assertTrue("Invalid txn ID", underHwmOpenTxnId > baseTxnId);
 
     // Open a txn to be tested for ValidWriteIdList. Get the ValidTxnList during open itself.
-    // Verify the ValidWriteIdList with no open/aborted write txns on this table. Write ID of committed txn should be valid.
+    // Verify the ValidWriteIdList with no open/aborted write txns on this table.
+    // Write ID of committed txn should be valid.
     HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     long testTxnId = txnMgr2.openTxn(ctx, "u2");
-    Assert.assertTrue("Invalid txn ID",testTxnId > underHwmOpenTxnId);
+    Assert.assertTrue("Invalid txn ID", testTxnId > underHwmOpenTxnId);
     String testValidTxns = txnMgr2.getValidTxns().toString();
     ValidWriteIdList testValidWriteIds = txnMgr2.getValidWriteIds(Collections.singletonList("temp.t7"), testValidTxns)
             .getTableValidWriteIdList("temp.t7");
@@ -2371,7 +2373,7 @@ public class TestDbTxnManager2 {
     // Open a txn which allocate write ID and remain open state.
     HiveTxnManager txnMgr3 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     long aboveHwmOpenTxnId = txnMgr3.openTxn(ctx, "u3");
-    Assert.assertTrue("Invalid txn ID",aboveHwmOpenTxnId > testTxnId);
+    Assert.assertTrue("Invalid txn ID", aboveHwmOpenTxnId > testTxnId);
     long aboveHwmOpenWriteId = txnMgr3.getTableWriteId("temp", "T7");
     Assert.assertEquals(2, aboveHwmOpenWriteId);
 
