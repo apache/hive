@@ -33,6 +33,7 @@ import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.hive.ql.plan.VectorMapJoinDesc.HashTableImplementationType;
@@ -139,6 +140,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   }
 
   @Explain(displayName = "input vertices", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Signature
   public Map<Integer, String> getParentToInput() {
     return parentToInput;
   }
@@ -156,6 +158,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   }
 
   @Explain(displayName = "Estimated key counts", explainLevels = { Level.EXTENDED })
+  @Signature
   public String getKeyCountsExplainDesc() {
     StringBuilder result = null;
     for (Map.Entry<Integer, Long> entry : parentKeyCounts.entrySet()) {
@@ -250,6 +253,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
    * @return the position of the big table not in memory
    */
   @Explain(displayName = "Position of Big Table", explainLevels = { Level.EXTENDED })
+  @Signature
   public int getPosBigTable() {
     return posBigTable;
   }
@@ -340,6 +344,7 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
   }
 
   @Explain(displayName = "BucketMapJoin", explainLevels = { Level.USER, Level.EXTENDED }, displayOnlyOnTrue = true)
+  @Signature
   public boolean isBucketMapJoin() {
     return isBucketMapJoin;
   }
@@ -607,4 +612,5 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     }
     return false;
   }
+
 }

@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -30,6 +32,8 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 /**
  * Hive query executer driver
  */
+@InterfaceAudience.Private
+@InterfaceStability.Unstable
 public interface IDriver extends CommandProcessor {
 
   int compile(String string);
@@ -66,4 +70,7 @@ public interface IDriver extends CommandProcessor {
   void destroy();
 
   HiveConf getConf();
+
+  Context getContext();
+
 }

@@ -598,6 +598,7 @@ public class SharedWorkOptimizer extends Transform {
         new LinkedList<>(tableToTotalSize.entrySet());
     Collections.sort(sortedTables, Collections.reverseOrder(
         new Comparator<Map.Entry<String, Long>>() {
+          @Override
           public int compare(Map.Entry<String, Long> o1, Map.Entry<String, Long> o2) {
             return (o1.getValue()).compareTo(o2.getValue());
           }
@@ -637,6 +638,7 @@ public class SharedWorkOptimizer extends Transform {
         new LinkedList<>(opToTotalSize.entrySet());
     Collections.sort(sortedOps, Collections.reverseOrder(
         new Comparator<Map.Entry<Operator<?>, Long>>() {
+          @Override
           public int compare(Map.Entry<Operator<?>, Long> o1, Map.Entry<Operator<?>, Long> o2) {
             int valCmp = o1.getValue().compareTo(o2.getValue());
             if (valCmp == 0) {
@@ -648,6 +650,7 @@ public class SharedWorkOptimizer extends Transform {
     return sortedOps;
   }
 
+  // FIXME: probably this should also be integrated with isSame() logics
   private static boolean areMergeable(ParseContext pctx, SharedWorkOptimizerCache optimizerCache,
           TableScanOperator tsOp1, TableScanOperator tsOp2) throws SemanticException {
     // First we check if the two table scan operators can actually be merged

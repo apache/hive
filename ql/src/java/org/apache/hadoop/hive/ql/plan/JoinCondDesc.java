@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Join conditions Descriptor implementation.
- * 
+ *
  */
 public class JoinCondDesc implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -153,7 +153,7 @@ public class JoinCondDesc implements Serializable {
 
   @Explain(explainLevels = { Level.USER })
   public String getUserLevelJoinCondString() {
-    JSONObject join = new JSONObject(new LinkedHashMap());
+    JSONObject join = new JSONObject(new LinkedHashMap<>());
     try {
       switch (type) {
       case JoinDesc.INNER_JOIN:
@@ -200,4 +200,6 @@ public class JoinCondDesc implements Serializable {
     }
     return true;
   }
+
+  // XXX: is hashCode missing here?
 }

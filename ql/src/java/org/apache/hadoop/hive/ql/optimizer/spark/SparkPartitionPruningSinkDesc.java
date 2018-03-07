@@ -22,6 +22,7 @@ import com.google.common.base.Preconditions;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -134,6 +135,7 @@ public class SparkPartitionPruningSinkDesc extends AbstractOperatorDesc {
         info -> info.columnName + " (" + info.columnType + ")").toArray());
   }
 
+  @Signature
   public TableDesc getTable() {
     return table;
   }
@@ -156,4 +158,5 @@ public class SparkPartitionPruningSinkDesc extends AbstractOperatorDesc {
     }
     return false;
   }
+
 }
