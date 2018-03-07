@@ -92,7 +92,6 @@ import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -156,7 +155,6 @@ import org.apache.hadoop.hive.metastore.model.MDelegationToken;
 import org.apache.hadoop.hive.metastore.model.MFieldSchema;
 import org.apache.hadoop.hive.metastore.model.MFunction;
 import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
-import org.apache.hadoop.hive.metastore.model.MIndex;
 import org.apache.hadoop.hive.metastore.model.MMasterKey;
 import org.apache.hadoop.hive.metastore.model.MMetastoreDBProperties;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
@@ -3777,37 +3775,6 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  @Override
-  public void alterIndex(String dbname, String baseTblName, String name, Index newIndex)
-      throws InvalidObjectException, MetaException {
-    boolean success = false;
-    try {
-      openTransaction();
-      name = normalizeIdentifier(name);
-      baseTblName = normalizeIdentifier(baseTblName);
-      dbname = normalizeIdentifier(dbname);
-      MIndex newi = convertToMIndex(newIndex);
-      if (newi == null) {
-        throw new InvalidObjectException("new index is invalid");
-      }
-
-      MIndex oldi = getMIndex(dbname, baseTblName, name);
-      if (oldi == null) {
-        throw new MetaException("index " + name + " doesn't exist");
-      }
-
-      // For now only alter parameters are allowed
-      oldi.setParameters(newi.getParameters());
-
-      // commit the changes
-      success = commitTransaction();
-    } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
-    }
-  }
-
   /**
    * Alters an existing partition. Initiates copy of SD. Returns the old CD.
    * @param dbname
@@ -4630,190 +4597,6 @@ public class ObjectStore implements RawStore, Configurable {
     }
     pm.makePersistentAll(cstrs);
     return nnNames;
-  }
-
-  @Override
-  public boolean addIndex(Index index) throws InvalidObjectException,
-      MetaException {
-    boolean commited = false;
-    try {
-      openTransaction();
-      MIndex idx = convertToMIndex(index);
-      pm.makePersistent(idx);
-      commited = commitTransaction();
-      return true;
-    } finally {
-      if (!commited) {
-        rollbackTransaction();
-        return false;
-      }
-    }
-  }
-
-  private MIndex convertToMIndex(Index index) throws InvalidObjectException,
-      MetaException {
-
-    StorageDescriptor sd = index.getSd();
-    if (sd == null) {
-      throw new InvalidObjectException("Storage descriptor is not defined for index.");
-    }
-
-    MStorageDescriptor msd = this.convertToMStorageDescriptor(sd);
-    MTable origTable = getMTable(index.getDbName(), index.getOrigTableName());
-    if (origTable == null) {
-      throw new InvalidObjectException(
-          "Original table does not exist for the given index.");
-    }
-
-    String[] qualified = MetaStoreUtils.getQualifiedName(index.getDbName(), index.getIndexTableName());
-    MTable indexTable = getMTable(qualified[0], qualified[1]);
-    if (indexTable == null) {
-      throw new InvalidObjectException(
-          "Underlying index table does not exist for the given index.");
-    }
-
-    return new MIndex(normalizeIdentifier(index.getIndexName()), origTable, index.getCreateTime(),
-        index.getLastAccessTime(), index.getParameters(), indexTable, msd,
-        index.getIndexHandlerClass(), index.isDeferredRebuild());
-  }
-
-  @Override
-  public boolean dropIndex(String dbName, String origTableName, String indexName)
-      throws MetaException {
-    boolean success = false;
-    try {
-      openTransaction();
-      MIndex index = getMIndex(dbName, origTableName, indexName);
-      if (index != null) {
-        pm.deletePersistent(index);
-      }
-      success = commitTransaction();
-    } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
-    }
-    return success;
-  }
-
-  private MIndex getMIndex(String dbName, String originalTblName, String indexName)
-      throws MetaException {
-    MIndex midx = null;
-    boolean commited = false;
-    Query query = null;
-    try {
-      openTransaction();
-      dbName = normalizeIdentifier(dbName);
-      originalTblName = normalizeIdentifier(originalTblName);
-      MTable mtbl = getMTable(dbName, originalTblName);
-      if (mtbl == null) {
-        commited = commitTransaction();
-        return null;
-      }
-      query =
-          pm.newQuery(MIndex.class,
-              "origTable.tableName == t1 && origTable.database.name == t2 && indexName == t3");
-      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
-      query.setUnique(true);
-      midx =
-          (MIndex) query.execute(originalTblName, dbName,
-              normalizeIdentifier(indexName));
-      pm.retrieve(midx);
-      commited = commitTransaction();
-    } finally {
-      rollbackAndCleanup(commited, query);
-    }
-    return midx;
-  }
-
-  @Override
-  public Index getIndex(String dbName, String origTableName, String indexName)
-      throws MetaException {
-    openTransaction();
-    MIndex mIndex = this.getMIndex(dbName, origTableName, indexName);
-    Index ret = convertToIndex(mIndex);
-    commitTransaction();
-    return ret;
-  }
-
-  private Index convertToIndex(MIndex mIndex) throws MetaException {
-    if (mIndex == null) {
-      return null;
-    }
-
-    MTable origTable = mIndex.getOrigTable();
-    MTable indexTable = mIndex.getIndexTable();
-
-    return new Index(
-    mIndex.getIndexName(),
-    mIndex.getIndexHandlerClass(),
-    origTable.getDatabase().getName(),
-    origTable.getTableName(),
-    mIndex.getCreateTime(),
-    mIndex.getLastAccessTime(),
-    indexTable.getTableName(),
-    convertToStorageDescriptor(mIndex.getSd()),
-    mIndex.getParameters(),
-    mIndex.getDeferredRebuild());
-
-  }
-
-  @Override
-  public List<Index> getIndexes(String dbName, String origTableName, int max)
-      throws MetaException {
-    boolean success = false;
-    Query query = null;
-    try {
-      LOG.debug("Executing getIndexes");
-      openTransaction();
-
-      dbName = normalizeIdentifier(dbName);
-      origTableName = normalizeIdentifier(origTableName);
-      query =
-          pm.newQuery(MIndex.class, "origTable.tableName == t1 && origTable.database.name == t2");
-      query.declareParameters("java.lang.String t1, java.lang.String t2");
-      List<MIndex> mIndexes = (List<MIndex>) query.execute(origTableName, dbName);
-      pm.retrieveAll(mIndexes);
-
-      List<Index> indexes = new ArrayList<>(mIndexes.size());
-      for (MIndex mIdx : mIndexes) {
-        indexes.add(this.convertToIndex(mIdx));
-      }
-      success = commitTransaction();
-      LOG.debug("Done retrieving all objects for getIndexes");
-
-      return indexes;
-    } finally {
-      rollbackAndCleanup(success, query);
-    }
-  }
-
-  @Override
-  public List<String> listIndexNames(String dbName, String origTableName, short max)
-      throws MetaException {
-    List<String> pns = new ArrayList<>();
-    boolean success = false;
-    Query query = null;
-    try {
-      openTransaction();
-      LOG.debug("Executing listIndexNames");
-      dbName = normalizeIdentifier(dbName);
-      origTableName = normalizeIdentifier(origTableName);
-      query =
-          pm.newQuery("select indexName from org.apache.hadoop.hive.metastore.model.MIndex "
-              + "where origTable.database.name == t1 && origTable.tableName == t2 "
-              + "order by indexName asc");
-      query.declareParameters("java.lang.String t1, java.lang.String t2");
-      query.setResult("indexName");
-      Collection names = (Collection) query.execute(dbName, origTableName);
-      for (Iterator i = names.iterator(); i.hasNext();) {
-        pns.add((String) i.next());
-      }
-      success = commitTransaction();
-    } finally {
-      rollbackAndCleanup(success, query);
-    }
-    return pns;
   }
 
   @Override
@@ -10117,7 +9900,7 @@ public class ObjectStore implements RawStore, Configurable {
       } else {
         result = handleSimpleAlter(name, changes, canActivateDisabled, canDeactivate);
       }
- 
+
       commited = commitTransaction();
       return result;
     } catch (Exception e) {
@@ -10210,7 +9993,9 @@ public class ObjectStore implements RawStore, Configurable {
     String copyName = generateOldPlanName(newName, i);
     while (true) {
       MWMResourcePlan dup = getMWMResourcePlan(copyName, false, false);
-      if (dup == null) break;
+      if (dup == null) {
+        break;
+      }
       // Note: this can still conflict with parallel transactions. We do not currently handle
       //       parallel changes from two admins (by design :().
       copyName = generateOldPlanName(newName, ++i);

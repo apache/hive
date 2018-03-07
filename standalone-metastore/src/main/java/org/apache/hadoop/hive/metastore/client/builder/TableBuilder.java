@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore.client.builder;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -123,7 +122,9 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
   }
 
   public TableBuilder addTableParam(String key, String value) {
-    if (tableParams == null) tableParams = new HashMap<>();
+    if (tableParams == null) {
+      tableParams = new HashMap<>();
+    }
     tableParams.put(key, value);
     return this;
   }
@@ -135,14 +136,6 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
 
   public TableBuilder setTemporary(boolean temporary) {
     this.temporary = temporary;
-    return this;
-  }
-
-  public TableBuilder fromIndex(Index index) {
-    dbName = index.getDbName();
-    tableName = index.getIndexTableName();
-    setCols(index.getSd().getCols());
-    setType(TableType.INDEX_TABLE.name());
     return this;
   }
 
@@ -159,8 +152,12 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
     }
     Table t = new Table(tableName, dbName, owner, createTime, lastAccessTime, retention, buildSd(),
         partCols, tableParams, viewOriginalText, viewExpandedText, type);
-    if (rewriteEnabled) t.setRewriteEnabled(true);
-    if (temporary) t.setTemporary(temporary);
+    if (rewriteEnabled) {
+      t.setRewriteEnabled(true);
+    }
+    if (temporary) {
+      t.setTemporary(temporary);
+    }
     return t;
   }
 

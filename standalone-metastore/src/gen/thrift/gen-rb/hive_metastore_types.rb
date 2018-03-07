@@ -982,40 +982,6 @@ class PartitionSpec
   ::Thrift::Struct.generate_accessors self
 end
 
-class Index
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  INDEXNAME = 1
-  INDEXHANDLERCLASS = 2
-  DBNAME = 3
-  ORIGTABLENAME = 4
-  CREATETIME = 5
-  LASTACCESSTIME = 6
-  INDEXTABLENAME = 7
-  SD = 8
-  PARAMETERS = 9
-  DEFERREDREBUILD = 10
-
-  FIELDS = {
-    INDEXNAME => {:type => ::Thrift::Types::STRING, :name => 'indexName'},
-    INDEXHANDLERCLASS => {:type => ::Thrift::Types::STRING, :name => 'indexHandlerClass'},
-    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
-    ORIGTABLENAME => {:type => ::Thrift::Types::STRING, :name => 'origTableName'},
-    CREATETIME => {:type => ::Thrift::Types::I32, :name => 'createTime'},
-    LASTACCESSTIME => {:type => ::Thrift::Types::I32, :name => 'lastAccessTime'},
-    INDEXTABLENAME => {:type => ::Thrift::Types::STRING, :name => 'indexTableName'},
-    SD => {:type => ::Thrift::Types::STRUCT, :name => 'sd', :class => ::StorageDescriptor},
-    PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
-    DEFERREDREBUILD => {:type => ::Thrift::Types::BOOL, :name => 'deferredRebuild'}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
 class BooleanColumnStatsData
   include ::Thrift::Struct, ::Thrift::Struct_Union
   NUMTRUES = 1
@@ -4462,27 +4428,6 @@ class InvalidObjectException < ::Thrift::Exception
 end
 
 class NoSuchObjectException < ::Thrift::Exception
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  def initialize(message=nil)
-    super()
-    self.message = message
-  end
-
-  MESSAGE = 1
-
-  FIELDS = {
-    MESSAGE => {:type => ::Thrift::Types::STRING, :name => 'message'}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class IndexAlreadyExistsException < ::Thrift::Exception
   include ::Thrift::Struct, ::Thrift::Struct_Union
   def initialize(message=nil)
     super()

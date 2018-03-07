@@ -42,9 +42,6 @@ public abstract class PreEventContext {
     AUTHORIZATION_API_CALL,
     READ_TABLE,
     READ_DATABASE,
-    ADD_INDEX,
-    ALTER_INDEX,
-    DROP_INDEX,
     ALTER_DATABASE
   }
 

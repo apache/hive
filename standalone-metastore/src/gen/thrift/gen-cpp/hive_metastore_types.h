@@ -254,8 +254,6 @@ class PartitionListComposingSpec;
 
 class PartitionSpec;
 
-class Index;
-
 class BooleanColumnStatsData;
 
 class DoubleColumnStatsData;
@@ -583,8 +581,6 @@ class UnknownPartitionException;
 class InvalidObjectException;
 
 class NoSuchObjectException;
-
-class IndexAlreadyExistsException;
 
 class InvalidOperationException;
 
@@ -2958,106 +2954,6 @@ class PartitionSpec {
 void swap(PartitionSpec &a, PartitionSpec &b);
 
 inline std::ostream& operator<<(std::ostream& out, const PartitionSpec& obj)
-{
-  obj.printTo(out);
-  return out;
-}
-
-typedef struct _Index__isset {
-  _Index__isset() : indexName(false), indexHandlerClass(false), dbName(false), origTableName(false), createTime(false), lastAccessTime(false), indexTableName(false), sd(false), parameters(false), deferredRebuild(false) {}
-  bool indexName :1;
-  bool indexHandlerClass :1;
-  bool dbName :1;
-  bool origTableName :1;
-  bool createTime :1;
-  bool lastAccessTime :1;
-  bool indexTableName :1;
-  bool sd :1;
-  bool parameters :1;
-  bool deferredRebuild :1;
-} _Index__isset;
-
-class Index {
- public:
-
-  Index(const Index&);
-  Index& operator=(const Index&);
-  Index() : indexName(), indexHandlerClass(), dbName(), origTableName(), createTime(0), lastAccessTime(0), indexTableName(), deferredRebuild(0) {
-  }
-
-  virtual ~Index() throw();
-  std::string indexName;
-  std::string indexHandlerClass;
-  std::string dbName;
-  std::string origTableName;
-  int32_t createTime;
-  int32_t lastAccessTime;
-  std::string indexTableName;
-  StorageDescriptor sd;
-  std::map<std::string, std::string>  parameters;
-  bool deferredRebuild;
-
-  _Index__isset __isset;
-
-  void __set_indexName(const std::string& val);
-
-  void __set_indexHandlerClass(const std::string& val);
-
-  void __set_dbName(const std::string& val);
-
-  void __set_origTableName(const std::string& val);
-
-  void __set_createTime(const int32_t val);
-
-  void __set_lastAccessTime(const int32_t val);
-
-  void __set_indexTableName(const std::string& val);
-
-  void __set_sd(const StorageDescriptor& val);
-
-  void __set_parameters(const std::map<std::string, std::string> & val);
-
-  void __set_deferredRebuild(const bool val);
-
-  bool operator == (const Index & rhs) const
-  {
-    if (!(indexName == rhs.indexName))
-      return false;
-    if (!(indexHandlerClass == rhs.indexHandlerClass))
-      return false;
-    if (!(dbName == rhs.dbName))
-      return false;
-    if (!(origTableName == rhs.origTableName))
-      return false;
-    if (!(createTime == rhs.createTime))
-      return false;
-    if (!(lastAccessTime == rhs.lastAccessTime))
-      return false;
-    if (!(indexTableName == rhs.indexTableName))
-      return false;
-    if (!(sd == rhs.sd))
-      return false;
-    if (!(parameters == rhs.parameters))
-      return false;
-    if (!(deferredRebuild == rhs.deferredRebuild))
-      return false;
-    return true;
-  }
-  bool operator != (const Index &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const Index & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-};
-
-void swap(Index &a, Index &b);
-
-inline std::ostream& operator<<(std::ostream& out, const Index& obj)
 {
   obj.printTo(out);
   return out;
@@ -11811,54 +11707,6 @@ class NoSuchObjectException : public ::apache::thrift::TException {
 void swap(NoSuchObjectException &a, NoSuchObjectException &b);
 
 inline std::ostream& operator<<(std::ostream& out, const NoSuchObjectException& obj)
-{
-  obj.printTo(out);
-  return out;
-}
-
-typedef struct _IndexAlreadyExistsException__isset {
-  _IndexAlreadyExistsException__isset() : message(false) {}
-  bool message :1;
-} _IndexAlreadyExistsException__isset;
-
-class IndexAlreadyExistsException : public ::apache::thrift::TException {
- public:
-
-  IndexAlreadyExistsException(const IndexAlreadyExistsException&);
-  IndexAlreadyExistsException& operator=(const IndexAlreadyExistsException&);
-  IndexAlreadyExistsException() : message() {
-  }
-
-  virtual ~IndexAlreadyExistsException() throw();
-  std::string message;
-
-  _IndexAlreadyExistsException__isset __isset;
-
-  void __set_message(const std::string& val);
-
-  bool operator == (const IndexAlreadyExistsException & rhs) const
-  {
-    if (!(message == rhs.message))
-      return false;
-    return true;
-  }
-  bool operator != (const IndexAlreadyExistsException &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const IndexAlreadyExistsException & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-  virtual void printTo(std::ostream& out) const;
-  mutable std::string thriftTExceptionMessageHolder_;
-  const char* what() const throw();
-};
-
-void swap(IndexAlreadyExistsException &a, IndexAlreadyExistsException &b);
-
-inline std::ostream& operator<<(std::ostream& out, const IndexAlreadyExistsException& obj)
 {
   obj.printTo(out);
   return out;

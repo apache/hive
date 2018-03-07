@@ -21,8 +21,6 @@ package org.apache.hive.hcatalog.messaging;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
-import org.apache.hive.hcatalog.messaging.json.JSONCreateFunctionMessage;
-import org.apache.hive.hcatalog.messaging.json.JSONDropFunctionMessage;
 
 /**
  * Interface for converting HCat events from String-form back to HCatEventMessage instances.
@@ -57,12 +55,6 @@ public abstract class MessageDeserializer {
       return getCreateFunctionMessage(messageBody);
     case DROP_FUNCTION:
       return getDropFunctionMessage(messageBody);
-    case CREATE_INDEX:
-      return getCreateIndexMessage(messageBody);
-    case DROP_INDEX:
-      return getDropIndexMessage(messageBody);
-    case ALTER_INDEX:
-      return getAlterIndexMessage(messageBody);
     case INSERT:
       return getInsertMessage(messageBody);
     default:
@@ -123,21 +115,6 @@ public abstract class MessageDeserializer {
    * Method to de-serialize DropFunctionMessage instance.
    */
   public abstract DropFunctionMessage getDropFunctionMessage(String messageBody);
-
-  /**
-   * Method to de-serialize CreateIndexMessage instance.
-   */
-  public abstract CreateIndexMessage getCreateIndexMessage(String messageBody);
-
-  /**
-   * Method to de-serialize DropIndexMessage instance.
-   */
-  public abstract DropIndexMessage getDropIndexMessage(String messageBody);
-
-  /**
-   * Method to de-serialize AlterIndexMessage instance.
-   */
-  public abstract AlterIndexMessage getAlterIndexMessage(String messageBody);
 
   /**
    * Method to deserialize InsertMessage

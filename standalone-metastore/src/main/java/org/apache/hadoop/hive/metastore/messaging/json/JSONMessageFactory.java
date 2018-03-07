@@ -30,7 +30,6 @@ import com.google.common.collect.Iterables;
 
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -44,17 +43,14 @@ import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddPrimaryKeyMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddUniqueConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
-import org.apache.hadoop.hive.metastore.messaging.AlterIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
-import org.apache.hadoop.hive.metastore.messaging.CreateIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropFunctionMessage;
-import org.apache.hadoop.hive.metastore.messaging.DropIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
@@ -161,21 +157,6 @@ public class JSONMessageFactory extends MessageFactory {
   }
 
   @Override
-  public CreateIndexMessage buildCreateIndexMessage(Index idx) {
-    return new JSONCreateIndexMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, idx, now());
-  }
-
-  @Override
-  public DropIndexMessage buildDropIndexMessage(Index idx) {
-    return new JSONDropIndexMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, idx, now());
-  }
-
-  @Override
-  public AlterIndexMessage buildAlterIndexMessage(Index before, Index after) {
-    return new JSONAlterIndexMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, before, after, now());
-  }
-
-  @Override
   public InsertMessage buildInsertMessage(Table tableObj, Partition partObj,
                                           boolean replace, Iterator<String> fileIter) {
     return new JSONInsertMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL,
@@ -215,8 +196,9 @@ public class JSONMessageFactory extends MessageFactory {
 
   static Map<String, String> getPartitionKeyValues(Table table, Partition partition) {
     Map<String, String> partitionKeys = new LinkedHashMap<>();
-    for (int i = 0; i < table.getPartitionKeysSize(); ++i)
+    for (int i = 0; i < table.getPartitionKeysSize(); ++i) {
       partitionKeys.put(table.getPartitionKeys().get(i).getName(), partition.getValues().get(i));
+    }
     return partitionKeys;
   }
 
@@ -269,11 +251,6 @@ public class JSONMessageFactory extends MessageFactory {
   static String createFunctionObjJson(Function functionObj) throws TException {
     TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
     return serializer.toString(functionObj, "UTF-8");
-  }
-
-  static String createIndexObjJson(Index indexObj) throws TException {
-    TSerializer serializer = new TSerializer(new TJSONProtocol.Factory());
-    return serializer.toString(indexObj, "UTF-8");
   }
 
   public static ObjectNode getJsonTree(NotificationEvent event) throws Exception {
