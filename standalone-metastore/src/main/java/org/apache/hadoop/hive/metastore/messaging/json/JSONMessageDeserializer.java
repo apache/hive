@@ -25,17 +25,14 @@ import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddPrimaryKeyMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddUniqueConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
-import org.apache.hadoop.hive.metastore.messaging.AlterIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
-import org.apache.hadoop.hive.metastore.messaging.CreateIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropFunctionMessage;
-import org.apache.hadoop.hive.metastore.messaging.DropIndexMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
@@ -167,36 +164,6 @@ public class JSONMessageDeserializer extends MessageDeserializer {
     }
     catch (Exception exception) {
       throw new IllegalArgumentException("Could not construct JSONDropDatabaseMessage.", exception);
-    }
-  }
-
-  @Override
-  public CreateIndexMessage getCreateIndexMessage(String messageBody) {
-    try {
-      return mapper.readValue(messageBody, JSONCreateIndexMessage.class);
-    }
-    catch (Exception exception) {
-      throw new IllegalArgumentException("Could not construct JSONCreateIndexMessage.", exception);
-    }
-  }
-
-  @Override
-  public DropIndexMessage getDropIndexMessage(String messageBody) {
-    try {
-      return mapper.readValue(messageBody, JSONDropIndexMessage.class);
-    }
-    catch (Exception exception) {
-      throw new IllegalArgumentException("Could not construct JSONDropIndexMessage.", exception);
-    }
-  }
-
-  @Override
-  public AlterIndexMessage getAlterIndexMessage(String messageBody) {
-    try {
-      return mapper.readValue(messageBody, JSONAlterIndexMessage.class);
-    }
-    catch (Exception exception) {
-      throw new IllegalArgumentException("Could not construct JSONAlterIndexMessage.", exception);
     }
   }
 

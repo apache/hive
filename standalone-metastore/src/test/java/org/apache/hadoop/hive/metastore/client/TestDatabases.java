@@ -20,12 +20,10 @@ package org.apache.hadoop.hive.metastore.client;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -34,10 +32,8 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.FunctionBuilder;
-import org.apache.hadoop.hive.metastore.client.builder.IndexBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
-import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
 import org.junit.Assert;
@@ -378,72 +374,6 @@ public class TestDatabases extends MetaStoreClientTest {
         metaStore.isPathExists(new Path(database.getLocationUri())));
   }
 
-  /**
-   * Creates an index in the given database for testing purposes.
-   * @param databaseName The database name in which the index should be creatd
-   * @throws TException If there is an error during the index creation
-   */
-  private void createIndex(String databaseName) throws TException {
-    Table testTable =
-        new TableBuilder()
-            .setDbName(databaseName)
-            .setTableName("test_table")
-            .addCol("test_col", "int")
-            .build();
-
-    Index testIndex =
-        new IndexBuilder()
-            .setIndexName("test_index")
-            .setIndexTableName("test_index_table")
-            .setDbAndTableName(testTable)
-            .addCol("test_col", "int")
-            .build();
-    Table testIndexTable =
-        new TableBuilder()
-            .setDbName(databaseName)
-            .setType(TableType.INDEX_TABLE.name())
-            .setTableName("test_index_table")
-            .addCol("test_col", "int")
-            .build();
-
-    // Drop database with index
-    client.createTable(testTable);
-    client.createIndex(testIndex, testIndexTable);
-  }
-
-  @Test
-  public void testDropDatabaseWithIndex() throws Exception {
-    Database database = testDatabases[0];
-    createIndex(database.getName());
-
-    // TODO: Known error, should be fixed
-    // client.dropDatabase(database.getName(), true, true, true);
-    // Need to drop index to clean up the mess
-    try {
-      // Without cascade
-      client.dropDatabase(database.getName(), true, true, false);
-      Assert.fail("Expected an InvalidOperationException to be thrown");
-    } catch (InvalidOperationException exception) {
-      // Expected exception
-    }
-    client.dropIndex(database.getName(), "test_table", "test_index", true);
-    // TODO: End index hack
-  }
-
-  @Test
-  public void testDropDatabaseWithIndexCascade() throws Exception {
-    Database database = testDatabases[0];
-    createIndex(database.getName());
-
-    // With cascade
-    // TODO: Known error, should be fixed
-    // client.dropDatabase(database.getName(), true, true, true);
-    // Need to drop index to clean up the mess
-    client.dropIndex(database.getName(), "test_table", "test_index", true);
-    client.dropDatabase(database.getName(), true, true, true);
-    Assert.assertFalse("The directory should be removed",
-        metaStore.isPathExists(new Path(database.getLocationUri())));
-  }
 
   @Test
   public void testGetAllDatabases() throws Exception {

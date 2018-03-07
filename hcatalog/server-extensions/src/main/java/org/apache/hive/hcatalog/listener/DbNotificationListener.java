@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -48,13 +47,11 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
-import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
@@ -64,7 +61,6 @@ import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
-import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
@@ -390,49 +386,6 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     process(event, fnEvent);
   }
 
-  /**
-   * @param indexEvent index event
-   * @throws MetaException
-   */
-  @Override
-  public void onAddIndex(AddIndexEvent indexEvent) throws MetaException {
-    Index index = indexEvent.getIndex();
-    NotificationEvent event =
-        new NotificationEvent(0, now(), EventType.CREATE_INDEX.toString(), msgFactory
-            .buildCreateIndexMessage(index).toString());
-    event.setDbName(index.getDbName());
-    process(event, indexEvent);
-  }
-
-  /**
-   * @param indexEvent index event
-   * @throws MetaException
-   */
-  @Override
-  public void onDropIndex(DropIndexEvent indexEvent) throws MetaException {
-    Index index = indexEvent.getIndex();
-    NotificationEvent event =
-        new NotificationEvent(0, now(), EventType.DROP_INDEX.toString(), msgFactory
-            .buildDropIndexMessage(index).toString());
-    event.setDbName(index.getDbName());
-    process(event, indexEvent);
-  }
-
-  /**
-   * @param indexEvent index event
-   * @throws MetaException
-   */
-  @Override
-  public void onAlterIndex(AlterIndexEvent indexEvent) throws MetaException {
-    Index before = indexEvent.getOldIndex();
-    Index after = indexEvent.getNewIndex();
-    NotificationEvent event =
-        new NotificationEvent(0, now(), EventType.ALTER_INDEX.toString(), msgFactory
-            .buildAlterIndexMessage(before, after).toString());
-    event.setDbName(before.getDbName());
-    process(event, indexEvent);
-  }
-
   class FileChksumIterator implements Iterator<String> {
     private List<String> files;
     private List<String> chksums;
@@ -625,8 +578,11 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     }
 
     public void setTimeToLive(long configTtl) {
-      if (configTtl > Integer.MAX_VALUE) ttl = Integer.MAX_VALUE;
-      else ttl = (int)configTtl;
+      if (configTtl > Integer.MAX_VALUE) {
+        ttl = Integer.MAX_VALUE;
+      } else {
+        ttl = (int)configTtl;
+      }
     }
 
   }

@@ -1004,11 +1004,6 @@ public class QTestUtil {
             LOG.warn("Trying to drop table " + e.getTableName() + ". But it does not exist.");
             continue;
           }
-          // dropping index table can not be dropped directly. Dropping the base
-          // table will automatically drop all its index table
-          if(tblObj.isIndexTable()) {
-            continue;
-          }
           db.dropTable(dbName, tblName, true, true, fsType == FsType.encrypted_hdfs);
         }
       }

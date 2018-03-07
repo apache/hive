@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -234,22 +233,6 @@ public interface RawStore extends Configurable {
 
   void alterPartitions(String db_name, String tbl_name,
       List<List<String>> part_vals_list, List<Partition> new_parts)
-      throws InvalidObjectException, MetaException;
-
-  boolean addIndex(Index index)
-      throws InvalidObjectException, MetaException;
-
-  Index getIndex(String dbName, String origTableName, String indexName) throws MetaException;
-
-  boolean dropIndex(String dbName, String origTableName, String indexName) throws MetaException;
-
-  List<Index> getIndexes(String dbName,
-      String origTableName, int max) throws MetaException;
-
-  List<String> listIndexNames(String dbName,
-      String origTableName, short max) throws MetaException;
-
-  void alterIndex(String dbname, String baseTblName, String name, Index newIndex)
       throws InvalidObjectException, MetaException;
 
   List<Partition> getPartitionsByFilter(

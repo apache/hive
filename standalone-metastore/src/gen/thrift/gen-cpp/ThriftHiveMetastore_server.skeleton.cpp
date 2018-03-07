@@ -452,36 +452,6 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("isPartitionMarkedForEvent\n");
   }
 
-  void add_index(Index& _return, const Index& new_index, const Table& index_table) {
-    // Your implementation goes here
-    printf("add_index\n");
-  }
-
-  void alter_index(const std::string& dbname, const std::string& base_tbl_name, const std::string& idx_name, const Index& new_idx) {
-    // Your implementation goes here
-    printf("alter_index\n");
-  }
-
-  bool drop_index_by_name(const std::string& db_name, const std::string& tbl_name, const std::string& index_name, const bool deleteData) {
-    // Your implementation goes here
-    printf("drop_index_by_name\n");
-  }
-
-  void get_index_by_name(Index& _return, const std::string& db_name, const std::string& tbl_name, const std::string& index_name) {
-    // Your implementation goes here
-    printf("get_index_by_name\n");
-  }
-
-  void get_indexes(std::vector<Index> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes) {
-    // Your implementation goes here
-    printf("get_indexes\n");
-  }
-
-  void get_index_names(std::vector<std::string> & _return, const std::string& db_name, const std::string& tbl_name, const int16_t max_indexes) {
-    // Your implementation goes here
-    printf("get_index_names\n");
-  }
-
   void get_primary_keys(PrimaryKeysResponse& _return, const PrimaryKeysRequest& request) {
     // Your implementation goes here
     printf("get_primary_keys\n");

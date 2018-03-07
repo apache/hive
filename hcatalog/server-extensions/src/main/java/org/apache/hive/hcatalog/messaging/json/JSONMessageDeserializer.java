@@ -20,16 +20,13 @@
 package org.apache.hive.hcatalog.messaging.json;
 
 import org.apache.hive.hcatalog.messaging.AddPartitionMessage;
-import org.apache.hive.hcatalog.messaging.AlterIndexMessage;
 import org.apache.hive.hcatalog.messaging.AlterPartitionMessage;
 import org.apache.hive.hcatalog.messaging.AlterTableMessage;
 import org.apache.hive.hcatalog.messaging.CreateDatabaseMessage;
 import org.apache.hive.hcatalog.messaging.CreateFunctionMessage;
-import org.apache.hive.hcatalog.messaging.CreateIndexMessage;
 import org.apache.hive.hcatalog.messaging.CreateTableMessage;
 import org.apache.hive.hcatalog.messaging.DropDatabaseMessage;
 import org.apache.hive.hcatalog.messaging.DropFunctionMessage;
-import org.apache.hive.hcatalog.messaging.DropIndexMessage;
 import org.apache.hive.hcatalog.messaging.DropPartitionMessage;
 import org.apache.hive.hcatalog.messaging.DropTableMessage;
 import org.apache.hive.hcatalog.messaging.InsertMessage;
@@ -145,36 +142,6 @@ public class JSONMessageDeserializer extends MessageDeserializer {
     }
     catch (Exception exception) {
       throw new IllegalArgumentException("Could not construct JSONDropDatabaseMessage.", exception);
-    }
-  }
-
-  @Override
-  public CreateIndexMessage getCreateIndexMessage(String messageBody) {
-    try {
-      return mapper.readValue(messageBody, JSONCreateIndexMessage.class);
-    }
-    catch (Exception exception) {
-      throw new IllegalArgumentException("Could not construct JSONCreateIndexMessage.", exception);
-    }
-  }
-
-  @Override
-  public DropIndexMessage getDropIndexMessage(String messageBody) {
-    try {
-      return mapper.readValue(messageBody, JSONDropIndexMessage.class);
-    }
-    catch (Exception exception) {
-      throw new IllegalArgumentException("Could not construct JSONDropIndexMessage.", exception);
-    }
-  }
-
-  @Override
-  public AlterIndexMessage getAlterIndexMessage(String messageBody) {
-    try {
-      return mapper.readValue(messageBody, JSONAlterIndexMessage.class);
-    }
-    catch (Exception exception) {
-      throw new IllegalArgumentException("Could not construct JSONAlterIndexMessage.", exception);
     }
   }
 
