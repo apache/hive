@@ -22,6 +22,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -167,13 +168,17 @@ public final class ObjectInspectorUtils {
     int hashcode = 1;
     for (Object element : keys) {
       hashcode = 31 * hashcode;
-      if (element == null) continue;
-      if (element instanceof LazyDouble) {
-        long v = Double.doubleToLongBits(((LazyDouble)element).getWritableObject().get());
+      if (element == null) {
+        // nothing
+      } else if (element instanceof LazyDouble) {
+        long v = Double.doubleToLongBits(((LazyDouble) element).getWritableObject().get());
         hashcode = hashcode + (int) (v ^ (v >>> 32));
-      } else if (element instanceof DoubleWritable){
-        long v = Double.doubleToLongBits(((DoubleWritable)element).get());
+      } else if (element instanceof DoubleWritable) {
+        long v = Double.doubleToLongBits(((DoubleWritable) element).get());
         hashcode = hashcode + (int) (v ^ (v >>> 32));
+      } else if (element instanceof Object[]) {
+        // use deep hashcode for arrays
+        hashcode = hashcode + Arrays.deepHashCode((Object[]) element);
       } else {
         hashcode = hashcode + element.hashCode();
       }

@@ -18,10 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.util.Arrays;
-
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.lazy.LazyDouble;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectsEqualComparer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -29,10 +26,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.Object
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 
 public class KeyWrapperFactory {
+
   public KeyWrapperFactory(ExprNodeEvaluator[] keyFields, ObjectInspector[] keyObjectInspectors,
       ObjectInspector[] currentKeyObjectInspectors) {
     this.keyFields = keyFields;
@@ -66,7 +63,7 @@ public class KeyWrapperFactory {
   transient ListObjectsEqualComparer newKeyStructEqualComparer;
 
   class ListKeyWrapper extends KeyWrapper {
-    int hashcode;
+    int hashcode = -1;
     Object[] keys;
     // decide whether this is already in hashmap (keys in hashmap are deepcopied
     // version, and we need to use 'currentKeyObjectInspector').
@@ -102,8 +99,13 @@ public class KeyWrapperFactory {
       if (!(obj instanceof ListKeyWrapper)) {
         return false;
       }
-      Object[] copied_in_hashmap = ((ListKeyWrapper) obj).keys;
-      return equalComparer.areEqual(copied_in_hashmap, keys);
+      ListKeyWrapper other = ((ListKeyWrapper) obj);
+      if (other.hashcode != this.hashcode && this.hashcode != -1 && other.hashcode != -1) {
+        return false;
+      }
+      Object[] copied_in_hashmap = other.keys;
+      boolean result = equalComparer.areEqual(copied_in_hashmap, keys);
+      return result;
     }
 
     @Override
@@ -117,6 +119,7 @@ public class KeyWrapperFactory {
       for (int i = 0; i < keyFields.length; i++) {
         keys[i]  = keyFields[i].evaluate(row);
       }
+      hashcode = -1;
     }
 
     @Override

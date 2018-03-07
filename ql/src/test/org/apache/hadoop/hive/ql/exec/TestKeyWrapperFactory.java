@@ -110,4 +110,12 @@ public class TestKeyWrapperFactory {
     assertFalse(w3.equals(w4));
     assertFalse(w4.equals(w3));
   }
+
+  @Test
+  public void testUnsetHashCode() {
+    KeyWrapper w1 = factory.getKeyWrapper();
+    KeyWrapper w2 = w1.copyKey();
+    w1.setHashKey();
+    assertTrue(w1.equals(w2));
+  }
 }
