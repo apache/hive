@@ -77,6 +77,7 @@ import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.hive.http.HttpServer;
+import org.apache.hive.http.JdbcJarDownloadServlet;
 import org.apache.hive.http.LlapServlet;
 import org.apache.hive.http.security.PamAuthenticator;
 import org.apache.hive.service.CompositeService;
@@ -281,6 +282,7 @@ public class HiveServer2 extends CompositeService {
             }
           }
           builder.addServlet("llap", LlapServlet.class);
+          builder.addServlet("jdbcjar", JdbcJarDownloadServlet.class);
           builder.setContextRootRewriteTarget("/hiveserver2.jsp");
 
           webServer = builder.build();
