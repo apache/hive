@@ -353,4 +353,9 @@
   <value>false</value>
 </property>
 
+<property>
+  <name>tez.counters.max</name>
+  <value>1024</value>
+</property>
+
 </configuration>

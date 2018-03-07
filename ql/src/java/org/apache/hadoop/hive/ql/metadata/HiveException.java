@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public class HiveException extends Exception {
+
   /**
    * Standard predefined message with error code and possibly SQL State, etc.
    */

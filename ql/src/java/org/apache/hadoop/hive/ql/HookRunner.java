@@ -318,4 +318,9 @@ public class HookRunner {
   public void addOnFailureHook(ExecuteWithHookContext hook) {
     onFailureHooks.add(hook);
   }
+
+  public void addSemanticAnalyzerHook(HiveSemanticAnalyzerHook hook) {
+    saHooks.add(hook);
+  }
+
 }

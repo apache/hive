@@ -31,6 +31,7 @@ array_contains
 ascii
 asin
 assert_true
+assert_true_oom
 atan
 avg
 base64
