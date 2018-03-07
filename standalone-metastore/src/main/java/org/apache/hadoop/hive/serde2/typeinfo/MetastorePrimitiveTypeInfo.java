@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.serde2.typeinfo;
 
 import org.apache.hadoop.classification.InterfaceAudience.LimitedPrivate;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 import java.io.Serializable;
 
@@ -48,8 +47,8 @@ public class MetastorePrimitiveTypeInfo extends TypeInfo implements Serializable
   }
 
   @Override
-  public Category getCategory() {
-    return Category.PRIMITIVE;
+  public MetastoreTypeCategory getCategory() {
+    return MetastoreTypeCategory.PRIMITIVE;
   }
 
   @Override

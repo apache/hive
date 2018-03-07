@@ -116,7 +116,7 @@ public class HCatSchemaUtils {
   }
 
   private static HCatFieldSchema getHCatFieldSchema(String fieldName, TypeInfo fieldTypeInfo, String comment) throws HCatException {
-    Category typeCategory = fieldTypeInfo.getCategory();
+    Category typeCategory = Category.fromMetastoreTypeCategory(fieldTypeInfo.getCategory());
     HCatFieldSchema hCatFieldSchema;
     if (Category.PRIMITIVE == typeCategory) {
       hCatFieldSchema = new HCatFieldSchema(fieldName, (PrimitiveTypeInfo)fieldTypeInfo, comment);
@@ -157,7 +157,7 @@ public class HCatSchemaUtils {
   }
 
   public static HCatSchema getHCatSchema(TypeInfo typeInfo) throws HCatException {
-    Category typeCategory = typeInfo.getCategory();
+    Category typeCategory = Category.fromMetastoreTypeCategory(typeInfo.getCategory());
     HCatSchema hCatSchema;
     if (Category.PRIMITIVE == typeCategory) {
       hCatSchema = getStructSchemaBuilder().addField(new HCatFieldSchema(null, (PrimitiveTypeInfo)typeInfo, null)).build();

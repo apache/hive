@@ -112,7 +112,7 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
 
   private Field createField(TypeInfo typeInfo) {
     final Field field = new Field();
-    final Category category = typeInfo.getCategory();
+    final Category category = Category.fromMetastoreTypeCategory(typeInfo.getCategory());
     field.category = category;
     field.typeInfo = typeInfo;
     switch (category) {

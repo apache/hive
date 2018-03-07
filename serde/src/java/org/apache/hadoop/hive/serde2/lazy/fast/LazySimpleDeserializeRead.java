@@ -89,7 +89,7 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
     public ComplexTypeHelper complexTypeHelper;
 
     public Field(TypeInfo typeInfo, DataTypePhysicalVariation dataTypePhysicalVariation) {
-      Category category = typeInfo.getCategory();
+      Category category = Category.fromMetastoreTypeCategory(typeInfo.getCategory());
       if (category == Category.PRIMITIVE) {
         isPrimitive = true;
         primitiveCategory = ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory();

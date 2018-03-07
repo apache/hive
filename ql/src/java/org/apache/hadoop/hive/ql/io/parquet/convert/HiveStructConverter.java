@@ -77,7 +77,8 @@ public class HiveStructConverter extends HiveGroupConverter {
     converters = new Converter[selectedFieldCount];
     this.repeatedConverters = new ArrayList<Repeated>();
 
-    if (hiveTypeInfo != null && hiveTypeInfo.getCategory().equals(ObjectInspector.Category.STRUCT)) {
+    if (hiveTypeInfo != null && hiveTypeInfo.getCategory()
+        .equals(ObjectInspector.Category.STRUCT.toMetastoreTypeCategory())) {
       this.hiveFieldNames = ((StructTypeInfo) hiveTypeInfo).getAllStructFieldNames();
       this.hiveFieldTypeInfos = ((StructTypeInfo) hiveTypeInfo).getAllStructFieldTypeInfos();
     }
@@ -126,9 +127,9 @@ public class HiveStructConverter extends HiveGroupConverter {
   private TypeInfo getFieldTypeIgnoreCase(TypeInfo hiveTypeInfo, String fieldName, int fieldIndex) {
     if (hiveTypeInfo == null) {
       return null;
-    } else if (hiveTypeInfo.getCategory().equals(ObjectInspector.Category.STRUCT)) {
+    } else if (hiveTypeInfo.getCategory().equals(ObjectInspector.Category.STRUCT.toMetastoreTypeCategory())) {
       return getStructFieldTypeInfo(fieldName, fieldIndex);
-    } else if (hiveTypeInfo.getCategory().equals(ObjectInspector.Category.MAP)) {
+    } else if (hiveTypeInfo.getCategory().equals(ObjectInspector.Category.MAP.toMetastoreTypeCategory())) {
       //This cover the case where hive table may have map<key, value> but the data file is
       // of type array<struct<value1, value2>>
       //Using index in place of type name.

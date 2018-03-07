@@ -248,7 +248,7 @@ public class RexNodeConverter {
     GenericUDF tgtUdf = func.getGenericUDF();
 
     boolean isNumeric = (tgtUdf instanceof GenericUDFBaseBinary
-        && func.getTypeInfo().getCategory() == Category.PRIMITIVE
+        && func.getTypeInfo().getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory()
         && (PrimitiveGrouping.NUMERIC_GROUP == PrimitiveObjectInspectorUtils.getPrimitiveGrouping(
             ((PrimitiveTypeInfo) func.getTypeInfo()).getPrimitiveCategory())));
     boolean isCompare = !isNumeric && tgtUdf instanceof GenericUDFBaseCompare;

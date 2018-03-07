@@ -106,7 +106,7 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
 
   private Field createField(TypeInfo typeInfo) {
     final Field field = new Field();
-    final Category category = typeInfo.getCategory();
+    final Category category = Category.fromMetastoreTypeCategory(typeInfo.getCategory());
     field.category = category;
     field.typeInfo = typeInfo;
     if (category == Category.PRIMITIVE) {

@@ -313,7 +313,7 @@ public class TestBinarySortableFast extends TestCase {
 
   private void verifyRead(BinarySortableDeserializeRead binarySortableDeserializeRead,
       TypeInfo typeInfo, Object expectedObject) throws IOException {
-    if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+    if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE.toMetastoreTypeCategory()) {
       VerifyFast.verifyDeserializeRead(binarySortableDeserializeRead, typeInfo, expectedObject);
     } else {
       Object complexFieldObj = VerifyFast.deserializeReadComplexType(binarySortableDeserializeRead, typeInfo);

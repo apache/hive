@@ -144,7 +144,7 @@ public class AvroObjectInspectorGenerator {
   }
 
   private boolean supportedCategories(TypeInfo ti) {
-    final Category c = ti.getCategory();
+    final Category c = Category.fromMetastoreTypeCategory(ti.getCategory());
     return c.equals(ObjectInspector.Category.PRIMITIVE) ||
            c.equals(ObjectInspector.Category.MAP)       ||
            c.equals(ObjectInspector.Category.LIST)      ||

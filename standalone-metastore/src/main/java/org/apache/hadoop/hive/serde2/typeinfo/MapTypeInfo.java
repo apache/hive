@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.serde2.typeinfo;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.ColumnType;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 import java.io.Serializable;
 
@@ -79,8 +77,8 @@ public final class MapTypeInfo extends TypeInfo implements Serializable {
   }
 
   @Override
-  public Category getCategory() {
-    return ObjectInspector.Category.MAP;
+  public MetastoreTypeCategory getCategory() {
+    return MetastoreTypeCategory.MAP;
   }
 
   public TypeInfo getMapKeyTypeInfo() {

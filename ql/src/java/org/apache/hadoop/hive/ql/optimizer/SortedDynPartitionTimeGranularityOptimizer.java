@@ -229,7 +229,7 @@ public class SortedDynPartitionTimeGranularityOptimizer extends Transform {
         ExprNodeColumnDesc columnDesc = new ExprNodeColumnDesc(ci);
         descs.add(columnDesc);
         colNames.add(columnDesc.getExprString());
-        if (columnDesc.getTypeInfo().getCategory() == ObjectInspector.Category.PRIMITIVE
+        if (columnDesc.getTypeInfo().getCategory() == ObjectInspector.Category.PRIMITIVE.toMetastoreTypeCategory()
                 && ((PrimitiveTypeInfo) columnDesc.getTypeInfo()).getPrimitiveCategory() == PrimitiveCategory.TIMESTAMPLOCALTZ) {
           if (timestampPos != -1) {
             throw new SemanticException("Multiple columns with timestamp with local time-zone type on query result; "

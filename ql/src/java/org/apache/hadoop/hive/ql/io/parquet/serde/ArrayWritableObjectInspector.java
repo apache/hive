@@ -107,12 +107,12 @@ public class ArrayWritableObjectInspector extends SettableStructObjectInspector 
       return ParquetPrimitiveInspectorFactory.parquetStringInspector;
     }  else if (typeInfo instanceof DecimalTypeInfo) {
       return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector((DecimalTypeInfo) typeInfo);
-    } else if (typeInfo.getCategory().equals(Category.STRUCT)) {
+    } else if (typeInfo.getCategory().equals(Category.STRUCT.toMetastoreTypeCategory())) {
       return new ArrayWritableObjectInspector(false, (StructTypeInfo) typeInfo, (StructTypeInfo) prunedTypeInfo);
-    } else if (typeInfo.getCategory().equals(Category.LIST)) {
+    } else if (typeInfo.getCategory().equals(Category.LIST.toMetastoreTypeCategory())) {
       final TypeInfo subTypeInfo = ((ListTypeInfo) typeInfo).getListElementTypeInfo();
       return new ParquetHiveArrayInspector(getObjectInspector(subTypeInfo, null));
-    } else if (typeInfo.getCategory().equals(Category.MAP)) {
+    } else if (typeInfo.getCategory().equals(Category.MAP.toMetastoreTypeCategory())) {
       final TypeInfo keyTypeInfo = ((MapTypeInfo) typeInfo).getMapKeyTypeInfo();
       final TypeInfo valueTypeInfo = ((MapTypeInfo) typeInfo).getMapValueTypeInfo();
       if (keyTypeInfo.equals(TypeInfoFactory.stringTypeInfo) || keyTypeInfo.equals(TypeInfoFactory.byteTypeInfo)

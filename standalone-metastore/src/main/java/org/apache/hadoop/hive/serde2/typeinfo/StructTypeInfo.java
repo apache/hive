@@ -26,8 +26,6 @@ import java.util.List;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.ColumnType;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 /**
  * StructTypeInfo represents the TypeInfo of a struct. A struct contains one or
@@ -92,8 +90,8 @@ public final class StructTypeInfo extends TypeInfo implements Serializable {
   }
 
   @Override
-  public Category getCategory() {
-    return ObjectInspector.Category.STRUCT;
+  public MetastoreTypeCategory getCategory() {
+    return MetastoreTypeCategory.STRUCT;
   }
 
   public ArrayList<String> getAllStructFieldNames() {

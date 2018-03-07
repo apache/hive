@@ -306,7 +306,7 @@ public final class PcrExprProcFactory {
         return new NodeInfoWrapper(WalkState.UNKNOWN, null, getOutExpr(fd, nodeOutputs));
       }
 
-      if (has_part_col && fd.getTypeInfo().getCategory() == Category.PRIMITIVE) {
+      if (has_part_col && fd.getTypeInfo().getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory()) {
         //  we need to evaluate result for every pruned partition
         if (fd.getTypeInfo().equals(TypeInfoFactory.booleanTypeInfo)) {
           // if the return type of the GenericUDF is boolean and all partitions agree on

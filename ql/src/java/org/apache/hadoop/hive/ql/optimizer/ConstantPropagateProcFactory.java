@@ -912,7 +912,7 @@ public final class ConstantPropagateProcFactory {
             return null;
           }
         }
-        if (constant.getTypeInfo().getCategory() != Category.PRIMITIVE) {
+        if (constant.getTypeInfo().getCategory() != Category.PRIMITIVE.toMetastoreTypeCategory()) {
           // nested complex types cannot be folded cleanly
           return null;
         }
@@ -932,7 +932,7 @@ public final class ConstantPropagateProcFactory {
           return null;
         }
         ExprNodeConstantDesc constant = (ExprNodeConstantDesc) evaluatedFn;
-        if (constant.getTypeInfo().getCategory() != Category.PRIMITIVE) {
+        if (constant.getTypeInfo().getCategory() != Category.PRIMITIVE.toMetastoreTypeCategory()) {
           // nested complex types cannot be folded cleanly
           return null;
         }

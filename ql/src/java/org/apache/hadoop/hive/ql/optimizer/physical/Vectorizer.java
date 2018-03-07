@@ -2557,7 +2557,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
           // COUNT, DENSE_RANK, and RANK do not care about column types.  The rest do.
           TypeInfo typeInfo = exprNodeDesc.getTypeInfo();
-          Category category = typeInfo.getCategory();
+          Category category = Category.fromMetastoreTypeCategory(typeInfo.getCategory());
           boolean isSupportedType;
           if (category != Category.PRIMITIVE) {
             isSupportedType = false;
@@ -2664,7 +2664,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
     if (desc.getChildren() != null) {
       if (isInExpression
-          && desc.getChildren().get(0).getTypeInfo().getCategory() == Category.STRUCT) {
+          && desc.getChildren().get(0).getTypeInfo().getCategory() == Category.STRUCT.toMetastoreTypeCategory()) {
         // Don't restrict child expressions for projection.
         // Always use loose FILTER mode.
         if (!validateStructInExpression(desc, expressionTitle, VectorExpressionDescriptor.Mode.FILTER)) {
@@ -2688,7 +2688,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       String expressionTitle, VectorExpressionDescriptor.Mode mode) {
     for (ExprNodeDesc d : desc.getChildren()) {
       TypeInfo typeInfo = d.getTypeInfo();
-      if (typeInfo.getCategory() != Category.STRUCT) {
+      if (typeInfo.getCategory() != Category.STRUCT.toMetastoreTypeCategory()) {
         return false;
       }
       StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
@@ -2699,7 +2699,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       final int fieldCount = fieldTypeInfos.size();
       for (int f = 0; f < fieldCount; f++) {
         TypeInfo fieldTypeInfo = fieldTypeInfos.get(f);
-        Category category = fieldTypeInfo.getCategory();
+        Category category = Category.fromMetastoreTypeCategory(fieldTypeInfo.getCategory());
         if (category != Category.PRIMITIVE) {
           setExpressionIssue(expressionTitle,
               "Cannot vectorize struct field " + fieldNames.get(f)
@@ -2788,7 +2788,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     if (!result) {
       TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(type);
-      if (typeInfo.getCategory() != Category.PRIMITIVE) {
+      if (typeInfo.getCategory() != Category.PRIMITIVE.toMetastoreTypeCategory()) {
         if (allowComplex) {
           return true;
         }
@@ -2808,7 +2808,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     if (!result) {
       TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(type);
-      if (typeInfo.getCategory() != Category.PRIMITIVE) {
+      if (typeInfo.getCategory() != Category.PRIMITIVE.toMetastoreTypeCategory()) {
         if (allowComplex && isVectorizationComplexTypesEnabled) {
           return null;
         } else if (!allowComplex) {
@@ -3131,7 +3131,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       // same check used in HashTableLoader.
       if (!MapJoinKey.isSupportedField(typeInfo)) {
         supportsKeyTypes = false;
-        Category category = typeInfo.getCategory();
+        Category category = Category.fromMetastoreTypeCategory(typeInfo.getCategory());
         notSupportedKeyTypes.add(
             (category != Category.PRIMITIVE ? category.toString() :
               ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory().toString()));

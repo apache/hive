@@ -58,8 +58,8 @@ public class PrimitiveTypeInfo extends MetastorePrimitiveTypeInfo implements Ser
    * Returns the category of this TypeInfo.
    */
   @Override
-  public Category getCategory() {
-    return Category.PRIMITIVE;
+  public MetastoreTypeCategory getCategory() {
+    return MetastoreTypeCategory.PRIMITIVE;
   }
 
   public PrimitiveCategory getPrimitiveCategory() {

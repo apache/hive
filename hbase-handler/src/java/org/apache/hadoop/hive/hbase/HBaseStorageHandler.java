@@ -425,7 +425,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
         continue;
       }
       TypeInfo typeInfo = searchConditions.get(0).getColumnDesc().getTypeInfo();
-      if (typeInfo.getCategory() == Category.PRIMITIVE && PrimitiveObjectInspectorUtils.getPrimitiveGrouping(
+      if (typeInfo.getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory() && PrimitiveObjectInspectorUtils.getPrimitiveGrouping(
               ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory()) == PrimitiveGrouping.NUMERIC_GROUP) {
         // If the predicate is on a numeric column, and it specifies an
         // open range e.g. key < 20 , we do not support conversion, as negative

@@ -67,7 +67,7 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
     // Validate the first parameter, which is the expression to compute over. This should be an
     // array of strings type, or an array of arrays of strings.
     PrimitiveTypeInfo pti;
-    if (parameters[0].getCategory() != ObjectInspector.Category.LIST) {
+    if (parameters[0].getCategory() != ObjectInspector.Category.LIST.toMetastoreTypeCategory()) {
       throw new UDFArgumentTypeException(0,
           "Only list type arguments are accepted but "
           + parameters[0].getTypeName() + " was passed as parameter 1.");
@@ -98,7 +98,7 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
     }
 
     // Validate the second parameter, which should be an integer
-    if(parameters[1].getCategory() != ObjectInspector.Category.PRIMITIVE) {
+    if(parameters[1].getCategory() != ObjectInspector.Category.PRIMITIVE.toMetastoreTypeCategory()) {
       throw new UDFArgumentTypeException(1, "Only integers are accepted but "
           + parameters[1].getTypeName() + " was passed as parameter 2.");
     }
@@ -116,7 +116,7 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
     }
 
     // Validate the third parameter, which should also be an integer
-    if(parameters[2].getCategory() != ObjectInspector.Category.PRIMITIVE) {
+    if(parameters[2].getCategory() != ObjectInspector.Category.PRIMITIVE.toMetastoreTypeCategory()) {
       throw new UDFArgumentTypeException(2, "Only integers are accepted but "
             + parameters[2].getTypeName() + " was passed as parameter 3.");
     }
@@ -135,7 +135,7 @@ public class GenericUDAFnGrams implements GenericUDAFResolver {
 
     // If we have the optional fourth parameter, make sure it's also an integer
     if(parameters.length == 4) {
-      if(parameters[3].getCategory() != ObjectInspector.Category.PRIMITIVE) {
+      if(parameters[3].getCategory() != ObjectInspector.Category.PRIMITIVE.toMetastoreTypeCategory()) {
         throw new UDFArgumentTypeException(3, "Only integers are accepted but "
             + parameters[3].getTypeName() + " was passed as parameter 4.");
       }

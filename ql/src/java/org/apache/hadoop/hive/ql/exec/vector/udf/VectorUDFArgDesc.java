@@ -54,7 +54,7 @@ public class VectorUDFArgDesc implements Serializable {
   public void setConstant(ExprNodeConstantDesc expr) {
     isConstant = true;
     if (expr != null) {
-      if (expr.getTypeInfo().getCategory() == Category.PRIMITIVE) {
+      if (expr.getTypeInfo().getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory()) {
         PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) expr.getTypeInfo())
             .getPrimitiveCategory();
         if (primitiveCategory == PrimitiveCategory.VOID) {

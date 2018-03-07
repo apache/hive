@@ -22,7 +22,6 @@ import java.io.Serializable;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 /**
  * Stores information about a type. Always use the TypeInfoFactory to create new
@@ -55,7 +54,7 @@ public abstract class TypeInfo implements Serializable {
    *
    * @return
    */
-  public abstract Category getCategory();
+  public abstract MetastoreTypeCategory getCategory();
 
   /**
    * String representing the qualified type name.

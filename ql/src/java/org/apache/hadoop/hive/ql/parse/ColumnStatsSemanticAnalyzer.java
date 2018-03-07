@@ -228,7 +228,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         if (colName.equalsIgnoreCase(col.getName())) {
           String type = col.getType();
           TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(type);
-          if (typeInfo.getCategory() != ObjectInspector.Category.PRIMITIVE) {
+          if (typeInfo.getCategory() != ObjectInspector.Category.PRIMITIVE.toMetastoreTypeCategory()) {
             logTypeWarning(colName, type);
             colNames.remove(colName);
           } else {

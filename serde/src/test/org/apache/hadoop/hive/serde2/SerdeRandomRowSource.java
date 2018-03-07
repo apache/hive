@@ -435,7 +435,7 @@ public class SerdeRandomRowSource {
       }
       
       typeInfos[c] = typeInfo;
-      final Category category = typeInfo.getCategory();
+      final Category category = Category.fromMetastoreTypeCategory(typeInfo.getCategory());
       categories[c] = category;
       ObjectInspector objectInspector = getObjectInspector(typeInfo);
       switch (category) {
@@ -640,7 +640,7 @@ public class SerdeRandomRowSource {
                 elementObjectInspector);
         boolean isStringFamily = false;
         PrimitiveCategory primitiveCategory = null;
-        if (elementTypeInfo.getCategory() == Category.PRIMITIVE) {
+        if (elementTypeInfo.getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory()) {
           primitiveCategory = ((PrimitiveTypeInfo) elementTypeInfo).getPrimitiveCategory();
           if (primitiveCategory == PrimitiveCategory.STRING ||
               primitiveCategory == PrimitiveCategory.BINARY ||

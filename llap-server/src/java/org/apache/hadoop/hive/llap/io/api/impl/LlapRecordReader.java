@@ -219,7 +219,7 @@ class LlapRecordReader
     double totalWeight = 0;
     for (TypeInfo ti : typeInfos) {
       int colWeight = 1;
-      if (ti.getCategory() != Category.PRIMITIVE) {
+      if (ti.getCategory() != Category.PRIMITIVE.toMetastoreTypeCategory()) {
         colWeight = COL_WEIGHT_COMPLEX;
       } else {
         PrimitiveTypeInfo pti = (PrimitiveTypeInfo)ti;

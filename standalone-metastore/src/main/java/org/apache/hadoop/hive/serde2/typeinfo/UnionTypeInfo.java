@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.serde2.typeinfo;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.ColumnType;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -80,8 +78,8 @@ public class UnionTypeInfo extends TypeInfo implements Serializable {
   }
 
   @Override
-  public Category getCategory() {
-    return ObjectInspector.Category.UNION;
+  public MetastoreTypeCategory getCategory() {
+    return MetastoreTypeCategory.UNION;
   }
 
   public List<TypeInfo> getAllUnionObjectTypeInfos() {

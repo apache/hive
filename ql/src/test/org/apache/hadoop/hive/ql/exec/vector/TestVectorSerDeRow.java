@@ -65,7 +65,7 @@ public class TestVectorSerDeRow extends TestCase {
   private void verifyRead(
       DeserializeRead deserializeRead, TypeInfo typeInfo, Object expectedObject) throws IOException {
 
-    if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+    if (typeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE.toMetastoreTypeCategory()) {
       VectorVerifyFast.verifyDeserializeRead(deserializeRead, typeInfo, expectedObject);
     } else {
       Object complexFieldObj = VectorVerifyFast.deserializeReadComplexType(deserializeRead, typeInfo);

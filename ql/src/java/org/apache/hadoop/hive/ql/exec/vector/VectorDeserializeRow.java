@@ -265,7 +265,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
   }
 
   private Field allocateComplexField(TypeInfo sourceTypeInfo) {
-    final Category category = sourceTypeInfo.getCategory();
+    final Category category = Category.fromMetastoreTypeCategory(sourceTypeInfo.getCategory());
     switch (category) {
     case LIST:
       {

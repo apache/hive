@@ -244,7 +244,8 @@ public final class TypeInfoUtils {
    * @return
    */
   public static boolean doPrimitiveCategoriesMatch(TypeInfo ti1, TypeInfo ti2) {
-    if (ti1.getCategory() == ObjectInspector.Category.PRIMITIVE && ti2.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+    if (ti1.getCategory() == ObjectInspector.Category.PRIMITIVE.toMetastoreTypeCategory()
+        && ti2.getCategory() == ObjectInspector.Category.PRIMITIVE.toMetastoreTypeCategory()) {
       if (((PrimitiveTypeInfo)ti1).getPrimitiveCategory()
           == ((PrimitiveTypeInfo)ti2).getPrimitiveCategory()) {
         return true;
@@ -642,7 +643,8 @@ public final class TypeInfoUtils {
     // Reimplemented to use PrimitiveCategory rather than TypeInfo, because
     // 2 TypeInfos from the same qualified type (varchar, decimal) should still be
     // seen as equivalent.
-    if (from.getCategory() == Category.PRIMITIVE && to.getCategory() == Category.PRIMITIVE) {
+    if (from.getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory()
+        && to.getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory()) {
       return implicitConvertible(
           ((PrimitiveTypeInfo) from).getPrimitiveCategory(),
           ((PrimitiveTypeInfo) to).getPrimitiveCategory());

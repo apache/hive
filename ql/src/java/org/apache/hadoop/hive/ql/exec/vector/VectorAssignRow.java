@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.MetastoreTypeCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.slf4j.Logger;
@@ -141,7 +142,7 @@ public class VectorAssignRow {
     isConvert[logicalColumnIndex] = false;
     projectionColumnNums[logicalColumnIndex] = projectionColumnNum;
     targetTypeInfos[logicalColumnIndex] = typeInfo;
-    if (typeInfo.getCategory() == Category.PRIMITIVE) {
+    if (typeInfo.getCategory() == Category.PRIMITIVE.toMetastoreTypeCategory()) {
       final PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
       final PrimitiveCategory primitiveCategory = primitiveTypeInfo.getPrimitiveCategory();
       switch (primitiveCategory) {
@@ -164,7 +165,7 @@ public class VectorAssignRow {
    */
   private void initConvertSourceEntry(int logicalColumnIndex, TypeInfo convertSourceTypeInfo) {
     isConvert[logicalColumnIndex] = true;
-    final Category convertSourceCategory = convertSourceTypeInfo.getCategory();
+    final Category convertSourceCategory = Category.fromMetastoreTypeCategory(convertSourceTypeInfo.getCategory());
     convertSourceOI[logicalColumnIndex] =
         TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(convertSourceTypeInfo);
 
@@ -654,7 +655,7 @@ public class VectorAssignRow {
       TypeInfo targetTypeInfo, ObjectInspector sourceObjectInspector,
       Writable convertTargetWritable, Object object) {
 
-    final Category targetCategory = targetTypeInfo.getCategory();
+    final Category targetCategory = Category.fromMetastoreTypeCategory(targetTypeInfo.getCategory());
     if (targetCategory == null) {
       /*
        * This is a column that we don't want (i.e. not included) -- we are done.

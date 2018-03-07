@@ -23,7 +23,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.ColumnType;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.typeinfo.MetastoreTypeCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.MetastoreTypeInfoFactory;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.serde2.avro.AvroSerDeConstants;
@@ -138,12 +138,12 @@ public class AvroSchemaUtils {
   }
 
   public static boolean supportedCategories(TypeInfo ti) {
-    final Category c = ti.getCategory();
-    return c.equals(Category.PRIMITIVE) ||
-        c.equals(Category.MAP)          ||
-        c.equals(Category.LIST)         ||
-        c.equals(Category.STRUCT)       ||
-        c.equals(Category.UNION);
+    final MetastoreTypeCategory c = ti.getCategory();
+    return c.equals(MetastoreTypeCategory.PRIMITIVE) ||
+        c.equals(MetastoreTypeCategory.MAP)          ||
+        c.equals(MetastoreTypeCategory.LIST)         ||
+        c.equals(MetastoreTypeCategory.STRUCT)       ||
+        c.equals(MetastoreTypeCategory.UNION);
   }
 
   /**

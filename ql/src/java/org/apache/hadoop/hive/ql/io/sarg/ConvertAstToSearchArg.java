@@ -112,7 +112,7 @@ public class ConvertAstToSearchArg {
    */
   private static BoxType getType(ExprNodeDesc expr) {
     TypeInfo type = expr.getTypeInfo();
-    if (type.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+    if (type.getCategory() == ObjectInspector.Category.PRIMITIVE.toMetastoreTypeCategory()) {
       switch (((PrimitiveTypeInfo) type).getPrimitiveCategory()) {
         case BYTE:
         case SHORT:

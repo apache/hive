@@ -208,7 +208,7 @@ public class AccumuloRowSerializer {
     TypeInfo rowIdTypeInfo = TypeInfoUtils.getTypeInfoFromTypeString(rowIdMappingType);
 
     if (!rowIdFieldOI.getCategory().equals(ObjectInspector.Category.PRIMITIVE)
-        && rowIdTypeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+        && rowIdTypeInfo.getCategory() == ObjectInspector.Category.PRIMITIVE.toMetastoreTypeCategory()) {
       // we always serialize the String type using the escaped algorithm for LazyString
       writeString(output, SerDeUtils.getJSONString(rowId, rowIdFieldOI),
           PrimitiveObjectInspectorFactory.javaStringObjectInspector);

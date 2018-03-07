@@ -265,8 +265,8 @@ public class ColumnPrunerProcCtx implements NodeProcessorCtx {
     // Check cases for arr[i].f and map[key].v
     // For these we should not generate paths like arr.f or map.v
     // Otherwise we would have a mismatch between type info and path
-    if (ti.getCategory() != ObjectInspector.Category.LIST
-        && ti.getCategory() != ObjectInspector.Category.MAP) {
+    if (ti.getCategory() != ObjectInspector.Category.LIST.toMetastoreTypeCategory()
+        && ti.getCategory() != ObjectInspector.Category.MAP.toMetastoreTypeCategory()) {
       fn.addFieldNodes(pathToRoot);
     }
   }

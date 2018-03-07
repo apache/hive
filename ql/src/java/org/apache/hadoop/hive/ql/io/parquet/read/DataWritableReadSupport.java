@@ -146,7 +146,7 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
           .named(fieldType.getName());
       case LIST:
         TypeInfo elemType = ((ListTypeInfo) colType).getListElementTypeInfo();
-        if (elemType.getCategory() == ObjectInspector.Category.STRUCT) {
+        if (elemType.getCategory() == ObjectInspector.Category.STRUCT.toMetastoreTypeCategory()) {
           Type subFieldType = fieldType.asGroupType().getType(0);
           if (!subFieldType.isPrimitive()) {
             String subFieldName = subFieldType.getName();
