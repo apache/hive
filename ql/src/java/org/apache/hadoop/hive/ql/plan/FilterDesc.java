@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 
@@ -109,6 +110,7 @@ public class FilterDesc extends AbstractOperatorDesc {
     this.sampleDescr = sampleDescr;
   }
 
+  @Signature
   public String getPredicateString() {
     return PlanUtils.getExprListString(Arrays.asList(predicate));
   }
@@ -137,6 +139,7 @@ public class FilterDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "isSamplingPred", explainLevels = { Level.EXTENDED })
+  @Signature
   public boolean getIsSamplingPred() {
     return isSamplingPred;
   }
@@ -154,6 +157,7 @@ public class FilterDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "sampleDesc", explainLevels = { Level.EXTENDED })
+  @Signature
   public String getSampleDescExpr() {
     return sampleDescr == null ? null : sampleDescr.toString();
   }
@@ -234,4 +238,5 @@ public class FilterDesc extends AbstractOperatorDesc {
     }
     return false;
   }
+
 }

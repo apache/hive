@@ -77,6 +77,7 @@ import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
+import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -109,6 +110,8 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzerFactory;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.plan.mapper.RuntimeStatsSource;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.security.authorization.AuthorizationUtils;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
@@ -191,6 +194,7 @@ public class Driver implements IDriver {
   // Transaction manager used for the query. This will be set at compile time based on
   // either initTxnMgr or from the SessionState, in that order.
   private HiveTxnManager queryTxnMgr;
+  private RuntimeStatsSource runtimeStatsSource;
 
   private CacheUsage cacheUsage;
   private CacheEntry usedCacheEntry;
@@ -280,6 +284,15 @@ public class Driver implements IDriver {
   @Override
   public Schema getSchema() {
     return schema;
+  }
+
+  @Override
+  public Context getContext() {
+    return ctx;
+  }
+
+  public PlanMapper getPlanMapper() {
+    return ctx.getPlanMapper();
   }
 
   /**
@@ -557,6 +570,7 @@ public class Driver implements IDriver {
         setTriggerContext(queryId);
       }
 
+      ctx.setRuntimeStatsSource(runtimeStatsSource);
       ctx.setCmd(command);
       ctx.setHDFSCleanup(true);
 
@@ -579,7 +593,6 @@ public class Driver implements IDriver {
       hookRunner.runBeforeCompileHook(command);
 
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
-      BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(queryState, tree);
 
       // Flush the metastore cache.  This assures that we don't pick up objects from a previous
       // query running in this same thread.  This has to be done after we get our semantic
@@ -587,15 +600,7 @@ public class Driver implements IDriver {
       // because at that point we need access to the objects.
       Hive.get().getMSC().flushCache();
 
-      if(checkConcurrency() && startImplicitTxn(queryTxnMgr)) {
-        String userFromUGI = getUserFromUGI();
-        if (!queryTxnMgr.isTxnOpen()) {
-          if(userFromUGI == null) {
-            throw createProcessorResponse(10);
-          }
-          long txnid = queryTxnMgr.openTxn(ctx, userFromUGI);
-        }
-      }
+      BaseSemanticAnalyzer sem;
       // Do semantic analysis and plan generation
       if (hookRunner.hasPreAnalyzeHooks()) {
         HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
@@ -606,12 +611,15 @@ public class Driver implements IDriver {
         hookCtx.setHiveOperation(queryState.getHiveOperation());
 
         tree =  hookRunner.runPreAnalyzeHooks(hookCtx, tree);
-
+        sem = SemanticAnalyzerFactory.get(queryState, tree);
+        openTransaction();
         sem.analyze(tree, ctx);
         hookCtx.update(sem);
 
         hookRunner.runPostAnalyzeHooks(hookCtx, sem.getAllRootTasks());
       } else {
+        sem = SemanticAnalyzerFactory.get(queryState, tree);
+        openTransaction();
         sem.analyze(tree, ctx);
       }
       LOG.info("Semantic Analysis Completed");
@@ -747,6 +755,18 @@ public class Driver implements IDriver {
     }
     WmContext wmContext = new WmContext(queryStartTime, queryId);
     ctx.setWmContext(wmContext);
+  }
+
+  private void openTransaction() throws LockException, CommandProcessorResponse {
+    if (checkConcurrency() && startImplicitTxn(queryTxnMgr)) {
+      String userFromUGI = getUserFromUGI();
+      if (!queryTxnMgr.isTxnOpen()) {
+        if (userFromUGI == null) {
+          throw createProcessorResponse(10);
+        }
+        long txnid = queryTxnMgr.openTxn(ctx, userFromUGI);
+      }
+    }
   }
 
   private boolean startImplicitTxn(HiveTxnManager txnManager) throws LockException {
@@ -1272,7 +1292,9 @@ public class Driver implements IDriver {
         return;
       }
     }
-    if (!AcidUtils.isTransactionalTable(tbl)) return;
+    if (!AcidUtils.isTransactionalTable(tbl)) {
+      return;
+    }
     String fullTableName = AcidUtils.getFullTableName(tbl.getDbName(), tbl.getTableName());
     tableList.add(fullTableName);
   }
@@ -1922,9 +1944,9 @@ public class Driver implements IDriver {
 
       SessionState ss = SessionState.get();
 
-      hookContext = new HookContext(plan, queryState, ctx.getPathToCS(), SessionState.get().getUserName(),
+      hookContext = new PrivateHookContext(plan, queryState, ctx.getPathToCS(), SessionState.get().getUserName(),
           ss.getUserIpAddress(), InetAddress.getLocalHost().getHostAddress(), operationId,
-          ss.getSessionId(), Thread.currentThread().getName(), ss.isHiveServerQuery(), perfLogger, queryInfo);
+          ss.getSessionId(), Thread.currentThread().getName(), ss.isHiveServerQuery(), perfLogger, queryInfo, ctx);
       hookContext.setHookType(HookContext.HookType.PRE_EXEC_HOOK);
 
       hookRunner.runPreHooks(hookContext);
@@ -2591,4 +2613,9 @@ public class Driver implements IDriver {
   public HookRunner getHookRunner() {
     return hookRunner;
   }
+
+  public void setRuntimeStatsSource(RuntimeStatsSource runtimeStatsSource) {
+    this.runtimeStatsSource = runtimeStatsSource;
+  }
+
 }

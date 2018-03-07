@@ -19,12 +19,13 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Objects;
 
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.io.DataOutputBuffer;
+
 
 
 @SuppressWarnings("serial")
@@ -36,11 +37,13 @@ public class AppMasterEventDesc extends AbstractOperatorDesc {
   private String inputName;
 
   @Explain(displayName = "Target Vertex")
+  @Signature
   public String getVertexName() {
     return vertexName;
   }
 
   @Explain(displayName = "Target Input")
+  @Signature
   public String getInputName() {
     return inputName;
   }
@@ -53,6 +56,7 @@ public class AppMasterEventDesc extends AbstractOperatorDesc {
     this.vertexName = vertexName;
   }
 
+  @Signature
   public TableDesc getTable() {
     return table;
   }
@@ -98,4 +102,5 @@ public class AppMasterEventDesc extends AbstractOperatorDesc {
     }
     return false;
   }
+
 }

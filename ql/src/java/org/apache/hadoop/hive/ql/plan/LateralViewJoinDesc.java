@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.plan;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
@@ -49,6 +50,7 @@ public class LateralViewJoinDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "outputColumnNames")
+  @Signature
   public ArrayList<String> getOutputInternalColNames() {
     return outputInternalColNames;
   }
@@ -74,4 +76,5 @@ public class LateralViewJoinDesc extends AbstractOperatorDesc {
     }
     return false;
   }
+
 }

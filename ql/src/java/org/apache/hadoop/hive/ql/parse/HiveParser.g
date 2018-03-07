@@ -774,14 +774,21 @@ explainStatement
 	: KW_EXPLAIN (
 	    explainOption* execStatement -> ^(TOK_EXPLAIN execStatement explainOption*)
         |
-        KW_REWRITE queryStatementExpression -> ^(TOK_EXPLAIN_SQ_REWRITE queryStatementExpression))
+        KW_REWRITE queryStatementExpression -> ^(TOK_EXPLAIN_SQ_REWRITE queryStatementExpression)
+      )
 	;
 
 explainOption
 @init { msgs.push("explain option"); }
 @after { msgs.pop(); }
-    : KW_EXTENDED|KW_FORMATTED|KW_DEPENDENCY|KW_LOGICAL|KW_AUTHORIZATION|KW_ANALYZE|
-      (KW_VECTORIZATION vectorizationOnly? vectorizatonDetail?)
+    : KW_EXTENDED
+    | KW_FORMATTED
+    | KW_DEPENDENCY
+    | KW_LOGICAL
+    | KW_AUTHORIZATION
+    | KW_ANALYZE
+    | KW_REOPTIMIZATION
+    | (KW_VECTORIZATION vectorizationOnly? vectorizatonDetail?)
     ;
 
 vectorizationOnly
