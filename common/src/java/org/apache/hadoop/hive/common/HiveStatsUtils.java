@@ -54,17 +54,17 @@ public class HiveStatsUtils {
    * @return array of FileStatus
    * @throws IOException
    */
-  public static FileStatus[] getFileStatusRecurse(Path path, int level,  FileSystem fs)
+  public static List<FileStatus> getFileStatusRecurse(Path path, int level,  FileSystem fs)
       throws IOException {
     return getFileStatusRecurse(path, level, fs, FileUtils.HIDDEN_FILES_PATH_FILTER, false);
   }
 
-  public static FileStatus[] getFileStatusRecurse(
+  public static List<FileStatus> getFileStatusRecurse(
       Path path, int level, FileSystem fs, PathFilter filter) throws IOException {
     return getFileStatusRecurse(path, level, fs, filter, false);
   }
 
-  public static FileStatus[] getFileStatusRecurse(
+  public static List<FileStatus> getFileStatusRecurse(
       Path path, int level, FileSystem fs, PathFilter filter, boolean allLevelsBelow)
           throws IOException {
 
@@ -79,9 +79,9 @@ public class HiveStatsUtils {
         // does not exist. But getFileStatus() throw IOException. To mimic the
         // similar behavior we will return empty array on exception. For external
         // tables, the path of the table will not exists during table creation
-        return new FileStatus[0];
+        return new ArrayList<>(0);
       }
-      return result.toArray(new FileStatus[result.size()]);
+      return result;
     }
 
     // construct a path pattern (e.g., /*/*) to find all dynamically generated paths
@@ -91,7 +91,7 @@ public class HiveStatsUtils {
     }
     Path pathPattern = new Path(path, sb.toString());
     if (!allLevelsBelow) {
-      return fs.globStatus(pathPattern, filter);
+      return Lists.newArrayList(fs.globStatus(pathPattern, filter));
     }
     LinkedList<FileStatus> queue = new LinkedList<>();
     List<FileStatus> results = new ArrayList<FileStatus>();
@@ -114,7 +114,7 @@ public class HiveStatsUtils {
         }
       }
     }
-    return results.toArray(new FileStatus[results.size()]);
+    return results;
   }
 
   public static int getNumBitVectorsForNDVEstimation(Configuration conf) throws Exception {

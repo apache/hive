@@ -240,6 +240,8 @@ public class LoadPartitions {
    */
   private Task<?> movePartitionTask(Table table, AddPartitionDesc.OnePartitionDesc partSpec,
       Path tmpPath) {
+    // Note: this sets LoadFileType incorrectly for ACID; is that relevant for load?
+    //       See setLoadFileType and setIsAcidIow calls elsewhere for an example.
     LoadTableDesc loadTableWork = new LoadTableDesc(
         tmpPath, Utilities.getTableDesc(table), partSpec.getPartSpec(),
         event.replicationSpec().isReplace() ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING,

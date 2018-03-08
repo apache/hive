@@ -687,7 +687,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
    * has done it's job before the query ran.
    */
   WriteEntity.WriteType getWriteType(LoadTableDesc tbd, AcidUtils.Operation operation) {
-    if (tbd.getLoadFileType() == LoadFileType.REPLACE_ALL) {
+    if (tbd.getLoadFileType() == LoadFileType.REPLACE_ALL || tbd.isInsertOverwrite()) {
       return WriteEntity.WriteType.INSERT_OVERWRITE;
     }
     switch (operation) {
@@ -730,13 +730,13 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       //       have the correct buckets. The existing code discards the inferred data when the
       //       reducers don't produce enough files; we'll do the same for MM tables for now.
       FileSystem fileSys = partn.getDataLocation().getFileSystem(conf);
-      FileStatus[] fileStatus = HiveStatsUtils.getFileStatusRecurse(
+      List<FileStatus> fileStatus = HiveStatsUtils.getFileStatusRecurse(
           partn.getDataLocation(), 1, fileSys);
       // Verify the number of buckets equals the number of files
       // This will not hold for dynamic partitions where not every reducer produced a file for
       // those partitions.  In this case the table is not bucketed as Hive requires a files for
       // each bucket.
-      if (fileStatus.length == numBuckets) {
+      if (fileStatus.size() == numBuckets) {
         List<String> newBucketCols = new ArrayList<String>();
         updateBucketCols = true;
         for (BucketCol bucketCol : bucketCols) {

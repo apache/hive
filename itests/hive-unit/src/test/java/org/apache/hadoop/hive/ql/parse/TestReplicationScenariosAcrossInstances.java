@@ -73,6 +73,7 @@ public class TestReplicationScenariosAcrossInstances {
         new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
     HashMap<String, String> overridesForHiveConf = new HashMap<String, String>() {{
       put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
+      put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
     }};
     primary = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
     replica = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
@@ -398,6 +399,9 @@ public class TestReplicationScenariosAcrossInstances {
         .run("create table t1 (i int, j int)")
         .run("create database " + dbOne)
         .run("use " + dbOne)
+    // TODO: this is wrong; this test sets up dummy txn manager and so it cannot create ACID tables.
+    //       This used to work by accident, now this works due a test flag. The test needs to be fixed.
+    //       Also applies for a couple more tests.
         .run("create table t1 (i int, j int) partitioned by (load_date date) "
             + "clustered by(i) into 2 buckets stored as orc tblproperties ('transactional'='true') ")
         .run("create database " + dbTwo)
