@@ -62,7 +62,7 @@ public class CopyTask extends Task<CopyWork> implements Serializable {
   protected int copyOnePath(Path fromPath, Path toPath) {
     FileSystem dstFs = null;
     try {
-      Utilities.FILE_OP_LOGGER./**/debug("Copying data from {} to {} " + fromPath);
+      Utilities.FILE_OP_LOGGER.trace("Copying data from {} to {} " + fromPath);
       console.printInfo("Copying data from " + fromPath.toString(), " to "
           + toPath.toString());
 

@@ -329,8 +329,9 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       stmtId = SessionState.get().getTxnMgr().getStmtIdAndIncrement();
     }
 
-    LoadTableDesc loadTableWork;
-    loadTableWork = new LoadTableDesc(new Path(fromURI),
+    // Note: this sets LoadFileType incorrectly for ACID; is that relevant for load?
+    //       See setLoadFileType and setIsAcidIow calls elsewhere for an example.
+    LoadTableDesc loadTableWork = new LoadTableDesc(new Path(fromURI),
       Utilities.getTableDesc(ts.tableHandle), partSpec,
       isOverWrite ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING, writeId);
     loadTableWork.setStmtId(stmtId);

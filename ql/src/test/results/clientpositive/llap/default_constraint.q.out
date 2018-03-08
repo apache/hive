@@ -1490,8 +1490,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	numFiles            	1                   
-	totalSize           	1063                
+	COLUMN_STATS_ACCURATE	{}                  
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1658,9 +1657,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{}                  
 #### A masked pattern was here ####
-	numFiles            	2                   
-	totalSize           	2127                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1737,9 +1735,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{}                  
 #### A masked pattern was here ####
-	numFiles            	2                   
-	totalSize           	2127                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1913,9 +1910,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{}                  
 #### A masked pattern was here ####
-	numFiles            	3                   
-	totalSize           	3192                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1991,9 +1987,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{}                  
 #### A masked pattern was here ####
-	numFiles            	3                   
-	totalSize           	3192                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -2070,9 +2065,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{}                  
 #### A masked pattern was here ####
-	numFiles            	3                   
-	totalSize           	3192                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -2644,8 +2638,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	numFiles            	1                   
-	totalSize           	1063                
+	COLUMN_STATS_ACCURATE	{}                  
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####

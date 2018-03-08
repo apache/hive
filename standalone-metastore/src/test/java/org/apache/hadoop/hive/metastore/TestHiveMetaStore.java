@@ -489,7 +489,7 @@ public abstract class TestHiveMetaStore {
     part4.setSd(tbl.getSd().deepCopy());
     part4.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo().deepCopy());
     part4.getSd().setLocation(tbl.getSd().getLocation() + ptnLocationSuffix);
-    MetaStoreUtils.updatePartitionStatsFast(part4, warehouse, null);
+    MetaStoreUtils.updatePartitionStatsFast(part4, tbl, warehouse, false, false, null, true);
     return part4;
   }
 

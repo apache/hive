@@ -297,7 +297,7 @@ public class HiveAlterHandler implements AlterHandler {
             !isPartitionedTable) {
           Database db = msdb.getDatabase(newDbName);
           // Update table stats. For partitioned table, we update stats in alterPartition()
-          MetaStoreUtils.updateTableStatsFast(db, newt, wh, false, true, environmentContext);
+          MetaStoreUtils.updateTableStatsFast(db, newt, wh, false, true, environmentContext, false);
         }
 
         if (isPartitionedTable) {
@@ -436,23 +436,25 @@ public class HiveAlterHandler implements AlterHandler {
           .currentTimeMillis() / 1000));
     }
 
-    Table tbl = msdb.getTable(dbname, name);
-    if (tbl == null) {
-      throw new InvalidObjectException(
-          "Unable to alter partition because table or database does not exist.");
-    }
 
     //alter partition
     if (part_vals == null || part_vals.size() == 0) {
       try {
         msdb.openTransaction();
+
+        Table tbl = msdb.getTable(dbname, name);
+        if (tbl == null) {
+          throw new InvalidObjectException(
+              "Unable to alter partition because table or database does not exist.");
+        }
         oldPart = msdb.getPartition(dbname, name, new_part.getValues());
         if (MetaStoreUtils.requireCalStats(oldPart, new_part, tbl, environmentContext)) {
           // if stats are same, no need to update
           if (MetaStoreUtils.isFastStatsSame(oldPart, new_part)) {
             MetaStoreUtils.updateBasicState(environmentContext, new_part.getParameters());
           } else {
-            MetaStoreUtils.updatePartitionStatsFast(new_part, wh, false, true, environmentContext);
+            MetaStoreUtils.updatePartitionStatsFast(
+                new_part, tbl, wh, false, true, environmentContext, false);
           }
         }
 
@@ -494,6 +496,11 @@ public class HiveAlterHandler implements AlterHandler {
     boolean dataWasMoved = false;
     try {
       msdb.openTransaction();
+      Table tbl = msdb.getTable(dbname, name);
+      if (tbl == null) {
+        throw new InvalidObjectException(
+            "Unable to alter partition because table or database does not exist.");
+      }
       try {
         oldPart = msdb.getPartition(dbname, name, part_vals);
       } catch (NoSuchObjectException e) {
@@ -581,7 +588,8 @@ public class HiveAlterHandler implements AlterHandler {
       }
 
       if (MetaStoreUtils.requireCalStats(oldPart, new_part, tbl, environmentContext)) {
-        MetaStoreUtils.updatePartitionStatsFast(new_part, wh, false, true, environmentContext);
+        MetaStoreUtils.updatePartitionStatsFast(
+            new_part, tbl, wh, false, true, environmentContext, false);
       }
 
       String newPartName = Warehouse.makePartName(tbl.getPartitionKeys(), new_part.getValues());
@@ -650,15 +658,16 @@ public class HiveAlterHandler implements AlterHandler {
       transactionalListeners = handler.getTransactionalListeners();
     }
 
-    Table tbl = msdb.getTable(dbname, name);
-    if (tbl == null) {
-      throw new InvalidObjectException(
-          "Unable to alter partitions because table or database does not exist.");
-    }
 
     boolean success = false;
     try {
       msdb.openTransaction();
+
+      Table tbl = msdb.getTable(dbname, name);
+      if (tbl == null) {
+        throw new InvalidObjectException(
+            "Unable to alter partitions because table or database does not exist.");
+      }
       for (Partition tmpPart: new_parts) {
         // Set DDL time to now if not specified
         if (tmpPart.getParameters() == null ||
@@ -677,7 +686,8 @@ public class HiveAlterHandler implements AlterHandler {
           if (MetaStoreUtils.isFastStatsSame(oldTmpPart, tmpPart)) {
             MetaStoreUtils.updateBasicState(environmentContext, tmpPart.getParameters());
           } else {
-            MetaStoreUtils.updatePartitionStatsFast(tmpPart, wh, false, true, environmentContext);
+            MetaStoreUtils.updatePartitionStatsFast(
+                tmpPart, tbl, wh, false, true, environmentContext, false);
           }
         }
 

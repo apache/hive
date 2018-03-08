@@ -36,6 +36,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
@@ -60,6 +61,8 @@ import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TJSONProtocol;
 import org.apache.thrift.transport.TMemoryBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * QueryPlan can be serialized to disk so that we can restart/resume the
@@ -149,6 +152,7 @@ public class QueryPlan implements Serializable {
     this.acidResourcesInQuery = sem.hasTransactionalInQuery();
     this.acidSinks = sem.getAcidFileSinks();
   }
+  private static final Logger LOG = LoggerFactory.getLogger(QueryPlan.class);
 
   /**
    * @return true if any acid resources are read/written

@@ -105,9 +105,7 @@ public class FSStatsPublisher implements StatsPublisher {
         statsFile = new Path(statsDir, StatsSetupConst.STATS_FILE_PREFIX
             + conf.getInt("mapred.task.partition", 0));
       }
-      if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-        Utilities.FILE_OP_LOGGER.trace("About to create stats file for this task : " + statsFile);
-      }
+      Utilities.FILE_OP_LOGGER.trace("About to create stats file for this task : {}", statsFile);
       Output output = new Output(statsFile.getFileSystem(conf).create(statsFile,true));
       LOG.debug("Created file : " + statsFile);
       LOG.debug("Writing stats in it : " + statsMap);

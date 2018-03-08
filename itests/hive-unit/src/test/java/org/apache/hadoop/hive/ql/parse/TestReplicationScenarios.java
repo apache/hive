@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -72,12 +73,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -146,6 +149,7 @@ public class TestReplicationScenarios {
     hconf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hconf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hconf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
+    hconf.set(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
     hconf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     hconf.set(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname,
         "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
@@ -2774,7 +2778,7 @@ public class TestReplicationScenarios {
   }
 
   @Test
-  public void testIncrementalRepeatEventOnMissingObject() throws IOException {
+  public void testIncrementalRepeatEventOnMissingObject() throws Exception {
     String testName = "incrementalRepeatEventOnMissingObject";
     String dbName = createDB(testName, driver);
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
@@ -3211,10 +3215,13 @@ public class TestReplicationScenarios {
   }
 
   @Test
-  public void testSkipTables() throws IOException {
+  public void testSkipTables() throws Exception {
     String testName = "skipTables";
     String dbName = createDB(testName, driver);
 
+    // TODO: this is wrong; this test sets up dummy txn manager and so it cannot create ACID tables.
+    //       If I change it to use proper txn manager, the setup for some tests hangs.
+    //       This used to work by accident, now this works due a test flag. The test needs to be fixed.
     // Create table
     run("CREATE TABLE " + dbName + ".acid_table (key int, value int) PARTITIONED BY (load_date date) " +
         "CLUSTERED BY(key) INTO 2 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')", driver);
@@ -3651,14 +3658,10 @@ public class TestReplicationScenarios {
     assertEquals(NoSuchObjectException.class, e.getClass());
   }
 
-  private void verifyIfTableExist(String dbName, String tableName, HiveMetaStoreClient myClient){
-    Exception e = null;
-    try {
-      Table tbl = myClient.getTable(dbName, tableName);
-      assertNotNull(tbl);
-    } catch (TException te) {
-      assert(false);
-    }
+  private void verifyIfTableExist(
+      String dbName, String tableName, HiveMetaStoreClient myClient) throws Exception {
+    Table tbl = myClient.getTable(dbName, tableName);
+    assertNotNull(tbl);
   }
 
   private void verifyIfPartitionNotExist(String dbName, String tableName, List<String> partValues,
