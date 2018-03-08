@@ -6953,10 +6953,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ltd = new LoadTableDesc(queryTmpdir, table_desc, dpCtx, acidOp, isReplace, writeId);
         // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
         // deltas and base and leave them up to the cleaner to clean up
-        LoadFileType loadType = (!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
-            dest_tab.getTableName()) && !destTableIsTransactional)
+        boolean isInsertInto = qb.getParseInfo().isInsertIntoTable(
+            dest_tab.getDbName(), dest_tab.getTableName());
+        LoadFileType loadType = (!isInsertInto && !destTableIsTransactional)
             ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING;
         ltd.setLoadFileType(loadType);
+        ltd.setInsertOverwrite(!isInsertInto);
         ltd.setLbCtx(lbCtx);
         loadTableWork.add(ltd);
       } else {
@@ -7042,10 +7044,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ltd = new LoadTableDesc(queryTmpdir, table_desc, dest_part.getSpec(), acidOp, writeId);
       // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
       // deltas and base and leave them up to the cleaner to clean up
-      LoadFileType loadType = (!qb.getParseInfo().isInsertIntoTable(dest_tab.getDbName(),
-          dest_tab.getTableName()) && !destTableIsTransactional) // // Both Full-acid and MM tables are excluded.
+      boolean isInsertInto = qb.getParseInfo().isInsertIntoTable(
+          dest_tab.getDbName(), dest_tab.getTableName());
+      LoadFileType loadType = (!isInsertInto && !destTableIsTransactional)
           ? LoadFileType.REPLACE_ALL : LoadFileType.KEEP_EXISTING;
       ltd.setLoadFileType(loadType);
+      ltd.setInsertOverwrite(!isInsertInto);
       ltd.setLbCtx(lbCtx);
 
       loadTableWork.add(ltd);
@@ -7055,7 +7059,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
             .getMsg(dest_tab.getTableName() + "@" + dest_part.getName()));
       }
-      break;
+     break;
     }
     case QBMetaData.DEST_LOCAL_FILE:
       isLocal = true;
@@ -12323,7 +12327,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (WriteEntity writeEntity : getOutputs()) {
       WriteEntity.Type type = writeEntity.getType();
 
-
       if (type == WriteEntity.Type.PARTITION || type == WriteEntity.Type.DUMMYPARTITION) {
         String conflictingArchive = null;
         try {
@@ -12697,8 +12700,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE);
-
     if (isTemporary) {
       if (partCols.size() > 0) {
         throw new SemanticException("Partition columns are not supported on temporary tables");
@@ -12720,11 +12721,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // Handle different types of CREATE TABLE command
+    // Note: each branch must call addDbAndTabToOutputs after finalizing table properties.
+
     switch (command_type) {
 
     case CREATE_TABLE: // REGULAR CREATE TABLE DDL
       tblProps = addDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization);
+      addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, tblProps);
 
       CreateTableDesc crtTblDesc = new CreateTableDesc(dbDotTab, isExt, isTemporary, cols, partCols,
           bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
@@ -12747,6 +12751,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case CTLT: // create table like <tbl_name>
       tblProps = addDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization);
+      addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, tblProps);
 
       if (isTemporary) {
         Table likeTable = getTable(likeTableName, false);
@@ -12825,6 +12830,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       tblProps = addDefaultProperties(
           tblProps, isExt, storageFormat, dbDotTab, sortCols, isMaterialization);
+      addDbAndTabToOutputs(qualifiedTabName, TableType.MANAGED_TABLE, tblProps);
       tableDesc = new CreateTableDesc(qualifiedTabName[0], dbDotTab, isExt, isTemporary, cols,
           partCols, bucketCols, sortCols, numBuckets, rowFormatParams.fieldDelim,
           rowFormatParams.fieldEscape, rowFormatParams.collItemDelim, rowFormatParams.mapKeyDelim,
@@ -12846,11 +12852,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return null;
   }
 
-  private void addDbAndTabToOutputs(String[] qualifiedTabName, TableType type) throws SemanticException {
+  /** Adds entities for create table/create view. */
+  private void addDbAndTabToOutputs(String[] qualifiedTabName, TableType type,
+      Map<String, String> tblProps) throws SemanticException {
     Database database  = getDatabase(qualifiedTabName[0]);
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_SHARED));
 
     Table t = new Table(qualifiedTabName[0], qualifiedTabName[1]);
+    t.setParameters(tblProps);
     t.setTableType(type);
     outputs.add(new WriteEntity(t, WriteEntity.WriteType.DDL_NO_LOCK));
   }
@@ -12952,7 +12961,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(),
           location, storageFormat.getSerde(), storageFormat.getStorageHandler(),
           storageFormat.getSerdeProps());
-      addDbAndTabToOutputs(qualTabName, TableType.MATERIALIZED_VIEW);
+      addDbAndTabToOutputs(qualTabName, TableType.MATERIALIZED_VIEW, tblProps);
       queryState.setCommandType(HiveOperation.CREATE_MATERIALIZED_VIEW);
     } else {
       createVwDesc = new CreateViewDesc(
@@ -12961,7 +12970,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           storageFormat.getOutputFormat(), storageFormat.getSerde());
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           createVwDesc), conf));
-      addDbAndTabToOutputs(qualTabName, TableType.VIRTUAL_VIEW);
+      addDbAndTabToOutputs(qualTabName, TableType.VIRTUAL_VIEW, tblProps);
       queryState.setCommandType(HiveOperation.CREATEVIEW);
     }
     qb.setViewDesc(createVwDesc);
@@ -14074,7 +14083,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   // Make sure the proper transaction manager that supports ACID is being used
   protected void checkAcidTxnManager(Table table) throws SemanticException {
-    if (SessionState.get() != null && !getTxnMgr().supportsAcid()) {
+    if (SessionState.get() != null && !getTxnMgr().supportsAcid()
+        && !HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST_REPL)) {
       throw new SemanticException(ErrorMsg.TXNMGR_NOT_ACID, table.getDbName(), table.getTableName());
     }
   }

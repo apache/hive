@@ -51,6 +51,10 @@ public abstract class Partish {
     return AcidUtils.isFullAcidTable(getTable());
   }
 
+  public final boolean isTransactionalTable() {
+    return AcidUtils.isTransactionalTable(getTable());
+  }
+
   public abstract Table getTable();
 
   public abstract Map<String, String> getPartParameters();

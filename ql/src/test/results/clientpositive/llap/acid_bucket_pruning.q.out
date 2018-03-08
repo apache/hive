@@ -45,22 +45,22 @@ STAGE PLANS:
                   alias: acidtbldefault
                   filterExpr: (a = 1) (type: boolean)
                   buckets included: [1,] of 16
-                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1765 Data size: 6712 Basic stats: COMPLETE Column stats: NONE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
                     predicate: (a = 1) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 5 Data size: 19 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: 1 (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 5 Data size: 19 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
                         GlobalTableId: 0
                         directory: hdfs://### HDFS PATH ###
                         NumFilesPerFileSink: 1
-                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 5 Data size: 19 Basic stats: COMPLETE Column stats: NONE
                         Stats Publishing Key Prefix: hdfs://### HDFS PATH ###
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -98,8 +98,6 @@ STAGE PLANS:
                     location hdfs://### HDFS PATH ###
                     name default.acidtbldefault
                     numFiles 17
-                    numRows 0
-                    rawDataSize 0
                     serialization.ddl struct acidtbldefault { i32 a}
                     serialization.format 1
                     serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
@@ -122,8 +120,6 @@ STAGE PLANS:
                       location hdfs://### HDFS PATH ###
                       name default.acidtbldefault
                       numFiles 17
-                      numRows 0
-                      rawDataSize 0
                       serialization.ddl struct acidtbldefault { i32 a}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde

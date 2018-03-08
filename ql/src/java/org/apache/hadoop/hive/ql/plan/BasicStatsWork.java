@@ -172,9 +172,11 @@ public class BasicStatsWork implements Serializable {
       return true;
     }
     // INSERT OVERWRITE
-    if (getLoadTableDesc() != null && getLoadTableDesc().getLoadFileType() == LoadFileType.REPLACE_ALL) {
+    LoadTableDesc ltd = getLoadTableDesc();
+    if (ltd != null && (ltd.getLoadFileType() == LoadFileType.REPLACE_ALL || ltd.isInsertOverwrite())) {
       return true;
     }
+
     // CREATE TABLE ... AS
     if (getLoadFileDesc() != null && getLoadFileDesc().getCtasCreateTableDesc() != null) {
       return true;

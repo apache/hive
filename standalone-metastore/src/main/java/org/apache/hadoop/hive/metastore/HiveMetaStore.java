@@ -1488,7 +1488,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
         if (MetastoreConf.getBoolVar(conf, ConfVars.STATS_AUTO_GATHER) &&
             !MetaStoreUtils.isView(tbl)) {
-          MetaStoreUtils.updateTableStatsFast(db, tbl, wh, madeDir, envContext);
+          MetaStoreUtils.updateTableStatsFast(db, tbl, wh, madeDir, false, envContext, true);
         }
 
         // set create time
@@ -2673,7 +2673,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         if (MetastoreConf.getBoolVar(conf, ConfVars.STATS_AUTO_GATHER) &&
             !MetaStoreUtils.isView(tbl)) {
-          MetaStoreUtils.updatePartitionStatsFast(part, wh, madeDir, envContext);
+          MetaStoreUtils.updatePartitionStatsFast(part, tbl, wh, madeDir, false, envContext, true);
         }
 
         if (ms.addPartition(part)) {
@@ -3241,7 +3241,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         final Table tbl, final PartitionSpecProxy.PartitionIterator part, boolean madeDir) throws MetaException {
       if (MetastoreConf.getBoolVar(conf, ConfVars.STATS_AUTO_GATHER) &&
           !MetaStoreUtils.isView(tbl)) {
-        MetaStoreUtils.updatePartitionStatsFast(part, wh, madeDir, false, null);
+        MetaStoreUtils.updatePartitionStatsFast(part, tbl, wh, madeDir, false, null, true);
       }
 
       // set create time

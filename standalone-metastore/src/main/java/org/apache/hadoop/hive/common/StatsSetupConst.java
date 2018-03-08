@@ -270,6 +270,7 @@ public class StatsSetupConst {
     if (params == null) {
       return;
     }
+
     ColumnStatsAccurate stats = parseStatsAcc(params.get(COLUMN_STATS_ACCURATE));
     stats.columnStats.clear();
 
