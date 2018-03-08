@@ -171,7 +171,7 @@ public class JvmPauseMonitor {
   private class Monitor implements Runnable {
     @Override
     public void run() {
-      Stopwatch sw = new Stopwatch();
+      Stopwatch sw = Stopwatch.createUnstarted();
       Map<String, GcTimes> gcTimesBeforeSleep = getGcTimes();
       Counter jvmPauseWarnCnt = Metrics.getOrCreateCounter(MetricsConstants.JVM_PAUSE_WARN);
       Counter jvmPauseInfoCnt = Metrics.getOrCreateCounter(MetricsConstants.JVM_PAUSE_INFO);
