@@ -22,10 +22,6 @@ package org.apache.hadoop.hive.ql.txn.compactor;
  */
 public class TestWorker2 extends TestWorker {
 
-  public TestWorker2() throws Exception {
-    super();
-  }
-
   @Override
   boolean useHive130DeltaDirName() {
     return true;
