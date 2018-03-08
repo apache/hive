@@ -871,6 +871,13 @@ public class Table implements Serializable {
     return TableType.VIRTUAL_VIEW.equals(getTableType());
   }
 
+  /**
+   * @return whether this table is actually an index table
+   */
+  public boolean isIndexTable() {
+    return TableType.INDEX_TABLE.equals(getTableType());
+  }
+
   public boolean isMaterializedView() {
     return TableType.MATERIALIZED_VIEW.equals(getTableType());
   }
