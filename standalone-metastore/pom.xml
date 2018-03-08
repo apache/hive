@@ -70,7 +70,7 @@
     <derby.version>10.10.2.0</derby.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2</dropwizard-metrics-hadoop-metrics2-reporter.version>
     <dropwizard.version>3.1.0</dropwizard.version>
-    <guava.version>14.0.1</guava.version>
+    <guava.version>19.0</guava.version>
     <hadoop.version>3.0.0-beta1</hadoop.version>
     <hikaricp.version>2.6.1</hikaricp.version>
     <jackson.new.version>2.6.5</jackson.new.version>
