@@ -27,6 +27,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.MutableDateTime;
 import org.joda.time.DateTimeFieldType;
 import org.joda.time.format.DateTimeFormat;
@@ -46,7 +47,7 @@ public class TimestampParser {
 
   protected final static String[] stringArray = new String[] {};
   protected final static String millisFormatString = "millis";
-  protected final static DateTime startingDateValue = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+  protected final static DateTime startingDateValue = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeZone.UTC).withZoneRetainFields(DateTimeZone.getDefault());
 
   protected String[] formatStrings = null;
   protected DateTimeFormatter fmt = null;
