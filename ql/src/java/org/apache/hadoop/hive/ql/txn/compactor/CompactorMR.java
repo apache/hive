@@ -342,7 +342,7 @@ public class CompactorMR {
       txnHandler.setHadoopJobId(rj.getID().toString(), id);
       rj.waitForCompletion();
       if (!rj.isSuccessful()) {
-        throw new IOException(compactionType == CompactionType.MAJOR ? "Major" : "Minor" +
+        throw new IOException((compactionType == CompactionType.MAJOR ? "Major" : "Minor") +
                " compactor job failed for " + jobName + "! Hadoop JobId: " + rj.getID());
       }
     } finally {
