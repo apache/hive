@@ -72,7 +72,8 @@ public class TestKryoMessageCodec {
     c.writeAndFlush(MESSAGE);
     assertEquals(1, c.outboundMessages().size());
     assertFalse(MESSAGE.getClass().equals(c.outboundMessages().peek().getClass()));
-    c.writeInbound(c.readOutbound());
+    Object readOutboundResult = c.readOutbound();
+    c.writeInbound(readOutboundResult);
     assertEquals(1, c.inboundMessages().size());
     assertEquals(MESSAGE, c.readInbound());
     c.close();

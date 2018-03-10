@@ -104,7 +104,7 @@ public class LocalHiveSparkClient implements HiveSparkClient {
       sc.addJar(regJar);
     }
     jobMetricsListener = new JobMetricsListener();
-    sc.sc().listenerBus().addListener(jobMetricsListener);
+    sc.sc().addSparkListener(jobMetricsListener);
   }
 
   @Override
