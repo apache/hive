@@ -179,7 +179,6 @@ public class TypeInfoToSchema {
         childSchemas.add(childSchema);
       }
     }
-
     return Schema.createUnion(removeDuplicateNullSchemas(childSchemas));
   }
 
