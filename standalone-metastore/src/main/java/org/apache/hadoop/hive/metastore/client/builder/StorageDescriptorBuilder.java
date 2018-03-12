@@ -34,44 +34,36 @@ import java.util.Map;
  * defaults for everything else.  This is intended for use just by objects that have a StorageDescriptor,
  * not direct use.
  */
-abstract class StorageDescriptorBuilder<T> {
-  private static final String SERDE_LIB = "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe";
+abstract class StorageDescriptorBuilder<T> extends SerdeAndColsBuilder<T> {
   private static final String INPUT_FORMAT = "org.apache.hadoop.hive.ql.io.HiveInputFormat";
   private static final String OUTPUT_FORMAT = "org.apache.hadoop.hive.ql.io.HiveOutputFormat";
 
-  private String location, inputFormat, outputFormat, serdeName, serdeLib;
-  private List<FieldSchema> cols;
+  private String location, inputFormat, outputFormat;
   private int numBuckets;
-  private Map<String, String> storageDescriptorParams, serdeParams;
+  private Map<String, String> storageDescriptorParams;
   private boolean compressed, storedAsSubDirectories;
   private List<String> bucketCols, skewedColNames;
   private List<Order> sortCols;
   private List<List<String>> skewedColValues;
   private Map<List<String>, String> skewedColValueLocationMaps;
-  // This enables us to return the correct type from the builder
-  private T child;
 
   protected StorageDescriptorBuilder() {
     // Set some reasonable defaults
     storageDescriptorParams = new HashMap<>();
-    serdeParams = new HashMap<>();
     bucketCols = new ArrayList<>();
     sortCols = new ArrayList<>();
     numBuckets = 0;
     compressed = false;
     inputFormat = INPUT_FORMAT;
     outputFormat = OUTPUT_FORMAT;
-    serdeLib = SERDE_LIB;
     skewedColNames = new ArrayList<>();
     skewedColValues = new ArrayList<>();
     skewedColValueLocationMaps = new HashMap<>();
   }
 
   protected StorageDescriptor buildSd() throws MetaException {
-    if (cols == null) throw new MetaException("You must provide the columns");
-    SerDeInfo serdeInfo = new SerDeInfo(serdeName, serdeLib, serdeParams);
-    StorageDescriptor sd = new StorageDescriptor(cols, location, inputFormat, outputFormat,
-        compressed, numBuckets, serdeInfo, bucketCols, sortCols, storageDescriptorParams);
+    StorageDescriptor sd = new StorageDescriptor(getCols(), location, inputFormat, outputFormat,
+        compressed, numBuckets, buildSerde(), bucketCols, sortCols, storageDescriptorParams);
     sd.setStoredAsSubDirectories(storedAsSubDirectories);
     if (skewedColNames != null) {
       SkewedInfo skewed = new SkewedInfo(skewedColNames, skewedColValues,
@@ -79,10 +71,6 @@ abstract class StorageDescriptorBuilder<T> {
       sd.setSkewedInfo(skewed);
     }
     return sd;
-  }
-
-  protected void setChild(T child) {
-    this.child = child;
   }
 
   public T setLocation(String location) {
@@ -100,30 +88,6 @@ abstract class StorageDescriptorBuilder<T> {
     return child;
   }
 
-  public T setSerdeName(String serdeName) {
-    this.serdeName = serdeName;
-    return child;
-  }
-
-  public T setSerdeLib(String serdeLib) {
-    this.serdeLib = serdeLib;
-    return child;
-  }
-  public T setCols(List<FieldSchema> cols) {
-    this.cols = cols;
-    return child;
-  }
-
-  public T addCol(String name, String type, String comment) {
-    if (cols == null) cols = new ArrayList<>();
-    cols.add(new FieldSchema(name, type, comment));
-    return child;
-  }
-
-  public T addCol(String name, String type) {
-    return addCol(name, type, "");
-  }
-
   public T setNumBuckets(int numBuckets) {
     this.numBuckets = numBuckets;
     return child;
@@ -138,17 +102,6 @@ abstract class StorageDescriptorBuilder<T> {
   public T addStorageDescriptorParam(String key, String value) {
     if (storageDescriptorParams == null) storageDescriptorParams = new HashMap<>();
     storageDescriptorParams.put(key, value);
-    return child;
-  }
-
-  public T setSerdeParams(Map<String, String> serdeParams) {
-    this.serdeParams = serdeParams;
-    return child;
-  }
-
-  public T addSerdeParam(String key, String value) {
-    if (serdeParams == null) serdeParams = new HashMap<>();
-    serdeParams.put(key, value);
     return child;
   }
 

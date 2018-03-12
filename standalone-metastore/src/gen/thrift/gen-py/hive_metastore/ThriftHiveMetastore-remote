@@ -204,6 +204,20 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  WMCreateOrUpdateMappingResponse create_or_update_wm_mapping(WMCreateOrUpdateMappingRequest request)')
   print('  WMDropMappingResponse drop_wm_mapping(WMDropMappingRequest request)')
   print('  WMCreateOrDropTriggerToPoolMappingResponse create_or_drop_wm_trigger_to_pool_mapping(WMCreateOrDropTriggerToPoolMappingRequest request)')
+  print('  void create_ischema(ISchema schema)')
+  print('  void alter_ischema(AlterISchemaRequest rqst)')
+  print('  ISchema get_ischema(ISchemaName name)')
+  print('  void drop_ischema(ISchemaName name)')
+  print('  void add_schema_version(SchemaVersion schemaVersion)')
+  print('  SchemaVersion get_schema_version(SchemaVersionDescriptor schemaVersion)')
+  print('  SchemaVersion get_schema_latest_version(ISchemaName schemaName)')
+  print('   get_schema_all_versions(ISchemaName schemaName)')
+  print('  void drop_schema_version(SchemaVersionDescriptor schemaVersion)')
+  print('  FindSchemasByColsResp get_schemas_by_cols(FindSchemasByColsRqst rqst)')
+  print('  void map_schema_version_to_serde(MapSchemaVersionToSerdeRequest rqst)')
+  print('  void set_schema_version_state(SetSchemaVersionStateRequest rqst)')
+  print('  void add_serde(SerDeInfo serde)')
+  print('  SerDeInfo get_serde(GetSerdeRequest rqst)')
   print('  string getName()')
   print('  string getVersion()')
   print('  fb_status getStatus()')
@@ -1352,6 +1366,90 @@ elif cmd == 'create_or_drop_wm_trigger_to_pool_mapping':
     print('create_or_drop_wm_trigger_to_pool_mapping requires 1 args')
     sys.exit(1)
   pp.pprint(client.create_or_drop_wm_trigger_to_pool_mapping(eval(args[0]),))
+
+elif cmd == 'create_ischema':
+  if len(args) != 1:
+    print('create_ischema requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.create_ischema(eval(args[0]),))
+
+elif cmd == 'alter_ischema':
+  if len(args) != 1:
+    print('alter_ischema requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.alter_ischema(eval(args[0]),))
+
+elif cmd == 'get_ischema':
+  if len(args) != 1:
+    print('get_ischema requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_ischema(eval(args[0]),))
+
+elif cmd == 'drop_ischema':
+  if len(args) != 1:
+    print('drop_ischema requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.drop_ischema(eval(args[0]),))
+
+elif cmd == 'add_schema_version':
+  if len(args) != 1:
+    print('add_schema_version requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.add_schema_version(eval(args[0]),))
+
+elif cmd == 'get_schema_version':
+  if len(args) != 1:
+    print('get_schema_version requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_schema_version(eval(args[0]),))
+
+elif cmd == 'get_schema_latest_version':
+  if len(args) != 1:
+    print('get_schema_latest_version requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_schema_latest_version(eval(args[0]),))
+
+elif cmd == 'get_schema_all_versions':
+  if len(args) != 1:
+    print('get_schema_all_versions requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_schema_all_versions(eval(args[0]),))
+
+elif cmd == 'drop_schema_version':
+  if len(args) != 1:
+    print('drop_schema_version requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.drop_schema_version(eval(args[0]),))
+
+elif cmd == 'get_schemas_by_cols':
+  if len(args) != 1:
+    print('get_schemas_by_cols requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_schemas_by_cols(eval(args[0]),))
+
+elif cmd == 'map_schema_version_to_serde':
+  if len(args) != 1:
+    print('map_schema_version_to_serde requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.map_schema_version_to_serde(eval(args[0]),))
+
+elif cmd == 'set_schema_version_state':
+  if len(args) != 1:
+    print('set_schema_version_state requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.set_schema_version_state(eval(args[0]),))
+
+elif cmd == 'add_serde':
+  if len(args) != 1:
+    print('add_serde requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.add_serde(eval(args[0]),))
+
+elif cmd == 'get_serde':
+  if len(args) != 1:
+    print('get_serde requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_serde(eval(args[0]),))
 
 elif cmd == 'getName':
   if len(args) != 0:

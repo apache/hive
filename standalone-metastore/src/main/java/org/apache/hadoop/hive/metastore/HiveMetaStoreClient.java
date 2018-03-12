@@ -2794,4 +2794,76 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     client.create_or_drop_wm_trigger_to_pool_mapping(request);
   }
 
+  public void createISchema(ISchema schema) throws TException {
+    client.create_ischema(schema);
+  }
+
+  @Override
+  public void alterISchema(String dbName, String schemaName, ISchema newSchema) throws TException {
+    client.alter_ischema(new AlterISchemaRequest(new ISchemaName(dbName, schemaName), newSchema));
+  }
+
+  @Override
+  public ISchema getISchema(String dbName, String name) throws TException {
+    return client.get_ischema(new ISchemaName(dbName, name));
+  }
+
+  @Override
+  public void dropISchema(String dbName, String name) throws TException {
+    client.drop_ischema(new ISchemaName(dbName, name));
+  }
+
+  @Override
+  public void addSchemaVersion(SchemaVersion schemaVersion) throws TException {
+    client.add_schema_version(schemaVersion);
+  }
+
+  @Override
+  public SchemaVersion getSchemaVersion(String dbName, String schemaName, int version) throws TException {
+    return client.get_schema_version(new SchemaVersionDescriptor(new ISchemaName(dbName, schemaName), version));
+  }
+
+  @Override
+  public SchemaVersion getSchemaLatestVersion(String dbName, String schemaName) throws TException {
+    return client.get_schema_latest_version(new ISchemaName(dbName, schemaName));
+  }
+
+  @Override
+  public List<SchemaVersion> getSchemaAllVersions(String dbName, String schemaName) throws TException {
+    return client.get_schema_all_versions(new ISchemaName(dbName, schemaName));
+  }
+
+  @Override
+  public void dropSchemaVersion(String dbName, String schemaName, int version) throws TException {
+    client.drop_schema_version(new SchemaVersionDescriptor(new ISchemaName(dbName, schemaName), version));
+  }
+
+  @Override
+  public FindSchemasByColsResp getSchemaByCols(FindSchemasByColsRqst rqst) throws TException {
+    return client.get_schemas_by_cols(rqst);
+  }
+
+  @Override
+  public void mapSchemaVersionToSerde(String dbName, String schemaName, int version, String serdeName)
+      throws TException {
+    client.map_schema_version_to_serde(new MapSchemaVersionToSerdeRequest(
+        new SchemaVersionDescriptor(new ISchemaName(dbName, schemaName), version), serdeName));
+  }
+
+  @Override
+  public void setSchemaVersionState(String dbName, String schemaName, int version, SchemaVersionState state)
+      throws TException {
+    client.set_schema_version_state(new SetSchemaVersionStateRequest(new SchemaVersionDescriptor(
+        new ISchemaName(dbName, schemaName), version), state));
+  }
+
+  @Override
+  public void addSerDe(SerDeInfo serDeInfo) throws TException {
+    client.add_serde(serDeInfo);
+  }
+
+  @Override
+  public SerDeInfo getSerDe(String serDeName) throws TException {
+    return client.get_serde(new GetSerdeRequest(serDeName));
+  }
 }
