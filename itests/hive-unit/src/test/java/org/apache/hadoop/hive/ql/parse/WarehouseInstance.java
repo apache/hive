@@ -56,7 +56,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-class WarehouseInstance implements Closeable {
+public class WarehouseInstance implements Closeable {
   final String functionsRoot;
   private Logger logger;
   private IDriver driver;
@@ -85,7 +85,7 @@ class WarehouseInstance implements Closeable {
     initialize(cmRootPath.toString(), warehouseRoot.toString(), overridesForHiveConf);
   }
 
-  WarehouseInstance(Logger logger, MiniDFSCluster cluster,
+  public WarehouseInstance(Logger logger, MiniDFSCluster cluster,
       Map<String, String> overridesForHiveConf) throws Exception {
     this(logger, cluster, overridesForHiveConf, null);
   }
@@ -165,7 +165,7 @@ class WarehouseInstance implements Closeable {
     return (lastResults.get(0).split("\\t"))[colNum];
   }
 
-  WarehouseInstance run(String command) throws Throwable {
+  public WarehouseInstance run(String command) throws Throwable {
     CommandProcessorResponse ret = driver.run(command);
     if (ret.getException() != null) {
       throw ret.getException();
@@ -257,7 +257,7 @@ class WarehouseInstance implements Closeable {
     return this;
   }
 
-  List<String> getOutput() throws IOException {
+  public List<String> getOutput() throws IOException {
     List<String> results = new ArrayList<>();
     driver.getResults(results);
     return results;

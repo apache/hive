@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A class to clean directories after compactions.  This will run in a separate thread.
@@ -55,12 +57,18 @@ import java.util.concurrent.TimeUnit;
 public class Cleaner extends CompactorThread {
   static final private String CLASS_NAME = Cleaner.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
-
   private long cleanerCheckInterval = 0;
 
+  private ReplChangeManager replChangeManager;
   // List of compactions to clean.
-  private Map<Long, Set<Long>> compactId2LockMap = new HashMap<Long, Set<Long>>();
-  private Map<Long, CompactionInfo> compactId2CompactInfoMap = new HashMap<Long, CompactionInfo>();
+  private Map<Long, Set<Long>> compactId2LockMap = new HashMap<>();
+  private Map<Long, CompactionInfo> compactId2CompactInfoMap = new HashMap<>();
+
+  @Override
+  public void init(AtomicBoolean stop, AtomicBoolean looped) throws MetaException {
+    super.init(stop, looped);
+    replChangeManager = ReplChangeManager.getInstance(conf);
+  }
 
   @Override
   public void run() {
@@ -245,10 +253,10 @@ public class Cleaner extends CompactorThread {
        * Each Compaction only compacts as far as the highest txn id such that all txns below it
        * are resolved (i.e. not opened).  This is what "highestWriteId" tracks.  This is only tracked
        * since Hive 1.3.0/2.0 - thus may be 0.  See ValidCompactorWriteIdList and uses for more info.
-       * 
+       *
        * We only want to clean up to the highestWriteId - otherwise we risk deleting deltas from
        * under an active reader.
-       * 
+       *
        * Suppose we have deltas D2 D3 for table T, i.e. the last compaction created D3 so now there is a 
        * clean request for D2.  
        * Cleaner checks existing locks and finds none.
@@ -258,8 +266,9 @@ public class Cleaner extends CompactorThread {
        * unless ValidTxnList is "capped" at highestWriteId.
        */
       final ValidWriteIdList txnList = (ci.highestWriteId > 0)
-              ? new ValidReaderWriteIdList(ci.getFullTableName(), new long[0], new BitSet(), ci.highestWriteId)
-              : new ValidReaderWriteIdList();
+          ? new ValidReaderWriteIdList(ci.getFullTableName(), new long[0], new BitSet(),
+          ci.highestWriteId)
+          : new ValidReaderWriteIdList();
 
       if (runJobAsSelf(ci.runAs)) {
         removeFiles(location, txnList);
@@ -306,8 +315,8 @@ public class Cleaner extends CompactorThread {
 
     for (Path dead : filesToDelete) {
       LOG.debug("Going to delete path " + dead.toString());
+      replChangeManager.recycle(dead, ReplChangeManager.RecycleType.MOVE, true);
       fs.delete(dead, true);
     }
   }
-
 }
