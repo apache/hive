@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileSystem;
@@ -53,7 +54,7 @@ import org.apache.hadoop.mapred.JobConf;
  */
 public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTableLoader {
 
-  private static final Logger LOG = LoggerFactory.getLogger(MapJoinOperator.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(MapJoinOperator.class);
 
   private ExecMapperContext context;
   private Configuration hconf;
@@ -76,7 +77,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       MapJoinTableContainerSerDe[] mapJoinTableSerdes) throws HiveException {
 
     String currentInputPath = context.getCurrentInputPath().toString();
-    LOG.info("******* Load from HashTable for input file: " + currentInputPath);
+    LOG.info("Load from HashTable for input file: {}", currentInputPath);
     MapredLocalWork localWork = context.getLocalWork();
     try {
       if (localWork.getDirectFetchOp() != null) {
@@ -92,9 +93,9 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
           continue;
         }
         Path path = Utilities.generatePath(baseDir, desc.getDumpFilePrefix(), (byte)pos, fileName);
-        LOG.info("\tLoad back 1 hashtable file from tmp file uri:" + path);
+        LOG.info("Load back 1 hashtable file from tmp file uri: {}", path);
         ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(
-            new FileInputStream(path.toUri().getPath()), 4096));
+            new FileInputStream(path.toUri().getPath())));
         try{
           mapJoinTables[pos] = mapJoinTableSerdes[pos].load(in);
         } finally {
@@ -115,12 +116,10 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       String stageID = localWork.getStageID();
       String suffix = Utilities.generateTarFileName(stageID);
       FileSystem localFs = FileSystem.getLocal(hconf);
-      for (int j = 0; j < localArchives.length; j++) {
-        Path archive = localArchives[j];
-        if (!archive.getName().endsWith(suffix)) {
-          continue;
+      for (Path archive : localArchives) {
+        if (archive.getName().endsWith(suffix)) {
+          return archive.makeQualified(localFs);
         }
-        return archive.makeQualified(localFs);
       }
     }
     return null;
@@ -130,7 +129,7 @@ public class HashTableLoader implements org.apache.hadoop.hive.ql.exec.HashTable
       throws Exception {
     MapredLocalWork localWork = context.getLocalWork();
     List<Operator<?>> directWorks = localWork.getDirectFetchOp().get(joinOp);
-    if (directWorks == null || directWorks.isEmpty()) {
+    if (CollectionUtils.isEmpty(directWorks)) {
       return;
     }
     JobConf job = new JobConf(hconf);
