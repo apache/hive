@@ -66,6 +66,7 @@ import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Progressable;
 import org.apache.thrift.TException;
+import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,19 +93,19 @@ public abstract class CompactorTest {
 
   protected TxnStore txnHandler;
   protected IMetaStoreClient ms;
-  protected long sleepTime = 1000;
   protected HiveConf conf;
 
   private final AtomicBoolean stop = new AtomicBoolean();
-  private final File tmpdir;
+  protected File tmpdir;
 
-  protected CompactorTest() throws Exception {
+  @Before
+  public void setup() throws Exception {
     conf = new HiveConf();
     TxnDbUtil.setConfValues(conf);
     TxnDbUtil.cleanDb(conf);
     ms = new HiveMetaStoreClient(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
-    tmpdir = new File (Files.createTempDirectory("compactor_test_table_").toString());
+    tmpdir = new File(Files.createTempDirectory("compactor_test_table_").toString());
   }
 
   protected void compactorTestCleanup() throws IOException {

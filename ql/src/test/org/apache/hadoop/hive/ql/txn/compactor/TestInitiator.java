@@ -41,8 +41,6 @@ import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,12 +53,6 @@ import java.util.concurrent.TimeUnit;
  * Tests for the compactor Initiator thread.
  */
 public class TestInitiator extends CompactorTest {
-  static final private String CLASS_NAME = TestInitiator.class.getName();
-  static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
-
-  public TestInitiator() throws Exception {
-    super();
-  }
 
   @Test
   public void nothing() throws Exception {
