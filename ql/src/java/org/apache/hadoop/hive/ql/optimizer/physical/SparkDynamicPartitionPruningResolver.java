@@ -20,9 +20,11 @@ package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +36,7 @@ import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
+import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc.DPPTargetInfo;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -89,39 +92,32 @@ public class SparkDynamicPartitionPruningResolver implements PhysicalPlanResolve
 
           // For each SparkPartitionPruningSinkOperator, take the target MapWork and see if it is in a dependent SparkTask
           for (Operator<?> op : pruningSinkOps) {
-            SparkPartitionPruningSinkOperator pruningSinkOp = (SparkPartitionPruningSinkOperator) op;
-            MapWork targetMapWork = pruningSinkOp.getConf().getTargetMapWork();
-
-            // Check if the given SparkTask has a child SparkTask that contains the target MapWork
-            // If it does not, then remove the DPP op
-            if (!taskContainsDependentMapWork(task, targetMapWork)) {
-              LOG.info("Disabling DPP for source work " + baseWork.getName() + " for target work "
-                      + targetMapWork.getName() + " as no dependency exists between the source and target work");
-              removeSparkPartitionPruningSink(baseWork, targetMapWork, pruningSinkOp);
+            SparkPartitionPruningSinkOperator pruningSinkOp =
+                (SparkPartitionPruningSinkOperator) op;
+            SparkPartitionPruningSinkDesc desc = pruningSinkOp.getConf();
+            List<DPPTargetInfo> toRemove = new ArrayList<>();
+            for (DPPTargetInfo targetInfo : desc.getTargetInfos()) {
+              MapWork targetMapWork = targetInfo.work;
+              // Check if the given SparkTask has a child SparkTask that contains the target MapWork
+              // If it does not, then remove the target from DPP op
+              if (!taskContainsDependentMapWork(task, targetMapWork)) {
+                toRemove.add(targetInfo);
+                pruningSinkOp.removeFromSourceEvent(targetMapWork, targetInfo.partKey,
+                    targetInfo.columnName, targetInfo.columnType);
+                LOG.info("Removing target map work " + targetMapWork.getName() + " from " + baseWork
+                    .getName() + " as no dependency exists between the two works.");
+              }
+            }
+            desc.getTargetInfos().removeAll(toRemove);
+            if (desc.getTargetInfos().isEmpty()) {
+              // The DPP sink has no target, remove the subtree.
+              OperatorUtils.removeBranch(pruningSinkOp);
             }
           }
         }
       }
       return null;
     }
-  }
-
-  /**
-   * Remove a {@link SparkPartitionPruningSinkOperator} from a given {@link BaseWork}. Unlink the target {@link MapWork}
-   * and the given {@link SparkPartitionPruningSinkOperator}.
-   */
-  private void removeSparkPartitionPruningSink(BaseWork sourceWork, MapWork targetMapWork,
-                                               SparkPartitionPruningSinkOperator pruningSinkOp) {
-    // Remove the DPP operator subtree
-    OperatorUtils.removeBranch(pruningSinkOp);
-
-    // Remove all event source info from the target MapWork
-    String sourceWorkId = pruningSinkOp.getUniqueId();
-    SparkPartitionPruningSinkDesc pruningSinkDesc = pruningSinkOp.getConf();
-    targetMapWork.getEventSourceTableDescMap().get(sourceWorkId).remove(pruningSinkDesc.getTable());
-    targetMapWork.getEventSourceColumnNameMap().get(sourceWorkId).remove(pruningSinkDesc.getTargetColumnName());
-    targetMapWork.getEventSourceColumnTypeMap().get(sourceWorkId).remove(pruningSinkDesc.getTargetColumnType());
-    targetMapWork.getEventSourcePartKeyExprMap().get(sourceWorkId).remove(pruningSinkDesc.getTargetPartKey());
   }
 
   /**

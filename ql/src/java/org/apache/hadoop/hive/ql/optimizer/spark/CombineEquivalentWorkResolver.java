@@ -35,10 +35,8 @@ import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -161,54 +159,6 @@ public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
       return false;
     }
 
-    // merge the second into the first
-    private void combineEquivalentDPPSinks(SparkPartitionPruningSinkDesc first,
-        SparkPartitionPruningSinkDesc second, String firstId, String secondId) {
-      MapWork target2 = second.getTargetMapWork();
-
-      first.addTarget(second.getTargetColumnName(), second.getTargetColumnType(),
-          second.getTargetPartKey(), target2);
-
-      // update the target map work of the second
-      target2.setTmpPathForPartitionPruning(first.getTmpPathOfTargetWork());
-
-      List<ExprNodeDesc> partKey = target2.getEventSourcePartKeyExprMap().get(secondId);
-      partKey.remove(second.getTargetPartKey());
-      if (partKey.isEmpty()) {
-        target2.getEventSourcePartKeyExprMap().remove(secondId);
-      }
-      List<ExprNodeDesc> newPartKey = target2.getEventSourcePartKeyExprMap().computeIfAbsent(
-          firstId, v -> new ArrayList<>());
-      newPartKey.add(second.getTargetPartKey());
-
-      List<TableDesc> tableDesc = target2.getEventSourceTableDescMap().get(secondId);
-      tableDesc.remove(second.getTable());
-      if (tableDesc.isEmpty()) {
-        target2.getEventSourceTableDescMap().remove(secondId);
-      }
-      List<TableDesc> newTableDesc = target2.getEventSourceTableDescMap().computeIfAbsent(
-          firstId, v -> new ArrayList<>());
-      newTableDesc.add(second.getTable());
-
-      List<String> columnName = target2.getEventSourceColumnNameMap().get(secondId);
-      columnName.remove(second.getTargetColumnName());
-      if (columnName.isEmpty()) {
-        target2.getEventSourceColumnNameMap().remove(secondId);
-      }
-      List<String> newColumnName = target2.getEventSourceColumnNameMap().computeIfAbsent(
-          firstId, v -> new ArrayList<>());
-      newColumnName.add(second.getTargetColumnName());
-
-      List<String> columnType = target2.getEventSourceColumnTypeMap().get(secondId);
-      columnType.remove(second.getTargetColumnType());
-      if (columnType.isEmpty()) {
-        target2.getEventSourceColumnTypeMap().remove(secondId);
-      }
-      List<String> newColumnType = target2.getEventSourceColumnTypeMap().computeIfAbsent(
-          firstId, v -> new ArrayList<>());
-      newColumnType.add(second.getTargetColumnType());
-    }
-
     private Set<BaseWork> combineEquivalentWorks(Set<Set<BaseWork>> equivalentWorks, SparkWork sparkWork) {
       Set<BaseWork> removedWorks = Sets.newHashSet();
       for (Set<BaseWork> workSet : equivalentWorks) {
@@ -222,8 +172,7 @@ public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
               List<SparkPartitionPruningSinkOperator> dppList2 = workToDpps.get(next);
               // equivalent works must have dpp lists of same size
               for (int i = 0; i < dppList1.size(); i++) {
-                combineEquivalentDPPSinks(dppList1.get(i).getConf(), dppList2.get(i).getConf(),
-                    dppList1.get(i).getUniqueId(), dppList2.get(i).getUniqueId());
+                combineEquivalentDPPSinks(dppList1.get(i), dppList2.get(i));
               }
             }
             replaceWork(next, first, sparkWork);
@@ -428,7 +377,10 @@ public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
           SparkUtilities.collectOp(pruningList, root, SparkPartitionPruningSinkOperator.class);
           for (Operator pruneSinkOp : pruningList) {
             SparkPartitionPruningSinkOperator sparkPruneSinkOp = (SparkPartitionPruningSinkOperator) pruneSinkOp;
-            if (removedMapWorkList.contains(sparkPruneSinkOp.getConf().getTargetMapWork().getName())) {
+            for (String removedName : removedMapWorkList) {
+              sparkPruneSinkOp.getConf().removeTarget(removedName);
+            }
+            if (sparkPruneSinkOp.getConf().getTargetInfos().isEmpty()) {
               LOG.debug("ready to remove the sparkPruneSinkOp which target work is " +
                   sparkPruneSinkOp.getConf().getTargetWorks() + " because the MapWork is equals to other map work and " +
                   "has been deleted!");
@@ -458,6 +410,27 @@ public class CombineEquivalentWorkResolver implements PhysicalPlanResolver {
         }
       }
       SparkUtilities.removeEmptySparkTask(currTask);
+    }
+  }
+
+  // Merge the target works of the second DPP sink into the first DPP sink.
+  public static void combineEquivalentDPPSinks(SparkPartitionPruningSinkOperator first,
+      SparkPartitionPruningSinkOperator second) {
+    SparkPartitionPruningSinkDesc firstConf = first.getConf();
+    SparkPartitionPruningSinkDesc secondConf = second.getConf();
+    for (SparkPartitionPruningSinkDesc.DPPTargetInfo targetInfo : secondConf.getTargetInfos()) {
+      MapWork target = targetInfo.work;
+      firstConf.addTarget(targetInfo.columnName, targetInfo.columnType, targetInfo.partKey, target,
+          targetInfo.tableScan);
+
+      if (target != null) {
+        // update the target map work of the second
+        first.addAsSourceEvent(target, targetInfo.partKey, targetInfo.columnName,
+            targetInfo.columnType);
+        second.removeFromSourceEvent(target, targetInfo.partKey, targetInfo.columnName,
+            targetInfo.columnType);
+        target.setTmpPathForPartitionPruning(firstConf.getTmpPathOfTargetWork());
+      }
     }
   }
 }

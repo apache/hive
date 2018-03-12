@@ -213,10 +213,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [1:hr (string)]
-                            partition key expr: [hr]
+                            Target Columns: [Map 1 -> [hr:string (hr)]]
                             Statistics: Num rows: 1000 Data size: 24624 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 1]
 
   Stage: Stage-3
     Spark
@@ -249,10 +247,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [1:ds (string)]
-                            partition key expr: [ds]
+                            Target Columns: [Map 1 -> [ds:string (ds)]]
                             Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 1]
             Local Work:
               Map Reduce Local Work
 
@@ -387,10 +383,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [1:ds (string)]
-                            partition key expr: [ds]
+                            Target Columns: [Map 1 -> [ds:string (ds)]]
                             Statistics: Num rows: 1 Data size: 21 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 1]
             Local Work:
               Map Reduce Local Work
 

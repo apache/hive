@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.google.common.base.Preconditions;
@@ -48,6 +49,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.spark.OptimizeSparkProcContext;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.BytesWritable;
@@ -127,7 +129,7 @@ public class SparkUtilities {
     // sessionConf and conf are different objects
     if (sessionConf.getSparkConfigUpdated() || conf.getSparkConfigUpdated()) {
       sparkSessionManager.closeSession(sparkSession);
-      sparkSession =  null;
+      sparkSession = null;
       conf.setSparkConfigUpdated(false);
       sessionConf.setSparkConfigUpdated(false);
     }
@@ -231,6 +233,30 @@ public class SparkUtilities {
     currTask.removeFromChildrenTasks();
   }
 
+  // Find if there's any DPP sink branch of the branchingOP that is equivalent
+  // to the branch represented by the list.
+  public static SparkPartitionPruningSinkOperator findReusableDPPSink(
+      Operator<? extends OperatorDesc> branchingOP, List<Operator<? extends OperatorDesc>> list) {
+    for (Operator<? extends OperatorDesc> other : branchingOP.getChildOperators()) {
+      int i;
+      for (i = 0; i < list.size(); i++) {
+        if (other == list.get(i) || !other.logicalEquals(list.get(i))) {
+          break;
+        }
+        if (i != list.size() - 1) {
+          if (other.getChildOperators() == null || other.getChildOperators().size() != 1) {
+            break;
+          }
+          other = other.getChildOperators().get(0);
+        }
+      }
+      if (i == list.size()) {
+        return (SparkPartitionPruningSinkOperator) other;
+      }
+    }
+    return null;
+  }
+
   /**
    * For DPP sinks w/ common join, we'll split the tree and what's above the branching
    * operator is computed multiple times. Therefore it may not be good for performance to support
@@ -294,7 +320,7 @@ public class SparkUtilities {
   }
 
   // whether of pattern "SEL - GBY - DPP"
-  private static boolean isDirectDPPBranch(Operator<?> op) {
+  public static boolean isDirectDPPBranch(Operator<?> op) {
     if (op instanceof SelectOperator && op.getChildOperators() != null
         && op.getChildOperators().size() == 1) {
       op = op.getChildOperators().get(0);
