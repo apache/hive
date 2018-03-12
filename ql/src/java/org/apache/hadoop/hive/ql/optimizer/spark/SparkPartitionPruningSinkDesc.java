@@ -18,10 +18,8 @@
 
 package org.apache.hadoop.hive.ql.optimizer.spark;
 
-import com.google.common.base.Preconditions;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Explain;
@@ -33,6 +31,8 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 @Explain(displayName = "Spark Partition Pruning Sink Operator")
 public class SparkPartitionPruningSinkDesc extends AbstractOperatorDesc {
@@ -45,12 +45,15 @@ public class SparkPartitionPruningSinkDesc extends AbstractOperatorDesc {
     // the partition column we're interested in
     public ExprNodeDesc partKey;
     public MapWork work;
+    public transient TableScanOperator tableScan;
 
-    DPPTargetInfo(String columnName, String columnType, ExprNodeDesc partKey, MapWork work) {
+    DPPTargetInfo(String columnName, String columnType, ExprNodeDesc partKey, MapWork work,
+        TableScanOperator tableScan) {
       this.columnName = columnName;
       this.columnType = columnType;
       this.partKey = partKey;
       this.work = work;
+      this.tableScan = tableScan;
     }
   }
 
@@ -58,52 +61,18 @@ public class SparkPartitionPruningSinkDesc extends AbstractOperatorDesc {
 
   private TableDesc table;
 
-  private transient TableScanOperator tableScan;
-
   private Path path;
 
   public List<DPPTargetInfo> getTargetInfos() {
     return targetInfos;
   }
 
-  private void assertSingleTarget() {
-    Preconditions.checkState(targetInfos.size() < 2, "The DPP sink has multiple targets.");
+  public void addTarget(String colName, String colType, ExprNodeDesc partKey, MapWork mapWork,
+      TableScanOperator tableScan) {
+    targetInfos.add(new DPPTargetInfo(colName, colType, partKey, mapWork, tableScan));
   }
 
-  public String getTargetColumnName() {
-    assertSingleTarget();
-    return targetInfos.isEmpty() ? null : targetInfos.get(0).columnName;
-  }
-
-  public String getTargetColumnType() {
-    assertSingleTarget();
-    return targetInfos.isEmpty() ? null : targetInfos.get(0).columnType;
-  }
-
-  public ExprNodeDesc getTargetPartKey() {
-    assertSingleTarget();
-    return targetInfos.isEmpty() ? null : targetInfos.get(0).partKey;
-  }
-
-  public MapWork getTargetMapWork() {
-    assertSingleTarget();
-    return targetInfos.isEmpty() ? null : targetInfos.get(0).work;
-  }
-
-  public void addTarget(String colName, String colType, ExprNodeDesc partKey, MapWork mapWork) {
-    targetInfos.add(new DPPTargetInfo(colName, colType, partKey, mapWork));
-  }
-
-  public void setTargetMapWork(MapWork mapWork) {
-    Preconditions.checkState(targetInfos.size() == 1,
-        "The DPP sink should have exactly one target.");
-    targetInfos.get(0).work = mapWork;
-    // in order to make the col name unique, prepend the targetId
-    targetInfos.get(0).columnName = SparkUtilities.getWorkId(mapWork) + ":" +
-        targetInfos.get(0).columnName;
-  }
-
-  Path getTmpPathOfTargetWork() {
+  public Path getTmpPathOfTargetWork() {
     return targetInfos.isEmpty() ? null : targetInfos.get(0).work.getTmpPathForPartitionPruning();
   }
 
@@ -116,23 +85,12 @@ public class SparkPartitionPruningSinkDesc extends AbstractOperatorDesc {
     this.path = path;
   }
 
-  @Explain(displayName = "target works")
   public String getTargetWorks() {
     return Arrays.toString(targetInfos.stream().map(info -> info.work.getName()).toArray());
   }
 
-  public TableScanOperator getTableScan() {
-    return tableScan;
-  }
-
-  public void setTableScan(TableScanOperator tableScan) {
-    this.tableScan = tableScan;
-  }
-
-  @Explain(displayName = "Target column")
-  public String displayTargetColumns() {
-    return Arrays.toString(targetInfos.stream().map(
-        info -> info.columnName + " (" + info.columnType + ")").toArray());
+  public String getTableScanNames() {
+    return Arrays.toString(targetInfos.stream().map(info -> info.tableScan.getName()).toArray());
   }
 
   @Signature
@@ -144,10 +102,25 @@ public class SparkPartitionPruningSinkDesc extends AbstractOperatorDesc {
     this.table = table;
   }
 
-  @Explain(displayName = "partition key expr")
-  public String getPartKeyStrings() {
-    return Arrays.toString(targetInfos.stream().map(
-        info -> info.partKey.getExprString()).toArray());
+  @Explain(displayName = "Target Columns")
+  public String displayTargetColumns() {
+    // The target column list has the format "TargetWork -> [colName:colType(expression), ...], ..."
+    Map<String, List<String>> map = new TreeMap<>();
+    for (DPPTargetInfo info : targetInfos) {
+      List<String> columns = map.computeIfAbsent(info.work.getName(), v -> new ArrayList<>());
+      String name = info.columnName.substring(info.columnName.indexOf(':') + 1);
+      columns.add(name + ":" + info.columnType + " (" + info.partKey.getExprString() + ")");
+    }
+    StringBuilder builder = new StringBuilder();
+    builder.append("[");
+    for (String work : map.keySet()) {
+      if (builder.length() > 1) {
+        builder.append(", ");
+      }
+      builder.append(work).append(" -> ").append(map.get(work));
+    }
+    builder.append("]");
+    return builder.toString();
   }
 
   @Override
@@ -159,4 +132,13 @@ public class SparkPartitionPruningSinkDesc extends AbstractOperatorDesc {
     return false;
   }
 
+  public void removeTarget(String name) {
+    List<DPPTargetInfo> toRemove = new ArrayList<>();
+    for (DPPTargetInfo targetInfo : targetInfos) {
+      if (targetInfo.work.getName().equals(name)) {
+        toRemove.add(targetInfo);
+      }
+    }
+    targetInfos.removeAll(toRemove);
+  }
 }

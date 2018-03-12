@@ -478,7 +478,7 @@ public class SparkMapJoinOptimizer implements NodeProcessor {
             OperatorUtils.removeBranch(partitionPruningSinkOp);
             // at this point we've found the fork in the op pipeline that has the pruning as a child plan.
             LOG.info("Disabling dynamic pruning for: "
-                    + (partitionPruningSinkOp.getConf()).getTableScan().getName()
+                    + (partitionPruningSinkOp.getConf()).getTableScanNames()
                     + ". Need to be removed together with reduce sink");
         }
       }

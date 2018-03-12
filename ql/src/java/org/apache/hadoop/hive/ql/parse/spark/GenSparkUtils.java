@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
+import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkPartitionPruningSinkDesc;
 import org.apache.hadoop.hive.ql.optimizer.spark.SparkSortMergeJoinFactory;
@@ -64,7 +65,6 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -256,7 +256,10 @@ public class GenSparkUtils {
         } else if (op instanceof SparkPartitionPruningSinkOperator) {
           SparkPartitionPruningSinkOperator oldPruningSink = (SparkPartitionPruningSinkOperator) op;
           SparkPartitionPruningSinkOperator newPruningSink = (SparkPartitionPruningSinkOperator) newOp;
-          newPruningSink.getConf().setTableScan(oldPruningSink.getConf().getTableScan());
+          for (int i = 0; i < oldPruningSink.getConf().getTargetInfos().size(); i++) {
+            newPruningSink.getConf().getTargetInfos().get(i).tableScan =
+                oldPruningSink.getConf().getTargetInfos().get(i).tableScan;
+          }
           context.pruningSinkSet.add(newPruningSink);
           context.pruningSinkSet.remove(oldPruningSink);
         }
@@ -456,52 +459,27 @@ public class GenSparkUtils {
   public void processPartitionPruningSink(GenSparkProcContext context,
       SparkPartitionPruningSinkOperator pruningSink) {
     SparkPartitionPruningSinkDesc desc = pruningSink.getConf();
-    TableScanOperator ts = desc.getTableScan();
-    MapWork targetWork = (MapWork) context.rootToWorkMap.get(ts);
+    final Path outputBase = getDPPOutputPath(context.parseContext.getContext());
+    final String sourceId = pruningSink.getUniqueId();
+    desc.setPath(new Path(outputBase, sourceId));
 
-    Preconditions.checkArgument(
-        targetWork != null,
-        "No targetWork found for tablescan " + ts);
+    for (SparkPartitionPruningSinkDesc.DPPTargetInfo targetInfo : desc.getTargetInfos()) {
+      TableScanOperator ts = targetInfo.tableScan;
+      MapWork targetWork = (MapWork) context.rootToWorkMap.get(ts);
+      Preconditions.checkNotNull(targetWork, "No targetWork found for tablescan " + ts);
 
-    String sourceId = pruningSink.getUniqueId();
+      // set up temporary path to communicate between the small/big table
+      if (targetWork.getTmpPathForPartitionPruning() == null) {
+        targetWork.setTmpPathForPartitionPruning(outputBase);
+        LOG.info("Setting tmp path between source work and target work:\n" + outputBase);
+      }
 
-    // set up temporary path to communicate between the small/big table
-    Path tmpPath = targetWork.getTmpPathForPartitionPruning();
-    if (tmpPath == null) {
-      tmpPath = getDPPOutputPath(context.parseContext.getContext());
-      targetWork.setTmpPathForPartitionPruning(tmpPath);
-      LOG.info("Setting tmp path between source work and target work:\n" + tmpPath);
+      targetInfo.work = targetWork;
+      targetInfo.columnName = SparkUtilities.getWorkId(targetWork) + ":" + targetInfo.columnName;
+
+      pruningSink.addAsSourceEvent(targetWork, targetInfo.partKey, targetInfo.columnName,
+          targetInfo.columnType);
     }
-
-    desc.setPath(new Path(tmpPath, sourceId));
-    desc.setTargetMapWork(targetWork);
-
-    // store table descriptor in map-targetWork
-    if (!targetWork.getEventSourceTableDescMap().containsKey(sourceId)) {
-      targetWork.getEventSourceTableDescMap().put(sourceId, new LinkedList<TableDesc>());
-    }
-    List<TableDesc> tables = targetWork.getEventSourceTableDescMap().get(sourceId);
-    tables.add(pruningSink.getConf().getTable());
-
-    // store column name in map-targetWork
-    if (!targetWork.getEventSourceColumnNameMap().containsKey(sourceId)) {
-      targetWork.getEventSourceColumnNameMap().put(sourceId, new LinkedList<String>());
-    }
-    List<String> columns = targetWork.getEventSourceColumnNameMap().get(sourceId);
-    columns.add(desc.getTargetColumnName());
-
-    if (!targetWork.getEventSourceColumnTypeMap().containsKey(sourceId)) {
-      targetWork.getEventSourceColumnTypeMap().put(sourceId, new LinkedList<String>());
-    }
-    List<String> columnTypes = targetWork.getEventSourceColumnTypeMap().get(sourceId);
-    columnTypes.add(desc.getTargetColumnType());
-
-    // store partition key expr in map-targetWork
-    if (!targetWork.getEventSourcePartKeyExprMap().containsKey(sourceId)) {
-      targetWork.getEventSourcePartKeyExprMap().put(sourceId, new LinkedList<ExprNodeDesc>());
-    }
-    List<ExprNodeDesc> keys = targetWork.getEventSourcePartKeyExprMap().get(sourceId);
-    keys.add(desc.getTargetPartKey());
   }
 
   private Path getDPPOutputPath(Context context) {

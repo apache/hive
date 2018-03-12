@@ -138,10 +138,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [3:p (string), 6:p (string)]
-                            partition key expr: [p, p]
+                            Target Columns: [Map 3 -> [p:string (p)], Map 6 -> [p:string (p)]]
                             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 3, Map 6]
 
   Stage: Stage-1
     Spark
@@ -368,10 +366,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [3:p (string), 6:q (string)]
-                            partition key expr: [p, q]
+                            Target Columns: [Map 3 -> [p:string (p)], Map 6 -> [q:string (q)]]
                             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 3, Map 6]
 
   Stage: Stage-1
     Spark
@@ -598,10 +594,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [3:q (string)]
-                            partition key expr: [q]
+                            Target Columns: [Map 3 -> [q:string (q)]]
                             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 3]
 
   Stage: Stage-1
     Spark
@@ -761,10 +755,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [3:p (string)]
-                            partition key expr: [p]
+                            Target Columns: [Map 3 -> [p:string (p)]]
                             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 3]
         Map 8 
             Map Operator Tree:
                 TableScan
@@ -787,10 +779,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [6:p (string)]
-                            partition key expr: [p]
+                            Target Columns: [Map 6 -> [p:string (p)]]
                             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 6]
 
   Stage: Stage-1
     Spark
@@ -950,10 +940,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [3:p (string)]
-                            partition key expr: [p]
+                            Target Columns: [Map 3 -> [p:string (p)]]
                             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 3]
         Map 8 
             Map Operator Tree:
                 TableScan
@@ -976,10 +964,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [6:p (string)]
-                            partition key expr: [p]
+                            Target Columns: [Map 6 -> [p:string (p)]]
                             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 6]
 
   Stage: Stage-1
     Spark
@@ -1159,10 +1145,8 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: [4:q (string), 8:q (string)]
-                          partition key expr: [q, q]
+                          Target Columns: [Map 4 -> [q:string (q)], Map 8 -> [q:string (q)]]
                           Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                          target works: [Map 4, Map 8]
 
   Stage: Stage-1
     Spark
@@ -1424,24 +1408,8 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: [4:q (string), 8:q (string)]
-                          partition key expr: [q, q]
+                          Target Columns: [Map 4 -> [q:string (q), p:string (p)], Map 8 -> [q:string (q), p:string (p)]]
                           Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                          target works: [Map 4, Map 8]
-                    Select Operator
-                      expressions: _col0 (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                        Spark Partition Pruning Sink Operator
-                          Target column: [4:p (string), 8:p (string)]
-                          partition key expr: [p, p]
-                          Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                          target works: [Map 4, Map 8]
 
   Stage: Stage-1
     Spark
@@ -1700,24 +1668,8 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: [4:q (string)]
-                          partition key expr: [q]
+                          Target Columns: [Map 4 -> [q:string (q), p:string (p)]]
                           Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                          target works: [Map 4]
-                    Select Operator
-                      expressions: _col0 (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                        Spark Partition Pruning Sink Operator
-                          Target column: [4:p (string)]
-                          partition key expr: [p]
-                          Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                          target works: [Map 4]
         Reducer 12 
             Reduce Operator Tree:
               Select Operator
@@ -1740,10 +1692,8 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: [8:p (string)]
-                          partition key expr: [p]
+                          Target Columns: [Map 8 -> [p:string (p)]]
                           Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                          target works: [Map 8]
                     Select Operator
                       expressions: _col1 (type: string)
                       outputColumnNames: _col0
@@ -1754,10 +1704,8 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: [8:q (string)]
-                          partition key expr: [q]
+                          Target Columns: [Map 8 -> [q:string (q)]]
                           Statistics: Num rows: 200 Data size: 2000 Basic stats: COMPLETE Column stats: NONE
-                          target works: [Map 8]
 
   Stage: Stage-1
     Spark
@@ -1990,10 +1938,8 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: [1:p (string), 5:p (string)]
-                          partition key expr: [p, p]
+                          Target Columns: [Map 1 -> [p:string (p)], Map 5 -> [p:string (p)]]
                           Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                          target works: [Map 1, Map 5]
         Reducer 16 
             Reduce Operator Tree:
               Group By Operator
@@ -2019,10 +1965,8 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: [5:p (string)]
-                          partition key expr: [p]
+                          Target Columns: [Map 5 -> [p:string (p)]]
                           Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: NONE
-                          target works: [Map 5]
 
   Stage: Stage-1
     Spark
