@@ -142,6 +142,67 @@ final class EventRequestType {
   );
 }
 
+final class SerdeType {
+  const HIVE = 1;
+  const SCHEMA_REGISTRY = 2;
+  static public $__names = array(
+    1 => 'HIVE',
+    2 => 'SCHEMA_REGISTRY',
+  );
+}
+
+final class SchemaType {
+  const HIVE = 1;
+  const AVRO = 2;
+  static public $__names = array(
+    1 => 'HIVE',
+    2 => 'AVRO',
+  );
+}
+
+final class SchemaCompatibility {
+  const NONE = 1;
+  const BACKWARD = 2;
+  const FORWARD = 3;
+  const BOTH = 4;
+  static public $__names = array(
+    1 => 'NONE',
+    2 => 'BACKWARD',
+    3 => 'FORWARD',
+    4 => 'BOTH',
+  );
+}
+
+final class SchemaValidation {
+  const LATEST = 1;
+  const ALL = 2;
+  static public $__names = array(
+    1 => 'LATEST',
+    2 => 'ALL',
+  );
+}
+
+final class SchemaVersionState {
+  const INITIATED = 1;
+  const START_REVIEW = 2;
+  const CHANGES_REQUIRED = 3;
+  const REVIEWED = 4;
+  const ENABLED = 5;
+  const DISABLED = 6;
+  const ARCHIVED = 7;
+  const DELETED = 8;
+  static public $__names = array(
+    1 => 'INITIATED',
+    2 => 'START_REVIEW',
+    3 => 'CHANGES_REQUIRED',
+    4 => 'REVIEWED',
+    5 => 'ENABLED',
+    6 => 'DISABLED',
+    7 => 'ARCHIVED',
+    8 => 'DELETED',
+  );
+}
+
 final class FunctionType {
   const JAVA = 1;
   static public $__names = array(
@@ -4266,6 +4327,22 @@ class SerDeInfo {
    * @var array
    */
   public $parameters = null;
+  /**
+   * @var string
+   */
+  public $description = null;
+  /**
+   * @var string
+   */
+  public $serializerClass = null;
+  /**
+   * @var string
+   */
+  public $deserializerClass = null;
+  /**
+   * @var int
+   */
+  public $serdeType = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -4290,6 +4367,22 @@ class SerDeInfo {
             'type' => TType::STRING,
             ),
           ),
+        4 => array(
+          'var' => 'description',
+          'type' => TType::STRING,
+          ),
+        5 => array(
+          'var' => 'serializerClass',
+          'type' => TType::STRING,
+          ),
+        6 => array(
+          'var' => 'deserializerClass',
+          'type' => TType::STRING,
+          ),
+        7 => array(
+          'var' => 'serdeType',
+          'type' => TType::I32,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -4301,6 +4394,18 @@ class SerDeInfo {
       }
       if (isset($vals['parameters'])) {
         $this->parameters = $vals['parameters'];
+      }
+      if (isset($vals['description'])) {
+        $this->description = $vals['description'];
+      }
+      if (isset($vals['serializerClass'])) {
+        $this->serializerClass = $vals['serializerClass'];
+      }
+      if (isset($vals['deserializerClass'])) {
+        $this->deserializerClass = $vals['deserializerClass'];
+      }
+      if (isset($vals['serdeType'])) {
+        $this->serdeType = $vals['serdeType'];
       }
     }
   }
@@ -4358,6 +4463,34 @@ class SerDeInfo {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->description);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->serializerClass);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->deserializerClass);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 7:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->serdeType);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -4397,6 +4530,26 @@ class SerDeInfo {
         }
         $output->writeMapEnd();
       }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->description !== null) {
+      $xfer += $output->writeFieldBegin('description', TType::STRING, 4);
+      $xfer += $output->writeString($this->description);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->serializerClass !== null) {
+      $xfer += $output->writeFieldBegin('serializerClass', TType::STRING, 5);
+      $xfer += $output->writeString($this->serializerClass);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->deserializerClass !== null) {
+      $xfer += $output->writeFieldBegin('deserializerClass', TType::STRING, 6);
+      $xfer += $output->writeString($this->deserializerClass);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->serdeType !== null) {
+      $xfer += $output->writeFieldBegin('serdeType', TType::I32, 7);
+      $xfer += $output->writeI32($this->serdeType);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -26100,6 +26253,1376 @@ class WMCreateOrDropTriggerToPoolMappingResponse {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('WMCreateOrDropTriggerToPoolMappingResponse');
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ISchema {
+  static $_TSPEC;
+
+  /**
+   * @var int
+   */
+  public $schemaType = null;
+  /**
+   * @var string
+   */
+  public $name = null;
+  /**
+   * @var string
+   */
+  public $dbName = null;
+  /**
+   * @var int
+   */
+  public $compatibility = null;
+  /**
+   * @var int
+   */
+  public $validationLevel = null;
+  /**
+   * @var bool
+   */
+  public $canEvolve = null;
+  /**
+   * @var string
+   */
+  public $schemaGroup = null;
+  /**
+   * @var string
+   */
+  public $description = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'schemaType',
+          'type' => TType::I32,
+          ),
+        2 => array(
+          'var' => 'name',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'dbName',
+          'type' => TType::STRING,
+          ),
+        4 => array(
+          'var' => 'compatibility',
+          'type' => TType::I32,
+          ),
+        5 => array(
+          'var' => 'validationLevel',
+          'type' => TType::I32,
+          ),
+        6 => array(
+          'var' => 'canEvolve',
+          'type' => TType::BOOL,
+          ),
+        7 => array(
+          'var' => 'schemaGroup',
+          'type' => TType::STRING,
+          ),
+        8 => array(
+          'var' => 'description',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['schemaType'])) {
+        $this->schemaType = $vals['schemaType'];
+      }
+      if (isset($vals['name'])) {
+        $this->name = $vals['name'];
+      }
+      if (isset($vals['dbName'])) {
+        $this->dbName = $vals['dbName'];
+      }
+      if (isset($vals['compatibility'])) {
+        $this->compatibility = $vals['compatibility'];
+      }
+      if (isset($vals['validationLevel'])) {
+        $this->validationLevel = $vals['validationLevel'];
+      }
+      if (isset($vals['canEvolve'])) {
+        $this->canEvolve = $vals['canEvolve'];
+      }
+      if (isset($vals['schemaGroup'])) {
+        $this->schemaGroup = $vals['schemaGroup'];
+      }
+      if (isset($vals['description'])) {
+        $this->description = $vals['description'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ISchema';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->schemaType);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->dbName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->compatibility);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->validationLevel);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->canEvolve);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 7:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->schemaGroup);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 8:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->description);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ISchema');
+    if ($this->schemaType !== null) {
+      $xfer += $output->writeFieldBegin('schemaType', TType::I32, 1);
+      $xfer += $output->writeI32($this->schemaType);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->name !== null) {
+      $xfer += $output->writeFieldBegin('name', TType::STRING, 2);
+      $xfer += $output->writeString($this->name);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->dbName !== null) {
+      $xfer += $output->writeFieldBegin('dbName', TType::STRING, 3);
+      $xfer += $output->writeString($this->dbName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->compatibility !== null) {
+      $xfer += $output->writeFieldBegin('compatibility', TType::I32, 4);
+      $xfer += $output->writeI32($this->compatibility);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->validationLevel !== null) {
+      $xfer += $output->writeFieldBegin('validationLevel', TType::I32, 5);
+      $xfer += $output->writeI32($this->validationLevel);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->canEvolve !== null) {
+      $xfer += $output->writeFieldBegin('canEvolve', TType::BOOL, 6);
+      $xfer += $output->writeBool($this->canEvolve);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->schemaGroup !== null) {
+      $xfer += $output->writeFieldBegin('schemaGroup', TType::STRING, 7);
+      $xfer += $output->writeString($this->schemaGroup);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->description !== null) {
+      $xfer += $output->writeFieldBegin('description', TType::STRING, 8);
+      $xfer += $output->writeString($this->description);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class ISchemaName {
+  static $_TSPEC;
+
+  /**
+   * @var string
+   */
+  public $dbName = null;
+  /**
+   * @var string
+   */
+  public $schemaName = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'dbName',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'schemaName',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['dbName'])) {
+        $this->dbName = $vals['dbName'];
+      }
+      if (isset($vals['schemaName'])) {
+        $this->schemaName = $vals['schemaName'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'ISchemaName';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->dbName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->schemaName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('ISchemaName');
+    if ($this->dbName !== null) {
+      $xfer += $output->writeFieldBegin('dbName', TType::STRING, 1);
+      $xfer += $output->writeString($this->dbName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->schemaName !== null) {
+      $xfer += $output->writeFieldBegin('schemaName', TType::STRING, 2);
+      $xfer += $output->writeString($this->schemaName);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class AlterISchemaRequest {
+  static $_TSPEC;
+
+  /**
+   * @var \metastore\ISchemaName
+   */
+  public $name = null;
+  /**
+   * @var \metastore\ISchema
+   */
+  public $newSchema = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'name',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\ISchemaName',
+          ),
+        3 => array(
+          'var' => 'newSchema',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\ISchema',
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['name'])) {
+        $this->name = $vals['name'];
+      }
+      if (isset($vals['newSchema'])) {
+        $this->newSchema = $vals['newSchema'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'AlterISchemaRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->name = new \metastore\ISchemaName();
+            $xfer += $this->name->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRUCT) {
+            $this->newSchema = new \metastore\ISchema();
+            $xfer += $this->newSchema->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('AlterISchemaRequest');
+    if ($this->name !== null) {
+      if (!is_object($this->name)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('name', TType::STRUCT, 1);
+      $xfer += $this->name->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->newSchema !== null) {
+      if (!is_object($this->newSchema)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('newSchema', TType::STRUCT, 3);
+      $xfer += $this->newSchema->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class SchemaVersion {
+  static $_TSPEC;
+
+  /**
+   * @var \metastore\ISchemaName
+   */
+  public $schema = null;
+  /**
+   * @var int
+   */
+  public $version = null;
+  /**
+   * @var int
+   */
+  public $createdAt = null;
+  /**
+   * @var \metastore\FieldSchema[]
+   */
+  public $cols = null;
+  /**
+   * @var int
+   */
+  public $state = null;
+  /**
+   * @var string
+   */
+  public $description = null;
+  /**
+   * @var string
+   */
+  public $schemaText = null;
+  /**
+   * @var string
+   */
+  public $fingerprint = null;
+  /**
+   * @var string
+   */
+  public $name = null;
+  /**
+   * @var \metastore\SerDeInfo
+   */
+  public $serDe = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'schema',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\ISchemaName',
+          ),
+        2 => array(
+          'var' => 'version',
+          'type' => TType::I32,
+          ),
+        3 => array(
+          'var' => 'createdAt',
+          'type' => TType::I64,
+          ),
+        4 => array(
+          'var' => 'cols',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\metastore\FieldSchema',
+            ),
+          ),
+        5 => array(
+          'var' => 'state',
+          'type' => TType::I32,
+          ),
+        6 => array(
+          'var' => 'description',
+          'type' => TType::STRING,
+          ),
+        7 => array(
+          'var' => 'schemaText',
+          'type' => TType::STRING,
+          ),
+        8 => array(
+          'var' => 'fingerprint',
+          'type' => TType::STRING,
+          ),
+        9 => array(
+          'var' => 'name',
+          'type' => TType::STRING,
+          ),
+        10 => array(
+          'var' => 'serDe',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\SerDeInfo',
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['schema'])) {
+        $this->schema = $vals['schema'];
+      }
+      if (isset($vals['version'])) {
+        $this->version = $vals['version'];
+      }
+      if (isset($vals['createdAt'])) {
+        $this->createdAt = $vals['createdAt'];
+      }
+      if (isset($vals['cols'])) {
+        $this->cols = $vals['cols'];
+      }
+      if (isset($vals['state'])) {
+        $this->state = $vals['state'];
+      }
+      if (isset($vals['description'])) {
+        $this->description = $vals['description'];
+      }
+      if (isset($vals['schemaText'])) {
+        $this->schemaText = $vals['schemaText'];
+      }
+      if (isset($vals['fingerprint'])) {
+        $this->fingerprint = $vals['fingerprint'];
+      }
+      if (isset($vals['name'])) {
+        $this->name = $vals['name'];
+      }
+      if (isset($vals['serDe'])) {
+        $this->serDe = $vals['serDe'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'SchemaVersion';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->schema = new \metastore\ISchemaName();
+            $xfer += $this->schema->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->version);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->createdAt);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::LST) {
+            $this->cols = array();
+            $_size764 = 0;
+            $_etype767 = 0;
+            $xfer += $input->readListBegin($_etype767, $_size764);
+            for ($_i768 = 0; $_i768 < $_size764; ++$_i768)
+            {
+              $elem769 = null;
+              $elem769 = new \metastore\FieldSchema();
+              $xfer += $elem769->read($input);
+              $this->cols []= $elem769;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->state);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 6:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->description);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 7:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->schemaText);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 8:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->fingerprint);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 9:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->name);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 10:
+          if ($ftype == TType::STRUCT) {
+            $this->serDe = new \metastore\SerDeInfo();
+            $xfer += $this->serDe->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('SchemaVersion');
+    if ($this->schema !== null) {
+      if (!is_object($this->schema)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('schema', TType::STRUCT, 1);
+      $xfer += $this->schema->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->version !== null) {
+      $xfer += $output->writeFieldBegin('version', TType::I32, 2);
+      $xfer += $output->writeI32($this->version);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->createdAt !== null) {
+      $xfer += $output->writeFieldBegin('createdAt', TType::I64, 3);
+      $xfer += $output->writeI64($this->createdAt);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->cols !== null) {
+      if (!is_array($this->cols)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('cols', TType::LST, 4);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->cols));
+        {
+          foreach ($this->cols as $iter770)
+          {
+            $xfer += $iter770->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->state !== null) {
+      $xfer += $output->writeFieldBegin('state', TType::I32, 5);
+      $xfer += $output->writeI32($this->state);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->description !== null) {
+      $xfer += $output->writeFieldBegin('description', TType::STRING, 6);
+      $xfer += $output->writeString($this->description);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->schemaText !== null) {
+      $xfer += $output->writeFieldBegin('schemaText', TType::STRING, 7);
+      $xfer += $output->writeString($this->schemaText);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->fingerprint !== null) {
+      $xfer += $output->writeFieldBegin('fingerprint', TType::STRING, 8);
+      $xfer += $output->writeString($this->fingerprint);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->name !== null) {
+      $xfer += $output->writeFieldBegin('name', TType::STRING, 9);
+      $xfer += $output->writeString($this->name);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->serDe !== null) {
+      if (!is_object($this->serDe)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('serDe', TType::STRUCT, 10);
+      $xfer += $this->serDe->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class SchemaVersionDescriptor {
+  static $_TSPEC;
+
+  /**
+   * @var \metastore\ISchemaName
+   */
+  public $schema = null;
+  /**
+   * @var int
+   */
+  public $version = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'schema',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\ISchemaName',
+          ),
+        2 => array(
+          'var' => 'version',
+          'type' => TType::I32,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['schema'])) {
+        $this->schema = $vals['schema'];
+      }
+      if (isset($vals['version'])) {
+        $this->version = $vals['version'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'SchemaVersionDescriptor';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->schema = new \metastore\ISchemaName();
+            $xfer += $this->schema->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->version);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('SchemaVersionDescriptor');
+    if ($this->schema !== null) {
+      if (!is_object($this->schema)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('schema', TType::STRUCT, 1);
+      $xfer += $this->schema->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->version !== null) {
+      $xfer += $output->writeFieldBegin('version', TType::I32, 2);
+      $xfer += $output->writeI32($this->version);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class FindSchemasByColsRqst {
+  static $_TSPEC;
+
+  /**
+   * @var string
+   */
+  public $colName = null;
+  /**
+   * @var string
+   */
+  public $colNamespace = null;
+  /**
+   * @var string
+   */
+  public $type = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'colName',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'colNamespace',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'type',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['colName'])) {
+        $this->colName = $vals['colName'];
+      }
+      if (isset($vals['colNamespace'])) {
+        $this->colNamespace = $vals['colNamespace'];
+      }
+      if (isset($vals['type'])) {
+        $this->type = $vals['type'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'FindSchemasByColsRqst';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->colName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->colNamespace);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->type);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('FindSchemasByColsRqst');
+    if ($this->colName !== null) {
+      $xfer += $output->writeFieldBegin('colName', TType::STRING, 1);
+      $xfer += $output->writeString($this->colName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->colNamespace !== null) {
+      $xfer += $output->writeFieldBegin('colNamespace', TType::STRING, 2);
+      $xfer += $output->writeString($this->colNamespace);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->type !== null) {
+      $xfer += $output->writeFieldBegin('type', TType::STRING, 3);
+      $xfer += $output->writeString($this->type);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class FindSchemasByColsResp {
+  static $_TSPEC;
+
+  /**
+   * @var \metastore\SchemaVersionDescriptor[]
+   */
+  public $schemaVersions = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'schemaVersions',
+          'type' => TType::LST,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\metastore\SchemaVersionDescriptor',
+            ),
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['schemaVersions'])) {
+        $this->schemaVersions = $vals['schemaVersions'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'FindSchemasByColsResp';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::LST) {
+            $this->schemaVersions = array();
+            $_size771 = 0;
+            $_etype774 = 0;
+            $xfer += $input->readListBegin($_etype774, $_size771);
+            for ($_i775 = 0; $_i775 < $_size771; ++$_i775)
+            {
+              $elem776 = null;
+              $elem776 = new \metastore\SchemaVersionDescriptor();
+              $xfer += $elem776->read($input);
+              $this->schemaVersions []= $elem776;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('FindSchemasByColsResp');
+    if ($this->schemaVersions !== null) {
+      if (!is_array($this->schemaVersions)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('schemaVersions', TType::LST, 1);
+      {
+        $output->writeListBegin(TType::STRUCT, count($this->schemaVersions));
+        {
+          foreach ($this->schemaVersions as $iter777)
+          {
+            $xfer += $iter777->write($output);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class MapSchemaVersionToSerdeRequest {
+  static $_TSPEC;
+
+  /**
+   * @var \metastore\SchemaVersionDescriptor
+   */
+  public $schemaVersion = null;
+  /**
+   * @var string
+   */
+  public $serdeName = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'schemaVersion',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\SchemaVersionDescriptor',
+          ),
+        2 => array(
+          'var' => 'serdeName',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['schemaVersion'])) {
+        $this->schemaVersion = $vals['schemaVersion'];
+      }
+      if (isset($vals['serdeName'])) {
+        $this->serdeName = $vals['serdeName'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'MapSchemaVersionToSerdeRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->schemaVersion = new \metastore\SchemaVersionDescriptor();
+            $xfer += $this->schemaVersion->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->serdeName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('MapSchemaVersionToSerdeRequest');
+    if ($this->schemaVersion !== null) {
+      if (!is_object($this->schemaVersion)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('schemaVersion', TType::STRUCT, 1);
+      $xfer += $this->schemaVersion->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->serdeName !== null) {
+      $xfer += $output->writeFieldBegin('serdeName', TType::STRING, 2);
+      $xfer += $output->writeString($this->serdeName);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class SetSchemaVersionStateRequest {
+  static $_TSPEC;
+
+  /**
+   * @var \metastore\SchemaVersionDescriptor
+   */
+  public $schemaVersion = null;
+  /**
+   * @var int
+   */
+  public $state = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'schemaVersion',
+          'type' => TType::STRUCT,
+          'class' => '\metastore\SchemaVersionDescriptor',
+          ),
+        2 => array(
+          'var' => 'state',
+          'type' => TType::I32,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['schemaVersion'])) {
+        $this->schemaVersion = $vals['schemaVersion'];
+      }
+      if (isset($vals['state'])) {
+        $this->state = $vals['state'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'SetSchemaVersionStateRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->schemaVersion = new \metastore\SchemaVersionDescriptor();
+            $xfer += $this->schemaVersion->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->state);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('SetSchemaVersionStateRequest');
+    if ($this->schemaVersion !== null) {
+      if (!is_object($this->schemaVersion)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('schemaVersion', TType::STRUCT, 1);
+      $xfer += $this->schemaVersion->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->state !== null) {
+      $xfer += $output->writeFieldBegin('state', TType::I32, 2);
+      $xfer += $output->writeI32($this->state);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class GetSerdeRequest {
+  static $_TSPEC;
+
+  /**
+   * @var string
+   */
+  public $serdeName = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'serdeName',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['serdeName'])) {
+        $this->serdeName = $vals['serdeName'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'GetSerdeRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->serdeName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('GetSerdeRequest');
+    if ($this->serdeName !== null) {
+      $xfer += $output->writeFieldBegin('serdeName', TType::STRING, 1);
+      $xfer += $output->writeString($this->serdeName);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;

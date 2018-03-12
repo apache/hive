@@ -312,7 +312,11 @@ CREATE TABLE SERDES
 (
     SERDE_ID bigint NOT NULL,
     "NAME" nvarchar(128) NULL,
-    SLIB nvarchar(4000) NULL
+    SLIB nvarchar(4000) NULL,
+    "DESCRIPTION" nvarchar(4000),
+    "SERIALIZER_CLASS" nvarchar(4000),
+    "DESERIALIZER_CLASS" nvarchar(4000),
+    "SERDE_TYPE" int
 );
 
 ALTER TABLE SERDES ADD CONSTRAINT SERDES_PK PRIMARY KEY (SERDE_ID);
@@ -1148,6 +1152,33 @@ CREATE TABLE NEXT_WRITE_ID (
 );
 
 CREATE UNIQUE INDEX NEXT_WRITE_ID_IDX ON NEXT_WRITE_ID (NWI_DATABASE, NWI_TABLE);
+
+CREATE TABLE "I_SCHEMA" (
+  "SCHEMA_ID" bigint primary key,
+  "SCHEMA_TYPE" int not null,
+  "NAME" nvarchar(256) unique,
+  "DB_ID" bigint references "DBS" ("DB_ID"),
+  "COMPATIBILITY" int not null,
+  "VALIDATION_LEVEL" int not null,
+  "CAN_EVOLVE" bit not null,
+  "SCHEMA_GROUP" nvarchar(256),
+  "DESCRIPTION" nvarchar(4000),
+);
+
+CREATE TABLE "SCHEMA_VERSION" (
+  "SCHEMA_VERSION_ID" bigint primary key,
+  "SCHEMA_ID" bigint references "I_SCHEMA" ("SCHEMA_ID"),
+  "VERSION" int not null,
+  "CREATED_AT" bigint not null,
+  "CD_ID" bigint references "CDS" ("CD_ID"),
+  "STATE" int not null,
+  "DESCRIPTION" nvarchar(4000),
+  "SCHEMA_TEXT" varchar(max),
+  "FINGERPRINT" nvarchar(256),
+  "SCHEMA_VERSION_NAME" nvarchar(256),
+  "SERDE_ID" bigint references "SERDES" ("SERDE_ID"),
+  unique ("SCHEMA_ID", "VERSION")
+);
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script

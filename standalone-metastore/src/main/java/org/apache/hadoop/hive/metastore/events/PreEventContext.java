@@ -42,7 +42,15 @@ public abstract class PreEventContext {
     AUTHORIZATION_API_CALL,
     READ_TABLE,
     READ_DATABASE,
-    ALTER_DATABASE
+    ALTER_DATABASE,
+    CREATE_ISCHEMA,
+    ALTER_ISCHEMA,
+    DROP_ISCHEMA,
+    ADD_SCHEMA_VERSION,
+    ALTER_SCHEMA_VERSION,
+    DROP_SCHEMA_VERSION,
+    READ_ISCHEMA,
+    READ_SCHEMA_VERSION
   }
 
   private final PreEventType eventType;

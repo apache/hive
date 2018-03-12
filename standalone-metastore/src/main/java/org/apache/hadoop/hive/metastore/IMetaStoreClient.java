@@ -49,6 +49,8 @@ import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.FindSchemasByColsResp;
+import org.apache.hadoop.hive.metastore.api.FindSchemasByColsRqst;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
 import org.apache.hadoop.hive.metastore.api.FireEventResponse;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
@@ -62,6 +64,7 @@ import org.apache.hadoop.hive.metastore.api.GetRoleGrantsForPrincipalResponse;
 import org.apache.hadoop.hive.metastore.api.HeartbeatTxnRangeResponse;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
+import org.apache.hadoop.hive.metastore.api.ISchema;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -94,6 +97,9 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.SchemaVersion;
+import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
@@ -1828,4 +1834,165 @@ public interface IMetaStoreClient {
   void createOrDropTriggerToPoolMapping(String resourcePlanName, String triggerName,
       String poolPath, boolean shouldDrop) throws AlreadyExistsException, NoSuchObjectException,
       InvalidObjectException, MetaException, TException;
+
+  /**
+   * Create a new schema.  This is really a schema container, as there will be specific versions
+   * of the schema that have columns, etc.
+   * @param schema schema to create
+   * @throws AlreadyExistsException if a schema of this name already exists
+   * @throws NoSuchObjectException database references by this schema does not exist
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  void createISchema(ISchema schema) throws TException;
+
+  /**
+   * Alter an existing schema.
+   * @param dbName database the schema is in
+   * @param schemaName name of the schema
+   * @param newSchema altered schema object
+   * @throws NoSuchObjectException no schema with this name could be found
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  void alterISchema(String dbName, String schemaName, ISchema newSchema) throws TException;
+
+  /**
+   * Fetch a schema.
+   * @param dbName database the schema is in
+   * @param name name of the schema
+   * @return the schema or null if no such schema
+   * @throws NoSuchObjectException no schema matching this name exists
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  ISchema getISchema(String dbName, String name) throws TException;
+
+  /**
+   * Drop an existing schema.  If there are schema versions of this, this call will fail.
+   * @param dbName database the schema is in
+   * @param name name of the schema to drop
+   * @throws NoSuchObjectException no schema with this name could be found
+   * @throws InvalidOperationException attempt to drop a schema that has versions
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  void dropISchema(String dbName, String name) throws TException;
+
+  /**
+   * Add a new version to an existing schema.
+   * @param schemaVersion version object to add
+   * @throws AlreadyExistsException a version of this schema with the same version id already exists
+   * @throws NoSuchObjectException no schema with this name could be found
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  void addSchemaVersion(SchemaVersion schemaVersion) throws TException;
+
+  /**
+   * Get a specific version of a schema.
+   * @param dbName database the schema is in
+   * @param schemaName name of the schema
+   * @param version version of the schema
+   * @return the schema version or null if no such schema version
+   * @throws NoSuchObjectException no schema matching this name and version exists
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  SchemaVersion getSchemaVersion(String dbName, String schemaName, int version) throws TException;
+
+  /**
+   * Get the latest version of a schema.
+   * @param dbName database the schema is in
+   * @param schemaName name of the schema
+   * @return latest version of the schema or null if the schema does not exist or there are no
+   * version of the schema.
+   * @throws NoSuchObjectException no versions of schema matching this name exist
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  SchemaVersion getSchemaLatestVersion(String dbName, String schemaName) throws TException;
+
+  /**
+   * Get all the extant versions of a schema.
+   * @param dbName database the schema is in
+   * @param schemaName name of the schema.
+   * @return list of all the schema versions or null if this schema does not exist or has no
+   * versions.
+   * @throws NoSuchObjectException no versions of schema matching this name exist
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  List<SchemaVersion> getSchemaAllVersions(String dbName, String schemaName) throws TException;
+
+  /**
+   * Drop a version of a schema.  Given that versions are supposed to be immutable you should
+   * think really hard before you call this method.  It should only be used for schema versions
+   * that were added in error and never referenced any data.
+   * @param dbName database the schema is in
+   * @param schemaName name of the schema
+   * @param version version of the schema
+   * @throws NoSuchObjectException no matching version of the schema could be found
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  void dropSchemaVersion(String dbName, String schemaName, int version) throws TException;
+
+  /**
+   * Find all schema versions that have columns that match a query.
+   * @param rqst query, this can include column names, namespaces (actually stored in the
+   *             description field in FieldSchema), and types.
+   * @return The (possibly empty) list of schema name/version pairs that match.
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  FindSchemasByColsResp getSchemaByCols(FindSchemasByColsRqst rqst) throws TException;
+
+  /**
+   * Map a schema version to a serde.  This mapping is one-to-one, thus this will destroy any
+   * previous mappings for this schema version.
+   * @param dbName database the schema is in
+   * @param schemaName name of the schema
+   * @param version version of the schema
+   * @param serdeName name of the serde
+   * @throws NoSuchObjectException no matching version of the schema could be found or no serde
+   * of the provided name could be found
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  void mapSchemaVersionToSerde(String dbName, String schemaName, int version, String serdeName) throws TException;
+
+  /**
+   * Set the state of a schema version.
+   * @param dbName database the schema is in
+   * @param schemaName name of the schema
+   * @param version version of the schema
+   * @param state state to set the schema too
+   * @throws NoSuchObjectException no matching version of the schema could be found
+   * @throws InvalidOperationException attempt to make a state change that is not valid
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  void setSchemaVersionState(String dbName, String schemaName, int version, SchemaVersionState state) throws TException;
+
+  /**
+   * Add a serde.  This is primarily intended for use with SchemaRegistry objects, since serdes
+   * are automatically added when needed as part of creating and altering tables and partitions.
+   * @param serDeInfo serde to add
+   * @throws AlreadyExistsException serde of this name already exists
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  void addSerDe(SerDeInfo serDeInfo) throws TException;
+
+  /**
+   * Fetch a serde.  This is primarily intended for use with SchemaRegistry objects, since serdes
+   * are automatically fetched along with other information for tables and partitions.
+   * @param serDeName name of the serde
+   * @return the serde.
+   * @throws NoSuchObjectException no serde with this name exists.
+   * @throws MetaException general metastore error
+   * @throws TException general thrift error
+   */
+  SerDeInfo getSerDe(String serDeName) throws TException;
 }

@@ -26,19 +26,25 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
+import org.apache.hadoop.hive.metastore.events.AddSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
+import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
+import org.apache.hadoop.hive.metastore.events.CreateISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.DropConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
+import org.apache.hadoop.hive.metastore.events.DropISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.DropSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
@@ -194,6 +200,26 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @throws MetaException
    */
   public void onDropConstraint(DropConstraintEvent dropConstraintEvent) throws MetaException {
+  }
+
+  public void onCreateISchema(CreateISchemaEvent createISchemaEvent) throws MetaException {
+  }
+
+  public void onAlterISchema(AlterISchemaEvent alterISchemaEvent) throws MetaException {
+  }
+
+  public void onDropISchema(DropISchemaEvent dropISchemaEvent) throws MetaException {
+  }
+
+  public void onAddSchemaVersion(AddSchemaVersionEvent addSchemaVersionEvent) throws MetaException {
+  }
+
+  public void onAlterSchemaVersion(AlterSchemaVersionEvent alterSchemaVersionEvent)
+      throws MetaException {
+  }
+
+  public void onDropSchemaVersion(DropSchemaVersionEvent dropSchemaVersionEvent)
+      throws MetaException {
   }
 
   @Override
