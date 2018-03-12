@@ -65,10 +65,6 @@ public class TestWorker extends CompactorTest {
   static final private String CLASS_NAME = TestWorker.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
-  public TestWorker() throws Exception {
-    super();
-  }
-
   @Test
   public void nothing() throws Exception {
     // Test that the whole things works when there's nothing in the queue.  This is just a

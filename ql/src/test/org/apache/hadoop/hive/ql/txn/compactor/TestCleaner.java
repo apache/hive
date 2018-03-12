@@ -40,8 +40,6 @@ import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,12 +51,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Tests for the compactor Cleaner thread
  */
 public class TestCleaner extends CompactorTest {
-
-  static final private Logger LOG = LoggerFactory.getLogger(TestCleaner.class.getName());
-
-  public TestCleaner() throws Exception {
-    super();
-  }
 
   @Test
   public void nothing() throws Exception {
