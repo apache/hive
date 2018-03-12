@@ -41,6 +41,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.FieldDesc;
@@ -305,6 +307,17 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         // Attach the resources to the session cleanup.
         SessionState.get().addCleanupItem(driverCleanup);
         needsCleanup = false;
+      }
+
+      // Pass the ValidTxnList and ValidTxnWriteIdList snapshot configurations corresponding to the input query
+      HiveConf driverConf = driver.getConf();
+      String validTxnString = driverConf.get(ValidTxnList.VALID_TXNS_KEY);
+      if (validTxnString != null) {
+        jc.set(ValidTxnList.VALID_TXNS_KEY, validTxnString);
+      }
+      String validWriteIdString = driverConf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
+      if (validWriteIdString != null) {
+        jc.set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, validWriteIdString);
       }
 
       return new PlanFragment(tezWork, schema, jc);
