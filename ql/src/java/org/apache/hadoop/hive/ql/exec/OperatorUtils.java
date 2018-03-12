@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -423,5 +425,20 @@ public class OperatorUtils {
       }
     }
     return matchingOps;
+  }
+
+  public static Operator<?> findOperatorById(Operator<?> start, String opId) {
+    Deque<Operator<?>> queue = new ArrayDeque<>();
+    queue.add(start);
+    while (!queue.isEmpty()) {
+      Operator<?> op = queue.remove();
+      if (op.getOperatorId().equals(opId)) {
+        return op;
+      }
+      if (op.getChildOperators() != null) {
+        queue.addAll(op.getChildOperators());
+      }
+    }
+    return null;
   }
 }

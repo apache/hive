@@ -365,10 +365,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [4:part_col (int)]
-                            partition key expr: [part_col]
+                            Target Columns: [Map 4 -> [part_col:int (part_col)]]
                             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 4]
             Local Work:
               Map Reduce Local Work
 
@@ -417,10 +415,8 @@ STAGE PLANS:
                               outputColumnNames: _col0
                               Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
                               Spark Partition Pruning Sink Operator
-                                Target column: [1:part_col (int)]
-                                partition key expr: [part_col]
+                                Target Columns: [Map 1 -> [part_col:int (part_col)]]
                                 Statistics: Num rows: 4 Data size: 4 Basic stats: COMPLETE Column stats: NONE
-                                target works: [Map 1]
             Local Work:
               Map Reduce Local Work
 
@@ -558,10 +554,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [1:part_col (int)]
-                            partition key expr: [part_col]
+                            Target Columns: [Map 1 -> [part_col:int (part_col)]]
                             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 1]
             Local Work:
               Map Reduce Local Work
         Map 4 
@@ -591,10 +585,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [1:part_col (int)]
-                            partition key expr: [part_col]
+                            Target Columns: [Map 1 -> [part_col:int (part_col)]]
                             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 1]
             Local Work:
               Map Reduce Local Work
 
@@ -734,10 +726,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [1:part_col (int)]
-                            partition key expr: [part_col]
+                            Target Columns: [Map 1 -> [part_col:int (part_col)]]
                             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 1]
             Local Work:
               Map Reduce Local Work
 
@@ -771,10 +761,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [5:part_col (int)]
-                            partition key expr: [part_col]
+                            Target Columns: [Map 5 -> [part_col:int (part_col)]]
                             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 5]
             Local Work:
               Map Reduce Local Work
 
@@ -954,10 +942,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [2:part_col (int)]
-                            partition key expr: [part_col]
+                            Target Columns: [Map 2 -> [part_col:int (part_col)]]
                             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 2]
             Local Work:
               Map Reduce Local Work
 
@@ -1088,10 +1074,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [2:part_col (int)]
-                            partition key expr: [part_col]
+                            Target Columns: [Map 2 -> [part_col:int (part_col)]]
                             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 2]
             Local Work:
               Map Reduce Local Work
 
@@ -1235,10 +1219,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 6 Data size: 6 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [1:part_col (int)]
-                            partition key expr: [part_col]
+                            Target Columns: [Map 1 -> [part_col:int (part_col)]]
                             Statistics: Num rows: 6 Data size: 6 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 1]
             Local Work:
               Map Reduce Local Work
 
@@ -1374,10 +1356,8 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 18 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: [1:part_col1 (int)]
-                          partition key expr: [part_col1]
+                          Target Columns: [Map 1 -> [part_col1:int (part_col1)]]
                           Statistics: Num rows: 18 Data size: 18 Basic stats: COMPLETE Column stats: NONE
-                          target works: [Map 1]
                     Select Operator
                       expressions: _col1 (type: int)
                       outputColumnNames: _col0
@@ -1388,10 +1368,8 @@ STAGE PLANS:
                         outputColumnNames: _col0
                         Statistics: Num rows: 18 Data size: 18 Basic stats: COMPLETE Column stats: NONE
                         Spark Partition Pruning Sink Operator
-                          Target column: [1:part_col2 (int)]
-                          partition key expr: [part_col2]
+                          Target Columns: [Map 1 -> [part_col2:int (part_col2)]]
                           Statistics: Num rows: 18 Data size: 18 Basic stats: COMPLETE Column stats: NONE
-                          target works: [Map 1]
             Local Work:
               Map Reduce Local Work
 
@@ -1527,10 +1505,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [3:part_col (int)]
-                            partition key expr: [part_col]
+                            Target Columns: [Map 3 -> [part_col:int (part_col)]]
                             Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 3]
             Local Work:
               Map Reduce Local Work
         Map 2 
@@ -1560,10 +1536,8 @@ STAGE PLANS:
                           outputColumnNames: _col0
                           Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
                           Spark Partition Pruning Sink Operator
-                            Target column: [3:part_col (int)]
-                            partition key expr: [part_col]
+                            Target Columns: [Map 3 -> [part_col:int (part_col)]]
                             Statistics: Num rows: 3 Data size: 9 Basic stats: COMPLETE Column stats: NONE
-                            target works: [Map 3]
             Local Work:
               Map Reduce Local Work
 
