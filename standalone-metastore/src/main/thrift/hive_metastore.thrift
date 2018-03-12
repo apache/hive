@@ -183,6 +183,39 @@ enum EventRequestType {
     DELETE = 3,
 }
 
+enum SerdeType {
+  HIVE = 1,
+  SCHEMA_REGISTRY = 2,
+}
+
+enum SchemaType {
+  HIVE = 1,
+  AVRO = 2,
+}
+
+enum SchemaCompatibility {
+  NONE = 1,
+  BACKWARD = 2,
+  FORWARD = 3,
+  BOTH = 4
+}
+
+enum SchemaValidation {
+  LATEST = 1,
+  ALL = 2
+}
+
+enum SchemaVersionState {
+  INITIATED = 1,
+  START_REVIEW = 2,
+  CHANGES_REQUIRED = 3,
+  REVIEWED = 4,
+  ENABLED = 5,
+  DISABLED = 6,
+  ARCHIVED = 7,
+  DELETED = 8
+}
+
 struct HiveObjectRef{
   1: HiveObjectType objectType,
   2: string dbName,
@@ -289,7 +322,11 @@ struct Database {
 struct SerDeInfo {
   1: string name,                   // name of the serde, table name by default
   2: string serializationLib,       // usually the class that implements the extractor & loader
-  3: map<string, string> parameters // initialization parameters
+  3: map<string, string> parameters, // initialization parameters
+  4: optional string description,
+  5: optional string serializerClass,
+  6: optional string deserializerClass,
+  7: optional SerdeType serdeType
 }
 
 // sort order of a column (column name along with asc(1)/desc(0))
@@ -1318,6 +1355,71 @@ struct WMCreateOrDropTriggerToPoolMappingRequest {
 struct WMCreateOrDropTriggerToPoolMappingResponse {
 }
 
+// Schema objects
+// Schema is already taken, so for the moment I'm calling it an ISchema for Independent Schema
+struct ISchema {
+  1: SchemaType schemaType,
+  2: string name,
+  3: string dbName,
+  4: SchemaCompatibility compatibility,
+  5: SchemaValidation validationLevel,
+  6: bool canEvolve,
+  7: optional string schemaGroup,
+  8: optional string description
+}
+
+struct ISchemaName {
+  1: string dbName,
+  2: string schemaName
+}
+
+struct AlterISchemaRequest {
+  1: ISchemaName name,
+  3: ISchema newSchema
+}
+
+struct SchemaVersion {
+  1:  ISchemaName schema,
+  2:  i32 version,
+  3:  i64 createdAt,
+  4:  list<FieldSchema> cols,
+  5:  optional SchemaVersionState state,
+  6:  optional string description,
+  7:  optional string schemaText,
+  8:  optional string fingerprint,
+  9:  optional string name,
+  10: optional SerDeInfo serDe
+}
+
+struct SchemaVersionDescriptor {
+  1: ISchemaName schema,
+  2: i32 version
+}
+
+struct FindSchemasByColsRqst {
+  1: optional string colName,
+  2: optional string colNamespace,
+  3: optional string type
+}
+
+struct FindSchemasByColsResp {
+  1: list<SchemaVersionDescriptor> schemaVersions
+}
+
+struct MapSchemaVersionToSerdeRequest {
+  1: SchemaVersionDescriptor schemaVersion,
+  2: string serdeName
+}
+
+struct SetSchemaVersionStateRequest {
+  1: SchemaVersionDescriptor schemaVersion,
+  2: SchemaVersionState state
+}
+
+struct GetSerdeRequest {
+  1: string serdeName
+}
+
 // Exceptions.
 
 exception MetaException {
@@ -1929,6 +2031,38 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   WMCreateOrDropTriggerToPoolMappingResponse create_or_drop_wm_trigger_to_pool_mapping(1:WMCreateOrDropTriggerToPoolMappingRequest request)
       throws(1:AlreadyExistsException o1, 2:NoSuchObjectException o2, 3:InvalidObjectException o3, 4:MetaException o4)
+
+  // Schema calls
+  void create_ischema(1:ISchema schema) throws(1:AlreadyExistsException o1,
+        NoSuchObjectException o2, 3:MetaException o3)
+  void alter_ischema(1:AlterISchemaRequest rqst)
+        throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  ISchema get_ischema(1:ISchemaName name) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  void drop_ischema(1:ISchemaName name)
+        throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
+
+  void add_schema_version(1:SchemaVersion schemaVersion)
+        throws(1:AlreadyExistsException o1, 2:NoSuchObjectException o2, 3:MetaException o3)
+  SchemaVersion get_schema_version(1: SchemaVersionDescriptor schemaVersion)
+        throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  SchemaVersion get_schema_latest_version(1: ISchemaName schemaName)
+        throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  list<SchemaVersion> get_schema_all_versions(1: ISchemaName schemaName)
+        throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  void drop_schema_version(1: SchemaVersionDescriptor schemaVersion)
+        throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  FindSchemasByColsResp get_schemas_by_cols(1: FindSchemasByColsRqst rqst)
+        throws(1:MetaException o1)
+  // There is no blanket update of SchemaVersion since it is (mostly) immutable.  The only
+  // updates are the specific ones to associate a version with a serde and to change its state
+  void map_schema_version_to_serde(1: MapSchemaVersionToSerdeRequest rqst)
+        throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  void set_schema_version_state(1: SetSchemaVersionStateRequest rqst)
+        throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
+
+  void add_serde(1: SerDeInfo serde) throws(1:AlreadyExistsException o1, 2:MetaException o2)
+  SerDeInfo get_serde(1: GetSerdeRequest rqst) throws(1:NoSuchObjectException o1, 2:MetaException o2)
+
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

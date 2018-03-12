@@ -98,6 +98,49 @@ module EventRequestType
   VALID_VALUES = Set.new([INSERT, UPDATE, DELETE]).freeze
 end
 
+module SerdeType
+  HIVE = 1
+  SCHEMA_REGISTRY = 2
+  VALUE_MAP = {1 => "HIVE", 2 => "SCHEMA_REGISTRY"}
+  VALID_VALUES = Set.new([HIVE, SCHEMA_REGISTRY]).freeze
+end
+
+module SchemaType
+  HIVE = 1
+  AVRO = 2
+  VALUE_MAP = {1 => "HIVE", 2 => "AVRO"}
+  VALID_VALUES = Set.new([HIVE, AVRO]).freeze
+end
+
+module SchemaCompatibility
+  NONE = 1
+  BACKWARD = 2
+  FORWARD = 3
+  BOTH = 4
+  VALUE_MAP = {1 => "NONE", 2 => "BACKWARD", 3 => "FORWARD", 4 => "BOTH"}
+  VALID_VALUES = Set.new([NONE, BACKWARD, FORWARD, BOTH]).freeze
+end
+
+module SchemaValidation
+  LATEST = 1
+  ALL = 2
+  VALUE_MAP = {1 => "LATEST", 2 => "ALL"}
+  VALID_VALUES = Set.new([LATEST, ALL]).freeze
+end
+
+module SchemaVersionState
+  INITIATED = 1
+  START_REVIEW = 2
+  CHANGES_REQUIRED = 3
+  REVIEWED = 4
+  ENABLED = 5
+  DISABLED = 6
+  ARCHIVED = 7
+  DELETED = 8
+  VALUE_MAP = {1 => "INITIATED", 2 => "START_REVIEW", 3 => "CHANGES_REQUIRED", 4 => "REVIEWED", 5 => "ENABLED", 6 => "DISABLED", 7 => "ARCHIVED", 8 => "DELETED"}
+  VALID_VALUES = Set.new([INITIATED, START_REVIEW, CHANGES_REQUIRED, REVIEWED, ENABLED, DISABLED, ARCHIVED, DELETED]).freeze
+end
+
 module FunctionType
   JAVA = 1
   VALUE_MAP = {1 => "JAVA"}
@@ -731,16 +774,27 @@ class SerDeInfo
   NAME = 1
   SERIALIZATIONLIB = 2
   PARAMETERS = 3
+  DESCRIPTION = 4
+  SERIALIZERCLASS = 5
+  DESERIALIZERCLASS = 6
+  SERDETYPE = 7
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
     SERIALIZATIONLIB => {:type => ::Thrift::Types::STRING, :name => 'serializationLib'},
-    PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}}
+    PARAMETERS => {:type => ::Thrift::Types::MAP, :name => 'parameters', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
+    DESCRIPTION => {:type => ::Thrift::Types::STRING, :name => 'description', :optional => true},
+    SERIALIZERCLASS => {:type => ::Thrift::Types::STRING, :name => 'serializerClass', :optional => true},
+    DESERIALIZERCLASS => {:type => ::Thrift::Types::STRING, :name => 'deserializerClass', :optional => true},
+    SERDETYPE => {:type => ::Thrift::Types::I32, :name => 'serdeType', :optional => true, :enum_class => ::SerdeType}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
+    unless @serdeType.nil? || ::SerdeType::VALID_VALUES.include?(@serdeType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field serdeType!')
+    end
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -4270,6 +4324,227 @@ class WMCreateOrDropTriggerToPoolMappingResponse
 
   FIELDS = {
 
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ISchema
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SCHEMATYPE = 1
+  NAME = 2
+  DBNAME = 3
+  COMPATIBILITY = 4
+  VALIDATIONLEVEL = 5
+  CANEVOLVE = 6
+  SCHEMAGROUP = 7
+  DESCRIPTION = 8
+
+  FIELDS = {
+    SCHEMATYPE => {:type => ::Thrift::Types::I32, :name => 'schemaType', :enum_class => ::SchemaType},
+    NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    COMPATIBILITY => {:type => ::Thrift::Types::I32, :name => 'compatibility', :enum_class => ::SchemaCompatibility},
+    VALIDATIONLEVEL => {:type => ::Thrift::Types::I32, :name => 'validationLevel', :enum_class => ::SchemaValidation},
+    CANEVOLVE => {:type => ::Thrift::Types::BOOL, :name => 'canEvolve'},
+    SCHEMAGROUP => {:type => ::Thrift::Types::STRING, :name => 'schemaGroup', :optional => true},
+    DESCRIPTION => {:type => ::Thrift::Types::STRING, :name => 'description', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @schemaType.nil? || ::SchemaType::VALID_VALUES.include?(@schemaType)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field schemaType!')
+    end
+    unless @compatibility.nil? || ::SchemaCompatibility::VALID_VALUES.include?(@compatibility)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field compatibility!')
+    end
+    unless @validationLevel.nil? || ::SchemaValidation::VALID_VALUES.include?(@validationLevel)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field validationLevel!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ISchemaName
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DBNAME = 1
+  SCHEMANAME = 2
+
+  FIELDS = {
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    SCHEMANAME => {:type => ::Thrift::Types::STRING, :name => 'schemaName'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class AlterISchemaRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  NAME = 1
+  NEWSCHEMA = 3
+
+  FIELDS = {
+    NAME => {:type => ::Thrift::Types::STRUCT, :name => 'name', :class => ::ISchemaName},
+    NEWSCHEMA => {:type => ::Thrift::Types::STRUCT, :name => 'newSchema', :class => ::ISchema}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class SchemaVersion
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SCHEMA = 1
+  VERSION = 2
+  CREATEDAT = 3
+  COLS = 4
+  STATE = 5
+  DESCRIPTION = 6
+  SCHEMATEXT = 7
+  FINGERPRINT = 8
+  NAME = 9
+  SERDE = 10
+
+  FIELDS = {
+    SCHEMA => {:type => ::Thrift::Types::STRUCT, :name => 'schema', :class => ::ISchemaName},
+    VERSION => {:type => ::Thrift::Types::I32, :name => 'version'},
+    CREATEDAT => {:type => ::Thrift::Types::I64, :name => 'createdAt'},
+    COLS => {:type => ::Thrift::Types::LIST, :name => 'cols', :element => {:type => ::Thrift::Types::STRUCT, :class => ::FieldSchema}},
+    STATE => {:type => ::Thrift::Types::I32, :name => 'state', :optional => true, :enum_class => ::SchemaVersionState},
+    DESCRIPTION => {:type => ::Thrift::Types::STRING, :name => 'description', :optional => true},
+    SCHEMATEXT => {:type => ::Thrift::Types::STRING, :name => 'schemaText', :optional => true},
+    FINGERPRINT => {:type => ::Thrift::Types::STRING, :name => 'fingerprint', :optional => true},
+    NAME => {:type => ::Thrift::Types::STRING, :name => 'name', :optional => true},
+    SERDE => {:type => ::Thrift::Types::STRUCT, :name => 'serDe', :class => ::SerDeInfo, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @state.nil? || ::SchemaVersionState::VALID_VALUES.include?(@state)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field state!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class SchemaVersionDescriptor
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SCHEMA = 1
+  VERSION = 2
+
+  FIELDS = {
+    SCHEMA => {:type => ::Thrift::Types::STRUCT, :name => 'schema', :class => ::ISchemaName},
+    VERSION => {:type => ::Thrift::Types::I32, :name => 'version'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class FindSchemasByColsRqst
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  COLNAME = 1
+  COLNAMESPACE = 2
+  TYPE = 3
+
+  FIELDS = {
+    COLNAME => {:type => ::Thrift::Types::STRING, :name => 'colName', :optional => true},
+    COLNAMESPACE => {:type => ::Thrift::Types::STRING, :name => 'colNamespace', :optional => true},
+    TYPE => {:type => ::Thrift::Types::STRING, :name => 'type', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class FindSchemasByColsResp
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SCHEMAVERSIONS = 1
+
+  FIELDS = {
+    SCHEMAVERSIONS => {:type => ::Thrift::Types::LIST, :name => 'schemaVersions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SchemaVersionDescriptor}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class MapSchemaVersionToSerdeRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SCHEMAVERSION = 1
+  SERDENAME = 2
+
+  FIELDS = {
+    SCHEMAVERSION => {:type => ::Thrift::Types::STRUCT, :name => 'schemaVersion', :class => ::SchemaVersionDescriptor},
+    SERDENAME => {:type => ::Thrift::Types::STRING, :name => 'serdeName'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class SetSchemaVersionStateRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SCHEMAVERSION = 1
+  STATE = 2
+
+  FIELDS = {
+    SCHEMAVERSION => {:type => ::Thrift::Types::STRUCT, :name => 'schemaVersion', :class => ::SchemaVersionDescriptor},
+    STATE => {:type => ::Thrift::Types::I32, :name => 'state', :enum_class => ::SchemaVersionState}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    unless @state.nil? || ::SchemaVersionState::VALID_VALUES.include?(@state)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field state!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class GetSerdeRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  SERDENAME = 1
+
+  FIELDS = {
+    SERDENAME => {:type => ::Thrift::Types::STRING, :name => 'serdeName'}
   }
 
   def struct_fields; FIELDS; end

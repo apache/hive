@@ -73,7 +73,7 @@ public class DatabaseBuilder {
     return this;
   }
 
-  public Database build() throws TException {
+  public Database build() throws MetaException {
     if (name == null) throw new MetaException("You must name the database");
     Database db = new Database(name, description, location, params);
     try {
