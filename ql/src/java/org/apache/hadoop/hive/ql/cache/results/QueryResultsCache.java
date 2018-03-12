@@ -242,7 +242,10 @@ public final class QueryResultsCache {
     }
 
     public FetchWork getFetchWork() {
-      return fetchWork;
+      // FetchWork's sink is used to hold results, so each query needs a separate copy of FetchWork
+      FetchWork fetch = new FetchWork(cachedResultsPath, fetchWork.getTblDesc(), fetchWork.getLimit());
+      fetch.setCachedResult(true);
+      return fetch;
     }
 
     public QueryInfo getQueryInfo() {
