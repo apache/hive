@@ -16941,6 +16941,7 @@ class Materialization:
    - tablesUsed
    - validTxnList
    - invalidationTime
+   - sourceTablesUpdateDeleteModified
   """
 
   thrift_spec = (
@@ -16948,12 +16949,14 @@ class Materialization:
     (1, TType.SET, 'tablesUsed', (TType.STRING,None), None, ), # 1
     (2, TType.STRING, 'validTxnList', None, None, ), # 2
     (3, TType.I64, 'invalidationTime', None, None, ), # 3
+    (4, TType.BOOL, 'sourceTablesUpdateDeleteModified', None, None, ), # 4
   )
 
-  def __init__(self, tablesUsed=None, validTxnList=None, invalidationTime=None,):
+  def __init__(self, tablesUsed=None, validTxnList=None, invalidationTime=None, sourceTablesUpdateDeleteModified=None,):
     self.tablesUsed = tablesUsed
     self.validTxnList = validTxnList
     self.invalidationTime = invalidationTime
+    self.sourceTablesUpdateDeleteModified = sourceTablesUpdateDeleteModified
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -16984,6 +16987,11 @@ class Materialization:
           self.invalidationTime = iprot.readI64()
         else:
           iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.BOOL:
+          self.sourceTablesUpdateDeleteModified = iprot.readBool()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -17009,14 +17017,16 @@ class Materialization:
       oprot.writeFieldBegin('invalidationTime', TType.I64, 3)
       oprot.writeI64(self.invalidationTime)
       oprot.writeFieldEnd()
+    if self.sourceTablesUpdateDeleteModified is not None:
+      oprot.writeFieldBegin('sourceTablesUpdateDeleteModified', TType.BOOL, 4)
+      oprot.writeBool(self.sourceTablesUpdateDeleteModified)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
   def validate(self):
     if self.tablesUsed is None:
       raise TProtocol.TProtocolException(message='Required field tablesUsed is unset!')
-    if self.invalidationTime is None:
-      raise TProtocol.TProtocolException(message='Required field invalidationTime is unset!')
     return
 
 
@@ -17025,6 +17035,7 @@ class Materialization:
     value = (value * 31) ^ hash(self.tablesUsed)
     value = (value * 31) ^ hash(self.validTxnList)
     value = (value * 31) ^ hash(self.invalidationTime)
+    value = (value * 31) ^ hash(self.sourceTablesUpdateDeleteModified)
     return value
 
   def __repr__(self):

@@ -1227,7 +1227,8 @@ struct TableMeta {
 struct Materialization {
   1: required set<string> tablesUsed;
   2: optional string validTxnList
-  3: required i64 invalidationTime;
+  3: optional i64 invalidationTime;
+  4: optional bool sourceTablesUpdateDeleteModified;
 }
 
 // Data types for workload management.
@@ -2163,6 +2164,8 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void add_serde(1: SerDeInfo serde) throws(1:AlreadyExistsException o1, 2:MetaException o2)
   SerDeInfo get_serde(1: GetSerdeRequest rqst) throws(1:NoSuchObjectException o1, 2:MetaException o2)
 
+  LockResponse get_lock_materialization_rebuild(1: string dbName, 2: string tableName, 3: i64 txnId)
+  bool heartbeat_lock_materialization_rebuild(1: string dbName, 2: string tableName, 3: i64 txnId)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

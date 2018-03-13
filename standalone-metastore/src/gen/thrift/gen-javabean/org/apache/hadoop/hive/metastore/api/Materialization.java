@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField TABLES_USED_FIELD_DESC = new org.apache.thrift.protocol.TField("tablesUsed", org.apache.thrift.protocol.TType.SET, (short)1);
   private static final org.apache.thrift.protocol.TField VALID_TXN_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validTxnList", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField INVALIDATION_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("invalidationTime", org.apache.thrift.protocol.TType.I64, (short)3);
+  private static final org.apache.thrift.protocol.TField SOURCE_TABLES_UPDATE_DELETE_MODIFIED_FIELD_DESC = new org.apache.thrift.protocol.TField("sourceTablesUpdateDeleteModified", org.apache.thrift.protocol.TType.BOOL, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -50,13 +51,15 @@ import org.slf4j.LoggerFactory;
 
   private Set<String> tablesUsed; // required
   private String validTxnList; // optional
-  private long invalidationTime; // required
+  private long invalidationTime; // optional
+  private boolean sourceTablesUpdateDeleteModified; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     TABLES_USED((short)1, "tablesUsed"),
     VALID_TXN_LIST((short)2, "validTxnList"),
-    INVALIDATION_TIME((short)3, "invalidationTime");
+    INVALIDATION_TIME((short)3, "invalidationTime"),
+    SOURCE_TABLES_UPDATE_DELETE_MODIFIED((short)4, "sourceTablesUpdateDeleteModified");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -77,6 +80,8 @@ import org.slf4j.LoggerFactory;
           return VALID_TXN_LIST;
         case 3: // INVALIDATION_TIME
           return INVALIDATION_TIME;
+        case 4: // SOURCE_TABLES_UPDATE_DELETE_MODIFIED
+          return SOURCE_TABLES_UPDATE_DELETE_MODIFIED;
         default:
           return null;
       }
@@ -118,8 +123,9 @@ import org.slf4j.LoggerFactory;
 
   // isset id assignments
   private static final int __INVALIDATIONTIME_ISSET_ID = 0;
+  private static final int __SOURCETABLESUPDATEDELETEMODIFIED_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.VALID_TXN_LIST};
+  private static final _Fields optionals[] = {_Fields.VALID_TXN_LIST,_Fields.INVALIDATION_TIME,_Fields.SOURCE_TABLES_UPDATE_DELETE_MODIFIED};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -128,8 +134,10 @@ import org.slf4j.LoggerFactory;
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.VALID_TXN_LIST, new org.apache.thrift.meta_data.FieldMetaData("validTxnList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.INVALIDATION_TIME, new org.apache.thrift.meta_data.FieldMetaData("invalidationTime", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.INVALIDATION_TIME, new org.apache.thrift.meta_data.FieldMetaData("invalidationTime", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.SOURCE_TABLES_UPDATE_DELETE_MODIFIED, new org.apache.thrift.meta_data.FieldMetaData("sourceTablesUpdateDeleteModified", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Materialization.class, metaDataMap);
   }
@@ -138,13 +146,10 @@ import org.slf4j.LoggerFactory;
   }
 
   public Materialization(
-    Set<String> tablesUsed,
-    long invalidationTime)
+    Set<String> tablesUsed)
   {
     this();
     this.tablesUsed = tablesUsed;
-    this.invalidationTime = invalidationTime;
-    setInvalidationTimeIsSet(true);
   }
 
   /**
@@ -160,6 +165,7 @@ import org.slf4j.LoggerFactory;
       this.validTxnList = other.validTxnList;
     }
     this.invalidationTime = other.invalidationTime;
+    this.sourceTablesUpdateDeleteModified = other.sourceTablesUpdateDeleteModified;
   }
 
   public Materialization deepCopy() {
@@ -172,6 +178,8 @@ import org.slf4j.LoggerFactory;
     this.validTxnList = null;
     setInvalidationTimeIsSet(false);
     this.invalidationTime = 0;
+    setSourceTablesUpdateDeleteModifiedIsSet(false);
+    this.sourceTablesUpdateDeleteModified = false;
   }
 
   public int getTablesUsedSize() {
@@ -257,6 +265,28 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __INVALIDATIONTIME_ISSET_ID, value);
   }
 
+  public boolean isSourceTablesUpdateDeleteModified() {
+    return this.sourceTablesUpdateDeleteModified;
+  }
+
+  public void setSourceTablesUpdateDeleteModified(boolean sourceTablesUpdateDeleteModified) {
+    this.sourceTablesUpdateDeleteModified = sourceTablesUpdateDeleteModified;
+    setSourceTablesUpdateDeleteModifiedIsSet(true);
+  }
+
+  public void unsetSourceTablesUpdateDeleteModified() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SOURCETABLESUPDATEDELETEMODIFIED_ISSET_ID);
+  }
+
+  /** Returns true if field sourceTablesUpdateDeleteModified is set (has been assigned a value) and false otherwise */
+  public boolean isSetSourceTablesUpdateDeleteModified() {
+    return EncodingUtils.testBit(__isset_bitfield, __SOURCETABLESUPDATEDELETEMODIFIED_ISSET_ID);
+  }
+
+  public void setSourceTablesUpdateDeleteModifiedIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SOURCETABLESUPDATEDELETEMODIFIED_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TABLES_USED:
@@ -283,6 +313,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case SOURCE_TABLES_UPDATE_DELETE_MODIFIED:
+      if (value == null) {
+        unsetSourceTablesUpdateDeleteModified();
+      } else {
+        setSourceTablesUpdateDeleteModified((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -296,6 +334,9 @@ import org.slf4j.LoggerFactory;
 
     case INVALIDATION_TIME:
       return getInvalidationTime();
+
+    case SOURCE_TABLES_UPDATE_DELETE_MODIFIED:
+      return isSourceTablesUpdateDeleteModified();
 
     }
     throw new IllegalStateException();
@@ -314,6 +355,8 @@ import org.slf4j.LoggerFactory;
       return isSetValidTxnList();
     case INVALIDATION_TIME:
       return isSetInvalidationTime();
+    case SOURCE_TABLES_UPDATE_DELETE_MODIFIED:
+      return isSetSourceTablesUpdateDeleteModified();
     }
     throw new IllegalStateException();
   }
@@ -349,12 +392,21 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
-    boolean this_present_invalidationTime = true;
-    boolean that_present_invalidationTime = true;
+    boolean this_present_invalidationTime = true && this.isSetInvalidationTime();
+    boolean that_present_invalidationTime = true && that.isSetInvalidationTime();
     if (this_present_invalidationTime || that_present_invalidationTime) {
       if (!(this_present_invalidationTime && that_present_invalidationTime))
         return false;
       if (this.invalidationTime != that.invalidationTime)
+        return false;
+    }
+
+    boolean this_present_sourceTablesUpdateDeleteModified = true && this.isSetSourceTablesUpdateDeleteModified();
+    boolean that_present_sourceTablesUpdateDeleteModified = true && that.isSetSourceTablesUpdateDeleteModified();
+    if (this_present_sourceTablesUpdateDeleteModified || that_present_sourceTablesUpdateDeleteModified) {
+      if (!(this_present_sourceTablesUpdateDeleteModified && that_present_sourceTablesUpdateDeleteModified))
+        return false;
+      if (this.sourceTablesUpdateDeleteModified != that.sourceTablesUpdateDeleteModified)
         return false;
     }
 
@@ -375,10 +427,15 @@ import org.slf4j.LoggerFactory;
     if (present_validTxnList)
       list.add(validTxnList);
 
-    boolean present_invalidationTime = true;
+    boolean present_invalidationTime = true && (isSetInvalidationTime());
     list.add(present_invalidationTime);
     if (present_invalidationTime)
       list.add(invalidationTime);
+
+    boolean present_sourceTablesUpdateDeleteModified = true && (isSetSourceTablesUpdateDeleteModified());
+    list.add(present_sourceTablesUpdateDeleteModified);
+    if (present_sourceTablesUpdateDeleteModified)
+      list.add(sourceTablesUpdateDeleteModified);
 
     return list.hashCode();
   }
@@ -421,6 +478,16 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetSourceTablesUpdateDeleteModified()).compareTo(other.isSetSourceTablesUpdateDeleteModified());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSourceTablesUpdateDeleteModified()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.sourceTablesUpdateDeleteModified, other.sourceTablesUpdateDeleteModified);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -458,10 +525,18 @@ import org.slf4j.LoggerFactory;
       }
       first = false;
     }
-    if (!first) sb.append(", ");
-    sb.append("invalidationTime:");
-    sb.append(this.invalidationTime);
-    first = false;
+    if (isSetInvalidationTime()) {
+      if (!first) sb.append(", ");
+      sb.append("invalidationTime:");
+      sb.append(this.invalidationTime);
+      first = false;
+    }
+    if (isSetSourceTablesUpdateDeleteModified()) {
+      if (!first) sb.append(", ");
+      sb.append("sourceTablesUpdateDeleteModified:");
+      sb.append(this.sourceTablesUpdateDeleteModified);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -470,10 +545,6 @@ import org.slf4j.LoggerFactory;
     // check for required fields
     if (!isSetTablesUsed()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'tablesUsed' is unset! Struct:" + toString());
-    }
-
-    if (!isSetInvalidationTime()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'invalidationTime' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -549,6 +620,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // SOURCE_TABLES_UPDATE_DELETE_MODIFIED
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.sourceTablesUpdateDeleteModified = iprot.readBool();
+              struct.setSourceTablesUpdateDeleteModifiedIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -581,9 +660,16 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
-      oprot.writeFieldBegin(INVALIDATION_TIME_FIELD_DESC);
-      oprot.writeI64(struct.invalidationTime);
-      oprot.writeFieldEnd();
+      if (struct.isSetInvalidationTime()) {
+        oprot.writeFieldBegin(INVALIDATION_TIME_FIELD_DESC);
+        oprot.writeI64(struct.invalidationTime);
+        oprot.writeFieldEnd();
+      }
+      if (struct.isSetSourceTablesUpdateDeleteModified()) {
+        oprot.writeFieldBegin(SOURCE_TABLES_UPDATE_DELETE_MODIFIED_FIELD_DESC);
+        oprot.writeBool(struct.sourceTablesUpdateDeleteModified);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -608,14 +694,25 @@ import org.slf4j.LoggerFactory;
           oprot.writeString(_iter828);
         }
       }
-      oprot.writeI64(struct.invalidationTime);
       BitSet optionals = new BitSet();
       if (struct.isSetValidTxnList()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetInvalidationTime()) {
+        optionals.set(1);
+      }
+      if (struct.isSetSourceTablesUpdateDeleteModified()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetValidTxnList()) {
         oprot.writeString(struct.validTxnList);
+      }
+      if (struct.isSetInvalidationTime()) {
+        oprot.writeI64(struct.invalidationTime);
+      }
+      if (struct.isSetSourceTablesUpdateDeleteModified()) {
+        oprot.writeBool(struct.sourceTablesUpdateDeleteModified);
       }
     }
 
@@ -633,12 +730,18 @@ import org.slf4j.LoggerFactory;
         }
       }
       struct.setTablesUsedIsSet(true);
-      struct.invalidationTime = iprot.readI64();
-      struct.setInvalidationTimeIsSet(true);
-      BitSet incoming = iprot.readBitSet(1);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.validTxnList = iprot.readString();
         struct.setValidTxnListIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.invalidationTime = iprot.readI64();
+        struct.setInvalidationTimeIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.sourceTablesUpdateDeleteModified = iprot.readBool();
+        struct.setSourceTablesUpdateDeleteModifiedIsSet(true);
       }
     }
   }

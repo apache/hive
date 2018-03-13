@@ -22,6 +22,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.api.*;
 
@@ -123,7 +124,7 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.Idempotent
   public BasicTxnInfo getFirstCompletedTransactionForTableAfterCommit(
-      String inputDbName, String inputTableName, ValidTxnList txnList)
+      String inputDbName, String inputTableName, ValidWriteIdList txnList)
           throws MetaException;
   /**
    * Gets the list of valid write ids for the given table wrt to current txn

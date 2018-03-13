@@ -26,15 +26,17 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.ValidReadTxnList;
-import org.apache.hadoop.hive.common.ValidTxnList;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -65,10 +67,12 @@ public final class MaterializationsInvalidationCache {
 
   /* Key is the database name. Each value is a map from the unique view qualified name to
    * the materialization invalidation info. This invalidation object contains information
-   * such as the tables used by the materialized view or the invalidation time, i.e., first
-   * modification of the tables used by materialized view after the view was created. */
-  private final ConcurrentMap<String, ConcurrentMap<String, MaterializationInvalidationInfo>> materializations =
-      new ConcurrentHashMap<String, ConcurrentMap<String, MaterializationInvalidationInfo>>();
+   * such as the tables used by the materialized view, whether there was any update or
+   * delete in the source tables since the materialized view was created or rebuilt,
+   * or the invalidation time, i.e., first modification of the tables used by materialized
+   * view after the view was created. */
+  private final ConcurrentMap<String, ConcurrentMap<String, Materialization>> materializations =
+      new ConcurrentHashMap<>();
 
   /*
    * Key is a qualified table name. The value is a (sorted) tree map (supporting concurrent
@@ -77,7 +81,10 @@ public final class MaterializationsInvalidationCache {
    * materialization.
    */
   private final ConcurrentMap<String, ConcurrentSkipListMap<Long, Long>> tableModifications =
-      new ConcurrentHashMap<String, ConcurrentSkipListMap<Long, Long>>();
+      new ConcurrentHashMap<>();
+
+  private final ConcurrentMap<String, ConcurrentSkipListSet<Long>> updateDeleteTableModifications =
+      new ConcurrentHashMap<>();
 
   /* Whether the cache has been initialized or not. */
   private boolean initialized;
@@ -188,9 +195,9 @@ public final class MaterializationsInvalidationCache {
       return;
     }
     // We are going to create the map for each view in the given database
-    ConcurrentMap<String, MaterializationInvalidationInfo> cq =
-        new ConcurrentHashMap<String, MaterializationInvalidationInfo>();
-    final ConcurrentMap<String, MaterializationInvalidationInfo> prevCq = materializations.putIfAbsent(
+    ConcurrentMap<String, Materialization> cq =
+        new ConcurrentHashMap<String, Materialization>();
+    final ConcurrentMap<String, Materialization> prevCq = materializations.putIfAbsent(
         dbName, cq);
     if (prevCq != null) {
       cq = prevCq;
@@ -204,13 +211,15 @@ public final class MaterializationsInvalidationCache {
     }
     if (opType == OpType.CREATE || opType == OpType.ALTER) {
       // You store the materialized view
-      cq.put(tableName, new MaterializationInvalidationInfo(tablesUsed, validTxnList));
+      Materialization materialization = new Materialization(tablesUsed);
+      materialization.setValidTxnList(validTxnList);
+      cq.put(tableName, materialization);
     } else {
-      ValidTxnList txnList = new ValidReadTxnList(validTxnList);
+      ValidTxnWriteIdList txnList = new ValidTxnWriteIdList(validTxnList);
       for (String qNameTableUsed : tablesUsed) {
+        ValidWriteIdList tableTxnList = txnList.getTableValidWriteIdList(qNameTableUsed);
         // First we insert a new tree set to keep table modifications, unless it already exists
-        ConcurrentSkipListMap<Long, Long> modificationsTree =
-                new ConcurrentSkipListMap<Long, Long>();
+        ConcurrentSkipListMap<Long, Long> modificationsTree = new ConcurrentSkipListMap<>();
         final ConcurrentSkipListMap<Long, Long> prevModificationsTree = tableModifications.putIfAbsent(
                 qNameTableUsed, modificationsTree);
         if (prevModificationsTree != null) {
@@ -222,7 +231,7 @@ public final class MaterializationsInvalidationCache {
         try {
           String[] names =  qNameTableUsed.split("\\.");
           BasicTxnInfo e = handler.getTxnHandler().getFirstCompletedTransactionForTableAfterCommit(
-                  names[0], names[1], txnList);
+                  names[0], names[1], tableTxnList);
           if (!e.isIsnull()) {
             modificationsTree.put(e.getTxnid(), e.getTime());
             // We do not need to do anything more for current table, as we detected
@@ -236,7 +245,9 @@ public final class MaterializationsInvalidationCache {
         }
       }
       // For LOAD, you only add it if it does exist as you might be loading an outdated MV
-      cq.putIfAbsent(tableName, new MaterializationInvalidationInfo(tablesUsed, validTxnList));
+      Materialization materialization = new Materialization(tablesUsed);
+      materialization.setValidTxnList(validTxnList);
+      cq.putIfAbsent(tableName, materialization);
     }
     if (LOG.isDebugEnabled()) {
       LOG.debug("Cached materialized view for rewriting in invalidation cache: " +
@@ -249,7 +260,7 @@ public final class MaterializationsInvalidationCache {
    * invalidation for the MVs that use that table.
    */
   public void notifyTableModification(String dbName, String tableName,
-      long txnId, long newModificationTime) {
+      long txnId, long newModificationTime, boolean isUpdateDelete) {
     if (disable) {
       // Nothing to do
       return;
@@ -258,8 +269,18 @@ public final class MaterializationsInvalidationCache {
       LOG.debug("Notification for table {} in database {} received -> id: {}, time: {}",
           tableName, dbName, txnId, newModificationTime);
     }
-    ConcurrentSkipListMap<Long, Long> modificationsTree =
-        new ConcurrentSkipListMap<Long, Long>();
+    if (isUpdateDelete) {
+      // We update first the update/delete modifications record
+      ConcurrentSkipListSet<Long> modificationsSet = new ConcurrentSkipListSet<>();
+      final ConcurrentSkipListSet<Long> prevModificationsSet =
+          updateDeleteTableModifications.putIfAbsent(Warehouse.getQualifiedName(dbName, tableName),
+              modificationsSet);
+      if (prevModificationsSet != null) {
+        modificationsSet = prevModificationsSet;
+      }
+      modificationsSet.add(txnId);
+    }
+    ConcurrentSkipListMap<Long, Long> modificationsTree = new ConcurrentSkipListMap<>();
     final ConcurrentSkipListMap<Long, Long> prevModificationsTree =
         tableModifications.putIfAbsent(Warehouse.getQualifiedName(dbName, tableName), modificationsTree);
     if (prevModificationsTree != null) {
@@ -293,30 +314,21 @@ public final class MaterializationsInvalidationCache {
     if (materializations.get(dbName) != null) {
       ImmutableMap.Builder<String, Materialization> m = ImmutableMap.builder();
       for (String materializationName : materializationNames) {
-        MaterializationInvalidationInfo materialization =
+        Materialization materialization =
             materializations.get(dbName).get(materializationName);
         if (materialization == null) {
           LOG.debug("Materialization {} skipped as there is no information "
               + "in the invalidation cache about it", materializationName);
           continue;
         }
-        long invalidationTime = getInvalidationTime(materialization);
-        // We need to check whether previous value is zero, as data modification
-        // in another table used by the materialized view might have modified
-        // the value too
-        boolean modified = materialization.compareAndSetInvalidationTime(0L, invalidationTime);
-        while (!modified) {
-          long currentInvalidationTime = materialization.getInvalidationTime();
-          if (invalidationTime < currentInvalidationTime) {
-            // It was set by other table modification, but it was after this table modification
-            // hence we need to set it
-            modified = materialization.compareAndSetInvalidationTime(currentInvalidationTime, invalidationTime);
-          } else {
-            // Nothing to do
-            modified = true;
-          }
-        }
-        m.put(materializationName, materialization);
+        // We create a deep copy of the materialization, as we need to set the time
+        // and whether any update/delete operation happen on the tables that it uses
+        // since it was created.
+        Materialization materializationCopy = new Materialization(
+            materialization.getTablesUsed());
+        materializationCopy.setValidTxnList(materialization.getValidTxnList());
+        enrichWithInvalidationInfo(materializationCopy);
+        m.put(materializationName, materializationCopy);
       }
       Map<String, Materialization> result = m.build();
       if (LOG.isDebugEnabled()) {
@@ -327,50 +339,65 @@ public final class MaterializationsInvalidationCache {
     return ImmutableMap.of();
   }
 
-  private long getInvalidationTime(MaterializationInvalidationInfo materialization) {
-    String txnListString = materialization.getValidTxnList();
-    if (txnListString == null) {
+  private void enrichWithInvalidationInfo(Materialization materialization) {
+    String materializationTxnListString = materialization.getValidTxnList();
+    if (materializationTxnListString == null) {
       // This can happen when the materialization was created on non-transactional tables
-      return Long.MIN_VALUE;
+      materialization.setInvalidationTime(Long.MIN_VALUE);
+      return;
     }
 
     // We will obtain the modification time as follows.
     // First, we obtain the first element after high watermark (if any)
     // Then, we iterate through the elements from min open txn till high
     // watermark, updating the modification time after creation if needed
-    ValidTxnList txnList = new ValidReadTxnList(txnListString);
+    ValidTxnWriteIdList materializationTxnList = new ValidTxnWriteIdList(materializationTxnListString);
     long firstModificationTimeAfterCreation = 0L;
+    boolean containsUpdateDelete = false;
     for (String qNameTableUsed : materialization.getTablesUsed()) {
-      final Entry<Long, Long> tn = tableModifications.get(qNameTableUsed)
-          .higherEntry(txnList.getHighWatermark());
+      final ValidWriteIdList tableMaterializationTxnList =
+          materializationTxnList.getTableValidWriteIdList(qNameTableUsed);
+
+      final ConcurrentSkipListMap<Long, Long> usedTableModifications =
+          tableModifications.get(qNameTableUsed);
+      final ConcurrentSkipListSet<Long> usedUDTableModifications =
+          updateDeleteTableModifications.get(qNameTableUsed);
+      final Entry<Long, Long> tn = usedTableModifications.higherEntry(tableMaterializationTxnList.getHighWatermark());
       if (tn != null) {
         if (firstModificationTimeAfterCreation == 0L ||
             tn.getValue() < firstModificationTimeAfterCreation) {
           firstModificationTimeAfterCreation = tn.getValue();
         }
+        // Check if there was any update/delete after creation
+        containsUpdateDelete = usedUDTableModifications != null &&
+            !usedUDTableModifications.tailSet(tableMaterializationTxnList.getHighWatermark(), false).isEmpty();
       }
       // Min open txn might be null if there were no open transactions
       // when this transaction was being executed
-      if (txnList.getMinOpenTxn() != null) {
+      if (tableMaterializationTxnList.getMinOpenWriteId() != null) {
         // Invalid transaction list is sorted
         int pos = 0;
-        for (Map.Entry<Long, Long> t : tableModifications.get(qNameTableUsed)
-                .subMap(txnList.getMinOpenTxn(), txnList.getHighWatermark()).entrySet()) {
-          while (pos < txnList.getInvalidTransactions().length &&
-              txnList.getInvalidTransactions()[pos] != t.getKey()) {
+        for (Map.Entry<Long, Long> t : usedTableModifications
+                .subMap(tableMaterializationTxnList.getMinOpenWriteId(), tableMaterializationTxnList.getHighWatermark()).entrySet()) {
+          while (pos < tableMaterializationTxnList.getInvalidWriteIds().length &&
+              tableMaterializationTxnList.getInvalidWriteIds()[pos] != t.getKey()) {
             pos++;
           }
-          if (pos >= txnList.getInvalidTransactions().length) {
+          if (pos >= tableMaterializationTxnList.getInvalidWriteIds().length) {
             break;
           }
           if (firstModificationTimeAfterCreation == 0L ||
               t.getValue() < firstModificationTimeAfterCreation) {
             firstModificationTimeAfterCreation = t.getValue();
           }
+          containsUpdateDelete = containsUpdateDelete ||
+              (usedUDTableModifications != null && usedUDTableModifications.contains(t.getKey()));
         }
       }
     }
-    return firstModificationTimeAfterCreation;
+
+    materialization.setInvalidationTime(firstModificationTimeAfterCreation);
+    materialization.setSourceTablesUpdateDeleteModified(containsUpdateDelete);
   }
 
   private enum OpType {
@@ -395,16 +422,17 @@ public final class MaterializationsInvalidationCache {
     // We execute the cleanup in two steps
     // First we gather all the transactions that need to be kept
     final Multimap<String, Long> keepTxnInfos = HashMultimap.create();
-    for (Map.Entry<String, ConcurrentMap<String, MaterializationInvalidationInfo>> e : materializations.entrySet()) {
-      for (MaterializationInvalidationInfo m : e.getValue().values()) {
-        ValidTxnList txnList = new ValidReadTxnList(m.getValidTxnList());
+    for (Map.Entry<String, ConcurrentMap<String, Materialization>> e : materializations.entrySet()) {
+      for (Materialization m : e.getValue().values()) {
+        ValidTxnWriteIdList txnList = new ValidTxnWriteIdList(m.getValidTxnList());
         boolean canBeDeleted = false;
         String currentTableForInvalidatingTxn = null;
         long currentInvalidatingTxnId = 0L;
         long currentInvalidatingTxnTime = 0L;
         for (String qNameTableUsed : m.getTablesUsed()) {
+          ValidWriteIdList tableTxnList = txnList.getTableValidWriteIdList(qNameTableUsed);
           final Entry<Long, Long> tn = tableModifications.get(qNameTableUsed)
-              .higherEntry(txnList.getHighWatermark());
+              .higherEntry(tableTxnList.getHighWatermark());
           if (tn != null) {
             if (currentInvalidatingTxnTime == 0L ||
                 tn.getValue() < currentInvalidatingTxnTime) {
@@ -424,16 +452,16 @@ public final class MaterializationsInvalidationCache {
               currentInvalidatingTxnTime = tn.getValue();
             }
           }
-          if (txnList.getMinOpenTxn() != null) {
+          if (tableTxnList.getMinOpenWriteId() != null) {
             // Invalid transaction list is sorted
             int pos = 0;
             for (Entry<Long, Long> t : tableModifications.get(qNameTableUsed)
-                .subMap(txnList.getMinOpenTxn(), txnList.getHighWatermark()).entrySet()) {
-              while (pos < txnList.getInvalidTransactions().length &&
-                  txnList.getInvalidTransactions()[pos] != t.getKey()) {
+                .subMap(tableTxnList.getMinOpenWriteId(), tableTxnList.getHighWatermark()).entrySet()) {
+              while (pos < tableTxnList.getInvalidWriteIds().length &&
+                  tableTxnList.getInvalidWriteIds()[pos] != t.getKey()) {
                 pos++;
               }
-              if (pos >= txnList.getInvalidTransactions().length) {
+              if (pos >= tableTxnList.getInvalidWriteIds().length) {
                 break;
               }
               if (currentInvalidatingTxnTime == 0L ||
@@ -462,6 +490,7 @@ public final class MaterializationsInvalidationCache {
     long removed = 0L;
     for (Entry<String, ConcurrentSkipListMap<Long, Long>> e : tableModifications.entrySet()) {
       Collection<Long> c = keepTxnInfos.get(e.getKey());
+      ConcurrentSkipListSet<Long> updateDeleteForTable = updateDeleteTableModifications.get(e.getKey());
       for (Iterator<Entry<Long, Long>> it = e.getValue().entrySet().iterator(); it.hasNext();) {
         Entry<Long, Long> v = it.next();
         // We need to check again the time because some of the transactions might not be explored
@@ -472,12 +501,34 @@ public final class MaterializationsInvalidationCache {
             LOG.debug("Transaction removed from cache for table {} -> id: {}, time: {}",
                 e.getKey(), v.getKey(), v.getValue());
           }
+          if (updateDeleteForTable != null) {
+            updateDeleteForTable.remove(v.getKey());
+          }
           it.remove();
           removed++;
         }
       }
     }
     return removed;
+  }
+
+  /**
+   * Checks whether the given materialization exists in the invalidation cache.
+   * @param dbName the database name for the materialization
+   * @param tblName the table name for the materialization
+   * @return true if we have information about the materialization in the cache,
+   * false otherwise
+   */
+  public boolean containsMaterialization(String dbName, String tblName) {
+    if (disable || dbName == null || tblName == null) {
+      return false;
+    }
+    ConcurrentMap<String, Materialization> dbMaterializations = materializations.get(dbName);
+    if (dbMaterializations == null || dbMaterializations.get(tblName) == null) {
+      // This is a table
+      return false;
+    }
+    return true;
   }
 
 }
