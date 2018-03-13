@@ -43,6 +43,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -2867,8 +2868,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       logInfo("add_partitions");
       boolean success = false;
       // Ensures that the list doesn't have dups, and keeps track of directories we have created.
-      final Map<PartValEqWrapper, Boolean> addedPartitions =
-          Collections.synchronizedMap(new HashMap<PartValEqWrapper, Boolean>());
+      final Map<PartValEqWrapper, Boolean> addedPartitions = new ConcurrentHashMap<>();
       final List<Partition> newParts = new ArrayList<>();
       final List<Partition> existingParts = new ArrayList<>();
       Table tbl = null;
@@ -3078,8 +3078,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws TException {
       boolean success = false;
       // Ensures that the list doesn't have dups, and keeps track of directories we have created.
-      final Map<PartValEqWrapperLite, Boolean> addedPartitions =
-          Collections.synchronizedMap(new HashMap<PartValEqWrapperLite, Boolean>());
+      final Map<PartValEqWrapperLite, Boolean> addedPartitions = new ConcurrentHashMap<>();
       PartitionSpecProxy partitionSpecProxy = PartitionSpecProxy.Factory.get(partSpecs);
       final PartitionSpecProxy.PartitionIterator partitionIterator = partitionSpecProxy
           .getPartitionIterator();
