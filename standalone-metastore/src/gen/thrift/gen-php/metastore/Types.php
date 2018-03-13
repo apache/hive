@@ -23975,6 +23975,10 @@ class Materialization {
    * @var int
    */
   public $invalidationTime = null;
+  /**
+   * @var bool
+   */
+  public $sourceTablesUpdateDeleteModified = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -23995,6 +23999,10 @@ class Materialization {
           'var' => 'invalidationTime',
           'type' => TType::I64,
           ),
+        4 => array(
+          'var' => 'sourceTablesUpdateDeleteModified',
+          'type' => TType::BOOL,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -24006,6 +24014,9 @@ class Materialization {
       }
       if (isset($vals['invalidationTime'])) {
         $this->invalidationTime = $vals['invalidationTime'];
+      }
+      if (isset($vals['sourceTablesUpdateDeleteModified'])) {
+        $this->sourceTablesUpdateDeleteModified = $vals['sourceTablesUpdateDeleteModified'];
       }
     }
   }
@@ -24064,6 +24075,13 @@ class Materialization {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->sourceTablesUpdateDeleteModified);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -24106,6 +24124,11 @@ class Materialization {
     if ($this->invalidationTime !== null) {
       $xfer += $output->writeFieldBegin('invalidationTime', TType::I64, 3);
       $xfer += $output->writeI64($this->invalidationTime);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->sourceTablesUpdateDeleteModified !== null) {
+      $xfer += $output->writeFieldBegin('sourceTablesUpdateDeleteModified', TType::BOOL, 4);
+      $xfer += $output->writeBool($this->sourceTablesUpdateDeleteModified);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

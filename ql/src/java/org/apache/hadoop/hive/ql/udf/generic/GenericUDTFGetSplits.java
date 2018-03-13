@@ -249,7 +249,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     DriverCleanup driverCleanup = new DriverCleanup(driver, txnManager, splitsAppId.toString());
     boolean needsCleanup = true;
     try {
-      CommandProcessorResponse cpr = driver.compileAndRespond(query);
+      CommandProcessorResponse cpr = driver.compileAndRespond(query, true);
       if (cpr.getResponseCode() != 0) {
         throw new HiveException("Failed to compile query: " + cpr.getException());
       }
@@ -280,7 +280,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
         HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, "llap");
         query = "select * from " + tableName;
-        cpr = driver.compileAndRespond(query);
+        cpr = driver.compileAndRespond(query, true);
         if(cpr.getResponseCode() != 0) {
           throw new HiveException("Failed to create temp table: "+cpr.getException());
         }

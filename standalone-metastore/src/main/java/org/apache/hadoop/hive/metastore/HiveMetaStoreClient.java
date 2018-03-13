@@ -3127,4 +3127,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     else if (max <= Short.MAX_VALUE) return (short)max;
     else return Short.MAX_VALUE;
   }
+
+  @Override
+  public LockResponse lockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException {
+    return client.get_lock_materialization_rebuild(dbName, tableName, txnId);
+  }
+
+  @Override
+  public boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException {
+    return client.heartbeat_lock_materialization_rebuild(dbName, tableName, txnId);
+  }
 }
