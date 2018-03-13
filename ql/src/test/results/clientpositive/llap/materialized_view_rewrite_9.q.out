@@ -1,0 +1,389 @@
+PREHOOK: query: create table if not exists source_table_001 (
+MY_DATE timestamp,
+MY_ID bigint,
+MY_ID2 bigint,
+ENVIRONMENT string,
+DOWN_VOLUME bigint,
+UP_VOLUME bigint
+)
+stored AS ORC
+TBLPROPERTIES("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@source_table_001
+POSTHOOK: query: create table if not exists source_table_001 (
+MY_DATE timestamp,
+MY_ID bigint,
+MY_ID2 bigint,
+ENVIRONMENT string,
+DOWN_VOLUME bigint,
+UP_VOLUME bigint
+)
+stored AS ORC
+TBLPROPERTIES("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@source_table_001
+PREHOOK: query: insert into table source_table_001
+  values ('2010-10-10 00:00:00', 1, 1, 'env', 1, 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@source_table_001
+POSTHOOK: query: insert into table source_table_001
+  values ('2010-10-10 00:00:00', 1, 1, 'env', 1, 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@source_table_001
+POSTHOOK: Lineage: source_table_001.down_volume SCRIPT []
+POSTHOOK: Lineage: source_table_001.environment SCRIPT []
+POSTHOOK: Lineage: source_table_001.my_date SCRIPT []
+POSTHOOK: Lineage: source_table_001.my_id SCRIPT []
+POSTHOOK: Lineage: source_table_001.my_id2 SCRIPT []
+POSTHOOK: Lineage: source_table_001.up_volume SCRIPT []
+PREHOOK: query: analyze table source_table_001 compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table_001
+PREHOOK: Output: default@source_table_001
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table source_table_001 compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table_001
+POSTHOOK: Output: default@source_table_001
+#### A masked pattern was here ####
+PREHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv ENABLE REWRITE AS
+SELECT
+SUM(A.DOWN_VOLUME) AS DOWN_VOLUME_SUM,
+SUM(A.UP_VOLUME) AS UP_VOLUME_SUM,
+A.MY_ID,A.MY_DATE,A.MY_ID2,A.ENVIRONMENT
+from source_table_001 AS A
+group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,A.MY_DATE
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@source_table_001
+PREHOOK: Output: database:default
+PREHOOK: Output: default@source_table_001_mv
+POSTHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv ENABLE REWRITE AS
+SELECT
+SUM(A.DOWN_VOLUME) AS DOWN_VOLUME_SUM,
+SUM(A.UP_VOLUME) AS UP_VOLUME_SUM,
+A.MY_ID,A.MY_DATE,A.MY_ID2,A.ENVIRONMENT
+from source_table_001 AS A
+group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,A.MY_DATE
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@source_table_001
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@source_table_001_mv
+PREHOOK: query: analyze table source_table_001_mv compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table_001_mv
+PREHOOK: Output: default@source_table_001_mv
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table source_table_001_mv compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table_001_mv
+POSTHOOK: Output: default@source_table_001_mv
+#### A masked pattern was here ####
+PREHOOK: query: explain
+select
+SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
+FLOOR(A.MY_DATE to hour),A.MY_ID2,A.ENVIRONMENT
+FROM source_table_001 AS A
+group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to hour)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select
+SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
+FLOOR(A.MY_DATE to hour),A.MY_ID2,A.ENVIRONMENT
+FROM source_table_001 AS A
+group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to hour)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: default.source_table_001_mv
+                  Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: down_volume_sum (type: bigint), my_id (type: bigint), my_id2 (type: bigint), environment (type: string), floor_hour(my_date) (type: timestamp)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(_col0)
+                      keys: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: string), _col4 (type: timestamp)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: string), _col3 (type: timestamp)
+                        sort order: ++++
+                        Map-reduce partition columns: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: string), _col3 (type: timestamp)
+                        Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col4 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: bigint), KEY._col1 (type: bigint), KEY._col2 (type: string), KEY._col3 (type: timestamp)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col4 (type: bigint), _col3 (type: timestamp), _col1 (type: bigint), _col2 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 1 Data size: 143 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 143 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DROP MATERIALIZED VIEW source_table_001_mv
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@source_table_001_mv
+PREHOOK: Output: default@source_table_001_mv
+POSTHOOK: query: DROP MATERIALIZED VIEW source_table_001_mv
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@source_table_001_mv
+POSTHOOK: Output: default@source_table_001_mv
+PREHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv ENABLE REWRITE AS
+SELECT
+SUM(A.DOWN_VOLUME) AS DOWN_VOLUME_SUM,
+SUM(A.UP_VOLUME) AS UP_VOLUME_SUM,
+A.MY_ID,FLOOR(A.MY_DATE to hour),A.MY_ID2,A.ENVIRONMENT
+from source_table_001 AS A
+group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to hour)
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@source_table_001
+PREHOOK: Output: database:default
+PREHOOK: Output: default@source_table_001_mv
+POSTHOOK: query: CREATE MATERIALIZED VIEW source_table_001_mv ENABLE REWRITE AS
+SELECT
+SUM(A.DOWN_VOLUME) AS DOWN_VOLUME_SUM,
+SUM(A.UP_VOLUME) AS UP_VOLUME_SUM,
+A.MY_ID,FLOOR(A.MY_DATE to hour),A.MY_ID2,A.ENVIRONMENT
+from source_table_001 AS A
+group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to hour)
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@source_table_001
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@source_table_001_mv
+PREHOOK: query: analyze table source_table_001_mv compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@source_table_001_mv
+PREHOOK: Output: default@source_table_001_mv
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table source_table_001_mv compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@source_table_001_mv
+POSTHOOK: Output: default@source_table_001_mv
+#### A masked pattern was here ####
+PREHOOK: query: explain
+select
+SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
+FLOOR(A.MY_DATE to day),A.MY_ID2,A.ENVIRONMENT
+FROM source_table_001 AS A
+group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to day)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select
+SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
+FLOOR(A.MY_DATE to day),A.MY_ID2,A.ENVIRONMENT
+FROM source_table_001 AS A
+group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to day)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: default.source_table_001_mv
+                  Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: down_volume_sum (type: bigint), my_id (type: bigint), my_id2 (type: bigint), environment (type: string), floor_day(_c3) (type: timestamp)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(_col0)
+                      keys: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: string), _col4 (type: timestamp)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: string), _col3 (type: timestamp)
+                        sort order: ++++
+                        Map-reduce partition columns: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: string), _col3 (type: timestamp)
+                        Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col4 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: bigint), KEY._col1 (type: bigint), KEY._col2 (type: string), KEY._col3 (type: timestamp)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col4 (type: bigint), _col3 (type: timestamp), _col1 (type: bigint), _col2 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 1 Data size: 143 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 143 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select
+SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
+FLOOR(A.MY_DATE to hour),A.MY_ID2,A.ENVIRONMENT
+FROM source_table_001 AS A
+group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to hour)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select
+SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
+FLOOR(A.MY_DATE to hour),A.MY_ID2,A.ENVIRONMENT
+FROM source_table_001 AS A
+group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to hour)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: default.source_table_001_mv
+          Select Operator
+            expressions: down_volume_sum (type: bigint), _c3 (type: timestamp), my_id2 (type: bigint), environment (type: string)
+            outputColumnNames: _col0, _col1, _col2, _col3
+            ListSink
+
+PREHOOK: query: explain
+select
+SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
+FLOOR(A.MY_DATE to second),A.MY_ID2,A.ENVIRONMENT
+FROM source_table_001 AS A
+group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to second)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select
+SUM(A.DOWN_VOLUME) AS DOWNLOAD_VOLUME_BYTES,
+FLOOR(A.MY_DATE to second),A.MY_ID2,A.ENVIRONMENT
+FROM source_table_001 AS A
+group by A.MY_ID,A.MY_ID2,A.ENVIRONMENT,FLOOR(A.MY_DATE to second)
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a
+                  Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: my_id (type: bigint), my_id2 (type: bigint), environment (type: string), floor_second(my_date) (type: timestamp), down_volume (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(_col4)
+                      keys: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: string), _col3 (type: timestamp)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                      Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: string), _col3 (type: timestamp)
+                        sort order: ++++
+                        Map-reduce partition columns: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: string), _col3 (type: timestamp)
+                        Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col4 (type: bigint)
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: bigint), KEY._col1 (type: bigint), KEY._col2 (type: string), KEY._col3 (type: timestamp)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                Statistics: Num rows: 1 Data size: 151 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col4 (type: bigint), _col3 (type: timestamp), _col1 (type: bigint), _col2 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
+                  Statistics: Num rows: 1 Data size: 143 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 143 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: DROP MATERIALIZED VIEW source_table_001_mv
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@source_table_001_mv
+PREHOOK: Output: default@source_table_001_mv
+POSTHOOK: query: DROP MATERIALIZED VIEW source_table_001_mv
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@source_table_001_mv
+POSTHOOK: Output: default@source_table_001_mv

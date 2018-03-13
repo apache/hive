@@ -18,32 +18,18 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import org.apache.hadoop.hive.common.HiveStatsUtils;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.conf.HiveVariableSource;
-import org.apache.hadoop.hive.conf.VariableSubstitution;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * MaterializedViewRebuildSemanticAnalyzer.
@@ -54,7 +40,6 @@ public class MaterializedViewRebuildSemanticAnalyzer extends CalcitePlanner {
 
   private static final Logger LOG =
       LoggerFactory.getLogger(MaterializedViewRebuildSemanticAnalyzer.class);
-  static final private LogHelper console = new LogHelper(LOG);
 
 
   public MaterializedViewRebuildSemanticAnalyzer(QueryState queryState) throws SemanticException {
@@ -64,7 +49,7 @@ public class MaterializedViewRebuildSemanticAnalyzer extends CalcitePlanner {
 
   @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
-    if (rewrittenRebuild) {
+    if (mvRebuildMode != MaterializationRebuildMode.NONE) {
       super.analyzeInternal(ast);
       return;
     }
@@ -86,14 +71,35 @@ public class MaterializedViewRebuildSemanticAnalyzer extends CalcitePlanner {
         throw new SemanticException(ErrorMsg.MATERIALIZED_VIEW_DEF_EMPTY);
       }
       Context ctx = new Context(queryState.getConf());
-      rewrittenAST = ParseUtils.parse("insert overwrite table `" +
-          dbDotTable + "` " + viewText, ctx);
+      rewrittenAST = ParseUtils.parse("insert overwrite table " +
+          "`" + qualifiedTableName[0] + "`.`" + qualifiedTableName[1] + "` " +
+          viewText, ctx);
       this.ctx.addRewrittenStatementContext(ctx);
+
+      if (!this.ctx.isExplainPlan() && AcidUtils.isTransactionalTable(tab)) {
+        // Acquire lock for the given materialized view. Only one rebuild per materialized
+        // view can be triggered at a given time, as otherwise we might produce incorrect
+        // results if incremental maintenance is triggered.
+        HiveTxnManager txnManager = SessionState.get().getTxnMgr();
+        LockState state;
+        try {
+          state = txnManager.acquireMaterializationRebuildLock(
+              qualifiedTableName[0], qualifiedTableName[1], txnManager.getCurrentTxnId()).getState();
+        } catch (LockException e) {
+          throw new SemanticException("Exception acquiring lock for rebuilding the materialized view", e);
+        }
+        if (state != LockState.ACQUIRED) {
+          throw new SemanticException("Another process is rebuilding the materialized view " + dbDotTable);
+        }
+      }
     } catch (Exception e) {
       throw new SemanticException(e);
     }
-    rewrittenRebuild = true;
-    LOG.info("Rebuilding view " + dbDotTable);
+    mvRebuildMode = MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD;
+    mvRebuildDbName = qualifiedTableName[0];
+    mvRebuildName = qualifiedTableName[1];
+
+    LOG.debug("Rebuilding materialized view " + dbDotTable);
     super.analyzeInternal(rewrittenAST);
   }
 }

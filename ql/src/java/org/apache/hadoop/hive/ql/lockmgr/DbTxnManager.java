@@ -61,6 +61,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * An implementation of HiveTxnManager that stores the transactions in the metastore database.
@@ -754,6 +755,13 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
 
     Heartbeater heartbeater = new Heartbeater(this, conf, queryId, currentUser);
+    heartbeatTask = startHeartbeat(initialDelay, heartbeatInterval, heartbeater);
+    LOG.debug("Started heartbeat with delay/interval = " + initialDelay + "/" + heartbeatInterval +
+        " " + TimeUnit.MILLISECONDS + " for query: " + queryId);
+    return heartbeater;
+  }
+
+  private ScheduledFuture<?> startHeartbeat(long initialDelay, long heartbeatInterval, Runnable heartbeater) {
     // For negative testing purpose..
     if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILHEARTBEATER)) {
       initialDelay = 0;
@@ -763,12 +771,9 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       resources, that they all don't start heartbeating at the same time*/
       initialDelay = (long)Math.floor(heartbeatInterval * 0.75 * Math.random());
     }
-
-    heartbeatTask = heartbeatExecutorService.scheduleAtFixedRate(
+    ScheduledFuture<?> task = heartbeatExecutorService.scheduleAtFixedRate(
         heartbeater, initialDelay, heartbeatInterval, TimeUnit.MILLISECONDS);
-    LOG.info("Started heartbeat with delay/interval = " + initialDelay + "/" + heartbeatInterval +
-        " " + TimeUnit.MILLISECONDS + " for query: " + queryId);
-    return heartbeater;
+    return task;
   }
 
   private void stopHeartbeat() throws LockException {
@@ -886,6 +891,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
     return false;
   }
+
   @Override
   public boolean isImplicitTransactionOpen() {
     if(!isTxnOpen()) {
@@ -976,6 +982,38 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     }
   }
 
+  @Override
+  public LockResponse acquireMaterializationRebuildLock(String dbName, String tableName, long txnId) throws LockException {
+    // Acquire lock
+    LockResponse lockResponse;
+    try {
+      lockResponse = getMS().lockMaterializationRebuild(dbName, tableName, txnId);
+    } catch (TException e) {
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+    }
+    if (lockResponse.getState() == LockState.ACQUIRED) {
+      // If lock response is ACQUIRED, we can create the heartbeater
+      long initialDelay = 0L;
+      long heartbeatInterval = getHeartbeatInterval(conf);
+      assert heartbeatInterval > 0;
+      MaterializationRebuildLockHeartbeater heartbeater = new MaterializationRebuildLockHeartbeater(
+          this, dbName, tableName, queryId, txnId);
+      ScheduledFuture<?> task = startHeartbeat(initialDelay, heartbeatInterval, heartbeater);
+      heartbeater.task.set(task);
+      LOG.debug("Started heartbeat for materialization rebuild lock for {} with delay/interval = {}/{} {} for query: {}",
+          AcidUtils.getFullTableName(dbName, tableName), initialDelay, heartbeatInterval, TimeUnit.MILLISECONDS, queryId);
+    }
+    return lockResponse;
+  }
+
+  private boolean heartbeatMaterializationRebuildLock(String dbName, String tableName, long txnId) throws LockException {
+    try {
+      return getMS().heartbeatLockMaterializationRebuild(dbName, tableName, txnId);
+    } catch (TException e) {
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+    }
+  }
+
   private static long getHeartbeatInterval(Configuration conf) throws LockException {
     // Retrieve HIVE_TXN_TIMEOUT in MILLISECONDS (it's defined as SECONDS),
     // then divide it by 2 to give us a safety factor.
@@ -1039,6 +1077,57 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
             + currentUser + ": " + t.getMessage();
         LOG.error(errorMsg, t);
         lockException = new LockException(errorMsg, t);
+      }
+    }
+  }
+
+  /**
+   * MaterializationRebuildLockHeartbeater is a runnable that will be run in a
+   * ScheduledExecutorService in given intervals. Once the heartbeat cannot
+   * refresh the lock anymore, it will interrupt itself.
+   */
+  private static class MaterializationRebuildLockHeartbeater implements Runnable {
+
+    private final DbTxnManager txnMgr;
+    private final String dbName;
+    private final String tableName;
+    private final String queryId;
+    private final long txnId;
+    private final AtomicReference<ScheduledFuture<?>> task;
+
+    MaterializationRebuildLockHeartbeater(DbTxnManager txnMgr, String dbName, String tableName,
+        String queryId, long txnId) {
+      this.txnMgr = txnMgr;
+      this.queryId = queryId;
+      this.dbName = dbName;
+      this.tableName = tableName;
+      this.txnId = txnId;
+      this.task = new AtomicReference<>();
+    }
+
+    /**
+     * Send a heartbeat to the metastore for locks and transactions.
+     */
+    @Override
+    public void run() {
+      LOG.trace("Heartbeating materialization rebuild lock for {} for query: {}",
+          AcidUtils.getFullTableName(dbName, tableName), queryId);
+      boolean refreshed;
+      try {
+        refreshed = txnMgr.heartbeatMaterializationRebuildLock(dbName, tableName, txnId);
+      } catch (LockException e) {
+        LOG.error("Failed trying to acquire lock", e);
+        throw new RuntimeException(e);
+      }
+      if (!refreshed) {
+        // We could not heartbeat the lock, i.e., the operation has finished,
+        // hence we interrupt this work
+        ScheduledFuture<?> t = task.get();
+        if (t != null) {
+          t.cancel(false);
+          LOG.debug("Stopped heartbeat for materialization rebuild lock for {} for query: {}",
+              AcidUtils.getFullTableName(dbName, tableName), queryId);
+        }
       }
     }
   }

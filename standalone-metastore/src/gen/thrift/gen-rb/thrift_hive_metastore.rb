@@ -3348,6 +3348,36 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_serde failed: unknown result')
     end
 
+    def get_lock_materialization_rebuild(dbName, tableName, txnId)
+      send_get_lock_materialization_rebuild(dbName, tableName, txnId)
+      return recv_get_lock_materialization_rebuild()
+    end
+
+    def send_get_lock_materialization_rebuild(dbName, tableName, txnId)
+      send_message('get_lock_materialization_rebuild', Get_lock_materialization_rebuild_args, :dbName => dbName, :tableName => tableName, :txnId => txnId)
+    end
+
+    def recv_get_lock_materialization_rebuild()
+      result = receive_message(Get_lock_materialization_rebuild_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_lock_materialization_rebuild failed: unknown result')
+    end
+
+    def heartbeat_lock_materialization_rebuild(dbName, tableName, txnId)
+      send_heartbeat_lock_materialization_rebuild(dbName, tableName, txnId)
+      return recv_heartbeat_lock_materialization_rebuild()
+    end
+
+    def send_heartbeat_lock_materialization_rebuild(dbName, tableName, txnId)
+      send_message('heartbeat_lock_materialization_rebuild', Heartbeat_lock_materialization_rebuild_args, :dbName => dbName, :tableName => tableName, :txnId => txnId)
+    end
+
+    def recv_heartbeat_lock_materialization_rebuild()
+      result = receive_message(Heartbeat_lock_materialization_rebuild_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'heartbeat_lock_materialization_rebuild failed: unknown result')
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -5873,6 +5903,20 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_serde', seqid)
+    end
+
+    def process_get_lock_materialization_rebuild(seqid, iprot, oprot)
+      args = read_args(iprot, Get_lock_materialization_rebuild_args)
+      result = Get_lock_materialization_rebuild_result.new()
+      result.success = @handler.get_lock_materialization_rebuild(args.dbName, args.tableName, args.txnId)
+      write_result(result, oprot, 'get_lock_materialization_rebuild', seqid)
+    end
+
+    def process_heartbeat_lock_materialization_rebuild(seqid, iprot, oprot)
+      args = read_args(iprot, Heartbeat_lock_materialization_rebuild_args)
+      result = Heartbeat_lock_materialization_rebuild_result.new()
+      result.success = @handler.heartbeat_lock_materialization_rebuild(args.dbName, args.tableName, args.txnId)
+      write_result(result, oprot, 'heartbeat_lock_materialization_rebuild', seqid)
     end
 
   end
@@ -13291,6 +13335,78 @@ module ThriftHiveMetastore
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::SerDeInfo},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_lock_materialization_rebuild_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DBNAME = 1
+    TABLENAME = 2
+    TXNID = 3
+
+    FIELDS = {
+      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+      TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
+      TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_lock_materialization_rebuild_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::LockResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Heartbeat_lock_materialization_rebuild_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DBNAME = 1
+    TABLENAME = 2
+    TXNID = 3
+
+    FIELDS = {
+      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+      TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
+      TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Heartbeat_lock_materialization_rebuild_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'}
     }
 
     def struct_fields; FIELDS; end
