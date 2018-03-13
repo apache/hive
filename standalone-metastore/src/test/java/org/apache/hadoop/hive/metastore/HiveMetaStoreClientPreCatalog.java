@@ -3321,4 +3321,16 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public SerDeInfo getSerDe(String serDeName) throws TException {
     throw new UnsupportedOperationException();
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public LockResponse lockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException {
+    throw new UnsupportedOperationException();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean heartbeatLockMaterializationRebuild(String dbName, String tableName, long txnId) throws TException {
+    throw new UnsupportedOperationException();
+  }
 }

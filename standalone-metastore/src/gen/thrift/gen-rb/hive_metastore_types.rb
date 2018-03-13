@@ -3814,18 +3814,19 @@ class Materialization
   TABLESUSED = 1
   VALIDTXNLIST = 2
   INVALIDATIONTIME = 3
+  SOURCETABLESUPDATEDELETEMODIFIED = 4
 
   FIELDS = {
     TABLESUSED => {:type => ::Thrift::Types::SET, :name => 'tablesUsed', :element => {:type => ::Thrift::Types::STRING}},
     VALIDTXNLIST => {:type => ::Thrift::Types::STRING, :name => 'validTxnList', :optional => true},
-    INVALIDATIONTIME => {:type => ::Thrift::Types::I64, :name => 'invalidationTime'}
+    INVALIDATIONTIME => {:type => ::Thrift::Types::I64, :name => 'invalidationTime', :optional => true},
+    SOURCETABLESUPDATEDELETEMODIFIED => {:type => ::Thrift::Types::BOOL, :name => 'sourceTablesUpdateDeleteModified', :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tablesUsed is unset!') unless @tablesUsed
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field invalidationTime is unset!') unless @invalidationTime
   end
 
   ::Thrift::Struct.generate_accessors self

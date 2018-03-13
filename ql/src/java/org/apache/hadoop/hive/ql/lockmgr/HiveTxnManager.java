@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -269,4 +270,14 @@ public interface HiveTxnManager {
    * Even a single statement, (e.g. Merge, multi-insert may generates several writes).
    */
   int getStmtIdAndIncrement();
+
+  /**
+   * Acquire the materialization rebuild lock for a given view. We need to specify the fully
+   * qualified name of the materialized view and the open transaction ID so we can identify
+   * uniquely the lock.
+   * @return the response from the metastore, where the lock id is equal to the txn id and
+   * the status can be either ACQUIRED or NOT ACQUIRED
+   */
+  LockResponse acquireMaterializationRebuildLock(String dbName, String tableName, long txnId)
+      throws LockException;
 }
