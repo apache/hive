@@ -8367,6 +8367,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("get_serde", serde != null, ex);
       }
     }
+
+    @Override
+    public LockResponse get_lock_materialization_rebuild(String dbName, String tableName, long txnId)
+        throws TException {
+      return MaterializationsRebuildLockHandler.get().lockResource(dbName, tableName, txnId);
+    }
+
+    @Override
+    public boolean heartbeat_lock_materialization_rebuild(String dbName, String tableName, long txnId)
+        throws TException {
+      return MaterializationsRebuildLockHandler.get().refreshLockResource(dbName, tableName, txnId);
+    }
   }
 
   private static IHMSHandler newRetryingHMSHandler(IHMSHandler baseHandler, Configuration conf)

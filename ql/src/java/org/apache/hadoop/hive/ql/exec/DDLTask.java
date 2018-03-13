@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.Constants;
@@ -5057,7 +5058,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         CreationMetadata cm =
             new CreationMetadata(MetaStoreUtils.getDefaultCatalog(conf), tbl.getDbName(),
                 tbl.getTableName(), ImmutableSet.copyOf(crtView.getTablesUsed()));
-        cm.setValidTxnList(conf.get(ValidTxnList.VALID_TXNS_KEY));
+        cm.setValidTxnList(conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
         tbl.getTTable().setCreationMetadata(cm);
       }
       db.createTable(tbl, crtView.getIfNotExists());

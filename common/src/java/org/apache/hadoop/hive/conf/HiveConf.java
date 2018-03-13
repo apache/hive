@@ -1594,6 +1594,16 @@ public class HiveConf extends Configuration {
         "moment in time t0, the materialized view will not be considered for rewriting anymore after t0 plus " +
         "the value assigned to this property. Default value 0 means that the materialized view cannot be " +
         "outdated to be used automatically in query rewriting."),
+    HIVE_MATERIALIZED_VIEW_REWRITING_INCREMENTAL("hive.materializedview.rewriting.incremental", true,
+        "Whether to try to execute incremental rewritings based on outdated materializations and\n" +
+        "current content of tables. Default value of true effectively amounts to enabling incremental\n" +
+        "rebuild for the materializations too."),
+    HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL("hive.materializedview.rebuild.incremental", true,
+        "Whether to try to execute incremental rebuild for the materialized views. Incremental rebuild\n" +
+        "tries to modify the original materialization contents to reflect the latest changes to the\n" +
+        "materialized view source tables, instead of rebuilding the contents fully. Incremental rebuild\n" +
+        "is based on the materialized view algebraic incremental rewriting. Hence, this requires\n" +
+        "hive.materializedview.rewriting.incremental to be true."),
     HIVE_MATERIALIZED_VIEW_FILE_FORMAT("hive.materializedview.fileformat", "ORC",
         new StringSet("none", "TextFile", "SequenceFile", "RCfile", "ORC"),
         "Default file format for CREATE MATERIALIZED VIEW statement"),

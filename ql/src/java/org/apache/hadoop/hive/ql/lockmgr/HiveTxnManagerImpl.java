@@ -24,6 +24,8 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
+import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -213,4 +215,11 @@ abstract class HiveTxnManagerImpl implements HiveTxnManager, Configurable {
     return true;
   }
 
+  @Override
+  public LockResponse acquireMaterializationRebuildLock(String dbName, String tableName, long txnId)
+      throws LockException {
+    // This is default implementation. Locking only works for incremental maintenance
+    // which only works for DB transactional manager, thus we cannot acquire a lock.
+    return new LockResponse(0L, LockState.NOT_ACQUIRED);
+  }
 }

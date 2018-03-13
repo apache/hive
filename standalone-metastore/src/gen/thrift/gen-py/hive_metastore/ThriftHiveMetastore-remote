@@ -224,6 +224,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void set_schema_version_state(SetSchemaVersionStateRequest rqst)')
   print('  void add_serde(SerDeInfo serde)')
   print('  SerDeInfo get_serde(GetSerdeRequest rqst)')
+  print('  LockResponse get_lock_materialization_rebuild(string dbName, string tableName, i64 txnId)')
+  print('  bool heartbeat_lock_materialization_rebuild(string dbName, string tableName, i64 txnId)')
   print('  string getName()')
   print('  string getVersion()')
   print('  fb_status getStatus()')
@@ -1492,6 +1494,18 @@ elif cmd == 'get_serde':
     print('get_serde requires 1 args')
     sys.exit(1)
   pp.pprint(client.get_serde(eval(args[0]),))
+
+elif cmd == 'get_lock_materialization_rebuild':
+  if len(args) != 3:
+    print('get_lock_materialization_rebuild requires 3 args')
+    sys.exit(1)
+  pp.pprint(client.get_lock_materialization_rebuild(args[0],args[1],eval(args[2]),))
+
+elif cmd == 'heartbeat_lock_materialization_rebuild':
+  if len(args) != 3:
+    print('heartbeat_lock_materialization_rebuild requires 3 args')
+    sys.exit(1)
+  pp.pprint(client.heartbeat_lock_materialization_rebuild(args[0],args[1],eval(args[2]),))
 
 elif cmd == 'getName':
   if len(args) != 0:
