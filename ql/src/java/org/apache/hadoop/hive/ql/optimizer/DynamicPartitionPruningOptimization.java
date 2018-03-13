@@ -437,7 +437,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     GroupByDesc groupBy =
         new GroupByDesc(GroupByDesc.Mode.HASH, outputNames, groupByExprs,
             new ArrayList<AggregationDesc>(), false, groupByMemoryUsage, memoryThreshold,
-            null, false, 0, true);
+            null, false, -1, true);
 
     GroupByOperator groupByOp = (GroupByOperator) OperatorFactory.getAndMakeChild(
         groupBy, selectOp);
@@ -611,7 +611,7 @@ public class DynamicPartitionPruningOptimization implements NodeProcessor {
     gbOutputNames.add(SemanticAnalyzer.getColumnInternalName(2));
     GroupByDesc groupBy = new GroupByDesc(GroupByDesc.Mode.HASH,
             gbOutputNames, new ArrayList<ExprNodeDesc>(), aggs, false,
-            groupByMemoryUsage, memoryThreshold, null, false, 0, false);
+        groupByMemoryUsage, memoryThreshold, null, false, -1, false);
 
     ArrayList<ColumnInfo> groupbyColInfos = new ArrayList<ColumnInfo>();
     groupbyColInfos.add(new ColumnInfo(gbOutputNames.get(0), key.getTypeInfo(), "", false));
