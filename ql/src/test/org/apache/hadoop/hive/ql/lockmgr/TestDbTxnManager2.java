@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
@@ -2334,5 +2335,87 @@ public class TestDbTxnManager2 {
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=1", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=2", locks);
 
+  }
+
+  @Test
+  public void testValidWriteIdListSnapshot() throws Exception {
+    // Create a transactional table
+    dropTable(new String[] {"temp.T7"});
+    CommandProcessorResponse cpr = driver.run("create database if not exists temp");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("create table if not exists temp.T7(a int, b int) clustered by(b) into 2 buckets stored as orc "
+            + "TBLPROPERTIES ('transactional'='true')");
+    checkCmdOnDriver(cpr);
+
+    // Open a base txn which allocates write ID and then committed.
+    long baseTxnId = txnMgr.openTxn(ctx, "u0");
+    long baseWriteId = txnMgr.getTableWriteId("temp", "T7");
+    Assert.assertEquals(1, baseWriteId);
+    txnMgr.commitTxn(); // committed baseTxnId
+
+    // Open a txn with no writes.
+    HiveTxnManager txnMgr1 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    long underHwmOpenTxnId = txnMgr1.openTxn(ctx, "u1");
+    Assert.assertTrue("Invalid txn ID", underHwmOpenTxnId > baseTxnId);
+
+    // Open a txn to be tested for ValidWriteIdList. Get the ValidTxnList during open itself.
+    // Verify the ValidWriteIdList with no open/aborted write txns on this table.
+    // Write ID of committed txn should be valid.
+    HiveTxnManager txnMgr2 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    long testTxnId = txnMgr2.openTxn(ctx, "u2");
+    Assert.assertTrue("Invalid txn ID", testTxnId > underHwmOpenTxnId);
+    String testValidTxns = txnMgr2.getValidTxns().toString();
+    ValidWriteIdList testValidWriteIds = txnMgr2.getValidWriteIds(Collections.singletonList("temp.t7"), testValidTxns)
+            .getTableValidWriteIdList("temp.t7");
+    Assert.assertEquals(baseWriteId, testValidWriteIds.getHighWatermark());
+    Assert.assertTrue("Invalid write ID list", testValidWriteIds.isWriteIdValid(baseWriteId));
+
+    // Open a txn which allocate write ID and remain open state.
+    HiveTxnManager txnMgr3 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    long aboveHwmOpenTxnId = txnMgr3.openTxn(ctx, "u3");
+    Assert.assertTrue("Invalid txn ID", aboveHwmOpenTxnId > testTxnId);
+    long aboveHwmOpenWriteId = txnMgr3.getTableWriteId("temp", "T7");
+    Assert.assertEquals(2, aboveHwmOpenWriteId);
+
+    // Allocate writeId to txn under HWM. This will get Id greater than a txn > HWM.
+    long underHwmOpenWriteId = txnMgr1.getTableWriteId("temp", "T7");
+    Assert.assertEquals(3, underHwmOpenWriteId);
+
+    // Verify the ValidWriteIdList with one open txn on this table. Write ID of open txn should be invalid.
+    testValidWriteIds = txnMgr2.getValidWriteIds(Collections.singletonList("temp.t7"), testValidTxns)
+            .getTableValidWriteIdList("temp.t7");
+    Assert.assertEquals(underHwmOpenWriteId, testValidWriteIds.getHighWatermark());
+    Assert.assertTrue("Invalid write ID list", testValidWriteIds.isWriteIdValid(baseWriteId));
+    Assert.assertFalse("Invalid write ID list", testValidWriteIds.isWriteIdValid(underHwmOpenWriteId));
+    Assert.assertFalse("Invalid write ID list", testValidWriteIds.isWriteIdValid(aboveHwmOpenWriteId));
+
+    // Commit the txn under HWM.
+    // Verify the writeId of this committed txn should be invalid for test txn.
+    txnMgr1.commitTxn();
+    testValidWriteIds = txnMgr2.getValidWriteIds(Collections.singletonList("temp.t7"), testValidTxns)
+            .getTableValidWriteIdList("temp.t7");
+    Assert.assertEquals(underHwmOpenWriteId, testValidWriteIds.getHighWatermark());
+    Assert.assertTrue("Invalid write ID list", testValidWriteIds.isWriteIdValid(baseWriteId));
+    Assert.assertFalse("Invalid write ID list", testValidWriteIds.isWriteIdValid(underHwmOpenWriteId));
+    Assert.assertFalse("Invalid write ID list", testValidWriteIds.isWriteIdValid(aboveHwmOpenWriteId));
+
+    // Allocate writeId from test txn and then verify ValidWriteIdList.
+    // Write Ids of committed and self test txn should be valid but writeId of open txn should be invalid.
+    // WriteId of recently committed txn which was open when get ValidTxnList snapshot should be invalid as well.
+    long testWriteId = txnMgr2.getTableWriteId("temp", "T7");
+    Assert.assertEquals(4, testWriteId);
+
+    testValidWriteIds = txnMgr2.getValidWriteIds(Collections.singletonList("temp.t7"), testValidTxns)
+            .getTableValidWriteIdList("temp.t7");
+    Assert.assertEquals(testWriteId, testValidWriteIds.getHighWatermark());
+    Assert.assertTrue("Invalid write ID list", testValidWriteIds.isWriteIdValid(baseWriteId));
+    Assert.assertTrue("Invalid write ID list", testValidWriteIds.isWriteIdValid(testWriteId));
+    Assert.assertFalse("Invalid write ID list", testValidWriteIds.isWriteIdValid(underHwmOpenWriteId));
+    Assert.assertFalse("Invalid write ID list", testValidWriteIds.isWriteIdValid(aboveHwmOpenWriteId));
+    txnMgr2.commitTxn();
+    txnMgr3.commitTxn();
+
+    cpr = driver.run("drop database if exists temp cascade");
+    checkCmdOnDriver(cpr);
   }
 }
