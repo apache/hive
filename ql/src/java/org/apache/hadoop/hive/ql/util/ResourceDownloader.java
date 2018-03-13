@@ -95,7 +95,7 @@ public class ResourceDownloader {
 
   private String downloadResource(URI srcUri, String subDir, boolean convertToUnix)
       throws IOException, URISyntaxException {
-    LOG.info("converting to local {}", srcUri);
+    LOG.debug("Converting to local {}", srcUri);
     File destinationDir = (subDir == null) ? resourceDir : new File(resourceDir, subDir);
     ensureDirectory(destinationDir);
     File destinationFile = new File(destinationDir, new Path(srcUri.toString()).getName());
