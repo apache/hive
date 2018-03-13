@@ -58,7 +58,10 @@ public class SetProcessor implements CommandProcessor {
   private static final Set<String> removedConfigs =
       Sets.newHashSet("hive.mapred.supports.subdirectories",
           "hive.enforce.sorting","hive.enforce.bucketing",
-          "hive.outerjoin.supports.filters");
+          "hive.outerjoin.supports.filters",
+          "hive.llap.zk.sm.principal",
+          "hive.llap.zk.sm.keytab.file"
+          );
   // Allow the user to set the ORC properties without getting an error.
   static {
     for(OrcConf var: OrcConf.values()) {

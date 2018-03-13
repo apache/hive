@@ -360,8 +360,6 @@ public class HiveConf extends Configuration {
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_IO_THREADPOOL_SIZE.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_KERBEROS_PRINCIPAL.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_KERBEROS_KEYTAB_FILE.varname);
-    llapDaemonVarsSetLocal.add(ConfVars.LLAP_ZKSM_KERBEROS_PRINCIPAL.varname);
-    llapDaemonVarsSetLocal.add(ConfVars.LLAP_ZKSM_KERBEROS_KEYTAB_FILE.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_ZKSM_ZK_CONNECTION_STRING.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_SECURITY_ACL.varname);
     llapDaemonVarsSetLocal.add(ConfVars.LLAP_MANAGEMENT_ACL.varname);
@@ -3272,11 +3270,6 @@ public class HiveConf extends Configuration {
         "The name of the LLAP daemon's service principal."),
     LLAP_KERBEROS_KEYTAB_FILE("hive.llap.daemon.keytab.file", "",
         "The path to the Kerberos Keytab file containing the LLAP daemon's service principal."),
-    LLAP_ZKSM_KERBEROS_PRINCIPAL("hive.llap.zk.sm.principal", "",
-        "The name of the principal to use to talk to ZooKeeper for ZooKeeper SecretManager."),
-    LLAP_ZKSM_KERBEROS_KEYTAB_FILE("hive.llap.zk.sm.keytab.file", "",
-        "The path to the Kerberos Keytab file containing the principal to use to talk to\n" +
-        "ZooKeeper for ZooKeeper SecretManager."),
     LLAP_WEBUI_SPNEGO_KEYTAB_FILE("hive.llap.webui.spnego.keytab", "",
         "The path to the Kerberos Keytab file containing the LLAP WebUI SPNEGO principal.\n" +
         "Typical value would look like /etc/security/keytabs/spnego.service.keytab."),
