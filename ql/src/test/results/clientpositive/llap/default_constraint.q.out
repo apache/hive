@@ -2399,7 +2399,7 @@ STAGE PLANS:
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         Filter Operator
-                          predicate: (enforce_constraint(_col0 is not null) and enforce_constraint(_col2 is not null)) (type: boolean)
+                          predicate: enforce_constraint((_col0 is not null and _col2 is not null)) (type: boolean)
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false

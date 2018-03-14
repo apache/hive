@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
@@ -3112,9 +3113,16 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     List<SQLUniqueConstraint> uniqueConstraints = null;
     List<SQLNotNullConstraint> notNullConstraints = null;
     List<SQLDefaultConstraint> defaultConstraints= null;
+    List<SQLCheckConstraint> checkConstraints= null;
     if (constraintChild != null) {
       // Process column constraint
       switch (constraintChild.getToken().getType()) {
+      case HiveParser.TOK_CHECK_CONSTRAINT:
+        checkConstraints = new ArrayList<>();
+        processCheckConstraints(qualified[0], qualified[1], constraintChild,
+                                  ImmutableList.of(newColName), checkConstraints, (ASTNode)ast.getChild(2),
+                                this.ctx.getTokenRewriteStream());
+        break;
       case HiveParser.TOK_DEFAULT_VALUE:
         defaultConstraints = new ArrayList<>();
         processDefaultConstraints(qualified[0], qualified[1], constraintChild,
@@ -3149,8 +3157,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     /* Validate the operation of renaming a column name. */
     Table tab = getTable(qualified);
 
+    if(checkConstraints != null && !checkConstraints.isEmpty()) {
+      validateCheckConstraint(tab.getCols(), checkConstraints, ctx.getConf());
+    }
+
     if(tab.getTableType() == TableType.EXTERNAL_TABLE
-        && hasEnabledOrValidatedConstraints(notNullConstraints, defaultConstraints)){
+        && hasEnabledOrValidatedConstraints(notNullConstraints, defaultConstraints, checkConstraints)){
       throw new SemanticException(
           ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Constraints are disallowed with External tables. "
               + "Only RELY is allowed."));
@@ -3167,7 +3179,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String tblName = getDotName(qualified);
     AlterTableDesc alterTblDesc;
     if (primaryKeys == null && foreignKeys == null
-            && uniqueConstraints == null && notNullConstraints == null && defaultConstraints == null) {
+            && uniqueConstraints == null && notNullConstraints == null && defaultConstraints == null
+        && checkConstraints == null) {
       alterTblDesc = new AlterTableDesc(tblName, partSpec,
           unescapeIdentifier(oldColName), unescapeIdentifier(newColName),
           newType, newComment, first, flagCol, isCascade);
@@ -3175,7 +3188,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       alterTblDesc = new AlterTableDesc(tblName, partSpec,
           unescapeIdentifier(oldColName), unescapeIdentifier(newColName),
           newType, newComment, first, flagCol, isCascade,
-          primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints);
+          primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
     }
     addInputsOutputsAlterTable(tblName, partSpec, alterTblDesc);
 

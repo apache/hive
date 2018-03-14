@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
@@ -906,6 +907,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public List<SQLCheckConstraint> getCheckConstraints(String db_name, String tbl_name)
+      throws MetaException {
+    return null;
+  }
+
+  @Override
   public List<SQLDefaultConstraint> getDefaultConstraints(String db_name, String tbl_name)
       throws MetaException {
     return null;
@@ -916,7 +923,8 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
                                          List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
                                          List<SQLUniqueConstraint> uniqueConstraints,
                                          List<SQLNotNullConstraint> notNullConstraints,
-                                         List<SQLDefaultConstraint> defaultConstraints)
+                                         List<SQLDefaultConstraint> defaultConstraints,
+                                         List<SQLCheckConstraint> checkConstraints)
       throws InvalidObjectException, MetaException {
     return null;
   }
@@ -952,6 +960,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
 
   @Override
   public List<String> addDefaultConstraints(List<SQLDefaultConstraint> nns)
+      throws InvalidObjectException, MetaException {
+    return null;
+  }
+
+  @Override
+  public List<String> addCheckConstraints(List<SQLCheckConstraint> nns)
       throws InvalidObjectException, MetaException {
     return null;
   }
