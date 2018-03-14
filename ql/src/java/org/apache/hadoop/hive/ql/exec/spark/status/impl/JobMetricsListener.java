@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark.status.impl;
 
+import java.util.AbstractMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import org.apache.spark.executor.TaskMetrics;
 import org.apache.spark.scheduler.SparkListener;
 import org.apache.spark.scheduler.SparkListenerJobStart;
 import org.apache.spark.scheduler.SparkListenerTaskEnd;
+import org.apache.spark.scheduler.TaskInfo;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -38,7 +40,8 @@ public class JobMetricsListener extends SparkListener {
 
   private final Map<Integer, int[]> jobIdToStageId = Maps.newHashMap();
   private final Map<Integer, Integer> stageIdToJobId = Maps.newHashMap();
-  private final Map<Integer, Map<Integer, List<TaskMetrics>>> allJobMetrics = Maps.newHashMap();
+  private final Map<Integer, Map<Integer, List<Map.Entry<TaskMetrics, TaskInfo>>>> allJobMetrics =
+          Maps.newHashMap();
 
   @Override
   public synchronized void onTaskEnd(SparkListenerTaskEnd taskEnd) {
@@ -47,17 +50,12 @@ public class JobMetricsListener extends SparkListener {
     if (jobId == null) {
       LOG.warn("Can not find job id for stage[" + stageId + "].");
     } else {
-      Map<Integer, List<TaskMetrics>> jobMetrics = allJobMetrics.get(jobId);
-      if (jobMetrics == null) {
-        jobMetrics = Maps.newHashMap();
-        allJobMetrics.put(jobId, jobMetrics);
-      }
-      List<TaskMetrics> stageMetrics = jobMetrics.get(stageId);
-      if (stageMetrics == null) {
-        stageMetrics = Lists.newLinkedList();
-        jobMetrics.put(stageId, stageMetrics);
-      }
-      stageMetrics.add(taskEnd.taskMetrics());
+      Map<Integer, List<Map.Entry<TaskMetrics, TaskInfo>>> jobMetrics = allJobMetrics.computeIfAbsent(
+          jobId, k -> Maps.newHashMap());
+      List<Map.Entry<TaskMetrics, TaskInfo>> stageMetrics = jobMetrics.computeIfAbsent(stageId,
+          k -> Lists.newLinkedList());
+
+      stageMetrics.add(new AbstractMap.SimpleEntry<>(taskEnd.taskMetrics(), taskEnd.taskInfo()));
     }
   }
 
@@ -74,7 +72,7 @@ public class JobMetricsListener extends SparkListener {
     jobIdToStageId.put(jobId, intStageIds);
   }
 
-  public synchronized  Map<Integer, List<TaskMetrics>> getJobMetric(int jobId) {
+  public synchronized  Map<Integer, List<Map.Entry<TaskMetrics, TaskInfo>>> getJobMetric(int jobId) {
     return allJobMetrics.get(jobId);
   }
 

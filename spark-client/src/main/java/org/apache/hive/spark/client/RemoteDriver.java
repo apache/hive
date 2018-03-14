@@ -478,7 +478,7 @@ public class RemoteDriver {
     public void onTaskEnd(SparkListenerTaskEnd taskEnd) {
       if (taskEnd.reason() instanceof org.apache.spark.Success$
           && !taskEnd.taskInfo().speculative()) {
-        Metrics metrics = new Metrics(taskEnd.taskMetrics());
+        Metrics metrics = new Metrics(taskEnd.taskMetrics(), taskEnd.taskInfo());
         Integer jobId;
         synchronized (stageToJobId) {
           jobId = stageToJobId.get(taskEnd.stageId());

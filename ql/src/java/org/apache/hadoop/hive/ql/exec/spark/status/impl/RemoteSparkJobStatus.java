@@ -19,28 +19,30 @@
 package org.apache.hadoop.hive.ql.exec.spark.status.impl;
 
 import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
+import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsNames;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsBuilder;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hive.spark.client.MetricsCollection;
-import org.apache.hive.spark.counter.SparkCounters;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkStageProgress;
+import org.apache.hive.spark.client.MetricsCollection;
 import org.apache.hive.spark.client.Job;
 import org.apache.hive.spark.client.JobContext;
 import org.apache.hive.spark.client.JobHandle;
 import org.apache.hive.spark.client.SparkClient;
+import org.apache.hive.spark.counter.SparkCounters;
+
 import org.apache.spark.JobExecutionStatus;
 import org.apache.spark.SparkJobInfo;
 import org.apache.spark.SparkStageInfo;
 import org.apache.spark.api.java.JavaFutureAction;
 
 import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -125,16 +127,19 @@ public class RemoteSparkJobStatus implements SparkJobStatus {
     if (metricsCollection == null || getCounter() == null) {
       return null;
     }
-    SparkStatisticsBuilder sparkStatisticsBuilder = new SparkStatisticsBuilder();
-    // add Hive operator level statistics.
-    sparkStatisticsBuilder.add(getCounter());
-    // add spark job metrics.
-    String jobIdentifier = "Spark Job[" + getJobId() + "] Metrics";
 
+    SparkStatisticsBuilder sparkStatisticsBuilder = new SparkStatisticsBuilder();
+
+    // add Hive operator level statistics. - e.g. RECORDS_IN, RECORDS_OUT
+    sparkStatisticsBuilder.add(getCounter());
+
+    // add spark job metrics. - e.g. metrics collected by Spark itself (JvmGCTime,
+    // ExecutorRunTime, etc.)
     Map<String, Long> flatJobMetric = SparkMetricsUtils.collectMetrics(
         metricsCollection.getAllMetrics());
     for (Map.Entry<String, Long> entry : flatJobMetric.entrySet()) {
-      sparkStatisticsBuilder.add(jobIdentifier, entry.getKey(), Long.toString(entry.getValue()));
+      sparkStatisticsBuilder.add(SparkStatisticsNames.SPARK_GROUP_NAME, entry.getKey(),
+              Long.toString(entry.getValue()));
     }
 
     return sparkStatisticsBuilder.build();
