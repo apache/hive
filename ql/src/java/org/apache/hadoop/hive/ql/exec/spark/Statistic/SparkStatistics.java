@@ -17,19 +17,26 @@
  */
 package org.apache.hadoop.hive.ql.exec.spark.Statistic;
 
-
-import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SparkStatistics {
-  private final List<SparkStatisticGroup> statisticGroups;
 
-  SparkStatistics(List<SparkStatisticGroup> statisticGroups) {
-    this.statisticGroups = Collections.unmodifiableList(statisticGroups);
+  private final Map<String, SparkStatisticGroup> statisticGroups = new LinkedHashMap<>();
+
+  SparkStatistics(List<SparkStatisticGroup> statisticGroupsList) {
+    for (SparkStatisticGroup group : statisticGroupsList) {
+      statisticGroups.put(group.getGroupName(), group);
+    }
   }
 
   public Iterator<SparkStatisticGroup> getStatisticGroups() {
-    return this.statisticGroups.iterator();
+    return this.statisticGroups.values().iterator();
+  }
+
+  public SparkStatisticGroup getStatisticGroup(String groupName) {
+    return this.statisticGroups.get(groupName);
   }
 }

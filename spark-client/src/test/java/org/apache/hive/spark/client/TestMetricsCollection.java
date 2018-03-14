@@ -66,7 +66,7 @@ public class TestMetricsCollection {
   @Test
   public void testOptionalMetrics() {
     long value = taskValue(1, 1, 1L);
-    Metrics metrics = new Metrics(value, value, value, value, value, value, value,
+    Metrics metrics = new Metrics(value, value, value, value, value, value, value, value,
         null, null, null);
 
     MetricsCollection collection = new MetricsCollection();
@@ -94,10 +94,10 @@ public class TestMetricsCollection {
     MetricsCollection collection = new MetricsCollection();
 
     long value = taskValue(1, 1, 1);
-    Metrics metrics1 = new Metrics(value, value, value, value, value, value, value,
-      new InputMetrics(value), null, null);
-    Metrics metrics2 = new Metrics(value, value, value, value, value, value, value,
-      new InputMetrics(value), null, null);
+    Metrics metrics1 = new Metrics(value, value, value, value, value, value, value, value,
+            new InputMetrics(value), null, null);
+    Metrics metrics2 = new Metrics(value, value, value, value, value, value, value, value,
+            new InputMetrics(value), null, null);
 
     collection.addMetrics(1, 1, 1, metrics1);
     collection.addMetrics(1, 1, 2, metrics2);
@@ -108,7 +108,7 @@ public class TestMetricsCollection {
 
   private Metrics makeMetrics(int jobId, int stageId, long taskId) {
     long value = 1000000 * jobId + 1000 * stageId + taskId;
-    return new Metrics(value, value, value, value, value, value, value,
+    return new Metrics(value, value, value, value, value, value, value, value,
       new InputMetrics(value),
       new ShuffleReadMetrics((int) value, (int) value, value, value),
       new ShuffleWriteMetrics(value, value));
@@ -154,6 +154,7 @@ public class TestMetricsCollection {
     assertEquals(expected, metrics.resultSerializationTime);
     assertEquals(expected, metrics.memoryBytesSpilled);
     assertEquals(expected, metrics.diskBytesSpilled);
+    assertEquals(expected, metrics.taskDurationTime);
 
     assertEquals(expected, metrics.inputMetrics.bytesRead);
 
