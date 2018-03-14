@@ -110,6 +110,7 @@ TOK_UNIQUE;
 TOK_PRIMARY_KEY;
 TOK_FOREIGN_KEY;
 TOK_DEFAULT_VALUE;
+TOK_CHECK_CONSTRAINT;
 TOK_VALIDATE;
 TOK_NOVALIDATE;
 TOK_RELY;
@@ -598,6 +599,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_PLANS", "PLANS");
     xlateMap.put("KW_ACTIVATE", "ACTIVATE");
     xlateMap.put("KW_DEFAULT", "DEFAULT");
+    xlateMap.put("KW_CHECK", "CHECK");
     xlateMap.put("KW_POOL", "POOL");
     xlateMap.put("KW_MOVE", "MOVE");
     xlateMap.put("KW_DO", "DO");
@@ -2411,6 +2413,7 @@ alterColConstraint
 columnConstraintType
     : KW_NOT KW_NULL       ->    TOK_NOT_NULL
     | KW_DEFAULT defaultVal->    ^(TOK_DEFAULT_VALUE defaultVal)
+    | KW_CHECK expression  ->    ^(TOK_CHECK_CONSTRAINT expression)
     | tableConstraintType
     ;
 

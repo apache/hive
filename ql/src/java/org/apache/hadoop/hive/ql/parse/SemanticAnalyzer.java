@@ -74,6 +74,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
@@ -130,9 +131,10 @@ import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
-import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.metadata.CheckConstraint;
+import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -148,6 +150,7 @@ import org.apache.hadoop.hive.ql.optimizer.QueryPlanPostProcessor;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
+import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.HiveOpConverterPostProc;
 import org.apache.hadoop.hive.ql.optimizer.lineage.Generator;
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext;
@@ -6707,6 +6710,86 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     this.rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), alterTblDesc)));
   }
 
+
+  private void replaceColumnReference(ASTNode checkExpr, Map<String, String> col2Col,
+                                      RowResolver inputRR){
+    if(checkExpr.getType() == HiveParser.TOK_TABLE_OR_COL) {
+      ASTNode oldColChild = (ASTNode)(checkExpr.getChild(0));
+      String oldColRef = oldColChild.getText().toLowerCase();
+      assert(col2Col.containsKey(oldColRef));
+      String internalColRef = col2Col.get(oldColRef);
+      String fullQualColRef[] = inputRR.reverseLookup(internalColRef);
+      String newColRef = fullQualColRef[1];
+      checkExpr.deleteChild(0);
+      checkExpr.addChild(ASTBuilder.createAST(oldColChild.getType(), newColRef));
+    }
+    else {
+      for(int i=0; i< ((ASTNode)checkExpr).getChildCount(); i++) {
+        replaceColumnReference((ASTNode)(checkExpr.getChild(i)), col2Col, inputRR);
+      }
+    }
+  }
+
+  private ExprNodeDesc getCheckConstraintExpr(Table tbl, Operator input, RowResolver inputRR, String dest)
+      throws SemanticException{
+
+    CheckConstraint cc = null;
+    try {
+      cc = Hive.get().getEnabledCheckConstraints(tbl.getDbName(), tbl.getTableName());
+    }
+    catch(HiveException e) {
+      throw new SemanticException(e);
+    }
+    if(cc == null || cc.getCheckConstraints().isEmpty()) {
+      return null;
+    }
+
+    // build a map which tracks the name of column in input's signature to corresponding table column name
+    // this will be used to replace column references in CHECK expression AST with corresponding column name
+    // in input
+    Map<String, String> col2Cols = new HashMap<>();
+    List<ColumnInfo> colInfos =  input.getSchema().getSignature();
+    int colIdx = 0;
+    if(updating(dest)) {
+      // if this is an update we need to skip the first col since it is row id
+      colIdx = 1;
+    }
+    for(FieldSchema fs: tbl.getCols()) {
+      // since SQL is case insenstive just to make sure that the comparison b/w column names
+      // and check expression's column reference work convert the key to lower case
+      col2Cols.put(fs.getName().toLowerCase(), colInfos.get(colIdx).getInternalName());
+      colIdx++;
+    }
+
+    List<String> checkExprStrs = cc.getCheckExpressionList();
+    TypeCheckCtx typeCheckCtx = new TypeCheckCtx(inputRR);
+    ExprNodeDesc checkAndExprs = null;
+    for(String checkExprStr:checkExprStrs) {
+      try {
+        ParseDriver parseDriver = new ParseDriver();
+        ASTNode checkExprAST = parseDriver.parseExpression(checkExprStr);
+        //replace column references in checkExprAST with corresponding columns in input
+        replaceColumnReference(checkExprAST, col2Cols, inputRR);
+        Map<ASTNode, ExprNodeDesc> genExprs = TypeCheckProcFactory
+            .genExprNode(checkExprAST, typeCheckCtx);
+        ExprNodeDesc checkExpr = genExprs.get(checkExprAST);
+        // Check constraint fails only if it evaluates to false, NULL/UNKNOWN should evaluate to TRUE
+        ExprNodeDesc notFalseCheckExpr = TypeCheckProcFactory.DefaultExprProcessor.
+            getFuncExprNodeDesc("isnotfalse", checkExpr);
+        if(checkAndExprs == null) {
+          checkAndExprs = notFalseCheckExpr;
+        }
+        else {
+          checkAndExprs = TypeCheckProcFactory.DefaultExprProcessor.
+              getFuncExprNodeDesc("and", checkAndExprs, notFalseCheckExpr);
+        }
+      } catch(Exception e) {
+        throw new SemanticException(e);
+      }
+    }
+    return checkAndExprs;
+  }
+
   private ImmutableBitSet getEnabledNotNullConstraints(Table tbl) throws HiveException{
     List<Boolean> nullConstraints = new ArrayList<>();
     final NotNullConstraint nnc = Hive.get().getEnabledNotNullConstraints(
@@ -6747,15 +6830,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return false;
   }
 
-  private Operator
-  genIsNotNullConstraint(String dest, QB qb, Operator input)
-      throws SemanticException {
-
-    boolean forceNotNullConstraint = conf.getBoolVar(ConfVars.HIVE_ENFORCE_NOT_NULL_CONSTRAINT);
-    if(!forceNotNullConstraint) {
-      return input;
-    }
-
+  private Operator genConstraintsPlan(String dest, QB qb, Operator input) throws SemanticException {
     if(deleting(dest)) {
       // for DELETE statements NOT NULL constraint need not be checked
       return input;
@@ -6779,8 +6854,45 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     }
     else {
-      throw new SemanticException("Generating NOT NULL constraint check: Invalid target type: " + dest);
+      throw new SemanticException("Generating constraint check plan: Invalid target type: " + dest);
     }
+
+    RowResolver inputRR = opParseCtx.get(input).getRowResolver();
+    ExprNodeDesc nullConstraintExpr = getNotNullConstraintExpr(targetTable, input, dest);
+    ExprNodeDesc checkConstraintExpr = getCheckConstraintExpr(targetTable, input, inputRR, dest);
+
+    ExprNodeDesc combinedConstraintExpr = null;
+    if(nullConstraintExpr != null && checkConstraintExpr != null) {
+      assert (input.getParentOperators().size() == 1);
+      combinedConstraintExpr = TypeCheckProcFactory.DefaultExprProcessor.
+          getFuncExprNodeDesc("and", nullConstraintExpr, checkConstraintExpr);
+
+    }
+    else if(nullConstraintExpr != null) {
+      combinedConstraintExpr = nullConstraintExpr;
+    }
+    else if(checkConstraintExpr != null) {
+      combinedConstraintExpr = checkConstraintExpr;
+    }
+
+    if (combinedConstraintExpr != null) {
+      ExprNodeDesc constraintUDF = TypeCheckProcFactory.DefaultExprProcessor.
+          getFuncExprNodeDesc("enforce_constraint", combinedConstraintExpr);
+      Operator newConstraintFilter = putOpInsertMap(OperatorFactory.getAndMakeChild(
+          new FilterDesc(constraintUDF, false), new RowSchema(
+              inputRR.getColumnInfos()), input), inputRR);
+
+      return newConstraintFilter;
+    }
+    return input;
+  }
+
+  private ExprNodeDesc getNotNullConstraintExpr(Table targetTable, Operator input, String dest) throws SemanticException {
+    boolean forceNotNullConstraint = conf.getBoolVar(ConfVars.HIVE_ENFORCE_NOT_NULL_CONSTRAINT);
+    if(!forceNotNullConstraint) {
+      return null;
+    }
+
     ImmutableBitSet nullConstraintBitSet = null;
     try {
       nullConstraintBitSet = getEnabledNotNullConstraints(targetTable);
@@ -6791,12 +6903,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         throw (new RuntimeException(e));
       }
     }
-    if(nullConstraintBitSet == null) {
-      return input;
+
+    if(nullConstraintBitSet ==  null) {
+      return null;
     }
     List<ColumnInfo> colInfos = input.getSchema().getSignature();
 
     ExprNodeDesc currUDF = null;
+    // Add NOT NULL constraints
     int constraintIdx = 0;
     for(int colExprIdx=0; colExprIdx < colInfos.size(); colExprIdx++) {
       if(updating(dest) && colExprIdx == 0) {
@@ -6807,28 +6921,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ExprNodeDesc currExpr = TypeCheckProcFactory.toExprNodeDesc(colInfos.get(colExprIdx));
         ExprNodeDesc isNotNullUDF = TypeCheckProcFactory.DefaultExprProcessor.
             getFuncExprNodeDesc("isnotnull", currExpr);
-        ExprNodeDesc constraintUDF = TypeCheckProcFactory.DefaultExprProcessor.
-            getFuncExprNodeDesc("enforce_constraint", isNotNullUDF);
         if (currUDF != null) {
           currUDF = TypeCheckProcFactory.DefaultExprProcessor.
-              getFuncExprNodeDesc("and", currUDF, constraintUDF);
+              getFuncExprNodeDesc("and", currUDF, isNotNullUDF);
         } else {
-          currUDF = constraintUDF;
+          currUDF = isNotNullUDF;
         }
       }
       constraintIdx++;
     }
-    if (currUDF != null) {
-      assert (input.getParentOperators().size() == 1);
-      RowResolver inputRR = opParseCtx.get(input).getRowResolver();
-      Operator newConstraintFilter = putOpInsertMap(OperatorFactory.getAndMakeChild(
-          new FilterDesc(currUDF, false), new RowSchema(
-              inputRR.getColumnInfos()), input), inputRR);
-
-      return newConstraintFilter;
-    }
-    return input;
+    return currUDF;
   }
+
   @SuppressWarnings("nls")
   protected Operator genFileSinkPlan(String dest, QB qb, Operator input)
       throws SemanticException {
@@ -6916,7 +7020,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       table_desc = Utilities.getTableDesc(dest_tab);
 
       // Add NOT NULL constraint check
-      input = genIsNotNullConstraint(dest, qb, input);
+      input = genConstraintsPlan(dest, qb, input);
 
       // Add sorting/bucketing if needed
       input = genBucketingSortingDest(dest, input, qb, table_desc, dest_tab, rsCtx);
@@ -7013,7 +7117,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       table_desc = Utilities.getTableDesc(dest_tab);
 
       // Add NOT NULL constraint check
-      input = genIsNotNullConstraint(dest, qb, input);
+      input = genConstraintsPlan(dest, qb, input);
 
       // Add sorting/bucketing if needed
       input = genBucketingSortingDest(dest, input, qb, table_desc, dest_tab, rsCtx);
@@ -12473,18 +12577,25 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   /**
-   * Checks to see if given partition columns has DEFAULT constraints (whether ENABLED or DISABLED)
+   * Checks to see if given partition columns has DEFAULT or CHECK constraints (whether ENABLED or DISABLED)
    *  Or has NOT NULL constraints (only ENABLED)
    * @param partCols partition columns
    * @param defConstraints default constraints
    * @param notNullConstraints not null constraints
-   * @return
+   * @param checkConstraints CHECK constraints
+   * @return true or false
    */
   boolean hasConstraints(final List<FieldSchema> partCols, final List<SQLDefaultConstraint> defConstraints,
-                         final List<SQLNotNullConstraint> notNullConstraints) {
+                         final List<SQLNotNullConstraint> notNullConstraints,
+                         final List<SQLCheckConstraint> checkConstraints) {
     for(FieldSchema partFS: partCols) {
       for(SQLDefaultConstraint dc:defConstraints) {
         if(dc.getColumn_name().equals(partFS.getName())) {
+          return true;
+        }
+      }
+      for(SQLCheckConstraint cc:checkConstraints) {
+        if(cc.getColumn_name().equals(partFS.getName())) {
           return true;
         }
       }
@@ -12518,6 +12629,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<SQLUniqueConstraint> uniqueConstraints = new ArrayList<>();
     List<SQLNotNullConstraint> notNullConstraints = new ArrayList<>();
     List<SQLDefaultConstraint> defaultConstraints= new ArrayList<>();
+    List<SQLCheckConstraint> checkConstraints= new ArrayList<>();
     List<Order> sortCols = new ArrayList<Order>();
     int numBuckets = -1;
     String comment = null;
@@ -12610,19 +12722,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         selectStmt = child;
         break;
       case HiveParser.TOK_TABCOLLIST:
-        cols = getColumns(child, true, primaryKeys, foreignKeys,
-            uniqueConstraints, notNullConstraints, defaultConstraints);
+        cols = getColumns(child, true, ctx.getTokenRewriteStream(), primaryKeys, foreignKeys,
+            uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
         break;
       case HiveParser.TOK_TABLECOMMENT:
         comment = unescapeSQLString(child.getChild(0).getText());
         break;
       case HiveParser.TOK_TABLEPARTCOLS:
-        partCols = getColumns(child, false, primaryKeys, foreignKeys,
-            uniqueConstraints, notNullConstraints, defaultConstraints);
-        if(hasConstraints(partCols, defaultConstraints, notNullConstraints)) {
+        partCols = getColumns(child, false, ctx.getTokenRewriteStream(),primaryKeys, foreignKeys,
+            uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
+        if(hasConstraints(partCols, defaultConstraints, notNullConstraints, checkConstraints)) {
           //TODO: these constraints should be supported for partition columns
           throw new SemanticException(
-              ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("NOT NULL and Default Constraints are not allowed with " +
+              ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("NOT NULL,DEFAULT and CHECK Constraints are not allowed with " +
                                                       "partition columns. "));
         }
         break;
@@ -12682,10 +12794,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException("Unrecognized command.");
     }
 
-    if(isExt && hasEnabledOrValidatedConstraints(notNullConstraints, defaultConstraints)){
+    if(isExt && hasEnabledOrValidatedConstraints(notNullConstraints, defaultConstraints, checkConstraints)){
       throw new SemanticException(
           ErrorMsg.INVALID_CSTR_SYNTAX.getMsg("Constraints are disallowed with External tables. "
               + "Only RELY is allowed."));
+    }
+    if(checkConstraints != null && !checkConstraints.isEmpty()) {
+      validateCheckConstraint(cols, checkConstraints, ctx.getConf());
     }
 
 
@@ -12741,7 +12856,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           comment,
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(), location, storageFormat.getSerde(),
           storageFormat.getStorageHandler(), storageFormat.getSerdeProps(), tblProps, ifNotExists, skewedColNames,
-          skewedValues, primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints);
+          skewedValues, primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints,
+                                                       checkConstraints);
       crtTblDesc.setStoredAsSubDirectories(storedAsDirs);
       crtTblDesc.setNullFormat(rowFormatParams.nullFormat);
 
@@ -12842,7 +12958,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           storageFormat.getOutputFormat(), location, storageFormat.getSerde(),
           storageFormat.getStorageHandler(), storageFormat.getSerdeProps(), tblProps, ifNotExists,
           skewedColNames, skewedValues, true, primaryKeys, foreignKeys,
-          uniqueConstraints, notNullConstraints, defaultConstraints);
+          uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
       tableDesc.setMaterialization(isMaterialization);
       tableDesc.setStoredAsSubDirectories(storedAsDirs);
       tableDesc.setNullFormat(rowFormatParams.nullFormat);
