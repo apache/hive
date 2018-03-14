@@ -83,6 +83,7 @@ public class ImportTableDesc {
                 null,
                 null,
                 null,
+            null,
             null);
         this.createTblDesc.setStoredAsSubDirectories(table.getSd().isStoredAsSubDirectories());
         break;

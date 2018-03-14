@@ -112,7 +112,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("create_table_with_environment_context\n");
   }
 
-  void create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys, const std::vector<SQLUniqueConstraint> & uniqueConstraints, const std::vector<SQLNotNullConstraint> & notNullConstraints, const std::vector<SQLDefaultConstraint> & defaultConstraints) {
+  void create_table_with_constraints(const Table& tbl, const std::vector<SQLPrimaryKey> & primaryKeys, const std::vector<SQLForeignKey> & foreignKeys, const std::vector<SQLUniqueConstraint> & uniqueConstraints, const std::vector<SQLNotNullConstraint> & notNullConstraints, const std::vector<SQLDefaultConstraint> & defaultConstraints, const std::vector<SQLCheckConstraint> & checkConstraints) {
     // Your implementation goes here
     printf("create_table_with_constraints\n");
   }
@@ -145,6 +145,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void add_default_constraint(const AddDefaultConstraintRequest& req) {
     // Your implementation goes here
     printf("add_default_constraint\n");
+  }
+
+  void add_check_constraint(const AddCheckConstraintRequest& req) {
+    // Your implementation goes here
+    printf("add_check_constraint\n");
   }
 
   void drop_table(const std::string& dbname, const std::string& name, const bool deleteData) {
@@ -475,6 +480,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_default_constraints(DefaultConstraintsResponse& _return, const DefaultConstraintsRequest& request) {
     // Your implementation goes here
     printf("get_default_constraints\n");
+  }
+
+  void get_check_constraints(CheckConstraintsResponse& _return, const CheckConstraintsRequest& request) {
+    // Your implementation goes here
+    printf("get_check_constraints\n");
   }
 
   bool update_table_column_statistics(const ColumnStatistics& stats_obj) {

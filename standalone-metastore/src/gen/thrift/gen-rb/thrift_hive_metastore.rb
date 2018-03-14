@@ -318,13 +318,13 @@ module ThriftHiveMetastore
       return
     end
 
-    def create_table_with_constraints(tbl, primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints)
-      send_create_table_with_constraints(tbl, primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints)
+    def create_table_with_constraints(tbl, primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints)
+      send_create_table_with_constraints(tbl, primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints)
       recv_create_table_with_constraints()
     end
 
-    def send_create_table_with_constraints(tbl, primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints)
-      send_message('create_table_with_constraints', Create_table_with_constraints_args, :tbl => tbl, :primaryKeys => primaryKeys, :foreignKeys => foreignKeys, :uniqueConstraints => uniqueConstraints, :notNullConstraints => notNullConstraints, :defaultConstraints => defaultConstraints)
+    def send_create_table_with_constraints(tbl, primaryKeys, foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints)
+      send_message('create_table_with_constraints', Create_table_with_constraints_args, :tbl => tbl, :primaryKeys => primaryKeys, :foreignKeys => foreignKeys, :uniqueConstraints => uniqueConstraints, :notNullConstraints => notNullConstraints, :defaultConstraints => defaultConstraints, :checkConstraints => checkConstraints)
     end
 
     def recv_create_table_with_constraints()
@@ -427,6 +427,22 @@ module ThriftHiveMetastore
 
     def recv_add_default_constraint()
       result = receive_message(Add_default_constraint_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def add_check_constraint(req)
+      send_add_check_constraint(req)
+      recv_add_check_constraint()
+    end
+
+    def send_add_check_constraint(req)
+      send_message('add_check_constraint', Add_check_constraint_args, :req => req)
+    end
+
+    def recv_add_check_constraint()
+      result = receive_message(Add_check_constraint_result)
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
       return
@@ -1552,6 +1568,23 @@ module ThriftHiveMetastore
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_default_constraints failed: unknown result')
+    end
+
+    def get_check_constraints(request)
+      send_get_check_constraints(request)
+      return recv_get_check_constraints()
+    end
+
+    def send_get_check_constraints(request)
+      send_message('get_check_constraints', Get_check_constraints_args, :request => request)
+    end
+
+    def recv_get_check_constraints()
+      result = receive_message(Get_check_constraints_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_check_constraints failed: unknown result')
     end
 
     def update_table_column_statistics(stats_obj)
@@ -3503,7 +3536,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Create_table_with_constraints_args)
       result = Create_table_with_constraints_result.new()
       begin
-        @handler.create_table_with_constraints(args.tbl, args.primaryKeys, args.foreignKeys, args.uniqueConstraints, args.notNullConstraints, args.defaultConstraints)
+        @handler.create_table_with_constraints(args.tbl, args.primaryKeys, args.foreignKeys, args.uniqueConstraints, args.notNullConstraints, args.defaultConstraints, args.checkConstraints)
       rescue ::AlreadyExistsException => o1
         result.o1 = o1
       rescue ::InvalidObjectException => o2
@@ -3592,6 +3625,19 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'add_default_constraint', seqid)
+    end
+
+    def process_add_check_constraint(seqid, iprot, oprot)
+      args = read_args(iprot, Add_check_constraint_args)
+      result = Add_check_constraint_result.new()
+      begin
+        @handler.add_check_constraint(args.req)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'add_check_constraint', seqid)
     end
 
     def process_drop_table(seqid, iprot, oprot)
@@ -4474,6 +4520,19 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_default_constraints', seqid)
+    end
+
+    def process_get_check_constraints(seqid, iprot, oprot)
+      args = read_args(iprot, Get_check_constraints_args)
+      result = Get_check_constraints_result.new()
+      begin
+        result.success = @handler.get_check_constraints(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_check_constraints', seqid)
     end
 
     def process_update_table_column_statistics(seqid, iprot, oprot)
@@ -6376,6 +6435,7 @@ module ThriftHiveMetastore
     UNIQUECONSTRAINTS = 4
     NOTNULLCONSTRAINTS = 5
     DEFAULTCONSTRAINTS = 6
+    CHECKCONSTRAINTS = 7
 
     FIELDS = {
       TBL => {:type => ::Thrift::Types::STRUCT, :name => 'tbl', :class => ::Table},
@@ -6383,7 +6443,8 @@ module ThriftHiveMetastore
       FOREIGNKEYS => {:type => ::Thrift::Types::LIST, :name => 'foreignKeys', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLForeignKey}},
       UNIQUECONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'uniqueConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLUniqueConstraint}},
       NOTNULLCONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'notNullConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLNotNullConstraint}},
-      DEFAULTCONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'defaultConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLDefaultConstraint}}
+      DEFAULTCONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'defaultConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLDefaultConstraint}},
+      CHECKCONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'checkConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLCheckConstraint}}
     }
 
     def struct_fields; FIELDS; end
@@ -6603,6 +6664,40 @@ module ThriftHiveMetastore
   end
 
   class Add_default_constraint_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_check_constraint_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQ = 1
+
+    FIELDS = {
+      REQ => {:type => ::Thrift::Types::STRUCT, :name => 'req', :class => ::AddCheckConstraintRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Add_check_constraint_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     O1 = 1
     O2 = 2
@@ -9230,6 +9325,42 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::DefaultConstraintsResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_check_constraints_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::CheckConstraintsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_check_constraints_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::CheckConstraintsResponse},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
     }

@@ -88,6 +88,7 @@ import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregator;
 import org.apache.hadoop.hive.metastore.columnstats.aggr.ColumnStatsAggregatorFactory;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
@@ -1934,13 +1935,21 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
+  public List<SQLCheckConstraint> getCheckConstraints(String db_name, String tbl_name)
+      throws MetaException {
+    // TODO constraintCache
+    return rawStore.getCheckConstraints(db_name, tbl_name);
+  }
+
+  @Override
   public List<String> createTableWithConstraints(Table tbl, List<SQLPrimaryKey> primaryKeys,
       List<SQLForeignKey> foreignKeys, List<SQLUniqueConstraint> uniqueConstraints,
       List<SQLNotNullConstraint> notNullConstraints,
-      List<SQLDefaultConstraint> defaultConstraints) throws InvalidObjectException, MetaException {
+      List<SQLDefaultConstraint> defaultConstraints,
+      List<SQLCheckConstraint> checkConstraints) throws InvalidObjectException, MetaException {
     // TODO constraintCache
     List<String> constraintNames = rawStore.createTableWithConstraints(tbl, primaryKeys,
-        foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints);
+        foreignKeys, uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
     String dbName = StringUtils.normalizeIdentifier(tbl.getDbName());
     String tblName = StringUtils.normalizeIdentifier(tbl.getTableName());
     if (!shouldCacheTable(dbName, tblName)) {
@@ -1990,6 +1999,13 @@ public class CachedStore implements RawStore, Configurable {
       throws InvalidObjectException, MetaException {
     // TODO constraintCache
     return rawStore.addDefaultConstraints(nns);
+  }
+
+  @Override
+  public List<String> addCheckConstraints(List<SQLCheckConstraint> nns)
+      throws InvalidObjectException, MetaException {
+    // TODO constraintCache
+    return rawStore.addCheckConstraints(nns);
   }
 
   // TODO - not clear if we should cache these or not.  For now, don't bother

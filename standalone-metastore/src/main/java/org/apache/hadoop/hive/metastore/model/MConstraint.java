@@ -44,6 +44,7 @@ public class MConstraint
   public final static int UNIQUE_CONSTRAINT = 2;
   public final static int NOT_NULL_CONSTRAINT = 3;
   public final static int DEFAULT_CONSTRAINT = 4;
+  public final static int CHECK_CONSTRAINT = 5;
 
   @SuppressWarnings("serial")
   public static class PK implements Serializable {
@@ -110,10 +111,10 @@ public class MConstraint
     this.defaultValue = defaultValue;
   }
 
-  public String getDefaultValue() { return defaultValue; }
+  public String getDefaultOrCheckValue() { return defaultValue; }
 
-  public void setDefaultValue(String defaultValue) {
-    this.defaultValue = defaultValue;
+  public void setDefaultOrCheckValue(String defaultOrCheckValue) {
+    this.defaultValue= defaultOrCheckValue;
   }
   public String getConstraintName() {
     return constraintName;

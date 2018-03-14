@@ -802,7 +802,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
     List<SQLUniqueConstraint> uniqueConstraints,
     List<SQLNotNullConstraint> notNullConstraints,
-    List<SQLDefaultConstraint> defaultConstraints)
+    List<SQLDefaultConstraint> defaultConstraints,
+    List<SQLCheckConstraint> checkConstraints)
         throws AlreadyExistsException, InvalidObjectException,
         MetaException, NoSuchObjectException, TException {
     HiveMetaHook hook = getHook(tbl);
@@ -813,7 +814,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       // Subclasses can override this step (for example, for temporary tables)
       client.create_table_with_constraints(tbl, primaryKeys, foreignKeys,
-          uniqueConstraints, notNullConstraints, defaultConstraints);
+          uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
       if (hook != null) {
         hook.commitCreateTable(tbl);
       }
@@ -859,6 +860,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public void addDefaultConstraint(List<SQLDefaultConstraint> defaultConstraints) throws
       NoSuchObjectException, MetaException, TException {
     client.add_default_constraint(new AddDefaultConstraintRequest(defaultConstraints));
+  }
+
+  @Override
+  public void addCheckConstraint(List<SQLCheckConstraint> checkConstraints) throws
+      NoSuchObjectException, MetaException, TException {
+    client.add_check_constraint(new AddCheckConstraintRequest(checkConstraints));
   }
 
   /**
@@ -1700,6 +1707,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public List<SQLDefaultConstraint> getDefaultConstraints(DefaultConstraintsRequest req)
       throws MetaException, NoSuchObjectException, TException {
     return client.get_default_constraints(req).getDefaultConstraints();
+  }
+
+  @Override
+  public List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest req)
+      throws MetaException, NoSuchObjectException, TException {
+    return client.get_check_constraints(req).getCheckConstraints();
   }
 
   /** {@inheritDoc} */
