@@ -20,12 +20,9 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -45,6 +42,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * ColumnStatsSemanticAnalyzer.
  * Handles semantic analysis and rewrite for gathering column statistics both at the level of a
@@ -54,7 +54,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
   private static final Logger LOG = LoggerFactory
       .getLogger(ColumnStatsSemanticAnalyzer.class);
-  static final private LogHelper console = new LogHelper(LOG);
+  private static final LogHelper CONSOLE = new LogHelper(LOG);
 
   private ASTNode originalTree;
   private ASTNode rewrittenTree;
@@ -90,25 +90,25 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     return rwt;
   }
 
-  private List<String> getColumnName(ASTNode tree) throws SemanticException{
+  private List<String> getColumnName(ASTNode tree) throws SemanticException {
 
     switch (tree.getChildCount()) {
-      case 2:
-       return Utilities.getColumnNamesFromFieldSchema(tbl.getCols());
-      case 3:
-        int numCols = tree.getChild(2).getChildCount();
-        List<String> colName = new LinkedList<String>();
-        for (int i = 0; i < numCols; i++) {
-          colName.add(i, new String(getUnescapedName((ASTNode) tree.getChild(2).getChild(i))));
-        }
-        return colName;
-      default:
-        throw new SemanticException("Internal error. Expected number of children of ASTNode to be"
-            + " either 2 or 3. Found : " + tree.getChildCount());
+    case 2:
+      return Utilities.getColumnNamesFromFieldSchema(tbl.getCols());
+    case 3:
+      int numCols = tree.getChild(2).getChildCount();
+      List<String> colName = new ArrayList<String>(numCols);
+      for (int i = 0; i < numCols; i++) {
+        colName.add(getUnescapedName((ASTNode) tree.getChild(2).getChild(i)));
+      }
+      return colName;
+    default:
+      throw new SemanticException("Internal error. Expected number of children of ASTNode to be"
+          + " either 2 or 3. Found : " + tree.getChildCount());
     }
   }
 
-  private void handlePartialPartitionSpec(Map<String,String> partSpec, ColumnStatsAutoGatherContext context) throws
+  private void handlePartialPartitionSpec(Map<String, String> partSpec, ColumnStatsAutoGatherContext context) throws
     SemanticException {
 
     // If user has fully specified partition, validate that partition exists
@@ -133,21 +133,21 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
 
     // User might have only specified partial list of partition keys, in which case add other partition keys in partSpec
     List<String> partKeys = Utilities.getColumnNamesFromFieldSchema(tbl.getPartitionKeys());
-    for (String partKey : partKeys){
-     if(!partSpec.containsKey(partKey)) {
-       partSpec.put(partKey, null);
-     }
-   }
+    for (String partKey : partKeys) {
+      if (!partSpec.containsKey(partKey)) {
+        partSpec.put(partKey, null);
+      }
+    }
 
-   // Check if user have erroneously specified non-existent partitioning columns
-   for (String partKey : partSpec.keySet()) {
-     if(!partKeys.contains(partKey)){
-       throw new SemanticException(ErrorMsg.COLUMNSTATSCOLLECTOR_INVALID_PART_KEY.getMsg() + " : " + partKey);
-     }
-   }
+    // Check if user have erroneously specified non-existent partitioning columns
+    for (String partKey : partSpec.keySet()) {
+      if (!partKeys.contains(partKey)) {
+        throw new SemanticException(ErrorMsg.COLUMNSTATSCOLLECTOR_INVALID_PART_KEY.getMsg() + " : " + partKey);
+      }
+    }
   }
 
-  private StringBuilder genPartitionClause(Map<String,String> partSpec) throws SemanticException {
+  private StringBuilder genPartitionClause(Map<String, String> partSpec) throws SemanticException {
     StringBuilder whereClause = new StringBuilder(" where ");
     boolean predPresent = false;
     StringBuilder groupByClause = new StringBuilder(" group by ");
@@ -165,12 +165,12 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       }
     }
 
-     for (FieldSchema fs : tbl.getPartitionKeys()) {
-        if (!aggPresent) {
-          aggPresent = true;
-        } else {
-          groupByClause.append(",");
-        }
+    for (FieldSchema fs : tbl.getPartitionKeys()) {
+      if (!aggPresent) {
+        aggPresent = true;
+      } else {
+        groupByClause.append(',');
+      }
       groupByClause.append("`" + fs.getName() + "`");
     }
 
@@ -178,7 +178,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     return predPresent ? whereClause.append(groupByClause) : groupByClause;
   }
 
-  private String genPartValueString (String partKey, String partVal) throws SemanticException {
+  private String genPartValueString(String partKey, String partVal) throws SemanticException {
     String returnVal = partVal;
     String partColType = getColTypeOf(partKey);
     if (partColType.equals(serdeConstants.STRING_TYPE_NAME) ||
@@ -186,13 +186,13 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         partColType.contains(serdeConstants.CHAR_TYPE_NAME)) {
       returnVal = "'" + escapeSQLString(partVal) + "'";
     } else if (partColType.equals(serdeConstants.TINYINT_TYPE_NAME)) {
-      returnVal = partVal+"Y";
+      returnVal = partVal + "Y";
     } else if (partColType.equals(serdeConstants.SMALLINT_TYPE_NAME)) {
-      returnVal = partVal+"S";
+      returnVal = partVal + "S";
     } else if (partColType.equals(serdeConstants.INT_TYPE_NAME)) {
       returnVal = partVal;
     } else if (partColType.equals(serdeConstants.BIGINT_TYPE_NAME)) {
-      returnVal = partVal+"L";
+      returnVal = partVal + "L";
     } else if (partColType.contains(serdeConstants.DECIMAL_TYPE_NAME)) {
       returnVal = partVal + "BD";
     } else if (partColType.equals(serdeConstants.DATE_TYPE_NAME) ||
@@ -206,22 +206,21 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     return returnVal;
   }
 
-  private String getColTypeOf (String partKey) throws SemanticException{
+  private String getColTypeOf(String partKey) throws SemanticException{
 
     for (FieldSchema fs : tbl.getPartitionKeys()) {
       if (partKey.equalsIgnoreCase(fs.getName())) {
         return fs.getType().toLowerCase();
       }
     }
-    throw new SemanticException ("Unknown partition key : " + partKey);
+    throw new SemanticException("Unknown partition key : " + partKey);
   }
 
   private List<String> getColumnTypes(List<String> colNames)
       throws SemanticException{
     List<String> colTypes = new ArrayList<String>();
     List<FieldSchema> cols = tbl.getCols();
-    List<String> copyColNames = new ArrayList<>();
-    copyColNames.addAll(colNames);
+    List<String> copyColNames = new ArrayList<>(colNames);
 
     for (String colName : copyColNames) {
       for (FieldSchema col : cols) {
@@ -245,10 +244,9 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     return colName.replaceAll("`", "``");
   }
 
-  private String genRewrittenQuery(List<String> colNames, HiveConf conf, Map<String,String> partSpec,
-    boolean isPartitionStats) throws SemanticException{
+  private String genRewrittenQuery(List<String> colNames, HiveConf conf, Map<String, String> partSpec,
+      boolean isPartitionStats) throws SemanticException{
     StringBuilder rewrittenQueryBuilder = new StringBuilder("select ");
-    String rewrittenQuery;
 
     for (int i = 0; i < colNames.size(); i++) {
       if (i > 0) {
@@ -258,7 +256,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       rewrittenQueryBuilder.append("compute_stats(`");
       rewrittenQueryBuilder.append(escapeBackTicks(colNames.get(i)));
       rewrittenQueryBuilder.append("`, '" + func + "'");
-      if (func.equals("fm")) {
+      if ("fm".equals(func)) {
         int numBitVectors = 0;
         try {
           numBitVectors = HiveStatsUtils.getNumBitVectorsForNDVEstimation(conf);
@@ -267,7 +265,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
         }
         rewrittenQueryBuilder.append(", " + numBitVectors);
       }
-      rewrittenQueryBuilder.append(")");
+      rewrittenQueryBuilder.append(')');
     }
 
     if (isPartitionStats) {
@@ -283,11 +281,11 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
 
     // If partition level statistics is requested, add predicate and group by as needed to rewritten
     // query
-     if (isPartitionStats) {
+    if (isPartitionStats) {
       rewrittenQueryBuilder.append(genPartitionClause(partSpec));
     }
 
-    rewrittenQuery = rewrittenQueryBuilder.toString();
+    String rewrittenQuery = rewrittenQueryBuilder.toString();
     rewrittenQuery = new VariableSubstitution(new HiveVariableSource() {
       @Override
       public Map<String, String> getHiveVariable() {
@@ -298,7 +296,6 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
   }
 
   private ASTNode genRewrittenTree(String rewrittenQuery) throws SemanticException {
-    ASTNode rewrittenTree;
     // Parse the rewritten query string
     try {
       ctx = new Context(conf);
@@ -308,18 +305,17 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     ctx.setCmd(rewrittenQuery);
 
     try {
-      rewrittenTree = ParseUtils.parse(rewrittenQuery, ctx);
+      return ParseUtils.parse(rewrittenQuery, ctx);
     } catch (ParseException e) {
       throw new SemanticException(ErrorMsg.COLUMNSTATSCOLLECTOR_PARSE_ERROR.getMsg());
     }
-    return rewrittenTree;
   }
 
   // fail early if the columns specified for column statistics are not valid
   private void validateSpecifiedColumnNames(List<String> specifiedCols)
       throws SemanticException {
     List<String> tableCols = Utilities.getColumnNamesFromFieldSchema(tbl.getCols());
-    for(String sc : specifiedCols) {
+    for (String sc : specifiedCols) {
       if (!tableCols.contains(sc.toLowerCase())) {
         String msg = "'" + sc + "' (possible columns are " + tableCols.toString() + ")";
         throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(msg));
@@ -344,7 +340,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
     String warning = "Only primitive type arguments are accepted but " + colType
         + " is passed for " + colName + ".";
     warning = "WARNING: " + warning;
-    console.printInfo(warning);
+    CONSOLE.printInfo(warning);
   }
 
   @Override
@@ -367,7 +363,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       // Save away the original AST
       originalTree = ast;
       boolean isPartitionStats = AnalyzeCommandUtils.isPartitionLevelStats(ast);
-      Map<String,String> partSpec = null;
+      Map<String, String> partSpec = null;
       checkForPartitionColumns(
           colNames, Utilities.getColumnNamesFromFieldSchema(tbl.getPartitionKeys()));
       validateSpecifiedColumnNames(colNames);
