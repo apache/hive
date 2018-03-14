@@ -23,7 +23,6 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -34,7 +33,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -71,12 +69,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileStatus;
@@ -164,9 +159,6 @@ public class QTestUtil {
   private static final String TEST_TMP_DIR_PROPERTY = "test.tmp.dir"; // typically target/tmp
   private static final String BUILD_DIR_PROPERTY = "build.dir"; // typically target
 
-  public static final String PATH_HDFS_REGEX = "(hdfs://)([a-zA-Z0-9:/_\\-\\.=])+";
-  public static final String PATH_HDFS_WITH_DATE_USER_GROUP_REGEX = "([a-z]+) ([a-z]+)([ ]+)([0-9]+) ([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}) " + PATH_HDFS_REGEX;
-
   public static final String TEST_SRC_TABLES_PROPERTY = "test.src.tables";
 
   private String testWarehouse;
@@ -206,7 +198,7 @@ public class QTestUtil {
   private SparkSession sparkSession = null;
   private boolean isSessionStateStarted = false;
   private static final String javaVersion = getJavaVersion();
-
+  private QOutProcessor qOutProcessor;
   private final String initScript;
   private final String cleanupScript;
 
@@ -587,6 +579,7 @@ public class QTestUtil {
     this.outDir = outDir;
     this.logDir = logDir;
     this.srcUDFs = getSrcUDFs();
+    this.qOutProcessor = new QOutProcessor(fsType);
 
     // HIVE-14443 move this fall-back logic to CliConfigs
     if (confDir != null && !confDir.isEmpty()) {
@@ -1668,186 +1661,6 @@ public class QTestUtil {
    return ret;
   }
 
-  private Pattern[] toPattern(String[] patternStrs) {
-    Pattern[] patterns = new Pattern[patternStrs.length];
-    for (int i = 0; i < patternStrs.length; i++) {
-      patterns[i] = Pattern.compile(patternStrs[i]);
-    }
-    return patterns;
-  }
-
-  private void maskPatterns(Pattern[] patterns, String fname) throws Exception {
-    String maskPattern = "#### A masked pattern was here ####";
-    String partialMaskPattern = "#### A PARTIAL masked pattern was here ####";
-
-    String line;
-    BufferedReader in;
-    BufferedWriter out;
-
-    File file = new File(fname);
-    File fileOrig = new File(fname + ".orig");
-    FileUtils.copyFile(file, fileOrig);
-
-    in = new BufferedReader(new InputStreamReader(new FileInputStream(fileOrig), "UTF-8"));
-    out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
-
-    boolean lastWasMasked = false;
-    boolean partialMaskWasMatched = false;
-    Matcher matcher;
-    while (null != (line = in.readLine())) {
-      if (fsType == FsType.encrypted_hdfs) {
-        for (Pattern pattern : partialReservedPlanMask) {
-          matcher = pattern.matcher(line);
-          if (matcher.find()) {
-            line = partialMaskPattern + " " + matcher.group(0);
-            partialMaskWasMatched = true;
-            break;
-          }
-        }
-      }
-      else {
-        for (PatternReplacementPair prp : partialPlanMask) {
-          matcher = prp.pattern.matcher(line);
-          if (matcher.find()) {
-            line = line.replaceAll(prp.pattern.pattern(), prp.replacement);
-            partialMaskWasMatched = true;
-          }
-        }
-      }
-
-      if (!partialMaskWasMatched) {
-        for (Pair<Pattern, String> pair : patternsWithMaskComments) {
-          Pattern pattern = pair.getLeft();
-          String maskComment = pair.getRight();
-
-          matcher = pattern.matcher(line);
-          if (matcher.find()) {
-            line = matcher.replaceAll(maskComment);
-            partialMaskWasMatched = true;
-            break;
-          }
-        }
-
-        for (Pattern pattern : patterns) {
-          line = pattern.matcher(line).replaceAll(maskPattern);
-        }
-      }
-
-      if (line.equals(maskPattern)) {
-        // We're folding multiple masked lines into one.
-        if (!lastWasMasked) {
-          out.write(line);
-          out.write("\n");
-          lastWasMasked = true;
-          partialMaskWasMatched = false;
-        }
-      } else {
-        out.write(line);
-        out.write("\n");
-        lastWasMasked = false;
-        partialMaskWasMatched = false;
-      }
-    }
-
-    in.close();
-    out.close();
-  }
-
-  private final Pattern[] planMask = toPattern(new String[] {
-      ".*file:.*",
-      ".*pfile:.*",
-      ".*/tmp/.*",
-      ".*invalidscheme:.*",
-      ".*lastUpdateTime.*",
-      ".*lastAccessTime.*",
-      ".*lastModifiedTime.*",
-      ".*[Oo]wner.*",
-      ".*CreateTime.*",
-      ".*LastAccessTime.*",
-      ".*Location.*",
-      ".*LOCATION '.*",
-      ".*transient_lastDdlTime.*",
-      ".*last_modified_.*",
-      ".*at org.*",
-      ".*at sun.*",
-      ".*at java.*",
-      ".*at junit.*",
-      ".*Caused by:.*",
-      ".*LOCK_QUERYID:.*",
-      ".*LOCK_TIME:.*",
-      ".*grantTime.*",
-      ".*[.][.][.] [0-9]* more.*",
-      ".*job_[0-9_]*.*",
-      ".*job_local[0-9_]*.*",
-      ".*USING 'java -cp.*",
-      "^Deleted.*",
-      ".*DagName:.*",
-      ".*DagId:.*",
-      ".*Input:.*/data/files/.*",
-      ".*Output:.*/data/files/.*",
-      ".*total number of created files now is.*",
-      ".*.hive-staging.*",
-      "pk_-?[0-9]*_[0-9]*_[0-9]*",
-      "fk_-?[0-9]*_[0-9]*_[0-9]*",
-      "uk_-?[0-9]*_[0-9]*_[0-9]*",
-      "nn_-?[0-9]*_[0-9]*_[0-9]*", // not null constraint name
-      "dc_-?[0-9]*_[0-9]*_[0-9]*", // default constraint name
-      ".*at com\\.sun\\.proxy.*",
-      ".*at com\\.jolbox.*",
-      ".*at com\\.zaxxer.*",
-      "org\\.apache\\.hadoop\\.hive\\.metastore\\.model\\.MConstraint@([0-9]|[a-z])*",
-      "^Repair: Added partition to metastore.*"
-  });
-
-  private final Pattern[] partialReservedPlanMask = toPattern(new String[] {
-      "data/warehouse/(.*?/)+\\.hive-staging"  // the directory might be db/table/partition
-      //TODO: add more expected test result here
-  });
-  /**
-   * Pattern to match and (partial) replacement text.
-   * For example, {"writeid":76,"bucketid":8249877}.  We just want to mask 76 but a regex that
-   * matches just 76 will match a lot of other things.
-   */
-  private final static class PatternReplacementPair {
-    private final Pattern pattern;
-    private final String replacement;
-    PatternReplacementPair(Pattern p, String r) {
-      pattern = p;
-      replacement = r;
-    }
-  }
-  private final PatternReplacementPair[] partialPlanMask;
-  {
-    ArrayList<PatternReplacementPair> ppm = new ArrayList<>();
-    ppm.add(new PatternReplacementPair(Pattern.compile("\\{\"writeid\":[1-9][0-9]*,\"bucketid\":"),
-      "{\"writeid\":### Masked writeid ###,\"bucketid\":"));
-
-    ppm.add(new PatternReplacementPair(Pattern.compile("attempt_[0-9_]+"), "attempt_#ID#"));
-    ppm.add(new PatternReplacementPair(Pattern.compile("vertex_[0-9_]+"), "vertex_#ID#"));
-    ppm.add(new PatternReplacementPair(Pattern.compile("task_[0-9_]+"), "task_#ID#"));
-    partialPlanMask = ppm.toArray(new PatternReplacementPair[ppm.size()]);
-  }
-  /* This list may be modified by specific cli drivers to mask strings that change on every test */
-  @SuppressWarnings("serial")
-  private final List<Pair<Pattern, String>> patternsWithMaskComments =
-      new ArrayList<Pair<Pattern, String>>() {
-        {
-          add(toPatternPair("(pblob|s3.?|swift|wasb.?).*hive-staging.*",
-              "### BLOBSTORE_STAGING_PATH ###"));
-          add(toPatternPair(PATH_HDFS_WITH_DATE_USER_GROUP_REGEX,
-              "### USER ### ### GROUP ###$3$4 ### HDFS DATE ### $6### HDFS PATH ###"));
-          add(toPatternPair(PATH_HDFS_REGEX, "$1### HDFS PATH ###"));
-        }
-      };
-
-  private Pair<Pattern, String> toPatternPair(String patternStr, String maskComment) {
-    return ImmutablePair.of(Pattern.compile(patternStr), maskComment);
-  }
-
-  public void addPatternWithMaskComment(String patternStr, String maskComment) {
-    patternsWithMaskComments.add(toPatternPair(patternStr, maskComment));
-  }
-
   public QTestProcessExecResult checkCliDriverResults(String tname) throws Exception {
     assert(qMap.containsKey(tname));
 
@@ -1856,7 +1669,7 @@ public class QTestUtil {
 
     File f = new File(logDir, tname + outFileExtension);
 
-    maskPatterns(planMask, f.getPath());
+    qOutProcessor.maskPatterns(f.getPath());
     QTestProcessExecResult exitVal = executeDiffCommand(f.getPath(),
                                      outFileName, false,
                                      qSortSet.contains(tname));
@@ -1873,9 +1686,9 @@ public class QTestUtil {
   public QTestProcessExecResult checkCompareCliDriverResults(String tname, List<String> outputs)
       throws Exception {
     assert outputs.size() > 1;
-    maskPatterns(planMask, outputs.get(0));
+    qOutProcessor.maskPatterns(outputs.get(0));
     for (int i = 1; i < outputs.size(); ++i) {
-      maskPatterns(planMask, outputs.get(i));
+      qOutProcessor.maskPatterns(outputs.get(i));
       QTestProcessExecResult result = executeDiffCommand(
           outputs.get(i - 1), outputs.get(i), false, qSortSet.contains(tname));
       if (result.getReturnCode() != 0) {
@@ -2596,5 +2409,9 @@ public class QTestUtil {
       } catch (SQLException sqle) {
       }
     }
+  }
+
+  public QOutProcessor getQOutProcessor() {
+    return qOutProcessor;
   }
 }
