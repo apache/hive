@@ -19,9 +19,10 @@ package org.apache.hive.spark.client.metrics;
 
 import java.io.Serializable;
 
-import org.apache.spark.executor.TaskMetrics;
-
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+
+import org.apache.spark.executor.TaskMetrics;
+import org.apache.spark.scheduler.TaskInfo;
 
 /**
  * Metrics tracked during the execution of a job.
@@ -46,6 +47,8 @@ public class Metrics implements Serializable {
   public final long memoryBytesSpilled;
   /** The number of on-disk bytes spilled by tasks. */
   public final long diskBytesSpilled;
+  /** Amount of time spent executing tasks. */
+  public final long taskDurationTime;
   /** If tasks read from a HadoopRDD or from persisted data, metrics on how much data was read. */
   public final InputMetrics inputMetrics;
   /**
@@ -58,7 +61,7 @@ public class Metrics implements Serializable {
 
   private Metrics() {
     // For Serialization only.
-    this(0L, 0L, 0L, 0L, 0L, 0L, 0L, null, null, null);
+    this(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, null, null, null);
   }
 
   public Metrics(
@@ -69,6 +72,7 @@ public class Metrics implements Serializable {
       long resultSerializationTime,
       long memoryBytesSpilled,
       long diskBytesSpilled,
+      long taskDurationTime,
       InputMetrics inputMetrics,
       ShuffleReadMetrics shuffleReadMetrics,
       ShuffleWriteMetrics shuffleWriteMetrics) {
@@ -79,12 +83,13 @@ public class Metrics implements Serializable {
     this.resultSerializationTime = resultSerializationTime;
     this.memoryBytesSpilled = memoryBytesSpilled;
     this.diskBytesSpilled = diskBytesSpilled;
+    this.taskDurationTime = taskDurationTime;
     this.inputMetrics = inputMetrics;
     this.shuffleReadMetrics = shuffleReadMetrics;
     this.shuffleWriteMetrics = shuffleWriteMetrics;
   }
 
-  public Metrics(TaskMetrics metrics) {
+  public Metrics(TaskMetrics metrics, TaskInfo taskInfo) {
     this(
       metrics.executorDeserializeTime(),
       metrics.executorRunTime(),
@@ -93,6 +98,7 @@ public class Metrics implements Serializable {
       metrics.resultSerializationTime(),
       metrics.memoryBytesSpilled(),
       metrics.diskBytesSpilled(),
+      taskInfo.duration(),
       optionalInputMetric(metrics),
       optionalShuffleReadMetric(metrics),
       optionalShuffleWriteMetrics(metrics));

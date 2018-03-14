@@ -21,7 +21,7 @@ import org.apache.hive.spark.counter.SparkCounter;
 import org.apache.hive.spark.counter.SparkCounterGroup;
 import org.apache.hive.spark.counter.SparkCounters;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -31,15 +31,15 @@ public class SparkStatisticsBuilder {
   private Map<String, List<SparkStatistic>> statisticMap;
 
   public SparkStatisticsBuilder() {
-    statisticMap = new HashMap<String, List<SparkStatistic>>();
+    statisticMap = new LinkedHashMap<>();
   }
 
   public SparkStatistics build() {
     List<SparkStatisticGroup> statisticGroups = new LinkedList<SparkStatisticGroup>();
     for (Map.Entry<String, List<SparkStatistic>> entry : statisticMap.entrySet()) {
       String groupName = entry.getKey();
-      List<SparkStatistic> statisitcList = entry.getValue();
-      statisticGroups.add(new SparkStatisticGroup(groupName, statisitcList));
+      List<SparkStatistic> statisticList = entry.getValue();
+      statisticGroups.add(new SparkStatisticGroup(groupName, statisticList));
     }
 
     return new SparkStatistics(statisticGroups);
