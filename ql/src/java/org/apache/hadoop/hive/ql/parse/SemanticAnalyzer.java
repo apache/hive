@@ -14309,14 +14309,38 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     // Don't increment the reader count for explain queries.
     boolean isExplainQuery = (ctx.getExplainConfig() != null);
-    QueryResultsCache.CacheEntry cacheEntry =
-        QueryResultsCache.getInstance().lookup(lookupInfo, !isExplainQuery);
+    QueryResultsCache.CacheEntry cacheEntry = QueryResultsCache.getInstance().lookup(lookupInfo);
     if (cacheEntry != null) {
-      // Use the cache rather than full query execution.
-      useCachedResult(cacheEntry);
+      // Potentially wait on the cache entry if entry is in PENDING status
+      // Blocking here can potentially be dangerous - for example if the global compile lock
+      // is used this will block all subsequent queries that try to acquire the compile lock,
+      // so it should not be done unless parallel compilation is enabled.
+      // We might not want to block for explain queries as well.
+      if (cacheEntry.getStatus() == QueryResultsCache.CacheEntryStatus.PENDING) {
+        if (!isExplainQuery &&
+            conf.getBoolVar(HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_WAIT_FOR_PENDING_RESULTS) &&
+            conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_PARALLEL_COMPILATION)) {
+          if (!cacheEntry.waitForValidStatus()) {
+            LOG.info("Waiting on pending cacheEntry, but it failed to become valid");
+            return false;
+          }
+        } else {
+          LOG.info("Not waiting for pending cacheEntry");
+          return false;
+        }
+      }
 
-      // At this point the caller should return from semantic analysis.
-      return true;
+      if (cacheEntry.getStatus() == QueryResultsCache.CacheEntryStatus.VALID) {
+        if (!isExplainQuery) {
+          if (!cacheEntry.addReader()) {
+            return false;
+          }
+        }
+        // Use the cache rather than full query execution.
+        // At this point the caller should return from semantic analysis.
+        useCachedResult(cacheEntry);
+        return true;
+      }
     }
     return false;
   }

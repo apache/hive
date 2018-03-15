@@ -1860,7 +1860,23 @@ public class Driver implements IDriver {
     cacheUsage = new CacheUsage(CacheUsage.CacheStatus.QUERY_USING_CACHE, cacheEntry);
   }
 
-  private void checkCacheUsage() throws Exception {
+  private void preExecutionCacheActions() throws Exception {
+    if (cacheUsage != null) {
+      if (cacheUsage.getStatus() == CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS &&
+          plan.getFetchTask() != null) {
+        // The results of this query execution might be cacheable.
+        // Add a placeholder entry in the cache so other queries know this result is pending.
+        CacheEntry pendingCacheEntry =
+            QueryResultsCache.getInstance().addToCache(cacheUsage.getQueryInfo());
+        if (pendingCacheEntry != null) {
+          // Update cacheUsage to reference the pending entry.
+          this.cacheUsage.setCacheEntry(pendingCacheEntry);
+        }
+      }
+    }
+  }
+
+  private void postExecutionCacheActions() throws Exception {
     if (cacheUsage != null) {
       if (cacheUsage.getStatus() == CacheUsage.CacheStatus.QUERY_USING_CACHE) {
         // Using a previously cached result.
@@ -1868,22 +1884,22 @@ public class Driver implements IDriver {
 
         // Reader count already incremented during cache lookup.
         // Save to usedCacheEntry to ensure reader is released after query.
-        usedCacheEntry = cacheEntry;
+        this.usedCacheEntry = cacheEntry;
       } else if (cacheUsage.getStatus() == CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS &&
+          cacheUsage.getCacheEntry() != null &&
           plan.getFetchTask() != null) {
-        // The query could not be resolved using the cache, but the query results
-        // can be added to the cache for future queries to use.
+        // Save results to the cache for future queries to use.
         PerfLogger perfLogger = SessionState.getPerfLogger();
         perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SAVE_TO_RESULTS_CACHE);
 
-        CacheEntry savedCacheEntry =
-            QueryResultsCache.getInstance().addToCache(
-                cacheUsage.getQueryInfo(),
-                plan.getFetchTask().getWork());
-        if (savedCacheEntry != null) {
-          useFetchFromCache(savedCacheEntry);
-          // addToCache() already increments the reader count. Set usedCacheEntry so it gets released.
-          usedCacheEntry = savedCacheEntry;
+        boolean savedToCache = QueryResultsCache.getInstance().setEntryValid(
+            cacheUsage.getCacheEntry(),
+            plan.getFetchTask().getWork());
+        LOG.info("savedToCache: {}", savedToCache);
+        if (savedToCache) {
+          useFetchFromCache(cacheUsage.getCacheEntry());
+          // setEntryValid() already increments the reader count. Set usedCacheEntry so it gets released.
+          this.usedCacheEntry = cacheUsage.getCacheEntry();
         }
 
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SAVE_TO_RESULTS_CACHE);
@@ -2000,6 +2016,8 @@ public class Driver implements IDriver {
         }
       }
 
+      preExecutionCacheActions();
+
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.RUN_TASKS);
       // Loop while you either have tasks running, or tasks queued up
       while (driverCxt.isRunning()) {
@@ -2099,7 +2117,7 @@ public class Driver implements IDriver {
       }
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.RUN_TASKS);
 
-      checkCacheUsage();
+      postExecutionCacheActions();
 
       // in case we decided to run everything in local mode, restore the
       // the jobtracker setting to its initial value
@@ -2499,13 +2517,31 @@ public class Driver implements IDriver {
     }
   }
 
+  private boolean hasBadCacheAttempt() {
+    // Check if the query results were cacheable, and created a pending cache entry.
+    // If we successfully saved the results, the usage would have changed to QUERY_USING_CACHE.
+    return (cacheUsage != null &&
+        cacheUsage.getStatus() == CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS &&
+        cacheUsage.getCacheEntry() != null);
+  }
+
   private void releaseCachedResult() {
     // Assumes the reader count has been incremented automatically by the results cache by either
     // lookup or creating the cache entry.
     if (usedCacheEntry != null) {
       usedCacheEntry.releaseReader();
       usedCacheEntry = null;
+    } else if (hasBadCacheAttempt()) {
+      // This query create a pending cache entry but it was never saved with real results, cleanup.
+      // This step is required, as there may be queries waiting on this pending cache entry.
+      // Removing/invalidating this entry will notify the waiters that this entry cannot be used.
+      try {
+        QueryResultsCache.getInstance().removeEntry(cacheUsage.getCacheEntry());
+      } catch (Exception err) {
+        LOG.error("Error removing failed cache entry " + cacheUsage.getCacheEntry(), err);
+      }
     }
+    cacheUsage = null;
   }
 
   // Close and release resources within a running query process. Since it runs under
