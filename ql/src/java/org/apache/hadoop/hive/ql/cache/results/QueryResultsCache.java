@@ -155,6 +155,10 @@ public final class QueryResultsCache {
     }
   }
 
+  public enum CacheEntryStatus {
+    VALID, INVALID, PENDING
+  }
+
   public static class CacheEntry {
     private QueryInfo queryInfo;
     private FetchWork fetchWork;
@@ -163,13 +167,9 @@ public final class QueryResultsCache {
     // Cache administration
     private long createTime;
     private long size;
-    private AtomicBoolean valid = new AtomicBoolean(false);
     private AtomicInteger readers = new AtomicInteger(0);
     private ScheduledFuture<?> invalidationFuture = null;
-
-    public boolean isValid() {
-      return valid.get();
-    }
+    private volatile CacheEntryStatus status = CacheEntryStatus.PENDING;
 
     public void releaseReader() {
       int readerCount = 0;
@@ -177,14 +177,13 @@ public final class QueryResultsCache {
         readerCount = readers.decrementAndGet();
       }
       LOG.debug("releaseReader: entry: {}, readerCount: {}", this, readerCount);
-      Preconditions.checkState(readerCount >= 0);
 
       cleanupIfNeeded();
     }
 
     public String toString() {
       return "CacheEntry query: [" + getQueryInfo().getLookupInfo().getQueryText()
-          + "], location: " + cachedResultsPath
+          + "], status: " + status + ", location: " + cachedResultsPath
           + ", size: " + size;
     }
 
@@ -192,13 +191,12 @@ public final class QueryResultsCache {
       boolean added = false;
       int readerCount = 0;
       synchronized (this) {
-        if (valid.get()) {
+        if (status == CacheEntryStatus.VALID) {
           readerCount = readers.incrementAndGet();
           added = true;
         }
       }
-      Preconditions.checkState(readerCount > 0);
-      LOG.debug("addReader: entry: {}, readerCount: {}", this, readerCount);
+      LOG.debug("addReader: entry: {}, readerCount: {}, added: {}", this, readerCount, added);
       return added;
     }
 
@@ -207,32 +205,36 @@ public final class QueryResultsCache {
     }
 
     private void invalidate() {
-      boolean wasValid = setValidity(false);
-
-      if (wasValid) {
-        LOG.info("Invalidated cache entry: {}", this);
-
+      LOG.info("Invalidating cache entry: {}", this);
+      CacheEntryStatus prevStatus = setStatus(CacheEntryStatus.INVALID);
+      if (prevStatus == CacheEntryStatus.VALID) {
         if (invalidationFuture != null) {
           // The cache entry has just been invalidated, no need for the scheduled invalidation.
           invalidationFuture.cancel(false);
         }
         cleanupIfNeeded();
+      } else if (prevStatus == CacheEntryStatus.PENDING) {
+        // Need to notify any queries waiting on the change from pending status.
+        synchronized (this) {
+          this.notifyAll();
+        }
       }
     }
 
-    /**
-     * Set the validity, returning the previous validity value.
-     * @param valid
-     * @return
-     */
-    private boolean setValidity(boolean valid) {
-      synchronized(this) {
-        return this.valid.getAndSet(valid);
+    public CacheEntryStatus getStatus() {
+      return status;
+    }
+
+    private CacheEntryStatus setStatus(CacheEntryStatus newStatus) {
+      synchronized (this) {
+        CacheEntryStatus oldStatus = status;
+        status = newStatus;
+        return oldStatus;
       }
     }
 
     private void cleanupIfNeeded() {
-      if (!isValid() && readers.get() <= 0) {
+      if (status == CacheEntryStatus.INVALID && readers.get() <= 0) {
         QueryResultsCache.cleanupEntry(this);
       }
     }
@@ -255,6 +257,37 @@ public final class QueryResultsCache {
     public Path getCachedResultsPath() {
       return cachedResultsPath;
     }
+
+    /**
+     * Wait for the cache entry to go from PENDING to VALID status.
+     * @return true if the cache entry successfully changed to VALID status,
+     *         false if the status changes from PENDING to INVALID
+     */
+    public boolean waitForValidStatus() {
+      LOG.info("Waiting on pending cacheEntry");
+      long timeout = 1000;
+
+      while (true) {
+        try {
+          switch (status) {
+          case VALID:
+            return true;
+          case INVALID:
+            return false;
+          case PENDING:
+            // Status has not changed, continue waiting.
+            break;
+          }
+
+          synchronized (this) {
+            this.wait(timeout);
+          }
+        } catch (InterruptedException err) {
+          Thread.currentThread().interrupt();
+          return false;
+        }
+      }
+    }
   }
 
   // Allow lookup by query string
@@ -267,6 +300,7 @@ public final class QueryResultsCache {
 
   private final HiveConf conf;
   private Path cacheDirPath;
+  private Path zeroRowsPath;
   private long cacheSize = 0;
   private long maxCacheSize;
   private long maxEntrySize;
@@ -286,6 +320,9 @@ public final class QueryResultsCache {
     FileSystem fs = cacheDirPath.getFileSystem(conf);
     FsPermission fsPermission = new FsPermission("700");
     fs.mkdirs(cacheDirPath, fsPermission);
+
+    // Create non-existent path for 0-row results
+    zeroRowsPath = new Path(cacheDirPath, "dummy_zero_rows");
 
     // Results cache directory should be cleaned up at process termination.
     fs.deleteOnExit(cacheDirPath);
@@ -327,7 +364,7 @@ public final class QueryResultsCache {
    *        using CacheEntry.releaseReader().
    * @return  The cached result if there is a match in the cache, or null if no match is found.
    */
-  public CacheEntry lookup(LookupInfo request, boolean addReader) {
+  public CacheEntry lookup(LookupInfo request) {
     CacheEntry result = null;
 
     LOG.debug("QueryResultsCache lookup for query: {}", request.queryText);
@@ -337,27 +374,26 @@ public final class QueryResultsCache {
       readLock.lock();
       Set<CacheEntry> candidates = queryMap.get(request.queryText);
       if (candidates != null) {
+        CacheEntry pendingResult = null;
         for (CacheEntry candidate : candidates) {
           if (entryMatches(request, candidate)) {
-            result = candidate;
-            break;
+            CacheEntryStatus entryStatus = candidate.status;
+            if (entryStatus == CacheEntryStatus.VALID) {
+              result = candidate;
+              break;
+            } else if (entryStatus == CacheEntryStatus.PENDING && pendingResult == null) {
+              pendingResult = candidate;
+            }
           }
+        }
+
+        // Try to find valid entry, but settle for pending entry if that is all we have.
+        if (result == null && pendingResult != null) {
+          result = pendingResult;
         }
 
         if (result != null) {
           lru.get(result);  // Update LRU
-
-          if (!result.isValid()) {
-            // Entry is in the cache, but not valid.
-            // This can happen when the entry is first added, before the data has been moved
-            // to the results cache directory. We cannot use this entry yet.
-            result = null;
-          } else {
-            if (addReader) {
-              // Caller will need to be responsible for releasing the reader count.
-              result.addReader();
-            }
-          }
         }
       }
     } finally {
@@ -370,111 +406,124 @@ public final class QueryResultsCache {
   }
 
   /**
-   * Add an entry to the query results cache.
+   * Add an entry to the cache.
+   * The new entry will be in PENDING state and not usable setEntryValid() is called on the entry.
+   * @param queryInfo
+   * @return
+   */
+  public CacheEntry addToCache(QueryInfo queryInfo) {
+    // Create placeholder entry with PENDING state.
+    String queryText = queryInfo.getLookupInfo().getQueryText();
+    CacheEntry addedEntry = new CacheEntry();
+    addedEntry.queryInfo = queryInfo;
+
+    Lock writeLock = rwLock.writeLock();
+    try {
+      writeLock.lock();
+
+      LOG.info("Adding placeholder cache entry for query '{}'", queryText);
+
+      // Add the entry to the cache structures while under write lock.
+      Set<CacheEntry> entriesForQuery = queryMap.get(queryText);
+      if (entriesForQuery == null) {
+        entriesForQuery = new HashSet<CacheEntry>();
+        queryMap.put(queryText, entriesForQuery);
+      }
+      entriesForQuery.add(addedEntry);
+      lru.put(addedEntry, addedEntry);
+    } finally {
+      writeLock.unlock();
+    }
+
+    return addedEntry;
+  }
+
+  /**
+   * Updates a pending cache entry with a FetchWork result from a finished query.
+   * If successful the cache entry will be set to valid status and be usable for cached queries.
    * Important: Adding the entry to the cache will increment the reader count for the cache entry.
    * CacheEntry.releaseReader() should be called when the caller is done with the cache entry.
-   *
-   * @param queryInfo
+   * @param cacheEntry
    * @param fetchWork
-   * @return The entry if added to the cache. null if the entry is not added.
+   * @return
    */
-  public CacheEntry addToCache(QueryInfo queryInfo, FetchWork fetchWork) {
-
-    CacheEntry addedEntry = null;
+  public boolean setEntryValid(CacheEntry cacheEntry, FetchWork fetchWork) {
+    String queryText = cacheEntry.getQueryText();
     boolean dataDirMoved = false;
     Path queryResultsPath = null;
     Path cachedResultsPath = null;
-    String queryText = queryInfo.getLookupInfo().getQueryText();
 
-    // Should we remove other candidate entries if they are equivalent to these query results?
     try {
-      CacheEntry potentialEntry = new CacheEntry();
-      potentialEntry.queryInfo = queryInfo;
+      boolean requiresMove = true;
       queryResultsPath = fetchWork.getTblDir();
       FileSystem resultsFs = queryResultsPath.getFileSystem(conf);
-      ContentSummary cs = resultsFs.getContentSummary(queryResultsPath);
-      potentialEntry.size = cs.getLength();
-
-      Lock writeLock = rwLock.writeLock();
-      try {
-        writeLock.lock();
-
-        if (!shouldEntryBeAdded(potentialEntry)) {
-          return null;
-        }
-        if (!clearSpaceForCacheEntry(potentialEntry)) {
-          return null;
-        }
-
-        LOG.info("Adding cache entry for query '{}'", queryText);
-
-        // Add the entry to the cache structures while under write lock. Do not mark the entry
-        // as valid yet, since the query results have not yet been moved to the cache directory.
-        // Do the data move after unlocking since it might take time.
-        // Mark the entry as valid once the data has been moved to the cache directory.
-        Set<CacheEntry> entriesForQuery = queryMap.get(queryText);
-        if (entriesForQuery == null) {
-          entriesForQuery = new HashSet<CacheEntry>();
-          queryMap.put(queryText, entriesForQuery);
-        }
-        entriesForQuery.add(potentialEntry);
-        lru.put(potentialEntry, potentialEntry);
-        cacheSize += potentialEntry.size;
-        addedEntry = potentialEntry;
-
-      } finally {
-        writeLock.unlock();
+      long resultSize;
+      if (resultsFs.exists(queryResultsPath)) {
+        ContentSummary cs = resultsFs.getContentSummary(queryResultsPath);
+        resultSize = cs.getLength();
+      } else {
+        // No actual result directory, no need to move anything.
+        cachedResultsPath = zeroRowsPath;
+        resultSize = 0;
+        requiresMove = false;
       }
 
-      // Move the query results to the query cache directory.
-      cachedResultsPath = moveResultsToCacheDirectory(queryResultsPath);
-      dataDirMoved = true;
+      if (!shouldEntryBeAdded(cacheEntry, resultSize)) {
+        return false;
+      }
+
+      if (requiresMove) {
+        // Move the query results to the query cache directory.
+        cachedResultsPath = moveResultsToCacheDirectory(queryResultsPath);
+        dataDirMoved = true;
+      }
       LOG.info("Moved query results from {} to {} (size {}) for query '{}'",
-          queryResultsPath, cachedResultsPath, cs.getLength(), queryText);
+          queryResultsPath, cachedResultsPath, resultSize, queryText);
 
       // Create a new FetchWork to reference the new cache location.
       FetchWork fetchWorkForCache =
           new FetchWork(cachedResultsPath, fetchWork.getTblDesc(), fetchWork.getLimit());
       fetchWorkForCache.setCachedResult(true);
-      addedEntry.fetchWork = fetchWorkForCache;
-      addedEntry.cachedResultsPath = cachedResultsPath;
-      addedEntry.createTime = System.currentTimeMillis();
-      addedEntry.setValidity(true);
+      cacheEntry.fetchWork = fetchWorkForCache;
+      cacheEntry.cachedResultsPath = cachedResultsPath;
+      cacheEntry.size = resultSize;
+      this.cacheSize += resultSize;
+      cacheEntry.createTime = System.currentTimeMillis();
 
+      cacheEntry.setStatus(CacheEntryStatus.VALID);
       // Mark this entry as being in use. Caller will need to release later.
-      addedEntry.addReader();
+      cacheEntry.addReader();
 
-      scheduleEntryInvalidation(addedEntry);
+      scheduleEntryInvalidation(cacheEntry);
+
+      // Notify any queries waiting on this cacheEntry to become valid.
+      synchronized (cacheEntry) {
+        cacheEntry.notifyAll();
+      }
     } catch (Exception err) {
       LOG.error("Failed to create cache entry for query results for query: " + queryText, err);
 
-      if (addedEntry != null) {
-        // If the entry was already added to the cache when we hit error, clean up properly.
-
-        if (dataDirMoved) {
-          // If data was moved from original location to cache directory, we need to move it back!
-          LOG.info("Restoring query results from {} back to {}", cachedResultsPath, queryResultsPath);
-          try {
-            FileSystem fs = cachedResultsPath.getFileSystem(conf);
-            fs.rename(cachedResultsPath, queryResultsPath);
-            addedEntry.cachedResultsPath = null;
-          } catch (Exception err2) {
-            String errMsg = "Failed cleanup during failed attempt to cache query: " + queryText;
-            LOG.error(errMsg);
-            throw new RuntimeException(errMsg);
-          }
-        }
-
-        addedEntry.invalidate();
-        if (addedEntry.numReaders() > 0) {
-          addedEntry.releaseReader();
+      if (dataDirMoved) {
+        // If data was moved from original location to cache directory, we need to move it back!
+        LOG.info("Restoring query results from {} back to {}", cachedResultsPath, queryResultsPath);
+        try {
+          FileSystem fs = cachedResultsPath.getFileSystem(conf);
+          fs.rename(cachedResultsPath, queryResultsPath);
+          cacheEntry.size = 0;
+          cacheEntry.cachedResultsPath = null;
+        } catch (Exception err2) {
+          String errMsg = "Failed cleanup during failed attempt to cache query: " + queryText;
+          LOG.error(errMsg);
+          throw new RuntimeException(errMsg);
         }
       }
 
-      return null;
+      // Invalidate the entry. Rely on query cleanup to remove from lookup.
+      cacheEntry.invalidate();
+      return false;
     }
 
-    return addedEntry;
+    return true;
   }
 
   public void clear() {
@@ -527,7 +576,7 @@ public final class QueryResultsCache {
     return true;
   }
 
-  private void removeEntry(CacheEntry entry) {
+  public void removeEntry(CacheEntry entry) {
     entry.invalidate();
     removeFromLookup(entry);
     lru.remove(entry);
@@ -538,9 +587,14 @@ public final class QueryResultsCache {
   private void removeFromLookup(CacheEntry entry) {
     String queryString = entry.getQueryText();
     Set<CacheEntry> entries = queryMap.get(queryString);
-    Preconditions.checkState(entries != null);
+    if (entries == null) {
+      LOG.warn("ResultsCache: no entry for {}", queryString);
+      return;
+    }
     boolean deleted = entries.remove(entry);
-    Preconditions.checkState(deleted);
+    if (!deleted) {
+      LOG.warn("ResultsCache: Attempted to remove entry but it was not in the cache: {}", entry);
+    }
     if (entries.isEmpty()) {
       queryMap.remove(queryString);
     }
@@ -556,10 +610,14 @@ public final class QueryResultsCache {
   /**
    * Determines if the cache entry should be added to the results cache.
    */
-  private boolean shouldEntryBeAdded(CacheEntry entry) {
+  private boolean shouldEntryBeAdded(CacheEntry entry, long size) {
     // Assumes the cache lock has already been taken.
-    if (maxEntrySize >= 0 && entry.size > maxEntrySize) {
-      LOG.debug("Cache entry size {} larger than max entry size ({})", entry.size, maxEntrySize);
+    if (maxEntrySize >= 0 && size > maxEntrySize) {
+      LOG.debug("Cache entry size {} larger than max entry size ({})", size, maxEntrySize);
+      return false;
+    }
+
+    if (!clearSpaceForCacheEntry(entry, size)) {
       return false;
     }
 
@@ -574,41 +632,41 @@ public final class QueryResultsCache {
     return cachedResultsPath;
   }
 
-  private boolean hasSpaceForCacheEntry(CacheEntry entry) {
+  private boolean hasSpaceForCacheEntry(CacheEntry entry, long size) {
     if (maxCacheSize >= 0) {
-      return (cacheSize + entry.size) <= maxCacheSize;
+      return (cacheSize + size) <= maxCacheSize;
     }
     // Negative max cache size means unbounded.
     return true;
   }
 
-  private boolean clearSpaceForCacheEntry(CacheEntry entry) {
-    if (hasSpaceForCacheEntry(entry)) {
+  private boolean clearSpaceForCacheEntry(CacheEntry entry, long size) {
+    if (hasSpaceForCacheEntry(entry, size)) {
       return true;
     }
 
     LOG.info("Clearing space for cache entry for query: [{}] with size {}",
-        entry.getQueryText(), entry.size);
+        entry.getQueryText(), size);
 
     // Entries should be in LRU order in the keyset iterator.
     CacheEntry[] entries = lru.keySet().toArray(EMPTY_CACHEENTRY_ARRAY);
     for (CacheEntry removalCandidate : entries) {
-      if (!removalCandidate.isValid()) {
-        // Likely an entry which is still getting its results moved to the cache directory.
+      if (removalCandidate.getStatus() != CacheEntryStatus.VALID) {
+        // Only entries marked as valid should have results that can be removed.
         continue;
       }
       // Only delete the entry if it has no readers.
       if (!(removalCandidate.numReaders() > 0)) {
         LOG.info("Removing entry: {}", removalCandidate);
         removeEntry(removalCandidate);
-        if (hasSpaceForCacheEntry(entry)) {
+        if (hasSpaceForCacheEntry(entry, size)) {
           return true;
         }
       }
     }
 
     LOG.info("Could not free enough space for cache entry for query: [{}] withe size {}",
-        entry.getQueryText(), entry.size);
+        entry.getQueryText(), size);
     return false;
   }
 
@@ -636,11 +694,11 @@ public final class QueryResultsCache {
 
   private void scheduleEntryInvalidation(final CacheEntry entry) {
     if (maxEntryLifetime >= 0) {
-      // Schedule task to invalidate cache entry.
+      // Schedule task to invalidate cache entry and remove from lookup.
       ScheduledFuture<?> future = invalidationExecutor.schedule(new Runnable() {
         @Override
         public void run() {
-          entry.invalidate();
+          removeEntry(entry);
         }
       }, maxEntryLifetime, TimeUnit.MILLISECONDS);
       entry.invalidationFuture = future;
@@ -648,9 +706,11 @@ public final class QueryResultsCache {
   }
 
   private static void cleanupEntry(final CacheEntry entry) {
-    Preconditions.checkState(!entry.isValid());
+    Preconditions.checkState(entry.getStatus() == CacheEntryStatus.INVALID);
+    final HiveConf conf = getInstance().conf;
 
-    if (entry.cachedResultsPath != null) {
+    if (entry.cachedResultsPath != null &&
+        !getInstance().zeroRowsPath.equals(entry.cachedResultsPath)) {
       deletionExecutor.execute(new Runnable() {
         @Override
         public void run() {
