@@ -15554,9 +15554,9 @@ void LockComponent::__set_operationType(const DataOperationType::type val) {
 __isset.operationType = true;
 }
 
-void LockComponent::__set_isAcid(const bool val) {
-  this->isAcid = val;
-__isset.isAcid = true;
+void LockComponent::__set_isTransactional(const bool val) {
+  this->isTransactional = val;
+__isset.isTransactional = true;
 }
 
 void LockComponent::__set_isDynamicPartitionWrite(const bool val) {
@@ -15644,8 +15644,8 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 7:
         if (ftype == ::apache::thrift::protocol::T_BOOL) {
-          xfer += iprot->readBool(this->isAcid);
-          this->__isset.isAcid = true;
+          xfer += iprot->readBool(this->isTransactional);
+          this->__isset.isTransactional = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -15708,9 +15708,9 @@ uint32_t LockComponent::write(::apache::thrift::protocol::TProtocol* oprot) cons
     xfer += oprot->writeI32((int32_t)this->operationType);
     xfer += oprot->writeFieldEnd();
   }
-  if (this->__isset.isAcid) {
-    xfer += oprot->writeFieldBegin("isAcid", ::apache::thrift::protocol::T_BOOL, 7);
-    xfer += oprot->writeBool(this->isAcid);
+  if (this->__isset.isTransactional) {
+    xfer += oprot->writeFieldBegin("isTransactional", ::apache::thrift::protocol::T_BOOL, 7);
+    xfer += oprot->writeBool(this->isTransactional);
     xfer += oprot->writeFieldEnd();
   }
   if (this->__isset.isDynamicPartitionWrite) {
@@ -15731,7 +15731,7 @@ void swap(LockComponent &a, LockComponent &b) {
   swap(a.tablename, b.tablename);
   swap(a.partitionname, b.partitionname);
   swap(a.operationType, b.operationType);
-  swap(a.isAcid, b.isAcid);
+  swap(a.isTransactional, b.isTransactional);
   swap(a.isDynamicPartitionWrite, b.isDynamicPartitionWrite);
   swap(a.__isset, b.__isset);
 }
@@ -15743,7 +15743,7 @@ LockComponent::LockComponent(const LockComponent& other673) {
   tablename = other673.tablename;
   partitionname = other673.partitionname;
   operationType = other673.operationType;
-  isAcid = other673.isAcid;
+  isTransactional = other673.isTransactional;
   isDynamicPartitionWrite = other673.isDynamicPartitionWrite;
   __isset = other673.__isset;
 }
@@ -15754,7 +15754,7 @@ LockComponent& LockComponent::operator=(const LockComponent& other674) {
   tablename = other674.tablename;
   partitionname = other674.partitionname;
   operationType = other674.operationType;
-  isAcid = other674.isAcid;
+  isTransactional = other674.isTransactional;
   isDynamicPartitionWrite = other674.isDynamicPartitionWrite;
   __isset = other674.__isset;
   return *this;
@@ -15768,7 +15768,7 @@ void LockComponent::printTo(std::ostream& out) const {
   out << ", " << "tablename="; (__isset.tablename ? (out << to_string(tablename)) : (out << "<null>"));
   out << ", " << "partitionname="; (__isset.partitionname ? (out << to_string(partitionname)) : (out << "<null>"));
   out << ", " << "operationType="; (__isset.operationType ? (out << to_string(operationType)) : (out << "<null>"));
-  out << ", " << "isAcid="; (__isset.isAcid ? (out << to_string(isAcid)) : (out << "<null>"));
+  out << ", " << "isTransactional="; (__isset.isTransactional ? (out << to_string(isTransactional)) : (out << "<null>"));
   out << ", " << "isDynamicPartitionWrite="; (__isset.isDynamicPartitionWrite ? (out << to_string(isDynamicPartitionWrite)) : (out << "<null>"));
   out << ")";
 }

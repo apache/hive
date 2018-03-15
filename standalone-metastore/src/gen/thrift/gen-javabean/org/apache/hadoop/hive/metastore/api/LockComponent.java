@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField TABLENAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tablename", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField PARTITIONNAME_FIELD_DESC = new org.apache.thrift.protocol.TField("partitionname", org.apache.thrift.protocol.TType.STRING, (short)5);
   private static final org.apache.thrift.protocol.TField OPERATION_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("operationType", org.apache.thrift.protocol.TType.I32, (short)6);
-  private static final org.apache.thrift.protocol.TField IS_ACID_FIELD_DESC = new org.apache.thrift.protocol.TField("isAcid", org.apache.thrift.protocol.TType.BOOL, (short)7);
+  private static final org.apache.thrift.protocol.TField IS_TRANSACTIONAL_FIELD_DESC = new org.apache.thrift.protocol.TField("isTransactional", org.apache.thrift.protocol.TType.BOOL, (short)7);
   private static final org.apache.thrift.protocol.TField IS_DYNAMIC_PARTITION_WRITE_FIELD_DESC = new org.apache.thrift.protocol.TField("isDynamicPartitionWrite", org.apache.thrift.protocol.TType.BOOL, (short)8);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
@@ -59,7 +59,7 @@ import org.slf4j.LoggerFactory;
   private String tablename; // optional
   private String partitionname; // optional
   private DataOperationType operationType; // optional
-  private boolean isAcid; // optional
+  private boolean isTransactional; // optional
   private boolean isDynamicPartitionWrite; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -82,7 +82,7 @@ import org.slf4j.LoggerFactory;
      * @see DataOperationType
      */
     OPERATION_TYPE((short)6, "operationType"),
-    IS_ACID((short)7, "isAcid"),
+    IS_TRANSACTIONAL((short)7, "isTransactional"),
     IS_DYNAMIC_PARTITION_WRITE((short)8, "isDynamicPartitionWrite");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -110,8 +110,8 @@ import org.slf4j.LoggerFactory;
           return PARTITIONNAME;
         case 6: // OPERATION_TYPE
           return OPERATION_TYPE;
-        case 7: // IS_ACID
-          return IS_ACID;
+        case 7: // IS_TRANSACTIONAL
+          return IS_TRANSACTIONAL;
         case 8: // IS_DYNAMIC_PARTITION_WRITE
           return IS_DYNAMIC_PARTITION_WRITE;
         default:
@@ -154,10 +154,10 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final int __ISACID_ISSET_ID = 0;
+  private static final int __ISTRANSACTIONAL_ISSET_ID = 0;
   private static final int __ISDYNAMICPARTITIONWRITE_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.TABLENAME,_Fields.PARTITIONNAME,_Fields.OPERATION_TYPE,_Fields.IS_ACID,_Fields.IS_DYNAMIC_PARTITION_WRITE};
+  private static final _Fields optionals[] = {_Fields.TABLENAME,_Fields.PARTITIONNAME,_Fields.OPERATION_TYPE,_Fields.IS_TRANSACTIONAL,_Fields.IS_DYNAMIC_PARTITION_WRITE};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -173,7 +173,7 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.OPERATION_TYPE, new org.apache.thrift.meta_data.FieldMetaData("operationType", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, DataOperationType.class)));
-    tmpMap.put(_Fields.IS_ACID, new org.apache.thrift.meta_data.FieldMetaData("isAcid", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+    tmpMap.put(_Fields.IS_TRANSACTIONAL, new org.apache.thrift.meta_data.FieldMetaData("isTransactional", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.IS_DYNAMIC_PARTITION_WRITE, new org.apache.thrift.meta_data.FieldMetaData("isDynamicPartitionWrite", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
@@ -184,7 +184,7 @@ import org.slf4j.LoggerFactory;
   public LockComponent() {
     this.operationType = org.apache.hadoop.hive.metastore.api.DataOperationType.UNSET;
 
-    this.isAcid = false;
+    this.isTransactional = false;
 
     this.isDynamicPartitionWrite = false;
 
@@ -224,7 +224,7 @@ import org.slf4j.LoggerFactory;
     if (other.isSetOperationType()) {
       this.operationType = other.operationType;
     }
-    this.isAcid = other.isAcid;
+    this.isTransactional = other.isTransactional;
     this.isDynamicPartitionWrite = other.isDynamicPartitionWrite;
   }
 
@@ -241,7 +241,7 @@ import org.slf4j.LoggerFactory;
     this.partitionname = null;
     this.operationType = org.apache.hadoop.hive.metastore.api.DataOperationType.UNSET;
 
-    this.isAcid = false;
+    this.isTransactional = false;
 
     this.isDynamicPartitionWrite = false;
 
@@ -409,26 +409,26 @@ import org.slf4j.LoggerFactory;
     }
   }
 
-  public boolean isIsAcid() {
-    return this.isAcid;
+  public boolean isIsTransactional() {
+    return this.isTransactional;
   }
 
-  public void setIsAcid(boolean isAcid) {
-    this.isAcid = isAcid;
-    setIsAcidIsSet(true);
+  public void setIsTransactional(boolean isTransactional) {
+    this.isTransactional = isTransactional;
+    setIsTransactionalIsSet(true);
   }
 
-  public void unsetIsAcid() {
-    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ISACID_ISSET_ID);
+  public void unsetIsTransactional() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __ISTRANSACTIONAL_ISSET_ID);
   }
 
-  /** Returns true if field isAcid is set (has been assigned a value) and false otherwise */
-  public boolean isSetIsAcid() {
-    return EncodingUtils.testBit(__isset_bitfield, __ISACID_ISSET_ID);
+  /** Returns true if field isTransactional is set (has been assigned a value) and false otherwise */
+  public boolean isSetIsTransactional() {
+    return EncodingUtils.testBit(__isset_bitfield, __ISTRANSACTIONAL_ISSET_ID);
   }
 
-  public void setIsAcidIsSet(boolean value) {
-    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISACID_ISSET_ID, value);
+  public void setIsTransactionalIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ISTRANSACTIONAL_ISSET_ID, value);
   }
 
   public boolean isIsDynamicPartitionWrite() {
@@ -503,11 +503,11 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
-    case IS_ACID:
+    case IS_TRANSACTIONAL:
       if (value == null) {
-        unsetIsAcid();
+        unsetIsTransactional();
       } else {
-        setIsAcid((Boolean)value);
+        setIsTransactional((Boolean)value);
       }
       break;
 
@@ -542,8 +542,8 @@ import org.slf4j.LoggerFactory;
     case OPERATION_TYPE:
       return getOperationType();
 
-    case IS_ACID:
-      return isIsAcid();
+    case IS_TRANSACTIONAL:
+      return isIsTransactional();
 
     case IS_DYNAMIC_PARTITION_WRITE:
       return isIsDynamicPartitionWrite();
@@ -571,8 +571,8 @@ import org.slf4j.LoggerFactory;
       return isSetPartitionname();
     case OPERATION_TYPE:
       return isSetOperationType();
-    case IS_ACID:
-      return isSetIsAcid();
+    case IS_TRANSACTIONAL:
+      return isSetIsTransactional();
     case IS_DYNAMIC_PARTITION_WRITE:
       return isSetIsDynamicPartitionWrite();
     }
@@ -646,12 +646,12 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
-    boolean this_present_isAcid = true && this.isSetIsAcid();
-    boolean that_present_isAcid = true && that.isSetIsAcid();
-    if (this_present_isAcid || that_present_isAcid) {
-      if (!(this_present_isAcid && that_present_isAcid))
+    boolean this_present_isTransactional = true && this.isSetIsTransactional();
+    boolean that_present_isTransactional = true && that.isSetIsTransactional();
+    if (this_present_isTransactional || that_present_isTransactional) {
+      if (!(this_present_isTransactional && that_present_isTransactional))
         return false;
-      if (this.isAcid != that.isAcid)
+      if (this.isTransactional != that.isTransactional)
         return false;
     }
 
@@ -701,10 +701,10 @@ import org.slf4j.LoggerFactory;
     if (present_operationType)
       list.add(operationType.getValue());
 
-    boolean present_isAcid = true && (isSetIsAcid());
-    list.add(present_isAcid);
-    if (present_isAcid)
-      list.add(isAcid);
+    boolean present_isTransactional = true && (isSetIsTransactional());
+    list.add(present_isTransactional);
+    if (present_isTransactional)
+      list.add(isTransactional);
 
     boolean present_isDynamicPartitionWrite = true && (isSetIsDynamicPartitionWrite());
     list.add(present_isDynamicPartitionWrite);
@@ -782,12 +782,12 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetIsAcid()).compareTo(other.isSetIsAcid());
+    lastComparison = Boolean.valueOf(isSetIsTransactional()).compareTo(other.isSetIsTransactional());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetIsAcid()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isAcid, other.isAcid);
+    if (isSetIsTransactional()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isTransactional, other.isTransactional);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -875,10 +875,10 @@ import org.slf4j.LoggerFactory;
       }
       first = false;
     }
-    if (isSetIsAcid()) {
+    if (isSetIsTransactional()) {
       if (!first) sb.append(", ");
-      sb.append("isAcid:");
-      sb.append(this.isAcid);
+      sb.append("isTransactional:");
+      sb.append(this.isTransactional);
       first = false;
     }
     if (isSetIsDynamicPartitionWrite()) {
@@ -992,10 +992,10 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 7: // IS_ACID
+          case 7: // IS_TRANSACTIONAL
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
-              struct.isAcid = iprot.readBool();
-              struct.setIsAcidIsSet(true);
+              struct.isTransactional = iprot.readBool();
+              struct.setIsTransactionalIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -1057,9 +1057,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
-      if (struct.isSetIsAcid()) {
-        oprot.writeFieldBegin(IS_ACID_FIELD_DESC);
-        oprot.writeBool(struct.isAcid);
+      if (struct.isSetIsTransactional()) {
+        oprot.writeFieldBegin(IS_TRANSACTIONAL_FIELD_DESC);
+        oprot.writeBool(struct.isTransactional);
         oprot.writeFieldEnd();
       }
       if (struct.isSetIsDynamicPartitionWrite()) {
@@ -1097,7 +1097,7 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetOperationType()) {
         optionals.set(2);
       }
-      if (struct.isSetIsAcid()) {
+      if (struct.isSetIsTransactional()) {
         optionals.set(3);
       }
       if (struct.isSetIsDynamicPartitionWrite()) {
@@ -1113,8 +1113,8 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetOperationType()) {
         oprot.writeI32(struct.operationType.getValue());
       }
-      if (struct.isSetIsAcid()) {
-        oprot.writeBool(struct.isAcid);
+      if (struct.isSetIsTransactional()) {
+        oprot.writeBool(struct.isTransactional);
       }
       if (struct.isSetIsDynamicPartitionWrite()) {
         oprot.writeBool(struct.isDynamicPartitionWrite);
@@ -1144,8 +1144,8 @@ import org.slf4j.LoggerFactory;
         struct.setOperationTypeIsSet(true);
       }
       if (incoming.get(3)) {
-        struct.isAcid = iprot.readBool();
-        struct.setIsAcidIsSet(true);
+        struct.isTransactional = iprot.readBool();
+        struct.setIsTransactionalIsSet(true);
       }
       if (incoming.get(4)) {
         struct.isDynamicPartitionWrite = iprot.readBool();
