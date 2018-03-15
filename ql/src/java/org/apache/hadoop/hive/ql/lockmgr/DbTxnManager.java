@@ -441,7 +441,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
           continue;
       }
       if(t != null) {
-        compBuilder.setIsFullAcid(AcidUtils.isFullAcidTable(t));
+        compBuilder.setIsTransactional(AcidUtils.isTransactionalTable(t));
       }
       LockComponent comp = compBuilder.build();
       LOG.debug("Adding lock component to lock request " + comp.toString());
@@ -539,7 +539,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
               output.getWriteType().toString());
       }
       if(t != null) {
-        compBuilder.setIsFullAcid(AcidUtils.isFullAcidTable(t));
+        compBuilder.setIsTransactional(AcidUtils.isTransactionalTable(t));
       }
 
       compBuilder.setIsDynamicPartitionWrite(output.isDynamicPartitionWrite());

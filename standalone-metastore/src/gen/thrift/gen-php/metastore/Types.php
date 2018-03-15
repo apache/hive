@@ -15506,7 +15506,7 @@ class LockComponent {
   /**
    * @var bool
    */
-  public $isAcid = false;
+  public $isTransactional = false;
   /**
    * @var bool
    */
@@ -15540,7 +15540,7 @@ class LockComponent {
           'type' => TType::I32,
           ),
         7 => array(
-          'var' => 'isAcid',
+          'var' => 'isTransactional',
           'type' => TType::BOOL,
           ),
         8 => array(
@@ -15568,8 +15568,8 @@ class LockComponent {
       if (isset($vals['operationType'])) {
         $this->operationType = $vals['operationType'];
       }
-      if (isset($vals['isAcid'])) {
-        $this->isAcid = $vals['isAcid'];
+      if (isset($vals['isTransactional'])) {
+        $this->isTransactional = $vals['isTransactional'];
       }
       if (isset($vals['isDynamicPartitionWrite'])) {
         $this->isDynamicPartitionWrite = $vals['isDynamicPartitionWrite'];
@@ -15640,7 +15640,7 @@ class LockComponent {
           break;
         case 7:
           if ($ftype == TType::BOOL) {
-            $xfer += $input->readBool($this->isAcid);
+            $xfer += $input->readBool($this->isTransactional);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -15695,9 +15695,9 @@ class LockComponent {
       $xfer += $output->writeI32($this->operationType);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->isAcid !== null) {
-      $xfer += $output->writeFieldBegin('isAcid', TType::BOOL, 7);
-      $xfer += $output->writeBool($this->isAcid);
+    if ($this->isTransactional !== null) {
+      $xfer += $output->writeFieldBegin('isTransactional', TType::BOOL, 7);
+      $xfer += $output->writeBool($this->isTransactional);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->isDynamicPartitionWrite !== null) {
