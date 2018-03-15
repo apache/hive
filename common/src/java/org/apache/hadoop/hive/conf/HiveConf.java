@@ -3713,6 +3713,10 @@ public class HiveConf extends Configuration {
         "If the query results cache is enabled. This will keep results of previously executed queries " +
         "to be reused if the same query is executed again."),
 
+    HIVE_QUERY_RESULTS_CACHE_WAIT_FOR_PENDING_RESULTS("hive.query.results.cache.wait.for.pending.results", true,
+        "Should a query wait for the pending results of an already running query, " +
+        "in order to use the cached result when it becomes ready"),
+
     HIVE_QUERY_RESULTS_CACHE_DIRECTORY("hive.query.results.cache.directory",
         "/tmp/hive/_resultscache_",
         "Location of the query results cache directory. Temporary results from queries " +
