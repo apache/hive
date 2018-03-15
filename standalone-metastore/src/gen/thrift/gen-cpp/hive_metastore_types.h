@@ -6477,11 +6477,11 @@ inline std::ostream& operator<<(std::ostream& out, const AllocateTableWriteIdsRe
 }
 
 typedef struct _LockComponent__isset {
-  _LockComponent__isset() : tablename(false), partitionname(false), operationType(true), isAcid(true), isDynamicPartitionWrite(true) {}
+  _LockComponent__isset() : tablename(false), partitionname(false), operationType(true), isTransactional(true), isDynamicPartitionWrite(true) {}
   bool tablename :1;
   bool partitionname :1;
   bool operationType :1;
-  bool isAcid :1;
+  bool isTransactional :1;
   bool isDynamicPartitionWrite :1;
 } _LockComponent__isset;
 
@@ -6490,7 +6490,7 @@ class LockComponent {
 
   LockComponent(const LockComponent&);
   LockComponent& operator=(const LockComponent&);
-  LockComponent() : type((LockType::type)0), level((LockLevel::type)0), dbname(), tablename(), partitionname(), operationType((DataOperationType::type)5), isAcid(false), isDynamicPartitionWrite(false) {
+  LockComponent() : type((LockType::type)0), level((LockLevel::type)0), dbname(), tablename(), partitionname(), operationType((DataOperationType::type)5), isTransactional(false), isDynamicPartitionWrite(false) {
     operationType = (DataOperationType::type)5;
 
   }
@@ -6502,7 +6502,7 @@ class LockComponent {
   std::string tablename;
   std::string partitionname;
   DataOperationType::type operationType;
-  bool isAcid;
+  bool isTransactional;
   bool isDynamicPartitionWrite;
 
   _LockComponent__isset __isset;
@@ -6519,7 +6519,7 @@ class LockComponent {
 
   void __set_operationType(const DataOperationType::type val);
 
-  void __set_isAcid(const bool val);
+  void __set_isTransactional(const bool val);
 
   void __set_isDynamicPartitionWrite(const bool val);
 
@@ -6543,9 +6543,9 @@ class LockComponent {
       return false;
     else if (__isset.operationType && !(operationType == rhs.operationType))
       return false;
-    if (__isset.isAcid != rhs.__isset.isAcid)
+    if (__isset.isTransactional != rhs.__isset.isTransactional)
       return false;
-    else if (__isset.isAcid && !(isAcid == rhs.isAcid))
+    else if (__isset.isTransactional && !(isTransactional == rhs.isTransactional))
       return false;
     if (__isset.isDynamicPartitionWrite != rhs.__isset.isDynamicPartitionWrite)
       return false;

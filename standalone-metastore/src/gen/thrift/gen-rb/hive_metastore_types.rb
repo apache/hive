@@ -2457,7 +2457,7 @@ class LockComponent
   TABLENAME = 4
   PARTITIONNAME = 5
   OPERATIONTYPE = 6
-  ISACID = 7
+  ISTRANSACTIONAL = 7
   ISDYNAMICPARTITIONWRITE = 8
 
   FIELDS = {
@@ -2467,7 +2467,7 @@ class LockComponent
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename', :optional => true},
     PARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'partitionname', :optional => true},
     OPERATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'operationType', :default =>     5, :optional => true, :enum_class => ::DataOperationType},
-    ISACID => {:type => ::Thrift::Types::BOOL, :name => 'isAcid', :default => false, :optional => true},
+    ISTRANSACTIONAL => {:type => ::Thrift::Types::BOOL, :name => 'isTransactional', :default => false, :optional => true},
     ISDYNAMICPARTITIONWRITE => {:type => ::Thrift::Types::BOOL, :name => 'isDynamicPartitionWrite', :default => false, :optional => true}
   }
 

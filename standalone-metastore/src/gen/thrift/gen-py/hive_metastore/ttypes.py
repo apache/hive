@@ -10881,7 +10881,7 @@ class LockComponent:
    - tablename
    - partitionname
    - operationType
-   - isAcid
+   - isTransactional
    - isDynamicPartitionWrite
   """
 
@@ -10893,18 +10893,18 @@ class LockComponent:
     (4, TType.STRING, 'tablename', None, None, ), # 4
     (5, TType.STRING, 'partitionname', None, None, ), # 5
     (6, TType.I32, 'operationType', None,     5, ), # 6
-    (7, TType.BOOL, 'isAcid', None, False, ), # 7
+    (7, TType.BOOL, 'isTransactional', None, False, ), # 7
     (8, TType.BOOL, 'isDynamicPartitionWrite', None, False, ), # 8
   )
 
-  def __init__(self, type=None, level=None, dbname=None, tablename=None, partitionname=None, operationType=thrift_spec[6][4], isAcid=thrift_spec[7][4], isDynamicPartitionWrite=thrift_spec[8][4],):
+  def __init__(self, type=None, level=None, dbname=None, tablename=None, partitionname=None, operationType=thrift_spec[6][4], isTransactional=thrift_spec[7][4], isDynamicPartitionWrite=thrift_spec[8][4],):
     self.type = type
     self.level = level
     self.dbname = dbname
     self.tablename = tablename
     self.partitionname = partitionname
     self.operationType = operationType
-    self.isAcid = isAcid
+    self.isTransactional = isTransactional
     self.isDynamicPartitionWrite = isDynamicPartitionWrite
 
   def read(self, iprot):
@@ -10948,7 +10948,7 @@ class LockComponent:
           iprot.skip(ftype)
       elif fid == 7:
         if ftype == TType.BOOL:
-          self.isAcid = iprot.readBool()
+          self.isTransactional = iprot.readBool()
         else:
           iprot.skip(ftype)
       elif fid == 8:
@@ -10990,9 +10990,9 @@ class LockComponent:
       oprot.writeFieldBegin('operationType', TType.I32, 6)
       oprot.writeI32(self.operationType)
       oprot.writeFieldEnd()
-    if self.isAcid is not None:
-      oprot.writeFieldBegin('isAcid', TType.BOOL, 7)
-      oprot.writeBool(self.isAcid)
+    if self.isTransactional is not None:
+      oprot.writeFieldBegin('isTransactional', TType.BOOL, 7)
+      oprot.writeBool(self.isTransactional)
       oprot.writeFieldEnd()
     if self.isDynamicPartitionWrite is not None:
       oprot.writeFieldBegin('isDynamicPartitionWrite', TType.BOOL, 8)
@@ -11019,7 +11019,7 @@ class LockComponent:
     value = (value * 31) ^ hash(self.tablename)
     value = (value * 31) ^ hash(self.partitionname)
     value = (value * 31) ^ hash(self.operationType)
-    value = (value * 31) ^ hash(self.isAcid)
+    value = (value * 31) ^ hash(self.isTransactional)
     value = (value * 31) ^ hash(self.isDynamicPartitionWrite)
     return value
 
