@@ -45,6 +45,7 @@ import java.util.regex.PatternSyntaxException;
 
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
+import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenRewriteStream;
 import org.antlr.runtime.tree.Tree;
 import org.antlr.runtime.tree.TreeVisitor;
@@ -14140,13 +14141,41 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     this.loadFileWork = loadFileWork;
   }
 
+  private String getQueryStringFromAst(ASTNode ast) {
+    StringBuilder sb = new StringBuilder();
+    int startIdx = ast.getTokenStartIndex();
+    int endIdx = ast.getTokenStopIndex();
+
+    boolean queryNeedsQuotes = true;
+    if (conf.getVar(ConfVars.HIVE_QUOTEDID_SUPPORT).equals("none")) {
+      queryNeedsQuotes = false;
+    }
+
+    for (int idx = startIdx; idx <= endIdx; idx++) {
+      Token curTok = ctx.getTokenRewriteStream().get(idx);
+      if (curTok.getType() == Token.EOF) {
+        continue;
+      } else if (queryNeedsQuotes && curTok.getType() == HiveLexer.Identifier) {
+        // The Tokens have no distinction between Identifiers and QuotedIdentifiers.
+        // Ugly solution is just to surround all identifiers with quotes.
+        sb.append('`');
+        // Re-escape any backtick (`) characters in the identifier.
+        sb.append(curTok.getText().replaceAll("`", "``"));
+        sb.append('`');
+      } else {
+        sb.append(curTok.getText());
+      }
+    }
+    return sb.toString();
+  }
+
   /**
    * Generate the query string for this query (with fully resolved table references).
    * @return The query string with resolved references. NULL if an error occurred.
    */
   private String getQueryStringForCache(ASTNode ast) {
     // Use the UnparseTranslator to resolve unqualified table names.
-    String queryString = ctx.getTokenRewriteStream().toString(ast.getTokenStartIndex(), ast.getTokenStopIndex());
+    String queryString = getQueryStringFromAst(ast);
 
     // Re-using the TokenRewriteStream map for views so we do not overwrite the current TokenRewriteStream
     String rewriteStreamName = "__qualified_query_string__";
