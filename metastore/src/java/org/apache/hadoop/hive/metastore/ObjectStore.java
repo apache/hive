@@ -8233,6 +8233,13 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       openTransaction();
       query = pm.newQuery(MNotificationNextId.class);
+
+      // To protect against concurrent modifications of Notification ID, obtain the row lock
+      // on the NOTIFICATION_SEQUENCE table row.
+      // This is a WRITE lock and it is maintained for the duration of transaction.
+      // See http://www.datanucleus.org/products/accessplatform_3_2/jdo/transactions.html
+      query.setSerializeRead(true);
+
       Collection<MNotificationNextId> ids = (Collection) query.execute();
       MNotificationNextId id = null;
       boolean needToPersistId;
