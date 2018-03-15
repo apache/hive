@@ -22,7 +22,6 @@ import java.nio.ByteBuffer;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.hive.llap.counters.LlapIOCounters;
@@ -81,9 +80,7 @@ import org.apache.orc.CompressionKind;
 import org.apache.orc.DataReader;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile.ReaderOptions;
-import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
 import org.apache.orc.OrcConf;
-import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSplit;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader;
 import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
@@ -913,20 +910,17 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   }
 
   private class DataWrapperForOrc implements DataReader, DataCache, BufferObjectFactory {
-    private final DataReader orcDataReader;
-
-    private DataWrapperForOrc(DataWrapperForOrc other) {
-      orcDataReader = other.orcDataReader.clone();
-    }
+    /** A reference to parent DataReader not owned by this object. */
+    private final DataReader orcDataReaderRef;
 
     public DataWrapperForOrc() throws IOException {
       ensureRawDataReader(false);
-      this.orcDataReader = rawDataReader.clone();
+      this.orcDataReaderRef = rawDataReader;
     }
 
     @Override
     public CompressionCodec getCompressionCodec() {
-      return orcDataReader.getCompressionCodec();
+      return orcDataReaderRef.getCompressionCodec();
     }
 
     @Override
@@ -974,14 +968,14 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
     @Override
     public void close() throws IOException {
-      orcDataReader.close();
+      // Noop: orcDataReaderRef is owned by the parent object
     }
 
     @Override
     public DiskRangeList readFileData(DiskRangeList range, long baseOffset,
         boolean doForceDirect) throws IOException {
       long startTime = counters.startTimeCounter();
-      DiskRangeList result = orcDataReader.readFileData(range, baseOffset, doForceDirect);
+      DiskRangeList result = orcDataReaderRef.readFileData(range, baseOffset, doForceDirect);
       counters.recordHdfsTime(startTime);
       if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
         LlapIoImpl.ORC_LOGGER.trace("Disk ranges after disk read (file {}, base offset {}): {}",
@@ -993,23 +987,23 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
     @Override
     public boolean isTrackingDiskRanges() {
-      return orcDataReader.isTrackingDiskRanges();
+      return orcDataReaderRef.isTrackingDiskRanges();
     }
 
     @Override
     public void releaseBuffer(ByteBuffer buffer) {
-      orcDataReader.releaseBuffer(buffer);
+      orcDataReaderRef.releaseBuffer(buffer);
     }
 
     @Override
     public DataWrapperForOrc clone() {
-      return new DataWrapperForOrc(this);
+      throw new AssertionError("Clone not supported");
     }
 
     @Override
     public void open() throws IOException {
       long startTime = counters.startTimeCounter();
-      orcDataReader.open();
+      orcDataReaderRef.open();
       counters.recordHdfsTime(startTime);
     }
 
@@ -1025,14 +1019,14 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
                                  OrcProto.Stream.Kind[] bloomFilterKinds,
                                  OrcProto.BloomFilterIndex[] bloomFilterIndices
                                  ) throws IOException {
-      return orcDataReader.readRowIndex(stripe, fileSchema, footer,
+      return orcDataReaderRef.readRowIndex(stripe, fileSchema, footer,
           ignoreNonUtf8BloomFilter, included, indexes,
           sargColumns, version, bloomFilterKinds, bloomFilterIndices);
     }
 
     @Override
     public OrcProto.StripeFooter readStripeFooter(StripeInformation stripe) throws IOException {
-      return orcDataReader.readStripeFooter(stripe);
+      return orcDataReaderRef.readStripeFooter(stripe);
     }
 
     @Override
