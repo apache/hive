@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.registry;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.registry.common.QueryParam;
 import org.apache.hadoop.hive.registry.cache.SchemaBranchCache;
 import org.apache.hadoop.hive.registry.cache.SchemaVersionInfoCache;
@@ -43,11 +44,6 @@ import org.apache.hadoop.hive.registry.state.SchemaVersionLifecycleStates;
 import org.apache.hadoop.hive.registry.state.SchemaVersionService;
 import org.apache.hadoop.hive.registry.state.details.InitializedStateDetails;
 import org.apache.hadoop.hive.registry.utils.ObjectMapperUtils;
-import org.apache.hadoop.hive.registry.storage.core.OrderByField;
-import org.apache.hadoop.hive.registry.storage.core.Storable;
-import org.apache.hadoop.hive.registry.storage.core.StorableKey;
-import org.apache.hadoop.hive.registry.storage.core.StorageManager;
-import org.apache.hadoop.hive.registry.storage.core.exception.StorageException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -77,15 +73,15 @@ public class SchemaVersionLifecycleManager {
     private SchemaVersionInfoCache schemaVersionInfoCache;
     private SchemaVersionRetriever schemaVersionRetriever;
     private static final int DEFAULT_RETRY_CT = 5;
-    private StorageManager storageManager;
+    private IMetaStoreClient metaStoreClient;
     private SchemaBranchCache schemaBranchCache;
     private DefaultSchemaRegistry.SchemaMetadataFetcher schemaMetadataFetcher;
 
-    public SchemaVersionLifecycleManager(StorageManager storageManager,
+    public SchemaVersionLifecycleManager(IMetaStoreClient metaStoreClient,
                                          Map<String, Object> props,
                                          DefaultSchemaRegistry.SchemaMetadataFetcher schemaMetadataFetcher,
                                          SchemaBranchCache schemaBranchCache) {
-        this.storageManager = storageManager;
+        this.metaStoreClient = metaStoreClient;
         this.schemaMetadataFetcher = schemaMetadataFetcher;
         this.schemaBranchCache = schemaBranchCache;
         SchemaVersionLifecycleStateMachine.Builder builder = SchemaVersionLifecycleStateMachine.newBuilder();
@@ -325,8 +321,6 @@ public class SchemaVersionLifecycleManager {
         final String schemaName = schemaMetadata.getName();
 
         SchemaVersionStorable schemaVersionStorable = new SchemaVersionStorable();
-        final Long schemaVersionStorableId = storageManager.nextId(schemaVersionStorable.getNameSpace());
-        schemaVersionStorable.setId(schemaVersionStorableId);
         schemaVersionStorable.setSchemaMetadataId(schemaMetadataId);
 
         schemaVersionStorable.setFingerprint(fingerprint);

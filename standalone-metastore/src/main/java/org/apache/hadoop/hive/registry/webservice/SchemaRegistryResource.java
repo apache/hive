@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.registry.SchemaFieldQuery;
 import org.apache.hadoop.hive.registry.SchemaIdVersion;
 import org.apache.hadoop.hive.registry.SchemaMetadata;
 import org.apache.hadoop.hive.registry.SchemaMetadataInfo;
-import org.apache.hadoop.hive.registry.SchemaMetadataStorable;
 import org.apache.hadoop.hive.registry.SchemaProviderInfo;
 import org.apache.hadoop.hive.registry.SchemaVersion;
 import org.apache.hadoop.hive.registry.SchemaVersionInfo;

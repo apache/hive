@@ -18,19 +18,13 @@
 package org.apache.hadoop.hive.registry;
 
 import org.apache.hadoop.hive.registry.common.Schema;
-import org.apache.hadoop.hive.registry.storage.core.PrimaryKey;
-import org.apache.hadoop.hive.registry.storage.core.catalog.AbstractStorable;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 
-/**
- *
- */
-public class SchemaVersionStateStorable extends AbstractStorable {
+
+public class SchemaVersionStateStorable  {
     public static final String NAME_SPACE = "schema_version_state";
 
     public static final String SCHEMA_VERSION_ID = "schemaVersionId";
@@ -86,12 +80,10 @@ public class SchemaVersionStateStorable extends AbstractStorable {
         return details;
     }
 
-    @Override
     public Long getId() {
         return id;
     }
 
-    @Override
     public void setId(Long id) {
         this.id = id;
     }
@@ -125,23 +117,8 @@ public class SchemaVersionStateStorable extends AbstractStorable {
         details = IOUtils.toByteArray(inputStream);
     }
 
-    @Override
     public String getNameSpace() {
         return NAME_SPACE;
     }
 
-    @Override
-    public PrimaryKey getPrimaryKey() {
-        Map<Schema.Field, Object> fields = new HashMap<Schema.Field, Object>(){{
-            put(SCHEMA_VERSION_ID_FIELD, schemaVersionId);
-            put(STATE_FIELD, stateId);
-            put(SEQUENCE_FIELD, sequence);
-        }};
-        return new PrimaryKey(fields);
-    }
-
-    @Override
-    public Schema getSchema() {
-        return SCHEMA;
-    }
 }
