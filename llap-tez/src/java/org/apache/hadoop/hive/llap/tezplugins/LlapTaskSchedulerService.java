@@ -1002,8 +1002,12 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       }
 
       totalGuaranteed = unusedGuaranteed = 0;
-      LOG.info(
-          "DAG reset. Current knownTaskCount={}, pendingTaskCount={}, runningTaskCount={}",
+      if (metrics != null) {
+        metrics.setDagId(null);
+        // We remove the tasks above without state checks so just reset all metrics to 0.
+        metrics.resetWmMetrics();
+      }
+      LOG.info("DAG reset. Current knownTaskCount={}, pendingTaskCount={}, runningTaskCount={}",
           knownTasks.size(), pendingCount, runningCount);
     } finally {
       writeLock.unlock();
@@ -1029,12 +1033,16 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   @Override
   public void allocateTask(Object task, Resource capability, String[] hosts, String[] racks,
       Priority priority, Object containerSignature, Object clientCookie) {
+    TezTaskAttemptID id = getTaskAttemptId(task);
     TaskInfo taskInfo = new TaskInfo(localityDelayConf, clock, task, clientCookie, priority,
-        capability, hosts, racks, clock.getTime(), getTaskAttemptId(task));
-    LOG.info("Received allocateRequest. task={}, priority={}, capability={}, hosts={}", task,
-        priority, capability, Arrays.toString(hosts));
+        capability, hosts, racks, clock.getTime(), id);
+    LOG.info("Received allocateRequest. task={}, priority={}, capability={}, hosts={}",
+        task, priority, capability, Arrays.toString(hosts));
     writeLock.lock();
     try {
+      if (!dagRunning && metrics != null && id != null) {
+        metrics.setDagId(id.getTaskID().getVertexID().getDAGId().toString());
+      }
       dagRunning = true;
       dagStats.registerTaskRequest(hosts, racks);
     } finally {
@@ -1049,13 +1057,16 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       Priority priority, Object containerSignature, Object clientCookie) {
     // Container affinity can be implemented as Host affinity for LLAP. Not required until
     // 1:1 edges are used in Hive.
-    TaskInfo taskInfo =
-        new TaskInfo(localityDelayConf, clock, task, clientCookie, priority, capability, null,
-            null, clock.getTime(), getTaskAttemptId(task));
-    LOG.info("Received allocateRequest. task={}, priority={}, capability={}, containerId={}", task,
-        priority, capability, containerId);
+    TezTaskAttemptID id = getTaskAttemptId(task);
+    TaskInfo taskInfo = new TaskInfo(localityDelayConf, clock, task, clientCookie, priority,
+        capability, null, null, clock.getTime(), id);
+    LOG.info("Received allocateRequest. task={}, priority={}, capability={}, containerId={}",
+        task, priority, capability, containerId);
     writeLock.lock();
     try {
+      if (!dagRunning && metrics != null && id != null) {
+        metrics.setDagId(id.getTaskID().getVertexID().getDAGId().toString());
+      }
       dagRunning = true;
       dagStats.registerTaskRequest(null, null);
     } finally {
