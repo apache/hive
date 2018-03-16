@@ -4135,7 +4135,7 @@ public class HiveConf extends Configuration {
     return getSizeVar(this, var);
   }
 
-  private static TimeUnit getDefaultTimeUnit(ConfVars var) {
+  public static TimeUnit getDefaultTimeUnit(ConfVars var) {
     TimeUnit inputUnit = null;
     if (var.validator instanceof TimeValidator) {
       inputUnit = ((TimeValidator)var.validator).getTimeUnit();
