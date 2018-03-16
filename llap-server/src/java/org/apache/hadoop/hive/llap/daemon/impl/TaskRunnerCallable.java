@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.llap.daemon.FragmentCompletionHandler;
 import org.apache.hadoop.hive.llap.daemon.HistoryLogger;
 import org.apache.hadoop.hive.llap.daemon.KilledTaskHandler;
 import org.apache.hadoop.hive.llap.daemon.SchedulerFragmentCompletingListener;
+import org.apache.hadoop.hive.llap.daemon.impl.AMReporter.AMNodeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.FragmentRuntimeInfo;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
@@ -130,6 +131,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
   private final SocketFactory socketFactory;
   private boolean isGuaranteed;
   private WmFragmentCounters wmCounters;
+  private final AMNodeInfo amNodeInfo;
 
   @VisibleForTesting
   public TaskRunnerCallable(SubmitWorkRequestProto request, QueryFragmentInfo fragmentInfo,
@@ -156,8 +158,11 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
     this.amReporter = amReporter;
     // Register with the AMReporter when the callable is setup. Unregister once it starts running.
     if (amReporter != null && jobToken != null) {
-      this.amReporter.registerTask(request.getAmHost(), request.getAmPort(),
-          vertex.getTokenIdentifier(), jobToken, fragmentInfo.getQueryInfo().getQueryIdentifier(), attemptId);
+      this.amNodeInfo = amReporter.registerTask(request.getAmHost(), request.getAmPort(),
+          vertex.getTokenIdentifier(), jobToken, fragmentInfo.getQueryInfo().getQueryIdentifier(),
+          attemptId, isGuaranteed);
+    } else {
+      this.amNodeInfo = null;
     }
     this.metrics = metrics;
     this.requestId = taskSpec.getTaskAttemptID().toString();
@@ -611,6 +616,9 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
 
   public void setIsGuaranteed(boolean isGuaranteed) {
     this.isGuaranteed = isGuaranteed;
+    if (amNodeInfo != null) {
+      amNodeInfo.updateTaskAttempt(taskSpec.getTaskAttemptID(), isGuaranteed);
+    }
     if (wmCounters != null) {
       wmCounters.changeGuaranteed(isGuaranteed);
     }
