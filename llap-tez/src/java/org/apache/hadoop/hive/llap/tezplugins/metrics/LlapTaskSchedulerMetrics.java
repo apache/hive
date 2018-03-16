@@ -40,6 +40,7 @@ import org.apache.hadoop.metrics2.MetricsSource;
 import org.apache.hadoop.metrics2.MetricsSystem;
 import org.apache.hadoop.metrics2.annotation.Metric;
 import org.apache.hadoop.metrics2.annotation.Metrics;
+import org.apache.hadoop.metrics2.impl.MsInfo;
 import org.apache.hadoop.metrics2.lib.MetricsRegistry;
 import org.apache.hadoop.metrics2.lib.MutableCounterInt;
 import org.apache.hadoop.metrics2.lib.MutableGaugeInt;
@@ -54,6 +55,7 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
   private final JvmMetrics jvmMetrics;
   private final String sessionId;
   private final MetricsRegistry registry;
+  private String dagId = null;
   @Metric
   MutableGaugeInt numExecutors;
   @Metric
@@ -112,7 +114,14 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
         .setContext("scheduler")
         .tag(ProcessName, "DAGAppMaster")
         .tag(SessionId, sessionId);
+    if (dagId != null) {
+        rb.tag(MsInfo.Context, dagId);
+    }
     getTaskSchedulerStats(rb);
+  }
+
+  public void setDagId(String dagId) {
+    this.dagId = dagId;
   }
 
   public void setNumExecutors(int value) {
@@ -243,6 +252,15 @@ public class LlapTaskSchedulerMetrics implements MetricsSource {
 
   public void setWmUnusedGuaranteed(int unusedGuaranteed) {
     wmUnusedGuaranteedCount.set(unusedGuaranteed);
+  }
+
+  public void resetWmMetrics() {
+    wmTotalGuaranteedCount.set(0);
+    wmUnusedGuaranteedCount.set(0);
+    wmGuaranteedCount.incr(-wmGuaranteedCount.value());
+    wmSpeculativeCount.incr(-wmSpeculativeCount.value());
+    wmGuaranteedPendingCount.incr(-wmGuaranteedPendingCount.value());
+    wmSpeculativePendingCount.incr(-wmSpeculativePendingCount.value());
   }
 
   private void getTaskSchedulerStats(MetricsRecordBuilder rb) {
