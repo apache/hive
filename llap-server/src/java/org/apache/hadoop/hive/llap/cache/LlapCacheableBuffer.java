@@ -56,5 +56,7 @@ public abstract class LlapCacheableBuffer {
         + lastUpdate + " " + (isLocked() ? "!" : ".") + "]";
   }
 
+  public abstract String getTag();
+
   protected abstract boolean isLocked();
 }

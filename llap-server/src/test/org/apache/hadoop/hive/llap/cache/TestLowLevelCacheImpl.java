@@ -130,9 +130,9 @@ Example code to test specific scenarios:
         LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
         new DummyAllocator(), true, -1); // no cleanup thread
     final int FILE = 1;
-    cache.putFileData(FILE, gaps(3756206, 4261729, 7294767, 7547564), fbs(3), 0, Priority.NORMAL, null);
-    cache.putFileData(FILE, gaps(7790545, 11051556), fbs(1), 0, Priority.NORMAL, null);
-    cache.putFileData(FILE, gaps(11864971, 11912961, 13350968, 13393630), fbs(3), 0, Priority.NORMAL, null);
+    cache.putFileData(FILE, gaps(3756206, 4261729, 7294767, 7547564), fbs(3), 0, Priority.NORMAL, null, null);
+    cache.putFileData(FILE, gaps(7790545, 11051556), fbs(1), 0, Priority.NORMAL, null, null);
+    cache.putFileData(FILE, gaps(11864971, 11912961, 13350968, 13393630), fbs(3), 0, Priority.NORMAL, null, null);
     DiskRangeList dr = dr(3756206, 7313562);
     MutateHelper mh = new MutateHelper(dr);
     dr = dr.insertAfter(dr(7790545, 11051556));
@@ -149,14 +149,14 @@ Example code to test specific scenarios:
     long fn1 = 1, fn2 = 2;
     MemoryBuffer[] fakes = new MemoryBuffer[] { fb(), fb(), fb(), fb(), fb(), fb() };
     verifyRefcount(fakes, 1, 1, 1, 1, 1, 1);
-    assertNull(cache.putFileData(fn1, drs(1, 2), fbs(fakes, 0, 1), 0, Priority.NORMAL, null));
-    assertNull(cache.putFileData(fn2, drs(1, 2), fbs(fakes, 2, 3), 0, Priority.NORMAL, null));
+    assertNull(cache.putFileData(fn1, drs(1, 2), fbs(fakes, 0, 1), 0, Priority.NORMAL, null, null));
+    assertNull(cache.putFileData(fn2, drs(1, 2), fbs(fakes, 2, 3), 0, Priority.NORMAL, null, null));
     verifyCacheGet(cache, fn1, 1, 3, fakes[0], fakes[1]);
     verifyCacheGet(cache, fn2, 1, 3, fakes[2], fakes[3]);
     verifyCacheGet(cache, fn1, 2, 4, fakes[1], dr(3, 4));
     verifyRefcount(fakes, 3, 4, 3, 3, 1, 1);
     MemoryBuffer[] bufsDiff = fbs(fakes, 4, 5);
-    long[] mask = cache.putFileData(fn1, drs(3, 1), bufsDiff, 0, Priority.NORMAL, null);
+    long[] mask = cache.putFileData(fn1, drs(3, 1), bufsDiff, 0, Priority.NORMAL, null, null);
     assertEquals(1, mask.length);
     assertEquals(2, mask[0]); // 2nd bit set - element 2 was already in cache.
     assertSame(fakes[0], bufsDiff[1]); // Should have been replaced
@@ -207,7 +207,7 @@ Example code to test specific scenarios:
     long fn = 1;
     MemoryBuffer[] fakes = new MemoryBuffer[] { fb(), fb() };
     assertNull(cache.putFileData(
-        fn, new DiskRange[] { dr(2, 4), dr(6, 8) }, fakes, 0, Priority.NORMAL, null));
+        fn, new DiskRange[] { dr(2, 4), dr(6, 8) }, fakes, 0, Priority.NORMAL, null, null));
     verifyCacheGet(cache, fn, 1, 9, dr(1, 2), fakes[0], dr(4, 6), fakes[1], dr(8, 9));
     verifyCacheGet(cache, fn, 2, 8, fakes[0], dr(4, 6), fakes[1]);
     verifyCacheGet(cache, fn, 1, 5, dr(1, 2), fakes[0], dr(4, 5));
@@ -226,7 +226,7 @@ Example code to test specific scenarios:
     long fn = 1;
     MemoryBuffer[] fakes = new MemoryBuffer[] { fb(), fb() };
     assertNull(cache.putFileData(
-        fn, new DiskRange[] { dr(2, 4), dr(6, 8) }, fakes, 0, Priority.NORMAL, null));
+        fn, new DiskRange[] { dr(2, 4), dr(6, 8) }, fakes, 0, Priority.NORMAL, null, null));
     // We expect cache requests from the middle here
     verifyCacheGet(cache, fn, 3, 4, fakes[0]);
     verifyCacheGet(cache, fn, 3, 7, fakes[0], dr(4, 6), fakes[1]);
@@ -239,8 +239,8 @@ Example code to test specific scenarios:
         new DummyAllocator(), true, -1); // no cleanup thread
     long fn1 = 1, fn2 = 2;
     MemoryBuffer[] fakes = new MemoryBuffer[] { fb(), fb(), fb() };
-    assertNull(cache.putFileData(fn1, drs(1, 2), fbs(fakes, 0, 1), 0, Priority.NORMAL, null));
-    assertNull(cache.putFileData(fn2, drs(1), fbs(fakes, 2), 0, Priority.NORMAL, null));
+    assertNull(cache.putFileData(fn1, drs(1, 2), fbs(fakes, 0, 1), 0, Priority.NORMAL, null, null));
+    assertNull(cache.putFileData(fn2, drs(1), fbs(fakes, 2), 0, Priority.NORMAL, null, null));
     verifyCacheGet(cache, fn1, 1, 3, fakes[0], fakes[1]);
     verifyCacheGet(cache, fn2, 1, 2, fakes[2]);
     verifyRefcount(fakes, 3, 3, 3);
@@ -259,15 +259,15 @@ Example code to test specific scenarios:
     long fn1 = 1, fn2 = 2;
     MemoryBuffer[] fakes = new MemoryBuffer[] {
         fb(), fb(), fb(), fb(), fb(), fb(), fb(), fb(), fb() };
-    assertNull(cache.putFileData(fn1, drs(1, 2, 3), fbs(fakes, 0, 1, 2), 0, Priority.NORMAL, null));
-    assertNull(cache.putFileData(fn2, drs(1), fbs(fakes, 3), 0, Priority.NORMAL, null));
+    assertNull(cache.putFileData(fn1, drs(1, 2, 3), fbs(fakes, 0, 1, 2), 0, Priority.NORMAL, null, null));
+    assertNull(cache.putFileData(fn2, drs(1), fbs(fakes, 3), 0, Priority.NORMAL, null, null));
     evict(cache, fakes[0]);
     evict(cache, fakes[3]);
     long[] mask = cache.putFileData(
-        fn1, drs(1, 2, 3, 4), fbs(fakes, 4, 5, 6, 7), 0, Priority.NORMAL, null);
+        fn1, drs(1, 2, 3, 4), fbs(fakes, 4, 5, 6, 7), 0, Priority.NORMAL, null, null);
     assertEquals(1, mask.length);
     assertEquals(6, mask[0]); // Buffers at offset 2 & 3 exist; 1 exists and is stale; 4 doesn't
-    assertNull(cache.putFileData(fn2, drs(1), fbs(fakes, 8), 0, Priority.NORMAL, null));
+    assertNull(cache.putFileData(fn2, drs(1), fbs(fakes, 8), 0, Priority.NORMAL, null, null));
     verifyCacheGet(cache, fn1, 1, 5, fakes[4], fakes[1], fakes[2], fakes[7]);
   }
 
@@ -304,7 +304,7 @@ Example code to test specific scenarios:
     long fn = 1;
     MemoryBuffer[] fakes = new MemoryBuffer[]{fb(), fb(), fb()};
     cache.putFileData(fn, new DiskRange[]{dr(0, 100), dr(300, 500), dr(800, 1000)},
-        fakes, 0, Priority.NORMAL, null);
+        fakes, 0, Priority.NORMAL, null, null);
     assertEquals(0, metrics.getCacheRequestedBytes());
     assertEquals(0, metrics.getCacheHitBytes());
     list = new CreateHelper();
@@ -390,7 +390,7 @@ Example code to test specific scenarios:
                 buf.setNewAllocLocation(makeFakeArenaIndex(fileIndex, offsets[j]), 0);
                 buffers[j] = buf;
               }
-              long[] mask = cache.putFileData(fileName, ranges, buffers, 0, Priority.NORMAL, null);
+              long[] mask = cache.putFileData(fileName, ranges, buffers, 0, Priority.NORMAL, null, null);
               puts += buffers.length;
               long maskVal = 0;
               if (mask != null) {

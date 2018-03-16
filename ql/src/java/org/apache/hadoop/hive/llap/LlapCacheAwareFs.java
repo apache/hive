@@ -61,10 +61,10 @@ public class LlapCacheAwareFs extends FileSystem {
       new ConcurrentHashMap<>();
 
   public static Path registerFile(DataCache cache, Path path, Object fileKey,
-      TreeMap<Long, Long> index, Configuration conf) throws IOException {
+      TreeMap<Long, Long> index, Configuration conf, String tag) throws IOException {
     long splitId = currentSplitId.incrementAndGet();
     CacheAwareInputStream stream = new CacheAwareInputStream(
-        cache, conf, index, path, fileKey, -1);
+        cache, conf, index, path, fileKey, -1, tag);
     if (files.putIfAbsent(splitId, stream) != null) {
       throw new IOException("Record already exists for " + splitId);
     }
@@ -166,23 +166,25 @@ public class LlapCacheAwareFs extends FileSystem {
     private final TreeMap<Long, Long> chunkIndex;
     private final Path path;
     private final Object fileKey;
+    private final String tag;
     private final Configuration conf;
     private final DataCache cache;
     private final int bufferSize;
     private long position = 0;
 
     public CacheAwareInputStream(DataCache cache, Configuration conf,
-        TreeMap<Long, Long> chunkIndex, Path path, Object fileKey, int bufferSize) {
+        TreeMap<Long, Long> chunkIndex, Path path, Object fileKey, int bufferSize, String tag) {
       this.cache = cache;
       this.fileKey = fileKey;
       this.chunkIndex = chunkIndex;
       this.path = path;
       this.conf = conf;
       this.bufferSize = bufferSize;
+      this.tag = tag;
     }
 
     public LlapCacheAwareFs.CacheAwareInputStream cloneWithBufferSize(int bufferSize) {
-      return new CacheAwareInputStream(cache, conf, chunkIndex, path, fileKey, bufferSize);
+      return new CacheAwareInputStream(cache, conf, chunkIndex, path, fileKey, bufferSize, tag);
     }
 
     @Override
@@ -307,7 +309,7 @@ public class LlapCacheAwareFs extends FileSystem {
               }
               smallBuffer = null;
             }
-            cache.putFileData(fileKey, cacheRanges, newCacheData, 0);
+            cache.putFileData(fileKey, cacheRanges, newCacheData, 0, tag);
           } finally {
             // We do not use the new cache buffers for the actual read, given the way read() API is.
             // Therefore, we don't need to handle cache collisions - just decref all the buffers.

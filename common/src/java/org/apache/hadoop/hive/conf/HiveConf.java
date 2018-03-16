@@ -3190,11 +3190,17 @@ public class HiveConf extends Configuration {
     LLAP_ALLOCATOR_DEFRAG_HEADROOM("hive.llap.io.allocator.defrag.headroom", "1Mb",
         "How much of a headroom to leave to allow allocator more flexibility to defragment.\n" +
         "The allocator would further cap it to a fraction of total memory."),
+    LLAP_TRACK_CACHE_USAGE("hive.llap.io.track.cache.usage", true,
+         "Whether to tag LLAP cache contents, mapping them to Hive entities (paths for\n" +
+         "partitions and tables) for reporting."),
     LLAP_USE_LRFU("hive.llap.io.use.lrfu", true,
         "Whether ORC low-level cache should use LRFU cache policy instead of default (FIFO)."),
-    LLAP_LRFU_LAMBDA("hive.llap.io.lrfu.lambda", 0.01f,
+    LLAP_LRFU_LAMBDA("hive.llap.io.lrfu.lambda", 0.000001f,
         "Lambda for ORC low-level cache LRFU cache policy. Must be in [0, 1]. 0 makes LRFU\n" +
-        "behave like LFU, 1 makes it behave like LRU, values in between balance accordingly."),
+        "behave like LFU, 1 makes it behave like LRU, values in between balance accordingly.\n" +
+        "The meaning of this parameter is the inverse of the number of time ticks (cache\n" +
+        " operations, currently) that cause the combined recency-frequency of a block in cache\n" +
+        " to be halved."),
     LLAP_CACHE_ALLOW_SYNTHETIC_FILEID("hive.llap.cache.allow.synthetic.fileid", false,
         "Whether LLAP cache should use synthetic file ID if real one is not available. Systems\n" +
         "like HDFS, Isilon, etc. provide a unique file/inode ID. On other FSes (e.g. local\n" +

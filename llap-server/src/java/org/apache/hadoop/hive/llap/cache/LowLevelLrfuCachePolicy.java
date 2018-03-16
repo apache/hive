@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.llap.cache;
 
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -153,7 +154,7 @@ public class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
         } finally {
           listLock.unlock();
         }
-        // Now insert the buffer in its place and restore heap property.
+        // Now insert the new buffer in its place and restore heap property.
         buffer.indexInHeap = 0;
         heapifyDownUnderLock(buffer, time);
       } else {
