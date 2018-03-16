@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.common.type.HiveBaseChar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
@@ -172,13 +173,18 @@ public final class ParquetDataColumnReaderFactory {
     }
 
     @Override
-    public int readInteger() {
+    public long readInteger() {
       return valuesReader.readInteger();
     }
 
     @Override
-    public int readInteger(int id) {
+    public long readInteger(int id) {
       return dict.decodeToInt(id);
+    }
+
+    @Override
+    public boolean isValid(long value) {
+      return true;
     }
 
     @Override
@@ -338,6 +344,16 @@ public final class ParquetDataColumnReaderFactory {
     }
 
     @Override
+    public long readInteger() {
+      return valuesReader.readLong();
+    }
+
+    @Override
+    public long readInteger(int id) {
+      return dict.decodeToLong(id);
+    }
+
+    @Override
     public float readFloat() {
       return valuesReader.readLong();
     }
@@ -401,6 +417,97 @@ public final class ParquetDataColumnReaderFactory {
 
     private static byte[] convertToBytes(long value) {
       return convertToBytes(convertToString(value));
+    }
+  }
+
+  /**
+   * The reader who reads long data using int type.
+   */
+  public static class Types64Int2IntPageReader extends TypesFromInt64PageReader {
+
+    public Types64Int2IntPageReader(ValuesReader realReader, int length) {
+      super(realReader, length);
+    }
+
+    public Types64Int2IntPageReader(Dictionary dict, int length) {
+      super(dict, length);
+    }
+
+    @Override
+    public boolean isValid(long value) {
+      return ((value <= Integer.MAX_VALUE) && (value >= Integer.MIN_VALUE));
+    }
+  }
+
+  /**
+   * The reader who reads long data using smallint type.
+   */
+  public static class Types64Int2SmallintPageReader extends TypesFromInt64PageReader {
+    public Types64Int2SmallintPageReader(ValuesReader realReader, int length) {
+      super(realReader, length);
+    }
+
+    public Types64Int2SmallintPageReader(Dictionary dict, int length) {
+      super(dict, length);
+    }
+
+    @Override
+    public boolean isValid(long value) {
+      return ((value <= Short.MAX_VALUE) && (value >= Short.MIN_VALUE));
+    }
+  }
+
+  /**
+   * The reader who reads long data using tinyint type.
+   */
+  public static class Types64Int2TinyintPageReader extends TypesFromInt64PageReader {
+    public Types64Int2TinyintPageReader(ValuesReader realReader, int length) {
+      super(realReader, length);
+    }
+
+    public Types64Int2TinyintPageReader(Dictionary dict, int length) {
+      super(dict, length);
+    }
+
+    @Override
+    public boolean isValid(long value) {
+      return ((value <= Byte.MAX_VALUE) && (value >= Byte.MIN_VALUE));
+    }
+  }
+
+  /**
+   * The reader who reads int data using smallint type.
+   */
+  public static class Types32Int2SmallintPageReader extends TypesFromInt32PageReader {
+    public Types32Int2SmallintPageReader(ValuesReader realReader, int length) {
+      super(realReader, length);
+    }
+
+    public Types32Int2SmallintPageReader(Dictionary dict, int length) {
+      super(dict, length);
+    }
+
+    @Override
+    public boolean isValid(long value) {
+      return ((value <= Short.MAX_VALUE) && (value >= Short.MIN_VALUE));
+    }
+  }
+
+  /**
+   * The reader who reads int data using tinyint type.
+   */
+  public static class Types32Int2TinyintPageReader extends TypesFromInt32PageReader {
+    public Types32Int2TinyintPageReader(ValuesReader realReader, int length) {
+      super(realReader, length);
+    }
+
+    public Types32Int2TinyintPageReader(Dictionary dict, int length) {
+      super(dict, length);
+    }
+
+    @Override
+    public boolean isValid(long value) {
+      return ((value <= Byte.MAX_VALUE) && (value >= Byte.MIN_VALUE));
     }
   }
 
@@ -812,11 +919,32 @@ public final class ParquetDataColumnReaderFactory {
 
     switch (parquetType.getPrimitiveTypeName()) {
     case INT32:
-      return isDictionary ? new TypesFromInt32PageReader(dictionary, length) : new
-          TypesFromInt32PageReader(valuesReader, length);
+      switch (hiveType.getTypeName()) {
+      case serdeConstants.SMALLINT_TYPE_NAME:
+        return isDictionary ? new Types32Int2SmallintPageReader(dictionary,
+            length) : new Types32Int2SmallintPageReader(valuesReader, length);
+      case serdeConstants.TINYINT_TYPE_NAME:
+        return isDictionary ? new Types32Int2TinyintPageReader(dictionary,
+            length) : new Types32Int2TinyintPageReader(valuesReader, length);
+      default:
+        return isDictionary ? new TypesFromInt32PageReader(dictionary,
+            length) : new TypesFromInt32PageReader(valuesReader, length);
+      }
     case INT64:
-      return isDictionary ? new TypesFromInt64PageReader(dictionary, length) : new
-          TypesFromInt64PageReader(valuesReader, length);
+      switch (hiveType.getTypeName()) {
+      case serdeConstants.INT_TYPE_NAME:
+        return isDictionary ? new Types64Int2IntPageReader(dictionary,
+            length) : new Types64Int2IntPageReader(valuesReader, length);
+      case serdeConstants.SMALLINT_TYPE_NAME:
+        return isDictionary ? new Types64Int2SmallintPageReader(dictionary,
+            length) : new Types64Int2SmallintPageReader(valuesReader, length);
+      case serdeConstants.TINYINT_TYPE_NAME:
+        return isDictionary ? new Types64Int2TinyintPageReader(dictionary,
+            length) : new Types64Int2TinyintPageReader(valuesReader, length);
+      default:
+        return isDictionary ? new TypesFromInt64PageReader(dictionary,
+            length) : new TypesFromInt64PageReader(valuesReader, length);
+      }
     case FLOAT:
       return isDictionary ? new TypesFromFloatPageReader(dictionary, length) : new
           TypesFromFloatPageReader(valuesReader, length);

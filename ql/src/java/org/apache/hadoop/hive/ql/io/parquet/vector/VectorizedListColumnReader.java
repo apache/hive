@@ -273,20 +273,15 @@ public class VectorizedListColumnReader extends BaseVectorizedColumnReader {
     int total = valueList.size();
     setChildrenInfo(lcv, total, elementNum);
     switch (category) {
-    case INT:
-    case BYTE:
-    case SHORT:
-      lcv.child = new LongColumnVector(total);
-      for (int i = 0; i < valueList.size(); i++) {
-        ((LongColumnVector) lcv.child).vector[i] = ((List<Integer>) valueList).get(i);
-      }
-      break;
     case BOOLEAN:
       lcv.child = new LongColumnVector(total);
       for (int i = 0; i < valueList.size(); i++) {
         ((LongColumnVector) lcv.child).vector[i] = ((List<Integer>) valueList).get(i);
       }
       break;
+    case INT:
+    case BYTE:
+    case SHORT:
     case DATE:
     case INTERVAL_YEAR_MONTH:
     case LONG:
