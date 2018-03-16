@@ -24,6 +24,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_TIME_WINDOW;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
@@ -74,6 +75,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.hive.common.log.InPlaceUpdate;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HdfsUtils;
@@ -1299,11 +1301,11 @@ public class Hive {
    * @return the list of materialized views available for rewriting
    * @throws HiveException
    */
-  public List<RelOptMaterialization> getValidMaterializedViews() throws HiveException {
-    final long diff =
+  public List<RelOptMaterialization> getValidMaterializedViews(boolean materializedViewRebuild) throws HiveException {
+    final long defaultDiff =
         HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW,
             TimeUnit.MILLISECONDS);
-    final long minTime = System.currentTimeMillis() - diff;
+    final long currentTime = System.currentTimeMillis();
     try {
       // Final result
       List<RelOptMaterialization> result = new ArrayList<>();
@@ -1326,9 +1328,17 @@ public class Hive {
                 " ignored for rewriting as there was no information loaded in the invalidation cache");
             continue;
           }
+          // Check if materialization defined its own invalidation time window
+          String timeWindowString = materializedViewTable.getProperty(MATERIALIZED_VIEW_REWRITING_TIME_WINDOW);
+          long diff = org.apache.commons.lang.StringUtils.isEmpty(timeWindowString) ? defaultDiff :
+              HiveConf.toTime(timeWindowString,
+                  HiveConf.getDefaultTimeUnit(HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW),
+                  TimeUnit.MILLISECONDS);
+
           long invalidationTime = materializationInvalidationInfo.getInvalidationTime();
-          // If the limit is not met, we do not add the materialized view
-          if (diff == 0L) {
+          // If the limit is not met, we do not add the materialized view.
+          // If we are doing a rebuild, we do not consider outdated materialized views either.
+          if (diff == 0L || materializedViewRebuild) {
             if (invalidationTime != 0L) {
               // If parameter is zero, materialized view cannot be outdated at all
               LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
@@ -1336,7 +1346,7 @@ public class Hive {
               continue;
             }
           } else {
-            if (invalidationTime != 0 && minTime > invalidationTime) {
+            if (invalidationTime != 0 && invalidationTime > currentTime - diff) {
               LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
                   " ignored for rewriting as its contents are outdated");
               continue;
