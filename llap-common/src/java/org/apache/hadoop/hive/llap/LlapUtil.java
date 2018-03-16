@@ -27,6 +27,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.ipc.ProtobufRpcEngine;
@@ -298,5 +300,70 @@ public class LlapUtil {
     }
     LOG.info("Instantiated " + protocolClass.getSimpleName() + " at " + bindAddressVal);
     return server;
+  }
+
+  // Copied from AcidUtils so we don't have to put the code using this into ql.
+  // TODO: Ideally, AcidUtils class and various constants should be in common.
+  private static final String BASE_PREFIX = "base_", DELTA_PREFIX = "delta_",
+      DELETE_DELTA_PREFIX = "delete_delta_", BUCKET_PREFIX = "bucket_",
+      DATABASE_PATH_SUFFIX = ".db", UNION_SUDBIR_PREFIX = "HIVE_UNION_SUBDIR_";
+
+  public static final char DERIVED_ENTITY_PARTITION_SEPARATOR = '/';
+
+  public static String getDbAndTableNameForMetrics(Path path, boolean includeParts) {
+    String[] parts = path.toUri().getPath().toString().split(Path.SEPARATOR);
+    int dbIx = -1;
+    // Try to find the default db postfix; don't check two last components - at least there
+    // should be a table and file (we could also try to throw away partition/bucket/acid stuff).
+    for (int i = 0; i < parts.length - 2; ++i) {
+      if (!parts[i].endsWith(DATABASE_PATH_SUFFIX)) continue;
+      if (dbIx >= 0) {
+        dbIx = -1; // Let's not guess which one is correct.
+        break;
+      }
+      dbIx = i;
+    }
+    if (dbIx >= 0) {
+      String dbAndTable = parts[dbIx].substring(
+          0, parts[dbIx].length() - 3) + "." + parts[dbIx + 1];
+      if (!includeParts) return dbAndTable;
+      for (int i = dbIx + 2; i < parts.length; ++i) {
+        if (!parts[i].contains("=")) break;
+        dbAndTable += "/" + parts[i];
+      }
+      return dbAndTable;
+    }
+
+    // Just go from the back and throw away everything we think is wrong; skip last item, the file.
+    boolean isInPartFields = false;
+    for (int i = parts.length - 2; i >= 0; --i) {
+      String p = parts[i];
+      boolean isPartField = p.contains("=");
+      if ((isInPartFields && !isPartField) || (!isPartField && !isSomeHiveDir(p))) {
+        dbIx = i - 1; // Assume this is the table we are at now.
+        break;
+      }
+      isInPartFields = isPartField;
+    }
+    // If we found something before we ran out of components, use it.
+    if (dbIx >= 0) {
+      String dbName = parts[dbIx];
+      if (dbName.endsWith(DATABASE_PATH_SUFFIX)) {
+        dbName = dbName.substring(0, dbName.length() - 3);
+      }
+      String dbAndTable = dbName + "." + parts[dbIx + 1];
+      if (!includeParts) return dbAndTable;
+      for (int i = dbIx + 2; i < parts.length; ++i) {
+        if (!parts[i].contains("=")) break;
+        dbAndTable += "/" + parts[i];
+      }
+      return dbAndTable;
+    }
+    return "unknown";
+  }
+
+  private static boolean isSomeHiveDir(String p) {
+    return p.startsWith(BASE_PREFIX) || p.startsWith(DELTA_PREFIX) || p.startsWith(BUCKET_PREFIX)
+        || p.startsWith(UNION_SUDBIR_PREFIX) || p.startsWith(DELETE_DELTA_PREFIX);
   }
 }

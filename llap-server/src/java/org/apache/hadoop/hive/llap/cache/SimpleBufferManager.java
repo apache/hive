@@ -84,9 +84,8 @@ public class SimpleBufferManager implements BufferUsageManager, LowLevelCache {
   }
 
   @Override
-  public long[] putFileData(Object fileKey, DiskRange[] ranges,
-      MemoryBuffer[] chunks, long baseOffset, Priority priority,
-      LowLevelCacheCounters qfCounters) {
+  public long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] chunks,
+      long baseOffset, Priority priority, LowLevelCacheCounters qfCounters, String tag) {
     for (int i = 0; i < chunks.length; ++i) {
       LlapAllocatorBuffer buffer = (LlapAllocatorBuffer)chunks[i];
       if (LlapIoImpl.LOCKING_LOGGER.isTraceEnabled()) {

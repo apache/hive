@@ -121,4 +121,10 @@ public class OrcFileEstimateErrors extends LlapCacheableBuffer {
   protected boolean isLocked() {
     return false;
   }
+
+  @Override
+  public String getTag() {
+    // We don't care about these.
+    return "OrcEstimates";
+  }
 }
