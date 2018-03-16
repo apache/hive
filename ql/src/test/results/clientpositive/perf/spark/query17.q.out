@@ -353,29 +353,33 @@ STAGE PLANS:
                   input vertices:
                     1 Map 16
                   Statistics: Num rows: 843315281 Data size: 74397518956 Basic stats: COMPLETE Column stats: NONE
-                  Group By Operator
-                    aggregations: count(_col5), avg(_col5), stddev_samp(_col5), count(_col21), avg(_col21), stddev_samp(_col21), count(_col14), avg(_col14), stddev_samp(_col14)
-                    keys: _col9 (type: string), _col10 (type: string), _col25 (type: string)
-                    mode: hash
+                  Select Operator
+                    expressions: _col9 (type: string), _col10 (type: string), _col25 (type: string), _col5 (type: int), _col21 (type: int), _col14 (type: int), UDFToDouble(_col5) (type: double), (UDFToDouble(_col5) * UDFToDouble(_col5)) (type: double), UDFToDouble(_col21) (type: double), (UDFToDouble(_col21) * UDFToDouble(_col21)) (type: double), UDFToDouble(_col14) (type: double), (UDFToDouble(_col14) * UDFToDouble(_col14)) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
                     Statistics: Num rows: 843315281 Data size: 74397518956 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
-                      sort order: +++
-                      Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                    Group By Operator
+                      aggregations: count(_col3), sum(_col3), sum(_col7), sum(_col6), count(_col4), sum(_col4), sum(_col9), sum(_col8), count(_col5), sum(_col5), sum(_col11), sum(_col10)
+                      keys: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
                       Statistics: Num rows: 843315281 Data size: 74397518956 Basic stats: COMPLETE Column stats: NONE
-                      TopN Hash Memory Usage: 0.1
-                      value expressions: _col3 (type: bigint), _col4 (type: struct<count:bigint,sum:double,input:int>), _col5 (type: struct<count:bigint,sum:double,variance:double>), _col6 (type: bigint), _col7 (type: struct<count:bigint,sum:double,input:int>), _col8 (type: struct<count:bigint,sum:double,variance:double>), _col9 (type: bigint), _col10 (type: struct<count:bigint,sum:double,input:int>), _col11 (type: struct<count:bigint,sum:double,variance:double>)
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: string)
+                        Statistics: Num rows: 843315281 Data size: 74397518956 Basic stats: COMPLETE Column stats: NONE
+                        TopN Hash Memory Usage: 0.1
+                        value expressions: _col3 (type: bigint), _col4 (type: bigint), _col5 (type: double), _col6 (type: double), _col7 (type: bigint), _col8 (type: bigint), _col9 (type: double), _col10 (type: double), _col11 (type: bigint), _col12 (type: bigint), _col13 (type: double), _col14 (type: double)
         Reducer 5 
             Reduce Operator Tree:
               Group By Operator
-                aggregations: count(VALUE._col0), avg(VALUE._col1), stddev_samp(VALUE._col2), count(VALUE._col3), avg(VALUE._col4), stddev_samp(VALUE._col5), count(VALUE._col6), avg(VALUE._col7), stddev_samp(VALUE._col8)
+                aggregations: count(VALUE._col0), sum(VALUE._col1), sum(VALUE._col2), sum(VALUE._col3), count(VALUE._col4), sum(VALUE._col5), sum(VALUE._col6), sum(VALUE._col7), count(VALUE._col8), sum(VALUE._col9), sum(VALUE._col10), sum(VALUE._col11)
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: string)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
                 Statistics: Num rows: 421657640 Data size: 37198759433 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: bigint), _col4 (type: double), _col5 (type: double), (_col5 / _col4) (type: double), _col6 (type: bigint), _col7 (type: double), _col8 (type: double), (_col8 / _col7) (type: double), _col9 (type: bigint), _col10 (type: double), (_col11 / _col10) (type: double)
+                  expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: bigint), (_col4 / _col3) (type: double), power(((_col5 - ((_col6 * _col6) / _col3)) / CASE WHEN ((_col3 = 1L)) THEN (null) ELSE ((_col3 - 1)) END), 0.5) (type: double), (power(((_col5 - ((_col6 * _col6) / _col3)) / CASE WHEN ((_col3 = 1L)) THEN (null) ELSE ((_col3 - 1)) END), 0.5) / (_col4 / _col3)) (type: double), _col7 (type: bigint), (_col8 / _col7) (type: double), power(((_col9 - ((_col10 * _col10) / _col7)) / CASE WHEN ((_col7 = 1L)) THEN (null) ELSE ((_col7 - 1)) END), 0.5) (type: double), (power(((_col9 - ((_col10 * _col10) / _col7)) / CASE WHEN ((_col7 = 1L)) THEN (null) ELSE ((_col7 - 1)) END), 0.5) / (_col8 / _col7)) (type: double), _col11 (type: bigint), (_col12 / _col11) (type: double), (power(((_col13 - ((_col14 * _col14) / _col11)) / CASE WHEN ((_col11 = 1L)) THEN (null) ELSE ((_col11 - 1)) END), 0.5) / (_col12 / _col11)) (type: double)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
                   Statistics: Num rows: 421657640 Data size: 37198759433 Basic stats: COMPLETE Column stats: NONE
                   Reduce Output Operator
