@@ -53,10 +53,10 @@ public enum DatabaseProduct {
   public static boolean isDeadlock(DatabaseProduct dbProduct, SQLException e) {
     return e instanceof SQLTransactionRollbackException
         || ((dbProduct == MYSQL || dbProduct == POSTGRES || dbProduct == SQLSERVER)
-            && e.getSQLState().equals("40001"))
-        || (dbProduct == POSTGRES && e.getSQLState().equals("40P01"))
-        || (dbProduct == ORACLE && (e.getMessage().contains("deadlock detected")
-            || e.getMessage().contains("can't serialize access for this transaction")));
+            && "40001".equals(e.getSQLState()))
+        || (dbProduct == POSTGRES && "40P01".equals(e.getSQLState()))
+        || (dbProduct == ORACLE && (e.getMessage() != null && (e.getMessage().contains("deadlock detected")
+            || e.getMessage().contains("can't serialize access for this transaction"))));
   }
 
   /**
