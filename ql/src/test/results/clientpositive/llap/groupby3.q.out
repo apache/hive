@@ -54,13 +54,13 @@ STAGE PLANS:
                   alias: src
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: substr(value, 5) (type: string)
-                    outputColumnNames: _col0
+                    expressions: value (type: string)
+                    outputColumnNames: value
                     Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
-                      key expressions: _col0 (type: string)
+                      key expressions: substr(value, 5) (type: string)
                       sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
+                      Map-reduce partition columns: substr(value, 5) (type: string)
                       Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: no inputs

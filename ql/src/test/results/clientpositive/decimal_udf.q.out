@@ -1282,26 +1282,26 @@ STAGE PLANS:
               outputColumnNames: key, value
               Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: sum(key), count(key), avg(key)
+                aggregations: sum(key), count(key)
                 keys: value (type: int)
                 mode: hash
-                outputColumnNames: _col0, _col1, _col2, _col3
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: decimal(30,10)), _col2 (type: bigint), _col3 (type: struct<count:bigint,sum:decimal(30,10),input:decimal(20,10)>)
+                  value expressions: _col1 (type: decimal(30,10)), _col2 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
-          aggregations: sum(VALUE._col0), count(VALUE._col1), avg(VALUE._col2)
+          aggregations: sum(VALUE._col0), count(VALUE._col1)
           keys: KEY._col0 (type: int)
           mode: mergepartial
-          outputColumnNames: _col0, _col1, _col2, _col3
+          outputColumnNames: _col0, _col1, _col2
           Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: int), (_col1 / CAST( _col2 AS decimal(19,0))) (type: decimal(38,18)), _col3 (type: decimal(24,14)), _col1 (type: decimal(30,10))
+            expressions: _col0 (type: int), (_col1 / CAST( _col2 AS decimal(19,0))) (type: decimal(38,18)), (CAST( _col1 AS decimal(24,14)) / _col2) (type: decimal(38,28)), _col1 (type: decimal(30,10))
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
@@ -1319,10 +1319,10 @@ STAGE PLANS:
               key expressions: _col0 (type: int)
               sort order: +
               Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
-              value expressions: _col1 (type: decimal(38,18)), _col2 (type: decimal(24,14)), _col3 (type: decimal(30,10))
+              value expressions: _col1 (type: decimal(38,18)), _col2 (type: decimal(38,28)), _col3 (type: decimal(30,10))
       Reduce Operator Tree:
         Select Operator
-          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: decimal(38,18)), VALUE._col1 (type: decimal(24,14)), VALUE._col2 (type: decimal(30,10))
+          expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: decimal(38,18)), VALUE._col1 (type: decimal(38,28)), VALUE._col2 (type: decimal(30,10))
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
           File Output Operator
@@ -1347,23 +1347,23 @@ POSTHOOK: query: SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DE
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--1234567890	-1234567890.123456789000000000	-1234567890.12345678900000	-1234567890.1234567890
--1255	-1255.490000000000000000	-1255.49000000000000	-1255.4900000000
--11	-1.122000000000000000	-1.12200000000000	-1.1220000000
--1	-1.120000000000000000	-1.12000000000000	-2.2400000000
-0	0.025384615384615385	0.02538461538462	0.3300000000
-1	1.048400000000000000	1.04840000000000	5.2420000000
-2	2.000000000000000000	2.00000000000000	4.0000000000
-3	3.140000000000000000	3.14000000000000	9.4200000000
-4	3.140000000000000000	3.14000000000000	3.1400000000
-10	10.000000000000000000	10.00000000000000	10.0000000000
-20	20.000000000000000000	20.00000000000000	20.0000000000
-100	100.000000000000000000	100.00000000000000	100.0000000000
-124	124.000000000000000000	124.00000000000000	124.0000000000
-125	125.200000000000000000	125.20000000000000	125.2000000000
-200	200.000000000000000000	200.00000000000000	200.0000000000
-4400	-4400.000000000000000000	-4400.00000000000000	-4400.0000000000
-1234567890	1234567890.123456780000000000	1234567890.12345678000000	1234567890.1234567800
+-1234567890	-1234567890.123456789000000000	-1234567890.1234567890000000000000000000	-1234567890.1234567890
+-1255	-1255.490000000000000000	-1255.4900000000000000000000000000	-1255.4900000000
+-11	-1.122000000000000000	-1.1220000000000000000000000000	-1.1220000000
+-1	-1.120000000000000000	-1.1200000000000000000000000000	-2.2400000000
+0	0.025384615384615385	0.0253846153846153846153846154	0.3300000000
+1	1.048400000000000000	1.0484000000000000000000000000	5.2420000000
+2	2.000000000000000000	2.0000000000000000000000000000	4.0000000000
+3	3.140000000000000000	3.1400000000000000000000000000	9.4200000000
+4	3.140000000000000000	3.1400000000000000000000000000	3.1400000000
+10	10.000000000000000000	10.0000000000000000000000000000	10.0000000000
+20	20.000000000000000000	20.0000000000000000000000000000	20.0000000000
+100	100.000000000000000000	100.0000000000000000000000000000	100.0000000000
+124	124.000000000000000000	124.0000000000000000000000000000	124.0000000000
+125	125.200000000000000000	125.2000000000000000000000000000	125.2000000000
+200	200.000000000000000000	200.0000000000000000000000000000	200.0000000000
+4400	-4400.000000000000000000	-4400.0000000000000000000000000000	-4400.0000000000
+1234567890	1234567890.123456780000000000	1234567890.1234567800000000000000000000	1234567890.1234567800
 PREHOOK: query: EXPLAIN SELECT -key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT -key FROM DECIMAL_UDF
@@ -1849,35 +1849,39 @@ STAGE PLANS:
             alias: decimal_udf
             Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: decimal(20,10)), value (type: int)
-              outputColumnNames: key, value
+              expressions: value (type: int), key (type: decimal(20,10)), UDFToDouble(key) (type: double), (UDFToDouble(key) * UDFToDouble(key)) (type: double)
+              outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: stddev(key), variance(key)
-                keys: value (type: int)
+                aggregations: sum(_col3), sum(_col2), count(_col1)
+                keys: _col0 (type: int)
                 mode: hash
-                outputColumnNames: _col0, _col1, _col2
+                outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: struct<count:bigint,sum:double,variance:double>), _col2 (type: struct<count:bigint,sum:double,variance:double>)
+                  value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
-          aggregations: stddev(VALUE._col0), variance(VALUE._col1)
+          aggregations: sum(VALUE._col0), sum(VALUE._col1), count(VALUE._col2)
           keys: KEY._col0 (type: int)
           mode: mergepartial
-          outputColumnNames: _col0, _col1, _col2
+          outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
+          Select Operator
+            expressions: _col0 (type: int), power(((_col1 - ((_col2 * _col2) / _col3)) / _col3), 0.5) (type: double), ((_col1 - ((_col2 * _col2) / _col3)) / _col3) (type: double)
+            outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1897,8 +1901,8 @@ POSTHOOK: Input: default@decimal_udf
 -1255	0.0	0.0
 -11	0.0	0.0
 -1	0.0	0.0
-0	0.22561046704494161	0.050900082840236685
-1	0.05928102563215321	0.0035142400000000066
+0	0.22561046704494161	0.05090008284023669
+1	0.05928102563215448	0.003514240000000157
 2	0.0	0.0
 3	0.0	0.0
 4	0.0	0.0
@@ -1926,35 +1930,39 @@ STAGE PLANS:
             alias: decimal_udf
             Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: key (type: decimal(20,10)), value (type: int)
-              outputColumnNames: key, value
+              expressions: value (type: int), key (type: decimal(20,10)), UDFToDouble(key) (type: double), (UDFToDouble(key) * UDFToDouble(key)) (type: double)
+              outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: stddev_samp(key), var_samp(key)
-                keys: value (type: int)
+                aggregations: sum(_col3), sum(_col2), count(_col1)
+                keys: _col0 (type: int)
                 mode: hash
-                outputColumnNames: _col0, _col1, _col2
+                outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: struct<count:bigint,sum:double,variance:double>), _col2 (type: struct<count:bigint,sum:double,variance:double>)
+                  value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: bigint)
       Reduce Operator Tree:
         Group By Operator
-          aggregations: stddev_samp(VALUE._col0), var_samp(VALUE._col1)
+          aggregations: sum(VALUE._col0), sum(VALUE._col1), count(VALUE._col2)
           keys: KEY._col0 (type: int)
           mode: mergepartial
-          outputColumnNames: _col0, _col1, _col2
+          outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
+          Select Operator
+            expressions: _col0 (type: int), power(((_col1 - ((_col2 * _col2) / _col3)) / CASE WHEN ((_col3 = 1L)) THEN (null) ELSE ((_col3 - 1)) END), 0.5) (type: double), ((_col1 - ((_col2 * _col2) / _col3)) / CASE WHEN ((_col3 = 1L)) THEN (null) ELSE ((_col3 - 1)) END) (type: double)
+            outputColumnNames: _col0, _col1, _col2
             Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 3590 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1974,8 +1982,8 @@ POSTHOOK: Input: default@decimal_udf
 -1255	NULL	NULL
 -11	NULL	NULL
 -1	0.0	0.0
-0	0.2348228191855647	0.055141756410256405
-1	0.06627820154470102	0.004392800000000008
+0	0.23482281918556472	0.05514175641025642
+1	0.06627820154470243	0.0043928000000001965
 2	0.0	0.0
 3	0.0	0.0
 4	NULL	NULL

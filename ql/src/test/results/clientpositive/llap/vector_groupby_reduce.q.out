@@ -822,9 +822,9 @@ STAGE PLANS:
                       projectedOutputColumnNums: [0, 1, 2, 3]
                   Statistics: Num rows: 6 Data size: 768 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    aggregations: sum(_col1), sum(_col2), avg(_col2), sum(_col3), avg(_col3), sum(_col4), avg(_col4)
+                    aggregations: sum(_col1), sum(_col2), count(_col2), sum(_col3), count(_col3), sum(_col4), count(_col4)
                     Group By Vectorization:
-                        aggregators: VectorUDAFSumLong(col 0:int) -> bigint, VectorUDAFSumLong(col 1:int) -> bigint, VectorUDAFAvgLong(col 1:int) -> struct<count:bigint,sum:double,input:int>, VectorUDAFSumDouble(col 2:double) -> double, VectorUDAFAvgDouble(col 2:double) -> struct<count:bigint,sum:double,input:double>, VectorUDAFSumDecimal(col 3:decimal(38,18)) -> decimal(38,18), VectorUDAFAvgDecimal(col 3:decimal(38,18)) -> struct<count:bigint,sum:decimal(38,18),input:decimal(38,18)>
+                        aggregators: VectorUDAFSumLong(col 0:int) -> bigint, VectorUDAFSumLong(col 1:int) -> bigint, VectorUDAFCount(col 1:int) -> bigint, VectorUDAFSumDouble(col 2:double) -> double, VectorUDAFCount(col 2:double) -> bigint, VectorUDAFSumDecimal(col 3:decimal(38,18)) -> decimal(38,18), VectorUDAFCount(col 3:decimal(38,18)) -> bigint
                         className: VectorGroupByOperator
                         groupByMode: HASH
                         keyExpressions: ConstantVectorExpression(val 1) -> 4:int
@@ -834,7 +834,7 @@ STAGE PLANS:
                     keys: 1 (type: int)
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                    Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 1 Data size: 164 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col0 (type: int)
                       sort order: +
@@ -843,8 +843,8 @@ STAGE PLANS:
                           className: VectorReduceSinkLongOperator
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                      Statistics: Num rows: 1 Data size: 584 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: struct<count:bigint,sum:double,input:int>), _col4 (type: double), _col5 (type: struct<count:bigint,sum:double,input:double>), _col6 (type: decimal(38,18)), _col7 (type: struct<count:bigint,sum:decimal(38,18),input:decimal(38,18)>)
+                      Statistics: Num rows: 1 Data size: 164 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: double), _col5 (type: bigint), _col6 (type: decimal(38,18)), _col7 (type: bigint)
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -855,9 +855,9 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Group By Operator
-                aggregations: sum(VALUE._col0), sum(VALUE._col1), avg(VALUE._col2), sum(VALUE._col3), avg(VALUE._col4), sum(VALUE._col5), avg(VALUE._col6)
+                aggregations: sum(VALUE._col0), sum(VALUE._col1), count(VALUE._col2), sum(VALUE._col3), count(VALUE._col4), sum(VALUE._col5), count(VALUE._col6)
                 Group By Vectorization:
-                    aggregators: VectorUDAFSumLong(col 1:bigint) -> bigint, VectorUDAFSumLong(col 2:bigint) -> bigint, VectorUDAFAvgFinal(col 3:struct<count:bigint,sum:double,input:int>) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFAvgFinal(col 5:struct<count:bigint,sum:double,input:double>) -> double, VectorUDAFSumDecimal(col 6:decimal(38,18)) -> decimal(38,18), VectorUDAFAvgDecimalFinal(col 7:struct<count:bigint,sum:decimal(38,18),input:decimal(38,18)>) -> decimal(38,18)
+                    aggregators: VectorUDAFSumLong(col 1:bigint) -> bigint, VectorUDAFSumLong(col 2:bigint) -> bigint, VectorUDAFCountMerge(col 3:bigint) -> bigint, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCountMerge(col 5:bigint) -> bigint, VectorUDAFSumDecimal(col 6:decimal(38,18)) -> decimal(38,18), VectorUDAFCountMerge(col 7:bigint) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: MERGEPARTIAL
                     keyExpressions: col 0:int
@@ -867,15 +867,15 @@ STAGE PLANS:
                 keys: KEY._col0 (type: int)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 1 Data size: 164 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: 1 (type: int), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: double), _col4 (type: double), _col5 (type: double), _col6 (type: decimal(38,18)), _col7 (type: decimal(38,18))
+                  expressions: 1 (type: int), _col1 (type: bigint), _col2 (type: bigint), (UDFToDouble(_col2) / _col3) (type: double), _col4 (type: double), (_col4 / _col5) (type: double), _col6 (type: decimal(38,18)), (_col6 / _col7) (type: decimal(38,18))
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
                   Select Vectorization:
                       className: VectorSelectOperator
                       native: true
-                      projectedOutputColumnNums: [8, 1, 2, 3, 4, 5, 6, 7]
-                      selectExpressions: ConstantVectorExpression(val 1) -> 8:int
+                      projectedOutputColumnNums: [8, 1, 2, 10, 4, 9, 6, 12]
+                      selectExpressions: ConstantVectorExpression(val 1) -> 8:int, DoubleColDivideLongColumn(col 9:double, col 3:bigint)(children: CastLongToDouble(col 2:bigint) -> 9:double) -> 10:double, DoubleColDivideLongColumn(col 4:double, col 5:bigint) -> 9:double, DecimalColDivideDecimalColumn(col 6:decimal(38,18), col 11:decimal(19,0))(children: CastLongToDecimal(col 7:bigint) -> 11:decimal(19,0)) -> 12:decimal(38,18)
                   Statistics: Num rows: 1 Data size: 268 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -1046,9 +1046,9 @@ STAGE PLANS:
                       projectedOutputColumnNums: [1, 0, 2, 3, 4]
                   Statistics: Num rows: 500 Data size: 66000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    aggregations: sum(_col2), avg(_col2), sum(_col3), avg(_col3), sum(_col4), avg(_col4)
+                    aggregations: sum(_col2), count(_col2), sum(_col3), count(_col3), sum(_col4), count(_col4)
                     Group By Vectorization:
-                        aggregators: VectorUDAFSumLong(col 2:int) -> bigint, VectorUDAFAvgLongComplete(col 2:int) -> double, VectorUDAFSumDouble(col 3:double) -> double, VectorUDAFAvgDoubleComplete(col 3:double) -> double, VectorUDAFSumDecimal(col 4:decimal(38,18)) -> decimal(38,18), VectorUDAFAvgDecimalComplete(col 4:decimal(38,18)) -> decimal(38,18)
+                        aggregators: VectorUDAFSumLong(col 2:int) -> bigint, VectorUDAFCount(col 2:int) -> bigint, VectorUDAFSumDouble(col 3:double) -> double, VectorUDAFCount(col 3:double) -> bigint, VectorUDAFSumDecimal(col 4:decimal(38,18)) -> decimal(38,18), VectorUDAFCount(col 4:decimal(38,18)) -> bigint
                         className: VectorGroupByOperator
                         groupByMode: COMPLETE
                         keyExpressions: col 0:int, col 1:int
@@ -1058,15 +1058,16 @@ STAGE PLANS:
                     keys: _col1 (type: int), _col0 (type: int)
                     mode: complete
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
-                    Statistics: Num rows: 500 Data size: 290000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 500 Data size: 80000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: double), _col4 (type: double), _col5 (type: double), _col6 (type: decimal(38,18)), _col7 (type: decimal(38,18))
+                      expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), (UDFToDouble(_col2) / _col3) (type: double), _col4 (type: double), (_col4 / _col5) (type: double), _col6 (type: decimal(38,18)), (_col6 / _col7) (type: decimal(38,18))
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7]
-                      Statistics: Num rows: 500 Data size: 290000 Basic stats: COMPLETE Column stats: COMPLETE
+                          projectedOutputColumnNums: [0, 1, 2, 9, 4, 8, 6, 11]
+                          selectExpressions: DoubleColDivideLongColumn(col 8:double, col 3:bigint)(children: CastLongToDouble(col 2:bigint) -> 8:double) -> 9:double, DoubleColDivideLongColumn(col 4:double, col 5:bigint) -> 8:double, DecimalColDivideDecimalColumn(col 6:decimal(38,18), col 10:decimal(19,0))(children: CastLongToDecimal(col 7:bigint) -> 10:decimal(19,0)) -> 11:decimal(38,18)
+                      Statistics: Num rows: 500 Data size: 132000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col0 (type: int), _col1 (type: int)
                         sort order: ++
@@ -1074,7 +1075,7 @@ STAGE PLANS:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 500 Data size: 290000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 500 Data size: 132000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: bigint), _col3 (type: double), _col4 (type: double), _col5 (type: double), _col6 (type: decimal(38,18)), _col7 (type: decimal(38,18))
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1092,13 +1093,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7]
-                Statistics: Num rows: 500 Data size: 290000 Basic stats: COMPLETE Column stats: COMPLETE
+                Statistics: Num rows: 500 Data size: 132000 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 500 Data size: 290000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 500 Data size: 132000 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

@@ -283,10 +283,10 @@ STAGE PLANS:
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: avg(_col1)
+                      aggregations: sum(_col1), count(_col1)
                       keys: _col0 (type: string)
                       mode: hash
-                      outputColumnNames: _col0, _col1
+                      outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
@@ -294,25 +294,29 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
                         TopN Hash Memory Usage: 0.3
-                        value expressions: _col1 (type: struct<count:bigint,sum:double,input:double>)
+                        value expressions: _col1 (type: double), _col2 (type: bigint)
         Reducer 2 
             Reduce Operator Tree:
               Group By Operator
-                aggregations: avg(VALUE._col0)
+                aggregations: sum(VALUE._col0), count(VALUE._col1)
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
-                Limit
-                  Number of rows: 20
-                  Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                  File Output Operator
-                    compressed: false
+                Select Operator
+                  expressions: _col0 (type: string), (_col1 / _col2) (type: double)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
+                  Limit
+                    Number of rows: 20
                     Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 20 Data size: 200 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
