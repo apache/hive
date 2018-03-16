@@ -21,7 +21,6 @@ package org.apache.hive.druid;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.FileUtils;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.service.AbstractService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,12 +50,13 @@ public class MiniDruidCluster extends AbstractService {
           );
 
   private static final Map<String, String> COMMON_DRUID_CONF = ImmutableMap.of(
-          "druid.metadata.storage.type", "derby"
+          "druid.metadata.storage.type", "derby",
+          "druid.storage.type", "hdfs",
+          "druid.processing.buffer.sizeBytes", "213870912",
+          "druid.processing.numThreads", "2"
   );
 
   private static final Map<String, String> COMMON_DRUID_HISTORICAL = ImmutableMap.of(
-          "druid.processing.buffer.sizeBytes", "213870912",
-          "druid.processing.numThreads", "2",
           "druid.server.maxSize", "130000000000"
   );
 
@@ -87,26 +87,13 @@ public class MiniDruidCluster extends AbstractService {
   }
 
 
-  public MiniDruidCluster(String name, String logDir, String dataDir, Integer zookeeperPort, String classpath) {
+  public MiniDruidCluster(String name, String logDir, String tmpDir, Integer zookeeperPort, String classpath) {
     super(name);
-    this.dataDirectory = new File(dataDir, "druid-data");
+    this.dataDirectory = new File(tmpDir, "druid-data");
     this.logDirectory = new File(logDir);
-    try {
 
-      if (dataDirectory.exists()) {
-        // need to clean data directory to ensure that there is no interference from old runs
-        // Cleaning is happening here to allow debugging in case of tests fail
-        // we don;t have to clean logs since it is an append mode
-        log.info("Cleaning the druid-data directory [{}]", dataDirectory.getAbsolutePath());
-        FileUtils.deleteDirectory(dataDirectory);
-      } else {
-        log.info("Creating the druid-data directory [{}]", dataDirectory.getAbsolutePath());
-        dataDirectory.mkdirs();
-      }
-    } catch (IOException e) {
-      log.error("Failed to clean data directory");
-      Throwables.propagate(e);
-    }
+    ensureCleanDirectory(dataDirectory);
+
     String derbyURI = String
             .format("jdbc:derby://localhost:1527/%s/druid_derby/metadata.db;create=true",
                     dataDirectory.getAbsolutePath()
@@ -126,13 +113,14 @@ public class MiniDruidCluster extends AbstractService {
             .put("druid.indexer.logs.directory", indexingLogDir)
             .put("druid.zk.service.host", "localhost:" + zookeeperPort)
             .put("druid.coordinator.startDelay", "PT1S")
+            .put("druid.indexer.runner", "local")
+            .put("druid.storage.storageDirectory", getDeepStorageDir())
             .build();
     Map<String, String> historicalProperties = historicalMapBuilder.putAll(COMMON_DRUID_CONF)
             .putAll(COMMON_DRUID_HISTORICAL)
             .put("druid.zk.service.host", "localhost:" + zookeeperPort)
             .put("druid.segmentCache.locations", segmentsCache)
             .put("druid.storage.storageDirectory", getDeepStorageDir())
-            .put("druid.storage.type", "hdfs")
             .build();
     coordinator = new ForkingDruidNode("coordinator", classpath, coordinatorProperties,
             COORDINATOR_JVM_CONF,
@@ -146,6 +134,24 @@ public class MiniDruidCluster extends AbstractService {
     );
     druidNodes = Arrays.asList(coordinator, historical, broker);
 
+  }
+
+  private static void ensureCleanDirectory(File dir){
+    try {
+      if (dir.exists()) {
+        // need to clean data directory to ensure that there is no interference from old runs
+        // Cleaning is happening here to allow debugging in case of tests fail
+        // we don;t have to clean logs since it is an append mode
+        log.info("Cleaning the druid directory [{}]", dir.getAbsolutePath());
+        FileUtils.deleteDirectory(dir);
+      } else {
+        log.info("Creating the druid directory [{}]", dir.getAbsolutePath());
+        dir.mkdirs();
+      }
+    } catch (IOException e) {
+      log.error("Failed to clean druid directory");
+      Throwables.propagate(e);
+    }
   }
 
   @Override
@@ -190,5 +196,14 @@ public class MiniDruidCluster extends AbstractService {
 
   public String getDeepStorageDir() {
     return dataDirectory.getAbsolutePath() + File.separator + "deep-storage";
+  }
+
+  public String getCoordinatorURI(){
+    return "localhost:8081";
+  }
+
+  public String getOverlordURI(){
+    // Overlord and coordinator both run in same JVM.
+    return getCoordinatorURI();
   }
 }
