@@ -220,6 +220,9 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
       ConfVars.HIVE_ZOOKEEPER_CONNECTION_BASESLEEPTIME, TimeUnit.MILLISECONDS);
     int maxRetries = HiveConf.getIntVar(conf, ConfVars.HIVE_ZOOKEEPER_CONNECTION_MAX_RETRIES);
 
+    LOG.info("Creating curator client with connectString: {} sessionTimeoutMs: {} connectionTimeoutMs: {}" +
+      " namespace: {} exponentialBackoff - sleepTime: {} maxRetries: {}", zkEnsemble, sessionTimeout,
+      connectionTimeout, namespace, baseSleepTime, maxRetries);
     // Create a CuratorFramework instance to be used as the ZooKeeper client
     // Use the zooKeeperAclProvider to create appropriate ACLs
     return CuratorFrameworkFactory.builder()
@@ -270,8 +273,12 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
   protected abstract String getZkPathUser(Configuration conf);
 
   protected final String registerServiceRecord(ServiceRecord srv) throws IOException {
+    return registerServiceRecord(srv, UNIQUE_ID.toString());
+  }
+
+  protected final String registerServiceRecord(ServiceRecord srv, final String uniqueId) throws IOException {
     // restart sensitive instance id
-    srv.set(UNIQUE_IDENTIFIER, UNIQUE_ID.toString());
+    srv.set(UNIQUE_IDENTIFIER, uniqueId);
 
     // Create a znode under the rootNamespace parent for this instance of the server
     try {
@@ -308,7 +315,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
       CloseableUtils.closeQuietly(znode);
       throw (e instanceof IOException) ? (IOException)e : new IOException(e);
     }
-    return UNIQUE_ID.toString();
+    return uniqueId;
   }
 
   protected final void updateServiceRecord(ServiceRecord srv) throws IOException {
