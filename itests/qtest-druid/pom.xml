@@ -43,6 +43,7 @@
     <druid.derby.version>10.11.1.1</druid.derby.version>
     <druid.guava.version>16.0.1</druid.guava.version>
     <druid.guice.version>4.1.0</druid.guice.version>
+    <kafka.version>0.10.2.0</kafka.version>
   </properties>
       <dependencies>
         <dependency>
@@ -102,6 +103,11 @@
               <artifactId>jersey-client</artifactId>
             </exclusion>
           </exclusions>
+        </dependency>
+        <dependency>
+          <groupId>io.druid.extensions</groupId>
+          <artifactId>druid-kafka-indexing-service</artifactId>
+          <version>${druid.version}</version>
         </dependency>
         <dependency>
           <groupId>org.apache.logging.log4j</groupId>
@@ -195,6 +201,11 @@
           <artifactId>junit</artifactId>
           <version>${junit.version}</version>
           <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.kafka</groupId>
+          <artifactId>kafka_2.11</artifactId>
+          <version>${kafka.version}</version>
         </dependency>
       </dependencies>
   <build>
