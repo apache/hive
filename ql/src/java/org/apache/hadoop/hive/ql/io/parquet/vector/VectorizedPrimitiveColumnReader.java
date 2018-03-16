@@ -121,6 +121,12 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
     }
   }
 
+  private static void setNullValue(ColumnVector c, int rowId) {
+    c.isNull[rowId] = true;
+    c.isRepeating = false;
+    c.noNulls = false;
+  }
+
   private void readDictionaryIDs(
       int total,
       LongColumnVector c,
@@ -133,9 +139,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         c.isNull[rowId] = false;
         c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -151,12 +155,15 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       readRepetitionAndDefinitionLevels();
       if (definitionLevel >= maxDefLevel) {
         c.vector[rowId] = dataColumn.readInteger();
-        c.isNull[rowId] = false;
-        c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        if (dataColumn.isValid(c.vector[rowId])) {
+          c.isNull[rowId] = false;
+          c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
+        } else {
+          c.vector[rowId] = 0;
+          setNullValue(c, rowId);
+        }
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -175,9 +182,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         c.isNull[rowId] = false;
         c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -196,9 +201,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         c.isNull[rowId] = false;
         c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -217,9 +220,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         c.isNull[rowId] = false;
         c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -238,9 +239,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         c.isNull[rowId] = false;
         c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -262,9 +261,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         c.isNull[rowId] = false;
         c.isRepeating = c.isRepeating && (c.vector[0] == c.vector[rowId]);
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -284,9 +281,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         // TODO figure out a better way to set repeat for Binary type
         c.isRepeating = false;
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -306,9 +301,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         // TODO figure out a better way to set repeat for Binary type
         c.isRepeating = false;
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -328,9 +321,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         // TODO figure out a better way to set repeat for Binary type
         c.isRepeating = false;
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -350,9 +341,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         // TODO figure out a better way to set repeat for Binary type
         c.isRepeating = false;
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -377,9 +366,7 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
         c.isRepeating =
             c.isRepeating && ((c.time[0] == c.time[rowId]) && (c.nanos[0] == c.nanos[rowId]));
       } else {
-        c.isNull[rowId] = true;
-        c.isRepeating = false;
-        c.noNulls = false;
+        setNullValue(c, rowId);
       }
       rowId++;
       left--;
@@ -411,8 +398,11 @@ public class VectorizedPrimitiveColumnReader extends BaseVectorizedColumnReader 
       for (int i = rowId; i < rowId + num; ++i) {
         ((LongColumnVector) column).vector[i] =
             dictionary.readInteger((int) dictionaryIds.vector[i]);
-      }
-      break;
+        if (!(dictionary.isValid(((LongColumnVector) column).vector[i]))) {
+          setNullValue(column, i);
+          ((LongColumnVector) column).vector[i] = 0;
+        }
+      } break;
     case DATE:
     case INTERVAL_YEAR_MONTH:
     case LONG:
