@@ -37,21 +37,19 @@ public class TezAmRegistryImpl extends ZkRegistryBase<TezAmInstance> {
   static final String AM_SESSION_ID = "am.session.id", AM_PLUGIN_TOKEN = "am.plugin.token",
       AM_PLUGIN_JOBID = "am.plugin.jobid";
   private final static String NAMESPACE_PREFIX = "tez-am-";
-  private final static String USER_SCOPE_PATH_PREFIX = "user-";
-  private static final String WORKER_PREFIX = "worker-";
   private static final String SASL_LOGIN_CONTEXT_NAME = "TezAmZooKeeperClient";
 
   private final String registryName;
 
-  public static TezAmRegistryImpl create(Configuration conf, boolean b) {
+  public static TezAmRegistryImpl create(Configuration conf, boolean useSecureZk) {
     String amRegistryName = HiveConf.getVar(conf, ConfVars.LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME);
     return StringUtils.isBlank(amRegistryName) ? null
-        : new TezAmRegistryImpl(amRegistryName, conf, true);
+        : new TezAmRegistryImpl(amRegistryName, conf, useSecureZk);
   }
 
 
   private TezAmRegistryImpl(String instanceName, Configuration conf, boolean useSecureZk) {
-    super(instanceName, conf, null, NAMESPACE_PREFIX, USER_SCOPE_PATH_PREFIX, WORKER_PREFIX,
+    super(instanceName, conf, null, NAMESPACE_PREFIX, USER_SCOPE_PATH_PREFIX, WORKER_PREFIX, WORKER_GROUP,
         useSecureZk ? SASL_LOGIN_CONTEXT_NAME : null,
         HiveConf.getVar(conf, ConfVars.LLAP_TASK_SCHEDULER_AM_REGISTRY_PRINCIPAL),
         HiveConf.getVar(conf, ConfVars.LLAP_TASK_SCHEDULER_AM_REGISTRY_KEYTAB_FILE),

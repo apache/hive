@@ -18,11 +18,14 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.junit.Before;
@@ -90,7 +93,7 @@ public class TestTezSessionPool {
 
       poolManager = new TestTezSessionPoolManager();
       poolManager.setupPool(conf);
-      poolManager.startPool();
+      poolManager.startPool(conf, null);
       // this is now a LIFO operation
 
       // draw 1 and replace
@@ -153,7 +156,7 @@ public class TestTezSessionPool {
 
       poolManager = new TestTezSessionPoolManager();
       poolManager.setupPool(conf);
-      poolManager.startPool();
+      poolManager.startPool(conf, null);
       TezSessionState[] sessions = new TezSessionState[12];
       int[] queueCounts = new int[3];
       for (int i = 0; i < sessions.length; ++i) {
@@ -234,7 +237,7 @@ public class TestTezSessionPool {
       conf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_LLAP_CONCURRENT_QUERIES, 2);
       poolManager = new TestTezSessionPoolManager();
       poolManager.setupPool(conf);
-      poolManager.startPool();
+      poolManager.startPool(conf, null);
     } catch (Exception e) {
       LOG.error("Initialization error", e);
       fail();
@@ -295,7 +298,7 @@ public class TestTezSessionPool {
     try {
       poolManager = new TestTezSessionPoolManager();
       poolManager.setupPool(conf);
-      poolManager.startPool();
+      poolManager.startPool(conf, null);
     } catch (Exception e) {
       e.printStackTrace();
       fail();
