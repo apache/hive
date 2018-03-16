@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.tez.Converters;
+import org.apache.hadoop.hive.registry.ServiceInstanceSet;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.NullWritable;
@@ -343,7 +344,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
   private LlapServiceInstance getServiceInstanceForHost(LlapRegistryService registryService, String host) throws IOException {
     InetAddress address = InetAddress.getByName(host);
-    LlapServiceInstanceSet instanceSet = registryService.getInstances();
+    ServiceInstanceSet<LlapServiceInstance> instanceSet = registryService.getInstances();
     LlapServiceInstance serviceInstance = null;
 
     // The name used in the service registry may not match the host name we're using.
@@ -375,7 +376,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
 
   private LlapServiceInstance getServiceInstanceRandom(LlapRegistryService registryService) throws IOException {
-    LlapServiceInstanceSet instanceSet = registryService.getInstances();
+    ServiceInstanceSet<LlapServiceInstance> instanceSet = registryService.getInstances();
     LlapServiceInstance serviceInstance = null;
 
     LOG.info("Finding random live service instance");

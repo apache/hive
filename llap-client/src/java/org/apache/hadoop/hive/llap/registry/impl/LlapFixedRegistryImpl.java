@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.ServiceRegistry;
+import org.apache.hadoop.hive.registry.ServiceInstance;
 import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.util.StringUtils;
@@ -267,8 +268,7 @@ public class LlapFixedRegistryImpl implements ServiceRegistry {
   }
 
   @Override
-  public void registerStateChangeListener(
-      final ServiceInstanceStateChangeListener<LlapServiceInstance> listener) {
+  public void registerStateChangeListener(final ServiceInstanceStateChangeListener listener) throws IOException {
     // nothing to set
     LOG.warn("Callbacks for instance state changes are not supported in fixed registry.");
   }

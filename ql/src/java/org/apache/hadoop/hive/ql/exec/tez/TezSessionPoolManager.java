@@ -98,12 +98,17 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
   protected TezSessionPoolManager() {
   }
 
-  public void startPool() throws Exception {
+  public void startPool(HiveConf conf, final WMFullResourcePlan resourcePlan) throws Exception {
     if (defaultSessionPool != null) {
       defaultSessionPool.start();
     }
     if (expirationTracker != null) {
       expirationTracker.start();
+    }
+    initTriggers(conf);
+    if (resourcePlan != null) {
+      updateTriggers(resourcePlan);
+      LOG.info("Updated tez session pool manager with active resource plan: {}", resourcePlan.getPlan().getName());
     }
   }
 
@@ -156,8 +161,6 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
 
     numConcurrentLlapQueries = conf.getIntVar(ConfVars.HIVE_SERVER2_LLAP_CONCURRENT_QUERIES);
     llapQueue = new Semaphore(numConcurrentLlapQueries, true);
-
-    initTriggers(conf);
 
     String queueAllowedStr = HiveConf.getVar(initConf,
         ConfVars.HIVE_SERVER2_TEZ_SESSION_CUSTOM_QUEUE_ALLOWED);

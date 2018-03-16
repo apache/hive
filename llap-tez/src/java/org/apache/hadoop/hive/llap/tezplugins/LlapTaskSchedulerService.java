@@ -14,6 +14,16 @@
 
 package org.apache.hadoop.hive.llap.tezplugins;
 
+import com.google.common.io.ByteArrayDataOutput;
+
+import org.apache.hadoop.hive.registry.ServiceInstanceSet;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.yarn.api.records.ApplicationId;
+
+import org.apache.hadoop.hive.registry.impl.TezAmRegistryImpl;
+
+import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;

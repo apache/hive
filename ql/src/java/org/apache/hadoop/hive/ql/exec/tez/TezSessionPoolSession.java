@@ -18,25 +18,20 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import com.google.common.util.concurrent.SettableFuture;
-import org.apache.hadoop.hive.registry.impl.TezAmInstance;
-import org.apache.hadoop.conf.Configuration;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Collection;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.security.auth.login.LoginException;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.ql.wm.SessionTriggerProvider;
-import org.apache.hadoop.hive.ql.wm.TriggerActionHandler;
 import org.apache.hadoop.hive.registry.impl.TezAmInstance;
 import org.apache.tez.dag.api.TezException;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 

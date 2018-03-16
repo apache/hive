@@ -1916,6 +1916,10 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.MILLISECONDS),
         "ZooKeeper client's session timeout (in milliseconds). The client is disconnected, and as a result, all locks released, \n" +
         "if a heartbeat is not sent in the timeout."),
+    HIVE_ZOOKEEPER_CONNECTION_TIMEOUT("hive.zookeeper.connection.timeout", "15s",
+      new TimeValidator(TimeUnit.SECONDS),
+      "ZooKeeper client's connection timeout in seconds. Connection timeout * hive.zookeeper.connection.max.retries\n" +
+        "with exponential backoff is when curator client deems connection is lost to zookeeper."),
     HIVE_ZOOKEEPER_NAMESPACE("hive.zookeeper.namespace", "hive_zookeeper_namespace",
         "The parent node under which all ZooKeeper nodes are created."),
     HIVE_ZOOKEEPER_CLEAN_EXTRA_NODES("hive.zookeeper.clean.extra.nodes", false,
@@ -2465,6 +2469,13 @@ public class HiveConf extends Configuration {
         "If true, the HiveServer2 WebUI will be secured with PAM."),
 
     // Tez session settings
+    HIVE_SERVER2_ACTIVE_PASSIVE_HA_ENABLE("hive.server2.active.passive.ha.enable", false,
+      "Whether HiveServer2 Active/Passive High Availability be enabled when Hive Interactive sessions are enabled." +
+        "This will also require hive.server2.support.dynamic.service.discovery to be enabled."),
+    HIVE_SERVER2_ACTIVE_PASSIVE_HA_REGISTRY_NAMESPACE("hive.server2.active.passive.ha.registry.namespace",
+      "hs2ActivePassiveHA",
+      "When HiveServer2 Active/Passive High Availability is enabled, uses this namespace for registering HS2\n" +
+        "instances with zookeeper"),
     HIVE_SERVER2_TEZ_INTERACTIVE_QUEUE("hive.server2.tez.interactive.queue", "",
         "A single YARN queues to use for Hive Interactive sessions. When this is specified,\n" +
         "workload management is enabled and used for these sessions."),
