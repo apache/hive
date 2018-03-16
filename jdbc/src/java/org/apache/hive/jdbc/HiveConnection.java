@@ -149,7 +149,10 @@ public class HiveConnection implements java.sql.Connection {
    */
   public static List<JdbcConnectionParams> getAllUrls(String zookeeperBasedHS2Url) throws Exception {
     JdbcConnectionParams params = Utils.parseURL(zookeeperBasedHS2Url, new Properties());
-    if (params.getZooKeeperEnsemble() == null) {
+    // if zk is disabled or if HA service discovery is enabled we return the already populated params.
+    // in HA mode, params is already populated with Active server host info.
+    if (params.getZooKeeperEnsemble() == null ||
+      ZooKeeperHiveClientHelper.isZkHADynamicDiscoveryMode(params.getSessionVars())) {
       return Collections.singletonList(params);
     }
     return ZooKeeperHiveClientHelper.getDirectParamsList(params);
@@ -230,7 +233,7 @@ public class HiveConnection implements java.sql.Connection {
           LOG.warn("Failed to connect to " + connParams.getHost() + ":" + connParams.getPort());
           String errMsg = null;
           String warnMsg = "Could not open client transport with JDBC Uri: " + jdbcUriString + ": ";
-          if (isZkDynamicDiscoveryMode()) {
+          if (ZooKeeperHiveClientHelper.isZkDynamicDiscoveryMode(sessConfMap)) {
             errMsg = "Could not open client transport for any of the Server URI's in ZooKeeper: ";
             // Try next available server in zookeeper, or retry all the servers again if retry is enabled
             while(!Utils.updateConnParamsFromZooKeeper(connParams) && ++numRetries < maxRetries) {
@@ -764,14 +767,8 @@ public class HiveConnection implements java.sql.Connection {
     return false;
   }
 
-  private boolean isZkDynamicDiscoveryMode() {
-    return (sessConfMap.get(JdbcConnectionParams.SERVICE_DISCOVERY_MODE) != null)
-      && (JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER.equalsIgnoreCase(sessConfMap
-      .get(JdbcConnectionParams.SERVICE_DISCOVERY_MODE)));
-  }
-
   private void logZkDiscoveryMessage(String message) {
-    if (isZkDynamicDiscoveryMode()) {
+    if (ZooKeeperHiveClientHelper.isZkDynamicDiscoveryMode(sessConfMap)) {
       LOG.info(message);
     }
   }

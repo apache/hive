@@ -46,8 +46,9 @@ public class HS2ActivePassiveHARegistryClient {
       registry = HS2ActivePassiveHARegistry.create(conf, true);
       registry.start();
       hs2Registries.put(nsKey, registry);
+      LOG.info("Added registry client to cache with namespace: {}", nsKey);
     } else {
-      LOG.debug("Returning cached registry client for nsKey: {}", nsKey);
+      LOG.info("Returning cached registry client for namespace: {}", nsKey);
     }
     return registry;
   }
