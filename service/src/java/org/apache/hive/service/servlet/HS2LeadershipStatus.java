@@ -30,7 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Returns 200 if this HS2 instance is leader.
+ * Returns "true" if this HS2 instance is leader else "false".
  */
 public class HS2LeadershipStatus extends HttpServlet {
   private static final Logger LOG = LoggerFactory.getLogger(HS2LeadershipStatus.class);

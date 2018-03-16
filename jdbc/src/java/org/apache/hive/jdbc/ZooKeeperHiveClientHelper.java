@@ -21,37 +21,67 @@ package org.apache.hive.jdbc;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
-import org.apache.zookeeper.Watcher;
+import org.apache.hive.service.server.HS2ActivePassiveHARegistry;
+import org.apache.hive.service.server.HS2ActivePassiveHARegistryClient;
+import org.apache.hive.service.server.HiveServer2Instance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Joiner;
 
 class ZooKeeperHiveClientHelper {
   static final Logger LOG = LoggerFactory.getLogger(ZooKeeperHiveClientHelper.class.getName());
   // Pattern for key1=value1;key2=value2
   private static final Pattern kvPattern = Pattern.compile("([^=;]*)=([^;]*)[;]?");
-  /**
-   * A no-op watcher class
-   */
-  static class DummyWatcher implements Watcher {
-    @Override
-    public void process(org.apache.zookeeper.WatchedEvent event) {
-    }
-  }
 
   private static String getZooKeeperNamespace(JdbcConnectionParams connParams) {
     String zooKeeperNamespace = connParams.getSessionVars().get(JdbcConnectionParams.ZOOKEEPER_NAMESPACE);
     if ((zooKeeperNamespace == null) || (zooKeeperNamespace.isEmpty())) {
-      zooKeeperNamespace = JdbcConnectionParams.ZOOKEEPER_DEFAULT_NAMESPACE;
+      // if active passive HA enabled, use default HA namespace
+      if (isZkHADynamicDiscoveryMode(connParams.getSessionVars())) {
+        zooKeeperNamespace = JdbcConnectionParams.ZOOKEEPER_ACTIVE_PASSIVE_HA_DEFAULT_NAMESPACE;
+      } else {
+        zooKeeperNamespace = JdbcConnectionParams.ZOOKEEPER_DEFAULT_NAMESPACE;
+      }
     }
     return zooKeeperNamespace;
+  }
+
+  /**
+   * Returns true is only if HA service discovery mode is enabled
+   *
+   * @param sessionConf - session configuration
+   * @return true if serviceDiscoveryMode=zooKeeperHA is specified in JDBC URI
+   */
+  public static boolean isZkHADynamicDiscoveryMode(Map<String, String> sessionConf) {
+    final String discoveryMode = sessionConf.get(JdbcConnectionParams.SERVICE_DISCOVERY_MODE);
+    return (discoveryMode != null) &&
+      JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER_HA.equalsIgnoreCase(discoveryMode);
+  }
+
+  /**
+   * Returns true is any service discovery mode is enabled (HA or non-HA)
+   *
+   * @param sessionConf - session configuration
+   * @return true if serviceDiscoveryMode is specified in JDBC URI
+   */
+  public static boolean isZkDynamicDiscoveryMode(Map<String, String> sessionConf) {
+    final String discoveryMode = sessionConf.get(JdbcConnectionParams.SERVICE_DISCOVERY_MODE);
+    return (discoveryMode != null)
+      && (JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER.equalsIgnoreCase(discoveryMode) ||
+      JdbcConnectionParams.SERVICE_DISCOVERY_MODE_ZOOKEEPER_HA.equalsIgnoreCase(discoveryMode));
   }
 
   private static CuratorFramework getZkClient(JdbcConnectionParams connParams) throws Exception {
@@ -103,20 +133,71 @@ class ZooKeeperHiveClientHelper {
   }
 
   static void configureConnParams(JdbcConnectionParams connParams) throws ZooKeeperHiveClientException {
-    CuratorFramework zooKeeperClient = null;
+    if (isZkHADynamicDiscoveryMode(connParams.getSessionVars())) {
+      configureConnParamsHA(connParams);
+    } else {
+      CuratorFramework zooKeeperClient = null;
+      try {
+        zooKeeperClient = getZkClient(connParams);
+        List<String> serverHosts = getServerHosts(connParams, zooKeeperClient);
+        // Now pick a server node randomly
+        String serverNode = serverHosts.get(new Random().nextInt(serverHosts.size()));
+        updateParamsWithZKServerNode(connParams, zooKeeperClient, serverNode);
+      } catch (Exception e) {
+        throw new ZooKeeperHiveClientException("Unable to read HiveServer2 configs from ZooKeeper", e);
+      } finally {
+        // Close the client connection with ZooKeeper
+        if (zooKeeperClient != null) {
+          zooKeeperClient.close();
+        }
+      }
+    }
+  }
+
+  private static void configureConnParamsHA(JdbcConnectionParams connParams) throws ZooKeeperHiveClientException {
     try {
-      zooKeeperClient = getZkClient(connParams);
-      List<String> serverHosts = getServerHosts(connParams, zooKeeperClient);
-      // Now pick a server node randomly
-      String serverNode = serverHosts.get(new Random().nextInt(serverHosts.size()));
-      updateParamsWithZKServerNode(connParams, zooKeeperClient, serverNode);
+      Configuration registryConf = new Configuration();
+      registryConf.set(HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM.varname, connParams.getZooKeeperEnsemble());
+      registryConf.set(HiveConf.ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_REGISTRY_NAMESPACE.varname,
+        getZooKeeperNamespace(connParams));
+      HS2ActivePassiveHARegistry haRegistryClient = HS2ActivePassiveHARegistryClient.getClient(registryConf);
+      boolean foundLeader = false;
+      String maxRetriesConf = connParams.getSessionVars().get(JdbcConnectionParams.RETRIES);
+      final int maxRetries = StringUtils.isEmpty(maxRetriesConf) ? 5 : Integer.parseInt(maxRetriesConf);
+      int retries = 0;
+      int sleepMs = 1000;
+      while (!foundLeader && retries < maxRetries) {
+        for (HiveServer2Instance hiveServer2Instance : haRegistryClient.getAll()) {
+          if (hiveServer2Instance.isLeader()) {
+            foundLeader = true;
+            connParams.setHost(hiveServer2Instance.getHost());
+            connParams.setPort(hiveServer2Instance.getRpcPort());
+            final String mode = hiveServer2Instance.getTransportMode().equals("http") ? "http:/" + hiveServer2Instance
+              .getHttpEndpoint() : hiveServer2Instance.getTransportMode();
+            LOG.info("Found HS2 Active Host: {} Port: {} Identity: {} Mode: {}", hiveServer2Instance.getHost(),
+              hiveServer2Instance.getRpcPort(), hiveServer2Instance.getWorkerIdentity(), mode);
+            // configurations are always published to ServiceRecord. Read/apply configs to JDBC connection params
+            String serverConfStr = Joiner.on(';').withKeyValueSeparator("=").join(hiveServer2Instance.getProperties());
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Configurations applied to JDBC connection params. {}", hiveServer2Instance.getProperties());
+            }
+            applyConfs(serverConfStr, connParams);
+            break;
+          }
+        }
+        if (!foundLeader) {
+          LOG.warn("Unable to connect to HS2 Active Host (No Leader Found!). Retrying after {} ms. retries: {}",
+            sleepMs, retries);
+          Thread.sleep(sleepMs);
+          retries++;
+        }
+      }
+      if (!foundLeader) {
+        throw new ZooKeeperHiveClientException("Unable to connect to HiveServer2 Active host (No leader found!) after" +
+          " " + maxRetries + " retries.");
+      }
     } catch (Exception e) {
       throw new ZooKeeperHiveClientException("Unable to read HiveServer2 configs from ZooKeeper", e);
-    } finally {
-      // Close the client connection with ZooKeeper
-      if (zooKeeperClient != null) {
-        zooKeeperClient.close();
-      }
     }
   }
 

@@ -62,6 +62,7 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
   private LeaderLatch leaderLatch;
   private ServiceRecord srv;
   private boolean isClient;
+  private final String uniqueId;
 
   // There are 2 paths under which the instances get registered
   // 1) Standard path used by ZkRegistryBase where all instances register themselves (also stores metadata)
@@ -89,8 +90,13 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
     super(instanceName, conf, null, zkNamespacePrefix, null, INSTANCE_PREFIX, INSTANCE_GROUP,
       saslContextName, krbPrincipal, krbKeytab, null);
     this.isClient = isClient;
-    leaderLatch = new LeaderLatch(zooKeeperClient, leaderLatchPath, UNIQUE_ID.toString(),
-      LeaderLatch.CloseMode.NOTIFY_LEADER);
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_IN_TEST) &&
+      conf.get(ZkRegistryBase.UNIQUE_IDENTIFIER) != null) {
+      this.uniqueId = conf.get(ZkRegistryBase.UNIQUE_IDENTIFIER);
+    } else {
+      this.uniqueId = UNIQUE_ID.toString();
+    }
+    leaderLatch = new LeaderLatch(zooKeeperClient, leaderLatchPath, uniqueId, LeaderLatch.CloseMode.NOTIFY_LEADER);
   }
 
   @Override
@@ -110,6 +116,7 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
       LOG.info("Registered HS2 with ZK. service record: {}", srv);
     } else {
       populateCache();
+      LOG.info("Populating instances cache for client");
     }
   }
 
@@ -121,7 +128,7 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
   @Override
   public String register() throws IOException {
     updateEndpoint(srv, PASSIVE_ENDPOINT);
-    return registerServiceRecord(srv);
+    return registerServiceRecord(srv, uniqueId);
   }
 
   @Override
@@ -285,7 +292,7 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
       conf.get(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_BIND_HOST.varname));
     // Hostname:port
     confsToPublish.put(INSTANCE_URI_CONFIG, conf.get(INSTANCE_URI_CONFIG));
-    confsToPublish.put(UNIQUE_IDENTIFIER, UNIQUE_ID.toString());
+    confsToPublish.put(UNIQUE_IDENTIFIER, uniqueId);
     // Transport mode
     confsToPublish.put(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname,
       conf.get(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname));
