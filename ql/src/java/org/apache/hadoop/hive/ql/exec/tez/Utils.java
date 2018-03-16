@@ -26,6 +26,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.split.SplitLocationProvider;
@@ -52,7 +53,7 @@ public class Utils {
       LOG.info("Using LLAP instance " + serviceRegistry.getApplicationId());
 
       Collection<LlapServiceInstance> serviceInstances =
-          serviceRegistry.getInstances().getAllInstancesOrdered(true);
+        serviceRegistry.getInstances().getAllInstancesOrdered(true);
       Preconditions.checkArgument(!serviceInstances.isEmpty(),
           "No running LLAP daemons! Please check LLAP service status and zookeeper configuration");
       ArrayList<String> locations = new ArrayList<>(serviceInstances.size());

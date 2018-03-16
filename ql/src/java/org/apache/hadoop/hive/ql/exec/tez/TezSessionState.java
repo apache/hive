@@ -738,7 +738,10 @@ public class TezSessionState {
   private Path createTezDir(String sessionId, String suffix) throws IOException {
     // tez needs its own scratch dir (per session)
     // TODO: De-link from SessionState. A TezSession can be linked to different Hive Sessions via the pool.
-    Path tezDir = new Path(SessionState.get().getHdfsScratchDirURIString(), TEZ_DIR);
+    SessionState sessionState = SessionState.get();
+    String hdfsScratchDir = sessionState == null ? HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIR) : sessionState
+      .getHdfsScratchDirURIString();
+    Path tezDir = new Path(hdfsScratchDir, TEZ_DIR);
     tezDir = new Path(tezDir, sessionId + ((suffix == null) ? "" : ("-" + suffix)));
     FileSystem fs = tezDir.getFileSystem(conf);
     FsPermission fsPermission = new FsPermission(HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION));

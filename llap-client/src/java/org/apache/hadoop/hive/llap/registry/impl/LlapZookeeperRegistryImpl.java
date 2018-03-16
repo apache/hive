@@ -53,7 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class LlapZookeeperRegistryImpl
-    extends ZkRegistryBase<LlapServiceInstance> implements ServiceRegistry {
+    extends ZkRegistryBase<LlapServiceInstance> implements ServiceRegistry<LlapServiceInstance> {
   private static final Logger LOG = LoggerFactory.getLogger(LlapZookeeperRegistryImpl.class);
 
   /**
@@ -65,8 +65,6 @@ public class LlapZookeeperRegistryImpl
   private static final String IPC_LLAP = "llap";
   private static final String IPC_OUTPUTFORMAT = "llapoutputformat";
   private final static String NAMESPACE_PREFIX = "llap-";
-  private final static String USER_SCOPE_PATH_PREFIX = "user-";
-  private static final String WORKER_PREFIX = "worker-";
   private static final String SLOT_PREFIX = "slot-";
   private static final String SASL_LOGIN_CONTEXT_NAME = "LlapZooKeeperClient";
 
@@ -79,7 +77,7 @@ public class LlapZookeeperRegistryImpl
   public LlapZookeeperRegistryImpl(String instanceName, Configuration conf) {
     super(instanceName, conf,
         HiveConf.getVar(conf, ConfVars.LLAP_ZK_REGISTRY_NAMESPACE), NAMESPACE_PREFIX,
-        USER_SCOPE_PATH_PREFIX, WORKER_PREFIX,
+        USER_SCOPE_PATH_PREFIX, WORKER_PREFIX, WORKER_GROUP,
         LlapProxy.isDaemon() ? SASL_LOGIN_CONTEXT_NAME : null,
         HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_PRINCIPAL),
         HiveConf.getVar(conf, ConfVars.LLAP_KERBEROS_KEYTAB_FILE),
@@ -225,7 +223,7 @@ public class LlapZookeeperRegistryImpl
 
     @Override
     public String toString() {
-      return "DynamicServiceInstance [id=" + getWorkerIdentity() + ", host=" + host + ":" + rpcPort +
+      return "DynamicServiceInstance [id=" + getWorkerIdentity() + ", host=" + getHost() + ":" + getRpcPort() +
           " with resources=" + getResource() + ", shufflePort=" + getShufflePort() +
           ", servicesAddress=" + getServicesAddress() +  ", mgmtPort=" + getManagementPort() + "]";
     }
@@ -327,9 +325,9 @@ public class LlapZookeeperRegistryImpl
       if (data == null) continue;
       String nodeName = extractNodeName(childData);
       if (nodeName.startsWith(WORKER_PREFIX)) {
-        Set<LlapServiceInstance> instances = getInstancesByPath(childData.getPath());
+        LlapServiceInstance instances = getInstanceByPath(childData.getPath());
         if (instances != null) {
-          unsorted.addAll(instances);
+          unsorted.add(instances);
         }
       } else if (nodeName.startsWith(SLOT_PREFIX)) {
         slotByWorker.put(extractWorkerIdFromSlot(childData),

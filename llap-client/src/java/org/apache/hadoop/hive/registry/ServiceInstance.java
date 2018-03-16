@@ -21,27 +21,27 @@ public interface ServiceInstance {
    * Worker identity is a UUID (unique across restarts), to identify a node which died &amp; was brought
    * back on the same host/port
    */
-  public abstract String getWorkerIdentity();
+  String getWorkerIdentity();
 
   /**
    * Hostname of the service instance
    * 
-   * @return
+   * @return service hostname
    */
-  public abstract String getHost();
+  String getHost();
 
   /**
    * RPC Endpoint for service instance
-   * 
-   * @return
+   *
+   * @return rpc port
    */
-  public int getRpcPort();
+  int getRpcPort();
 
   /**
    * Config properties of the Service Instance (llap.daemon.*)
-   * 
-   * @return
+   *
+   * @return properties
    */
-  public abstract Map<String, String> getProperties();
+  Map<String, String> getProperties();
 
 }
