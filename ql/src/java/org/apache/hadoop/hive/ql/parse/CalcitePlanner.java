@@ -1547,7 +1547,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         // Add views to planner
         List<RelOptMaterialization> materializations = new ArrayList<>();
         try {
-          materializations = Hive.get().getValidMaterializedViews();
+          materializations = Hive.get().getValidMaterializedViews(rewrittenRebuild);
           // We need to use the current cluster for the scan operator on views,
           // otherwise the planner will throw an Exception (different planners)
           materializations = Lists.transform(materializations,
