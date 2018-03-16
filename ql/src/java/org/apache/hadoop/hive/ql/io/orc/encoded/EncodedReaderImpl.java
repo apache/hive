@@ -62,6 +62,8 @@ import org.apache.orc.impl.BufferChunk;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace.RangesSrc;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.PoolFactory;
+import org.apache.hadoop.io.compress.zlib.ZlibDecompressor;
+import org.apache.hadoop.io.compress.zlib.ZlibDecompressor.ZlibDirectDecompressor;
 import org.apache.orc.OrcProto;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -130,7 +132,7 @@ class EncodedReaderImpl implements EncodedReader {
   private final Object fileKey;
   private final DataReader dataReader;
   private boolean isDataReaderOpen = false;
-  private final CompressionCodec codec;
+  private CompressionCodec codec;
   private final boolean isCodecFromPool;
   private boolean isCodecFailure = false;
   private final boolean isCompressed;
@@ -143,11 +145,12 @@ class EncodedReaderImpl implements EncodedReader {
   private final IoTrace trace;
   private final TypeDescription fileSchema;
   private final WriterVersion version;
+  private final String tag;
 
   public EncodedReaderImpl(Object fileKey, List<OrcProto.Type> types,
       TypeDescription fileSchema, org.apache.orc.CompressionKind kind, WriterVersion version,
       int bufferSize, long strideRate, DataCache cacheWrapper, DataReader dataReader,
-      PoolFactory pf, IoTrace trace, boolean useCodecPool) throws IOException {
+      PoolFactory pf, IoTrace trace, boolean useCodecPool, String tag) throws IOException {
     this.fileKey = fileKey;
     this.compressionKind = kind;
     this.isCompressed = kind != org.apache.orc.CompressionKind.NONE;
@@ -161,6 +164,7 @@ class EncodedReaderImpl implements EncodedReader {
     this.cacheWrapper = cacheWrapper;
     this.dataReader = dataReader;
     this.trace = trace;
+    this.tag = tag;
     if (POOLS != null) return;
     if (pf == null) {
       pf = new NoopPoolFactory();
@@ -686,6 +690,7 @@ class EncodedReaderImpl implements EncodedReader {
       } else {
         codec.close();
       }
+      codec = null;
     } catch (Exception ex) {
       LOG.error("Ignoring error from codec", ex);
     } finally {
@@ -849,7 +854,7 @@ class EncodedReaderImpl implements EncodedReader {
     if (badEstimates != null && !badEstimates.isEmpty()) {
       // Relies on the fact that cache does not actually store these.
       DiskRange[] cacheKeys = badEstimates.toArray(new DiskRange[badEstimates.size()]);
-      long[] result = cacheWrapper.putFileData(fileKey, cacheKeys, null, baseOffset);
+      long[] result = cacheWrapper.putFileData(fileKey, cacheKeys, null, baseOffset, tag);
       assert result == null; // We don't expect conflicts from bad estimates.
     }
 
@@ -909,7 +914,7 @@ class EncodedReaderImpl implements EncodedReader {
     // 6. Finally, put uncompressed data to cache.
     if (fileKey != null) {
       long[] collisionMask = cacheWrapper.putFileData(
-          fileKey, cacheKeys, targetBuffers, baseOffset);
+          fileKey, cacheKeys, targetBuffers, baseOffset, tag);
       processCacheCollisions(collisionMask, toDecompress, targetBuffers, csd.getCacheBuffers());
     }
 
@@ -1163,7 +1168,8 @@ class EncodedReaderImpl implements EncodedReader {
 
     // 5. Put uncompressed data to cache.
     if (fileKey != null) {
-      long[] collisionMask = cacheWrapper.putFileData(fileKey, cacheKeys, targetBuffers, baseOffset);
+      long[] collisionMask = cacheWrapper.putFileData(
+          fileKey, cacheKeys, targetBuffers, baseOffset, tag);
       processCacheCollisions(collisionMask, toCache, targetBuffers, null);
     }
 
@@ -1261,6 +1267,7 @@ class EncodedReaderImpl implements EncodedReader {
     }
     codec.reset(); // We always need to call reset on the codec.
     codec.decompress(src, dest);
+
     dest.position(startPos);
     int newLim = dest.limit();
     if (newLim > startLim) {

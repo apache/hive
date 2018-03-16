@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl;
@@ -146,6 +147,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
   private final Map<Path, PartitionDesc> parts;
 
   private final Object fileKey;
+  private final String cacheTag;
   private final FileSystem fs;
 
   private volatile boolean isStopped = false;
@@ -212,6 +214,8 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     fileKey = determineFileId(fs, split,
         HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID),
         HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID));
+    cacheTag = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_TRACK_CACHE_USAGE)
+        ? LlapUtil.getDbAndTableNameForMetrics(split.getPath(), true) : null;
     this.sourceInputFormat = sourceInputFormat;
     this.sourceSerDe = sourceSerDe;
     this.reporter = reporter;
@@ -735,7 +739,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       }
       FileData fd = new FileData(fileKey, encodings.length);
       fd.addStripe(sd);
-      cache.putFileData(fd, Priority.NORMAL, counters);
+      cache.putFileData(fd, Priority.NORMAL, counters, cacheTag);
     } else {
       lockAllBuffers(sd);
     }
