@@ -279,17 +279,17 @@ STAGE PLANS:
                     predicate: p_mfgr is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: avg(p_size)
+                      aggregations: sum(p_size), count(p_size)
                       keys: p_mfgr (type: string)
                       mode: hash
-                      outputColumnNames: _col0, _col1
+                      outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: struct<count:bigint,sum:double,input:int>)
+                        value expressions: _col1 (type: bigint), _col2 (type: bigint)
                     Group By Operator
                       aggregations: max(p_size), min(p_size)
                       keys: p_mfgr (type: string)
@@ -308,17 +308,21 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: avg(VALUE._col0)
+                aggregations: sum(VALUE._col0), count(VALUE._col1)
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
+                Select Operator
+                  expressions: _col0 (type: string), (_col1 / _col2) (type: double)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: double)
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: double)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -410,17 +414,17 @@ STAGE PLANS:
                     predicate: p_mfgr is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: avg(p_size)
+                      aggregations: sum(p_size), count(p_size)
                       keys: p_mfgr (type: string)
                       mode: hash
-                      outputColumnNames: _col0, _col1
+                      outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string)
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col1 (type: struct<count:bigint,sum:double,input:int>)
+                        value expressions: _col1 (type: bigint), _col2 (type: bigint)
                     Group By Operator
                       aggregations: max(p_size), min(p_size)
                       keys: p_mfgr (type: string)
@@ -439,17 +443,21 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: avg(VALUE._col0)
+                aggregations: sum(VALUE._col0), count(VALUE._col1)
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1
+                outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  key expressions: _col0 (type: string)
-                  sort order: +
-                  Map-reduce partition columns: _col0 (type: string)
+                Select Operator
+                  expressions: _col0 (type: string), (_col1 / _col2) (type: double)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: double)
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col1 (type: double)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1432,17 +1440,17 @@ STAGE PLANS:
                     predicate: p_name is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
-                      aggregations: avg(p_size)
+                      aggregations: sum(p_size), count(p_size)
                       keys: p_name (type: string), p_mfgr (type: string)
                       mode: hash
-                      outputColumnNames: _col0, _col1, _col2
+                      outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
-                        value expressions: _col2 (type: struct<count:bigint,sum:double,input:int>)
+                        value expressions: _col2 (type: bigint), _col3 (type: bigint)
             Execution mode: llap
             LLAP IO: no inputs
         Map 3 
@@ -1462,13 +1470,13 @@ STAGE PLANS:
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: avg(VALUE._col0)
+                aggregations: sum(VALUE._col0), count(VALUE._col1)
                 keys: KEY._col0 (type: string), KEY._col1 (type: string)
                 mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2
+                outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
                 Select Operator
-                  expressions: _col1 (type: string), _col0 (type: string), _col2 (type: double)
+                  expressions: _col1 (type: string), _col0 (type: string), (_col2 / _col3) (type: double)
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
                   Map Join Operator

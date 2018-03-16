@@ -316,17 +316,17 @@ STAGE PLANS:
                   projectedOutputColumnNums: [0]
               Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: avg(ts)
+                aggregations: sum(ts), count(ts)
                 Group By Vectorization:
-                    aggregators: VectorUDAFAvgTimestamp(col 0:timestamp) -> struct<count:bigint,sum:double,input:timestamp>
+                    aggregators: VectorUDAFSumTimestamp(col 0:timestamp) -> double, VectorUDAFCount(col 0:timestamp) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: HASH
                     native: false
                     vectorProcessingMode: HASH
-                    projectedOutputColumnNums: [0]
+                    projectedOutputColumnNums: [0, 1]
                 mode: hash
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
                   Reduce Sink Vectorization:
@@ -334,8 +334,8 @@ STAGE PLANS:
                       native: false
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: struct<count:bigint,sum:double,input:timestamp>)
+                  Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: double), _col1 (type: bigint)
       Execution mode: vectorized
       Map Vectorization:
           enabled: true
@@ -358,17 +358,17 @@ STAGE PLANS:
           enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
-          aggregations: avg(VALUE._col0)
+          aggregations: sum(VALUE._col0), count(VALUE._col1)
           mode: mergepartial
-          outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+          outputColumnNames: _col0, _col1
+          Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
           Select Operator
-            expressions: _col0 (type: double), CAST( _col0 AS TIMESTAMP) (type: timestamp)
+            expressions: (_col0 / _col1) (type: double), CAST( (_col0 / _col1) AS TIMESTAMP) (type: timestamp)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -414,25 +414,26 @@ STAGE PLANS:
                 native: true
                 vectorizationSchemaColumns: [0:ts:timestamp, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
-              expressions: ts (type: timestamp)
-              outputColumnNames: ts
+              expressions: ts (type: timestamp), UDFToDouble(ts) (type: double), (UDFToDouble(ts) * UDFToDouble(ts)) (type: double)
+              outputColumnNames: _col0, _col1, _col2
               Select Vectorization:
                   className: VectorSelectOperator
                   native: true
-                  projectedOutputColumnNums: [0]
+                  projectedOutputColumnNums: [0, 2, 5]
+                  selectExpressions: CastTimestampToDouble(col 0:timestamp) -> 2:double, DoubleColMultiplyDoubleColumn(col 3:double, col 4:double)(children: CastTimestampToDouble(col 0:timestamp) -> 3:double, CastTimestampToDouble(col 0:timestamp) -> 4:double) -> 5:double
               Statistics: Num rows: 2 Data size: 80 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: variance(ts), var_pop(ts), var_samp(ts), std(ts), stddev(ts), stddev_pop(ts), stddev_samp(ts)
+                aggregations: sum(_col2), sum(_col1), count(_col0)
                 Group By Vectorization:
-                    aggregators: VectorUDAFVarTimestamp(col 0:timestamp) -> struct<count:bigint,sum:double,variance:double> aggregation: variance, VectorUDAFVarTimestamp(col 0:timestamp) -> struct<count:bigint,sum:double,variance:double> aggregation: var_pop, VectorUDAFVarTimestamp(col 0:timestamp) -> struct<count:bigint,sum:double,variance:double> aggregation: var_samp, VectorUDAFVarTimestamp(col 0:timestamp) -> struct<count:bigint,sum:double,variance:double> aggregation: std, VectorUDAFVarTimestamp(col 0:timestamp) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev, VectorUDAFVarTimestamp(col 0:timestamp) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_pop, VectorUDAFVarTimestamp(col 0:timestamp) -> struct<count:bigint,sum:double,variance:double> aggregation: stddev_samp
+                    aggregators: VectorUDAFSumDouble(col 5:double) -> double, VectorUDAFSumDouble(col 2:double) -> double, VectorUDAFCount(col 0:timestamp) -> bigint
                     className: VectorGroupByOperator
                     groupByMode: HASH
                     native: false
                     vectorProcessingMode: HASH
-                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6]
+                    projectedOutputColumnNums: [0, 1, 2]
                 mode: hash
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   sort order: 
                   Reduce Sink Vectorization:
@@ -440,8 +441,8 @@ STAGE PLANS:
                       native: false
                       nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
-                  Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: struct<count:bigint,sum:double,variance:double>), _col1 (type: struct<count:bigint,sum:double,variance:double>), _col2 (type: struct<count:bigint,sum:double,variance:double>), _col3 (type: struct<count:bigint,sum:double,variance:double>), _col4 (type: struct<count:bigint,sum:double,variance:double>), _col5 (type: struct<count:bigint,sum:double,variance:double>), _col6 (type: struct<count:bigint,sum:double,variance:double>)
+                  Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+                  value expressions: _col0 (type: double), _col1 (type: double), _col2 (type: bigint)
       Execution mode: vectorized
       Map Vectorization:
           enabled: true
@@ -457,24 +458,28 @@ STAGE PLANS:
               includeColumns: [0]
               dataColumns: ts:timestamp
               partitionColumnCount: 0
-              scratchColumnTypeNames: []
+              scratchColumnTypeNames: [double, double, double, double]
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
           enableConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
       Reduce Operator Tree:
         Group By Operator
-          aggregations: variance(VALUE._col0), var_pop(VALUE._col1), var_samp(VALUE._col2), std(VALUE._col3), stddev(VALUE._col4), stddev_pop(VALUE._col5), stddev_samp(VALUE._col6)
+          aggregations: sum(VALUE._col0), sum(VALUE._col1), count(VALUE._col2)
           mode: mergepartial
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-          Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          outputColumnNames: _col0, _col1, _col2
+          Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+          Select Operator
+            expressions: ((_col0 - ((_col1 * _col1) / _col2)) / _col2) (type: double), ((_col0 - ((_col1 * _col1) / _col2)) / _col2) (type: double), ((_col0 - ((_col1 * _col1) / _col2)) / CASE WHEN ((_col2 = 1L)) THEN (null) ELSE ((_col2 - 1)) END) (type: double), power(((_col0 - ((_col1 * _col1) / _col2)) / _col2), 0.5) (type: double), power(((_col0 - ((_col1 * _col1) / _col2)) / _col2), 0.5) (type: double), power(((_col0 - ((_col1 * _col1) / _col2)) / _col2), 0.5) (type: double), power(((_col0 - ((_col1 * _col1) / _col2)) / CASE WHEN ((_col2 = 1L)) THEN (null) ELSE ((_col2 - 1)) END), 0.5) (type: double)
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+            Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: NONE
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

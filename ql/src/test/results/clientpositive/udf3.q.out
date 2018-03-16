@@ -29,22 +29,22 @@ STAGE PLANS:
             Select Operator
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
-                aggregations: count(null), sum(null), avg(null), min(null), max(null)
+                aggregations: count(null), sum(null), min(null), max(null)
                 mode: hash
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   sort order: 
-                  Statistics: Num rows: 1 Data size: 100 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: struct<count:bigint,sum:double,input:int>), _col3 (type: int), _col4 (type: int)
+                  Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: int), _col3 (type: int)
       Reduce Operator Tree:
         Group By Operator
-          aggregations: count(VALUE._col0), sum(VALUE._col1), avg(VALUE._col2), min(VALUE._col3), max(VALUE._col4)
+          aggregations: count(VALUE._col0), sum(VALUE._col1), min(VALUE._col2), max(VALUE._col3)
           mode: mergepartial
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4
-          Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+          outputColumnNames: _col0, _col1, _col2, _col3
+          Statistics: Num rows: 1 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: UDFToString(_col0) (type: string), UDFToString(_col1) (type: string), UDFToString(_col2) (type: string), UDFToString(_col3) (type: string), UDFToString(_col4) (type: string)
+            expressions: UDFToString(_col0) (type: string), UDFToString(_col1) (type: string), UDFToString((UDFToDouble(_col1) / _col0)) (type: string), UDFToString(_col2) (type: string), UDFToString(_col3) (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4
             Statistics: Num rows: 1 Data size: 920 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator

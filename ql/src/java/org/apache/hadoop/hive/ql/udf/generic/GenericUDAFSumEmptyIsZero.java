@@ -41,16 +41,30 @@ public class GenericUDAFSumEmptyIsZero extends GenericUDAFSum {
               + parameters[0].getTypeName() + " is passed.");
     }
     switch (((PrimitiveTypeInfo) parameters[0]).getPrimitiveCategory()) {
+    case BYTE:
+    case SHORT:
+    case INT:
     case LONG:
-      return new SumZeroIfEmpty();
+      return new SumLongZeroIfEmpty();
+    case TIMESTAMP:
+    case FLOAT:
+    case DOUBLE:
+    case STRING:
+    case VARCHAR:
+    case CHAR:
+      return new SumDoubleZeroIfEmpty();
+    case DECIMAL:
+      return new SumHiveDecimalZeroIfEmpty();
+    case BOOLEAN:
+    case DATE:
     default:
       throw new UDFArgumentTypeException(0,
-          "Only bigint type arguments are accepted but "
+          "Only numeric or string type arguments are accepted but "
               + parameters[0].getTypeName() + " is passed.");
     }
   }
 
-  public static class SumZeroIfEmpty extends GenericUDAFSumLong {
+  public static class SumLongZeroIfEmpty extends GenericUDAFSumLong {
 
     @Override
     public Object terminate(AggregationBuffer agg) throws HiveException {
@@ -59,5 +73,24 @@ public class GenericUDAFSumEmptyIsZero extends GenericUDAFSum {
       return result;
     }
   }
-}
 
+  public static class SumDoubleZeroIfEmpty extends GenericUDAFSumDouble {
+
+    @Override
+    public Object terminate(AggregationBuffer agg) throws HiveException {
+      SumDoubleAgg myagg = (SumDoubleAgg) agg;
+      result.set(myagg.sum);
+      return result;
+    }
+  }
+
+  public static class SumHiveDecimalZeroIfEmpty extends GenericUDAFSumHiveDecimal {
+
+    @Override
+    public Object terminate(AggregationBuffer agg) throws HiveException {
+      SumHiveDecimalWritableAgg myagg = (SumHiveDecimalWritableAgg) agg;
+      result.set(myagg.sum);
+      return result;
+    }
+  }
+}

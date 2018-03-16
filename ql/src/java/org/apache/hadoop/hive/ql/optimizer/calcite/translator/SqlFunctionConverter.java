@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlAverageAggFu
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlCountAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlMinMaxAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlSumAggFunction;
+import org.apache.hadoop.hive.ql.optimizer.calcite.functions.HiveSqlVarianceAggFunction;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveConcat;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
@@ -577,48 +578,82 @@ public class SqlFunctionConverter {
       CalciteUDFInfo udfInfo = getUDFInfo(hiveUdfName, calciteArgTypes, calciteRetType);
 
       switch (hiveUdfName.toLowerCase()) {
-        case "sum":
-          calciteAggFn = new HiveSqlSumAggFunction(
-              isDistinct,
-              udfInfo.returnTypeInference,
-              udfInfo.operandTypeInference,
-              udfInfo.operandTypeChecker);
-          break;
-        case "count":
-          calciteAggFn = new HiveSqlCountAggFunction(
-              isDistinct,
-              udfInfo.returnTypeInference,
-              udfInfo.operandTypeInference,
-              udfInfo.operandTypeChecker);
-          break;
-        case "min":
-          calciteAggFn = new HiveSqlMinMaxAggFunction(
-              udfInfo.returnTypeInference,
-              udfInfo.operandTypeInference,
-              udfInfo.operandTypeChecker, true);
-          break;
-        case "max":
-          calciteAggFn = new HiveSqlMinMaxAggFunction(
-              udfInfo.returnTypeInference,
-              udfInfo.operandTypeInference,
-              udfInfo.operandTypeChecker, false);
-          break;
-        case "avg":
-          calciteAggFn = new HiveSqlAverageAggFunction(
-              udfInfo.returnTypeInference,
-              udfInfo.operandTypeInference,
-              udfInfo.operandTypeChecker);
+      case "sum":
+        calciteAggFn = new HiveSqlSumAggFunction(
+            isDistinct,
+            udfInfo.returnTypeInference,
+            udfInfo.operandTypeInference,
+            udfInfo.operandTypeChecker);
         break;
-        default:
-          calciteAggFn = new CalciteUDAF(
-              isDistinct,
-              udfInfo.udfName,
-              udfInfo.returnTypeInference,
-              udfInfo.operandTypeInference,
-              udfInfo.operandTypeChecker);
-          break;
+      case "count":
+        calciteAggFn = new HiveSqlCountAggFunction(
+            isDistinct,
+            udfInfo.returnTypeInference,
+            udfInfo.operandTypeInference,
+            udfInfo.operandTypeChecker);
+        break;
+      case "min":
+        calciteAggFn = new HiveSqlMinMaxAggFunction(
+            udfInfo.returnTypeInference,
+            udfInfo.operandTypeInference,
+            udfInfo.operandTypeChecker, true);
+        break;
+      case "max":
+        calciteAggFn = new HiveSqlMinMaxAggFunction(
+            udfInfo.returnTypeInference,
+            udfInfo.operandTypeInference,
+            udfInfo.operandTypeChecker, false);
+        break;
+      case "avg":
+        calciteAggFn = new HiveSqlAverageAggFunction(
+            udfInfo.returnTypeInference,
+            udfInfo.operandTypeInference,
+            udfInfo.operandTypeChecker);
+        break;
+      case "std":
+      case "stddev":
+      case "stddev_pop":
+        calciteAggFn = new HiveSqlVarianceAggFunction(
+            "stddev_pop",
+            SqlKind.STDDEV_POP,
+            udfInfo.returnTypeInference,
+            udfInfo.operandTypeInference,
+            udfInfo.operandTypeChecker);
+        break;
+      case "stddev_samp":
+        calciteAggFn = new HiveSqlVarianceAggFunction(
+            "stddev_samp",
+            SqlKind.STDDEV_SAMP,
+            udfInfo.returnTypeInference,
+            udfInfo.operandTypeInference,
+            udfInfo.operandTypeChecker);
+        break;
+      case "variance":
+      case "var_pop":
+        calciteAggFn = new HiveSqlVarianceAggFunction(
+            "var_pop",
+            SqlKind.VAR_POP,
+            udfInfo.returnTypeInference,
+            udfInfo.operandTypeInference,
+            udfInfo.operandTypeChecker);
+        break;
+      case "var_samp":
+        calciteAggFn = new HiveSqlVarianceAggFunction(
+            "var_samp",
+            SqlKind.VAR_SAMP,
+            udfInfo.returnTypeInference,
+            udfInfo.operandTypeInference,
+            udfInfo.operandTypeChecker);
+        break;
+      default:
+        calciteAggFn = new CalciteUDAF(
+            isDistinct,
+            udfInfo.udfName,
+            udfInfo.returnTypeInference,
+            udfInfo.operandTypeInference,
+            udfInfo.operandTypeChecker);
+        break;
       }
-
     }
     return calciteAggFn;
   }
