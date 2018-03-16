@@ -187,6 +187,29 @@ public class CliConfigs {
     }
   }
 
+  public static class MiniDruidKafkaCliConfig extends AbstractCliConfig {
+    public MiniDruidKafkaCliConfig() {
+      super(CoreCliDriver.class);
+      try {
+        setQueryDir("ql/src/test/queries/clientpositive");
+
+        includesFrom(testConfigProps, "druid.kafka.query.files");
+
+        setResultsDir("ql/src/test/results/clientpositive/druid");
+        setLogDir("itests/qtest/target/tmp/log");
+
+        setInitScript("q_test_druid_init.sql");
+        setCleanupScript("q_test_cleanup_druid.sql");
+        setHiveConfDir("data/conf/llap");
+        setClusterType(MiniClusterType.druidKafka);
+        setMetastoreType(MetastoreType.sql);
+        setFsType(QTestUtil.FsType.hdfs);
+      } catch (Exception e) {
+        throw new RuntimeException("can't construct cliconfig", e);
+      }
+    }
+  }
+
   public static class MiniLlapLocalCliConfig extends AbstractCliConfig {
 
     public MiniLlapLocalCliConfig() {
