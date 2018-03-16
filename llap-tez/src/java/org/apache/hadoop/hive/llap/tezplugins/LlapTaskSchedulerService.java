@@ -3012,5 +3012,42 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     return unusedGuaranteed;
   }
 
+  /**
+   * A direct call from communicator to scheduler to propagate data that cannot be passed via Tez.
+   */
+  public void taskInfoUpdated(TezTaskAttemptID attemptId, boolean isGuaranteed) {
+    TaskInfo ti = null;
+    writeLock.lock();
+    try {
+      ti = tasksById.get(attemptId);
+      if (ti == null) {
+        WM_LOG.warn("Unknown task from heartbeat " + attemptId);
+        return;
+      }
+    } finally {
+      writeLock.unlock();
+    }
 
+    boolean newState = false;
+    synchronized (ti) {
+      if (ti.isPendingUpdate) return; // A pending update is not done.
+      if (ti.isGuaranteed == null) return; // The task has terminated, out of date heartbeat.
+      if (ti.lastSetGuaranteed != null && ti.lastSetGuaranteed == isGuaranteed) {
+        return; // The heartbeat is consistent with what we have.
+      }
+      ti.lastSetGuaranteed = isGuaranteed;
+      if (isGuaranteed == ti.isGuaranteed) return; // Already consistent. Can happen w/null lSG.
+
+      // There could be races here, e.g. heartbeat delivered us the old value just after we have
+      // received a successful confirmation from the API, so we are about to overwrite the latter.
+      // We could solve this by adding a version or smth like that; or by ignoring discrepancies
+      // unless we have previously received an update error for this task; however, the only effect
+      // right now are a few cheap redundant update calls; let's just do the simple thing.
+      newState = ti.isGuaranteed;
+      setUpdateStartedUnderTiLock(ti);
+    } // End of synchronized (ti)
+    WM_LOG.info("Sending an update based on inconsistent state from heartbeat for "
+        + attemptId + ", " + newState);
+    sendUpdateMessageAsync(ti, newState);
+  }
 }
