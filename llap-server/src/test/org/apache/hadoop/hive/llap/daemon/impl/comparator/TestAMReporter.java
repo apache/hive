@@ -69,9 +69,9 @@ public class TestAMReporter {
     String umbilicalUser = "user";
     QueryIdentifier queryId = new QueryIdentifier("app", 0);
     amReporter.registerTask(am1Location, am1Port, umbilicalUser, null, queryId,
-      mock(TezTaskAttemptID.class));
+      mock(TezTaskAttemptID.class), false);
     amReporter.registerTask(am2Location, am2Port, umbilicalUser, null, queryId,
-      mock(TezTaskAttemptID.class));
+      mock(TezTaskAttemptID.class), false);
 
     Thread.currentThread().sleep(2000);
     // verify both am get node heartbeat
@@ -97,7 +97,8 @@ public class TestAMReporter {
           return null;
         }
       }).when(umbilical).nodeHeartbeat(any(Text.class), any(Text.class), anyInt(),
-        any(LlapTaskUmbilicalProtocol.TezAttemptArray.class));
+        any(LlapTaskUmbilicalProtocol.TezAttemptArray.class),
+        any(LlapTaskUmbilicalProtocol.BooleanArray.class));
       return umbilical;
     }
   }
