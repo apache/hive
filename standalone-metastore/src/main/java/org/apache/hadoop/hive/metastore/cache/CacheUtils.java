@@ -17,78 +17,57 @@
  */
 package org.apache.hadoop.hive.metastore.cache;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.cache.CachedStore.PartitionWrapper;
-import org.apache.hadoop.hive.metastore.cache.CachedStore.TableWrapper;
+import org.apache.hadoop.hive.metastore.cache.SharedCache.PartitionWrapper;
+import org.apache.hadoop.hive.metastore.cache.SharedCache.TableWrapper;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 
 public class CacheUtils {
   private static final String delimit = "\u0001";
 
-  public static String buildKey(String dbName) {
-    return dbName;
-  }
-
-  public static String buildKeyWithDelimit(String dbName) {
-    return buildKey(dbName) + delimit;
-  }
-
-  public static String buildKey(String dbName, String tableName) {
+  /**
+   * Builds a key for the table cache which is concatenation of database name and table name
+   * separated by a delimiter
+   *
+   * @param dbName
+   * @param tableName
+   * @return
+   */
+  public static String buildTableCacheKey(String dbName, String tableName) {
     return dbName + delimit + tableName;
   }
 
-  public static String buildKeyWithDelimit(String dbName, String tableName) {
-    return buildKey(dbName, tableName) + delimit;
-  }
-
-  public static String buildKey(String dbName, String tableName, List<String> partVals) {
-    String key = buildKey(dbName, tableName);
-    if (CollectionUtils.isNotEmpty(partVals)) {
-      key += delimit;
-      key += String.join(delimit, partVals);
+  /**
+   * Builds a key for the partition cache which is concatenation of partition values, each value
+   * separated by a delimiter
+   *
+   * @param list of partition values
+   * @return cache key for partitions cache
+   */
+  public static String buildPartitionCacheKey(List<String> partVals) {
+    if (partVals == null || partVals.isEmpty()) {
+      return "";
     }
-    return key;
+    return String.join(delimit, partVals);
   }
 
-  public static String buildKeyWithDelimit(String dbName, String tableName, List<String> partVals) {
-    return buildKey(dbName, tableName, partVals) + delimit;
-  }
-
-  public static String buildKey(String dbName, String tableName, List<String> partVals, String colName) {
-    String key = buildKey(dbName, tableName, partVals);
-    return key + delimit + colName;
-  }
-
-  public static String buildKey(String dbName, String tableName, String colName) {
-    String key = buildKey(dbName, tableName);
-    return key + delimit + colName;
-  }
-
-  public static String[] splitTableColStats(String key) {
-    return key.split(delimit);
-  }
-
-  public static Object[] splitPartitionColStats(String key) {
-    Object[] result = new Object[4];
-    String[] comps = key.split(delimit);
-    result[0] = comps[0];
-    result[1] = comps[1];
-    result[2] = Arrays.asList((Arrays.copyOfRange(comps, 2, comps.length - 1)));
-    result[3] = comps[comps.length-1];
-    return result;
-  }
-
-  public static Object[] splitAggrColStats(String key) {
-    return key.split(delimit);
+  /**
+   * Builds a key for the partitions column cache which is concatenation of partition values, each
+   * value separated by a delimiter and the column name
+   *
+   * @param list of partition values
+   * @param column name
+   * @return cache key for partitions column stats cache
+   */
+  public static String buildPartitonColStatsCacheKey(List<String> partVals, String colName) {
+    return buildPartitionCacheKey(partVals) + delimit + colName;
   }
 
   static Table assemble(TableWrapper wrapper, SharedCache sharedCache) {

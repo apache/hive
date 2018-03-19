@@ -339,7 +339,7 @@ public class MetaStoreUtils {
    * @param md message descriptor to use to generate the hash
    * @return the hash as a byte array
    */
-  public static byte[] hashStorageDescriptor(StorageDescriptor sd, MessageDigest md)  {
+  public static synchronized byte[] hashStorageDescriptor(StorageDescriptor sd, MessageDigest md)  {
     // Note all maps and lists have to be absolutely sorted.  Otherwise we'll produce different
     // results for hashes based on the OS or JVM being used.
     md.reset();
@@ -428,6 +428,15 @@ public class MetaStoreUtils {
   public static List<String> getColumnNamesForTable(Table table) {
     List<String> colNames = new ArrayList<>();
     Iterator<FieldSchema> colsIterator = table.getSd().getColsIterator();
+    while (colsIterator.hasNext()) {
+      colNames.add(colsIterator.next().getName());
+    }
+    return colNames;
+  }
+
+  public static List<String> getColumnNamesForPartition(Partition partition) {
+    List<String> colNames = new ArrayList<>();
+    Iterator<FieldSchema> colsIterator = partition.getSd().getColsIterator();
     while (colsIterator.hasNext()) {
       colNames.add(colsIterator.next().getName());
     }

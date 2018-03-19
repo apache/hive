@@ -64,7 +64,6 @@ import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
-import org.apache.hadoop.hive.metastore.cache.CachedStore;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolManager;
@@ -162,9 +161,6 @@ public class HiveServer2 extends CompositeService {
     } catch (Throwable t) {
       LOG.warn("Could not initiate the HiveServer2 Metrics system.  Metrics may not be reported.", t);
     }
-
-    // Initialize cachedstore with background prewarm. The prewarm will only start if configured.
-    CachedStore.initSharedCacheAsync(hiveConf);
 
     cliService = new CLIService(this);
     addService(cliService);
@@ -570,7 +566,7 @@ public class HiveServer2 extends CompositeService {
 
   private void removeServerInstanceFromZooKeeper() throws Exception {
     setDeregisteredWithZooKeeper(true);
-    
+
     if (znode != null) {
       znode.close();
     }
