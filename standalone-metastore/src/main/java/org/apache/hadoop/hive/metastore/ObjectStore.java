@@ -201,7 +201,6 @@ import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.thrift.TException;
 import org.datanucleus.AbstractNucleusContext;
@@ -7898,35 +7897,6 @@ public class ObjectStore implements RawStore, Configurable {
         // directSql, do it. No point in failing back to slow path here.
         throw new MetaException("Jdo path is not implemented for stats aggr.");
       }
-      @Override
-      protected String describeResult() {
-        return null;
-      }
-    }.run(true);
-  }
-
-  @Override
-  public List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String dbName)
-      throws MetaException, NoSuchObjectException {
-    final boolean enableBitVector =
-        MetastoreConf.getBoolVar(getConf(), ConfVars.STATS_FETCH_BITVECTOR);
-    return new GetHelper<List<ColStatsObjWithSourceInfo>>(dbName, null, true, false) {
-      @Override
-      protected List<ColStatsObjWithSourceInfo> getSqlResult(
-          GetHelper<List<ColStatsObjWithSourceInfo>> ctx) throws MetaException {
-        return directSql.getColStatsForAllTablePartitions(dbName, enableBitVector);
-      }
-
-      @Override
-      protected List<ColStatsObjWithSourceInfo> getJdoResult(
-          GetHelper<List<ColStatsObjWithSourceInfo>> ctx)
-          throws MetaException, NoSuchObjectException {
-        // This is fast path for query optimizations, if we can find this info
-        // quickly using directSql, do it. No point in failing back to slow path
-        // here.
-        throw new MetaException("Jdo path is not implemented for getPartitionColStatsForDatabase.");
-      }
-
       @Override
       protected String describeResult() {
         return null;

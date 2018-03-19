@@ -1033,13 +1033,6 @@ public class DummyRawStoreForJdoConnection implements RawStore {
       String poolPath) throws NoSuchObjectException, InvalidOperationException, MetaException {
   }
 
-  @Override
-  public List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String dbName)
-      throws MetaException, NoSuchObjectException {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
   public void createISchema(ISchema schema) throws AlreadyExistsException, MetaException {
 
   }
