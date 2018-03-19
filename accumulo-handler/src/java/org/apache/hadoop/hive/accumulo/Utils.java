@@ -40,11 +40,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,9 +72,9 @@ public class Utils {
 
     // Add jars containing the specified classes
     for (Class<?> clazz : classes) {
-      if (clazz == null)
+      if (clazz == null) {
         continue;
-
+      }
       Path path = findOrCreateJar(clazz, localFs, packagedClasses);
       if (path == null) {
         log.warn("Could not find jar for class " + clazz + " in order to ship it to the cluster.");
@@ -85,10 +86,9 @@ public class Utils {
       }
       jars.add(path.toString());
     }
-    if (jars.isEmpty())
-      return;
-
-    conf.set("tmpjars", StringUtils.arrayToString(jars.toArray(new String[jars.size()])));
+    if (!jars.isEmpty()) {
+      conf.set("tmpjars", StringUtils.join(jars, ","));
+    }
   }
 
   /**
@@ -113,16 +113,16 @@ public class Utils {
       Map<String,String> packagedClasses) throws IOException {
     // attempt to locate an existing jar for the class.
     String jar = findContainingJar(my_class, packagedClasses);
-    if (null == jar || jar.isEmpty()) {
+    if (StringUtils.isEmpty(jar)) {
       jar = getJar(my_class);
       updateMap(jar, packagedClasses);
     }
 
-    if (null == jar || jar.isEmpty()) {
+    if (StringUtils.isEmpty(jar)) {
       return null;
     }
 
-    log.debug(String.format("For class %s, using jar %s", my_class.getName(), jar));
+    log.debug("For class {}, using jar {}", my_class.getName(), jar);
     return new Path(jar).makeQualified(fs);
   }
 
@@ -136,7 +136,7 @@ public class Utils {
    *          map[class -> jar]
    */
   private static void updateMap(String jar, Map<String,String> packagedClasses) throws IOException {
-    if (null == jar || jar.isEmpty()) {
+    if (StringUtils.isEmpty(jar)) {
       return;
     }
     ZipFile zip = null;
@@ -209,9 +209,9 @@ public class Utils {
     String hadoopJarFinder = "org.apache.hadoop.util.JarFinder";
     Class<?> jarFinder = null;
     try {
-      log.debug("Looking for " + hadoopJarFinder + ".");
+      log.debug("Looking for: {}", hadoopJarFinder);
       jarFinder = JavaUtils.loadClass(hadoopJarFinder);
-      log.debug(hadoopJarFinder + " found.");
+      log.debug("Found: {}", hadoopJarFinder);
       Method getJar = jarFinder.getMethod("getJar", Class.class);
       ret = (String) getJar.invoke(null, my_class);
     } catch (ClassNotFoundException e) {
@@ -281,12 +281,7 @@ public class Utils {
   private static void copyToZipStream(InputStream is, ZipEntry entry, ZipOutputStream zos)
       throws IOException {
     zos.putNextEntry(entry);
-    byte[] arr = new byte[4096];
-    int read = is.read(arr);
-    while (read > -1) {
-      zos.write(arr, 0, read);
-      read = is.read(arr);
-    }
+    IOUtils.copy(is, zos);
     is.close();
     zos.closeEntry();
   }
@@ -350,6 +345,6 @@ public class Utils {
       }
     }
     JarOutputStream zos = new JarOutputStream(new FileOutputStream(jarFile));
-    jarDir(dir, "", zos);
+    jarDir(dir, StringUtils.EMPTY, zos);
   }
 }
