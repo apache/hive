@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -595,7 +594,7 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
     List<Entry<String, Long>> sortedTables =
-        new LinkedList<>(tableToTotalSize.entrySet());
+        new ArrayList<>(tableToTotalSize.entrySet());
     Collections.sort(sortedTables, Collections.reverseOrder(
         new Comparator<Map.Entry<String, Long>>() {
           @Override
@@ -635,7 +634,7 @@ public class SharedWorkOptimizer extends Transform {
           StatsUtils.safeMult(op.getChildOperators().size(), size));
     }
     List<Entry<Operator<?>, Long>> sortedOps =
-        new LinkedList<>(opToTotalSize.entrySet());
+        new ArrayList<>(opToTotalSize.entrySet());
     Collections.sort(sortedOps, Collections.reverseOrder(
         new Comparator<Map.Entry<Operator<?>, Long>>() {
           @Override
