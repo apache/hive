@@ -40,7 +40,7 @@ public class DropDatabaseHandler extends AbstractMessageHandler {
         new DropDatabaseDesc(actualDbName, true, context.eventOnlyReplicationSpec());
     Task<? extends Serializable> dropDBTask =
         TaskFactory
-            .get(new DDLWork(new HashSet<>(), new HashSet<>(), desc), context.hiveConf);
+            .get(new DDLWork(new HashSet<>(), new HashSet<>(), desc));
     context.log.info(
         "Added drop database task : {}:{}", dropDBTask.getId(), desc.getDatabaseName());
     updatedMetadata.set(context.dmd.getEventTo().toString(), actualDbName, null, null);

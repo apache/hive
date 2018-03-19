@@ -113,7 +113,7 @@ public class LoadPartitions {
   private void createTableReplLogTask() throws SemanticException {
     ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger,
                                             tableDesc.getTableName(), tableDesc.tableType());
-    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, context.hiveConf, true);
+    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, context.hiveConf);
 
     if (tracker.tasks().isEmpty()) {
       tracker.addTask(replLogTask);
@@ -224,8 +224,7 @@ public class LoadPartitions {
 
     Task<?> addPartTask = TaskFactory.get(
         new DDLWork(new HashSet<>(), new HashSet<>(), addPartitionDesc),
-        context.hiveConf,
-        true
+        context.hiveConf
     );
 
     Task<?> movePartitionTask = movePartitionTask(table, partSpec, tmpPath);
@@ -249,7 +248,7 @@ public class LoadPartitions {
     );
     loadTableWork.setInheritTableSpecs(false);
     MoveWork work = new MoveWork(new HashSet<>(), new HashSet<>(), loadTableWork, null, false);
-    return TaskFactory.get(work, context.hiveConf, true);
+    return TaskFactory.get(work, context.hiveConf);
   }
 
   private Path locationOnReplicaWarehouse(Table table, AddPartitionDesc.OnePartitionDesc partSpec)
@@ -277,8 +276,7 @@ public class LoadPartitions {
     desc.getPartition(0).setLocation(ptn.getLocation()); // use existing location
     return TaskFactory.get(
         new DDLWork(new HashSet<>(), new HashSet<>(), desc),
-        context.hiveConf,
-        true
+        context.hiveConf
     );
   }
 

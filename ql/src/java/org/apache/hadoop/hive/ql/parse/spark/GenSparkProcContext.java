@@ -179,7 +179,7 @@ public class GenSparkProcContext implements NodeProcessorCtx {
     this.linkChildOpWithDummyOp = new LinkedHashMap<Operator<?>, List<Operator<?>>>();
     this.dependencyTask = conf.getBoolVar(
         HiveConf.ConfVars.HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES)
-        ? (DependencyCollectionTask) TaskFactory.get(new DependencyCollectionWork(), conf)
+            ? (DependencyCollectionTask) TaskFactory.get(new DependencyCollectionWork())
         : null;
     this.unionWorkMap = new LinkedHashMap<Operator<?>, BaseWork>();
     this.currentUnionOperators = new LinkedList<UnionOperator>();

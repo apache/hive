@@ -185,7 +185,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
               ErrorMsg.INVALID_PATH.getMsg(ast),
               maxEventLimit,
               ctx.getResFile().toUri().toString()
-          ), conf, true);
+      ), conf);
       rootTasks.add(replDumpWorkTask);
       if (dbNameOrPattern != null) {
         for (String dbName : Utils.matchesDb(db, dbNameOrPattern)) {
@@ -323,7 +323,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         ReplLoadWork replLoadWork =
             new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern, tblNameOrPattern,
                 queryState.getLineageState(), SessionState.get().getTxnMgr().getCurrentTxnId());
-        rootTasks.add(TaskFactory.get(replLoadWork, conf, true));
+        rootTasks.add(TaskFactory.get(replLoadWork, conf));
         return;
       }
 
@@ -354,7 +354,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
 
         ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern,
             queryState.getLineageState(), SessionState.get().getTxnMgr().getCurrentTxnId());
-        rootTasks.add(TaskFactory.get(replLoadWork, conf, true));
+        rootTasks.add(TaskFactory.get(replLoadWork, conf));
         //
         //        for (FileStatus dir : dirsInLoadPath) {
         //          analyzeDatabaseLoad(dbNameOrPattern, fs, dir);
@@ -364,7 +364,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         // We need to guarantee that the directory listing we got is in order of evid.
         Arrays.sort(dirsInLoadPath, new EventDumpDirComparator());
 
-        Task<? extends Serializable> evTaskRoot = TaskFactory.get(new DependencyCollectionWork(), conf);
+        Task<? extends Serializable> evTaskRoot = TaskFactory.get(new DependencyCollectionWork());
         Task<? extends Serializable> taskChainTail = evTaskRoot;
 
         ReplLogger replLogger = new IncrementalLoadLogger(dbNameOrPattern,
@@ -403,7 +403,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
             ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger,
                                                           dir.getPath().getName(),
                                                           eventDmd.getDumpType().toString());
-            Task<? extends Serializable> barrierTask = TaskFactory.get(replStateLogWork, conf);
+            Task<? extends Serializable> barrierTask = TaskFactory.get(replStateLogWork);
             for (Task<? extends Serializable> t : evTasks){
               t.addDependentTask(barrierTask);
               LOG.debug("Added {}:{} as a precursor of barrier task {}:{}",
@@ -420,7 +420,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           Map<String, String> dbProps = new HashMap<>();
           dbProps.put(ReplicationSpec.KEY.CURR_STATE_ID.toString(), String.valueOf(dmd.getEventTo()));
           ReplStateLogWork replStateLogWork = new ReplStateLogWork(replLogger, dbProps);
-          Task<? extends Serializable> barrierTask = TaskFactory.get(replStateLogWork, conf);
+          Task<? extends Serializable> barrierTask = TaskFactory.get(replStateLogWork);
           taskChainTail.addDependentTask(barrierTask);
           LOG.debug("Added {}:{} as a precursor of barrier task {}:{}",
                   taskChainTail.getClass(), taskChainTail.getId(),
@@ -473,7 +473,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     alterTblDesc.setPartSpec((HashMap<String, String>)partSpec);
 
     Task<? extends Serializable> updateReplIdTask = TaskFactory.get(
-                      new DDLWork(inputs, outputs, alterTblDesc), conf, true);
+        new DDLWork(inputs, outputs, alterTblDesc), conf);
 
     // Link the update repl state task with dependency collection task
     if (preCursor != null) {
@@ -495,7 +495,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     AlterDatabaseDesc alterDbDesc = new AlterDatabaseDesc(
                             dbName, mapProp, new ReplicationSpec(replState, replState));
     Task<? extends Serializable> updateReplIdTask = TaskFactory.get(
-                            new DDLWork(inputs, outputs, alterDbDesc), conf, true);
+        new DDLWork(inputs, outputs, alterDbDesc), conf);
 
     // Link the update repl state task with dependency collection task
     if (preCursor != null) {
@@ -523,7 +523,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     // Create a barrier task for dependency collection of import tasks
-    Task<? extends Serializable> barrierTask = TaskFactory.get(new DependencyCollectionWork(), conf);
+    Task<? extends Serializable> barrierTask = TaskFactory.get(new DependencyCollectionWork());
 
     // Link import tasks to the barrier task which will in-turn linked with repl state update tasks
     for (Task<? extends Serializable> t : importTasks){

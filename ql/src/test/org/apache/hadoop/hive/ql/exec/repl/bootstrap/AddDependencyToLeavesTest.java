@@ -46,11 +46,11 @@ public class AddDependencyToLeavesTest {
   @Test
   public void shouldNotSkipIntermediateDependencyCollectionTasks() {
     Task<DependencyCollectionWork> collectionWorkTaskOne =
-        TaskFactory.get(new DependencyCollectionWork(), hiveConf);
+        TaskFactory.get(new DependencyCollectionWork());
     Task<DependencyCollectionWork> collectionWorkTaskTwo =
-        TaskFactory.get(new DependencyCollectionWork(), hiveConf);
+        TaskFactory.get(new DependencyCollectionWork());
     Task<DependencyCollectionWork> collectionWorkTaskThree =
-        TaskFactory.get(new DependencyCollectionWork(), hiveConf);
+        TaskFactory.get(new DependencyCollectionWork());
 
     @SuppressWarnings("unchecked") Task<? extends Serializable> rootTask = mock(Task.class);
     when(rootTask.getDependentTasks())

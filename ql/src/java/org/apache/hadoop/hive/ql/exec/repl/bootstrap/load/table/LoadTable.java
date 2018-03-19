@@ -78,7 +78,7 @@ public class LoadTable {
 
   private void createTableReplLogTask(String tableName, TableType tableType) throws SemanticException {
     ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger,tableName, tableType);
-    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, context.hiveConf);
+    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork);
     DAGTraversal.traverse(tracker.tasks(), new AddDependencyToLeaves(replLogTask));
 
     if (tracker.tasks().isEmpty()) {
@@ -234,7 +234,7 @@ public class LoadTable {
     );
     MoveWork moveWork =
         new MoveWork(new HashSet<>(), new HashSet<>(), loadTableWork, null, false);
-    Task<?> loadTableTask = TaskFactory.get(moveWork, context.hiveConf, true);
+    Task<?> loadTableTask = TaskFactory.get(moveWork, context.hiveConf);
     copyTask.addDependentTask(loadTableTask);
     return copyTask;
   }

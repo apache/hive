@@ -4358,7 +4358,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     MoveWork mw = new MoveWork(null, null, null, null, false);
     mw.setMultiFilesDesc(new LoadMultiFilesDesc(srcs, tgts, true, null, null));
     ImportCommitWork icw = new ImportCommitWork(tbl.getDbName(), tbl.getTableName(), mmWriteId, stmtId);
-    Task<?> mv = TaskFactory.get(mw, conf), ic = TaskFactory.get(icw, conf);
+    Task<?> mv = TaskFactory.get(mw), ic = TaskFactory.get(icw);
     mv.addDependentTask(ic);
     return Lists.<Task<?>>newArrayList(mv);
   }

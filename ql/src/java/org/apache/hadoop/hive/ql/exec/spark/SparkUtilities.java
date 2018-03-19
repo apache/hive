@@ -161,11 +161,11 @@ public class SparkUtilities {
 
   public static SparkTask createSparkTask(HiveConf conf) {
     return (SparkTask) TaskFactory.get(
-        new SparkWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID)), conf);
+        new SparkWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID)));
   }
 
   public static SparkTask createSparkTask(SparkWork work, HiveConf conf) {
-    return (SparkTask) TaskFactory.get(work, conf);
+    return (SparkTask) TaskFactory.get(work);
   }
 
   /**
