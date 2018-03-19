@@ -53,6 +53,8 @@ import org.apache.hadoop.hive.ql.plan.ReplCopyWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * TaskFactory implementation.
  **/
@@ -131,8 +133,8 @@ public final class TaskFactory {
   }
 
   @SuppressWarnings("unchecked")
-  public static <T extends Serializable> Task<T> get(Class<T> workClass,
-      HiveConf conf) {
+  @VisibleForTesting
+  static <T extends Serializable> Task<T> get(Class<T> workClass) {
 
     for (TaskTuple<? extends Serializable> t : taskvec) {
       if (t.workClass == workClass) {
@@ -149,36 +151,24 @@ public final class TaskFactory {
     throw new RuntimeException("No task for work class " + workClass.getName());
   }
 
-  @SafeVarargs
-  public static <T extends Serializable> Task<T> get(T work, HiveConf conf, boolean setConf,
-                                                     Task<? extends Serializable>... tasklist) {
-    Task<T> ret = get((Class<T>) work.getClass(), conf);
+  public static <T extends Serializable> Task<T> get(T work, HiveConf conf) {
+    @SuppressWarnings("unchecked")
+    Task<T> ret = get((Class<T>) work.getClass());
     ret.setWork(work);
-    if (setConf && (null != conf)) {
+    if (null != conf) {
       ret.setConf(conf);
     }
-    if (tasklist.length == 0) {
-      return (ret);
-    }
+    return ret;
+  }
 
-    ArrayList<Task<? extends Serializable>> clist = new ArrayList<Task<? extends Serializable>>();
-    for (Task<? extends Serializable> tsk : tasklist) {
-      clist.add(tsk);
-    }
-    ret.setChildTasks(clist);
-    return (ret);
+  public static <T extends Serializable> Task<T> get(T work) {
+    return get(work, null);
   }
 
   @SafeVarargs
-  public static <T extends Serializable> Task<T> get(T work, HiveConf conf,
-      Task<? extends Serializable>... tasklist) {
-    return get(work, conf, false, tasklist);
-  }
-
   public static <T extends Serializable> Task<T> getAndMakeChild(T work,
       HiveConf conf, Task<? extends Serializable>... tasklist) {
-    Task<T> ret = get((Class<T>) work.getClass(), conf);
-    ret.setWork(work);
+    Task<T> ret = get(work);
     if (tasklist.length == 0) {
       return (ret);
     }
@@ -189,6 +179,7 @@ public final class TaskFactory {
   }
 
 
+  @SafeVarargs
   public static  void makeChild(Task<?> ret,
       Task<? extends Serializable>... tasklist) {
     // Add the new task as child of each of the passed in tasks

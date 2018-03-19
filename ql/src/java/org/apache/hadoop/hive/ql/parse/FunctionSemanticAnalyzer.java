@@ -61,7 +61,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
     } else if (ast.getType() == HiveParser.TOK_DROPFUNCTION) {
       analyzeDropFunction(ast);
     } else if (ast.getType() == HiveParser.TOK_RELOADFUNCTION) {
-      rootTasks.add(TaskFactory.get(new FunctionWork(new ReloadFunctionDesc()), conf));
+      rootTasks.add(TaskFactory.get(new FunctionWork(new ReloadFunctionDesc())));
     }
 
     LOG.info("analyze done");
@@ -86,7 +86,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     CreateFunctionDesc desc =
         new CreateFunctionDesc(functionName, isTemporaryFunction, className, resources, null);
-    rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
+    rootTasks.add(TaskFactory.get(new FunctionWork(desc)));
 
     addEntities(functionName, className, isTemporaryFunction, resources);
   }
@@ -114,7 +114,7 @@ public class FunctionSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     boolean isTemporaryFunction = (ast.getFirstChildWithType(HiveParser.TOK_TEMPORARY) != null);
     DropFunctionDesc desc = new DropFunctionDesc(functionName, isTemporaryFunction, null);
-    rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
+    rootTasks.add(TaskFactory.get(new FunctionWork(desc)));
 
     addEntities(functionName, info.getClassName(), isTemporaryFunction, null);
   }

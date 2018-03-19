@@ -230,7 +230,7 @@ public class GenMRUnion1 implements NodeProcessor {
     GenMRUnionCtx uCtxTask = ctx.getUnionTask(union);
     if (uCtxTask == null) {
       uPlan = GenMapRedUtils.getMapRedWork(parseCtx);
-      uTask = TaskFactory.get(uPlan, parseCtx.getConf());
+      uTask = TaskFactory.get(uPlan);
       uCtxTask = new GenMRUnionCtx(uTask);
       ctx.setUnionTask(union, uCtxTask);
     }

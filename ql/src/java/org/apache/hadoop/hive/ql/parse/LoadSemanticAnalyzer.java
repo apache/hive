@@ -344,7 +344,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Task<? extends Serializable> childTask = TaskFactory.get(
         new MoveWork(getInputs(), getOutputs(), loadTableWork, null, true,
-            isLocal), conf
+            isLocal)
     );
     if (rTask != null) {
       rTask.addDependentTask(childTask);
@@ -364,7 +364,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
       basicStatsWork.setNoStatsAggregator(true);
       basicStatsWork.setClearAggregatorStats(true);
       StatsWork columnStatsWork = new StatsWork(ts.tableHandle, basicStatsWork, conf);
-      statTask = TaskFactory.get(columnStatsWork, conf);
+      statTask = TaskFactory.get(columnStatsWork);
     }
 
     if (statTask != null) {

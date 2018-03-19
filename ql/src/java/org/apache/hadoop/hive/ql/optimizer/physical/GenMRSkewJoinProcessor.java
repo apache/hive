@@ -331,7 +331,7 @@ public final class GenMRSkewJoinProcessor {
       MapredWork w = new MapredWork();
       w.setMapWork(newPlan);
 
-      Task<? extends Serializable> skewJoinMapJoinTask = TaskFactory.get(w, jc);
+      Task<? extends Serializable> skewJoinMapJoinTask = TaskFactory.get(w);
       skewJoinMapJoinTask.setFetchSource(currTask.isFetchSource());
 
       bigKeysDirToTaskMap.put(bigKeyDirPath, skewJoinMapJoinTask);
@@ -354,7 +354,7 @@ public final class GenMRSkewJoinProcessor {
         new ConditionalResolverSkewJoinCtx(bigKeysDirToTaskMap, children);
 
     ConditionalWork cndWork = new ConditionalWork(listWorks);
-    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork, parseCtx.getConf());
+    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork);
     cndTsk.setListTasks(listTasks);
     cndTsk.setResolver(new ConditionalResolverSkewJoin());
     cndTsk.setResolverCtx(context);

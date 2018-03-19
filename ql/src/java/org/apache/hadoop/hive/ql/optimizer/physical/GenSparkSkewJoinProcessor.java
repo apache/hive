@@ -223,7 +223,7 @@ public class GenSparkSkewJoinProcessor {
       HiveConf hiveConf = new HiveConf(parseCtx.getConf(),
           GenSparkSkewJoinProcessor.class);
       SparkWork sparkWork = new SparkWork(parseCtx.getConf().getVar(HiveConf.ConfVars.HIVEQUERYID));
-      Task<? extends Serializable> skewJoinMapJoinTask = TaskFactory.get(sparkWork, hiveConf);
+      Task<? extends Serializable> skewJoinMapJoinTask = TaskFactory.get(sparkWork);
       skewJoinMapJoinTask.setFetchSource(currTask.isFetchSource());
 
       // create N TableScans
@@ -346,7 +346,7 @@ public class GenSparkSkewJoinProcessor {
         new ConditionalResolverSkewJoin.ConditionalResolverSkewJoinCtx(bigKeysDirToTaskMap, children);
 
     ConditionalWork cndWork = new ConditionalWork(listWorks);
-    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork, parseCtx.getConf());
+    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork);
     cndTsk.setListTasks(listTasks);
     cndTsk.setResolver(new ConditionalResolverSkewJoin());
     cndTsk.setResolverCtx(context);

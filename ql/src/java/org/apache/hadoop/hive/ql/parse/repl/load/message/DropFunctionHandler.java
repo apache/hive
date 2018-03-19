@@ -39,7 +39,7 @@ public class DropFunctionHandler extends AbstractMessageHandler {
         FunctionUtils.qualifyFunctionName(msg.getFunctionName(), actualDbName);
     DropFunctionDesc desc = new DropFunctionDesc(
             qualifiedFunctionName, false, context.eventOnlyReplicationSpec());
-    Task<FunctionWork> dropFunctionTask = TaskFactory.get(new FunctionWork(desc), context.hiveConf);
+    Task<FunctionWork> dropFunctionTask = TaskFactory.get(new FunctionWork(desc));
     context.log.debug(
         "Added drop function task : {}:{}", dropFunctionTask.getId(), desc.getFunctionName()
     );

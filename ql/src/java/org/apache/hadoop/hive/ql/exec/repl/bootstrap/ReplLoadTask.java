@@ -231,7 +231,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
                                                   ReplLogger replLogger) throws SemanticException {
     Database dbInMetadata = work.databaseEvent(context.hiveConf).dbInMetadata(work.dbNameToLoadIn);
     ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, dbInMetadata.getParameters());
-    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, conf);
+    Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork);
     if (scope.rootTasks.isEmpty()) {
       scope.rootTasks.add(replLogTask);
     } else {
@@ -298,7 +298,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     use loadTask as dependencyCollection
    */
     if (shouldCreateAnotherLoadTask) {
-      Task<ReplLoadWork> loadTask = TaskFactory.get(work, conf, true);
+      Task<ReplLoadWork> loadTask = TaskFactory.get(work, conf);
       DAGTraversal.traverse(rootTasks, new AddDependencyToLeaves(loadTask));
     }
   }

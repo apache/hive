@@ -236,7 +236,7 @@ public class SparkMapJoinResolver implements PhysicalPlanResolver {
         return createdTaskMap.get(sparkWork);
       }
       SparkTask resultTask = originalTask.getWork() == sparkWork ?
-          originalTask : (SparkTask) TaskFactory.get(sparkWork, physicalContext.conf);
+          originalTask : (SparkTask) TaskFactory.get(sparkWork);
       if (!dependencyGraph.get(sparkWork).isEmpty()) {
         for (SparkWork parentWork : dependencyGraph.get(sparkWork)) {
           SparkTask parentTask =

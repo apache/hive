@@ -758,7 +758,7 @@ public class StatsOptimizer extends Transform {
           StandardStructObjectInspector sOI = ObjectInspectorFactory.
               getStandardStructObjectInspector(colNames, ois);
           fWork = new FetchWork(allRows, sOI);
-          fTask = (FetchTask)TaskFactory.get(fWork, pctx.getConf());
+          fTask = (FetchTask) TaskFactory.get(fWork);
           pctx.setFetchTask(fTask);
         }
         fWork.setLimit(fWork.getRowsComputedUsingStats().size());
