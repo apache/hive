@@ -57,7 +57,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -272,9 +271,10 @@ public class HiveAlterHandler implements AlterHandler {
             while (partsToProcess > 0) {
               int batchEnd = Math.min(batchStart + partitionBatchSize, parts.size());
               List<Partition> partBatch = parts.subList(batchStart, batchEnd);
-              partsToProcess -= partBatch.size();
-              batchStart += partBatch.size();
-              List<List<String>> partValues = new LinkedList<>();
+              int partBatchSize = partBatch.size();
+              partsToProcess -= partBatchSize;
+              batchStart += partBatchSize;
+              List<List<String>> partValues = new ArrayList<>(partBatchSize);
               for (Partition part : partBatch) {
                 partValues.add(part.getValues());
               }
