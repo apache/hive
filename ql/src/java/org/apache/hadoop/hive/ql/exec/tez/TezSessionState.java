@@ -643,7 +643,7 @@ public class TezSessionState {
     appJarLr = null;
 
     try {
-      if (session != null) {
+      if (getSession() != null) {
         LOG.info("Closing Tez Session");
         closeClient(session);
         session = null;
