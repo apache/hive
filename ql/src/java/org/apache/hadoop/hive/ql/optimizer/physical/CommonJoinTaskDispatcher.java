@@ -175,8 +175,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
   private MapRedTask convertTaskToMapJoinTask(MapredWork newWork, int bigTablePosition)
       throws UnsupportedEncodingException, SemanticException {
     // create a mapred task for this work
-    MapRedTask newTask = (MapRedTask) TaskFactory.get(newWork, physicalContext
-        .getParseContext().getConf());
+    MapRedTask newTask = (MapRedTask) TaskFactory.get(newWork);
     JoinOperator newJoinOp = getJoinOp(newTask);
     // optimize this newWork given the big table position
     MapJoinProcessor.genMapJoinOpAndLocalWork(physicalContext.getParseContext().getConf(),
@@ -397,9 +396,6 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     HashMap<Path, ArrayList<String>> pathToAliases = currWork.getPathToAliases();
     Map<String, Operator<? extends OperatorDesc>> aliasToWork = currWork.getAliasToWork();
 
-    // get parseCtx for this Join Operator
-    ParseContext parseCtx = physicalContext.getParseContext();
-
     // start to generate multiple map join tasks
     JoinDesc joinDesc = joinOp.getConf();
 
@@ -528,7 +524,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
 
     // create conditional task and insert conditional task into task tree
     ConditionalWork cndWork = new ConditionalWork(listWorks);
-    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork, parseCtx.getConf());
+    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork);
     cndTsk.setListTasks(listTasks);
 
     // set resolver and resolver context

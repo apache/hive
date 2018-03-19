@@ -198,7 +198,7 @@ public abstract class TaskCompiler {
           fetch.setIsUsingThriftJDBCBinarySerDe(false);
       }
 
-      pCtx.setFetchTask((FetchTask) TaskFactory.get(fetch, conf));
+      pCtx.setFetchTask((FetchTask) TaskFactory.get(fetch));
 
       // For the FetchTask, the limit optimization requires we fetch all the rows
       // in memory and count how many rows we get. It's not practical if the
@@ -219,8 +219,7 @@ public abstract class TaskCompiler {
     } else if (!isCStats) {
       for (LoadTableDesc ltd : loadTableWork) {
         Task<MoveWork> tsk = TaskFactory
-            .get(new MoveWork(null, null, ltd, null, false),
-                conf);
+            .get(new MoveWork(null, null, ltd, null, false));
         mvTask.add(tsk);
       }
 
@@ -235,8 +234,7 @@ public abstract class TaskCompiler {
           oneLoadFileForCtas = false;
         }
         mvTask.add(TaskFactory
-            .get(new MoveWork(null, null, null, lfd, false),
-                conf));
+            .get(new MoveWork(null, null, null, lfd, false)));
       }
     }
 
@@ -326,13 +324,13 @@ public abstract class TaskCompiler {
       CreateTableDesc crtTblDesc = pCtx.getCreateTable();
       crtTblDesc.validate(conf);
       Task<? extends Serializable> crtTblTask = TaskFactory.get(new DDLWork(
-          inputs, outputs, crtTblDesc), conf);
+          inputs, outputs, crtTblDesc));
       patchUpAfterCTASorMaterializedView(rootTasks, outputs, crtTblTask);
     } else if (pCtx.getQueryProperties().isMaterializedView()) {
       // generate a DDL task and make it a dependent task of the leaf
       CreateViewDesc viewDesc = pCtx.getCreateViewDesc();
       Task<? extends Serializable> crtViewTask = TaskFactory.get(new DDLWork(
-          inputs, outputs, viewDesc), conf);
+          inputs, outputs, viewDesc));
       patchUpAfterCTASorMaterializedView(rootTasks, outputs, crtViewTask);
     } else if (pCtx.getMaterializedViewUpdateDesc() != null) {
       // If there is a materialized view update desc, we create introduce it at the end
@@ -391,13 +389,13 @@ public abstract class TaskCompiler {
       if (partitions.size() > 0) {
         columnStatsWork.addInputPartitions(parseContext.getPrunedPartitions(tableScan).getPartitions());
       }
-      return TaskFactory.get(columnStatsWork, parseContext.getConf());
+      return TaskFactory.get(columnStatsWork);
     } else {
       BasicStatsWork statsWork = new BasicStatsWork(tableScan.getConf().getTableMetadata().getTableSpec());
       StatsWork columnStatsWork = new StatsWork(table, statsWork, parseContext.getConf());
       columnStatsWork.collectStatsFromAggregator(tableScan.getConf());
       columnStatsWork.setSourceTask(currentTask);
-      return TaskFactory.get(columnStatsWork, parseContext.getConf());
+      return TaskFactory.get(columnStatsWork);
     }
   }
 

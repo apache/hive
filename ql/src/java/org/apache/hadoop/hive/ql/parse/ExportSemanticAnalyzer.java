@@ -96,7 +96,7 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
     ExportWork exportWork =
         new ExportWork(exportRootDirName, ts, replicationSpec, ErrorMsg.INVALID_PATH.getMsg(ast));
     // Create an export task and add it as a root task
-    Task<ExportWork> exportTask = TaskFactory.get(exportWork, conf);
+    Task<ExportWork> exportTask = TaskFactory.get(exportWork);
     rootTasks.add(exportTask);
   }
 }

@@ -140,7 +140,7 @@ public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
         body = sa.genExprNodeDesc((ASTNode)ast.getChild(2), rowResolver);
     }
     CreateMacroDesc desc = new CreateMacroDesc(functionName, macroColNames, macroColTypes, body);
-    rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
+    rootTasks.add(TaskFactory.get(new FunctionWork(desc)));
 
     addEntities();
   }
@@ -164,7 +164,7 @@ public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     DropMacroDesc desc = new DropMacroDesc(functionName);
-    rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
+    rootTasks.add(TaskFactory.get(new FunctionWork(desc)));
 
     addEntities();
   }

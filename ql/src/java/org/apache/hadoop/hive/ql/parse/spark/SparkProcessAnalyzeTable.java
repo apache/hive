@@ -111,7 +111,7 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
           PrunedPartitionList partList = new PrunedPartitionList(table, confirmedParts, partCols, false);
           statWork.addInputPartitions(partList.getPartitions());
         }
-        Task<StatsWork> snjTask = TaskFactory.get(statWork, parseContext.getConf());
+        Task<StatsWork> snjTask = TaskFactory.get(statWork);
         snjTask.setParentTasks(null);
         context.rootTasks.remove(context.currentTask);
         context.rootTasks.add(snjTask);
@@ -127,7 +127,7 @@ public class SparkProcessAnalyzeTable implements NodeProcessor {
         StatsWork columnStatsWork = new StatsWork(table, basicStatsWork, parseContext.getConf());
         columnStatsWork.collectStatsFromAggregator(tableScan.getConf());
         columnStatsWork.setSourceTask(context.currentTask);
-        Task<StatsWork> statsTask = TaskFactory.get(columnStatsWork, parseContext.getConf());
+        Task<StatsWork> statsTask = TaskFactory.get(columnStatsWork);
         context.currentTask.addDependentTask(statsTask);
 
         // ANALYZE TABLE T [PARTITION (...)] COMPUTE STATISTICS noscan;

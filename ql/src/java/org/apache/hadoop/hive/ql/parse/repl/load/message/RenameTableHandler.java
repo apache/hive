@@ -61,7 +61,7 @@ public class RenameTableHandler extends AbstractMessageHandler {
       AlterTableDesc renameTableDesc = new AlterTableDesc(
               oldName, newName, false, context.eventOnlyReplicationSpec());
       Task<DDLWork> renameTableTask = TaskFactory.get(
-          new DDLWork(readEntitySet, writeEntitySet, renameTableDesc), context.hiveConf);
+          new DDLWork(readEntitySet, writeEntitySet, renameTableDesc));
       context.log.debug("Added rename table task : {}:{}->{}",
                         renameTableTask.getId(), oldName, newName);
 

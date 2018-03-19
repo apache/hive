@@ -1854,7 +1854,7 @@ public class Driver implements IDriver {
 
   private void useFetchFromCache(CacheEntry cacheEntry) {
     // Change query FetchTask to use new location specified in results cache.
-    FetchTask fetchTaskFromCache = (FetchTask) TaskFactory.get(cacheEntry.getFetchWork(), conf);
+    FetchTask fetchTaskFromCache = (FetchTask) TaskFactory.get(cacheEntry.getFetchWork());
     fetchTaskFromCache.initialize(queryState, plan, null, ctx.getOpContext());
     plan.setFetchTask(fetchTaskFromCache);
     cacheUsage = new CacheUsage(CacheUsage.CacheStatus.QUERY_USING_CACHE, cacheEntry);

@@ -71,7 +71,7 @@ public class GenMRTableScan1 implements NodeProcessor {
 
     // create a dummy MapReduce task
     MapredWork currWork = GenMapRedUtils.getMapRedWork(parseCtx);
-    MapRedTask currTask = (MapRedTask) TaskFactory.get(currWork, parseCtx.getConf());
+    MapRedTask currTask = (MapRedTask) TaskFactory.get(currWork);
     ctx.setCurrTask(currTask);
     ctx.setCurrTopOp(op);
 
@@ -101,7 +101,7 @@ public class GenMRTableScan1 implements NodeProcessor {
               PrunedPartitionList partList = new PrunedPartitionList(table, confirmedParts, partCols, false);
               statWork.addInputPartitions(partList.getPartitions());
             }
-            Task<StatsWork> snjTask = TaskFactory.get(statWork, parseCtx.getConf());
+            Task<StatsWork> snjTask = TaskFactory.get(statWork);
             ctx.setCurrTask(snjTask);
             ctx.setCurrTopOp(null);
             ctx.getRootTasks().clear();
@@ -118,7 +118,7 @@ public class GenMRTableScan1 implements NodeProcessor {
             columnStatsWork.collectStatsFromAggregator(op.getConf());
 
             columnStatsWork.setSourceTask(currTask);
-            Task<StatsWork> columnStatsTask = TaskFactory.get(columnStatsWork, parseCtx.getConf());
+            Task<StatsWork> columnStatsTask = TaskFactory.get(columnStatsWork);
             currTask.addDependentTask(columnStatsTask);
             if (!ctx.getRootTasks().contains(currTask)) {
               ctx.getRootTasks().add(currTask);

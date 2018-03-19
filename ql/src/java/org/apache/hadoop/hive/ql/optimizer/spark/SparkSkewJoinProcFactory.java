@@ -170,7 +170,7 @@ public class SparkSkewJoinProcFactory {
           tableScanOp, mapWork, false, tableDesc);
       // insert the new task between current task and its child
       @SuppressWarnings("unchecked")
-      Task<? extends Serializable> newTask = TaskFactory.get(newWork, parseContext.getConf());
+      Task<? extends Serializable> newTask = TaskFactory.get(newWork);
       List<Task<? extends Serializable>> childTasks = currentTask.getChildTasks();
       // must have at most one child
       if (childTasks != null && childTasks.size() > 0) {

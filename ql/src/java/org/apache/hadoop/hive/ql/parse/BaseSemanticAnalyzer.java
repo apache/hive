@@ -2082,7 +2082,7 @@ public abstract class BaseSemanticAnalyzer {
         new FetchWork(ctx.getResFile(), new TableDesc(TextInputFormat.class,
             IgnoreKeyTextOutputFormat.class, prop), -1);
     fetch.setSerializationNullFormat(" ");
-    return (FetchTask) TaskFactory.get(fetch, conf);
+    return (FetchTask) TaskFactory.get(fetch);
   }
 
   protected HiveTxnManager getTxnMgr() {
