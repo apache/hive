@@ -3389,12 +3389,25 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public List<Partition> exchange_partitions(Map<String, String> partitionSpecs,
         String sourceDbName, String sourceTableName, String destDbName,
         String destTableName) throws TException {
+      if (partitionSpecs == null || sourceDbName == null || sourceTableName == null
+          || destDbName == null || destTableName == null) {
+        throw new MetaException("The DB and table name for the source and destination tables,"
+            + " and the partition specs must not be null.");
+      }
       boolean success = false;
       boolean pathCreated = false;
       RawStore ms = getMS();
       ms.openTransaction();
       Table destinationTable = ms.getTable(destDbName, destTableName);
+      if (destinationTable == null) {
+        throw new MetaException(
+            "The destination table " + destDbName + "." + destTableName + " not found");
+      }
       Table sourceTable = ms.getTable(sourceDbName, sourceTableName);
+      if (sourceTable == null) {
+        throw new MetaException(
+            "The source table " + sourceDbName + "." + sourceTableName + " not found");
+      }
       List<String> partVals = MetaStoreUtils.getPvals(sourceTable.getPartitionKeys(),
           partitionSpecs);
       List<String> partValsPresent = new ArrayList<> ();
