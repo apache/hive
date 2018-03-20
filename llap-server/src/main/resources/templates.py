@@ -1,6 +1,7 @@
 yarnfile = """
 {
   "name": "%(name)s",
+  "version": "1.0.0",
   "queue": "%(queue.string)s",
   "configuration": {
     "properties": {
@@ -14,7 +15,6 @@ yarnfile = """
   "components": [
     {
       "name": "llap",
-      "version": "1.0.0",
       "number_of_containers": %(instances)d,
       "launch_command": "$LLAP_DAEMON_BIN_HOME/llapDaemon.sh start &> $LLAP_DAEMON_TMP_DIR/shell.out",
       "artifact": {
