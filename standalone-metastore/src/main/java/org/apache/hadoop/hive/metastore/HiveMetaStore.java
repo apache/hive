@@ -3445,6 +3445,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       List<Map<String, String>> transactionalListenerResponsesForDropPartition =
           Lists.newArrayListWithCapacity(partitionsToExchange.size());
 
+      // Check if any of the partitions already exists in destTable.
+      List<String> destPartitionNames =
+          ms.listPartitionNames(destDbName, destTableName, (short) -1);
+      if (destPartitionNames != null && !destPartitionNames.isEmpty()) {
+        for (Partition partition : partitionsToExchange) {
+          String partToExchangeName =
+              Warehouse.makePartName(destinationTable.getPartitionKeys(), partition.getValues());
+          if (destPartitionNames.contains(partToExchangeName)) {
+            throw new MetaException("The partition " + partToExchangeName
+                + " already exists in the table " + destTableName);
+          }
+        }
+      }
+
       try {
         for (Partition partition: partitionsToExchange) {
           Partition destPartition = new Partition(partition);
