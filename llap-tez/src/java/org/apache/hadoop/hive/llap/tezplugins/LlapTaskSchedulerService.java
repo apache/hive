@@ -257,6 +257,16 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   private int totalGuaranteed = 0, unusedGuaranteed = 0;
 
+  /**
+   * An internal version to make sure we don't race and overwrite a newer totalGuaranteed count in
+   * ZK with an older one, without requiring us to make ZK updates under the main writeLock.
+   * This is updated under writeLock, together with totalGuaranteed.
+   */
+  private long totalGuaranteedVersion = Long.MIN_VALUE;
+  private final Object registryUpdateLock = new Object(); // The lock for ZK updates.
+  /** The last totalGuaranteedVersion sent to ZK. Updated under registryUpdateLock. */
+  private long tgVersionSent = Long.MIN_VALUE;
+
   private LlapTaskCommunicator communicator;
   private final int amPort;
   private final String serializedToken, jobIdForToken;
@@ -504,6 +514,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   @VisibleForTesting
   void updateGuaranteedCount(int newTotalGuaranteed) {
     List<TaskInfo> toUpdate = null;
+    long tgVersionForZk;
     writeLock.lock();
     try {
       // TODO: when this code is a little less hot, change most logs to debug.
@@ -514,8 +525,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       // The "procedural" approach requires that we track the ducks traveling on network,
       // concurrent terminations, etc. So, while more precise it's much more complex.
       int delta = newTotalGuaranteed - totalGuaranteed;
-      WM_LOG.info("Received guaranteed tasks " + newTotalGuaranteed
-          + "; the delta to adjust by is " + delta);
+      tgVersionForZk = ++totalGuaranteedVersion;
+      WM_LOG.info("Received guaranteed tasks " + newTotalGuaranteed + " (internal version "
+          + tgVersionForZk + "); the delta to adjust by is " + delta);
       if (delta == 0) return;
       totalGuaranteed = newTotalGuaranteed;
       if (metrics != null) {
@@ -562,6 +574,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     } finally {
       writeLock.unlock();
     }
+    updateGuaranteedInRegistry(tgVersionForZk, newTotalGuaranteed);
     if (toUpdate == null) return;
     WM_LOG.info("Sending updates to " + toUpdate.size() + " tasks");
     for (TaskInfo ti : toUpdate) {
@@ -752,7 +765,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         amRegistry.start();
         int pluginPort = pluginEndpoint != null ? pluginEndpoint.getActualPort() : -1;
         amRegistry.register(amPort, pluginPort, HiveConf.getVar(conf, ConfVars.HIVESESSIONID),
-            serializedToken, jobIdForToken);
+            serializedToken, jobIdForToken, 0);
       }
     } finally {
       writeLock.unlock();
@@ -969,6 +982,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     if (metrics != null) {
       metrics.incrCompletedDagCount();
     }
+    long tgVersionForZk;
     writeLock.lock();
     try {
       dagRunning = false;
@@ -1002,6 +1016,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       }
 
       totalGuaranteed = unusedGuaranteed = 0;
+      tgVersionForZk = ++totalGuaranteedVersion;
       if (metrics != null) {
         metrics.setDagId(null);
         // We remove the tasks above without state checks so just reset all metrics to 0.
@@ -1012,8 +1027,27 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     } finally {
       writeLock.unlock();
     }
+    updateGuaranteedInRegistry(tgVersionForZk, 0);
     // TODO Cleanup pending tasks etc, so that the next dag is not affected.
   }
+
+  private void updateGuaranteedInRegistry(long tgVersionForZk, int newTotalGuaranteed) {
+    if (amRegistry == null) return;
+    synchronized (registryUpdateLock) {
+      // Make sure the updates are not sent to ZK out of order compared to how we apply them in AM.
+      if (tgVersionForZk <= tgVersionSent) return;
+      try {
+        amRegistry.updateGuaranteed(newTotalGuaranteed);
+        tgVersionSent = tgVersionForZk;
+      } catch (IOException ex) {
+        // Ignore for now. HS2 will probably try to send us the count we already have again.
+        // We are assuming here that if we can't talk to ZK we will eventually fail.
+        LOG.error("Failed to update guaranteed count in registry; ignoring", ex);
+      }
+    }
+  }
+
+
 
   @Override
   public void blacklistNode(NodeId nodeId) {

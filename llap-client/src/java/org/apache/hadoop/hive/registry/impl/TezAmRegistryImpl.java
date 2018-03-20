@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Collection;
+
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -35,11 +36,12 @@ public class TezAmRegistryImpl extends ZkRegistryBase<TezAmInstance> {
   static final String IPC_TEZCLIENT = "tez-client";
   static final String IPC_PLUGIN = "llap-plugin";
   static final String AM_SESSION_ID = "am.session.id", AM_PLUGIN_TOKEN = "am.plugin.token",
-      AM_PLUGIN_JOBID = "am.plugin.jobid";
+      AM_PLUGIN_JOBID = "am.plugin.jobid", AM_GUARANTEED_COUNT = "am.guaranteed.count";
   private final static String NAMESPACE_PREFIX = "tez-am-";
   private static final String SASL_LOGIN_CONTEXT_NAME = "TezAmZooKeeperClient";
 
   private final String registryName;
+  private ServiceRecord srv;
 
   public static TezAmRegistryImpl create(Configuration conf, boolean useSecureZk) {
     String amRegistryName = HiveConf.getVar(conf, ConfVars.LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME);
@@ -68,8 +70,11 @@ public class TezAmRegistryImpl extends ZkRegistryBase<TezAmInstance> {
   }
 
   public String register(int amPort, int pluginPort, String sessionId,
-      String serializedToken, String jobIdForToken) throws IOException {
-    ServiceRecord srv = new ServiceRecord();
+      String serializedToken, String jobIdForToken, int guaranteedCount) throws IOException {
+    if (srv != null) {
+      throw new UnsupportedOperationException("Already registered with " + srv);
+    }
+    srv = new ServiceRecord();
     Endpoint rpcEndpoint = RegistryTypeUtils.ipcEndpoint(
         IPC_TEZCLIENT, new InetSocketAddress(hostname, amPort));
     srv.addInternalEndpoint(rpcEndpoint);
@@ -83,10 +88,16 @@ public class TezAmRegistryImpl extends ZkRegistryBase<TezAmInstance> {
     boolean hasToken = serializedToken != null;
     srv.set(AM_PLUGIN_TOKEN, hasToken ? serializedToken : "");
     srv.set(AM_PLUGIN_JOBID, jobIdForToken != null ? jobIdForToken : "");
+    srv.set(AM_GUARANTEED_COUNT, Integer.toString(guaranteedCount));
     String uniqueId = registerServiceRecord(srv);
     LOG.info("Registered this AM: rpc: {}, plugin: {}, sessionId: {}, token: {}, znodePath: {}",
         rpcEndpoint, pluginEndpoint, sessionId, hasToken, getRegistrationZnodePath());
     return uniqueId;
+  }
+
+  public void updateGuaranteed(int guaranteedCount) throws IOException {
+    srv.set(AM_GUARANTEED_COUNT, Integer.toString(guaranteedCount));
+    updateServiceRecord(srv, false, false);
   }
 
   public TezAmInstance getInstance(String name) {

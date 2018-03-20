@@ -334,10 +334,16 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
     }
 
     @Override
-    public void onUpdate(TezAmInstance serviceInstance, int ephSeqVersion) {
-      // We currently never update the znode once registered.
-      // AM recovery will create a new node when it calls register.
-      LOG.warn("Received an unexpected update for instance={}. Ignoring", serviceInstance);
+    public void onUpdate(TezAmInstance si, int ephSeqVersion) {
+      String sessionId = si.getSessionId();
+      SessionType session = bySessionId.get(sessionId);
+      if (session != null) {
+        LOG.info("AM for " + sessionId + ", v." + ephSeqVersion + " has updated; updating ["
+            + session + "] with an endpoint at " + si.getPluginPort());
+        session.updateFromRegistry(si, ephSeqVersion);
+      } else {
+        LOG.warn("AM for an unknown " + sessionId + " has updated; ignoring");
+      }
     }
 
     @Override
