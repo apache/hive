@@ -409,9 +409,6 @@ public class TestExchangePartitions extends MetaStoreClientTest {
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
     client.exchange_partitions(partitionSpecs, DB_NAME, sourceTable.getTableName(), DB_NAME,
         destTable.getTableName());
-    // TODO: In this case we get an exception, because the insert statement fails due to duplicated
-    // primary key. Maybe this use case could be handled better by checking if the partition already
-    // exists.
   }
 
   @Test
@@ -936,9 +933,6 @@ public class TestExchangePartitions extends MetaStoreClientTest {
     Map<String, String> partitionSpecs = getPartitionSpec(partitions[1]);
     client.exchange_partition(partitionSpecs, DB_NAME, sourceTable.getTableName(), DB_NAME,
         destTable.getTableName());
-    // TODO: In this case we get an exception, because the insert statement fails due to duplicated
-    // primary key. Maybe this use case could be handled better by checking if the partition already
-    // exists.
   }
 
   @Test
