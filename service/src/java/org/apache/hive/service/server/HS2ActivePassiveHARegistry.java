@@ -156,9 +156,10 @@ public class HS2ActivePassiveHARegistry extends ZkRegistryBase<HiveServer2Instan
     addEndpointToServiceRecord(getNewServiceRecord(), PASSIVE_ENDPOINT);
   }
 
-  private void addEndpointToServiceRecord(final ServiceRecord srv, final String endpointName) throws IOException {
+  private void addEndpointToServiceRecord(
+      final ServiceRecord srv, final String endpointName) throws IOException {
     updateEndpoint(srv, endpointName);
-    updateServiceRecord(srv);
+    updateServiceRecord(srv, doCheckAcls, true);
   }
 
   private void updateEndpoint(final ServiceRecord srv, final String endpointName) {

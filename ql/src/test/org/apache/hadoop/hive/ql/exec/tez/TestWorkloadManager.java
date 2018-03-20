@@ -110,6 +110,10 @@ public class TestWorkloadManager {
     public void updateSessionsAsync(Double totalMaxAlloc, List<WmTezSession> sessions) {
       isCalled = true;
     }
+    
+    @Override
+    public void updateSessionAsync(WmTezSession session) {
+    }
 
     void assertWasCalledAndReset() {
       assertTrue(isCalled);

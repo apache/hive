@@ -143,14 +143,19 @@ public class GuaranteedTasksAllocator implements QueryAllocationManager {
     }
   }
 
-  private void updateSessionAsync(final WmTezSession session, final int intAlloc) {
-    boolean needsUpdate = session.setSendingGuaranteed(intAlloc);
-    if (!needsUpdate) return;
+  @Override
+  public void updateSessionAsync(WmTezSession session) {
+    updateSessionAsync(session, null); // Resend existing value if necessary.
+  }
+
+  private void updateSessionAsync(final WmTezSession session, final Integer intAlloc) {
+    Integer valueToSend = session.setSendingGuaranteed(intAlloc);
+    if (valueToSend == null) return;
     // Note: this assumes that the pattern where the same session object is reset with a different
     //       Tez client is not used. It was used a lot in the past but appears to be gone from most
     //       HS2 session pool paths, and this patch removes the last one (reopen).
     UpdateQueryRequestProto request = UpdateQueryRequestProto
-        .newBuilder().setGuaranteedTaskCount(intAlloc).build();
+        .newBuilder().setGuaranteedTaskCount(valueToSend.intValue()).build();
     LOG.info("Updating {} with {} guaranteed tasks", session.getSessionId(), intAlloc);
     amCommunicator.sendUpdateQuery(request, (AmPluginNode)session, new UpdateCallback(session));
   }
