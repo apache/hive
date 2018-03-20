@@ -189,6 +189,20 @@ insert into table hbase_table_10 select 5 as id, map(50,cast(null as int), 55, 5
 select * from hbase_table_10;
 
 
+DROP TABLE IF EXISTS hbase_table_11;
+CREATE TABLE hbase_table_11(id INT, map_column STRUCT<s_int:INT,s_string:STRING,s_date:DATE>)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,id:id');
+INSERT INTO hbase_table_11 SELECT 2,NAMED_STRUCT("s_int",CAST(NULL AS INT),"s_string","s1","s_date",CAST('2018-03-12' AS DATE)) FROM src LIMIT 1;
+select * from hbase_table_11;
+
+DROP TABLE IF EXISTS hbase_table_12;
+CREATE TABLE hbase_table_12(id INT, list_column ARRAY <STRING>)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,id:id');
+INSERT INTO hbase_table_12 SELECT 2, ARRAY("a", CAST (NULL AS STRING),  "b") FROM src LIMIT 1;
+select * from hbase_table_12;
+
 DROP TABLE hbase_table_1;
 DROP TABLE hbase_table_1_like;
 DROP TABLE hbase_table_2;
@@ -203,3 +217,5 @@ DROP TABLE empty_hbase_table;
 DROP TABLE empty_normal_table;
 DROP TABLE hbase_table_9;
 DROP TABLE hbase_table_10;
+DROP TABLE hbase_table_11;
+DROP TABLE hbase_table_12;
