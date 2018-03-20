@@ -1095,6 +1095,72 @@ POSTHOOK: Input: default@hbase_table_10
 3	{30:31}	1234
 4	{40:null,45:null}	1234
 5	{50:null,55:58}	1234
+PREHOOK: query: DROP TABLE IF EXISTS hbase_table_11
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS hbase_table_11
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE hbase_table_11(id INT, map_column STRUCT<s_int:INT,s_string:STRING,s_date:DATE>)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,id:id')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hbase_table_11
+POSTHOOK: query: CREATE TABLE hbase_table_11(id INT, map_column STRUCT<s_int:INT,s_string:STRING,s_date:DATE>)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,id:id')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hbase_table_11
+PREHOOK: query: INSERT INTO hbase_table_11 SELECT 2,NAMED_STRUCT("s_int",CAST(NULL AS INT),"s_string","s1","s_date",CAST('2018-03-12' AS DATE)) FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_table_11
+POSTHOOK: query: INSERT INTO hbase_table_11 SELECT 2,NAMED_STRUCT("s_int",CAST(NULL AS INT),"s_string","s1","s_date",CAST('2018-03-12' AS DATE)) FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_table_11
+PREHOOK: query: select * from hbase_table_11
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_table_11
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hbase_table_11
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_table_11
+#### A masked pattern was here ####
+2	{"s_int":null,"s_string":"s1","s_date":"2018-03-12"}
+PREHOOK: query: DROP TABLE IF EXISTS hbase_table_12
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS hbase_table_12
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE hbase_table_12(id INT, list_column ARRAY <STRING>)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,id:id')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@hbase_table_12
+POSTHOOK: query: CREATE TABLE hbase_table_12(id INT, list_column ARRAY <STRING>)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,id:id')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@hbase_table_12
+PREHOOK: query: INSERT INTO hbase_table_12 SELECT 2, ARRAY("a", CAST (NULL AS STRING),  "b") FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@hbase_table_12
+POSTHOOK: query: INSERT INTO hbase_table_12 SELECT 2, ARRAY("a", CAST (NULL AS STRING),  "b") FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@hbase_table_12
+PREHOOK: query: select * from hbase_table_12
+PREHOOK: type: QUERY
+PREHOOK: Input: default@hbase_table_12
+#### A masked pattern was here ####
+POSTHOOK: query: select * from hbase_table_12
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@hbase_table_12
+#### A masked pattern was here ####
+2	["a","","b"]
 PREHOOK: query: DROP TABLE hbase_table_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@hbase_table_1
@@ -1207,3 +1273,19 @@ POSTHOOK: query: DROP TABLE hbase_table_10
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@hbase_table_10
 POSTHOOK: Output: default@hbase_table_10
+PREHOOK: query: DROP TABLE hbase_table_11
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hbase_table_11
+PREHOOK: Output: default@hbase_table_11
+POSTHOOK: query: DROP TABLE hbase_table_11
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hbase_table_11
+POSTHOOK: Output: default@hbase_table_11
+PREHOOK: query: DROP TABLE hbase_table_12
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@hbase_table_12
+PREHOOK: Output: default@hbase_table_12
+POSTHOOK: query: DROP TABLE hbase_table_12
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@hbase_table_12
+POSTHOOK: Output: default@hbase_table_12

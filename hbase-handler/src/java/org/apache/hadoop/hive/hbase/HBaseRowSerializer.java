@@ -226,83 +226,83 @@ public class HBaseRowSerializer {
     return output.toByteArray();
   }
 
-  private boolean serialize(
-      Object obj,
-      ObjectInspector objInspector,
-      int level, ByteStream.Output ss) throws IOException {
+  private boolean serialize(Object obj, ObjectInspector objInspector, int level, ByteStream.Output ss)
+      throws IOException {
 
     switch (objInspector.getCategory()) {
-      case PRIMITIVE:
-        LazyUtils.writePrimitiveUTF8(ss, obj,
-            (PrimitiveObjectInspector) objInspector, escaped, escapeChar, needsEscape);
-        return true;
-      case LIST:
-        char separator = (char) separators[level];
-        ListObjectInspector loi = (ListObjectInspector)objInspector;
-        List<?> list = loi.getList(obj);
-        ObjectInspector eoi = loi.getListElementObjectInspector();
-        if (list == null) {
-          return false;
-        } else {
-          for (int i = 0; i < list.size(); i++) {
-            if (i > 0) {
-              ss.write(separator);
-            }
-            serialize(list.get(i), eoi, level + 1, ss);
-          }
-        }
-        return true;
-      case MAP:
-        char sep = (char) separators[level];
-        char keyValueSeparator = (char) separators[level+1];
-        MapObjectInspector moi = (MapObjectInspector) objInspector;
-        ObjectInspector koi = moi.getMapKeyObjectInspector();
-        ObjectInspector voi = moi.getMapValueObjectInspector();
-
-        Map<?, ?> map = moi.getMap(obj);
-        if (map == null) {
-          return false;
-        } else {
-          boolean first = true;
-          for (Map.Entry<?, ?> entry: map.entrySet()) {
-            if (first) {
-              first = false;
-            } else {
-              ss.write(sep);
-            }
-            serialize(entry.getKey(), koi, level+2, ss);
-
-            if ( entry.getValue() != null) {
-              ss.write(keyValueSeparator);
-              serialize(entry.getValue(), voi, level+2, ss);
-            }
-          }
-        }
-        return true;
-      case STRUCT:
-        sep = (char)separators[level];
-        StructObjectInspector soi = (StructObjectInspector)objInspector;
-        List<? extends StructField> fields = soi.getAllStructFieldRefs();
-        list = soi.getStructFieldsDataAsList(obj);
-        if (list == null) {
-          return false;
-        } else {
-          for (int i = 0; i < list.size(); i++) {
-            if (i > 0) {
-              ss.write(sep);
-            }
-
-            serialize(list.get(i), fields.get(i).getFieldObjectInspector(),
-                level + 1, ss);
-          }
-        }
-        return true;
-       case UNION: {
-        // union type currently not totally supported. See HIVE-2390
+    case PRIMITIVE:
+      LazyUtils.writePrimitiveUTF8(ss, obj, (PrimitiveObjectInspector) objInspector, escaped, escapeChar, needsEscape);
+      return true;
+    case LIST:
+      char separator = (char) separators[level];
+      ListObjectInspector loi = (ListObjectInspector) objInspector;
+      List<?> list = loi.getList(obj);
+      ObjectInspector eoi = loi.getListElementObjectInspector();
+      if (list == null) {
         return false;
-       }
-      default:
-        throw new RuntimeException("Unknown category type: " + objInspector.getCategory());
+      } else {
+        for (int i = 0; i < list.size(); i++) {
+          if (i > 0) {
+            ss.write(separator);
+          }
+          Object currentItem = list.get(i);
+          if (currentItem != null) {
+            serialize(currentItem, eoi, level + 1, ss);
+          }
+        }
+      }
+      return true;
+    case MAP:
+      char sep = (char) separators[level];
+      char keyValueSeparator = (char) separators[level + 1];
+      MapObjectInspector moi = (MapObjectInspector) objInspector;
+      ObjectInspector koi = moi.getMapKeyObjectInspector();
+      ObjectInspector voi = moi.getMapValueObjectInspector();
+
+      Map<?, ?> map = moi.getMap(obj);
+      if (map == null) {
+        return false;
+      } else {
+        boolean first = true;
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+          if (first) {
+            first = false;
+          } else {
+            ss.write(sep);
+          }
+          serialize(entry.getKey(), koi, level + 2, ss);
+          Object currentValue = entry.getValue();
+          if (currentValue != null) {
+            ss.write(keyValueSeparator);
+            serialize(currentValue, voi, level + 2, ss);
+          }
+        }
+      }
+      return true;
+    case STRUCT:
+      sep = (char) separators[level];
+      StructObjectInspector soi = (StructObjectInspector) objInspector;
+      List<? extends StructField> fields = soi.getAllStructFieldRefs();
+      list = soi.getStructFieldsDataAsList(obj);
+      if (list == null) {
+        return false;
+      } else {
+        for (int i = 0; i < list.size(); i++) {
+          if (i > 0) {
+            ss.write(sep);
+          }
+          Object currentItem = list.get(i);
+          if (currentItem != null) {
+            serialize(currentItem, fields.get(i).getFieldObjectInspector(), level + 1, ss);
+          }
+        }
+      }
+      return true;
+    case UNION:
+      // union type currently not totally supported. See HIVE-2390
+      return false;
+    default:
+      throw new RuntimeException("Unknown category type: " + objInspector.getCategory());
     }
   }
 }
