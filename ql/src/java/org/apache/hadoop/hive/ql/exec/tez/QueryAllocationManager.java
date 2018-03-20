@@ -27,7 +27,7 @@ interface QueryAllocationManager {
   void start();
   void stop();
   /**
-   * Updates the session allocations asynchoronously.
+   * Updates the session allocations asynchronously.
    * @param totalMaxAlloc The total maximum fraction of the cluster to allocate. Used to
    *                      avoid various artifacts, esp. with small numbers and double weirdness.
    *                      Null means the total is unknown.
@@ -39,4 +39,9 @@ interface QueryAllocationManager {
    * Sets a callback to be invoked on cluster changes relevant to resource allocation.
    */
   void setClusterChangedCallback(Runnable clusterChangedCallback);
+  
+  /**
+   * Updates the session asynchronously with the existing allocation.
+   */
+  void updateSessionAsync(WmTezSession session);
 }

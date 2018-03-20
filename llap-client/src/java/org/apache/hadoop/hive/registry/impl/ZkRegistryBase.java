@@ -98,7 +98,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
 
   private final Set<ServiceInstanceStateChangeListener<InstanceType>> stateChangeListeners;
 
-  private final boolean doCheckAcls;
+  protected final boolean doCheckAcls;
   // Secure ZK is only set up by the registering service; anyone can read the registrations.
   private final String zkPrincipal, zkKeytab, saslLoginContextName;
   private String userNameFromPrincipal; // Only set when setting up the secure config for ZK.
@@ -286,7 +286,7 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
       // even under connection or session interruption (will automatically handle retries)
       znode = new PersistentEphemeralNode(zooKeeperClient, Mode.EPHEMERAL_SEQUENTIAL,
           workersPath + "/" + workerNodePrefix, encoder.toBytes(srv));
-
+    
       // start the creation of znodes
       znode.start();
 
@@ -318,7 +318,12 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     return uniqueId;
   }
 
-  protected final void updateServiceRecord(ServiceRecord srv) throws IOException {
+  protected final void updateServiceRecord(
+     ServiceRecord srv, boolean doCheckAcls, boolean closeOnFailure) throws IOException {
+    if (srv.get(UNIQUE_IDENTIFIER) == null) {
+      srv.set(UNIQUE_IDENTIFIER, UNIQUE_ID.toString());
+    }
+    // waitForInitialCreate must have already been called in registerServiceRecord.
     try {
       znode.setData(encoder.toBytes(srv));
 
@@ -331,10 +336,13 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
       }
     } catch (Exception e) {
       LOG.error("Unable to update znode with new service record", e);
-      CloseableUtils.closeQuietly(znode);
+      if (closeOnFailure) {
+        CloseableUtils.closeQuietly(znode);
+      }
       throw (e instanceof IOException) ? (IOException) e : new IOException(e);
     }
   }
+
 
   final void initializeWithoutRegisteringInternal() throws IOException {
     // Create a znode under the rootNamespace parent for this instance of the server

@@ -16,6 +16,7 @@ package org.apache.hadoop.hive.registry.impl;
 import java.io.IOException;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.registry.client.binding.RegistryTypeUtils;
 import org.apache.hadoop.registry.client.types.AddressTypes;
 import org.apache.hadoop.registry.client.types.Endpoint;
@@ -49,6 +50,12 @@ public class TezAmInstance extends ServiceInstanceBase {
 
   public String getSessionId() {
     return getProperties().get(TezAmRegistryImpl.AM_SESSION_ID);
+  }
+  
+  public int getGuaranteedCount() {
+    String str = getProperties().get(TezAmRegistryImpl.AM_GUARANTEED_COUNT);
+    if (!StringUtils.isEmpty(str)) return 0;
+    return Integer.parseInt(str);
   }
 
   public String getPluginTokenJobId() {

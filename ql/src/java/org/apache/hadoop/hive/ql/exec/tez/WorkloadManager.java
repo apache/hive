@@ -685,7 +685,6 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       processPoolChangesOnMasterThread(poolName, hasRequeues, syncWork);
     }
 
-
     // 12. Save state for future iterations.
     for (KillQueryContext killCtx : syncWork.toKillQuery.values()) {
       if (killQueryInProgress.put(killCtx.session, killCtx) != null) {
@@ -698,7 +697,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       entry.getValue().endEvent(entry.getKey());
     }
 
-    // 14. Notify tests and global async ops.
+    // 14. Give our final state to UI/API requests if any.
     if (e.dumpStateFuture != null) {
       List<String> result = new ArrayList<>();
       result.add("RESOURCE PLAN " + rpName + "; default pool " + defaultPool);
@@ -708,6 +707,8 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       e.dumpStateFuture.set(result);
       e.dumpStateFuture = null;
     }
+    
+    // 15. Notify tests and global async ops.
     if (e.testEvent != null) {
       e.testEvent.set(true);
       e.testEvent = null;
@@ -1420,6 +1421,13 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     } finally {
       currentLock.unlock();
     }
+  }
+
+  public void notifyOfInconsistentAllocation(WmTezSession session) {
+    // We just act as a pass-thru between the session and allocation manager. We don't change the
+    // allocation target (only WM thread can do that); therefore we can do this directly and
+    // actualState-based sync will take care of multiple potential message senders.
+    allocationManager.updateSessionAsync(session);
   }
 
   public void notifyOfClusterStateChange() {
