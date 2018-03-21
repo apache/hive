@@ -146,6 +146,10 @@ public class WarehouseInstance implements Closeable {
     return PathBuilder.fullyQualifiedHDFSUri(path, fs);
   }
 
+  public HiveConf getConf() {
+    return hiveConf;
+  }
+
   private int next = 0;
 
   private void advanceDumpDir() {
@@ -199,6 +203,25 @@ public class WarehouseInstance implements Closeable {
     printOutput();
     run("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
     return this;
+  }
+
+  WarehouseInstance load(String replicatedDbName, String dumpLocation, List<String> withClauseOptions)
+          throws Throwable {
+    String replLoadCmd = "REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'";
+    if (!withClauseOptions.isEmpty()) {
+      replLoadCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
+    }
+    run("EXPLAIN " + replLoadCmd);
+    printOutput();
+    return run(replLoadCmd);
+  }
+
+  WarehouseInstance status(String replicatedDbName, List<String> withClauseOptions) throws Throwable {
+    String replStatusCmd = "REPL STATUS " + replicatedDbName;
+    if (!withClauseOptions.isEmpty()) {
+      replStatusCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
+    }
+    return run(replStatusCmd);
   }
 
   WarehouseInstance verifyResult(String data) throws IOException {
