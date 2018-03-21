@@ -32,35 +32,6 @@
 
   <modules>
     <module>storage-api</module>
-    <module>accumulo-handler</module>
-    <module>vector-code-gen</module>
-    <module>beeline</module>
-    <module>classification</module>
-    <module>cli</module>
-    <module>common</module>
-    <module>contrib</module>
-    <module>druid-handler</module>
-    <module>hbase-handler</module>
-    <module>jdbc-handler</module>
-    <module>hcatalog</module>
-    <module>hplsql</module>
-    <module>jdbc</module>
-    <module>metastore</module>
-    <module>ql</module>
-    <module>serde</module>
-    <module>service-rpc</module>
-    <module>service</module>
-    <module>llap-common</module>
-    <module>llap-client</module>
-    <module>llap-ext-client</module>
-    <module>llap-tez</module>
-    <module>llap-server</module>
-    <module>shims</module>
-    <module>spark-client</module>
-    <module>kryo-registrator</module>
-    <module>testutils</module>
-    <module>packaging</module>
-    <module>standalone-metastore</module>
   </modules>
 
   <properties>
