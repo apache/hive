@@ -44,7 +44,7 @@ public class ValidCompactorWriteIdList extends ValidReaderWriteIdList {
     this(tableName, abortedWriteIdList, abortedBits, highWatermark, Long.MAX_VALUE);
   }
   /**
-   * @param tableName table which is under compaction. Full name of format <db_name>.<table_name>
+   * @param tableName table which is under compaction. Full name of format &lt;db_name&gt;.&lt;table_name&gt;
    * @param abortedWriteIdList list of all aborted write ids
    * @param abortedBits bitset marking whether the corresponding write id is aborted
    * @param highWatermark highest committed write id to be considered for compaction,
