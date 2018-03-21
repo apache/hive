@@ -50,6 +50,7 @@ public interface ValidWriteIdList {
    * Returns {@code true} if such base file can be used to materialize the snapshot represented by
    * this {@code ValidWriteIdList}.
    * @param writeId highest write ID in a given base_xxxx file
+   * @return true if the base file can be used
    */
   boolean isValidBase(long writeId);
 
@@ -66,6 +67,7 @@ public interface ValidWriteIdList {
   /**
    * Write this ValidWriteIdList into a string. This should produce a string that
    * can be used by {@link #readFromString(String)} to populate a ValidWriteIdList.
+   * @return the list as a string
    */
   String writeToString();
 
@@ -78,7 +80,7 @@ public interface ValidWriteIdList {
 
   /**
    * Get the table for which the ValidWriteIdList is formed
-   * @return table name (<db_name>.<table_name>) associated with ValidWriteIdList.
+   * @return table name (&lt;db_name&gt;.&lt;table_name&gt;) associated with ValidWriteIdList.
    */
   String getTableName();
 
@@ -112,7 +114,8 @@ public interface ValidWriteIdList {
   RangeResponse isWriteIdRangeAborted(long minWriteId, long maxWriteId);
 
   /**
-   * Returns smallest Open write Id in this set, {@code null} if there is none.
+   * The smallest open write id.
+   * @return smallest Open write Id in this set, {@code null} if there is none.
    */
   Long getMinOpenWriteId();
 }
