@@ -27,7 +27,9 @@ import java.lang.management.MemoryMXBean;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
@@ -172,6 +174,12 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   public void initialize(QueryState queryState, QueryPlan queryPlan, DriverContext driverContext,
       CompilationOpContext opContext) {
     super.initialize(queryState, queryPlan, driverContext, opContext);
+
+    Iterator<Map.Entry<String, String>> iter = conf.iterator();
+    while(iter.hasNext()) {
+      String key = iter.next().getKey();
+      conf.set(key, conf.get(key));
+    }
 
     job = new JobConf(conf, ExecDriver.class);
 
