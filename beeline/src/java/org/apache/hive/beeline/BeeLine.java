@@ -795,6 +795,8 @@ public class BeeLine implements Closeable {
     int code = 0;
     if (cl.getOptionValues('e') != null) {
       commands = Arrays.asList(cl.getOptionValues('e'));
+      opts.setAllowMultiLineCommand(false); //When using -e, command is always a single line
+
     }
 
     if (!commands.isEmpty() && getOpts().getScriptFile() != null) {
