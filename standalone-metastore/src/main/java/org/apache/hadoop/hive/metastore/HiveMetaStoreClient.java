@@ -993,6 +993,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public boolean dropPartition(String db_name, String tbl_name,
       List<String> part_vals, PartitionDropOptions options) throws TException {
+    if (options == null) {
+      options = PartitionDropOptions.instance();
+    }
     return dropPartition(db_name, tbl_name, part_vals, options.deleteData,
                          options.purgeData? getEnvironmentContextWithIfPurgeSet() : null);
   }
@@ -1000,6 +1003,13 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public boolean dropPartition(String db_name, String tbl_name, List<String> part_vals,
       boolean deleteData, EnvironmentContext envContext) throws NoSuchObjectException,
       MetaException, TException {
+    if (part_vals != null) {
+      for (String partVal : part_vals) {
+        if (partVal == null) {
+          throw new MetaException("The partition value must not be null.");
+        }
+      }
+    }
     return client.drop_partition_with_environment_context(db_name, tbl_name, part_vals, deleteData,
         envContext);
   }

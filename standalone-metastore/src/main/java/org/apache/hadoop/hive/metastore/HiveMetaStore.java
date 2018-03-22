@@ -3555,6 +3555,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean isExternalTbl = false;
       Map<String, String> transactionalListenerResponses = Collections.emptyMap();
 
+      if (db_name == null) {
+        throw new MetaException("The DB name cannot be null.");
+      }
+      if (tbl_name == null) {
+        throw new MetaException("The table name cannot be null.");
+      }
+      if (part_vals == null) {
+        throw new MetaException("The partition values cannot be null.");
+      }
+
       try {
         ms.openTransaction();
         part = ms.getPartition(db_name, tbl_name, part_vals);
