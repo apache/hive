@@ -50,9 +50,7 @@ public class TestRemoteHiveMetaStoreIpAddress {
 
     System.setProperty(ConfVars.EVENT_LISTENERS.toString(), IpAddressListener.class.getName());
     MetaStoreTestUtils.setConfForStandloneMode(conf);
-    int port = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
-    LOG.debug("Starting MetaStore Server on port " + port);
-    MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
+    MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
 
     msc = new HiveMetaStoreClient(conf);
   }
