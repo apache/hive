@@ -67,6 +67,8 @@ import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.MaterializationsInvalidationCache;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
+import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
@@ -119,15 +121,15 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.BoneCPDataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.HikariCPDataSourceProvider;
+import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
+import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
+import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage;
-import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
-import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
-import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
-import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
@@ -224,6 +226,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   static private DataSource connPool;
   private static DataSource connPoolMutex;
   static private boolean doRetryOnConnPool = false;
+
+  private List<TransactionalMetaStoreEventListener> transactionalListeners;
   
   private enum OpertaionType {
     SELECT('s'), INSERT('i'), UPDATE('u'), DELETE('d');
@@ -359,6 +363,16 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     retryLimit = MetastoreConf.getIntVar(conf, ConfVars.HMSHANDLERATTEMPTS);
     deadlockRetryInterval = retryInterval / 10;
     maxOpenTxns = MetastoreConf.getIntVar(conf, ConfVars.MAX_OPEN_TXNS);
+
+    try {
+      transactionalListeners = MetaStoreUtils.getMetaStoreListeners
+              (TransactionalMetaStoreEventListener.class,
+                      conf, MetastoreConf.getVar(conf, ConfVars.TRANSACTIONAL_EVENT_LISTENERS));
+    } catch(MetaException e) {
+      String msg = "Unable to get transaction listeners, " + e.getMessage();
+      LOG.error(msg);
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -630,13 +644,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
         }
 
-        int totalTxns = txnIds.size() - 1;
-        MessageFactory msgFactory = MessageFactory.getInstance();
-        OpenTxnMessage msg = msgFactory.buildOpenTxnMessage(txnIds.get(0), txnIds.get(totalTxns));
-        LOG.debug("Transactions added to event log " + msg.toString() + " from " +
-                txnIds.get(0) + " to " + txnIds.get(totalTxns) + " and txnIds.size() " + txnIds.size());
-        addNotificationLog(stmt, EventMessage.EventType.OPEN_TXN.toString(), msg.toString(),
-                msg.getDB(), msgFactory.getMessageFormat());
+        MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventMessage.EventType.OPEN_TXN, new OpenTxnEvent(txnIds, dbConn, sqlGenerator));
+
         LOG.debug("Going to commit");
         dbConn.commit();
         return new OpenTxnsResponse(txnIds);
@@ -652,71 +662,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
     } catch (RetryException e) {
       return openTxns(rqst);
-    }
-  }
-
-  private void addNotificationLog(Statement stmt, String eventType, String msg, String db, String msgFormat)
-          throws MetaException, SQLException {
-    if (sqlGenerator.getDbProduct() == MYSQL) {
-      stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
-    }
-
-    String s = sqlGenerator.addForUpdateClause("select \"NEXT_EVENT_ID\" " +
-            " from \"NOTIFICATION_SEQUENCE\"");
-    LOG.debug("Going to execute query <" + s + ">");
-    ResultSet rs = stmt.executeQuery(s);
-    if (!rs.next()) {
-      throw new MetaException("Transaction database not properly " +
-              "configured, can't find next event id.");
-    }
-    long nextEventId = rs.getLong(1);
-    long updatedEventid = nextEventId + 1;
-    s = "update \"NOTIFICATION_SEQUENCE\" set \"NEXT_EVENT_ID\" = " + updatedEventid;
-    LOG.debug("Going to execute update <" + s + ">");
-    stmt.executeUpdate(s);
-
-    s = sqlGenerator.addForUpdateClause("select \"NEXT_VAL\" from " +
-            "\"SEQUENCE_TABLE\" where \"SEQUENCE_NAME\" = " +
-            " 'org.apache.hadoop.hive.metastore.model.MNotificationLog'");
-    LOG.debug("Going to execute query <" + s + ">");
-    rs = stmt.executeQuery(s);
-    if (!rs.next()) {
-      throw new MetaException("Transaction database not properly " +
-              "configured, can't find next event id.");
-    }
-
-    long nextNLId = rs.getLong(1);
-    long updatedNLId = nextNLId + 1;
-    s = "update \"SEQUENCE_TABLE\" set \"NEXT_VAL\" = " + updatedNLId + " where \"SEQUENCE_NAME\" = " +
-            " 'org.apache.hadoop.hive.metastore.model.MNotificationLog'";
-    LOG.debug("Going to execute update <" + s + ">");
-    stmt.executeUpdate(s);
-
-    List<String> insert = new ArrayList<>();
-    int trimmedNow;
-
-    long millis = System.currentTimeMillis();
-    millis /= 1000;
-    if (millis > Integer.MAX_VALUE) {
-      LOG.warn("We've passed max int value in seconds since the epoch, " +
-              "all notification times will be the same!");
-      trimmedNow = Integer.MAX_VALUE;
-    } else {
-      trimmedNow = (int) millis;
-    }
-
-    insert.add(0, nextNLId + "," + nextEventId + "," + trimmedNow + "," +
-            quoteString(eventType) + "," + quoteString(db) + "," +
-            quoteString(" ") + "," + quoteString(msg) + "," +
-            quoteString(msgFormat));
-
-    List<String> sql = sqlGenerator.createInsertValuesStmt(
-            "\"NOTIFICATION_LOG\" (\"NL_ID\", \"EVENT_ID\", \"EVENT_TIME\", " +
-                    " \"EVENT_TYPE\", \"DB_NAME\"," +
-                    " \"TBL_NAME\", \"MESSAGE\", \"MESSAGE_FORMAT\")", insert);
-    for (String q : sql) {
-      LOG.info("Going to execute insert <" + q + ">");
-      stmt.execute(q);
     }
   }
 
@@ -777,10 +722,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           stmt.executeUpdate(s);
         }
 
-        MessageFactory msgFactory = MessageFactory.getInstance();
-        AbortTxnMessage msg = msgFactory.buildAbortTxnMessage(txnid);
-        addNotificationLog(stmt, EventMessage.EventType.ABORT_TXN.toString(), msg.toString(),
-                msg.getDB(), msgFactory.getMessageFormat());
+        MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnid, dbConn, sqlGenerator));
+
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
@@ -814,12 +758,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               " transactions have been aborted or committed, or the transaction ids are invalid.");
         }
 
-        Statement stmt = dbConn.createStatement();
         for (Long txnId : txnids) {
-          MessageFactory msgFactory = MessageFactory.getInstance();
-          AbortTxnMessage msg = msgFactory.buildAbortTxnMessage(txnId);
-          addNotificationLog(stmt, EventMessage.EventType.ABORT_TXN.toString(), msg.toString(),
-              msg.getDB(), msgFactory.getMessageFormat());
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnId, dbConn, sqlGenerator));
         }
         LOG.debug("Going to commit");
         dbConn.commit();
@@ -1047,10 +988,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           stmt.executeUpdate(s);
         }
 
-        MessageFactory msgFactory = MessageFactory.getInstance();
-        CommitTxnMessage msg = msgFactory.buildCommitTxnMessage(txnid);
-        addNotificationLog(stmt, EventMessage.EventType.COMMIT_TXN.toString(), msg.toString(),
-                msg.getDB(), msgFactory.getMessageFormat());
+        MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                EventMessage.EventType.COMMIT_TXN, new CommitTxnEvent(txnid, dbConn, sqlGenerator));
 
         close(rs);
         dbConn.commit();

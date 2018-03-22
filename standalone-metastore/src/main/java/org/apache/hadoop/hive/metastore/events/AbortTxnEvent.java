@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.metastore.events;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
+import java.sql.Connection;
 
 /**
  * AbortTxnEvent
@@ -31,6 +33,8 @@ import org.apache.hadoop.hive.metastore.IHMSHandler;
 public class AbortTxnEvent extends ListenerEvent {
 
   private final Long txnId;
+  Connection connection;
+  SQLGenerator sqlGenerator;
 
   /**
    *
@@ -40,6 +44,20 @@ public class AbortTxnEvent extends ListenerEvent {
   public AbortTxnEvent(Long transactionId, IHMSHandler handler) {
     super(true, handler);
     txnId = transactionId;
+    connection = null;
+    sqlGenerator = null;
+  }
+
+  /**
+   * @param transactionId Unique identification for the transaction just got aborted.
+   * @param connection connection to execute direct SQL statement within same transaction
+   * @param sqlGenerator generates db specific SQL query
+   */
+  public AbortTxnEvent(Long transactionId, Connection connection, SQLGenerator sqlGenerator) {
+    super(true, null);
+    this.txnId = transactionId;
+    this.connection = connection;
+    this.sqlGenerator = sqlGenerator;
   }
 
   /**
@@ -47,5 +65,19 @@ public class AbortTxnEvent extends ListenerEvent {
    */
   public Long getTxnId() {
     return txnId;
+  }
+
+  /**
+   * @return Connection connection - used only by DbNotificationListener
+   */
+  public Connection getConnection() {
+    return connection;
+  }
+
+  /**
+   * @return SQLGenerator sqlGenerator - used only by DbNotificationListener
+   */
+  public SQLGenerator getSqlGenerator() {
+    return sqlGenerator;
   }
 }

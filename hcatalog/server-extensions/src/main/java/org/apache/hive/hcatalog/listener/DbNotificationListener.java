@@ -18,6 +18,11 @@
 package org.apache.hive.hcatalog.listener;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -71,13 +76,17 @@ import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
+import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.PartitionFiles;
+import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
+import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
 
 /**
  * An implementation of {@link org.apache.hadoop.hive.metastore.MetaStoreEventListener} that
@@ -443,11 +452,17 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
   @Override
   public void onOpenTxn(OpenTxnEvent openTxnEvent) throws MetaException {
+    int totalTxns = openTxnEvent.getTxnIds().size() - 1;
+    OpenTxnMessage msg = msgFactory.buildOpenTxnMessage(openTxnEvent.getTxnIds().get(0),
+            openTxnEvent.getTxnIds().get(totalTxns));
     NotificationEvent event =
-            new NotificationEvent(0, now(), EventType.OPEN_TXN.toString(), msgFactory.buildOpenTxnMessage(
-                    openTxnEvent.getTxnIds())
-                    .toString());
-    process(event, openTxnEvent);
+            new NotificationEvent(0, now(), EventType.OPEN_TXN.toString(), msg.toString());
+
+    try {
+      addNotificationLog(event, openTxnEvent);
+    } catch (SQLException e) {
+      throw new MetaException("Unable to execute direct SQL " + StringUtils.stringifyException(e));
+    }
   }
 
   @Override
@@ -457,7 +472,11 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
                     commitTxnEvent.getTxnId())
                     .toString());
 
-    process(event, commitTxnEvent);
+    try {
+      addNotificationLog(event, commitTxnEvent);
+    } catch (SQLException e) {
+      throw new MetaException("Unable to execute direct SQL " + StringUtils.stringifyException(e));
+    }
   }
 
   @Override
@@ -467,7 +486,11 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
             abortTxnEvent.getTxnId())
             .toString());
 
-    process(event, abortTxnEvent);
+    try {
+      addNotificationLog(event, abortTxnEvent);
+    } catch (SQLException e) {
+      throw new MetaException("Unable to execute direct SQL " + StringUtils.stringifyException(e));
+    }
   }
 
   /**
@@ -579,6 +602,86 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       return Integer.MAX_VALUE;
     }
     return (int)millis;
+  }
+
+  static String quoteString(String input) {
+    return "'" + input + "'";
+  }
+
+  private void addNotificationLog(NotificationEvent event, ListenerEvent listenerEvent)
+          throws MetaException, SQLException {
+    Statement stmt = listenerEvent.getConnection().createStatement();
+    SQLGenerator sqlGenerator = listenerEvent.getSqlGenerator();
+    event.setMessageFormat(msgFactory.getMessageFormat());
+
+    if (sqlGenerator.getDbProduct() == MYSQL) {
+      stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
+    }
+
+    String s = sqlGenerator.addForUpdateClause("select \"NEXT_EVENT_ID\" " +
+            " from \"NOTIFICATION_SEQUENCE\"");
+    LOG.debug("Going to execute query <" + s + ">");
+    ResultSet rs = stmt.executeQuery(s);
+    if (!rs.next()) {
+      throw new MetaException("Transaction database not properly " +
+              "configured, can't find next event id.");
+    }
+    long nextEventId = rs.getLong(1);
+    long updatedEventid = nextEventId + 1;
+    s = "update \"NOTIFICATION_SEQUENCE\" set \"NEXT_EVENT_ID\" = " + updatedEventid;
+    LOG.debug("Going to execute update <" + s + ">");
+    stmt.executeUpdate(s);
+
+    s = sqlGenerator.addForUpdateClause("select \"NEXT_VAL\" from " +
+            "\"SEQUENCE_TABLE\" where \"SEQUENCE_NAME\" = " +
+            " 'org.apache.hadoop.hive.metastore.model.MNotificationLog'");
+    LOG.debug("Going to execute query <" + s + ">");
+    rs = stmt.executeQuery(s);
+    if (!rs.next()) {
+      throw new MetaException("Transaction database not properly " +
+              "configured, can't find next event id.");
+    }
+
+    long nextNLId = rs.getLong(1);
+    long updatedNLId = nextNLId + 1;
+    s = "update \"SEQUENCE_TABLE\" set \"NEXT_VAL\" = " + updatedNLId + " where \"SEQUENCE_NAME\" = " +
+            " 'org.apache.hadoop.hive.metastore.model.MNotificationLog'";
+    LOG.debug("Going to execute update <" + s + ">");
+    stmt.executeUpdate(s);
+
+    List<String> insert = new ArrayList<>();
+    int trimmedNow;
+
+    long millis = System.currentTimeMillis();
+    millis /= 1000;
+    if (millis > Integer.MAX_VALUE) {
+      LOG.warn("We've passed max int value in seconds since the epoch, " +
+              "all notification times will be the same!");
+      trimmedNow = Integer.MAX_VALUE;
+    } else {
+      trimmedNow = (int) millis;
+    }
+
+    insert.add(0, nextNLId + "," + nextEventId + "," + trimmedNow + "," +
+            quoteString(event.getEventType()) + "," + quoteString(event.getDbName()) + "," +
+            quoteString(" ") + "," + quoteString(event.getMessage()) + "," +
+            quoteString(event.getMessageFormat()));
+
+    List<String> sql = sqlGenerator.createInsertValuesStmt(
+            "\"NOTIFICATION_LOG\" (\"NL_ID\", \"EVENT_ID\", \"EVENT_TIME\", " +
+                    " \"EVENT_TYPE\", \"DB_NAME\"," +
+                    " \"TBL_NAME\", \"MESSAGE\", \"MESSAGE_FORMAT\")", insert);
+    for (String q : sql) {
+      LOG.info("Going to execute insert <" + q + ">");
+      stmt.execute(q);
+    }
+
+    // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
+    if (event.isSetEventId()) {
+      listenerEvent.putParameter(
+              MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME,
+              Long.toString(event.getEventId()));
+    }
   }
 
   /**
