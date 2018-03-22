@@ -49,12 +49,8 @@ abstract class BaseProtocol extends RpcDispatcher {
 
     final String cause;
 
-    Error(Throwable cause) {
-      if (cause == null) {
-        this.cause = "";
-      } else {
-        this.cause = Throwables.getStackTraceAsString(cause);
-      }
+    Error(String cause) {
+      this.cause = cause;
     }
 
     Error() {
