@@ -160,8 +160,8 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     partition.getSd().getCols().add(new FieldSchema("newcol", "string", ""));
   }
 
-  private static void assertPartitionUnchanged(Partition partition, List<String> testValues,
-                                               List<String> partCols) {
+  private void assertPartitionUnchanged(Partition partition, List<String> testValues,
+                                               List<String> partCols) throws MetaException {
     assertFalse(partition.getParameters().containsKey("hmsTestParam001"));
 
     List<String> expectedKVPairs = new ArrayList<>();
@@ -169,15 +169,15 @@ public class TestAlterPartitions extends MetaStoreClientTest {
       expectedKVPairs.add(partCols.get(i) + "=" + testValues.get(i));
     }
     String partPath = expectedKVPairs.stream().collect(joining("/"));
-    assertTrue(partition.getSd().getLocation().endsWith("warehouse/testpartdb" +
-            ".db/testparttable/" + partPath));
+    assertTrue(partition.getSd().getLocation().equals(metaStore.getWarehouseRoot()
+        + "/testpartdb.db/testparttable/" + partPath));
     assertNotEquals(NEW_CREATE_TIME, partition.getCreateTime());
     assertNotEquals(NEW_CREATE_TIME, partition.getLastAccessTime());
     assertEquals(2, partition.getSd().getCols().size());
   }
 
-  private static void assertPartitionChanged(Partition partition, List<String> testValues,
-                                             List<String> partCols) {
+  private void assertPartitionChanged(Partition partition, List<String> testValues,
+                                      List<String> partCols) throws MetaException {
     assertEquals("testValue001", partition.getParameters().get("hmsTestParam001"));
 
     List<String> expectedKVPairs = new ArrayList<>();
@@ -185,8 +185,8 @@ public class TestAlterPartitions extends MetaStoreClientTest {
       expectedKVPairs.add(partCols.get(i) + "=" + testValues.get(i));
     }
     String partPath = expectedKVPairs.stream().collect(joining("/"));
-    assertTrue(partition.getSd().getLocation().endsWith("warehouse/testpartdb" +
-            ".db/testparttable/" + partPath + "/hh=01"));
+    assertTrue(partition.getSd().getLocation().equals(metaStore.getWarehouseRoot()
+        + "/testpartdb.db/testparttable/" + partPath + "/hh=01"));
     assertEquals(NEW_CREATE_TIME, partition.getCreateTime());
     assertEquals(NEW_CREATE_TIME, partition.getLastAccessTime());
     assertEquals(3, partition.getSd().getCols().size());
