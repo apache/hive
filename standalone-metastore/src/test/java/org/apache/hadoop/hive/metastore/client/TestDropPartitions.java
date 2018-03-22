@@ -264,18 +264,13 @@ public class TestDropPartitions extends MetaStoreClientTest {
     client.dropPartition(DB_NAME, TABLE_NAME, Lists.newArrayList("2017", "may"), false);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testDropPartitionNullVal() throws Exception {
 
     List<String> partVals = new ArrayList<>();
     partVals.add(null);
     partVals.add(null);
-    try {
-      client.dropPartition(DB_NAME, TABLE_NAME, partVals, false);
-      Assert.fail("NullPointerException or NoSuchObjectException is expected to be thrown");
-    } catch (NullPointerException | NoSuchObjectException e) {
-      // TODO: Should not throw NPE.
-    }
+    client.dropPartition(DB_NAME, TABLE_NAME, partVals, false);
   }
 
   @Test(expected = NoSuchObjectException.class)
@@ -400,10 +395,13 @@ public class TestDropPartitions extends MetaStoreClientTest {
     checkPartitionsAfterDelete(tableName, droppedPartitions, remainingPartitions, true, true);
   }
 
-  @Test(expected = NullPointerException.class)
+  @Test
   public void testDropPartitionNullPartDropOptions() throws Exception {
-    // TODO: This should not throw NPE
+
     client.dropPartition(DB_NAME, TABLE_NAME, PARTITIONS[0].getValues(), null);
+    List<Partition> droppedPartitions = Lists.newArrayList(PARTITIONS[0]);
+    List<Partition> remainingPartitions = Lists.newArrayList(PARTITIONS[1], PARTITIONS[2]);
+    checkPartitionsAfterDelete(TABLE_NAME, droppedPartitions, remainingPartitions, true, false);
   }
 
   // Tests for dropPartition(String db_name, String tbl_name, String name,
