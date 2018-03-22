@@ -49,15 +49,13 @@ public class TestMetaStoreEventListenerWithOldConf {
     System.setProperty("hive.metastore.pre.event.listeners",
         DummyPreListener.class.getName());
 
-    int port = MetaStoreTestUtils.findFreePort();
     conf = MetastoreConf.newMetastoreConf();
 
     MetastoreConf.setVar(conf, ConfVars.PARTITION_NAME_WHITELIST_PATTERN, metaConfVal);
-    MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
     MetastoreConf.setLongVar(conf, ConfVars.THRIFT_CONNECTION_RETRIES, 3);
     MetastoreConf.setBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
-    MetaStoreTestUtils.startMetaStore(port, HadoopThriftAuthBridge.getBridge(), conf);
+    MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
 
     DummyListener.notifyList.clear();
     DummyPreListener.notifyList.clear();

@@ -75,8 +75,7 @@ public class TestHiveMetaStoreWithEnvironmentContext {
     MetastoreConf.setLongVar(conf, ConfVars.THRIFT_CONNECTION_RETRIES, 3);
     MetastoreConf.setBoolVar(conf, ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
-    int port = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
-    MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
+    MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
     msc = new HiveMetaStoreClient(conf);
 
     msc.dropDatabase(dbName, true, true);
