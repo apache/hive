@@ -109,6 +109,11 @@ public final class TxnDbUtil {
           " NWI_TABLE varchar(256) NOT NULL," +
           " NWI_NEXT bigint NOT NULL)");
 
+      stmt.execute("CREATE TABLE MIN_HISTORY_LEVEL (" +
+        " MHL_TXNID bigint NOT NULL," +
+        " MHL_MIN_OPEN_TXNID bigint NOT NULL," +
+        " PRIMARY KEY(MHL_TXNID))");
+
       stmt.execute("CREATE TABLE HIVE_LOCKS (" +
           " HL_LOCK_EXT_ID bigint NOT NULL," +
           " HL_LOCK_INT_ID bigint NOT NULL," +
@@ -293,6 +298,7 @@ public final class TxnDbUtil {
         success &= dropTable(stmt, "NEXT_TXN_ID", retryCount);
         success &= dropTable(stmt, "TXN_TO_WRITE_ID", retryCount);
         success &= dropTable(stmt, "NEXT_WRITE_ID", retryCount);
+        success &= dropTable(stmt, "MIN_HISTORY_LEVEL", retryCount);
         success &= dropTable(stmt, "HIVE_LOCKS", retryCount);
         success &= dropTable(stmt, "NEXT_LOCK_ID", retryCount);
         success &= dropTable(stmt, "COMPACTION_QUEUE", retryCount);
