@@ -259,7 +259,7 @@ public class GenericUDFTrunc extends GenericUDF {
         && PrimitiveObjectInspectorUtils
             .getPrimitiveGrouping(inputType2) != PrimitiveGrouping.VOID_GROUP) {
       throw new UDFArgumentTypeException(1,
-          "trunk() only takes STRING/CHAR/VARCHAR types as second argument, got " + inputType2);
+          "trunc() only takes STRING/CHAR/VARCHAR types as second argument, got " + inputType2);
     }
 
     inputType2 = PrimitiveCategory.STRING;
