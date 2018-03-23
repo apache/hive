@@ -43,7 +43,7 @@ public class TestHiveRemote extends TestHive {
     hiveConf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
-    MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf);
+    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + MetaStoreTestUtils.startMetaStore());
 
     try {
       hm = Hive.get(hiveConf);

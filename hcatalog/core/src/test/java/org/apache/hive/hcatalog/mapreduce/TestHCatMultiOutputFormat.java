@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -162,10 +161,7 @@ public class TestHCatMultiOutputFormat {
     metastoreConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, warehousedir.toString());
 
     // Run hive metastore server
-    msPort = MetaStoreTestUtils.startMetaStoreWithRetry(metastoreConf);
-    // Read the warehouse dir, which can be changed so multiple MetaStore tests could be run on
-    // the same server
-    warehousedir = new Path(MetastoreConf.getVar(metastoreConf, MetastoreConf.ConfVars.WAREHOUSE));
+    msPort = MetaStoreTestUtils.startMetaStore(metastoreConf);
     // LocalJobRunner does not work with mapreduce OutputCommitter. So need
     // to use MiniMRCluster. MAPREDUCE-2350
     Configuration conf = new Configuration(true);

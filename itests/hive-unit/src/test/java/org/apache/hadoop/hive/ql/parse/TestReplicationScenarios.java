@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.DatabaseAndTableFilter;
@@ -102,10 +101,12 @@ public class TestReplicationScenarios {
       System.getProperty("test.warehouse.dir", "/tmp") + Path.SEPARATOR + tid;
 
   private static HiveConf hconf;
+  private static int msPort;
   private static IDriver driver;
   private static HiveMetaStoreClient metaStoreClient;
   private static String proxySettingName;
   static HiveConf hconfMirror;
+  static int msPortMirror;
   static IDriver driverMirror;
   static HiveMetaStoreClient metaStoreClientMirror;
 
@@ -141,8 +142,10 @@ public class TestReplicationScenarios {
     hconf.setVar(HiveConf.ConfVars.REPLCMDIR, TEST_PATH + "/cmroot/");
     proxySettingName = "hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts";
     hconf.set(proxySettingName, "*");
-    MetaStoreTestUtils.startMetaStoreWithRetry(hconf);
+    msPort = MetaStoreTestUtils.startMetaStore(hconf);
     hconf.setVar(HiveConf.ConfVars.REPLDIR,TEST_PATH + "/hrepl/");
+    hconf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
+        + msPort);
     hconf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hconf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hconf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
@@ -167,10 +170,10 @@ public class TestReplicationScenarios {
     FileUtils.deleteDirectory(new File("metastore_db2"));
     HiveConf hconfMirrorServer = new HiveConf();
     hconfMirrorServer.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, "jdbc:derby:;databaseName=metastore_db2;create=true");
-    MetaStoreTestUtils.startMetaStoreWithRetry(hconfMirrorServer);
+    msPortMirror = MetaStoreTestUtils.startMetaStore(hconfMirrorServer);
     hconfMirror = new HiveConf(hconf);
-    String thriftUri = MetastoreConf.getVar(hconfMirrorServer, MetastoreConf.ConfVars.THRIFT_URIS);
-    MetastoreConf.setVar(hconfMirror, MetastoreConf.ConfVars.THRIFT_URIS, thriftUri);
+    hconfMirror.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:"
+        + msPortMirror);
     driverMirror = DriverFactory.newDriver(hconfMirror);
     metaStoreClientMirror = new HiveMetaStoreClient(hconfMirror);
 

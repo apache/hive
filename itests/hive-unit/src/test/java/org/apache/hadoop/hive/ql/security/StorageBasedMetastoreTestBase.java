@@ -72,11 +72,12 @@ public class StorageBasedMetastoreTestBase {
         InjectableDummyAuthenticator.class.getName());
 
     clientHiveConf = createHiveConf();
-    MetaStoreTestUtils.startMetaStoreWithRetry(clientHiveConf);
+    int port = MetaStoreTestUtils.startMetaStoreWithRetry(clientHiveConf);
 
     // Turn off client-side authorization
     clientHiveConf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED,false);
 
+    clientHiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     clientHiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     clientHiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
 

@@ -151,7 +151,8 @@ public class TestFilterHooks {
     MetastoreConf.setClass(conf, ConfVars.FILTER_HOOK, DummyMetaStoreFilterHookImpl.class,
         MetaStoreFilterHook.class);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
-    MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
+    int port = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
+    MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
 
     msc = new HiveMetaStoreClient(conf);
 
