@@ -152,9 +152,6 @@ CREATE TABLE "SCHEMA_VERSION" (
 );
 
 
-UPDATE "VERSION" SET "SCHEMA_VERSION"='3.0.0', "VERSION_COMMENT"='Hive release version 3.0.0' where "VER_ID"=1;
-SELECT 'Finished upgrading MetaStore schema from 2.3.0 to 3.0.0';
-
 -- 047-HIVE-14498
 CREATE TABLE "MV_CREATION_METADATA" (
     "MV_CREATION_METADATA_ID" bigint NOT NULL,
@@ -239,3 +236,7 @@ ALTER TABLE COMPLETED_TXN_COMPONENTS ADD CTC_WRITEID bigint;
 ALTER TABLE "KEY_CONSTRAINTS" ADD COLUMN "DEFAULT_VALUE" VARCHAR(400);
 
 ALTER TABLE HIVE_LOCKS ALTER COLUMN HL_TXNID SET NOT NULL;
+
+-- These lines need to be last.  Insert any changes above.
+UPDATE "VERSION" SET "SCHEMA_VERSION"='3.0.0', "VERSION_COMMENT"='Hive release version 3.0.0' where "VER_ID"=1;
+SELECT 'Finished upgrading MetaStore schema from 2.3.0 to 3.0.0';
