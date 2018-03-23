@@ -83,8 +83,6 @@ public class DbNotificationListener extends MetaStoreEventListener {
   private static final Logger LOG = LoggerFactory.getLogger(DbNotificationListener.class.getName());
   private static CleanerThread cleaner = null;
 
-  private static final Object NOTIFICATION_TBL_LOCK = new Object();
-
   // This is the same object as super.conf, but it's convenient to keep a copy of it as a
   // HiveConf rather than a Configuration.
   private HiveConf hiveConf;
@@ -479,18 +477,14 @@ public class DbNotificationListener extends MetaStoreEventListener {
    */
   private void process(NotificationEvent event, ListenerEvent listenerEvent) throws MetaException {
     event.setMessageFormat(msgFactory.getMessageFormat());
-    synchronized (NOTIFICATION_TBL_LOCK) {
-      LOG.debug("DbNotificationListener: Processing : {}:{}", event.getEventId(),
-          event.getMessage());
-      HMSHandler.getMSForConf(hiveConf).addNotificationEvent(event);
-    }
+    LOG.debug("DbNotificationListener: Processing : {}:{}", event.getEventId(), event.getMessage());
+    HMSHandler.getMSForConf(hiveConf).addNotificationEvent(event);
 
-      // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
-      if (event.isSetEventId()) {
-        listenerEvent.putParameter(
-            MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME,
-            Long.toString(event.getEventId()));
-      }
+    // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
+    if (event.isSetEventId()) {
+      listenerEvent.putParameter(MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME,
+          Long.toString(event.getEventId()));
+    }
   }
 
   private static class CleanerThread extends Thread {
@@ -509,8 +503,13 @@ public class DbNotificationListener extends MetaStoreEventListener {
     @Override
     public void run() {
       while (true) {
-        synchronized(NOTIFICATION_TBL_LOCK) {
-          rs.cleanNotificationEvents(ttl);
+        synchronized (this) {
+          try {
+            rs.cleanNotificationEvents(ttl);
+          } catch (Exception ex) {
+            //catch exceptions so that this thread doesn't die
+            LOG.debug("Exception caught while cleaning notifications", ex);
+          }
         }
         LOG.debug("Cleaner thread done");
         try {
