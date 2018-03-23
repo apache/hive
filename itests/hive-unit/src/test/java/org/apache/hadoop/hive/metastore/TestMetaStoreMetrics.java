@@ -49,7 +49,9 @@ public class TestMetaStoreMetrics {
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
 
     //Increments one HMS connection
-    MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf);
+    int port = MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf);
+
+    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
 
     //Increments one HMS connection (Hive.get())
     SessionState.start(new CliSessionState(hiveConf));

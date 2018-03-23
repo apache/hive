@@ -25,7 +25,6 @@ import java.net.Socket;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
@@ -34,19 +33,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MetaStoreTestUtils {
+
   private static final Logger LOG = LoggerFactory.getLogger(MetaStoreTestUtils.class);
   public static final int RETRY_COUNT = 10;
 
-  /**
-   * Starts a MetaStore instance on get given port with the given configuration and Thrift bridge.
-   * Use it only it the port is definitely free. For tests use startMetaStoreWithRetry instead so
-   * the MetaStore will find an emtpy port eventually, so the different tests can be run on the
-   * same machine.
-   * @param port The port to start on
-   * @param bridge The bridge to use
-   * @param conf The configuration to use
-   * @throws Exception
-   */
+  public static int startMetaStore() throws Exception {
+    return MetaStoreTestUtils.startMetaStore(HadoopThriftAuthBridge.getBridge(), null);
+  }
+
+  public static int startMetaStore(final HadoopThriftAuthBridge bridge, Configuration conf)
+      throws Exception {
+    int port = MetaStoreTestUtils.findFreePort();
+    MetaStoreTestUtils.startMetaStore(port, bridge, conf);
+    return port;
+  }
+
+  public static int startMetaStore(Configuration conf) throws Exception {
+    return startMetaStore(HadoopThriftAuthBridge.getBridge(), conf);
+  }
+
+
+  public static void startMetaStore(final int port, final HadoopThriftAuthBridge bridge) throws Exception {
+    MetaStoreTestUtils.startMetaStore(port, bridge, null);
+  }
+
   public static void startMetaStore(final int port,
       final HadoopThriftAuthBridge bridge, Configuration conf)
       throws Exception{
@@ -63,14 +73,14 @@ public class MetaStoreTestUtils {
           LOG.error("Metastore Thrift Server threw an exception...", e);
         }
       }
-    }, "MetaStoreThread-" + port);
+    });
     thread.setDaemon(true);
     thread.start();
     MetaStoreTestUtils.loopUntilHMSReady(port);
   }
 
   public static int startMetaStoreWithRetry(final HadoopThriftAuthBridge bridge) throws Exception {
-    return MetaStoreTestUtils.startMetaStoreWithRetry(bridge, MetastoreConf.newMetastoreConf());
+    return MetaStoreTestUtils.startMetaStoreWithRetry(bridge, null);
   }
 
   public static int startMetaStoreWithRetry(Configuration conf) throws Exception {
@@ -78,34 +88,23 @@ public class MetaStoreTestUtils {
   }
 
   public static int startMetaStoreWithRetry() throws Exception {
-    return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(),
-        MetastoreConf.newMetastoreConf());
+    return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), null);
   }
 
-  /**
-   * Starts a MetaStore instance with the given configuration and given bridge.
-   * Tries to find a free port, and use it. If failed tries another port so the tests will not
-   * fail if run parallel. Also adds the port to the warehouse dir, so the multiple MetaStore
-   * instances will use different warehouse directories.
-   * @param bridge The Thrift bridge to uses
-   * @param conf The configuration to use
-   * @return The port on which the MetaStore finally started
-   * @throws Exception
-   */
-  public static int startMetaStoreWithRetry(HadoopThriftAuthBridge bridge,
-                                            Configuration conf) throws Exception {
+  public static int startMetaStoreWithRetry(final HadoopThriftAuthBridge bridge, Configuration conf)
+      throws Exception {
+    int metaStorePort = findFreePort();
+    startMetaStoreWithRetry(metaStorePort, bridge, conf);
+    return metaStorePort;
+  }
+
+  private static void startMetaStoreWithRetry(int port, HadoopThriftAuthBridge bridge,
+                                             Configuration conf) throws Exception {
     Exception metaStoreException = null;
-    String warehouseDir = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE);
     for (int tryCount = 0; tryCount < MetaStoreTestUtils.RETRY_COUNT; tryCount++) {
       try {
-        int metaStorePort = findFreePort();
-        Path postfixedWarehouseDir = new Path(warehouseDir, String.valueOf(metaStorePort));
-        MetastoreConf.setVar(conf, ConfVars.WAREHOUSE, postfixedWarehouseDir.toString());
-        MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + metaStorePort);
-        MetaStoreTestUtils.startMetaStore(metaStorePort, bridge, conf);
-        LOG.error("MetaStore Thrift Server started on port: {} with warehouse dir: {}",
-            metaStorePort, postfixedWarehouseDir);
-        return metaStorePort;
+        MetaStoreTestUtils.startMetaStore(port, bridge, conf);
+        return;
       } catch (ConnectException ce) {
         metaStoreException = ce;
       }
@@ -117,7 +116,7 @@ public class MetaStoreTestUtils {
    * A simple connect test to make sure that the metastore is up
    * @throws Exception
    */
-  private static void loopUntilHMSReady(int port) throws Exception {
+  public static void loopUntilHMSReady(int port) throws Exception {
     int retries = 0;
     Exception exc = null;
     while (true) {
@@ -142,7 +141,7 @@ public class MetaStoreTestUtils {
     throw exc;
   }
 
-  private static String getAllThreadStacksAsString() {
+  public static String getAllThreadStacksAsString() {
     Map<Thread, StackTraceElement[]> threadStacks = Thread.getAllStackTraces();
     StringBuilder sb = new StringBuilder();
     for (Map.Entry<Thread, StackTraceElement[]> entry : threadStacks.entrySet()) {
@@ -154,7 +153,7 @@ public class MetaStoreTestUtils {
     return sb.toString();
   }
 
-  private static void addStackString(StackTraceElement[] stackElems, StringBuilder sb) {
+  public static void addStackString(StackTraceElement[] stackElems, StringBuilder sb) {
     sb.append(System.lineSeparator());
     for (StackTraceElement stackElem : stackElems) {
       sb.append(stackElem).append(System.lineSeparator());
