@@ -18,7 +18,7 @@
 
 package org.apache.hive.jdbc;
 
-import java.math.BigInteger;
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -98,7 +98,7 @@ public class JdbcColumn {
       case Types.TIMESTAMP_WITH_TIMEZONE:
         return TimestampTZ.class.getName();
       case Types.DECIMAL:
-        return BigInteger.class.getName();
+        return BigDecimal.class.getName();
       case Types.BINARY:
         return byte[].class.getName();
       case Types.OTHER:
