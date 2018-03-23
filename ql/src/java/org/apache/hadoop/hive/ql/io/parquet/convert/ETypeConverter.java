@@ -95,121 +95,307 @@ public enum ETypeConverter {
     @Override
     PrimitiveConverter getConverter(final PrimitiveType type, final int index,
         final ConverterParent parent, TypeInfo hiveTypeInfo) {
-      if (hiveTypeInfo != null) {
-        switch (hiveTypeInfo.getTypeName()) {
-        case serdeConstants.BIGINT_TYPE_NAME:
-          return new PrimitiveConverter() {
-            @Override
-            public void addInt(final int value) {
-              parent.set(index, new LongWritable((long) value));
-            }
-          };
-        case serdeConstants.FLOAT_TYPE_NAME:
-          return new PrimitiveConverter() {
-            @Override
-            public void addInt(final int value) {
-              parent.set(index, new FloatWritable((float) value));
-            }
-          };
-        case serdeConstants.DOUBLE_TYPE_NAME:
-          return new PrimitiveConverter() {
-            @Override
-            public void addInt(final int value) {
-              parent.set(index, new DoubleWritable((float) value));
-            }
-          };
-        case serdeConstants.SMALLINT_TYPE_NAME:
-          return new PrimitiveConverter() {
-            @Override
-            public void addInt(final int value) {
-              if ((value >= Short.MIN_VALUE) && (value <= Short.MAX_VALUE)) {
-                parent.set(index, new IntWritable((int)value));
-              } else {
-                parent.set(index, null);
+      if (OriginalType.UINT_8 == type.getOriginalType() ||
+          OriginalType.UINT_16 == type.getOriginalType() ||
+          OriginalType.UINT_32 == type.getOriginalType() ||
+          OriginalType.UINT_64 == type.getOriginalType()) {
+        if (hiveTypeInfo != null) {
+          switch (hiveTypeInfo.getTypeName()) {
+          case serdeConstants.BIGINT_TYPE_NAME:
+            return new PrimitiveConverter() {
+              @Override
+              public void addInt(final int value) {
+                if (value >= 0) {
+                  parent.set(index, new LongWritable((long) value));
+                } else {
+                  parent.set(index, null);
+                }
               }
-            }
-          };
-        case serdeConstants.TINYINT_TYPE_NAME:
-          return new PrimitiveConverter() {
-            @Override
-            public void addInt(final int value) {
-              if ((value >= Byte.MIN_VALUE) && (value <= Byte.MAX_VALUE)) {
-                parent.set(index, new IntWritable((int)value));
-              } else {
-                parent.set(index, null);
+            };
+          case serdeConstants.FLOAT_TYPE_NAME:
+            return new PrimitiveConverter() {
+              @Override
+              public void addInt(final int value) {
+                if (value >= 0) {
+                  parent.set(index, new FloatWritable((float) value));
+                } else {
+                  parent.set(index, null);
+                }
               }
-            }
-          };
+            };
+          case serdeConstants.DOUBLE_TYPE_NAME:
+            return new PrimitiveConverter() {
+              @Override
+              public void addInt(final int value) {
+                if (value >= 0) {
+                  parent.set(index, new DoubleWritable((float) value));
+                } else {
+                  parent.set(index, null);
+                }
+              }
+            };
+          case serdeConstants.SMALLINT_TYPE_NAME:
+            return new PrimitiveConverter() {
+              @Override
+              public void addInt(final int value) {
+                if ((value >= 0) && (value <= Short.MAX_VALUE)) {
+                  parent.set(index, new IntWritable((int) value));
+                } else {
+                  parent.set(index, null);
+                }
+              }
+            };
+          case serdeConstants.TINYINT_TYPE_NAME:
+            return new PrimitiveConverter() {
+              @Override
+              public void addInt(final int value) {
+                if ((value >= 0) && (value <= Byte.MAX_VALUE)) {
+                  parent.set(index, new IntWritable((int) value));
+                } else {
+                  parent.set(index, null);
+                }
+              }
+            };
+          default:
+            return new PrimitiveConverter() {
+              @Override
+              public void addInt(final int value) {
+                if (value >= 0) {
+                  parent.set(index, new IntWritable(value));
+                } else {
+                  parent.set(index, null);
+                }
+              }
+            };
+          }
         }
+        return new PrimitiveConverter() {
+          @Override
+          public void addInt(final int value) {
+            if (value >= 0) {
+              parent.set(index, new IntWritable(value));
+            } else {
+              parent.set(index, null);
+            }
+          }
+        };
+      } else {
+        if (hiveTypeInfo != null) {
+          switch (hiveTypeInfo.getTypeName()) {
+          case serdeConstants.BIGINT_TYPE_NAME:
+            return new PrimitiveConverter() {
+              @Override
+              public void addInt(final int value) {
+                parent.set(index, new LongWritable((long) value));
+              }
+            };
+          case serdeConstants.FLOAT_TYPE_NAME:
+            return new PrimitiveConverter() {
+              @Override
+              public void addInt(final int value) {
+                parent.set(index, new FloatWritable((float) value));
+              }
+            };
+          case serdeConstants.DOUBLE_TYPE_NAME:
+            return new PrimitiveConverter() {
+              @Override
+              public void addInt(final int value) {
+                parent.set(index, new DoubleWritable((float) value));
+              }
+            };
+          case serdeConstants.SMALLINT_TYPE_NAME:
+            return new PrimitiveConverter() {
+              @Override
+              public void addInt(final int value) {
+                if ((value >= Short.MIN_VALUE) && (value <= Short.MAX_VALUE)) {
+                  parent.set(index, new IntWritable((int) value));
+                } else {
+                  parent.set(index, null);
+                }
+              }
+            };
+          case serdeConstants.TINYINT_TYPE_NAME:
+            return new PrimitiveConverter() {
+              @Override
+              public void addInt(final int value) {
+                if ((value >= Byte.MIN_VALUE) && (value <= Byte.MAX_VALUE)) {
+                  parent.set(index, new IntWritable((int) value));
+                } else {
+                  parent.set(index, null);
+                }
+              }
+            };
+          default:
+            return new PrimitiveConverter() {
+              @Override
+              public void addInt(final int value) {
+                parent.set(index, new IntWritable(value));
+              }
+            };
+          }
+        }
+        return new PrimitiveConverter() {
+          @Override
+          public void addInt(final int value) {
+            parent.set(index, new IntWritable(value));
+          }
+        };
       }
-      return new PrimitiveConverter() {
-        @Override
-        public void addInt(final int value) {
-          parent.set(index, new IntWritable(value));
-        }
-      };
     }
   },
   EINT64_CONVERTER(Long.TYPE) {
     @Override
     PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent, TypeInfo hiveTypeInfo) {
-      if(hiveTypeInfo != null) {
-        switch(hiveTypeInfo.getTypeName()) {
-        case serdeConstants.FLOAT_TYPE_NAME:
-          return new PrimitiveConverter() {
-            @Override
-            public void addLong(final long value) {
-              parent.set(index, new FloatWritable(value));
-            }
-          };
-        case serdeConstants.DOUBLE_TYPE_NAME:
-          return new PrimitiveConverter() {
-            @Override
-            public void addLong(final long value) {
-              parent.set(index, new DoubleWritable(value));
-            }
-          };
-        case serdeConstants.INT_TYPE_NAME:
-          return new PrimitiveConverter() {
-            @Override
-            public void addLong(long value) {
-              if ((value >= Integer.MIN_VALUE) && (value <= Integer.MAX_VALUE)) {
-                parent.set(index, new IntWritable((int)value));
-              } else {
-                parent.set(index, null);
+      if (OriginalType.UINT_8 == type.getOriginalType() ||
+          OriginalType.UINT_16 == type.getOriginalType() ||
+          OriginalType.UINT_32 == type.getOriginalType() ||
+          OriginalType.UINT_64 == type.getOriginalType()) {
+        if (hiveTypeInfo != null) {
+          switch (hiveTypeInfo.getTypeName()) {
+          case serdeConstants.FLOAT_TYPE_NAME:
+            return new PrimitiveConverter() {
+              @Override
+              public void addLong(final long value) {
+                if (value >= 0) {
+                  parent.set(index, new FloatWritable(value));
+                } else {
+                  parent.set(index, null);
+                }
               }
-            }
-          };
-        case serdeConstants.SMALLINT_TYPE_NAME:
-          return new PrimitiveConverter() {
-            @Override
-            public void addLong(long value) {
-              if ((value >= Short.MIN_VALUE) && (value <= Short.MAX_VALUE)) {
-                parent.set(index, new IntWritable((int)value));
-              } else {
-                parent.set(index, null);
+            };
+          case serdeConstants.DOUBLE_TYPE_NAME:
+            return new PrimitiveConverter() {
+              @Override
+              public void addLong(final long value) {
+                if (value >= 0) {
+                  parent.set(index, new DoubleWritable(value));
+                } else {
+                  parent.set(index, null);
+                }
               }
-            }
-          };
-        case serdeConstants.TINYINT_TYPE_NAME:
-          return new PrimitiveConverter() {
-            @Override
-            public void addLong(long value) {
-              if ((value >= Byte.MIN_VALUE) && (value <= Byte.MAX_VALUE)) {
-                parent.set(index, new IntWritable((int)value));
-              } else {
-                parent.set(index, null);
+            };
+          case serdeConstants.INT_TYPE_NAME:
+            return new PrimitiveConverter() {
+              @Override
+              public void addLong(long value) {
+                if ((value >= 0) && (value <= Integer.MAX_VALUE)) {
+                  parent.set(index, new IntWritable((int) value));
+                } else {
+                  parent.set(index, null);
+                }
               }
-            }
-          };
+            };
+          case serdeConstants.SMALLINT_TYPE_NAME:
+            return new PrimitiveConverter() {
+              @Override
+              public void addLong(long value) {
+                if ((value >= 0) && (value <= Short.MAX_VALUE)) {
+                  parent.set(index, new IntWritable((int) value));
+                } else {
+                  parent.set(index, null);
+                }
+              }
+            };
+          case serdeConstants.TINYINT_TYPE_NAME:
+            return new PrimitiveConverter() {
+              @Override
+              public void addLong(long value) {
+                if ((value >= 0) && (value <= Byte.MAX_VALUE)) {
+                  parent.set(index, new IntWritable((int) value));
+                } else {
+                  parent.set(index, null);
+                }
+              }
+            };
+          default:
+            return new PrimitiveConverter() {
+              @Override
+              public void addLong(final long value) {
+                if (value >= 0) {
+                  parent.set(index, new LongWritable(value));
+                } else {
+                  parent.set(index, null);
+                }
+              }
+            };
+          }
         }
+        return new PrimitiveConverter() {
+          @Override
+          public void addLong(final long value) {
+            if (value >= 0) {
+              parent.set(index, new LongWritable(value));
+            } else {
+              parent.set(index, null);
+            }
+          }
+        };
+      } else {
+        if (hiveTypeInfo != null) {
+          switch (hiveTypeInfo.getTypeName()) {
+          case serdeConstants.FLOAT_TYPE_NAME:
+            return new PrimitiveConverter() {
+              @Override
+              public void addLong(final long value) {
+                parent.set(index, new FloatWritable(value));
+              }
+            };
+          case serdeConstants.DOUBLE_TYPE_NAME:
+            return new PrimitiveConverter() {
+              @Override
+              public void addLong(final long value) {
+                parent.set(index, new DoubleWritable(value));
+              }
+            };
+          case serdeConstants.INT_TYPE_NAME:
+            return new PrimitiveConverter() {
+              @Override
+              public void addLong(long value) {
+                if ((value >= Integer.MIN_VALUE) && (value <= Integer.MAX_VALUE)) {
+                  parent.set(index, new IntWritable((int) value));
+                } else {
+                  parent.set(index, null);
+                }
+              }
+            };
+          case serdeConstants.SMALLINT_TYPE_NAME:
+            return new PrimitiveConverter() {
+              @Override
+              public void addLong(long value) {
+                if ((value >= Short.MIN_VALUE) && (value <= Short.MAX_VALUE)) {
+                  parent.set(index, new IntWritable((int) value));
+                } else {
+                  parent.set(index, null);
+                }
+              }
+            };
+          case serdeConstants.TINYINT_TYPE_NAME:
+            return new PrimitiveConverter() {
+              @Override
+              public void addLong(long value) {
+                if ((value >= Byte.MIN_VALUE) && (value <= Byte.MAX_VALUE)) {
+                  parent.set(index, new IntWritable((int) value));
+                } else {
+                  parent.set(index, null);
+                }
+              }
+            };
+          default:
+            return new PrimitiveConverter() {
+              @Override
+              public void addLong(final long value) {
+                parent.set(index, new LongWritable(value));
+              }
+            };
+          }
+        }
+        return new PrimitiveConverter() {
+          @Override
+          public void addLong(final long value) {
+            parent.set(index, new LongWritable(value));
+          }
+        };
       }
-      return new PrimitiveConverter() {
-        @Override
-        public void addLong(final long value) {
-          parent.set(index, new LongWritable(value));
-        }
-      };
     }
   },
   EBINARY_CONVERTER(Binary.class) {
