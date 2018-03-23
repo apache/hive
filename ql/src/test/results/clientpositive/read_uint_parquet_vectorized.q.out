@@ -1,0 +1,429 @@
+PREHOOK: query: create table testbasicint (uint_32_col int) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testbasicint
+POSTHOOK: query: create table testbasicint (uint_32_col int) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testbasicint
+PREHOOK: query: load data local inpath '../../data/files/test_uint.parquet' into table testbasicint
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testbasicint
+POSTHOOK: query: load data local inpath '../../data/files/test_uint.parquet' into table testbasicint
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testbasicint
+PREHOOK: query: select * from testbasicint
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testbasicint
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testbasicint
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testbasicint
+#### A masked pattern was here ####
+0
+1
+2147483647
+NULL
+NULL
+PREHOOK: query: drop table testbasicint
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testbasicint
+PREHOOK: Output: default@testbasicint
+POSTHOOK: query: drop table testbasicint
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testbasicint
+POSTHOOK: Output: default@testbasicint
+PREHOOK: query: create table testbigintinv
+(col_INT32_UINT_8 bigint,
+ col_INT32_UINT_16 bigint,
+ col_INT32_UINT_32 bigint,
+ col_INT64_UINT_64 bigint) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testbigintinv
+POSTHOOK: query: create table testbigintinv
+(col_INT32_UINT_8 bigint,
+ col_INT32_UINT_16 bigint,
+ col_INT32_UINT_32 bigint,
+ col_INT64_UINT_64 bigint) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testbigintinv
+PREHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testbigintinv
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testbigintinv
+POSTHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testbigintinv
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testbigintinv
+PREHOOK: query: select * from testbigintinv
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testbigintinv
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testbigintinv
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testbigintinv
+#### A masked pattern was here ####
+0	0	0	0
+127	127	127	127
+255	255	255	255
+32767	32767	32767	32767
+65535	65535	65535	65535
+2147483647	2147483647	2147483647	2147483647
+NULL	NULL	NULL	4294967295
+NULL	NULL	NULL	9223372036854775807
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testbigintinv
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testbigintinv
+PREHOOK: Output: default@testbigintinv
+POSTHOOK: query: drop table testbigintinv
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testbigintinv
+POSTHOOK: Output: default@testbigintinv
+PREHOOK: query: create table testintinv
+(col_INT32_UINT_8  int,
+ col_INT32_UINT_16 int,
+ col_INT32_UINT_32 int,
+ col_INT64_UINT_64 int) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testintinv
+POSTHOOK: query: create table testintinv
+(col_INT32_UINT_8  int,
+ col_INT32_UINT_16 int,
+ col_INT32_UINT_32 int,
+ col_INT64_UINT_64 int) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testintinv
+PREHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testintinv
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testintinv
+POSTHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testintinv
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testintinv
+PREHOOK: query: select * from testintinv
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testintinv
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testintinv
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testintinv
+#### A masked pattern was here ####
+0	0	0	0
+127	127	127	127
+255	255	255	255
+32767	32767	32767	32767
+65535	65535	65535	65535
+2147483647	2147483647	2147483647	2147483647
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testintinv
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testintinv
+PREHOOK: Output: default@testintinv
+POSTHOOK: query: drop table testintinv
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testintinv
+POSTHOOK: Output: default@testintinv
+PREHOOK: query: create table testsmallintinv
+(col_INT32_UINT_8  smallint,
+ col_INT32_UINT_16 smallint,
+ col_INT32_UINT_32 smallint,
+ col_INT64_UINT_64 smallint) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testsmallintinv
+POSTHOOK: query: create table testsmallintinv
+(col_INT32_UINT_8  smallint,
+ col_INT32_UINT_16 smallint,
+ col_INT32_UINT_32 smallint,
+ col_INT64_UINT_64 smallint) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testsmallintinv
+PREHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testsmallintinv
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testsmallintinv
+POSTHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testsmallintinv
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testsmallintinv
+PREHOOK: query: select * from testsmallintinv
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testsmallintinv
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testsmallintinv
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testsmallintinv
+#### A masked pattern was here ####
+0	0	0	0
+127	127	127	127
+255	255	255	255
+32767	32767	32767	32767
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testsmallintinv
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testsmallintinv
+PREHOOK: Output: default@testsmallintinv
+POSTHOOK: query: drop table testsmallintinv
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testsmallintinv
+POSTHOOK: Output: default@testsmallintinv
+PREHOOK: query: create table testtinyintinv
+(col_INT32_UINT_8  tinyint,
+ col_INT32_UINT_16 tinyint,
+ col_INT32_UINT_32 tinyint,
+ col_INT64_UINT_64 tinyint) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testtinyintinv
+POSTHOOK: query: create table testtinyintinv
+(col_INT32_UINT_8  tinyint,
+ col_INT32_UINT_16 tinyint,
+ col_INT32_UINT_32 tinyint,
+ col_INT64_UINT_64 tinyint) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testtinyintinv
+PREHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testtinyintinv
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testtinyintinv
+POSTHOOK: query: load data local inpath '../../data/files/data_including_invalid_values.parquet' into table testtinyintinv
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testtinyintinv
+PREHOOK: query: select * from testtinyintinv
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testtinyintinv
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testtinyintinv
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testtinyintinv
+#### A masked pattern was here ####
+0	0	0	0
+127	127	127	127
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testtinyintinv
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testtinyintinv
+PREHOOK: Output: default@testtinyintinv
+POSTHOOK: query: drop table testtinyintinv
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testtinyintinv
+POSTHOOK: Output: default@testtinyintinv
+PREHOOK: query: create table testbigintvalid
+(col_INT32_UINT_8 bigint,
+ col_INT32_UINT_16 bigint,
+ col_INT32_UINT_32 bigint,
+ col_INT64_UINT_64 bigint) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testbigintvalid
+POSTHOOK: query: create table testbigintvalid
+(col_INT32_UINT_8 bigint,
+ col_INT32_UINT_16 bigint,
+ col_INT32_UINT_32 bigint,
+ col_INT64_UINT_64 bigint) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testbigintvalid
+PREHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testbigintvalid
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testbigintvalid
+POSTHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testbigintvalid
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testbigintvalid
+PREHOOK: query: select * from testbigintvalid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testbigintvalid
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testbigintvalid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testbigintvalid
+#### A masked pattern was here ####
+0	0	0	0
+127	127	127	127
+255	255	255	255
+NULL	32767	32767	32767
+NULL	65535	65535	65535
+NULL	NULL	2147483647	2147483647
+NULL	NULL	NULL	4294967295
+NULL	NULL	NULL	9223372036854775807
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testbigintvalid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testbigintvalid
+PREHOOK: Output: default@testbigintvalid
+POSTHOOK: query: drop table testbigintvalid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testbigintvalid
+POSTHOOK: Output: default@testbigintvalid
+PREHOOK: query: create table testintvalid
+(col_INT32_UINT_8  int,
+ col_INT32_UINT_16 int,
+ col_INT32_UINT_32 int,
+ col_INT64_UINT_64 int) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testintvalid
+POSTHOOK: query: create table testintvalid
+(col_INT32_UINT_8  int,
+ col_INT32_UINT_16 int,
+ col_INT32_UINT_32 int,
+ col_INT64_UINT_64 int) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testintvalid
+PREHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testintvalid
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testintvalid
+POSTHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testintvalid
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testintvalid
+PREHOOK: query: select * from testintvalid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testintvalid
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testintvalid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testintvalid
+#### A masked pattern was here ####
+0	0	0	0
+127	127	127	127
+255	255	255	255
+NULL	32767	32767	32767
+NULL	65535	65535	65535
+NULL	NULL	2147483647	2147483647
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testintvalid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testintvalid
+PREHOOK: Output: default@testintvalid
+POSTHOOK: query: drop table testintvalid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testintvalid
+POSTHOOK: Output: default@testintvalid
+PREHOOK: query: create table testsmallintvalid
+(col_INT32_UINT_8  smallint,
+ col_INT32_UINT_16 smallint,
+ col_INT32_UINT_32 smallint,
+ col_INT64_UINT_64 smallint) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testsmallintvalid
+POSTHOOK: query: create table testsmallintvalid
+(col_INT32_UINT_8  smallint,
+ col_INT32_UINT_16 smallint,
+ col_INT32_UINT_32 smallint,
+ col_INT64_UINT_64 smallint) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testsmallintvalid
+PREHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testsmallintvalid
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testsmallintvalid
+POSTHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testsmallintvalid
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testsmallintvalid
+PREHOOK: query: select * from testsmallintvalid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testsmallintvalid
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testsmallintvalid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testsmallintvalid
+#### A masked pattern was here ####
+0	0	0	0
+127	127	127	127
+255	255	255	255
+NULL	32767	32767	32767
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testsmallintvalid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testsmallintvalid
+PREHOOK: Output: default@testsmallintvalid
+POSTHOOK: query: drop table testsmallintvalid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testsmallintvalid
+POSTHOOK: Output: default@testsmallintvalid
+PREHOOK: query: create table testtinyintvalid
+(col_INT32_UINT_8  tinyint,
+ col_INT32_UINT_16 tinyint,
+ col_INT32_UINT_32 tinyint,
+ col_INT64_UINT_64 tinyint) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testtinyintvalid
+POSTHOOK: query: create table testtinyintvalid
+(col_INT32_UINT_8  tinyint,
+ col_INT32_UINT_16 tinyint,
+ col_INT32_UINT_32 tinyint,
+ col_INT64_UINT_64 tinyint) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testtinyintvalid
+PREHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testtinyintvalid
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@testtinyintvalid
+POSTHOOK: query: load data local inpath '../../data/files/data_with_valid_values.parquet' into table testtinyintvalid
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@testtinyintvalid
+PREHOOK: query: select * from testtinyintvalid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testtinyintvalid
+#### A masked pattern was here ####
+POSTHOOK: query: select * from testtinyintvalid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testtinyintvalid
+#### A masked pattern was here ####
+0	0	0	0
+127	127	127	127
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL
+PREHOOK: query: drop table testtinyintvalid
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testtinyintvalid
+PREHOOK: Output: default@testtinyintvalid
+POSTHOOK: query: drop table testtinyintvalid
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testtinyintvalid
+POSTHOOK: Output: default@testtinyintvalid
