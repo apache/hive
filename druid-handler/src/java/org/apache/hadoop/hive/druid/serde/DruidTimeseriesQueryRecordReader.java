@@ -64,7 +64,7 @@ public class DruidTimeseriesQueryRecordReader
   public DruidWritable getCurrentValue() throws IOException, InterruptedException {
     // Create new value
     DruidWritable value = new DruidWritable();
-    value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
+    value.getValue().put("timestamp", current.getTimestamp().getMillis());
     value.getValue().putAll(current.getValue().getBaseObject());
     return value;
   }
@@ -74,7 +74,7 @@ public class DruidTimeseriesQueryRecordReader
     if (nextKeyValue()) {
       // Update value
       value.getValue().clear();
-      value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, current.getTimestamp().getMillis());
+      value.getValue().put("timestamp", current.getTimestamp().getMillis());
       value.getValue().putAll(current.getValue().getBaseObject());
       return true;
     }
