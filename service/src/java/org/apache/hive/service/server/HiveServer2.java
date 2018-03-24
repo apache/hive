@@ -18,9 +18,15 @@
 
 package org.apache.hive.service.server;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +45,9 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.curator.framework.CuratorFramework;
@@ -87,12 +96,14 @@ import org.apache.hive.http.security.PamAuthenticator;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.cli.CLIService;
+import org.apache.hive.service.cli.session.SessionManager;
 import org.apache.hive.service.cli.thrift.ThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.hive.service.cli.thrift.ThriftHttpCLIService;
 import org.apache.hive.service.servlet.HS2LeadershipStatus;
 import org.apache.hive.service.servlet.HS2Peers;
 import org.apache.hive.service.servlet.QueryProfileServlet;
+import org.apache.http.HttpHeaders;
 import org.apache.logging.log4j.util.Strings;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -150,6 +161,10 @@ public class HiveServer2 extends CompositeService {
     this.pamAuthenticator = pamAuthenticator;
   }
 
+  @VisibleForTesting
+  public void setPamAuthenticator(PamAuthenticator pamAuthenticator) {
+    this.pamAuthenticator = pamAuthenticator;
+  }
 
   @Override
   public synchronized void init(HiveConf hiveConf) {
@@ -221,6 +236,22 @@ public class HiveServer2 extends CompositeService {
 
     this.serviceDiscovery = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY);
     this.activePassiveHA = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_ENABLE);
+
+    try {
+      if (serviceDiscovery) {
+        serviceUri = getServerInstanceURI();
+        addConfsToPublish(hiveConf, confsToPublish, serviceUri);
+        if (activePassiveHA) {
+          hiveConf.set(INSTANCE_URI_CONFIG, serviceUri);
+          leaderLatchListener = new HS2LeaderLatchListener(this, SessionState.get());
+          leaderActionsExecutorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setDaemon(true)
+            .setNameFormat("Leader Actions Handler Thread").build());
+          hs2HARegistry = HS2ActivePassiveHARegistry.create(hiveConf, false);
+        }
+      }
+    } catch (Exception e) {
+      throw new ServiceException(e);
+    }
 
     // Setup web UI
     final int webUIPort;
@@ -295,6 +326,7 @@ public class HiveServer2 extends CompositeService {
           }
           if (serviceDiscovery && activePassiveHA) {
             builder.setContextAttribute("hs2.isLeader", isLeader);
+            builder.setContextAttribute("hs2.failover.callback", new FailoverHandlerCallback(hs2HARegistry));
             builder.setContextAttribute("hiveconf", hiveConf);
             builder.addServlet("leader", HS2LeadershipStatus.class);
             builder.addServlet("peers", HS2Peers.class);
@@ -309,22 +341,6 @@ public class HiveServer2 extends CompositeService {
       }
     } catch (IOException ie) {
       throw new ServiceException(ie);
-    }
-
-    try {
-      if (serviceDiscovery) {
-        serviceUri = getServerInstanceURI();
-        addConfsToPublish(hiveConf, confsToPublish, serviceUri);
-        if (activePassiveHA) {
-          hiveConf.set(INSTANCE_URI_CONFIG, serviceUri);
-          leaderLatchListener = new HS2LeaderLatchListener(this, SessionState.get());
-          leaderActionsExecutorService = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setDaemon(true)
-            .setNameFormat("Leader Actions Handler Thread").build());
-          hs2HARegistry = HS2ActivePassiveHARegistry.create(hiveConf, false);
-        }
-      }
-    } catch (Exception e) {
-      throw new ServiceException(e);
     }
 
     // Add a shutdown hook for catching SIGTERM & SIGINT
@@ -532,7 +548,22 @@ public class HiveServer2 extends CompositeService {
     return isLeader.get();
   }
 
+  interface FailoverHandler {
+    void failover() throws Exception;
+  }
 
+  public static class FailoverHandlerCallback implements FailoverHandler {
+    private HS2ActivePassiveHARegistry hs2HARegistry;
+
+    FailoverHandlerCallback(HS2ActivePassiveHARegistry hs2HARegistry) {
+      this.hs2HARegistry = hs2HARegistry;
+    }
+
+    @Override
+    public void failover() throws Exception {
+      hs2HARegistry.failover();
+    }
+  }
   /**
    * The watcher class which sets the de-register flag when the znode corresponding to this server
    * instance is deleted. Additionally, it shuts down the server if there are no more active client
@@ -663,6 +694,9 @@ public class HiveServer2 extends CompositeService {
     public void notLeader() {
       LOG.info("HS2 instance {} LOST LEADERSHIP. Stopping/Disconnecting tez sessions..", hiveServer2.serviceUri);
       hiveServer2.isLeader.set(false);
+      // TODO: should we explicitly close client connections with appropriate error msg? SessionManager.closeSession()
+      // will shut itself down upon explicit --deregister after all connections are closed. Something similar but for
+      // failover.
       hiveServer2.stopOrDisconnectTezSessions();
       LOG.info("Stopped/Disconnected tez sessions.");
     }
@@ -998,6 +1032,19 @@ public class HiveServer2 extends CompositeService {
           .withLongOpt("deregister")
           .withDescription("Deregister all instances of given version from dynamic service discovery")
           .create());
+      // --listHAPeers
+      options.addOption(OptionBuilder
+        .hasArgs(0)
+        .withLongOpt("listHAPeers")
+        .withDescription("List all HS2 instances when running in Active Passive HA mode")
+        .create());
+      // --failover <workerIdentity>
+      options.addOption(OptionBuilder
+        .hasArgs(1)
+        .withArgName("workerIdentity")
+        .withLongOpt("failover")
+        .withDescription("Manually failover Active HS2 instance to passive standby mode")
+        .create());
       options.addOption(new Option("H", "help", false, "Print help information"));
     }
 
@@ -1026,6 +1073,18 @@ public class HiveServer2 extends CompositeService {
         if (commandLine.hasOption("deregister")) {
           return new ServerOptionsProcessorResponse(new DeregisterOptionExecutor(
               commandLine.getOptionValue("deregister")));
+        }
+
+        // Process --listHAPeers
+        if (commandLine.hasOption("listHAPeers")) {
+          return new ServerOptionsProcessorResponse(new ListHAPeersExecutor());
+        }
+
+        // Process --failover
+        if (commandLine.hasOption("failover")) {
+          return new ServerOptionsProcessorResponse(new FailoverHS2InstanceExecutor(
+            commandLine.getOptionValue("failover")
+          ));
         }
       } catch (ParseException e) {
         // Error out & exit - we were not able to parse the args successfully
@@ -1119,6 +1178,114 @@ public class HiveServer2 extends CompositeService {
             + " from ZooKeeper", e);
         System.out.println("Error deregistering HiveServer2 instances for version: " + versionNumber
             + " from ZooKeeper." + e);
+        System.exit(-1);
+      }
+      System.exit(0);
+    }
+  }
+
+  /**
+   * Handler for --failover <workerIdentity> command. The way failover works is,
+   * - the client gets <workerIdentity> from user input
+   * - the client uses HS2 HA registry to get list of HS2 instances and finds the one that matches <workerIdentity>
+   * - if there is a match, client makes sure the instance is a leader (only leader can failover)
+   * - if the matched instance is a leader, its web endpoint is obtained from service record then http DELETE method
+   *   is invoked on /leader endpoint (Yes. Manual failover requires web UI to be enabled)
+   * - the webpoint checks if admin ACLs are set, if so will close and restart the leader latch triggering a failover
+   */
+  static class FailoverHS2InstanceExecutor implements ServerOptionsExecutor {
+    private final String workerIdentity;
+
+    FailoverHS2InstanceExecutor(String workerIdentity) {
+      this.workerIdentity = workerIdentity;
+    }
+
+    @Override
+    public void execute() {
+      try {
+        HiveConf hiveConf = new HiveConf();
+        HS2ActivePassiveHARegistry haRegistry = HS2ActivePassiveHARegistryClient.getClient(hiveConf);
+        Collection<HiveServer2Instance> hs2Instances = haRegistry.getAll();
+        // no HS2 instances are running
+        if (hs2Instances.isEmpty()) {
+          LOG.error("No HiveServer2 instances are running in HA mode");
+          System.err.println("No HiveServer2 instances are running in HA mode");
+          System.exit(-1);
+        }
+        HiveServer2Instance targetInstance = null;
+        for (HiveServer2Instance instance : hs2Instances) {
+          if (instance.getWorkerIdentity().equals(workerIdentity)) {
+            targetInstance = instance;
+            break;
+          }
+        }
+        // no match for workerIdentity
+        if (targetInstance == null) {
+          LOG.error("Cannot find any HiveServer2 instance with workerIdentity: " + workerIdentity);
+          System.err.println("Cannot find any HiveServer2 instance with workerIdentity: " + workerIdentity);
+          System.exit(-1);
+        }
+        // only one HS2 instance available (cannot failover)
+        if (hs2Instances.size() == 1) {
+          LOG.error("Only one HiveServer2 instance running in thefail cluster. Cannot failover: " + workerIdentity);
+          System.err.println("Only one HiveServer2 instance running in the cluster. Cannot failover: " + workerIdentity);
+          System.exit(-1);
+        }
+        // matched HS2 instance is not leader
+        if (!targetInstance.isLeader()) {
+          LOG.error("HiveServer2 instance (workerIdentity: " + workerIdentity + ") is not a leader. Cannot failover");
+          System.err.println("HiveServer2 instance (workerIdentity: " + workerIdentity + ") is not a leader. Cannot failover");
+          System.exit(-1);
+        }
+
+        String webPort = targetInstance.getProperties().get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname);
+        // web port cannot be obtained
+        if (StringUtils.isEmpty(webPort)) {
+          LOG.error("Unable to determine web port for instance: " + workerIdentity);
+          System.err.println("Unable to determine web port for instance: " + workerIdentity);
+          System.exit(-1);
+        }
+
+        // invoke DELETE /leader endpoint for failover
+        String webEndpoint = "http://" + targetInstance.getHost() + ":" + webPort + "/leader";
+        HttpClient client = new HttpClient();
+        HttpMethodBase method = new DeleteMethod(webEndpoint);
+        try {
+          int statusCode = client.executeMethod(method);
+          if (statusCode == 200) {
+            System.out.println(method.getResponseBodyAsString());
+          } else {
+            String response = method.getStatusLine().getReasonPhrase();
+            LOG.error("Unable to failover HiveServer2 instance: " + workerIdentity + ". status code: " +
+              statusCode + "error: " + response);
+            System.err.println("Unable to failover HiveServer2 instance: " + workerIdentity + ". status code: " +
+              statusCode + " error: " + response);
+            System.exit(-1);
+          }
+        } finally {
+          method.releaseConnection();
+        }
+      } catch (IOException e) {
+        LOG.error("Error listing HiveServer2 HA instances from ZooKeeper", e);
+        System.err.println("Error listing HiveServer2 HA instances from ZooKeeper" + e);
+        System.exit(-1);
+      }
+      System.exit(0);
+    }
+  }
+
+  static class ListHAPeersExecutor implements ServerOptionsExecutor {
+    @Override
+    public void execute() {
+      try {
+        HiveConf hiveConf = new HiveConf();
+        HS2ActivePassiveHARegistry haRegistry = HS2ActivePassiveHARegistryClient.getClient(hiveConf);
+        HS2Peers.HS2Instances hs2Instances = new HS2Peers.HS2Instances(haRegistry.getAll());
+        String jsonOut = hs2Instances.toJson();
+        System.out.println(jsonOut);
+      } catch (IOException e) {
+        LOG.error("Error listing HiveServer2 HA instances from ZooKeeper", e);
+        System.err.println("Error listing HiveServer2 HA instances from ZooKeeper" + e);
         System.exit(-1);
       }
       System.exit(0);

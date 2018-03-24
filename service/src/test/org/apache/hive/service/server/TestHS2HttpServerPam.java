@@ -155,7 +155,7 @@ public class TestHS2HttpServerPam {
   public static class TestPamAuthenticator extends PamAuthenticator {
     private static final Map<String, String> users = new HashMap<>();
 
-    TestPamAuthenticator(HiveConf conf) throws AuthenticationException {
+    public TestPamAuthenticator(HiveConf conf) throws AuthenticationException {
       super(conf);
     }
 
