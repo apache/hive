@@ -21,33 +21,37 @@ package org.apache.hive.jdbc;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.methods.DeleteMethod;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.curator.test.TestingServer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.registry.impl.ZkRegistryBase;
+import org.apache.hive.http.security.PamAuthenticator;
 import org.apache.hive.jdbc.miniHS2.MiniHS2;
 import org.apache.hive.service.server.HS2ActivePassiveHARegistry;
 import org.apache.hive.service.server.HS2ActivePassiveHARegistryClient;
 import org.apache.hive.service.server.HiveServer2Instance;
+import org.apache.hive.service.server.TestHS2HttpServerPam;
 import org.apache.hive.service.servlet.HS2Peers;
+import org.apache.http.HttpHeaders;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -60,6 +64,8 @@ public class TestActivePassiveHA {
   private MiniHS2 miniHS2_2 = null;
   private static TestingServer zkServer;
   private Connection hs2Conn = null;
+  private static String ADMIN_USER = "user1"; // user from TestPamAuthenticator
+  private static String ADMIN_PASSWORD = "1";
   private static String zkHANamespace = "hs2ActivePassiveHATest";
   private HiveConf hiveConf1;
   private HiveConf hiveConf2;
@@ -124,15 +130,8 @@ public class TestActivePassiveHA {
   public void testActivePassiveHA() throws Exception {
     String instanceId1 = UUID.randomUUID().toString();
     miniHS2_1.start(getConfOverlay(instanceId1));
-    while (!miniHS2_1.isStarted()) {
-      Thread.sleep(100);
-    }
-
     String instanceId2 = UUID.randomUUID().toString();
     miniHS2_2.start(getConfOverlay(instanceId2));
-    while (!miniHS2_2.isStarted()) {
-      Thread.sleep(100);
-    }
 
     assertEquals(true, miniHS2_1.isLeader());
     String url = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
@@ -175,9 +174,6 @@ public class TestActivePassiveHA {
 
     miniHS2_1.stop();
 
-    while (!miniHS2_2.isStarted()) {
-      Thread.sleep(100);
-    }
     assertEquals(true, miniHS2_2.isLeader());
     url = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
     assertEquals("true", sendGet(url));
@@ -219,9 +215,6 @@ public class TestActivePassiveHA {
     instanceId1 = UUID.randomUUID().toString();
     miniHS2_1.start(getConfOverlay(instanceId1));
 
-    while (!miniHS2_1.isStarted()) {
-      Thread.sleep(100);
-    }
     assertEquals(false, miniHS2_1.isLeader());
     url = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
     assertEquals("false", sendGet(url));
@@ -264,17 +257,11 @@ public class TestActivePassiveHA {
   public void testConnectionActivePassiveHAServiceDiscovery() throws Exception {
     String instanceId1 = UUID.randomUUID().toString();
     miniHS2_1.start(getConfOverlay(instanceId1));
-    while (!miniHS2_1.isStarted()) {
-      Thread.sleep(100);
-    }
     String instanceId2 = UUID.randomUUID().toString();
     Map<String, String> confOverlay = getConfOverlay(instanceId2);
     confOverlay.put(ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname, "http");
     confOverlay.put(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH.varname, "clidriverTest");
     miniHS2_2.start(confOverlay);
-    while (!miniHS2_2.isStarted()) {
-      Thread.sleep(100);
-    }
 
     assertEquals(true, miniHS2_1.isLeader());
     String url = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
@@ -323,6 +310,92 @@ public class TestActivePassiveHA {
     openConnectionAndRunQuery(zkJdbcUrl);
   }
 
+  @Test(timeout = 60000)
+  public void testManualFailover() throws Exception {
+    setPamConfs(hiveConf1);
+    setPamConfs(hiveConf2);
+    PamAuthenticator pamAuthenticator1 = new TestHS2HttpServerPam.TestPamAuthenticator(hiveConf1);
+    PamAuthenticator pamAuthenticator2 = new TestHS2HttpServerPam.TestPamAuthenticator(hiveConf2);
+    try {
+      String instanceId1 = UUID.randomUUID().toString();
+      miniHS2_1.setPamAuthenticator(pamAuthenticator1);
+      miniHS2_1.start(getSecureConfOverlay(instanceId1));
+      String instanceId2 = UUID.randomUUID().toString();
+      Map<String, String> confOverlay = getSecureConfOverlay(instanceId2);
+      confOverlay.put(ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname, "http");
+      confOverlay.put(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH.varname, "clidriverTest");
+      miniHS2_2.setPamAuthenticator(pamAuthenticator2);
+      miniHS2_2.start(confOverlay);
+      String url1 = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+      String url2 = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+
+      // when we start miniHS2_1 will be leader (sequential start)
+      assertEquals(true, miniHS2_1.isLeader());
+      assertEquals("true", sendGet(url1, true));
+
+      // trigger failover on miniHS2_1
+      String resp = sendDelete(url1, true);
+      assertTrue(resp.contains("Failover successful!"));
+
+      // make sure miniHS2_1 is not leader
+      assertEquals(false, miniHS2_1.isLeader());
+      assertEquals("false", sendGet(url1, true));
+
+      // make sure miniHS2_2 is the new leader
+      assertEquals(true, miniHS2_2.isLeader());
+      assertEquals("true", sendGet(url2, true));
+
+      // send failover request again to miniHS2_1 and get a failure
+      resp = sendDelete(url1, true);
+      assertTrue(resp.contains("Cannot failover an instance that is not a leader"));
+      assertEquals(false, miniHS2_1.isLeader());
+
+      // send failover request to miniHS2_2 and make sure miniHS2_1 takes over (returning back to leader, test listeners)
+      resp = sendDelete(url2, true);
+      assertTrue(resp.contains("Failover successful!"));
+      assertEquals(true, miniHS2_1.isLeader());
+      assertEquals("true", sendGet(url1, true));
+      assertEquals("false", sendGet(url2, true));
+      assertEquals(false, miniHS2_2.isLeader());
+    } finally {
+      // revert configs to not affect other tests
+      unsetPamConfs(hiveConf1);
+      unsetPamConfs(hiveConf2);
+    }
+  }
+
+  @Test(timeout = 60000)
+  public void testManualFailoverUnauthorized() throws Exception {
+    setPamConfs(hiveConf1);
+    PamAuthenticator pamAuthenticator1 = new TestHS2HttpServerPam.TestPamAuthenticator(hiveConf1);
+    try {
+      String instanceId1 = UUID.randomUUID().toString();
+      miniHS2_1.setPamAuthenticator(pamAuthenticator1);
+      miniHS2_1.start(getSecureConfOverlay(instanceId1));
+
+      // dummy HS2 instance just to trigger failover
+      String instanceId2 = UUID.randomUUID().toString();
+      Map<String, String> confOverlay = getSecureConfOverlay(instanceId2);
+      confOverlay.put(ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname, "http");
+      confOverlay.put(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH.varname, "clidriverTest");
+      miniHS2_2.start(confOverlay);
+
+      String url1 = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+      // when we start miniHS2_1 will be leader (sequential start)
+      assertEquals(true, miniHS2_1.isLeader());
+      assertEquals("true", sendGet(url1, true));
+
+      // trigger failover on miniHS2_1 without authorization header
+      assertEquals("Unauthorized", sendDelete(url1, false));
+      assertTrue(sendDelete(url1, true).contains("Failover successful!"));
+      assertEquals(false, miniHS2_1.isLeader());
+      assertEquals(true, miniHS2_2.isLeader());
+    } finally {
+      // revert configs to not affect other tests
+      unsetPamConfs(hiveConf1);
+    }
+  }
+
   private Connection getConnection(String jdbcURL, String user) throws SQLException {
     return DriverManager.getConnection(jdbcURL, user, "bar");
   }
@@ -346,23 +419,62 @@ public class TestActivePassiveHA {
   }
 
   private String sendGet(String url) throws Exception {
-    URL obj = new URL(url);
-    HttpURLConnection con = (HttpURLConnection) obj.openConnection();
-    con.setRequestMethod("GET");
-    BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-    String inputLine;
-    StringBuilder response = new StringBuilder();
-    while ((inputLine = in.readLine()) != null) {
-      response.append(inputLine);
-    }
-    in.close();
-    return response.toString();
+    return sendGet(url, false);
   }
 
-  private Map<String,String> getConfOverlay(final String instanceId) {
+  private String sendGet(String url, boolean enableAuth) throws Exception {
+    return sendAuthMethod(new GetMethod(url), enableAuth);
+  }
+
+  private String sendDelete(String url, boolean enableAuth) throws Exception {
+    return sendAuthMethod(new DeleteMethod(url), enableAuth);
+  }
+
+  private String sendAuthMethod(HttpMethodBase method, boolean enableAuth) throws Exception {
+    HttpClient client = new HttpClient();
+    try {
+      if (enableAuth) {
+        String userPass = ADMIN_USER + ":" + ADMIN_PASSWORD;
+        method.addRequestHeader(HttpHeaders.AUTHORIZATION,
+          "Basic " + new String(Base64.getEncoder().encode(userPass.getBytes())));
+      }
+      int statusCode = client.executeMethod(method);
+      if (statusCode == 200) {
+        return method.getResponseBodyAsString();
+      } else {
+        return method.getStatusLine().getReasonPhrase();
+      }
+    } finally {
+      method.releaseConnection();
+    }
+  }
+
+  private Map<String, String> getConfOverlay(final String instanceId) {
     Map<String, String> confOverlay = new HashMap<>();
     confOverlay.put("hive.server2.zookeeper.publish.configs", "true");
     confOverlay.put(ZkRegistryBase.UNIQUE_IDENTIFIER, instanceId);
     return confOverlay;
+  }
+
+  private Map<String, String> getSecureConfOverlay(final String instanceId) {
+    Map<String, String> confOverlay = new HashMap<>();
+    confOverlay.put("hive.server2.zookeeper.publish.configs", "true");
+    confOverlay.put(ZkRegistryBase.UNIQUE_IDENTIFIER, instanceId);
+    confOverlay.put("hadoop.security.instrumentation.requires.admin", "true");
+    confOverlay.put("hadoop.security.authorization", "true");
+    confOverlay.put(ConfVars.USERS_IN_ADMIN_ROLE.varname, ADMIN_USER);
+    return confOverlay;
+  }
+
+  private void setPamConfs(final HiveConf hiveConf) {
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PAM_SERVICES, "sshd");
+    hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_PAM, true);
+    hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST, true);
+  }
+
+  private void unsetPamConfs(final HiveConf hiveConf) {
+    hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_PAM_SERVICES, "");
+    hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_PAM, false);
+    hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST, false);
   }
 }

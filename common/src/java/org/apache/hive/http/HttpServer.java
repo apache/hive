@@ -273,6 +273,28 @@ public class HttpServer {
   }
 
   /**
+   * Same as {@link HttpServer#isInstrumentationAccessAllowed(ServletContext, HttpServletRequest, HttpServletResponse)}
+   * except that it returns true only if <code>hadoop.security.instrumentation.requires.admin</code> is set to true.
+   */
+  @InterfaceAudience.LimitedPrivate("hive")
+  public static boolean isInstrumentationAccessAllowedStrict(
+    ServletContext servletContext, HttpServletRequest request,
+    HttpServletResponse response) throws IOException {
+    Configuration conf =
+      (Configuration) servletContext.getAttribute(CONF_CONTEXT_ATTRIBUTE);
+
+    boolean access;
+    boolean adminAccess = conf.getBoolean(
+      CommonConfigurationKeys.HADOOP_SECURITY_INSTRUMENTATION_REQUIRES_ADMIN, false);
+    if (adminAccess) {
+      access = hasAdministratorAccess(servletContext, request, response);
+    } else {
+      return false;
+    }
+    return access;
+  }
+
+  /**
    * Check if the remote user has access to an object (e.g. query history) that belongs to a user
    *
    * @param ctx the context containing the admin ACL.
