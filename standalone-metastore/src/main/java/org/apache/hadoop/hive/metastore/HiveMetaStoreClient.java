@@ -1000,15 +1000,24 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
 
     if (cascade) {
-       List<String> tableList = getAllTables(dbName);
-       for (String table : tableList) {
-         try {
-           // Subclasses can override this step (for example, for temporary tables)
-           dropTable(dbName, table, deleteData, true);
-         } catch (UnsupportedOperationException e) {
-           // Ignore Index tables, those will be dropped with parent tables
-         }
+      // Note that this logic may drop some of the tables of the database
+      // even if the drop database fail for any reason
+      // TODO: Fix this
+      List<String> materializedViews = getTables(dbName, ".*", TableType.MATERIALIZED_VIEW);
+      for (String table : materializedViews) {
+        // First we delete the materialized views
+        dropTable(dbName, table, deleteData, true);
+      }
+      List<String> tableList = getAllTables(dbName);
+      for (String table : tableList) {
+        // Now we delete the rest of tables
+        try {
+          // Subclasses can override this step (for example, for temporary tables)
+          dropTable(dbName, table, deleteData, true);
+        } catch (UnsupportedOperationException e) {
+          // Ignore Index tables, those will be dropped with parent tables
         }
+      }
     }
     client.drop_database(prependCatalogToDbName(catalogName, dbName, conf), deleteData, cascade);
   }
