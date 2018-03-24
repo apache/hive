@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
+
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -47,6 +47,7 @@ import java.util.Set;
 public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
   private String catName, dbName, tableName, owner, viewOriginalText, viewExpandedText, type,
       mvValidTxnList;
+  private CreationMetadata cm;
   private List<FieldSchema> partCols;
   private int createTime, lastAccessTime, retention;
   private Map<String, String> tableParams;
@@ -108,6 +109,11 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
     return this;
   }
 
+  public TableBuilder setCreationMetadata(CreationMetadata cm) {
+    this.cm = cm;
+    return this;
+  }
+
   public TableBuilder setPartCols(List<FieldSchema> partCols) {
     this.partCols = partCols;
     return this;
@@ -162,6 +168,11 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
 
   public TableBuilder addMaterializedViewReferencedTable(String tableName) {
     mvReferencedTables.add(tableName);
+    return this;
+  }
+
+  public TableBuilder addMaterializedViewReferencedTables(Set<String> tableNames) {
+    mvReferencedTables.addAll(tableNames);
     return this;
   }
 

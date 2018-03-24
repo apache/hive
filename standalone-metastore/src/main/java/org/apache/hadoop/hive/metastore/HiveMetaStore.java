@@ -1382,11 +1382,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         firePreEvent(new PreDropDatabaseEvent(db, this));
         String catPrependedName = MetaStoreUtils.prependCatalogToDbName(catName, name, conf);
 
-        List<String> allTables = get_all_tables(catPrependedName);
+        Set<String> uniqueTableNames = new HashSet<>(get_all_tables(catPrependedName));
         List<String> allFunctions = get_functions(catPrependedName, "*");
 
         if (!cascade) {
-          if (!allTables.isEmpty()) {
+          if (!uniqueTableNames.isEmpty()) {
             throw new InvalidOperationException(
                 "Database " + db.getName() + " is not empty. One or more tables exist.");
           }
@@ -1409,11 +1409,49 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           drop_function(catPrependedName, funcName);
         }
 
-        // drop tables before dropping db
-        int tableBatchSize = MetastoreConf.getIntVar(conf,
+        final int tableBatchSize = MetastoreConf.getIntVar(conf,
             ConfVars.BATCH_RETRIEVE_MAX);
 
+        // First pass will drop the materialized views
+        List<String> materializedViewNames = get_tables_by_type(name, ".*", TableType.MATERIALIZED_VIEW.toString());
         int startIndex = 0;
+        // retrieve the tables from the metastore in batches to alleviate memory constraints
+        while (startIndex < materializedViewNames.size()) {
+          int endIndex = Math.min(startIndex + tableBatchSize, materializedViewNames.size());
+
+          List<Table> materializedViews;
+          try {
+            materializedViews = ms.getTableObjectsByName(catName, name, materializedViewNames.subList(startIndex, endIndex));
+          } catch (UnknownDBException e) {
+            throw new MetaException(e.getMessage());
+          }
+
+          if (materializedViews != null && !materializedViews.isEmpty()) {
+            for (Table materializedView : materializedViews) {
+              if (materializedView.getSd().getLocation() != null) {
+                Path materializedViewPath = wh.getDnsPath(new Path(materializedView.getSd().getLocation()));
+                if (!wh.isWritable(materializedViewPath.getParent())) {
+                  throw new MetaException("Database metadata not deleted since table: " +
+                      materializedView.getTableName() + " has a parent location " + materializedViewPath.getParent() +
+                      " which is not writable by " + SecurityUtils.getUser());
+                }
+
+                if (!isSubdirectory(databasePath, materializedViewPath)) {
+                  tablePaths.add(materializedViewPath);
+                }
+              }
+              // Drop the materialized view but not its data
+              drop_table(name, materializedView.getTableName(), false);
+              // Remove from all tables
+              uniqueTableNames.remove(materializedView.getTableName());
+            }
+          }
+          startIndex = endIndex;
+        }
+
+        // drop tables before dropping db
+        List<String> allTables = new ArrayList<>(uniqueTableNames);
+        startIndex = 0;
         // retrieve the tables from the metastore in batches to alleviate memory constraints
         while (startIndex < allTables.size()) {
           int endIndex = Math.min(startIndex + tableBatchSize, allTables.size());
@@ -1427,7 +1465,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
           if (tables != null && !tables.isEmpty()) {
             for (Table table : tables) {
-
               // If the table is not external and it might not be in a subdirectory of the database
               // add it's locations to the list of paths to delete
               Path tablePath = null;
