@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.util.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hive.http.security.PamAuthenticator;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.service.Service;
 import org.apache.hive.service.cli.CLIServiceClient;
@@ -76,6 +77,7 @@ public class MiniHS2 extends AbstractHiveService {
   private final boolean isMetastoreSecure;
   private MiniClusterType miniClusterType = MiniClusterType.LOCALFS_ONLY;
   private boolean usePortsFromConf = false;
+  private PamAuthenticator pamAuthenticator;
 
   public enum MiniClusterType {
     MR,
@@ -352,6 +354,9 @@ public class MiniHS2 extends AbstractHiveService {
     for (int tryCount = 0; (tryCount < MetaStoreTestUtils.RETRY_COUNT); tryCount++) {
       try {
         hiveServer2 = new HiveServer2();
+        if (pamAuthenticator != null) {
+          hiveServer2.setPamAuthenticator(pamAuthenticator);
+        }
         hiveServer2.init(getHiveConf());
         hiveServer2.start();
         hs2Started = true;
@@ -409,6 +414,10 @@ public class MiniHS2 extends AbstractHiveService {
 
   public boolean isLeader() {
     return hiveServer2.isLeader();
+  }
+
+  public void setPamAuthenticator(final PamAuthenticator pamAuthenticator) {
+    this.pamAuthenticator = pamAuthenticator;
   }
 
   public CLIServiceClient getServiceClient() {
