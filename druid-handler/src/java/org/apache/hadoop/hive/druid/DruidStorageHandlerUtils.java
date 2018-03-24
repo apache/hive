@@ -35,10 +35,18 @@ import io.druid.math.expr.ExprMacroTable;
 import io.druid.metadata.MetadataStorageTablesConfig;
 import io.druid.metadata.SQLMetadataConnector;
 import io.druid.metadata.storage.mysql.MySQLConnector;
+import io.druid.query.expression.LikeExprMacro;
+import io.druid.query.expression.RegexpExtractExprMacro;
+import io.druid.query.expression.TimestampCeilExprMacro;
+import io.druid.query.expression.TimestampExtractExprMacro;
+import io.druid.query.expression.TimestampFloorExprMacro;
+import io.druid.query.expression.TimestampFormatExprMacro;
+import io.druid.query.expression.TimestampParseExprMacro;
+import io.druid.query.expression.TimestampShiftExprMacro;
+import io.druid.query.expression.TrimExprMacro;
 import io.druid.query.select.SelectQueryConfig;
 import io.druid.segment.IndexIO;
 import io.druid.segment.IndexMergerV9;
-import io.druid.segment.column.ColumnConfig;
 import io.druid.segment.loading.DataSegmentPusher;
 import io.druid.segment.realtime.appenderator.SegmentIdentifier;
 import io.druid.storage.hdfs.HdfsDataSegmentPusher;
@@ -100,7 +108,6 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -145,8 +152,21 @@ public final class DruidStorageHandlerUtils {
   static {
     // This is needed for serde of PagingSpec as it uses JacksonInject for injecting SelectQueryConfig
     InjectableValues.Std injectableValues = new InjectableValues.Std()
-            .addValue(SelectQueryConfig.class, new SelectQueryConfig(false))
-            .addValue(ExprMacroTable.class, ExprMacroTable.nil());
+        .addValue(SelectQueryConfig.class, new SelectQueryConfig(false))
+        // Expressions macro table used when we deserialize the query from calcite plan
+        .addValue(ExprMacroTable.class, new ExprMacroTable(ImmutableList
+            .of(new LikeExprMacro(),
+                new RegexpExtractExprMacro(),
+                new TimestampCeilExprMacro(),
+                new TimestampExtractExprMacro(),
+                new TimestampFormatExprMacro(),
+                new TimestampParseExprMacro(),
+                new TimestampShiftExprMacro(),
+                new TimestampFloorExprMacro(),
+                new TrimExprMacro.BothTrimExprMacro(),
+                new TrimExprMacro.LeftTrimExprMacro(),
+                new TrimExprMacro.RightTrimExprMacro()
+            )));
     JSON_MAPPER.setInjectableValues(injectableValues);
     SMILE_MAPPER.setInjectableValues(injectableValues);
     HiveDruidSerializationModule hiveDruidSerializationModule = new HiveDruidSerializationModule();
@@ -171,12 +191,7 @@ public final class DruidStorageHandlerUtils {
   /**
    * Used by druid to perform IO on indexes
    */
-  public static final IndexIO INDEX_IO = new IndexIO(JSON_MAPPER, new ColumnConfig() {
-    @Override
-    public int columnCacheSizeBytes() {
-      return 0;
-    }
-  });
+  public static final IndexIO INDEX_IO = new IndexIO(JSON_MAPPER, () -> 0);
 
   /**
    * Used by druid to merge indexes
@@ -327,19 +342,12 @@ public final class DruidStorageHandlerUtils {
                             metadataStorageTablesConfig.getSegmentsTable()
                     ))
                     .fold(Lists.<String>newArrayList(),
-                            new Folder3<ArrayList<String>, Map<String, Object>>() {
-                              @Override
-                              public ArrayList<String> fold(ArrayList<String> druidDataSources,
-                                      Map<String, Object> stringObjectMap,
-                                      FoldController foldController,
-                                      StatementContext statementContext
-                              ) throws SQLException {
-                                druidDataSources.add(
-                                        MapUtils.getString(stringObjectMap, "datasource")
-                                );
-                                return druidDataSources;
-                              }
-                            }
+                        (druidDataSources, stringObjectMap, foldController, statementContext) -> {
+                          druidDataSources.add(
+                                  MapUtils.getString(stringObjectMap, "datasource")
+                          );
+                          return druidDataSources;
+                        }
                     )
     );
   }

@@ -132,6 +132,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
       if (dataSource == null || dataSource.isEmpty()) {
         throw new IOException("Druid data source cannot be empty or null");
       }
+      //@FIXME https://issues.apache.org/jira/browse/HIVE-19023 use scan instead of Select
       druidQuery = createSelectStarQuery(dataSource);
       druidQueryType = Query.SELECT;
     } else {

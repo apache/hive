@@ -266,7 +266,7 @@ POSTHOOK: query: alter materialized view cmv_mat_view2 enable rewrite
 POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REWRITE
 POSTHOOK: Input: default@cmv_mat_view2
 POSTHOOK: Output: default@cmv_mat_view2
-Warning: Shuffle Join JOIN[7][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[4][tables = [test_db_materialized_view_create_rewrite.cmv_mat_view2, cmv_basetable]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain
 select * from (
   (select a, c from cmv_basetable where a = 3) table1
@@ -292,28 +292,17 @@ STAGE PLANS:
           TableScan
             alias: default.cmv_mat_view2
             Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
-            Select Operator
-              expressions: c (type: decimal(10,2))
-              outputColumnNames: _col0
+            Reduce Output Operator
+              sort order: 
               Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
-              Reduce Output Operator
-                sort order: 
-                Statistics: Num rows: 2 Data size: 232 Basic stats: COMPLETE Column stats: NONE
-                value expressions: _col0 (type: decimal(10,2))
+              value expressions: a (type: int), c (type: decimal(10,2))
           TableScan
             alias: cmv_basetable
             Statistics: Num rows: 5 Data size: 1205 Basic stats: COMPLETE Column stats: NONE
-            Filter Operator
-              predicate: ((a = 3) and (d = 3)) (type: boolean)
-              Statistics: Num rows: 1 Data size: 241 Basic stats: COMPLETE Column stats: NONE
-              Select Operator
-                expressions: c (type: decimal(10,2))
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 241 Basic stats: COMPLETE Column stats: NONE
-                Reduce Output Operator
-                  sort order: 
-                  Statistics: Num rows: 1 Data size: 241 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col0 (type: decimal(10,2))
+            Reduce Output Operator
+              sort order: 
+              Statistics: Num rows: 5 Data size: 1205 Basic stats: COMPLETE Column stats: NONE
+              value expressions: a (type: int), c (type: decimal(10,2)), d (type: int)
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -321,19 +310,22 @@ STAGE PLANS:
           keys:
             0 
             1 
-          outputColumnNames: _col0, _col1
-          Statistics: Num rows: 2 Data size: 716 Basic stats: COMPLETE Column stats: NONE
-          Select Operator
-            expressions: 3 (type: int), _col0 (type: decimal(10,2)), 3 (type: int), _col1 (type: decimal(10,2))
-            outputColumnNames: _col0, _col1, _col2, _col3
+          outputColumnNames: _col0, _col1, _col5, _col7, _col8
+          Statistics: Num rows: 10 Data size: 3580 Basic stats: COMPLETE Column stats: NONE
+          Filter Operator
+            predicate: ((_col5 = 3) and (_col8 = 3)) (type: boolean)
             Statistics: Num rows: 2 Data size: 716 Basic stats: COMPLETE Column stats: NONE
-            File Output Operator
-              compressed: false
+            Select Operator
+              expressions: _col0 (type: int), _col1 (type: decimal(10,2)), _col0 (type: int), _col7 (type: decimal(10,2))
+              outputColumnNames: _col0, _col1, _col2, _col3
               Statistics: Num rows: 2 Data size: 716 Basic stats: COMPLETE Column stats: NONE
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              File Output Operator
+                compressed: false
+                Statistics: Num rows: 2 Data size: 716 Basic stats: COMPLETE Column stats: NONE
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -341,7 +333,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join JOIN[7][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
+Warning: Shuffle Join JOIN[4][tables = [test_db_materialized_view_create_rewrite.cmv_mat_view2, cmv_basetable]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * from (
   (select a, c from cmv_basetable where a = 3) table1
   join

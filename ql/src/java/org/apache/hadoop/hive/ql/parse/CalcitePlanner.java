@@ -44,14 +44,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import org.antlr.runtime.ClassicToken;
 import org.antlr.runtime.CommonToken;
 import org.antlr.runtime.tree.Tree;
 import org.antlr.runtime.tree.TreeVisitor;
 import org.antlr.runtime.tree.TreeVisitorAction;
+import org.apache.calcite.adapter.druid.DirectOperatorConversion;
 import org.apache.calcite.adapter.druid.DruidQuery;
 import org.apache.calcite.adapter.druid.DruidSchema;
 import org.apache.calcite.adapter.druid.DruidTable;
+import org.apache.calcite.adapter.druid.ExtractOperatorConversion;
+import org.apache.calcite.adapter.druid.FloorOperatorConversion;
 import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
 import org.apache.calcite.config.CalciteConnectionProperty;
@@ -106,11 +110,13 @@ import org.apache.calcite.schema.SchemaPlus;
 import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlCall;
 import org.apache.calcite.sql.SqlExplainLevel;
+import org.apache.calcite.sql.SqlFunction;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlLiteral;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.SqlWindow;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParserPos;
 import org.apache.calcite.sql.type.ArraySqlType;
 import org.apache.calcite.sql.type.SqlTypeName;
@@ -162,8 +168,11 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveVolcanoPlanner;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveConcat;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIntersect;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
@@ -274,6 +283,7 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
+
 
 public class CalcitePlanner extends SemanticAnalyzer {
 
@@ -1689,6 +1699,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               HiveDruidRules.POST_AGGREGATION_PROJECT,
               HiveDruidRules.FILTER_AGGREGATE_TRANSPOSE,
               HiveDruidRules.FILTER_PROJECT_TRANSPOSE,
+              HiveDruidRules.HAVING_FILTER_RULE,
               HiveDruidRules.SORT_PROJECT_TRANSPOSE,
               HiveDruidRules.SORT,
               HiveDruidRules.PROJECT_SORT_TRANSPOSE
@@ -2473,6 +2484,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           RelDataTypeFactory dtFactory = rexBuilder.getTypeFactory();
           List<RelDataType> druidColTypes = new ArrayList<>();
           List<String> druidColNames = new ArrayList<>();
+          //@TODO FIX this, we actually do not need this anymore,
+          // in addition to that Druid allow numeric dimensions now so this check is not accurate
           for (RelDataTypeField field : rowType.getFieldList()) {
             if (DruidTable.DEFAULT_TIMESTAMP_COLUMN.equals(field.getName())) {
               // Druid's time column is always not null.
@@ -2505,8 +2518,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
                   getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
                       HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP), qb.isInsideView()
                       || qb.getAliasInsideView().contains(tableAlias.toLowerCase()));
+          // Default Druid Standard
           tableRel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
-              optTable, druidTable, ImmutableList.<RelNode>of(scan));
+              optTable, druidTable, ImmutableList.of(scan), DruidSqlOperatorConverter.getDefaultMap());
         } else {
           // Build row type from field <type, name>
           RelDataType rowType = inferNotNullableColumns(tabMetaData, TypeConverter.getType(cluster, rr, null));

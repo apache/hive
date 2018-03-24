@@ -27,6 +27,8 @@ SELECT floor_year(`__time`), max(added), sum(variation)
 FROM druid_table_1
 GROUP BY floor_year(`__time`);
 
+//@TODO FIXME https://issues.apache.org/jira/browse/CALCITE-2222
+// the current plan of this query is not optimal it can be planned as time series instead of scan
 -- GRANULARITY: QUARTER
 EXPLAIN
 SELECT floor_quarter(`__time`), max(added), sum(variation)

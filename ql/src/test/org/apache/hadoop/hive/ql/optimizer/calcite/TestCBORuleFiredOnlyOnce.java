@@ -85,8 +85,8 @@ public class TestCBORuleFiredOnlyOnce {
 
     planner.findBestExp();
 
-    // Matches 3 times: 2 times the original node, 1 time the new node created by the rule
-    assertEquals(3, DummyRule.INSTANCE.numberMatches);
+    // Matches 2 times: one time the original node, one time the new node created by the rule
+    assertEquals(2, DummyRule.INSTANCE.numberMatches);
     // It is fired only once: on the original node
     assertEquals(1, DummyRule.INSTANCE.numberOnMatch);
   }

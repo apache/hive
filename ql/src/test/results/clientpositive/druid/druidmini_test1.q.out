@@ -64,7 +64,9 @@ STAGE PLANS:
         TableScan
           alias: druid_table
           properties:
-            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":"all","aggregations":[{"type":"count","name":"$f0"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
+            druid.fieldNames $f0
+            druid.fieldTypes bigint
+            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":"all","aggregations":[{"type":"count","name":"$f0"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":false}}
             druid.query.type timeseries
           Select Operator
             expressions: $f0 (type: bigint)
@@ -97,10 +99,12 @@ STAGE PLANS:
         TableScan
           alias: druid_table
           properties:
-            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":"year","aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"cfloat"},{"type":"doubleSum","name":"$f2","fieldName":"cdouble"},{"type":"longSum","name":"$f3","fieldName":"ctinyint"},{"type":"longSum","name":"$f4","fieldName":"csmallint"},{"type":"longSum","name":"$f5","fieldName":"cint"},{"type":"longSum","name":"$f6","fieldName":"cbigint"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
+            druid.fieldNames timestamp,$f1,$f2,$f3,$f4,$f5,$f6
+            druid.fieldTypes timestamp with local time zone,double,double,bigint,bigint,bigint,bigint
+            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":{"type":"period","period":"P1Y","timeZone":"US/Pacific"},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"cfloat"},{"type":"doubleSum","name":"$f2","fieldName":"cdouble"},{"type":"longSum","name":"$f3","fieldName":"ctinyint"},{"type":"longSum","name":"$f4","fieldName":"csmallint"},{"type":"longSum","name":"$f5","fieldName":"cint"},{"type":"longSum","name":"$f6","fieldName":"cbigint"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
             druid.query.type timeseries
           Select Operator
-            expressions: __time (type: timestamp with local time zone), $f1 (type: float), $f2 (type: float), $f3 (type: bigint), $f4 (type: bigint), $f5 (type: bigint), $f6 (type: bigint)
+            expressions: timestamp (type: timestamp with local time zone), $f1 (type: double), $f2 (type: double), $f3 (type: bigint), $f4 (type: bigint), $f5 (type: bigint), $f6 (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
             ListSink
 
@@ -114,8 +118,7 @@ FROM druid_table GROUP BY floor_year(`__time`)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1968-12-31 16:00:00.0 US/Pacific	-4532.57	3660538.8	-4611	3658030	688783835691	8060200254
-1969-12-31 16:00:00.0 US/Pacific	-35057.676	2.3648124E7	-35356	4123059	719285966109	2932345033
+1969-01-01 00:00:00.0 US/Pacific	-39590.24694168568	2.7308662809692383E7	-39967	7781089	1408069801800	10992545287
 PREHOOK: query: EXPLAIN SELECT floor_year(`__time`), MIN(cfloat), MIN(cdouble), MIN(ctinyint), MIN(csmallint),MIN(cint), MIN(cbigint)
 FROM druid_table GROUP BY floor_year(`__time`)
 PREHOOK: type: QUERY
@@ -133,10 +136,12 @@ STAGE PLANS:
         TableScan
           alias: druid_table
           properties:
-            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":"year","aggregations":[{"type":"doubleMin","name":"$f1","fieldName":"cfloat"},{"type":"doubleMin","name":"$f2","fieldName":"cdouble"},{"type":"longMin","name":"$f3","fieldName":"ctinyint"},{"type":"longMin","name":"$f4","fieldName":"csmallint"},{"type":"longMin","name":"$f5","fieldName":"cint"},{"type":"longMin","name":"$f6","fieldName":"cbigint"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
+            druid.fieldNames timestamp,$f1,$f2,$f3,$f4,$f5,$f6
+            druid.fieldTypes timestamp with local time zone,float,double,tinyint,smallint,int,bigint
+            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":{"type":"period","period":"P1Y","timeZone":"US/Pacific"},"aggregations":[{"type":"doubleMin","name":"$f1","fieldName":"cfloat"},{"type":"doubleMin","name":"$f2","fieldName":"cdouble"},{"type":"longMin","name":"$f3","fieldName":"ctinyint"},{"type":"longMin","name":"$f4","fieldName":"csmallint"},{"type":"longMin","name":"$f5","fieldName":"cint"},{"type":"longMin","name":"$f6","fieldName":"cbigint"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
             druid.query.type timeseries
           Select Operator
-            expressions: __time (type: timestamp with local time zone), $f1 (type: float), $f2 (type: float), $f3 (type: bigint), $f4 (type: bigint), $f5 (type: bigint), $f6 (type: bigint)
+            expressions: timestamp (type: timestamp with local time zone), $f1 (type: float), $f2 (type: double), $f3 (type: tinyint), $f4 (type: smallint), $f5 (type: int), $f6 (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
             ListSink
 
@@ -150,8 +155,7 @@ FROM druid_table GROUP BY floor_year(`__time`)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1968-12-31 16:00:00.0 US/Pacific	-1790.778	-308691.84	-1790	-313425	0	-8577981133
-1969-12-31 16:00:00.0 US/Pacific	-964.719	-287404.84	-1051	-292138	-1073279343	-2147311592
+1969-01-01 00:00:00.0 US/Pacific	-1790.778	-308691.84375	2	14255	-1073279343	-8577981133
 PREHOOK: query: EXPLAIN SELECT floor_year(`__time`), MAX(cfloat), MAX(cdouble), MAX(ctinyint), MAX(csmallint),MAX(cint), MAX(cbigint)
 FROM druid_table GROUP BY floor_year(`__time`)
 PREHOOK: type: QUERY
@@ -169,10 +173,12 @@ STAGE PLANS:
         TableScan
           alias: druid_table
           properties:
-            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":"year","aggregations":[{"type":"doubleMax","name":"$f1","fieldName":"cfloat"},{"type":"doubleMax","name":"$f2","fieldName":"cdouble"},{"type":"longMax","name":"$f3","fieldName":"ctinyint"},{"type":"longMax","name":"$f4","fieldName":"csmallint"},{"type":"longMax","name":"$f5","fieldName":"cint"},{"type":"longMax","name":"$f6","fieldName":"cbigint"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
+            druid.fieldNames timestamp,$f1,$f2,$f3,$f4,$f5,$f6
+            druid.fieldTypes timestamp with local time zone,float,double,tinyint,smallint,int,bigint
+            druid.query.json {"queryType":"timeseries","dataSource":"default.druid_table","descending":false,"granularity":{"type":"period","period":"P1Y","timeZone":"US/Pacific"},"aggregations":[{"type":"doubleMax","name":"$f1","fieldName":"cfloat"},{"type":"doubleMax","name":"$f2","fieldName":"cdouble"},{"type":"longMax","name":"$f3","fieldName":"ctinyint"},{"type":"longMax","name":"$f4","fieldName":"csmallint"},{"type":"longMax","name":"$f5","fieldName":"cint"},{"type":"longMax","name":"$f6","fieldName":"cbigint"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"context":{"skipEmptyBuckets":true}}
             druid.query.type timeseries
           Select Operator
-            expressions: __time (type: timestamp with local time zone), $f1 (type: float), $f2 (type: float), $f3 (type: bigint), $f4 (type: bigint), $f5 (type: bigint), $f6 (type: bigint)
+            expressions: timestamp (type: timestamp with local time zone), $f1 (type: float), $f2 (type: double), $f3 (type: tinyint), $f4 (type: smallint), $f5 (type: int), $f6 (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
             ListSink
 
@@ -186,8 +192,7 @@ FROM druid_table GROUP BY floor_year(`__time`)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1968-12-31 16:00:00.0 US/Pacific	62.0	57235.0	62	57235	314088763179	2144274348
-1969-12-31 16:00:00.0 US/Pacific	769.164	1.9565518E7	723	57435	319104152611	4923772860
+1969-01-01 00:00:00.0 US/Pacific	769.164	1.9565518E7	-45	-8101	1276572707	4923772860
 PREHOOK: query: EXPLAIN SELECT cstring1, SUM(cdouble) as s FROM druid_table GROUP BY cstring1 ORDER BY s ASC LIMIT 10
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT cstring1, SUM(cdouble) as s FROM druid_table GROUP BY cstring1 ORDER BY s ASC LIMIT 10
@@ -203,10 +208,12 @@ STAGE PLANS:
         TableScan
           alias: druid_table
           properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table","granularity":"all","dimensions":[{"type":"default","dimension":"cstring1"}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"$f1","direction":"ascending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"cdouble"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.fieldNames cstring1,$f1
+            druid.fieldTypes string,double
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table","granularity":"all","dimensions":[{"type":"default","dimension":"cstring1","outputName":"cstring1","outputType":"STRING"}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"$f1","direction":"ascending","dimensionOrder":"numeric"}]},"aggregations":[{"type":"doubleSum","name":"$f1","fieldName":"cdouble"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
-            expressions: cstring1 (type: string), $f1 (type: float)
+            expressions: cstring1 (type: string), $f1 (type: double)
             outputColumnNames: _col0, _col1
             ListSink
 
@@ -218,8 +225,8 @@ POSTHOOK: query: SELECT cstring1, SUM(cdouble) as s FROM druid_table GROUP BY cs
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1cGVWH7n1QU	-596096.7
-821UdmGbkEf4j	-14161.827
+1cGVWH7n1QU	-596096.6875
+821UdmGbkEf4j	-14161.827026367188
 00iT08	0.0
 02v8WnLuYDos3Cq	0.0
 yv1js	0.0
@@ -243,10 +250,12 @@ STAGE PLANS:
         TableScan
           alias: druid_table
           properties:
-            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table","granularity":"all","dimensions":[{"type":"default","dimension":"cstring2"}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"cstring2","direction":"ascending","dimensionOrder":"alphanumeric"}]},"aggregations":[{"type":"doubleMax","name":"$f1","fieldName":"cdouble"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
+            druid.fieldNames cstring2,$f1
+            druid.fieldTypes string,double
+            druid.query.json {"queryType":"groupBy","dataSource":"default.druid_table","granularity":"all","dimensions":[{"type":"default","dimension":"cstring2","outputName":"cstring2","outputType":"STRING"}],"limitSpec":{"type":"default","limit":10,"columns":[{"dimension":"cstring2","direction":"ascending","dimensionOrder":"lexicographic"}]},"aggregations":[{"type":"doubleMax","name":"$f1","fieldName":"cdouble"}],"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"]}
             druid.query.type groupBy
           Select Operator
-            expressions: cstring2 (type: string), $f1 (type: float)
+            expressions: cstring2 (type: string), $f1 (type: double)
             outputColumnNames: _col0, _col1
             ListSink
 
@@ -259,15 +268,15 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 NULL	1.9565518E7
-0AAE3daA78MISbsRsHJrp2PI	0.0
-0amu3m60U20Xa3	-200.0
-0aO3Lwer	0.0
-0aQBRP67JY0gpi	15601.0
-0b1WvXy	0.0
-0b03cuG3B4ASx4es1411336I	-7196.0
-0B5S310g	0.0
-0bffMd8KSbW32A8A5	0.0
-0bke07kBhD1s33AV3R1X7j7j	0.0
+0034fkcXMQI3	15601.0
+004J8y	0.0
+00GNm	-200.0
+00GW4dnb6Wgj52	-200.0
+00PBhB1Iefgk	0.0
+00d5kr1wEB7evExG	15601.0
+00qccwt8n	0.0
+017fFeQ3Gcsa83Xj2Vo0	0.0
+01EfkvNk6mjG44uxs	0.0
 PREHOOK: query: EXPLAIN
 SELECT `__time`
 FROM druid_table ORDER BY `__time` ASC LIMIT 10
@@ -293,11 +302,13 @@ STAGE PLANS:
                 TableScan
                   alias: druid_table
                   properties:
-                    druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
-                    druid.query.type select
+                    druid.fieldNames vc
+                    druid.fieldTypes timestamp with local time zone
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table","intervals":["1900-01-01T00:00:00.000Z/3000-01-01T00:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+                    druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: __time (type: timestamp with local time zone)
+                    expressions: vc (type: timestamp with local time zone)
                     outputColumnNames: _col0
                     Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
@@ -375,11 +386,13 @@ STAGE PLANS:
                 TableScan
                   alias: druid_table
                   properties:
-                    druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1900-01-01T00:00:00.000Z/1970-03-01T08:00:00.000Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
-                    druid.query.type select
+                    druid.fieldNames vc
+                    druid.fieldTypes timestamp with local time zone
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table","intervals":["1900-01-01T00:00:00.000Z/1970-03-01T08:00:00.000Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+                    druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: __time (type: timestamp with local time zone)
+                    expressions: vc (type: timestamp with local time zone)
                     outputColumnNames: _col0
                     Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
@@ -459,11 +472,13 @@ STAGE PLANS:
                 TableScan
                   alias: druid_table
                   properties:
-                    druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1968-01-01T08:00:00.000Z/1970-03-01T08:00:00.001Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
-                    druid.query.type select
+                    druid.fieldNames vc
+                    druid.fieldTypes timestamp with local time zone
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table","intervals":["1968-01-01T08:00:00.000Z/1970-03-01T08:00:00.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+                    druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: __time (type: timestamp with local time zone)
+                    expressions: vc (type: timestamp with local time zone)
                     outputColumnNames: _col0
                     Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
@@ -545,11 +560,13 @@ STAGE PLANS:
                 TableScan
                   alias: druid_table
                   properties:
-                    druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1968-01-01T08:00:00.000Z/1970-03-01T08:00:00.001Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
-                    druid.query.type select
+                    druid.fieldNames vc
+                    druid.fieldTypes timestamp with local time zone
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table","intervals":["1968-01-01T08:00:00.000Z/1970-03-01T08:00:00.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+                    druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: __time (type: timestamp with local time zone)
+                    expressions: vc (type: timestamp with local time zone)
                     outputColumnNames: _col0
                     Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
@@ -631,11 +648,13 @@ STAGE PLANS:
                 TableScan
                   alias: druid_table
                   properties:
-                    druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1968-01-01T08:00:00.000Z/1970-01-01T08:00:00.001Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
-                    druid.query.type select
+                    druid.fieldNames vc
+                    druid.fieldTypes timestamp with local time zone
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table","intervals":["1968-01-01T08:00:00.000Z/1970-01-01T08:00:00.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+                    druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: __time (type: timestamp with local time zone)
+                    expressions: vc (type: timestamp with local time zone)
                     outputColumnNames: _col0
                     Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
@@ -717,11 +736,13 @@ STAGE PLANS:
                 TableScan
                   alias: druid_table
                   properties:
-                    druid.query.json {"queryType":"select","dataSource":"default.druid_table","descending":false,"intervals":["1968-01-01T08:00:00.000Z/1970-04-01T08:00:00.001Z"],"dimensions":[],"metrics":[],"granularity":"all","pagingSpec":{"threshold":16384,"fromNext":true},"context":{"druid.query.fetch":false}}
-                    druid.query.type select
+                    druid.fieldNames vc
+                    druid.fieldTypes timestamp with local time zone
+                    druid.query.json {"queryType":"scan","dataSource":"default.druid_table","intervals":["1968-01-01T08:00:00.000Z/1970-04-01T08:00:00.001Z"],"virtualColumns":[{"type":"expression","name":"vc","expression":"\"__time\"","outputType":"LONG"}],"columns":["vc"],"resultFormat":"compactedList"}
+                    druid.query.type scan
                   Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
-                    expressions: __time (type: timestamp with local time zone)
+                    expressions: vc (type: timestamp with local time zone)
                     outputColumnNames: _col0
                     Statistics: Num rows: 9173 Data size: 348640 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
