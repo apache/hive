@@ -38,6 +38,8 @@ public class Constants {
   public static final String DRUID_TIMESTAMP_GRANULARITY_COL_NAME = "__time_granularity";
   public static final String DRUID_SHARD_KEY_COL_NAME = "__druid_extra_partition_key";
   public static final String DRUID_QUERY_JSON = "druid.query.json";
+  public static final String DRUID_QUERY_FIELD_NAMES = "druid.fieldNames";
+  public static final String DRUID_QUERY_FIELD_TYPES = "druid.fieldTypes";
   public static final String DRUID_QUERY_TYPE = "druid.query.type";
   public static final String DRUID_QUERY_FETCH = "druid.query.fetch";
   public static final String DRUID_SEGMENT_DIRECTORY = "druid.storage.storageDirectory";

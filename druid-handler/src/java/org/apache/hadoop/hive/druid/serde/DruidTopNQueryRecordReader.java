@@ -76,7 +76,7 @@ public class DruidTopNQueryRecordReader
   public DruidWritable getCurrentValue() throws IOException, InterruptedException {
     // Create new value
     DruidWritable value = new DruidWritable();
-    value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN,
+    value.getValue().put("timestamp",
             current.getTimestamp().getMillis()
     );
     if (values.hasNext()) {
@@ -91,7 +91,7 @@ public class DruidTopNQueryRecordReader
     if (nextKeyValue()) {
       // Update value
       value.getValue().clear();
-      value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN,
+      value.getValue().put("timestamp",
               current.getTimestamp().getMillis()
       );
       if (values.hasNext()) {

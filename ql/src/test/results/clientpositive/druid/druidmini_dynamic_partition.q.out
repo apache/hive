@@ -235,15 +235,24 @@ POSTHOOK: Lineage: druid_partitioned_table.csmallint SIMPLE [(alltypesorc)alltyp
 POSTHOOK: Lineage: druid_partitioned_table.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 POSTHOOK: Lineage: druid_partitioned_table.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
 POSTHOOK: Lineage: druid_partitioned_table.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: SELECT sum(cfloat)  FROM druid_partitioned_table
+PREHOOK: query: SELECT  sum(cint), sum(cbigint) FROM druid_partitioned_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_partitioned_table
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT sum(cfloat)  FROM druid_partitioned_table
+POSTHOOK: query: SELECT  sum(cint), sum(cbigint) FROM druid_partitioned_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_partitioned_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
--39590.246
+1408069801800	10992545287
+PREHOOK: query: SELECT  sum(cint), sum(cbigint) FROM druid_partitioned_table_0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@druid_partitioned_table_0
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: SELECT  sum(cint), sum(cbigint) FROM druid_partitioned_table_0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@druid_partitioned_table_0
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1408069801800	10992545287
 PREHOOK: query: SELECT floor_hour(cast(`ctimestamp1` as timestamp with local time zone)) as `__time`,
           cstring1,
           cstring2,
@@ -412,15 +421,15 @@ SELECT cast (`ctimestamp2` as timestamp with local time zone) as `__time`,
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@druid_partitioned_table
-PREHOOK: query: SELECT  sum(cfloat)  FROM druid_partitioned_table
+PREHOOK: query: SELECT sum(cint), sum(cbigint) FROM druid_partitioned_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_partitioned_table
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT  sum(cfloat)  FROM druid_partitioned_table
+POSTHOOK: query: SELECT sum(cint), sum(cbigint) FROM druid_partitioned_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_partitioned_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
--46301.883
+2857395071862	-1661313883124
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE druid_partitioned_table
   SELECT cast (`ctimestamp1` as timestamp with local time zone) as `__time`,
     cstring1,
@@ -549,15 +558,15 @@ POSTHOOK: query: INSERT OVERWRITE TABLE druid_partitioned_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 POSTHOOK: Output: default@druid_partitioned_table
-PREHOOK: query: SELECT  sum(cfloat)  FROM druid_partitioned_table
+PREHOOK: query: SELECT sum(cint), sum(cbigint) FROM druid_partitioned_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_partitioned_table
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT  sum(cfloat)  FROM druid_partitioned_table
+POSTHOOK: query: SELECT sum(cint), sum(cbigint) FROM druid_partitioned_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_partitioned_table
 POSTHOOK: Output: hdfs://### HDFS PATH ###
--39590.246
+1408069801800	10992545287
 PREHOOK: query: CREATE TABLE druid_max_size_partition
         STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
         TBLPROPERTIES (
@@ -615,15 +624,15 @@ POSTHOOK: Lineage: druid_max_size_partition.csmallint SIMPLE [(alltypesorc)allty
 POSTHOOK: Lineage: druid_max_size_partition.cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:null), ]
 POSTHOOK: Lineage: druid_max_size_partition.cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:null), ]
 POSTHOOK: Lineage: druid_max_size_partition.ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:null), ]
-PREHOOK: query: SELECT  sum(cfloat)  FROM druid_max_size_partition
+PREHOOK: query: SELECT  sum(cint), sum(cbigint) FROM druid_max_size_partition
 PREHOOK: type: QUERY
 PREHOOK: Input: default@druid_max_size_partition
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT  sum(cfloat)  FROM druid_max_size_partition
+POSTHOOK: query: SELECT  sum(cint), sum(cbigint) FROM druid_max_size_partition
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@druid_max_size_partition
 POSTHOOK: Output: hdfs://### HDFS PATH ###
--39590.246
+1408069801800	10992545287
 PREHOOK: query: DROP TABLE druid_partitioned_table_0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@druid_partitioned_table_0

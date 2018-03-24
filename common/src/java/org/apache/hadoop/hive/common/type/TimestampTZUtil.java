@@ -143,7 +143,7 @@ public class TimestampTZUtil {
       return ZoneId.of(timeZoneStr);
     } catch (DateTimeException e1) {
       // default
-      throw new RuntimeException("Invalid time zone displacement value");
+      throw new RuntimeException("Invalid time zone displacement value", e1);
     }
   }
 

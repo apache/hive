@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
+import org.apache.calcite.adapter.druid.DruidRules.DruidHavingFilterRule;
 import org.apache.calcite.adapter.druid.DruidRules.DruidAggregateFilterTransposeRule;
 import org.apache.calcite.adapter.druid.DruidRules.DruidAggregateProjectRule;
 import org.apache.calcite.adapter.druid.DruidRules.DruidAggregateRule;
@@ -71,4 +72,7 @@ public class HiveDruidRules {
 
   public static final DruidPostAggregationProjectRule POST_AGGREGATION_PROJECT =
       new DruidPostAggregationProjectRule(HiveRelFactories.HIVE_BUILDER);
+
+  public static final DruidHavingFilterRule HAVING_FILTER_RULE =
+      new DruidHavingFilterRule(HiveRelFactories.HIVE_BUILDER);
 }

@@ -31,21 +31,27 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 public class HiveMaterializedViewRule {
 
   public static final MaterializedViewProjectFilterRule INSTANCE_PROJECT_FILTER =
-      new MaterializedViewProjectFilterRule(HiveRelFactories.HIVE_BUILDER, true);
+      new MaterializedViewProjectFilterRule(HiveRelFactories.HIVE_BUILDER, true,
+          null, false);
 
   public static final MaterializedViewOnlyFilterRule INSTANCE_FILTER =
-      new MaterializedViewOnlyFilterRule(HiveRelFactories.HIVE_BUILDER, true);
+      new MaterializedViewOnlyFilterRule(HiveRelFactories.HIVE_BUILDER, true,
+          null, false);
 
   public static final MaterializedViewProjectJoinRule INSTANCE_PROJECT_JOIN =
-      new MaterializedViewProjectJoinRule(HiveRelFactories.HIVE_BUILDER, true);
+      new MaterializedViewProjectJoinRule(HiveRelFactories.HIVE_BUILDER, true,
+          null, false);
 
   public static final MaterializedViewOnlyJoinRule INSTANCE_JOIN =
-      new MaterializedViewOnlyJoinRule(HiveRelFactories.HIVE_BUILDER, true);
+      new MaterializedViewOnlyJoinRule(HiveRelFactories.HIVE_BUILDER, true,
+          null, false);
 
   public static final MaterializedViewProjectAggregateRule INSTANCE_PROJECT_AGGREGATE =
-      new MaterializedViewProjectAggregateRule(HiveRelFactories.HIVE_BUILDER, true);
+      new MaterializedViewProjectAggregateRule(HiveRelFactories.HIVE_BUILDER, true,
+          null);
 
   public static final MaterializedViewOnlyAggregateRule INSTANCE_AGGREGATE =
-      new MaterializedViewOnlyAggregateRule(HiveRelFactories.HIVE_BUILDER, true);
+      new MaterializedViewOnlyAggregateRule(HiveRelFactories.HIVE_BUILDER, true,
+          null);
 
 }
