@@ -1819,6 +1819,7 @@ public class ObjectStore implements RawStore, Configurable {
         lowered_tbl_names.add(normalizeIdentifier(t));
       }
       query = pm.newQuery(MTable.class);
+//<<<<<<< HEAD
       query.setFilter("database.name == db && database.catalogName == cat && tbl_names.contains(tableName)");
       query.declareParameters("java.lang.String db, java.lang.String cat, java.util.Collection tbl_names");
       Collection mtables = (Collection) query.execute(db, catName, lowered_tbl_names);
@@ -1835,7 +1836,14 @@ public class ObjectStore implements RawStore, Configurable {
         }
       } else {
         for (Iterator iter = mtables.iterator(); iter.hasNext(); ) {
-          tables.add(convertToTable((MTable) iter.next()));
+          Table tbl = convertToTable((MTable) iter.next());
+          // Retrieve creation metadata if needed
+          if (TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType())) {
+            tbl.setCreationMetadata(
+                convertToCreationMetadata(
+                    getCreationMetadata(tbl.getCatName(), tbl.getDbName(), tbl.getTableName())));
+          }
+          tables.add(tbl);
         }
       }
       committed = commitTransaction();
