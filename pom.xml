@@ -118,7 +118,7 @@
     <antlr.version>3.5.2</antlr.version>
     <apache-directory-server.version>1.5.6</apache-directory-server.version>
     <apache-directory-clientapi.version>0.1</apache-directory-clientapi.version>
-    <avatica.version>1.10.0</avatica.version>
+    <avatica.version>1.11.0</avatica.version>
     <avro.version>1.7.7</avro.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
     <calcite.version>1.16.0</calcite.version>
@@ -259,19 +259,6 @@
        <snapshots>
          <enabled>false</enabled>
        </snapshots>
-    </repository>
-    <repository>
-      <id>calcite</id>
-      <name>calcite repository</name>
-      <url>https://repository.apache.org/content/repositories/orgapachecalcite-1042</url>
-      <layout>default</layout>
-      <releases>
-        <enabled>true</enabled>
-        <checksumPolicy>warn</checksumPolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
     </repository>
   </repositories>
 

@@ -131,7 +131,10 @@ public final class DruidStorageHandlerUtils {
   private static final int DEFAULT_FS_BUFFER_SIZE = 1 << 18; // 256KB
   private static final int DEFAULT_STREAMING_RESULT_SIZE = 100;
   private static final String SMILE_CONTENT_TYPE = "application/x-jackson-smile";
+  //Druid storage timestamp column name
   public static final String DEFAULT_TIMESTAMP_COLUMN = "__time";
+  //Druid Json timestamp column name
+  public static final String EVENT_TIMESTAMP_COLUMN = "timestamp";
   public static final String INDEX_ZIP = "index.zip";
   public static final String DESCRIPTOR_JSON = "descriptor.json";
   public static final Interval DEFAULT_INTERVAL = new Interval(
