@@ -17,6 +17,10 @@
  */
 package org.apache.hadoop.hive.metastore.client.builder;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
@@ -33,10 +37,23 @@ import java.util.Map;
  * selects reasonable defaults.
  */
 public class DatabaseBuilder {
-  private String name, description, location;
+  private String name, description, location, catalogName;
   private Map<String, String> params = new HashMap<>();
   private String ownerName;
   private PrincipalType ownerType;
+
+  public DatabaseBuilder() {
+  }
+
+  public DatabaseBuilder setCatalogName(String catalogName) {
+    this.catalogName = catalogName;
+    return this;
+  }
+
+  public DatabaseBuilder setCatalogName(Catalog catalog) {
+    this.catalogName = catalog.getName();
+    return this;
+  }
 
   public DatabaseBuilder setName(String name) {
     this.name = name;
@@ -73,11 +90,13 @@ public class DatabaseBuilder {
     return this;
   }
 
-  public Database build() throws MetaException {
+  public Database build(Configuration conf) throws MetaException {
     if (name == null) throw new MetaException("You must name the database");
+    if (catalogName == null) catalogName = MetaStoreUtils.getDefaultCatalog(conf);
     Database db = new Database(name, description, location, params);
+    db.setCatalogName(catalogName);
     try {
-      if (ownerName != null) ownerName = SecurityUtils.getUser();
+      if (ownerName == null) ownerName = SecurityUtils.getUser();
       db.setOwnerName(ownerName);
       if (ownerType == null) ownerType = PrincipalType.USER;
       db.setOwnerType(ownerType);
@@ -85,5 +104,19 @@ public class DatabaseBuilder {
     } catch (IOException e) {
       throw MetaStoreUtils.newMetaException(e);
     }
+  }
+
+  /**
+   * Build the database, create it in the metastore, and then return the db object.
+   * @param client metastore client
+   * @param conf configuration file
+   * @return new database object
+   * @throws TException comes from {@link #build(Configuration)} or
+   * {@link IMetaStoreClient#createDatabase(Database)}.
+   */
+  public Database create(IMetaStoreClient client, Configuration conf) throws TException {
+    Database db = build(conf);
+    client.createDatabase(db);
+    return db;
   }
 }

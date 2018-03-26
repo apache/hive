@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField IGNORE_PROTECTION_FIELD_DESC = new org.apache.thrift.protocol.TField("ignoreProtection", org.apache.thrift.protocol.TType.BOOL, (short)6);
   private static final org.apache.thrift.protocol.TField ENVIRONMENT_CONTEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("environmentContext", org.apache.thrift.protocol.TType.STRUCT, (short)7);
   private static final org.apache.thrift.protocol.TField NEED_RESULT_FIELD_DESC = new org.apache.thrift.protocol.TField("needResult", org.apache.thrift.protocol.TType.BOOL, (short)8);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)9);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -61,6 +62,7 @@ import org.slf4j.LoggerFactory;
   private boolean ignoreProtection; // optional
   private EnvironmentContext environmentContext; // optional
   private boolean needResult; // optional
+  private String catName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -71,7 +73,8 @@ import org.slf4j.LoggerFactory;
     IF_EXISTS((short)5, "ifExists"),
     IGNORE_PROTECTION((short)6, "ignoreProtection"),
     ENVIRONMENT_CONTEXT((short)7, "environmentContext"),
-    NEED_RESULT((short)8, "needResult");
+    NEED_RESULT((short)8, "needResult"),
+    CAT_NAME((short)9, "catName");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -102,6 +105,8 @@ import org.slf4j.LoggerFactory;
           return ENVIRONMENT_CONTEXT;
         case 8: // NEED_RESULT
           return NEED_RESULT;
+        case 9: // CAT_NAME
+          return CAT_NAME;
         default:
           return null;
       }
@@ -147,7 +152,7 @@ import org.slf4j.LoggerFactory;
   private static final int __IGNOREPROTECTION_ISSET_ID = 2;
   private static final int __NEEDRESULT_ISSET_ID = 3;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.DELETE_DATA,_Fields.IF_EXISTS,_Fields.IGNORE_PROTECTION,_Fields.ENVIRONMENT_CONTEXT,_Fields.NEED_RESULT};
+  private static final _Fields optionals[] = {_Fields.DELETE_DATA,_Fields.IF_EXISTS,_Fields.IGNORE_PROTECTION,_Fields.ENVIRONMENT_CONTEXT,_Fields.NEED_RESULT,_Fields.CAT_NAME};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -167,6 +172,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, EnvironmentContext.class)));
     tmpMap.put(_Fields.NEED_RESULT, new org.apache.thrift.meta_data.FieldMetaData("needResult", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(DropPartitionsRequest.class, metaDataMap);
   }
@@ -210,6 +217,9 @@ import org.slf4j.LoggerFactory;
       this.environmentContext = new EnvironmentContext(other.environmentContext);
     }
     this.needResult = other.needResult;
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
   }
 
   public DropPartitionsRequest deepCopy() {
@@ -230,6 +240,7 @@ import org.slf4j.LoggerFactory;
     this.environmentContext = null;
     this.needResult = true;
 
+    this.catName = null;
   }
 
   public String getDbName() {
@@ -412,6 +423,29 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __NEEDRESULT_ISSET_ID, value);
   }
 
+  public String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case DB_NAME:
@@ -478,6 +512,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((String)value);
+      }
+      break;
+
     }
   }
 
@@ -507,6 +549,9 @@ import org.slf4j.LoggerFactory;
     case NEED_RESULT:
       return isNeedResult();
 
+    case CAT_NAME:
+      return getCatName();
+
     }
     throw new IllegalStateException();
   }
@@ -534,6 +579,8 @@ import org.slf4j.LoggerFactory;
       return isSetEnvironmentContext();
     case NEED_RESULT:
       return isSetNeedResult();
+    case CAT_NAME:
+      return isSetCatName();
     }
     throw new IllegalStateException();
   }
@@ -623,6 +670,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
+
     return true;
   }
 
@@ -669,6 +725,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_needResult);
     if (present_needResult)
       list.add(needResult);
+
+    boolean present_catName = true && (isSetCatName());
+    list.add(present_catName);
+    if (present_catName)
+      list.add(catName);
 
     return list.hashCode();
   }
@@ -761,6 +822,16 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetCatName()).compareTo(other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -836,6 +907,16 @@ import org.slf4j.LoggerFactory;
       if (!first) sb.append(", ");
       sb.append("needResult:");
       sb.append(this.needResult);
+      first = false;
+    }
+    if (isSetCatName()) {
+      if (!first) sb.append(", ");
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
+      }
       first = false;
     }
     sb.append(")");
@@ -964,6 +1045,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 9: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1019,6 +1108,13 @@ import org.slf4j.LoggerFactory;
         oprot.writeBool(struct.needResult);
         oprot.writeFieldEnd();
       }
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1055,7 +1151,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetNeedResult()) {
         optionals.set(4);
       }
-      oprot.writeBitSet(optionals, 5);
+      if (struct.isSetCatName()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
       if (struct.isSetDeleteData()) {
         oprot.writeBool(struct.deleteData);
       }
@@ -1071,6 +1170,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetNeedResult()) {
         oprot.writeBool(struct.needResult);
       }
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
+      }
     }
 
     @Override
@@ -1083,7 +1185,7 @@ import org.slf4j.LoggerFactory;
       struct.parts = new RequestPartsSpec();
       struct.parts.read(iprot);
       struct.setPartsIsSet(true);
-      BitSet incoming = iprot.readBitSet(5);
+      BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
         struct.deleteData = iprot.readBool();
         struct.setDeleteDataIsSet(true);
@@ -1104,6 +1206,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(4)) {
         struct.needResult = iprot.readBool();
         struct.setNeedResultIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
       }
     }
   }

@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField ROOT_PATH_FIELD_DESC = new org.apache.thrift.protocol.TField("rootPath", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField SHARED_SDPARTITION_SPEC_FIELD_DESC = new org.apache.thrift.protocol.TField("sharedSDPartitionSpec", org.apache.thrift.protocol.TType.STRUCT, (short)4);
   private static final org.apache.thrift.protocol.TField PARTITION_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("partitionList", org.apache.thrift.protocol.TType.STRUCT, (short)5);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -55,6 +56,7 @@ import org.slf4j.LoggerFactory;
   private String rootPath; // required
   private PartitionSpecWithSharedSD sharedSDPartitionSpec; // optional
   private PartitionListComposingSpec partitionList; // optional
+  private String catName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -62,7 +64,8 @@ import org.slf4j.LoggerFactory;
     TABLE_NAME((short)2, "tableName"),
     ROOT_PATH((short)3, "rootPath"),
     SHARED_SDPARTITION_SPEC((short)4, "sharedSDPartitionSpec"),
-    PARTITION_LIST((short)5, "partitionList");
+    PARTITION_LIST((short)5, "partitionList"),
+    CAT_NAME((short)6, "catName");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -87,6 +90,8 @@ import org.slf4j.LoggerFactory;
           return SHARED_SDPARTITION_SPEC;
         case 5: // PARTITION_LIST
           return PARTITION_LIST;
+        case 6: // CAT_NAME
+          return CAT_NAME;
         default:
           return null;
       }
@@ -127,7 +132,7 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.SHARED_SDPARTITION_SPEC,_Fields.PARTITION_LIST};
+  private static final _Fields optionals[] = {_Fields.SHARED_SDPARTITION_SPEC,_Fields.PARTITION_LIST,_Fields.CAT_NAME};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -141,6 +146,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PartitionSpecWithSharedSD.class)));
     tmpMap.put(_Fields.PARTITION_LIST, new org.apache.thrift.meta_data.FieldMetaData("partitionList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, PartitionListComposingSpec.class)));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(PartitionSpec.class, metaDataMap);
   }
@@ -178,6 +185,9 @@ import org.slf4j.LoggerFactory;
     if (other.isSetPartitionList()) {
       this.partitionList = new PartitionListComposingSpec(other.partitionList);
     }
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
   }
 
   public PartitionSpec deepCopy() {
@@ -191,6 +201,7 @@ import org.slf4j.LoggerFactory;
     this.rootPath = null;
     this.sharedSDPartitionSpec = null;
     this.partitionList = null;
+    this.catName = null;
   }
 
   public String getDbName() {
@@ -308,6 +319,29 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case DB_NAME:
@@ -350,6 +384,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((String)value);
+      }
+      break;
+
     }
   }
 
@@ -369,6 +411,9 @@ import org.slf4j.LoggerFactory;
 
     case PARTITION_LIST:
       return getPartitionList();
+
+    case CAT_NAME:
+      return getCatName();
 
     }
     throw new IllegalStateException();
@@ -391,6 +436,8 @@ import org.slf4j.LoggerFactory;
       return isSetSharedSDPartitionSpec();
     case PARTITION_LIST:
       return isSetPartitionList();
+    case CAT_NAME:
+      return isSetCatName();
     }
     throw new IllegalStateException();
   }
@@ -453,6 +500,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
+
     return true;
   }
 
@@ -484,6 +540,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_partitionList);
     if (present_partitionList)
       list.add(partitionList);
+
+    boolean present_catName = true && (isSetCatName());
+    list.add(present_catName);
+    if (present_catName)
+      list.add(catName);
 
     return list.hashCode();
   }
@@ -542,6 +603,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetPartitionList()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.partitionList, other.partitionList);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetCatName()).compareTo(other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -606,6 +677,16 @@ import org.slf4j.LoggerFactory;
         sb.append("null");
       } else {
         sb.append(this.partitionList);
+      }
+      first = false;
+    }
+    if (isSetCatName()) {
+      if (!first) sb.append(", ");
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
       }
       first = false;
     }
@@ -700,6 +781,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 6: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -742,6 +831,13 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -775,7 +871,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetPartitionList()) {
         optionals.set(4);
       }
-      oprot.writeBitSet(optionals, 5);
+      if (struct.isSetCatName()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
       if (struct.isSetDbName()) {
         oprot.writeString(struct.dbName);
       }
@@ -791,12 +890,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetPartitionList()) {
         struct.partitionList.write(oprot);
       }
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, PartitionSpec struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(5);
+      BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
         struct.dbName = iprot.readString();
         struct.setDbNameIsSet(true);
@@ -818,6 +920,10 @@ import org.slf4j.LoggerFactory;
         struct.partitionList = new PartitionListComposingSpec();
         struct.partitionList.read(iprot);
         struct.setPartitionListIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
       }
     }
   }

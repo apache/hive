@@ -34,6 +34,7 @@ public class MPartitionColumnStatistics {
 
   private MPartition partition;
 
+  private String catName;
   private String dbName;
   private String tableName;
   private String partitionName;
@@ -135,6 +136,14 @@ public class MPartitionColumnStatistics {
 
   public void setDbName(String dbName) {
     this.dbName = dbName;
+  }
+
+  public String getCatName() {
+    return catName;
+  }
+
+  public void setCatName(String catName) {
+    this.catName = catName;
   }
 
   public MPartition getPartition() {

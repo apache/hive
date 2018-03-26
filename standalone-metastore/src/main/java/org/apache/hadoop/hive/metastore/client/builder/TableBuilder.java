@@ -17,39 +17,59 @@
  */
 package org.apache.hadoop.hive.metastore.client.builder;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.thrift.TException;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Build a {@link Table}.  The database name and table name must be provided, plus whatever is
  * needed by the underlying {@link StorageDescriptorBuilder}.
  */
 public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
-  private String dbName, tableName, owner, viewOriginalText, viewExpandedText, type;
+  private String catName, dbName, tableName, owner, viewOriginalText, viewExpandedText, type,
+      mvValidTxnList;
   private List<FieldSchema> partCols;
   private int createTime, lastAccessTime, retention;
   private Map<String, String> tableParams;
   private boolean rewriteEnabled, temporary;
+  private Set<String> mvReferencedTables;
+
 
   public TableBuilder() {
     // Set some reasonable defaults
+    dbName = Warehouse.DEFAULT_DATABASE_NAME;
     tableParams = new HashMap<>();
     createTime = lastAccessTime = (int)(System.currentTimeMillis() / 1000);
     retention = 0;
     partCols = new ArrayList<>();
     type = TableType.MANAGED_TABLE.name();
+    mvReferencedTables = new HashSet<>();
+    temporary = false;
     super.setChild(this);
+  }
+
+  public TableBuilder setCatName(String catName) {
+    this.catName = catName;
+    return this;
   }
 
   public TableBuilder setDbName(String dbName) {
@@ -57,8 +77,9 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
     return this;
   }
 
-  public TableBuilder setDbName(Database db) {
+  public TableBuilder inDb(Database db) {
     this.dbName = db.getName();
+    this.catName = db.getCatalogName();
     return this;
   }
 
@@ -139,9 +160,19 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
     return this;
   }
 
-  public Table build() throws MetaException {
-    if (dbName == null || tableName == null) {
-      throw new MetaException("You must set the database and table name");
+  public TableBuilder addMaterializedViewReferencedTable(String tableName) {
+    mvReferencedTables.add(tableName);
+    return this;
+  }
+
+  public TableBuilder setMaterializedViewValidTxnList(ValidTxnList validTxnList) {
+    mvValidTxnList = validTxnList.writeToString();
+    return this;
+  }
+
+  public Table build(Configuration conf) throws MetaException {
+    if (tableName == null) {
+      throw new MetaException("You must set the table name");
     }
     if (owner == null) {
       try {
@@ -150,14 +181,23 @@ public class TableBuilder extends StorageDescriptorBuilder<TableBuilder> {
         throw MetaStoreUtils.newMetaException(e);
       }
     }
+    if (catName == null) catName = MetaStoreUtils.getDefaultCatalog(conf);
     Table t = new Table(tableName, dbName, owner, createTime, lastAccessTime, retention, buildSd(),
         partCols, tableParams, viewOriginalText, viewExpandedText, type);
-    if (rewriteEnabled) {
-      t.setRewriteEnabled(true);
+    if (rewriteEnabled) t.setRewriteEnabled(true);
+    if (temporary) t.setTemporary(temporary);
+    t.setCatName(catName);
+    if (!mvReferencedTables.isEmpty()) {
+      CreationMetadata cm = new CreationMetadata(catName, dbName, tableName, mvReferencedTables);
+      if (mvValidTxnList != null) cm.setValidTxnList(mvValidTxnList);
+      t.setCreationMetadata(cm);
     }
-    if (temporary) {
-      t.setTemporary(temporary);
-    }
+    return t;
+  }
+
+  public Table create(IMetaStoreClient client, Configuration conf) throws TException {
+    Table t = build(conf);
+    client.createTable(t);
     return t;
   }
 

@@ -38,8 +38,9 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class ISchemaName implements org.apache.thrift.TBase<ISchemaName, ISchemaName._Fields>, java.io.Serializable, Cloneable, Comparable<ISchemaName> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ISchemaName");
 
-  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField SCHEMA_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("schemaName", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField SCHEMA_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("schemaName", org.apache.thrift.protocol.TType.STRING, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -47,13 +48,15 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new ISchemaNameTupleSchemeFactory());
   }
 
+  private String catName; // required
   private String dbName; // required
   private String schemaName; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    DB_NAME((short)1, "dbName"),
-    SCHEMA_NAME((short)2, "schemaName");
+    CAT_NAME((short)1, "catName"),
+    DB_NAME((short)2, "dbName"),
+    SCHEMA_NAME((short)3, "schemaName");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -68,9 +71,11 @@ import org.slf4j.LoggerFactory;
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // DB_NAME
+        case 1: // CAT_NAME
+          return CAT_NAME;
+        case 2: // DB_NAME
           return DB_NAME;
-        case 2: // SCHEMA_NAME
+        case 3: // SCHEMA_NAME
           return SCHEMA_NAME;
         default:
           return null;
@@ -115,6 +120,8 @@ import org.slf4j.LoggerFactory;
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.SCHEMA_NAME, new org.apache.thrift.meta_data.FieldMetaData("schemaName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -127,10 +134,12 @@ import org.slf4j.LoggerFactory;
   }
 
   public ISchemaName(
+    String catName,
     String dbName,
     String schemaName)
   {
     this();
+    this.catName = catName;
     this.dbName = dbName;
     this.schemaName = schemaName;
   }
@@ -139,6 +148,9 @@ import org.slf4j.LoggerFactory;
    * Performs a deep copy on <i>other</i>.
    */
   public ISchemaName(ISchemaName other) {
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
     if (other.isSetDbName()) {
       this.dbName = other.dbName;
     }
@@ -153,8 +165,32 @@ import org.slf4j.LoggerFactory;
 
   @Override
   public void clear() {
+    this.catName = null;
     this.dbName = null;
     this.schemaName = null;
+  }
+
+  public String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
   }
 
   public String getDbName() {
@@ -205,6 +241,14 @@ import org.slf4j.LoggerFactory;
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((String)value);
+      }
+      break;
+
     case DB_NAME:
       if (value == null) {
         unsetDbName();
@@ -226,6 +270,9 @@ import org.slf4j.LoggerFactory;
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
+    case CAT_NAME:
+      return getCatName();
+
     case DB_NAME:
       return getDbName();
 
@@ -243,6 +290,8 @@ import org.slf4j.LoggerFactory;
     }
 
     switch (field) {
+    case CAT_NAME:
+      return isSetCatName();
     case DB_NAME:
       return isSetDbName();
     case SCHEMA_NAME:
@@ -263,6 +312,15 @@ import org.slf4j.LoggerFactory;
   public boolean equals(ISchemaName that) {
     if (that == null)
       return false;
+
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
 
     boolean this_present_dbName = true && this.isSetDbName();
     boolean that_present_dbName = true && that.isSetDbName();
@@ -289,6 +347,11 @@ import org.slf4j.LoggerFactory;
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
 
+    boolean present_catName = true && (isSetCatName());
+    list.add(present_catName);
+    if (present_catName)
+      list.add(catName);
+
     boolean present_dbName = true && (isSetDbName());
     list.add(present_dbName);
     if (present_dbName)
@@ -310,6 +373,16 @@ import org.slf4j.LoggerFactory;
 
     int lastComparison = 0;
 
+    lastComparison = Boolean.valueOf(isSetCatName()).compareTo(other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = Boolean.valueOf(isSetDbName()).compareTo(other.isSetDbName());
     if (lastComparison != 0) {
       return lastComparison;
@@ -350,6 +423,14 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("ISchemaName(");
     boolean first = true;
 
+    sb.append("catName:");
+    if (this.catName == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.catName);
+    }
+    first = false;
+    if (!first) sb.append(", ");
     sb.append("dbName:");
     if (this.dbName == null) {
       sb.append("null");
@@ -408,7 +489,15 @@ import org.slf4j.LoggerFactory;
           break;
         }
         switch (schemeField.id) {
-          case 1: // DB_NAME
+          case 1: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 2: // DB_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.dbName = iprot.readString();
               struct.setDbNameIsSet(true);
@@ -416,7 +505,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // SCHEMA_NAME
+          case 3: // SCHEMA_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.schemaName = iprot.readString();
               struct.setSchemaNameIsSet(true);
@@ -437,6 +526,11 @@ import org.slf4j.LoggerFactory;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (struct.catName != null) {
+        oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+        oprot.writeString(struct.catName);
+        oprot.writeFieldEnd();
+      }
       if (struct.dbName != null) {
         oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
         oprot.writeString(struct.dbName);
@@ -465,13 +559,19 @@ import org.slf4j.LoggerFactory;
     public void write(org.apache.thrift.protocol.TProtocol prot, ISchemaName struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
-      if (struct.isSetDbName()) {
+      if (struct.isSetCatName()) {
         optionals.set(0);
       }
-      if (struct.isSetSchemaName()) {
+      if (struct.isSetDbName()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetSchemaName()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
+      }
       if (struct.isSetDbName()) {
         oprot.writeString(struct.dbName);
       }
@@ -483,12 +583,16 @@ import org.slf4j.LoggerFactory;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, ISchemaName struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(2);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
+      }
+      if (incoming.get(1)) {
         struct.dbName = iprot.readString();
         struct.setDbNameIsSet(true);
       }
-      if (incoming.get(1)) {
+      if (incoming.get(2)) {
         struct.schemaName = iprot.readString();
         struct.setSchemaNameIsSet(true);
       }

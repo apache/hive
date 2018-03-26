@@ -28,6 +28,7 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.Iterables;
 
+import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -45,9 +46,11 @@ import org.apache.hadoop.hive.metastore.messaging.AddUniqueConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
+import org.apache.hadoop.hive.metastore.messaging.CreateCatalogMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateTableMessage;
+import org.apache.hadoop.hive.metastore.messaging.DropCatalogMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropFunctionMessage;
@@ -188,6 +191,16 @@ public class JSONMessageFactory extends MessageFactory {
       String constraintName) {
     return new JSONDropConstraintMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, dbName, tableName,
         constraintName, now());
+  }
+
+  @Override
+  public CreateCatalogMessage buildCreateCatalogMessage(Catalog catalog) {
+    return new JSONCreateCatalogMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, catalog.getName(), now());
+  }
+
+  @Override
+  public DropCatalogMessage buildDropCatalogMessage(Catalog catalog) {
+    return new JSONDropCatalogMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, catalog.getName(), now());
   }
 
   private long now() {

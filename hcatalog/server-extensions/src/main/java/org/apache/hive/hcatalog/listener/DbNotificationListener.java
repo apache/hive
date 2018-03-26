@@ -74,6 +74,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+
 /**
  * An implementation of {@link org.apache.hadoop.hive.metastore.MetaStoreEventListener} that
  * stores events in the database.
@@ -140,6 +142,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.CREATE_TABLE.toString(), msgFactory
             .buildCreateTableMessage(t, new FileIterator(t.getSd().getLocation())).toString());
+    event.setCatName(t.isSetCatName() ? t.getCatName() : DEFAULT_CATALOG_NAME);
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
     process(event, tableEvent);
@@ -155,6 +158,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.DROP_TABLE.toString(), msgFactory
             .buildDropTableMessage(t).toString());
+    event.setCatName(t.isSetCatName() ? t.getCatName() : DEFAULT_CATALOG_NAME);
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
     process(event, tableEvent);
@@ -171,6 +175,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ALTER_TABLE.toString(), msgFactory
             .buildAlterTableMessage(before, after, tableEvent.getIsTruncateOp()).toString());
+    event.setCatName(after.isSetCatName() ? after.getCatName() : DEFAULT_CATALOG_NAME);
     event.setDbName(after.getDbName());
     event.setTableName(after.getTableName());
     process(event, tableEvent);
@@ -279,6 +284,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
             new PartitionFilesIterator(partitionEvent.getPartitionIterator(), t)).toString();
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ADD_PARTITION.toString(), msg);
+    event.setCatName(t.isSetCatName() ? t.getCatName() : DEFAULT_CATALOG_NAME);
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
     process(event, partitionEvent);
@@ -294,6 +300,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.DROP_PARTITION.toString(), msgFactory
             .buildDropPartitionMessage(t, partitionEvent.getPartitionIterator()).toString());
+    event.setCatName(t.isSetCatName() ? t.getCatName() : DEFAULT_CATALOG_NAME);
     event.setDbName(t.getDbName());
     event.setTableName(t.getTableName());
     process(event, partitionEvent);
@@ -310,6 +317,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ALTER_PARTITION.toString(), msgFactory
             .buildAlterPartitionMessage(partitionEvent.getTable(), before, after, partitionEvent.getIsTruncateOp()).toString());
+    event.setCatName(before.isSetCatName() ? before.getCatName() : DEFAULT_CATALOG_NAME);
     event.setDbName(before.getDbName());
     event.setTableName(before.getTableName());
     process(event, partitionEvent);
@@ -325,6 +333,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.CREATE_DATABASE.toString(), msgFactory
             .buildCreateDatabaseMessage(db).toString());
+    event.setCatName(db.isSetCatalogName() ? db.getCatalogName() : DEFAULT_CATALOG_NAME);
     event.setDbName(db.getName());
     process(event, dbEvent);
   }
@@ -339,6 +348,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.DROP_DATABASE.toString(), msgFactory
             .buildDropDatabaseMessage(db).toString());
+    event.setCatName(db.isSetCatalogName() ? db.getCatalogName() : DEFAULT_CATALOG_NAME);
     event.setDbName(db.getName());
     process(event, dbEvent);
   }
@@ -354,6 +364,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     NotificationEvent event =
             new NotificationEvent(0, now(), EventType.ALTER_DATABASE.toString(), msgFactory
                     .buildAlterDatabaseMessage(oldDb, newDb).toString());
+    event.setCatName(oldDb.isSetCatalogName() ? oldDb.getCatalogName() : DEFAULT_CATALOG_NAME);
     event.setDbName(oldDb.getName());
     process(event, dbEvent);
   }
@@ -368,6 +379,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.CREATE_FUNCTION.toString(), msgFactory
             .buildCreateFunctionMessage(fn).toString());
+    event.setCatName(fn.isSetCatName() ? fn.getCatName() : DEFAULT_CATALOG_NAME);
     event.setDbName(fn.getDbName());
     process(event, fnEvent);
   }
@@ -382,6 +394,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.DROP_FUNCTION.toString(), msgFactory
             .buildDropFunctionMessage(fn).toString());
+    event.setCatName(fn.isSetCatName() ? fn.getCatName() : DEFAULT_CATALOG_NAME);
     event.setDbName(fn.getDbName());
     process(event, fnEvent);
   }
@@ -419,6 +432,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
                 insertEvent.getPartitionObj(), insertEvent.isReplace(),
             new FileChksumIterator(insertEvent.getFiles(), insertEvent.getFileChecksums()))
                 .toString());
+    event.setCatName(tableObj.isSetCatName() ? tableObj.getCatName() : DEFAULT_CATALOG_NAME);
     event.setDbName(tableObj.getDbName());
     event.setTableName(tableObj.getTableName());
     process(event, insertEvent);
@@ -445,6 +459,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       NotificationEvent event =
           new NotificationEvent(0, now(), EventType.ADD_PRIMARYKEY.toString(), msgFactory
               .buildAddPrimaryKeyMessage(addPrimaryKeyEvent.getPrimaryKeyCols()).toString());
+      event.setCatName(cols.get(0).isSetCatName() ? cols.get(0).getCatName() : DEFAULT_CATALOG_NAME);
       event.setDbName(cols.get(0).getTable_db());
       event.setTableName(cols.get(0).getTable_name());
       process(event, addPrimaryKeyEvent);
@@ -462,6 +477,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       NotificationEvent event =
           new NotificationEvent(0, now(), EventType.ADD_FOREIGNKEY.toString(), msgFactory
               .buildAddForeignKeyMessage(addForeignKeyEvent.getForeignKeyCols()).toString());
+      event.setCatName(cols.get(0).isSetCatName() ? cols.get(0).getCatName() : DEFAULT_CATALOG_NAME);
       event.setDbName(cols.get(0).getPktable_db());
       event.setTableName(cols.get(0).getPktable_name());
       process(event, addForeignKeyEvent);
@@ -479,6 +495,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       NotificationEvent event =
           new NotificationEvent(0, now(), EventType.ADD_UNIQUECONSTRAINT.toString(), msgFactory
               .buildAddUniqueConstraintMessage(addUniqueConstraintEvent.getUniqueConstraintCols()).toString());
+      event.setCatName(cols.get(0).isSetCatName() ? cols.get(0).getCatName() : DEFAULT_CATALOG_NAME);
       event.setDbName(cols.get(0).getTable_db());
       event.setTableName(cols.get(0).getTable_name());
       process(event, addUniqueConstraintEvent);
@@ -496,6 +513,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       NotificationEvent event =
           new NotificationEvent(0, now(), EventType.ADD_NOTNULLCONSTRAINT.toString(), msgFactory
               .buildAddNotNullConstraintMessage(addNotNullConstraintEvent.getNotNullConstraintCols()).toString());
+      event.setCatName(cols.get(0).isSetCatName() ? cols.get(0).getCatName() : DEFAULT_CATALOG_NAME);
       event.setDbName(cols.get(0).getTable_db());
       event.setTableName(cols.get(0).getTable_name());
       process(event, addNotNullConstraintEvent);
@@ -514,6 +532,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.DROP_CONSTRAINT.toString(), msgFactory
             .buildDropConstraintMessage(dbName, tableName, constraintName).toString());
+    event.setCatName(dropConstraintEvent.getCatName());
     event.setDbName(dbName);
     event.setTableName(tableName);
     process(event, dropConstraintEvent);

@@ -166,4 +166,8 @@ public abstract class AbstractMetaStoreService {
    */
   public void stop() {
   }
+
+  public Configuration getConf() {
+    return configuration;
+  }
 }

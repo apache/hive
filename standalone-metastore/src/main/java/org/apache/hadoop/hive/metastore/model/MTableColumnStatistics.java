@@ -33,6 +33,7 @@ package org.apache.hadoop.hive.metastore.model;
 public class MTableColumnStatistics {
 
   private MTable table;
+  private String catName;
   private String dbName;
   private String tableName;
   private String colName;
@@ -149,6 +150,14 @@ public class MTableColumnStatistics {
 
   public void setDbName(String dbName) {
     this.dbName = dbName;
+  }
+
+  public String getCatName() {
+    return catName;
+  }
+
+  public void setCatName(String catName) {
+    this.catName = catName;
   }
 
   public void setBooleanStats(Long numTrues, Long numFalses, Long numNulls) {

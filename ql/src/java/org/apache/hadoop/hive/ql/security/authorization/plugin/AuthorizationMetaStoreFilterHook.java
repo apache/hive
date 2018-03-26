@@ -43,7 +43,8 @@ public class AuthorizationMetaStoreFilterHook extends DefaultMetaStoreFilterHook
   }
 
   @Override
-  public List<String> filterTableNames(String dbName, List<String> tableList) throws MetaException {
+  public List<String> filterTableNames(String catName, String dbName, List<String> tableList)
+      throws MetaException {
     List<HivePrivilegeObject> listObjs = getHivePrivObjects(dbName, tableList);
     return getTableNames(getFilteredObjects(listObjs));
   }

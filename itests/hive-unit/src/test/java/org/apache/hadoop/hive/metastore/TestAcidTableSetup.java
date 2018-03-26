@@ -85,7 +85,7 @@ public class TestAcidTableSetup {
           .setTableName(tblName)
           .setTableParams(params)
           .setCols(type.getFields())
-          .build();
+          .build(conf);
       client.createTable(t);
       fail("Expected exception");
     } catch (MetaException e) {
@@ -102,7 +102,7 @@ public class TestAcidTableSetup {
           .setTableName(tblName)
           .setTableParams(params)
           .setCols(type.getFields())
-          .build();
+          .build(conf);
       client.createTable(t);
       fail("Expected exception");
     } catch (MetaException e) {
@@ -119,7 +119,7 @@ public class TestAcidTableSetup {
           .setTableName(tblName)
           .setTableParams(params)
           .setCols(type.getFields())
-          .build();
+          .build(conf);
       client.createTable(t);
       fail("Expected exception");
     } catch (MetaException e) {
@@ -139,7 +139,7 @@ public class TestAcidTableSetup {
           .setTableParams(params)
           .setCols(type.getFields())
           .setBucketCols(bucketCols)
-          .build();
+          .build(conf);
       client.createTable(t);
       fail("Expected exception");
     } catch (MetaException e) {
@@ -158,7 +158,7 @@ public class TestAcidTableSetup {
         .setBucketCols(bucketCols)
         .setInputFormat("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat")
         .setOutputFormat("org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat")
-        .build();
+        .build(conf);
     client.createTable(t);
     assertTrue("CREATE TABLE should succeed",
         "true".equals(t.getParameters().get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)));
@@ -188,7 +188,7 @@ public class TestAcidTableSetup {
           .setTableName(tblName)
           .setCols(type.getFields())
           .setInputFormat("org.apache.hadoop.mapred.FileInputFormat")
-          .build();
+          .build(conf);
       client.createTable(t);
       params.put("transactional", "true");
       t.setParameters(params);
@@ -210,7 +210,7 @@ public class TestAcidTableSetup {
         .setBucketCols(bucketCols)
         .setInputFormat("org.apache.hadoop.hive.ql.io.orc.OrcInputFormat")
         .setOutputFormat("org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat")
-        .build();
+        .build(conf);
     client.createTable(t);
     params.put("transactional", "true");
     t.setParameters(params);

@@ -26,6 +26,10 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('Functions:')
   print('  string getMetaConf(string key)')
   print('  void setMetaConf(string key, string value)')
+  print('  void create_catalog(CreateCatalogRequest catalog)')
+  print('  GetCatalogResponse get_catalog(GetCatalogRequest catName)')
+  print('  GetCatalogsResponse get_catalogs()')
+  print('  void drop_catalog(DropCatalogRequest catName)')
   print('  void create_database(Database database)')
   print('  Database get_database(string name)')
   print('  void drop_database(string name, bool deleteData, bool cascade)')
@@ -63,7 +67,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  GetTableResult get_table_req(GetTableRequest req)')
   print('  GetTablesResult get_table_objects_by_name_req(GetTablesRequest req)')
   print('   get_materialization_invalidation_info(string dbname,  tbl_names)')
-  print('  void update_creation_metadata(string dbname, string tbl_name, CreationMetadata creation_metadata)')
+  print('  void update_creation_metadata(string catName, string dbname, string tbl_name, CreationMetadata creation_metadata)')
   print('   get_table_names_by_filter(string dbname, string filter, i16 max_tables)')
   print('  void alter_table(string dbname, string tbl_name, Table new_tbl)')
   print('  void alter_table_with_environment_context(string dbname, string tbl_name, Table new_tbl, EnvironmentContext environment_context)')
@@ -301,6 +305,30 @@ elif cmd == 'setMetaConf':
     sys.exit(1)
   pp.pprint(client.setMetaConf(args[0],args[1],))
 
+elif cmd == 'create_catalog':
+  if len(args) != 1:
+    print('create_catalog requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.create_catalog(eval(args[0]),))
+
+elif cmd == 'get_catalog':
+  if len(args) != 1:
+    print('get_catalog requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_catalog(eval(args[0]),))
+
+elif cmd == 'get_catalogs':
+  if len(args) != 0:
+    print('get_catalogs requires 0 args')
+    sys.exit(1)
+  pp.pprint(client.get_catalogs())
+
+elif cmd == 'drop_catalog':
+  if len(args) != 1:
+    print('drop_catalog requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.drop_catalog(eval(args[0]),))
+
 elif cmd == 'create_database':
   if len(args) != 1:
     print('create_database requires 1 args')
@@ -524,10 +552,10 @@ elif cmd == 'get_materialization_invalidation_info':
   pp.pprint(client.get_materialization_invalidation_info(args[0],eval(args[1]),))
 
 elif cmd == 'update_creation_metadata':
-  if len(args) != 3:
-    print('update_creation_metadata requires 3 args')
+  if len(args) != 4:
+    print('update_creation_metadata requires 4 args')
     sys.exit(1)
-  pp.pprint(client.update_creation_metadata(args[0],args[1],eval(args[2]),))
+  pp.pprint(client.update_creation_metadata(args[0],args[1],args[2],eval(args[3]),))
 
 elif cmd == 'get_table_names_by_filter':
   if len(args) != 3:

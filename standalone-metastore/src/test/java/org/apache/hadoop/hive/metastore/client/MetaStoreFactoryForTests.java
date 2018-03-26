@@ -87,6 +87,7 @@ public final class MetaStoreFactoryForTests {
     // Create Embedded MetaStore
     conf.set("javax.jdo.option.ConnectionURL",
         "jdbc:derby:memory:${test.tmp.dir}/junit_metastore_db1;create=true");
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TRY_DIRECT_SQL, false);
     AbstractMetaStoreService embedded =
         new MiniHMS.Builder()
             .setConf(conf)
@@ -97,6 +98,7 @@ public final class MetaStoreFactoryForTests {
     // Create Remote MetaStore
     conf.set("javax.jdo.option.ConnectionURL",
         "jdbc:derby:memory:${test.tmp.dir}/junit_metastore_db2;create=true");
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TRY_DIRECT_SQL, true);
     AbstractMetaStoreService remote =
         new MiniHMS.Builder()
             .setConf(conf)

@@ -88,10 +88,9 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     // Clean up the database
     client.dropDatabase(DB_NAME, true, true, true);
     metaStore.cleanWarehouseDirs();
-    Database db = new DatabaseBuilder().
+    new DatabaseBuilder().
         setName(DB_NAME).
-        build();
-    client.createDatabase(db);
+        create(client, metaStore.getConf());
   }
 
   @After
@@ -168,6 +167,8 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     verifyPartitionSharedSD(table, "year=2004/month=june", Lists.newArrayList("2004", "june"), 3);
     verifyPartitionSharedSD(table, "year=2005/month=may", Lists.newArrayList("2005", "may"), 4);
   }
+
+  // TODO add tests for partitions in other catalogs
 
   @Test(expected = NullPointerException.class)
   public void testAddPartitionSpecNullSpec() throws Exception {
@@ -679,8 +680,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
         .addCol("test_value", DEFAULT_COL_TYPE, "test col value")
         .addPartCol(YEAR_COL_NAME, DEFAULT_COL_TYPE)
         .setLocation(null)
-        .build();
-    client.createTable(table);
+        .create(client, metaStore.getConf());
 
     Partition partition = buildPartition(DB_NAME, TABLE_NAME, DEFAULT_YEAR_VALUE);
     PartitionSpecProxy partitionSpecProxy =
@@ -714,7 +714,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
         .setTableName(TABLE_NAME)
         .addCol(YEAR_COL_NAME, DEFAULT_COL_TYPE)
         .setLocation(metaStore.getWarehouseRoot() + "/addpartspectest")
-        .build();
+        .build(metaStore.getConf());
 
     PartitionSpecProxy partitionSpecProxy =
         buildPartitionSpec(DB_NAME, TABLE_NAME, null, Lists.newArrayList(partition));
@@ -821,8 +821,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
 
   // Helper methods
   private void createDB(String dbName) throws TException {
-    Database db = new DatabaseBuilder().setName(dbName).build();
-    client.createDatabase(db);
+    Database db = new DatabaseBuilder().setName(dbName).create(client, metaStore.getConf());
   }
 
   private Table createTable() throws Exception {
@@ -844,8 +843,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
         .setStoredAsSubDirectories(false)
         .addSerdeParam("partTestSerdeParamKey", "partTestSerdeParamValue")
         .setLocation(location)
-        .build();
-    client.createTable(table);
+        .create(client, metaStore.getConf());
     return client.getTable(dbName, tableName);
   }
 
@@ -866,7 +864,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
         .addCol("test_value", "string", "test col value")
         .addPartParam(DEFAULT_PARAM_KEY, DEFAULT_PARAM_VALUE)
         .setLocation(location)
-        .build();
+        .build(metaStore.getConf());
     return partition;
   }
 
@@ -886,7 +884,7 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
         .setLastAccessTime(DEFAULT_CREATE_TIME)
         .addCol("test_id", "int", "test col id")
         .addCol("test_value", "string", "test col value")
-        .build();
+        .build(metaStore.getConf());
     return partition;
   }
 

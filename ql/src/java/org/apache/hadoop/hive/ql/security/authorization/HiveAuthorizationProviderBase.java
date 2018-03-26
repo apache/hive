@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.security.authorization;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -89,7 +91,7 @@ public abstract class HiveAuthorizationProviderBase implements
         return Hive.getWithFastCheck(conf).getDatabase(dbName);
       } else {
         try {
-          return handler.get_database_core(dbName);
+          return handler.get_database_core(MetaStoreUtils.getDefaultCatalog(conf), dbName);
         } catch (NoSuchObjectException e) {
           throw new HiveException(e);
         } catch (MetaException e) {

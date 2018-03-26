@@ -201,13 +201,12 @@ public class TestMetaStoreEventListener {
     assertEquals(notifyList.size(), listSize);
     assertEquals(preNotifyList.size(), listSize);
 
-    Database db = new DatabaseBuilder()
+    new DatabaseBuilder()
         .setName(dbName)
-        .build();
-    msc.createDatabase(db);
+        .create(msc, conf);
     listSize++;
     PreCreateDatabaseEvent preDbEvent = (PreCreateDatabaseEvent)(preNotifyList.get(preNotifyList.size() - 1));
-    db = msc.getDatabase(dbName);
+    Database db = msc.getDatabase(dbName);
     assertEquals(listSize, notifyList.size());
     assertEquals(listSize + 1, preNotifyList.size());
     validateCreateDb(db, preDbEvent.getDatabase());
@@ -217,12 +216,11 @@ public class TestMetaStoreEventListener {
     validateCreateDb(db, dbEvent.getDatabase());
 
     Table table = new TableBuilder()
-        .setDbName(db)
+        .inDb(db)
         .setTableName(tblName)
         .addCol("a", "string")
         .addPartCol("b", "string")
-        .build();
-    msc.createTable(table);
+        .create(msc, conf);
     PreCreateTableEvent preTblEvent = (PreCreateTableEvent)(preNotifyList.get(preNotifyList.size() - 1));
     listSize++;
     Table tbl = msc.getTable(dbName, tblName);
@@ -234,18 +232,17 @@ public class TestMetaStoreEventListener {
     validateCreateTable(tbl, tblEvent.getTable());
 
 
-    Partition part = new PartitionBuilder()
-        .fromTable(table)
+    new PartitionBuilder()
+        .inTable(table)
         .addValue("2011")
-        .build();
-    msc.add_partition(part);
+        .addToTable(msc, conf);
     listSize++;
     assertEquals(notifyList.size(), listSize);
     PreAddPartitionEvent prePartEvent = (PreAddPartitionEvent)(preNotifyList.get(preNotifyList.size() - 1));
 
     AddPartitionEvent partEvent = (AddPartitionEvent)(notifyList.get(listSize-1));
     Assert.assertTrue(partEvent.getStatus());
-    part = msc.getPartition("hive2038", "tmptbl", "b=2011");
+    Partition part = msc.getPartition("hive2038", "tmptbl", "b=2011");
     Partition partAdded = partEvent.getPartitionIterator().next();
     validateAddPartition(part, partAdded);
     validateTableInAddPartition(tbl, partEvent.getTable());

@@ -55,12 +55,13 @@ public class InsertEvent extends ListenerEvent {
    * @param status status of insert, true = success, false = failure
    * @param handler handler that is firing the event
    */
-  public InsertEvent(String db, String table, List<String> partVals,
+  public InsertEvent(String catName, String db, String table, List<String> partVals,
       InsertEventRequestData insertData, boolean status, IHMSHandler handler) throws MetaException,
       NoSuchObjectException {
     super(status, handler);
 
     GetTableRequest req = new GetTableRequest(db, table);
+    req.setCatName(catName);
     // TODO MS-SPLIT Switch this back once HiveMetaStoreClient is moved.
     //req.setCapabilities(HiveMetaStoreClient.TEST_VERSION);
     req.setCapabilities(new ClientCapabilities(
@@ -68,7 +69,8 @@ public class InsertEvent extends ListenerEvent {
     try {
       this.tableObj = handler.get_table_req(req).getTable();
       if (partVals != null) {
-        this.ptnObj = handler.get_partition(db, table, partVals);
+        this.ptnObj = handler.get_partition(MetaStoreUtils.prependNotNullCatToDbName(catName, db),
+            table, partVals);
       } else {
         this.ptnObj = null;
       }

@@ -32,24 +32,18 @@ import org.apache.hadoop.hive.metastore.utils.StringUtils;
 public class CacheUtils {
   private static final String delimit = "\u0001";
 
-  /**
-   * Builds a key for the table cache which is concatenation of database name and table name
-   * separated by a delimiter
-   *
-   * @param dbName
-   * @param tableName
-   * @return
-   */
-  public static String buildTableCacheKey(String dbName, String tableName) {
-    return dbName + delimit + tableName;
+  public static String buildCatalogKey(String catName) {
+    return catName;
+  }
+
+  public static String buildDbKey(String catName, String dbName) {
+    return buildKey(catName.toLowerCase(), dbName.toLowerCase());
   }
 
   /**
    * Builds a key for the partition cache which is concatenation of partition values, each value
    * separated by a delimiter
    *
-   * @param list of partition values
-   * @return cache key for partitions cache
    */
   public static String buildPartitionCacheKey(List<String> partVals) {
     if (partVals == null || partVals.isEmpty()) {
@@ -58,13 +52,29 @@ public class CacheUtils {
     return String.join(delimit, partVals);
   }
 
+  public static String buildTableKey(String catName, String dbName, String tableName) {
+    return buildKey(catName.toLowerCase(), dbName.toLowerCase(), tableName.toLowerCase());
+  }
+
+  public static String buildTableColKey(String catName, String dbName, String tableName,
+                                        String colName) {
+    return buildKey(catName, dbName, tableName, colName);
+  }
+
+  private static String buildKey(String... elements) {
+    return org.apache.commons.lang.StringUtils.join(elements, delimit);
+  }
+
+  public static String[] splitDbName(String key) {
+    String[] names = key.split(delimit);
+    assert names.length == 2;
+    return names;
+  }
+
   /**
    * Builds a key for the partitions column cache which is concatenation of partition values, each
    * value separated by a delimiter and the column name
    *
-   * @param list of partition values
-   * @param column name
-   * @return cache key for partitions column stats cache
    */
   public static String buildPartitonColStatsCacheKey(List<String> partVals, String colName) {
     return buildPartitionCacheKey(partVals) + delimit + colName;

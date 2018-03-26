@@ -41,6 +41,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+
 @Category(MetastoreUnitTest.class)
 public class TestAggregateStatsCache {
   static String DB_NAME = "db";
@@ -117,11 +119,11 @@ public class TestAggregateStatsCache {
 
   @Test
   public void testCacheKey() {
-    Key k1 = new Key("db", "tbl1", "col");
-    Key k2 = new Key("db", "tbl1", "col");
+    Key k1 = new Key("cat", "db", "tbl1", "col");
+    Key k2 = new Key("cat", "db", "tbl1", "col");
     // k1 equals k2
     Assert.assertEquals(k1, k2);
-    Key k3 = new Key("db", "tbl2", "col");
+    Key k3 = new Key("cat", "db", "tbl2", "col");
     // k1 not equals k3
     Assert.assertNotEquals(k1, k3);
   }
@@ -140,16 +142,16 @@ public class TestAggregateStatsCache {
     ColumnStatisticsObj aggrColStats =
         getDummyLongColStat(colName, highVal, lowVal, numDVs, numNulls);
     // Now add to cache the dummy colstats for these 10 partitions
-    cache.add(DB_NAME, tblName, colName, 10, aggrColStats, bloomFilter);
+    cache.add(DEFAULT_CATALOG_NAME, DB_NAME, tblName, colName, 10, aggrColStats, bloomFilter);
     // Now get from cache
-    AggrColStats aggrStatsCached = cache.get(DB_NAME, tblName, colName, partNames);
+    AggrColStats aggrStatsCached = cache.get(DEFAULT_CATALOG_NAME, DB_NAME, tblName, colName, partNames);
     Assert.assertNotNull(aggrStatsCached);
 
     ColumnStatisticsObj aggrColStatsCached = aggrStatsCached.getColStats();
     Assert.assertEquals(aggrColStats, aggrColStatsCached);
 
     // Now get a non-existant entry
-    aggrStatsCached = cache.get("dbNotThere", tblName, colName, partNames);
+    aggrStatsCached = cache.get(DEFAULT_CATALOG_NAME, "dbNotThere", tblName, colName, partNames);
     Assert.assertNull(aggrStatsCached);
   }
 
@@ -167,25 +169,25 @@ public class TestAggregateStatsCache {
     ColumnStatisticsObj aggrColStats =
         getDummyLongColStat(colName, highVal, lowVal, numDVs, numNulls);
     // Now add to cache
-    cache.add(DB_NAME, tblName, colName, 10, aggrColStats, bloomFilter);
+    cache.add(DEFAULT_CATALOG_NAME, DB_NAME, tblName, colName, 10, aggrColStats, bloomFilter);
 
     // Now prepare partnames with only 5 partitions: [tab1part1...tab1part5]
     partNames = preparePartNames(tables.get(0), 1, 5);
     // This get should fail because its variance ((10-5)/5) is way past MAX_VARIANCE (0.5)
-    AggrColStats aggrStatsCached = cache.get(DB_NAME, tblName, colName, partNames);
+    AggrColStats aggrStatsCached = cache.get(DEFAULT_CATALOG_NAME, DB_NAME, tblName, colName, partNames);
     Assert.assertNull(aggrStatsCached);
 
     // Now prepare partnames with 10 partitions: [tab1part11...tab1part20], but with no overlap
     partNames = preparePartNames(tables.get(0), 11, 20);
     // This get should fail because its variance ((10-0)/10) is way past MAX_VARIANCE (0.5)
-    aggrStatsCached = cache.get(DB_NAME, tblName, colName, partNames);
+    aggrStatsCached = cache.get(DEFAULT_CATALOG_NAME, DB_NAME, tblName, colName, partNames);
     Assert.assertNull(aggrStatsCached);
 
     // Now prepare partnames with 9 partitions: [tab1part1...tab1part8], which are contained in the
     // object that we added to the cache
     partNames = preparePartNames(tables.get(0), 1, 8);
     // This get should succeed because its variance ((10-9)/9) is within past MAX_VARIANCE (0.5)
-    aggrStatsCached = cache.get(DB_NAME, tblName, colName, partNames);
+    aggrStatsCached = cache.get(DEFAULT_CATALOG_NAME, DB_NAME, tblName, colName, partNames);
     Assert.assertNotNull(aggrStatsCached);
     ColumnStatisticsObj aggrColStatsCached = aggrStatsCached.getColStats();
     Assert.assertEquals(aggrColStats, aggrColStatsCached);
@@ -206,13 +208,13 @@ public class TestAggregateStatsCache {
     ColumnStatisticsObj aggrColStats =
         getDummyLongColStat(colName, highVal, lowVal, numDVs, numNulls);
     // Now add to cache
-    cache.add(DB_NAME, tblName, colName, 10, aggrColStats, bloomFilter);
+    cache.add(DEFAULT_CATALOG_NAME, DB_NAME, tblName, colName, 10, aggrColStats, bloomFilter);
 
     // Sleep for 3 seconds
     Thread.sleep(3000);
 
     // Get should fail now (since TTL is 2s) and we've snoozed for 3 seconds
-    AggrColStats aggrStatsCached = cache.get(DB_NAME, tblName, colName, partNames);
+    AggrColStats aggrStatsCached = cache.get(DEFAULT_CATALOG_NAME, DB_NAME, tblName, colName, partNames);
     Assert.assertNull(aggrStatsCached);
   }
 

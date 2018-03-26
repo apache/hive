@@ -27,7 +27,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -1162,10 +1161,9 @@ public class TestExchangePartitions extends MetaStoreClientTest {
 
   // Helper methods
   private void createDB(String dbName) throws TException {
-    Database db = new DatabaseBuilder()
+    new DatabaseBuilder()
         .setName(dbName)
-        .build();
-    client.createDatabase(db);
+        .create(client, metaStore.getConf());
   }
 
   private Table createSourceTable() throws Exception {
@@ -1186,14 +1184,13 @@ public class TestExchangePartitions extends MetaStoreClientTest {
 
   private Table createTable(String dbName, String tableName, List<FieldSchema> partCols,
       List<FieldSchema> cols, String location) throws Exception {
-    Table table = new TableBuilder()
+    new TableBuilder()
         .setDbName(dbName)
         .setTableName(tableName)
         .setCols(cols)
         .setPartCols(partCols)
         .setLocation(location)
-        .build();
-    client.createTable(table);
+        .create(client, metaStore.getConf());
     return client.getTable(dbName, tableName);
   }
 
@@ -1244,7 +1241,7 @@ public class TestExchangePartitions extends MetaStoreClientTest {
         .addStorageDescriptorParam("test_exch_sd_param_key", "test_exch_sd_param_value")
         .setCols(getYearMonthAndDayPartCols())
         .setLocation(location)
-        .build();
+        .build(metaStore.getConf());
     return partition;
   }
 

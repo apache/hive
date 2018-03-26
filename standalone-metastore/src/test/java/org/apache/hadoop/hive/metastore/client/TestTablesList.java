@@ -18,16 +18,22 @@
 
 package org.apache.hadoop.hive.metastore.client;
 
+import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
+import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
+import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,6 +43,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.List;
+
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 
 /**
  * Test class for IMetaStoreClient API. Testing the Table related functions for metadata
@@ -78,7 +86,7 @@ public class TestTablesList extends MetaStoreClientTest {
             .setOwner("Owner1")
             .setLastAccessTime(1000)
             .addTableParam("param1", "value1")
-            .build();
+            .create(client, metaStore.getConf());
 
     testTables[1] =
         new TableBuilder()
@@ -88,7 +96,7 @@ public class TestTablesList extends MetaStoreClientTest {
             .setOwner("Owner1")
             .setLastAccessTime(2000)
             .addTableParam("param1", "value2")
-            .build();
+            .create(client, metaStore.getConf());
 
     testTables[2] =
         new TableBuilder()
@@ -98,7 +106,7 @@ public class TestTablesList extends MetaStoreClientTest {
             .setOwner("Owner2")
             .setLastAccessTime(1000)
             .addTableParam("param1", "value2")
-            .build();
+            .create(client, metaStore.getConf());
 
     testTables[3] =
         new TableBuilder()
@@ -108,7 +116,7 @@ public class TestTablesList extends MetaStoreClientTest {
             .setOwner("Owner3")
             .setLastAccessTime(3000)
             .addTableParam("param1", "value2")
-            .build();
+            .create(client, metaStore.getConf());
 
     testTables[4] =
         new TableBuilder()
@@ -118,16 +126,16 @@ public class TestTablesList extends MetaStoreClientTest {
             .setOwner("Tester")
             .setLastAccessTime(2500)
             .addTableParam("param1", "value4")
-            .build();
+            .create(client, metaStore.getConf());
 
     testTables[5] =
         new TableBuilder()
             .setDbName(DEFAULT_DATABASE)
             .setTableName("filter_test_table_5")
             .addCol("test_col", "int")
-            .build();
+            .create(client, metaStore.getConf());
 
-    client.createDatabase(new DatabaseBuilder().setName(OTHER_DATABASE).build());
+    new DatabaseBuilder().setName(OTHER_DATABASE).create(client, metaStore.getConf());
 
     testTables[6] =
         new TableBuilder()
@@ -137,16 +145,12 @@ public class TestTablesList extends MetaStoreClientTest {
             .setOwner("Owner1")
             .setLastAccessTime(1000)
             .addTableParam("param1", "value1")
-            .build();
-
-    // Create the tables in the MetaStore
-    for(int i=0; i < testTables.length; i++) {
-      client.createTable(testTables[i]);
-    }
+            .create(client, metaStore.getConf());
 
     // Reload tables from the MetaStore
     for(int i=0; i < testTables.length; i++) {
-      testTables[i] = client.getTable(testTables[i].getDbName(), testTables[i].getTableName());
+      testTables[i] = client.getTable(testTables[i].getCatName(), testTables[i].getDbName(),
+          testTables[i].getTableName());
     }
   }
 
@@ -267,5 +271,46 @@ public class TestTablesList extends MetaStoreClientTest {
   @Test(expected = MetaException.class)
   public void testListTableNamesByFilterInvalidFilter() throws Exception {
     client.listTableNamesByFilter(DEFAULT_DATABASE, "invalid filter", (short)-1);
+  }
+
+  @Test
+  public void otherCatalogs() throws TException {
+    String catName = "list_tables_in_other_catalogs";
+    Catalog cat = new CatalogBuilder()
+        .setName(catName)
+        .setLocation(MetaStoreTestUtils.getTestWarehouseDir(catName))
+        .build();
+    client.createCatalog(cat);
+
+    String dbName = "db_in_other_catalog";
+    // For this one don't specify a location to make sure it gets put in the catalog directory
+    Database db = new DatabaseBuilder()
+        .setName(dbName)
+        .setCatalogName(catName)
+        .create(client, metaStore.getConf());
+
+    String[] tableNames = new String[4];
+    for (int i = 0; i < tableNames.length; i++) {
+      tableNames[i] = "table_in_other_catalog_" + i;
+      TableBuilder builder = new TableBuilder()
+          .inDb(db)
+          .setTableName(tableNames[i])
+          .addCol("col1_" + i, ColumnType.STRING_TYPE_NAME)
+          .addCol("col2_" + i, ColumnType.INT_TYPE_NAME);
+      if (i == 0) builder.addTableParam("the_key", "the_value");
+      builder.create(client, metaStore.getConf());
+    }
+
+    String filter = hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS + "the_key=\"the_value\"";
+    List<String> fetchedNames = client.listTableNamesByFilter(catName, dbName, filter, (short)-1);
+    Assert.assertEquals(1, fetchedNames.size());
+    Assert.assertEquals(tableNames[0], fetchedNames.get(0));
+  }
+
+  @Test(expected = UnknownDBException.class)
+  public void listTablesBogusCatalog() throws TException {
+    String filter = hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS + "the_key=\"the_value\"";
+    List<String> fetchedNames = client.listTableNamesByFilter("", DEFAULT_DATABASE_NAME,
+        filter, (short)-1);
   }
 }
