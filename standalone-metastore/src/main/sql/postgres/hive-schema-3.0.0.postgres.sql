@@ -320,7 +320,7 @@ CREATE TABLE "SEQUENCE_TABLE" (
     "NEXT_VAL" bigint NOT NULL
 );
 
-INSERT INTO "SEQUENCE_TABLE" ("SEQUENCE_NAME", "NEXT_VAL") SELECT 'org.apache.hadoop.hive.metastore.model.MNotificationLog',1 WHERE NOT EXISTS ( SELECT "NEXT_VAL" FROM "SEQUENCE_TABLE" WHERE "SEQUENCE_NAME" = 'org.apache.hadoop.hive.metastore.model.MNotificationLog');
+INSERT INTO "SEQUENCE_TABLE" ("SEQUENCE_NAME", "NEXT_VAL") VALUES ('org.apache.hadoop.hive.metastore.model.MNotificationLog', 1);
 
 --
 -- Name: SERDES; Type: TABLE; Schema: public; Owner: hiveuser; Tablespace:

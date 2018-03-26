@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
 import org.apache.hadoop.hive.ql.exec.ReplTxnWork;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import java.io.Serializable;
 import java.util.Collections;
@@ -35,10 +36,7 @@ public class CommitTxnHandler extends AbstractMessageHandler {
   @Override
   public List<Task<? extends Serializable>> handle(Context context)
       throws SemanticException {
-    String txnMgr = context.hiveConf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER);
-    boolean concurrency =  context.hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
-    String dbTxnMgr = "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager";
-    if (!txnMgr.equals(dbTxnMgr) || !concurrency) {
+    if (!AcidUtils.isAcidEnabled(context.hiveConf)) {
       context.log.error("Cannot load transaction events as acid is not enabled");
       throw new SemanticException("Cannot load transaction events as acid is not enabled");
     }

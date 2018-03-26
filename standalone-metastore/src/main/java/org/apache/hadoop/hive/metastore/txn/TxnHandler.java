@@ -639,7 +639,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               "REPL_TXN_MAP (RTM_REPL_POLICY, RTM_SRC_TXN_ID, RTM_TARGET_TXN_ID)", rowsRepl);
 
           for (String query : queriesRepl) {
-            LOG.debug("Going to execute insert <" + query + ">");
+            LOG.info("Going to execute insert <" + query + ">");
             stmt.execute(query);
           }
         }
@@ -666,18 +666,26 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   private Long getTargetTxnId(String replPolicy, long sourceTxnId, Statement stmt) throws SQLException {
-    ResultSet rs;
-    String s = "select RTM_TARGET_TXN_ID from REPL_TXN_MAP where RTM_SRC_TXN_ID = " + sourceTxnId +
-            " and RTM_REPL_POLICY = " + quoteString(replPolicy);
-    LOG.debug("Going to execute query <" + s + ">");
-    rs = stmt.executeQuery(s);
-    if (!rs.next()) {
-      LOG.info("Target txn is missing for the input source txn for ReplPolicy: " +
-              quoteString(replPolicy) + " , srcTxnId: " + sourceTxnId);
-      return -1L;
+    ResultSet rs = null;
+    try {
+      String s = "select RTM_TARGET_TXN_ID from REPL_TXN_MAP where RTM_SRC_TXN_ID = " + sourceTxnId +
+
+              " and RTM_REPL_POLICY = " + quoteString(replPolicy);
+      LOG.debug("Going to execute query <" + s + ">");
+      rs = stmt.executeQuery(s);
+      if (!rs.next()) {
+        LOG.info("Target txn is missing for the input source txn for ReplPolicy: " +
+                quoteString(replPolicy) + " , srcTxnId: " + sourceTxnId);
+        return -1L;
+      }
+      LOG.debug("targetTxnid for srcTxnId " + sourceTxnId + " is " + rs.getLong(1));
+      return rs.getLong(1);
+    }  catch (SQLException e) {
+      LOG.warn("failed to get target txn ids " + e.getMessage());
+      throw e;
+    } finally {
+      close(rs);
     }
-    LOG.debug("targetTxnid for srcTxnId " + sourceTxnId + " is " + rs.getLong(1));
-    return rs.getLong(1);
   }
 
   @Override
@@ -718,7 +726,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         if (rqst.isSetReplPolicy()) {
           String s = "delete from REPL_TXN_MAP where RTM_SRC_TXN_ID = " + sourceTxnId +
               " and RTM_REPL_POLICY = " + quoteString(rqst.getReplPolicy());
-          LOG.debug("Going to execute  <" + s + ">");
+          LOG.info("Going to execute  <" + s + ">");
           stmt.executeUpdate(s);
         }
 
@@ -984,7 +992,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         if (rqst.isSetReplPolicy()) {
           s = "delete from REPL_TXN_MAP where RTM_SRC_TXN_ID = " + sourceTxnId +
                   " and RTM_REPL_POLICY = " + quoteString(rqst.getReplPolicy());
-          LOG.debug("Repl going to execute  <" + s + ">");
+          LOG.info("Repl going to execute  <" + s + ">");
           stmt.executeUpdate(s);
         }
 

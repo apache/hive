@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.lang.RuntimeException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -182,6 +183,9 @@ public class WarehouseInstance implements Closeable {
 
   WarehouseInstance runFailure(String command) throws Throwable {
     CommandProcessorResponse ret = driver.run(command);
+    if (ret.getException() == null) {
+      throw new RuntimeException("command execution passed for a invalid command" + command);
+    }
     return this;
   }
 

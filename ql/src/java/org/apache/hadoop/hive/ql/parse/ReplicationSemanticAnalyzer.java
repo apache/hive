@@ -244,19 +244,19 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private boolean filterEvent(FileStatus dir, DumpType dumpType) throws SemanticException{
+  private boolean shouldReplayEvent(FileStatus dir, DumpType dumpType) throws SemanticException {
     // This functions filters out all the events which are already replayed. This can be done only
     // for transaction related events as for other kind of events we can not gurantee that the last
     // repl id stored in the database/table is valid.
     if ((dumpType != DumpType.EVENT_ABORT_TXN) &&
             (dumpType != DumpType.EVENT_OPEN_TXN) &&
             (dumpType != DumpType.EVENT_COMMIT_TXN)) {
-      return false;
+      return true;
     }
 
     // if database itself is null then we can not filter out anything.
     if (dbNameOrPattern == null || dbNameOrPattern.isEmpty()) {
-      return false;
+      return true;
     } else if ((tblNameOrPattern == null) || (tblNameOrPattern.isEmpty())) {
       Database database;
       try {
@@ -270,7 +270,9 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
         replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
         if (Long.parseLong(replLastId) >= Long.parseLong(dir.getPath().getName())) {
-          return true;
+          LOG.debug("Event " + dumpType + " with replId " + Long.parseLong(dir.getPath().getName())
+                  + " is already replayed. LastReplId - " +  Long.parseLong(replLastId));
+          return false;
         }
       }
     } else {
@@ -286,12 +288,14 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
           String replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
           if (Long.parseLong(replLastId) >= Long.parseLong(dir.getPath().getName())) {
-            return true;
+            LOG.debug("Event " + dumpType + " with replId " + Long.parseLong(dir.getPath().getName())
+                    + " is already replayed. LastReplId - " +  Long.parseLong(replLastId));
+            return false;
           }
         }
       }
     }
-    return false;
+    return true;
   }
 
   /*
@@ -434,7 +438,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           String locn = dir.getPath().toUri().toString();
           DumpMetaData eventDmd = new DumpMetaData(new Path(locn), conf);
 
-          if (filterEvent(dir, eventDmd.getDumpType())) {
+          if (!shouldReplayEvent(dir, eventDmd.getDumpType())) {
             continue;
           }
 

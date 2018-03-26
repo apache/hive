@@ -9,7 +9,7 @@ CREATE TABLE SEQUENCE_TABLE
 
 ALTER TABLE SEQUENCE_TABLE ADD CONSTRAINT PART_TABLE_PK PRIMARY KEY (SEQUENCE_NAME);
 
-INSERT INTO SEQUENCE_TABLE (SEQUENCE_NAME, NEXT_VAL) SELECT 'org.apache.hadoop.hive.metastore.model.MNotificationLog',1 FROM DUAL WHERE NOT EXISTS ( SELECT NEXT_VAL FROM SEQUENCE_TABLE WHERE SEQUENCE_NAME = 'org.apache.hadoop.hive.metastore.model.MNotificationLog');
+INSERT INTO SEQUENCE_TABLE (SEQUENCE_NAME, NEXT_VAL) VALUES ('org.apache.hadoop.hive.metastore.model.MNotificationLog', 1);
 
 -- Table NUCLEUS_TABLES is an internal table required by DataNucleus.
 -- This table is required if datanucleus.autoStartMechanism=SchemaTable

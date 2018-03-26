@@ -18,7 +18,6 @@
 package org.apache.hive.hcatalog.listener;
 
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -452,9 +451,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
   @Override
   public void onOpenTxn(OpenTxnEvent openTxnEvent) throws MetaException {
-    int totalTxns = openTxnEvent.getTxnIds().size() - 1;
+    int lastTxnIdx = openTxnEvent.getTxnIds().size() - 1;
     OpenTxnMessage msg = msgFactory.buildOpenTxnMessage(openTxnEvent.getTxnIds().get(0),
-            openTxnEvent.getTxnIds().get(totalTxns));
+            openTxnEvent.getTxnIds().get(lastTxnIdx));
     NotificationEvent event =
             new NotificationEvent(0, now(), EventType.OPEN_TXN.toString(), msg.toString());
 
@@ -610,77 +609,106 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
   private void addNotificationLog(NotificationEvent event, ListenerEvent listenerEvent)
           throws MetaException, SQLException {
-    Statement stmt = listenerEvent.getConnection().createStatement();
-    SQLGenerator sqlGenerator = listenerEvent.getSqlGenerator();
-    event.setMessageFormat(msgFactory.getMessageFormat());
-
-    if (sqlGenerator.getDbProduct() == MYSQL) {
-      stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
+    if ((listenerEvent.getConnection() == null) || (listenerEvent.getSqlGenerator() == null)) {
+      LOG.info("connection or sql generator is not set so executing sql via DN");
+      process(event, listenerEvent);
+      return;
     }
+    Statement stmt = null;
+    ResultSet rs = null;
+    try {
+      stmt = listenerEvent.getConnection().createStatement();
+      SQLGenerator sqlGenerator = listenerEvent.getSqlGenerator();
+      event.setMessageFormat(msgFactory.getMessageFormat());
 
-    String s = sqlGenerator.addForUpdateClause("select \"NEXT_EVENT_ID\" " +
-            " from \"NOTIFICATION_SEQUENCE\"");
-    LOG.debug("Going to execute query <" + s + ">");
-    ResultSet rs = stmt.executeQuery(s);
-    if (!rs.next()) {
-      throw new MetaException("Transaction database not properly " +
-              "configured, can't find next event id.");
-    }
-    long nextEventId = rs.getLong(1);
-    long updatedEventid = nextEventId + 1;
-    s = "update \"NOTIFICATION_SEQUENCE\" set \"NEXT_EVENT_ID\" = " + updatedEventid;
-    LOG.debug("Going to execute update <" + s + ">");
-    stmt.executeUpdate(s);
+      if (sqlGenerator.getDbProduct() == MYSQL) {
+        stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
+      }
 
-    s = sqlGenerator.addForUpdateClause("select \"NEXT_VAL\" from " +
-            "\"SEQUENCE_TABLE\" where \"SEQUENCE_NAME\" = " +
-            " 'org.apache.hadoop.hive.metastore.model.MNotificationLog'");
-    LOG.debug("Going to execute query <" + s + ">");
-    rs = stmt.executeQuery(s);
-    if (!rs.next()) {
-      throw new MetaException("Transaction database not properly " +
-              "configured, can't find next event id.");
-    }
+      String s = sqlGenerator.addForUpdateClause("select \"NEXT_EVENT_ID\" " +
+              " from \"NOTIFICATION_SEQUENCE\"");
+      LOG.debug("Going to execute query <" + s + ">");
+      rs = stmt.executeQuery(s);
+      if (!rs.next()) {
+        throw new MetaException("Transaction database not properly " +
+                "configured, can't find next event id.");
+      }
+      long nextEventId = rs.getLong(1);
+      long updatedEventid = nextEventId + 1;
+      s = "update \"NOTIFICATION_SEQUENCE\" set \"NEXT_EVENT_ID\" = " + updatedEventid;
+      LOG.debug("Going to execute update <" + s + ">");
+      stmt.executeUpdate(s);
 
-    long nextNLId = rs.getLong(1);
-    long updatedNLId = nextNLId + 1;
-    s = "update \"SEQUENCE_TABLE\" set \"NEXT_VAL\" = " + updatedNLId + " where \"SEQUENCE_NAME\" = " +
-            " 'org.apache.hadoop.hive.metastore.model.MNotificationLog'";
-    LOG.debug("Going to execute update <" + s + ">");
-    stmt.executeUpdate(s);
+      s = sqlGenerator.addForUpdateClause("select \"NEXT_VAL\" from " +
+              "\"SEQUENCE_TABLE\" where \"SEQUENCE_NAME\" = " +
+              " 'org.apache.hadoop.hive.metastore.model.MNotificationLog'");
+      LOG.debug("Going to execute query <" + s + ">");
+      rs = stmt.executeQuery(s);
+      if (!rs.next()) {
+        throw new MetaException("failed to get next NEXT_VAL from SEQUENCE_TABLE");
+      }
 
-    List<String> insert = new ArrayList<>();
-    int trimmedNow;
+      long nextNLId = rs.getLong(1);
+      long updatedNLId = nextNLId + 1;
+      s = "update \"SEQUENCE_TABLE\" set \"NEXT_VAL\" = " + updatedNLId + " where \"SEQUENCE_NAME\" = " +
 
-    long millis = System.currentTimeMillis();
-    millis /= 1000;
-    if (millis > Integer.MAX_VALUE) {
-      LOG.warn("We've passed max int value in seconds since the epoch, " +
-              "all notification times will be the same!");
-      trimmedNow = Integer.MAX_VALUE;
-    } else {
-      trimmedNow = (int) millis;
-    }
+              " 'org.apache.hadoop.hive.metastore.model.MNotificationLog'";
+      LOG.debug("Going to execute update <" + s + ">");
+      stmt.executeUpdate(s);
 
-    insert.add(0, nextNLId + "," + nextEventId + "," + trimmedNow + "," +
-            quoteString(event.getEventType()) + "," + quoteString(event.getDbName()) + "," +
-            quoteString(" ") + "," + quoteString(event.getMessage()) + "," +
-            quoteString(event.getMessageFormat()));
+      List<String> insert = new ArrayList<>();
+      int trimmedNow;
 
-    List<String> sql = sqlGenerator.createInsertValuesStmt(
-            "\"NOTIFICATION_LOG\" (\"NL_ID\", \"EVENT_ID\", \"EVENT_TIME\", " +
-                    " \"EVENT_TYPE\", \"DB_NAME\"," +
-                    " \"TBL_NAME\", \"MESSAGE\", \"MESSAGE_FORMAT\")", insert);
-    for (String q : sql) {
-      LOG.info("Going to execute insert <" + q + ">");
-      stmt.execute(q);
-    }
+      long millis = System.currentTimeMillis();
+      millis /= 1000;
+      if (millis > Integer.MAX_VALUE) {
+        LOG.warn("We've passed max int value in seconds since the epoch, " +
+                "all notification times will be the same!");
+        trimmedNow = Integer.MAX_VALUE;
+      } else {
+        trimmedNow = (int) millis;
+      }
 
-    // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
-    if (event.isSetEventId()) {
-      listenerEvent.putParameter(
-              MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME,
-              Long.toString(event.getEventId()));
+      insert.add(0, nextNLId + "," + nextEventId + "," + trimmedNow + "," +
+              quoteString(event.getEventType()) + "," + quoteString(event.getDbName()) + "," +
+              quoteString(" ") + "," + quoteString(event.getMessage()) + "," +
+              quoteString(event.getMessageFormat()));
+
+      List<String> sql = sqlGenerator.createInsertValuesStmt(
+              "\"NOTIFICATION_LOG\" (\"NL_ID\", \"EVENT_ID\", \"EVENT_TIME\", " +
+                      " \"EVENT_TYPE\", \"DB_NAME\"," +
+                      " \"TBL_NAME\", \"MESSAGE\", \"MESSAGE_FORMAT\")", insert);
+      for (String q : sql) {
+        LOG.info("Going to execute insert <" + q + ">");
+        stmt.execute(q);
+      }
+
+      // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
+      if (event.isSetEventId()) {
+        listenerEvent.putParameter(
+                MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME,
+                Long.toString(event.getEventId()));
+      }
+    } catch (SQLException e) {
+      LOG.warn("failed to add notification log" + getMessage(e));
+      throw e;
+    } finally {
+      if (stmt != null && !stmt.isClosed()) {
+        try {
+          stmt.close();
+        } catch (SQLException e) {
+          LOG.warn("Failed to close statement " + getMessage(e));
+          throw e;
+        }
+      }
+      if (rs != null && !rs.isClosed()) {
+        try {
+          rs.close();
+        } catch (SQLException e) {
+          LOG.warn("Failed to close result set " + getMessage(e));
+          throw e;
+        }
+      }
     }
   }
 

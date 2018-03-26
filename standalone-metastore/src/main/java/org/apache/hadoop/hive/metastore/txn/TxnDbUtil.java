@@ -272,6 +272,9 @@ public final class TxnDbUtil {
         success &= dropTable(stmt, "AUX_TABLE", retryCount);
         success &= dropTable(stmt, "WRITE_SET", retryCount);
         success &= dropTable(stmt, "REPL_TXN_MAP", retryCount);
+        success &= dropTable(stmt, "SEQUENCE_TABLE", retryCount);
+        success &= dropTable(stmt, "NOTIFICATION_SEQUENCE", retryCount);
+        success &= dropTable(stmt, "NOTIFICATION_LOG", retryCount);
       } finally {
         closeResources(conn, stmt, null);
       }

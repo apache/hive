@@ -99,6 +99,7 @@ public class TestReplicationScenariosAcidTables {
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
 
+    // create table will start and coomit the transaction
     primary.run("CREATE TABLE " + tableName +
             " (key int, value int) PARTITIONED BY (load_date date) " +
             "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')")
@@ -107,8 +108,6 @@ public class TestReplicationScenariosAcidTables {
             .run("INSERT INTO " + tableName + " partition (load_date='2016-03-01') VALUES (1, 1)")
             .run("select key from " + tableName)
             .verifyResult("1");
-
-    //replica.run("SHOW TABLES LIKE '" + tableName + "'").verifyFailure(new String[] {tableName});
 
     WarehouseInstance.Tuple incrementalDump =
             primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
@@ -135,12 +134,6 @@ public class TestReplicationScenariosAcidTables {
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
 
-    primary.run("CREATE TABLE " + tableName +
-            " (key int, value int) PARTITIONED BY (load_date date) " +
-            "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')")
-            .run("SHOW TABLES LIKE '" + tableName + "'")
-            .verifyResult(tableName);
-
     // this should fail
     primary.runFailure("CREATE TABLE " + tableNameFail +
             " (key int, value int) PARTITIONED BY (load_date date) " +
@@ -153,8 +146,6 @@ public class TestReplicationScenariosAcidTables {
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(incrementalDump.lastReplicationId)
-            .run("SHOW TABLES LIKE '" + tableName + "'")
-            .verifyResult(tableName)
             .run("SHOW TABLES LIKE '" + tableNameFail + "'")
             .verifyFailure(new String[]{tableNameFail});
 
@@ -162,8 +153,6 @@ public class TestReplicationScenariosAcidTables {
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(incrementalDump.lastReplicationId)
-            .run("SHOW TABLES LIKE '" + tableName + "'")
-            .verifyResult(tableName)
             .run("SHOW TABLES LIKE '" + tableNameFail + "'")
             .verifyFailure(new String[]{tableNameFail});
   }

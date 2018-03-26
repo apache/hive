@@ -1217,7 +1217,7 @@ CREATE TABLE SEQUENCE_TABLE
 
 CREATE UNIQUE INDEX PART_TABLE_PK ON SEQUENCE_TABLE (SEQUENCE_NAME);
 
-INSERT INTO SEQUENCE_TABLE (SEQUENCE_NAME, NEXT_VAL) SELECT 'org.apache.hadoop.hive.metastore.model.MNotificationLog', 1 WHERE NOT EXISTS (SELECT NEXT_VAL FROM SEQUENCE_TABLE where SEQUENCE_NAME = 'org.apache.hadoop.hive.metastore.model.MNotificationLog');
+INSERT INTO SEQUENCE_TABLE (SEQUENCE_NAME, NEXT_VAL) VALUES ('org.apache.hadoop.hive.metastore.model.MNotificationLog', 1);
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
