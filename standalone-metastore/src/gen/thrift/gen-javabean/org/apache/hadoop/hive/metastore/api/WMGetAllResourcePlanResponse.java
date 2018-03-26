@@ -346,99 +346,14 @@ import org.slf4j.LoggerFactory;
           case 1: // RESOURCE_PLANS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-                org.apache.thrift.protocol.TList _list856 = iprot.readListBegin();
-                struct.resourcePlans = new ArrayList<WMResourcePlan>(_list856.size);
-                WMResourcePlan _elem857;
-                for (int _i858 = 0; _i858 < _list856.size; ++_i858)
-<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list864 = iprot.readListBegin();
+                struct.resourcePlans = new ArrayList<WMResourcePlan>(_list864.size);
+                WMResourcePlan _elem865;
+                for (int _i866 = 0; _i866 < _list864.size; ++_i866)
                 {
-                  _elem857 = new WMResourcePlan();
-                  _elem857.read(iprot);
-                  struct.resourcePlans.add(_elem857);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list848 = iprot.readListBegin();
-                struct.resourcePlans = new ArrayList<WMResourcePlan>(_list848.size);
-                WMResourcePlan _elem849;
-                for (int _i850 = 0; _i850 < _list848.size; ++_i850)
-                {
-                  _elem849 = new WMResourcePlan();
-                  _elem849.read(iprot);
-                  struct.resourcePlans.add(_elem849);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list832 = iprot.readListBegin();
-                struct.resourcePlans = new ArrayList<WMResourcePlan>(_list832.size);
-                WMResourcePlan _elem833;
-                for (int _i834 = 0; _i834 < _list832.size; ++_i834)
-                {
-                  _elem833 = new WMResourcePlan();
-                  _elem833.read(iprot);
-                  struct.resourcePlans.add(_elem833);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-                org.apache.thrift.protocol.TList _list850 = iprot.readListBegin();
-                struct.resourcePlans = new ArrayList<WMResourcePlan>(_list850.size);
-                WMResourcePlan _elem851;
-                for (int _i852 = 0; _i852 < _list850.size; ++_i852)
-                {
-                  _elem851 = new WMResourcePlan();
-                  _elem851.read(iprot);
-                  struct.resourcePlans.add(_elem851);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-                org.apache.thrift.protocol.TList _list834 = iprot.readListBegin();
-                struct.resourcePlans = new ArrayList<WMResourcePlan>(_list834.size);
-                WMResourcePlan _elem835;
-                for (int _i836 = 0; _i836 < _list834.size; ++_i836)
-                {
-                  _elem835 = new WMResourcePlan();
-                  _elem835.read(iprot);
-                  struct.resourcePlans.add(_elem835);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-                org.apache.thrift.protocol.TList _list840 = iprot.readListBegin();
-                struct.resourcePlans = new ArrayList<WMResourcePlan>(_list840.size);
-                WMResourcePlan _elem841;
-                for (int _i842 = 0; _i842 < _list840.size; ++_i842)
-                {
-                  _elem841 = new WMResourcePlan();
-                  _elem841.read(iprot);
-                  struct.resourcePlans.add(_elem841);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-                {
-                  _elem857 = new WMResourcePlan();
-                  _elem857.read(iprot);
-                  struct.resourcePlans.add(_elem857);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+                  _elem865 = new WMResourcePlan();
+                  _elem865.read(iprot);
+                  struct.resourcePlans.add(_elem865);
                 }
                 iprot.readListEnd();
               }
@@ -465,65 +380,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(RESOURCE_PLANS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.resourcePlans.size()));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            for (WMResourcePlan _iter859 : struct.resourcePlans)
+            for (WMResourcePlan _iter867 : struct.resourcePlans)
             {
-              _iter859.write(oprot);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            for (WMResourcePlan _iter851 : struct.resourcePlans)
-            {
-              _iter851.write(oprot);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            for (WMResourcePlan _iter835 : struct.resourcePlans)
-            {
-              _iter835.write(oprot);
-=======
-            for (WMResourcePlan _iter853 : struct.resourcePlans)
-            {
-              _iter853.write(oprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-            for (WMResourcePlan _iter853 : struct.resourcePlans)
-            {
-              _iter853.write(oprot);
-=======
-            for (WMResourcePlan _iter837 : struct.resourcePlans)
-            {
-              _iter837.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            for (WMResourcePlan _iter843 : struct.resourcePlans)
-            {
-              _iter843.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            for (WMResourcePlan _iter859 : struct.resourcePlans)
-            {
-              _iter859.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              _iter867.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -555,65 +414,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetResourcePlans()) {
         {
           oprot.writeI32(struct.resourcePlans.size());
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          for (WMResourcePlan _iter860 : struct.resourcePlans)
+          for (WMResourcePlan _iter868 : struct.resourcePlans)
           {
-            _iter860.write(oprot);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          for (WMResourcePlan _iter852 : struct.resourcePlans)
-          {
-            _iter852.write(oprot);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          for (WMResourcePlan _iter836 : struct.resourcePlans)
-          {
-            _iter836.write(oprot);
-=======
-          for (WMResourcePlan _iter854 : struct.resourcePlans)
-          {
-            _iter854.write(oprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          for (WMResourcePlan _iter854 : struct.resourcePlans)
-          {
-            _iter854.write(oprot);
-=======
-          for (WMResourcePlan _iter838 : struct.resourcePlans)
-          {
-            _iter838.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          for (WMResourcePlan _iter844 : struct.resourcePlans)
-          {
-            _iter844.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          for (WMResourcePlan _iter860 : struct.resourcePlans)
-          {
-            _iter860.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            _iter868.write(oprot);
           }
         }
       }
@@ -625,99 +428,14 @@ import org.slf4j.LoggerFactory;
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-          org.apache.thrift.protocol.TList _list861 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.resourcePlans = new ArrayList<WMResourcePlan>(_list861.size);
-          WMResourcePlan _elem862;
-          for (int _i863 = 0; _i863 < _list861.size; ++_i863)
-<<<<<<< HEAD
+          org.apache.thrift.protocol.TList _list869 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.resourcePlans = new ArrayList<WMResourcePlan>(_list869.size);
+          WMResourcePlan _elem870;
+          for (int _i871 = 0; _i871 < _list869.size; ++_i871)
           {
-            _elem862 = new WMResourcePlan();
-            _elem862.read(iprot);
-            struct.resourcePlans.add(_elem862);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          org.apache.thrift.protocol.TList _list853 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.resourcePlans = new ArrayList<WMResourcePlan>(_list853.size);
-          WMResourcePlan _elem854;
-          for (int _i855 = 0; _i855 < _list853.size; ++_i855)
-          {
-            _elem854 = new WMResourcePlan();
-            _elem854.read(iprot);
-            struct.resourcePlans.add(_elem854);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          org.apache.thrift.protocol.TList _list837 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.resourcePlans = new ArrayList<WMResourcePlan>(_list837.size);
-          WMResourcePlan _elem838;
-          for (int _i839 = 0; _i839 < _list837.size; ++_i839)
-          {
-            _elem838 = new WMResourcePlan();
-            _elem838.read(iprot);
-            struct.resourcePlans.add(_elem838);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-          org.apache.thrift.protocol.TList _list855 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.resourcePlans = new ArrayList<WMResourcePlan>(_list855.size);
-          WMResourcePlan _elem856;
-          for (int _i857 = 0; _i857 < _list855.size; ++_i857)
-          {
-            _elem856 = new WMResourcePlan();
-            _elem856.read(iprot);
-            struct.resourcePlans.add(_elem856);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-          org.apache.thrift.protocol.TList _list839 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.resourcePlans = new ArrayList<WMResourcePlan>(_list839.size);
-          WMResourcePlan _elem840;
-          for (int _i841 = 0; _i841 < _list839.size; ++_i841)
-          {
-            _elem840 = new WMResourcePlan();
-            _elem840.read(iprot);
-            struct.resourcePlans.add(_elem840);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          org.apache.thrift.protocol.TList _list845 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.resourcePlans = new ArrayList<WMResourcePlan>(_list845.size);
-          WMResourcePlan _elem846;
-          for (int _i847 = 0; _i847 < _list845.size; ++_i847)
-          {
-            _elem846 = new WMResourcePlan();
-            _elem846.read(iprot);
-            struct.resourcePlans.add(_elem846);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          {
-            _elem862 = new WMResourcePlan();
-            _elem862.read(iprot);
-            struct.resourcePlans.add(_elem862);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            _elem870 = new WMResourcePlan();
+            _elem870.read(iprot);
+            struct.resourcePlans.add(_elem870);
           }
         }
         struct.setResourcePlansIsSet(true);

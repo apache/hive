@@ -453,92 +453,13 @@ import org.slf4j.LoggerFactory;
           case 1: // ABORTED
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-                org.apache.thrift.protocol.TSet _set642 = iprot.readSetBegin();
-                struct.aborted = new HashSet<Long>(2*_set642.size);
-                long _elem643;
-                for (int _i644 = 0; _i644 < _set642.size; ++_i644)
-<<<<<<< HEAD
+                org.apache.thrift.protocol.TSet _set650 = iprot.readSetBegin();
+                struct.aborted = new HashSet<Long>(2*_set650.size);
+                long _elem651;
+                for (int _i652 = 0; _i652 < _set650.size; ++_i652)
                 {
-                  _elem643 = iprot.readI64();
-                  struct.aborted.add(_elem643);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TSet _set634 = iprot.readSetBegin();
-                struct.aborted = new HashSet<Long>(2*_set634.size);
-                long _elem635;
-                for (int _i636 = 0; _i636 < _set634.size; ++_i636)
-                {
-                  _elem635 = iprot.readI64();
-                  struct.aborted.add(_elem635);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TSet _set618 = iprot.readSetBegin();
-                struct.aborted = new HashSet<Long>(2*_set618.size);
-                long _elem619;
-                for (int _i620 = 0; _i620 < _set618.size; ++_i620)
-                {
-                  _elem619 = iprot.readI64();
-                  struct.aborted.add(_elem619);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-                org.apache.thrift.protocol.TSet _set636 = iprot.readSetBegin();
-                struct.aborted = new HashSet<Long>(2*_set636.size);
-                long _elem637;
-                for (int _i638 = 0; _i638 < _set636.size; ++_i638)
-                {
-                  _elem637 = iprot.readI64();
-                  struct.aborted.add(_elem637);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-                org.apache.thrift.protocol.TSet _set620 = iprot.readSetBegin();
-                struct.aborted = new HashSet<Long>(2*_set620.size);
-                long _elem621;
-                for (int _i622 = 0; _i622 < _set620.size; ++_i622)
-                {
-                  _elem621 = iprot.readI64();
-                  struct.aborted.add(_elem621);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-                org.apache.thrift.protocol.TSet _set626 = iprot.readSetBegin();
-                struct.aborted = new HashSet<Long>(2*_set626.size);
-                long _elem627;
-                for (int _i628 = 0; _i628 < _set626.size; ++_i628)
-                {
-                  _elem627 = iprot.readI64();
-                  struct.aborted.add(_elem627);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-                {
-                  _elem643 = iprot.readI64();
-                  struct.aborted.add(_elem643);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+                  _elem651 = iprot.readI64();
+                  struct.aborted.add(_elem651);
                 }
                 iprot.readSetEnd();
               }
@@ -550,92 +471,13 @@ import org.slf4j.LoggerFactory;
           case 2: // NOSUCH
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-                org.apache.thrift.protocol.TSet _set645 = iprot.readSetBegin();
-                struct.nosuch = new HashSet<Long>(2*_set645.size);
-                long _elem646;
-                for (int _i647 = 0; _i647 < _set645.size; ++_i647)
-<<<<<<< HEAD
+                org.apache.thrift.protocol.TSet _set653 = iprot.readSetBegin();
+                struct.nosuch = new HashSet<Long>(2*_set653.size);
+                long _elem654;
+                for (int _i655 = 0; _i655 < _set653.size; ++_i655)
                 {
-                  _elem646 = iprot.readI64();
-                  struct.nosuch.add(_elem646);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TSet _set637 = iprot.readSetBegin();
-                struct.nosuch = new HashSet<Long>(2*_set637.size);
-                long _elem638;
-                for (int _i639 = 0; _i639 < _set637.size; ++_i639)
-                {
-                  _elem638 = iprot.readI64();
-                  struct.nosuch.add(_elem638);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TSet _set621 = iprot.readSetBegin();
-                struct.nosuch = new HashSet<Long>(2*_set621.size);
-                long _elem622;
-                for (int _i623 = 0; _i623 < _set621.size; ++_i623)
-                {
-                  _elem622 = iprot.readI64();
-                  struct.nosuch.add(_elem622);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-                org.apache.thrift.protocol.TSet _set639 = iprot.readSetBegin();
-                struct.nosuch = new HashSet<Long>(2*_set639.size);
-                long _elem640;
-                for (int _i641 = 0; _i641 < _set639.size; ++_i641)
-                {
-                  _elem640 = iprot.readI64();
-                  struct.nosuch.add(_elem640);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-                org.apache.thrift.protocol.TSet _set623 = iprot.readSetBegin();
-                struct.nosuch = new HashSet<Long>(2*_set623.size);
-                long _elem624;
-                for (int _i625 = 0; _i625 < _set623.size; ++_i625)
-                {
-                  _elem624 = iprot.readI64();
-                  struct.nosuch.add(_elem624);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-                org.apache.thrift.protocol.TSet _set629 = iprot.readSetBegin();
-                struct.nosuch = new HashSet<Long>(2*_set629.size);
-                long _elem630;
-                for (int _i631 = 0; _i631 < _set629.size; ++_i631)
-                {
-                  _elem630 = iprot.readI64();
-                  struct.nosuch.add(_elem630);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-                {
-                  _elem646 = iprot.readI64();
-                  struct.nosuch.add(_elem646);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+                  _elem654 = iprot.readI64();
+                  struct.nosuch.add(_elem654);
                 }
                 iprot.readSetEnd();
               }
@@ -661,65 +503,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(ABORTED_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, struct.aborted.size()));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          for (long _iter648 : struct.aborted)
+          for (long _iter656 : struct.aborted)
           {
-            oprot.writeI64(_iter648);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          for (long _iter640 : struct.aborted)
-          {
-            oprot.writeI64(_iter640);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          for (long _iter624 : struct.aborted)
-          {
-            oprot.writeI64(_iter624);
-=======
-          for (long _iter642 : struct.aborted)
-          {
-            oprot.writeI64(_iter642);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          for (long _iter642 : struct.aborted)
-          {
-            oprot.writeI64(_iter642);
-=======
-          for (long _iter626 : struct.aborted)
-          {
-            oprot.writeI64(_iter626);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          for (long _iter632 : struct.aborted)
-          {
-            oprot.writeI64(_iter632);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          for (long _iter648 : struct.aborted)
-          {
-            oprot.writeI64(_iter648);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            oprot.writeI64(_iter656);
           }
           oprot.writeSetEnd();
         }
@@ -729,65 +515,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(NOSUCH_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, struct.nosuch.size()));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          for (long _iter649 : struct.nosuch)
+          for (long _iter657 : struct.nosuch)
           {
-            oprot.writeI64(_iter649);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          for (long _iter641 : struct.nosuch)
-          {
-            oprot.writeI64(_iter641);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          for (long _iter625 : struct.nosuch)
-          {
-            oprot.writeI64(_iter625);
-=======
-          for (long _iter643 : struct.nosuch)
-          {
-            oprot.writeI64(_iter643);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          for (long _iter643 : struct.nosuch)
-          {
-            oprot.writeI64(_iter643);
-=======
-          for (long _iter627 : struct.nosuch)
-          {
-            oprot.writeI64(_iter627);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          for (long _iter633 : struct.nosuch)
-          {
-            oprot.writeI64(_iter633);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          for (long _iter649 : struct.nosuch)
-          {
-            oprot.writeI64(_iter649);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            oprot.writeI64(_iter657);
           }
           oprot.writeSetEnd();
         }
@@ -812,128 +542,16 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.aborted.size());
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        for (long _iter650 : struct.aborted)
+        for (long _iter658 : struct.aborted)
         {
-          oprot.writeI64(_iter650);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-        for (long _iter642 : struct.aborted)
-        {
-          oprot.writeI64(_iter642);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-        for (long _iter626 : struct.aborted)
-        {
-          oprot.writeI64(_iter626);
-=======
-        for (long _iter644 : struct.aborted)
-        {
-          oprot.writeI64(_iter644);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-        for (long _iter644 : struct.aborted)
-        {
-          oprot.writeI64(_iter644);
-=======
-        for (long _iter628 : struct.aborted)
-        {
-          oprot.writeI64(_iter628);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-        for (long _iter634 : struct.aborted)
-        {
-          oprot.writeI64(_iter634);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-        for (long _iter650 : struct.aborted)
-        {
-          oprot.writeI64(_iter650);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+          oprot.writeI64(_iter658);
         }
       }
       {
         oprot.writeI32(struct.nosuch.size());
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        for (long _iter651 : struct.nosuch)
+        for (long _iter659 : struct.nosuch)
         {
-          oprot.writeI64(_iter651);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-        for (long _iter643 : struct.nosuch)
-        {
-          oprot.writeI64(_iter643);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-        for (long _iter627 : struct.nosuch)
-        {
-          oprot.writeI64(_iter627);
-=======
-        for (long _iter645 : struct.nosuch)
-        {
-          oprot.writeI64(_iter645);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-        for (long _iter645 : struct.nosuch)
-        {
-          oprot.writeI64(_iter645);
-=======
-        for (long _iter629 : struct.nosuch)
-        {
-          oprot.writeI64(_iter629);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-        for (long _iter635 : struct.nosuch)
-        {
-          oprot.writeI64(_iter635);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-        for (long _iter651 : struct.nosuch)
-        {
-          oprot.writeI64(_iter651);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+          oprot.writeI64(_iter659);
         }
       }
     }
@@ -942,182 +560,24 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, HeartbeatTxnRangeResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-        org.apache.thrift.protocol.TSet _set652 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.aborted = new HashSet<Long>(2*_set652.size);
-        long _elem653;
-        for (int _i654 = 0; _i654 < _set652.size; ++_i654)
-<<<<<<< HEAD
+        org.apache.thrift.protocol.TSet _set660 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.aborted = new HashSet<Long>(2*_set660.size);
+        long _elem661;
+        for (int _i662 = 0; _i662 < _set660.size; ++_i662)
         {
-          _elem653 = iprot.readI64();
-          struct.aborted.add(_elem653);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-        org.apache.thrift.protocol.TSet _set644 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.aborted = new HashSet<Long>(2*_set644.size);
-        long _elem645;
-        for (int _i646 = 0; _i646 < _set644.size; ++_i646)
-        {
-          _elem645 = iprot.readI64();
-          struct.aborted.add(_elem645);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-        org.apache.thrift.protocol.TSet _set628 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.aborted = new HashSet<Long>(2*_set628.size);
-        long _elem629;
-        for (int _i630 = 0; _i630 < _set628.size; ++_i630)
-        {
-          _elem629 = iprot.readI64();
-          struct.aborted.add(_elem629);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-        org.apache.thrift.protocol.TSet _set646 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.aborted = new HashSet<Long>(2*_set646.size);
-        long _elem647;
-        for (int _i648 = 0; _i648 < _set646.size; ++_i648)
-        {
-          _elem647 = iprot.readI64();
-          struct.aborted.add(_elem647);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-        org.apache.thrift.protocol.TSet _set630 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.aborted = new HashSet<Long>(2*_set630.size);
-        long _elem631;
-        for (int _i632 = 0; _i632 < _set630.size; ++_i632)
-        {
-          _elem631 = iprot.readI64();
-          struct.aborted.add(_elem631);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-        org.apache.thrift.protocol.TSet _set636 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.aborted = new HashSet<Long>(2*_set636.size);
-        long _elem637;
-        for (int _i638 = 0; _i638 < _set636.size; ++_i638)
-        {
-          _elem637 = iprot.readI64();
-          struct.aborted.add(_elem637);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-        {
-          _elem653 = iprot.readI64();
-          struct.aborted.add(_elem653);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+          _elem661 = iprot.readI64();
+          struct.aborted.add(_elem661);
         }
       }
       struct.setAbortedIsSet(true);
       {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-        org.apache.thrift.protocol.TSet _set655 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.nosuch = new HashSet<Long>(2*_set655.size);
-        long _elem656;
-        for (int _i657 = 0; _i657 < _set655.size; ++_i657)
-<<<<<<< HEAD
+        org.apache.thrift.protocol.TSet _set663 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.nosuch = new HashSet<Long>(2*_set663.size);
+        long _elem664;
+        for (int _i665 = 0; _i665 < _set663.size; ++_i665)
         {
-          _elem656 = iprot.readI64();
-          struct.nosuch.add(_elem656);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-        org.apache.thrift.protocol.TSet _set647 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.nosuch = new HashSet<Long>(2*_set647.size);
-        long _elem648;
-        for (int _i649 = 0; _i649 < _set647.size; ++_i649)
-        {
-          _elem648 = iprot.readI64();
-          struct.nosuch.add(_elem648);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-        org.apache.thrift.protocol.TSet _set631 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.nosuch = new HashSet<Long>(2*_set631.size);
-        long _elem632;
-        for (int _i633 = 0; _i633 < _set631.size; ++_i633)
-        {
-          _elem632 = iprot.readI64();
-          struct.nosuch.add(_elem632);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-        org.apache.thrift.protocol.TSet _set649 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.nosuch = new HashSet<Long>(2*_set649.size);
-        long _elem650;
-        for (int _i651 = 0; _i651 < _set649.size; ++_i651)
-        {
-          _elem650 = iprot.readI64();
-          struct.nosuch.add(_elem650);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-        org.apache.thrift.protocol.TSet _set633 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.nosuch = new HashSet<Long>(2*_set633.size);
-        long _elem634;
-        for (int _i635 = 0; _i635 < _set633.size; ++_i635)
-        {
-          _elem634 = iprot.readI64();
-          struct.nosuch.add(_elem634);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-        org.apache.thrift.protocol.TSet _set639 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.nosuch = new HashSet<Long>(2*_set639.size);
-        long _elem640;
-        for (int _i641 = 0; _i641 < _set639.size; ++_i641)
-        {
-          _elem640 = iprot.readI64();
-          struct.nosuch.add(_elem640);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-        {
-          _elem656 = iprot.readI64();
-          struct.nosuch.add(_elem656);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+          _elem664 = iprot.readI64();
+          struct.nosuch.add(_elem664);
         }
       }
       struct.setNosuchIsSet(true);

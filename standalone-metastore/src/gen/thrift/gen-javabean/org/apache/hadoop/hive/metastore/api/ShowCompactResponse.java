@@ -354,99 +354,14 @@ import org.slf4j.LoggerFactory;
           case 1: // COMPACTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-                org.apache.thrift.protocol.TList _list668 = iprot.readListBegin();
-                struct.compacts = new ArrayList<ShowCompactResponseElement>(_list668.size);
-                ShowCompactResponseElement _elem669;
-                for (int _i670 = 0; _i670 < _list668.size; ++_i670)
-<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list676 = iprot.readListBegin();
+                struct.compacts = new ArrayList<ShowCompactResponseElement>(_list676.size);
+                ShowCompactResponseElement _elem677;
+                for (int _i678 = 0; _i678 < _list676.size; ++_i678)
                 {
-                  _elem669 = new ShowCompactResponseElement();
-                  _elem669.read(iprot);
-                  struct.compacts.add(_elem669);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list660 = iprot.readListBegin();
-                struct.compacts = new ArrayList<ShowCompactResponseElement>(_list660.size);
-                ShowCompactResponseElement _elem661;
-                for (int _i662 = 0; _i662 < _list660.size; ++_i662)
-                {
-                  _elem661 = new ShowCompactResponseElement();
-                  _elem661.read(iprot);
-                  struct.compacts.add(_elem661);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list644 = iprot.readListBegin();
-                struct.compacts = new ArrayList<ShowCompactResponseElement>(_list644.size);
-                ShowCompactResponseElement _elem645;
-                for (int _i646 = 0; _i646 < _list644.size; ++_i646)
-                {
-                  _elem645 = new ShowCompactResponseElement();
-                  _elem645.read(iprot);
-                  struct.compacts.add(_elem645);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-                org.apache.thrift.protocol.TList _list662 = iprot.readListBegin();
-                struct.compacts = new ArrayList<ShowCompactResponseElement>(_list662.size);
-                ShowCompactResponseElement _elem663;
-                for (int _i664 = 0; _i664 < _list662.size; ++_i664)
-                {
-                  _elem663 = new ShowCompactResponseElement();
-                  _elem663.read(iprot);
-                  struct.compacts.add(_elem663);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-                org.apache.thrift.protocol.TList _list646 = iprot.readListBegin();
-                struct.compacts = new ArrayList<ShowCompactResponseElement>(_list646.size);
-                ShowCompactResponseElement _elem647;
-                for (int _i648 = 0; _i648 < _list646.size; ++_i648)
-                {
-                  _elem647 = new ShowCompactResponseElement();
-                  _elem647.read(iprot);
-                  struct.compacts.add(_elem647);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-                org.apache.thrift.protocol.TList _list652 = iprot.readListBegin();
-                struct.compacts = new ArrayList<ShowCompactResponseElement>(_list652.size);
-                ShowCompactResponseElement _elem653;
-                for (int _i654 = 0; _i654 < _list652.size; ++_i654)
-                {
-                  _elem653 = new ShowCompactResponseElement();
-                  _elem653.read(iprot);
-                  struct.compacts.add(_elem653);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-                {
-                  _elem669 = new ShowCompactResponseElement();
-                  _elem669.read(iprot);
-                  struct.compacts.add(_elem669);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+                  _elem677 = new ShowCompactResponseElement();
+                  _elem677.read(iprot);
+                  struct.compacts.add(_elem677);
                 }
                 iprot.readListEnd();
               }
@@ -472,65 +387,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(COMPACTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.compacts.size()));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          for (ShowCompactResponseElement _iter671 : struct.compacts)
+          for (ShowCompactResponseElement _iter679 : struct.compacts)
           {
-            _iter671.write(oprot);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          for (ShowCompactResponseElement _iter663 : struct.compacts)
-          {
-            _iter663.write(oprot);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          for (ShowCompactResponseElement _iter647 : struct.compacts)
-          {
-            _iter647.write(oprot);
-=======
-          for (ShowCompactResponseElement _iter665 : struct.compacts)
-          {
-            _iter665.write(oprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          for (ShowCompactResponseElement _iter665 : struct.compacts)
-          {
-            _iter665.write(oprot);
-=======
-          for (ShowCompactResponseElement _iter649 : struct.compacts)
-          {
-            _iter649.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          for (ShowCompactResponseElement _iter655 : struct.compacts)
-          {
-            _iter655.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          for (ShowCompactResponseElement _iter671 : struct.compacts)
-          {
-            _iter671.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            _iter679.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -555,65 +414,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.compacts.size());
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        for (ShowCompactResponseElement _iter672 : struct.compacts)
+        for (ShowCompactResponseElement _iter680 : struct.compacts)
         {
-          _iter672.write(oprot);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-        for (ShowCompactResponseElement _iter664 : struct.compacts)
-        {
-          _iter664.write(oprot);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-        for (ShowCompactResponseElement _iter648 : struct.compacts)
-        {
-          _iter648.write(oprot);
-=======
-        for (ShowCompactResponseElement _iter666 : struct.compacts)
-        {
-          _iter666.write(oprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-        for (ShowCompactResponseElement _iter666 : struct.compacts)
-        {
-          _iter666.write(oprot);
-=======
-        for (ShowCompactResponseElement _iter650 : struct.compacts)
-        {
-          _iter650.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-        for (ShowCompactResponseElement _iter656 : struct.compacts)
-        {
-          _iter656.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-        for (ShowCompactResponseElement _iter672 : struct.compacts)
-        {
-          _iter672.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+          _iter680.write(oprot);
         }
       }
     }
@@ -622,99 +425,14 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, ShowCompactResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-        org.apache.thrift.protocol.TList _list673 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.compacts = new ArrayList<ShowCompactResponseElement>(_list673.size);
-        ShowCompactResponseElement _elem674;
-        for (int _i675 = 0; _i675 < _list673.size; ++_i675)
-<<<<<<< HEAD
+        org.apache.thrift.protocol.TList _list681 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.compacts = new ArrayList<ShowCompactResponseElement>(_list681.size);
+        ShowCompactResponseElement _elem682;
+        for (int _i683 = 0; _i683 < _list681.size; ++_i683)
         {
-          _elem674 = new ShowCompactResponseElement();
-          _elem674.read(iprot);
-          struct.compacts.add(_elem674);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-        org.apache.thrift.protocol.TList _list665 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.compacts = new ArrayList<ShowCompactResponseElement>(_list665.size);
-        ShowCompactResponseElement _elem666;
-        for (int _i667 = 0; _i667 < _list665.size; ++_i667)
-        {
-          _elem666 = new ShowCompactResponseElement();
-          _elem666.read(iprot);
-          struct.compacts.add(_elem666);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-        org.apache.thrift.protocol.TList _list649 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.compacts = new ArrayList<ShowCompactResponseElement>(_list649.size);
-        ShowCompactResponseElement _elem650;
-        for (int _i651 = 0; _i651 < _list649.size; ++_i651)
-        {
-          _elem650 = new ShowCompactResponseElement();
-          _elem650.read(iprot);
-          struct.compacts.add(_elem650);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-        org.apache.thrift.protocol.TList _list667 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.compacts = new ArrayList<ShowCompactResponseElement>(_list667.size);
-        ShowCompactResponseElement _elem668;
-        for (int _i669 = 0; _i669 < _list667.size; ++_i669)
-        {
-          _elem668 = new ShowCompactResponseElement();
-          _elem668.read(iprot);
-          struct.compacts.add(_elem668);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-        org.apache.thrift.protocol.TList _list651 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.compacts = new ArrayList<ShowCompactResponseElement>(_list651.size);
-        ShowCompactResponseElement _elem652;
-        for (int _i653 = 0; _i653 < _list651.size; ++_i653)
-        {
-          _elem652 = new ShowCompactResponseElement();
-          _elem652.read(iprot);
-          struct.compacts.add(_elem652);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-        org.apache.thrift.protocol.TList _list657 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.compacts = new ArrayList<ShowCompactResponseElement>(_list657.size);
-        ShowCompactResponseElement _elem658;
-        for (int _i659 = 0; _i659 < _list657.size; ++_i659)
-        {
-          _elem658 = new ShowCompactResponseElement();
-          _elem658.read(iprot);
-          struct.compacts.add(_elem658);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-        {
-          _elem674 = new ShowCompactResponseElement();
-          _elem674.read(iprot);
-          struct.compacts.add(_elem674);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+          _elem682 = new ShowCompactResponseElement();
+          _elem682.read(iprot);
+          struct.compacts.add(_elem682);
         }
       }
       struct.setCompactsIsSet(true);

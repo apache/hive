@@ -708,67 +708,13 @@ import org.slf4j.LoggerFactory;
           case 3: // INVALID_WRITE_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-                org.apache.thrift.protocol.TList _list594 = iprot.readListBegin();
-                struct.invalidWriteIds = new ArrayList<Long>(_list594.size);
-                long _elem595;
-                for (int _i596 = 0; _i596 < _list594.size; ++_i596)
-<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list602 = iprot.readListBegin();
+                struct.invalidWriteIds = new ArrayList<Long>(_list602.size);
+                long _elem603;
+                for (int _i604 = 0; _i604 < _list602.size; ++_i604)
                 {
-                  _elem595 = iprot.readI64();
-                  struct.invalidWriteIds.add(_elem595);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list586 = iprot.readListBegin();
-                struct.invalidWriteIds = new ArrayList<Long>(_list586.size);
-                long _elem587;
-                for (int _i588 = 0; _i588 < _list586.size; ++_i588)
-                {
-                  _elem587 = iprot.readI64();
-                  struct.invalidWriteIds.add(_elem587);
-=======
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list570 = iprot.readListBegin();
-                struct.invalidWriteIds = new ArrayList<Long>(_list570.size);
-                long _elem571;
-                for (int _i572 = 0; _i572 < _list570.size; ++_i572)
-                {
-                  _elem571 = iprot.readI64();
-                  struct.invalidWriteIds.add(_elem571);
-=======
-                org.apache.thrift.protocol.TList _list588 = iprot.readListBegin();
-                struct.invalidWriteIds = new ArrayList<Long>(_list588.size);
-                long _elem589;
-                for (int _i590 = 0; _i590 < _list588.size; ++_i590)
-                {
-                  _elem589 = iprot.readI64();
-                  struct.invalidWriteIds.add(_elem589);
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-                org.apache.thrift.protocol.TList _list578 = iprot.readListBegin();
-                struct.invalidWriteIds = new ArrayList<Long>(_list578.size);
-                long _elem579;
-                for (int _i580 = 0; _i580 < _list578.size; ++_i580)
-                {
-                  _elem579 = iprot.readI64();
-                  struct.invalidWriteIds.add(_elem579);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-                {
-                  _elem595 = iprot.readI64();
-                  struct.invalidWriteIds.add(_elem595);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+                  _elem603 = iprot.readI64();
+                  struct.invalidWriteIds.add(_elem603);
                 }
                 iprot.readListEnd();
               }
@@ -818,44 +764,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(INVALID_WRITE_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.invalidWriteIds.size()));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          for (long _iter597 : struct.invalidWriteIds)
+          for (long _iter605 : struct.invalidWriteIds)
           {
-            oprot.writeI64(_iter597);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          for (long _iter589 : struct.invalidWriteIds)
-          {
-            oprot.writeI64(_iter589);
-=======
-<<<<<<< HEAD
-          for (long _iter573 : struct.invalidWriteIds)
-          {
-            oprot.writeI64(_iter573);
-=======
-          for (long _iter591 : struct.invalidWriteIds)
-          {
-            oprot.writeI64(_iter591);
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-          for (long _iter581 : struct.invalidWriteIds)
-          {
-            oprot.writeI64(_iter581);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          for (long _iter597 : struct.invalidWriteIds)
-          {
-            oprot.writeI64(_iter597);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            oprot.writeI64(_iter605);
           }
           oprot.writeListEnd();
         }
@@ -892,44 +803,9 @@ import org.slf4j.LoggerFactory;
       oprot.writeI64(struct.writeIdHighWaterMark);
       {
         oprot.writeI32(struct.invalidWriteIds.size());
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        for (long _iter598 : struct.invalidWriteIds)
+        for (long _iter606 : struct.invalidWriteIds)
         {
-          oprot.writeI64(_iter598);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-        for (long _iter590 : struct.invalidWriteIds)
-        {
-          oprot.writeI64(_iter590);
-=======
-<<<<<<< HEAD
-        for (long _iter574 : struct.invalidWriteIds)
-        {
-          oprot.writeI64(_iter574);
-=======
-        for (long _iter592 : struct.invalidWriteIds)
-        {
-          oprot.writeI64(_iter592);
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-        for (long _iter582 : struct.invalidWriteIds)
-        {
-          oprot.writeI64(_iter582);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-        for (long _iter598 : struct.invalidWriteIds)
-        {
-          oprot.writeI64(_iter598);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+          oprot.writeI64(_iter606);
         }
       }
       oprot.writeBinary(struct.abortedBits);
@@ -951,67 +827,13 @@ import org.slf4j.LoggerFactory;
       struct.writeIdHighWaterMark = iprot.readI64();
       struct.setWriteIdHighWaterMarkIsSet(true);
       {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-        org.apache.thrift.protocol.TList _list599 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.invalidWriteIds = new ArrayList<Long>(_list599.size);
-        long _elem600;
-        for (int _i601 = 0; _i601 < _list599.size; ++_i601)
-<<<<<<< HEAD
+        org.apache.thrift.protocol.TList _list607 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.invalidWriteIds = new ArrayList<Long>(_list607.size);
+        long _elem608;
+        for (int _i609 = 0; _i609 < _list607.size; ++_i609)
         {
-          _elem600 = iprot.readI64();
-          struct.invalidWriteIds.add(_elem600);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-        org.apache.thrift.protocol.TList _list591 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.invalidWriteIds = new ArrayList<Long>(_list591.size);
-        long _elem592;
-        for (int _i593 = 0; _i593 < _list591.size; ++_i593)
-        {
-          _elem592 = iprot.readI64();
-          struct.invalidWriteIds.add(_elem592);
-=======
-<<<<<<< HEAD
-        org.apache.thrift.protocol.TList _list575 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.invalidWriteIds = new ArrayList<Long>(_list575.size);
-        long _elem576;
-        for (int _i577 = 0; _i577 < _list575.size; ++_i577)
-        {
-          _elem576 = iprot.readI64();
-          struct.invalidWriteIds.add(_elem576);
-=======
-        org.apache.thrift.protocol.TList _list593 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.invalidWriteIds = new ArrayList<Long>(_list593.size);
-        long _elem594;
-        for (int _i595 = 0; _i595 < _list593.size; ++_i595)
-        {
-          _elem594 = iprot.readI64();
-          struct.invalidWriteIds.add(_elem594);
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-        org.apache.thrift.protocol.TList _list583 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.invalidWriteIds = new ArrayList<Long>(_list583.size);
-        long _elem584;
-        for (int _i585 = 0; _i585 < _list583.size; ++_i585)
-        {
-          _elem584 = iprot.readI64();
-          struct.invalidWriteIds.add(_elem584);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-        {
-          _elem600 = iprot.readI64();
-          struct.invalidWriteIds.add(_elem600);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+          _elem608 = iprot.readI64();
+          struct.invalidWriteIds.add(_elem608);
         }
       }
       struct.setInvalidWriteIdsIsSet(true);

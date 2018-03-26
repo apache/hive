@@ -354,99 +354,14 @@ import org.slf4j.LoggerFactory;
           case 1: // EVENTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-                org.apache.thrift.protocol.TList _list692 = iprot.readListBegin();
-                struct.events = new ArrayList<NotificationEvent>(_list692.size);
-                NotificationEvent _elem693;
-                for (int _i694 = 0; _i694 < _list692.size; ++_i694)
-<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list700 = iprot.readListBegin();
+                struct.events = new ArrayList<NotificationEvent>(_list700.size);
+                NotificationEvent _elem701;
+                for (int _i702 = 0; _i702 < _list700.size; ++_i702)
                 {
-                  _elem693 = new NotificationEvent();
-                  _elem693.read(iprot);
-                  struct.events.add(_elem693);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list684 = iprot.readListBegin();
-                struct.events = new ArrayList<NotificationEvent>(_list684.size);
-                NotificationEvent _elem685;
-                for (int _i686 = 0; _i686 < _list684.size; ++_i686)
-                {
-                  _elem685 = new NotificationEvent();
-                  _elem685.read(iprot);
-                  struct.events.add(_elem685);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list668 = iprot.readListBegin();
-                struct.events = new ArrayList<NotificationEvent>(_list668.size);
-                NotificationEvent _elem669;
-                for (int _i670 = 0; _i670 < _list668.size; ++_i670)
-                {
-                  _elem669 = new NotificationEvent();
-                  _elem669.read(iprot);
-                  struct.events.add(_elem669);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-                org.apache.thrift.protocol.TList _list686 = iprot.readListBegin();
-                struct.events = new ArrayList<NotificationEvent>(_list686.size);
-                NotificationEvent _elem687;
-                for (int _i688 = 0; _i688 < _list686.size; ++_i688)
-                {
-                  _elem687 = new NotificationEvent();
-                  _elem687.read(iprot);
-                  struct.events.add(_elem687);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-                org.apache.thrift.protocol.TList _list670 = iprot.readListBegin();
-                struct.events = new ArrayList<NotificationEvent>(_list670.size);
-                NotificationEvent _elem671;
-                for (int _i672 = 0; _i672 < _list670.size; ++_i672)
-                {
-                  _elem671 = new NotificationEvent();
-                  _elem671.read(iprot);
-                  struct.events.add(_elem671);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-                org.apache.thrift.protocol.TList _list676 = iprot.readListBegin();
-                struct.events = new ArrayList<NotificationEvent>(_list676.size);
-                NotificationEvent _elem677;
-                for (int _i678 = 0; _i678 < _list676.size; ++_i678)
-                {
-                  _elem677 = new NotificationEvent();
-                  _elem677.read(iprot);
-                  struct.events.add(_elem677);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-                {
-                  _elem693 = new NotificationEvent();
-                  _elem693.read(iprot);
-                  struct.events.add(_elem693);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+                  _elem701 = new NotificationEvent();
+                  _elem701.read(iprot);
+                  struct.events.add(_elem701);
                 }
                 iprot.readListEnd();
               }
@@ -472,65 +387,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(EVENTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.events.size()));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          for (NotificationEvent _iter695 : struct.events)
+          for (NotificationEvent _iter703 : struct.events)
           {
-            _iter695.write(oprot);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          for (NotificationEvent _iter687 : struct.events)
-          {
-            _iter687.write(oprot);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          for (NotificationEvent _iter671 : struct.events)
-          {
-            _iter671.write(oprot);
-=======
-          for (NotificationEvent _iter689 : struct.events)
-          {
-            _iter689.write(oprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          for (NotificationEvent _iter689 : struct.events)
-          {
-            _iter689.write(oprot);
-=======
-          for (NotificationEvent _iter673 : struct.events)
-          {
-            _iter673.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          for (NotificationEvent _iter679 : struct.events)
-          {
-            _iter679.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          for (NotificationEvent _iter695 : struct.events)
-          {
-            _iter695.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            _iter703.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -555,65 +414,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.events.size());
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        for (NotificationEvent _iter696 : struct.events)
+        for (NotificationEvent _iter704 : struct.events)
         {
-          _iter696.write(oprot);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-        for (NotificationEvent _iter688 : struct.events)
-        {
-          _iter688.write(oprot);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-        for (NotificationEvent _iter672 : struct.events)
-        {
-          _iter672.write(oprot);
-=======
-        for (NotificationEvent _iter690 : struct.events)
-        {
-          _iter690.write(oprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-        for (NotificationEvent _iter690 : struct.events)
-        {
-          _iter690.write(oprot);
-=======
-        for (NotificationEvent _iter674 : struct.events)
-        {
-          _iter674.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-        for (NotificationEvent _iter680 : struct.events)
-        {
-          _iter680.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-        for (NotificationEvent _iter696 : struct.events)
-        {
-          _iter696.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+          _iter704.write(oprot);
         }
       }
     }
@@ -622,99 +425,14 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, NotificationEventResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-        org.apache.thrift.protocol.TList _list697 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.events = new ArrayList<NotificationEvent>(_list697.size);
-        NotificationEvent _elem698;
-        for (int _i699 = 0; _i699 < _list697.size; ++_i699)
-<<<<<<< HEAD
+        org.apache.thrift.protocol.TList _list705 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.events = new ArrayList<NotificationEvent>(_list705.size);
+        NotificationEvent _elem706;
+        for (int _i707 = 0; _i707 < _list705.size; ++_i707)
         {
-          _elem698 = new NotificationEvent();
-          _elem698.read(iprot);
-          struct.events.add(_elem698);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-        org.apache.thrift.protocol.TList _list689 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.events = new ArrayList<NotificationEvent>(_list689.size);
-        NotificationEvent _elem690;
-        for (int _i691 = 0; _i691 < _list689.size; ++_i691)
-        {
-          _elem690 = new NotificationEvent();
-          _elem690.read(iprot);
-          struct.events.add(_elem690);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-        org.apache.thrift.protocol.TList _list673 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.events = new ArrayList<NotificationEvent>(_list673.size);
-        NotificationEvent _elem674;
-        for (int _i675 = 0; _i675 < _list673.size; ++_i675)
-        {
-          _elem674 = new NotificationEvent();
-          _elem674.read(iprot);
-          struct.events.add(_elem674);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-        org.apache.thrift.protocol.TList _list691 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.events = new ArrayList<NotificationEvent>(_list691.size);
-        NotificationEvent _elem692;
-        for (int _i693 = 0; _i693 < _list691.size; ++_i693)
-        {
-          _elem692 = new NotificationEvent();
-          _elem692.read(iprot);
-          struct.events.add(_elem692);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-        org.apache.thrift.protocol.TList _list675 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.events = new ArrayList<NotificationEvent>(_list675.size);
-        NotificationEvent _elem676;
-        for (int _i677 = 0; _i677 < _list675.size; ++_i677)
-        {
-          _elem676 = new NotificationEvent();
-          _elem676.read(iprot);
-          struct.events.add(_elem676);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-        org.apache.thrift.protocol.TList _list681 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.events = new ArrayList<NotificationEvent>(_list681.size);
-        NotificationEvent _elem682;
-        for (int _i683 = 0; _i683 < _list681.size; ++_i683)
-        {
-          _elem682 = new NotificationEvent();
-          _elem682.read(iprot);
-          struct.events.add(_elem682);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-        {
-          _elem698 = new NotificationEvent();
-          _elem698.read(iprot);
-          struct.events.add(_elem698);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+          _elem706 = new NotificationEvent();
+          _elem706.read(iprot);
+          struct.events.add(_elem706);
         }
       }
       struct.setEventsIsSet(true);

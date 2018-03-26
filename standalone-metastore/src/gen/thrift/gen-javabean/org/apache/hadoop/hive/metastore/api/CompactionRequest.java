@@ -814,105 +814,15 @@ import org.slf4j.LoggerFactory;
           case 6: // PROPERTIES
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-                org.apache.thrift.protocol.TMap _map658 = iprot.readMapBegin();
-                struct.properties = new HashMap<String,String>(2*_map658.size);
-                String _key659;
-                String _val660;
-                for (int _i661 = 0; _i661 < _map658.size; ++_i661)
-<<<<<<< HEAD
+                org.apache.thrift.protocol.TMap _map666 = iprot.readMapBegin();
+                struct.properties = new HashMap<String,String>(2*_map666.size);
+                String _key667;
+                String _val668;
+                for (int _i669 = 0; _i669 < _map666.size; ++_i669)
                 {
-                  _key659 = iprot.readString();
-                  _val660 = iprot.readString();
-                  struct.properties.put(_key659, _val660);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TMap _map650 = iprot.readMapBegin();
-                struct.properties = new HashMap<String,String>(2*_map650.size);
-                String _key651;
-                String _val652;
-                for (int _i653 = 0; _i653 < _map650.size; ++_i653)
-                {
-                  _key651 = iprot.readString();
-                  _val652 = iprot.readString();
-                  struct.properties.put(_key651, _val652);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TMap _map634 = iprot.readMapBegin();
-                struct.properties = new HashMap<String,String>(2*_map634.size);
-                String _key635;
-                String _val636;
-                for (int _i637 = 0; _i637 < _map634.size; ++_i637)
-                {
-                  _key635 = iprot.readString();
-                  _val636 = iprot.readString();
-                  struct.properties.put(_key635, _val636);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-                org.apache.thrift.protocol.TMap _map652 = iprot.readMapBegin();
-                struct.properties = new HashMap<String,String>(2*_map652.size);
-                String _key653;
-                String _val654;
-                for (int _i655 = 0; _i655 < _map652.size; ++_i655)
-                {
-                  _key653 = iprot.readString();
-                  _val654 = iprot.readString();
-                  struct.properties.put(_key653, _val654);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-                org.apache.thrift.protocol.TMap _map636 = iprot.readMapBegin();
-                struct.properties = new HashMap<String,String>(2*_map636.size);
-                String _key637;
-                String _val638;
-                for (int _i639 = 0; _i639 < _map636.size; ++_i639)
-                {
-                  _key637 = iprot.readString();
-                  _val638 = iprot.readString();
-                  struct.properties.put(_key637, _val638);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-                org.apache.thrift.protocol.TMap _map642 = iprot.readMapBegin();
-                struct.properties = new HashMap<String,String>(2*_map642.size);
-                String _key643;
-                String _val644;
-                for (int _i645 = 0; _i645 < _map642.size; ++_i645)
-                {
-                  _key643 = iprot.readString();
-                  _val644 = iprot.readString();
-                  struct.properties.put(_key643, _val644);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-                {
-                  _key659 = iprot.readString();
-                  _val660 = iprot.readString();
-                  struct.properties.put(_key659, _val660);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+                  _key667 = iprot.readString();
+                  _val668 = iprot.readString();
+                  struct.properties.put(_key667, _val668);
                 }
                 iprot.readMapEnd();
               }
@@ -968,72 +878,10 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(PROPERTIES_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.properties.size()));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            for (Map.Entry<String, String> _iter662 : struct.properties.entrySet())
+            for (Map.Entry<String, String> _iter670 : struct.properties.entrySet())
             {
-              oprot.writeString(_iter662.getKey());
-              oprot.writeString(_iter662.getValue());
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            for (Map.Entry<String, String> _iter654 : struct.properties.entrySet())
-            {
-              oprot.writeString(_iter654.getKey());
-              oprot.writeString(_iter654.getValue());
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            for (Map.Entry<String, String> _iter638 : struct.properties.entrySet())
-            {
-              oprot.writeString(_iter638.getKey());
-              oprot.writeString(_iter638.getValue());
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            for (Map.Entry<String, String> _iter656 : struct.properties.entrySet())
-            {
-              oprot.writeString(_iter656.getKey());
-              oprot.writeString(_iter656.getValue());
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            for (Map.Entry<String, String> _iter640 : struct.properties.entrySet())
-            {
-              oprot.writeString(_iter640.getKey());
-              oprot.writeString(_iter640.getValue());
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            for (Map.Entry<String, String> _iter646 : struct.properties.entrySet())
-            {
-              oprot.writeString(_iter646.getKey());
-              oprot.writeString(_iter646.getValue());
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            for (Map.Entry<String, String> _iter662 : struct.properties.entrySet())
-            {
-              oprot.writeString(_iter662.getKey());
-              oprot.writeString(_iter662.getValue());
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              oprot.writeString(_iter670.getKey());
+              oprot.writeString(_iter670.getValue());
             }
             oprot.writeMapEnd();
           }
@@ -1080,72 +928,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetProperties()) {
         {
           oprot.writeI32(struct.properties.size());
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          for (Map.Entry<String, String> _iter663 : struct.properties.entrySet())
+          for (Map.Entry<String, String> _iter671 : struct.properties.entrySet())
           {
-            oprot.writeString(_iter663.getKey());
-            oprot.writeString(_iter663.getValue());
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          for (Map.Entry<String, String> _iter655 : struct.properties.entrySet())
-          {
-            oprot.writeString(_iter655.getKey());
-            oprot.writeString(_iter655.getValue());
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          for (Map.Entry<String, String> _iter639 : struct.properties.entrySet())
-          {
-            oprot.writeString(_iter639.getKey());
-            oprot.writeString(_iter639.getValue());
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-          for (Map.Entry<String, String> _iter657 : struct.properties.entrySet())
-          {
-            oprot.writeString(_iter657.getKey());
-            oprot.writeString(_iter657.getValue());
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-          for (Map.Entry<String, String> _iter641 : struct.properties.entrySet())
-          {
-            oprot.writeString(_iter641.getKey());
-            oprot.writeString(_iter641.getValue());
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          for (Map.Entry<String, String> _iter647 : struct.properties.entrySet())
-          {
-            oprot.writeString(_iter647.getKey());
-            oprot.writeString(_iter647.getValue());
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          for (Map.Entry<String, String> _iter663 : struct.properties.entrySet())
-          {
-            oprot.writeString(_iter663.getKey());
-            oprot.writeString(_iter663.getValue());
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            oprot.writeString(_iter671.getKey());
+            oprot.writeString(_iter671.getValue());
           }
         }
       }
@@ -1171,105 +957,15 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(2)) {
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-          org.apache.thrift.protocol.TMap _map664 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.properties = new HashMap<String,String>(2*_map664.size);
-          String _key665;
-          String _val666;
-          for (int _i667 = 0; _i667 < _map664.size; ++_i667)
-<<<<<<< HEAD
+          org.apache.thrift.protocol.TMap _map672 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.properties = new HashMap<String,String>(2*_map672.size);
+          String _key673;
+          String _val674;
+          for (int _i675 = 0; _i675 < _map672.size; ++_i675)
           {
-            _key665 = iprot.readString();
-            _val666 = iprot.readString();
-            struct.properties.put(_key665, _val666);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          org.apache.thrift.protocol.TMap _map656 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.properties = new HashMap<String,String>(2*_map656.size);
-          String _key657;
-          String _val658;
-          for (int _i659 = 0; _i659 < _map656.size; ++_i659)
-          {
-            _key657 = iprot.readString();
-            _val658 = iprot.readString();
-            struct.properties.put(_key657, _val658);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          org.apache.thrift.protocol.TMap _map640 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.properties = new HashMap<String,String>(2*_map640.size);
-          String _key641;
-          String _val642;
-          for (int _i643 = 0; _i643 < _map640.size; ++_i643)
-          {
-            _key641 = iprot.readString();
-            _val642 = iprot.readString();
-            struct.properties.put(_key641, _val642);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-          org.apache.thrift.protocol.TMap _map658 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.properties = new HashMap<String,String>(2*_map658.size);
-          String _key659;
-          String _val660;
-          for (int _i661 = 0; _i661 < _map658.size; ++_i661)
-          {
-            _key659 = iprot.readString();
-            _val660 = iprot.readString();
-            struct.properties.put(_key659, _val660);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-          org.apache.thrift.protocol.TMap _map642 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.properties = new HashMap<String,String>(2*_map642.size);
-          String _key643;
-          String _val644;
-          for (int _i645 = 0; _i645 < _map642.size; ++_i645)
-          {
-            _key643 = iprot.readString();
-            _val644 = iprot.readString();
-            struct.properties.put(_key643, _val644);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          org.apache.thrift.protocol.TMap _map648 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.properties = new HashMap<String,String>(2*_map648.size);
-          String _key649;
-          String _val650;
-          for (int _i651 = 0; _i651 < _map648.size; ++_i651)
-          {
-            _key649 = iprot.readString();
-            _val650 = iprot.readString();
-            struct.properties.put(_key649, _val650);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          {
-            _key665 = iprot.readString();
-            _val666 = iprot.readString();
-            struct.properties.put(_key665, _val666);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            _key673 = iprot.readString();
+            _val674 = iprot.readString();
+            struct.properties.put(_key673, _val674);
           }
         }
         struct.setPropertiesIsSet(true);

@@ -16022,14 +16022,14 @@ class OpenTxnRequest {
         case 6:
           if ($ftype == TType::LST) {
             $this->replSrcTxnIds = array();
-            $_size495 = 0;
-            $_etype498 = 0;
-            $xfer += $input->readListBegin($_etype498, $_size495);
-            for ($_i499 = 0; $_i499 < $_size495; ++$_i499)
+            $_size502 = 0;
+            $_etype505 = 0;
+            $xfer += $input->readListBegin($_etype505, $_size502);
+            for ($_i506 = 0; $_i506 < $_size502; ++$_i506)
             {
-              $elem500 = null;
-              $xfer += $input->readI64($elem500);
-              $this->replSrcTxnIds []= $elem500;
+              $elem507 = null;
+              $xfer += $input->readI64($elem507);
+              $this->replSrcTxnIds []= $elem507;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -16082,9 +16082,9 @@ class OpenTxnRequest {
       {
         $output->writeListBegin(TType::I64, count($this->replSrcTxnIds));
         {
-          foreach ($this->replSrcTxnIds as $iter501)
+          foreach ($this->replSrcTxnIds as $iter508)
           {
-            $xfer += $output->writeI64($iter501);
+            $xfer += $output->writeI64($iter508);
           }
         }
         $output->writeListEnd();
@@ -16148,73 +16148,14 @@ class OpenTxnsResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->txn_ids = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size502 = 0;
-            $_etype505 = 0;
-            $xfer += $input->readListBegin($_etype505, $_size502);
-            for ($_i506 = 0; $_i506 < $_size502; ++$_i506)
-<<<<<<< HEAD
+            $_size509 = 0;
+            $_etype512 = 0;
+            $xfer += $input->readListBegin($_etype512, $_size509);
+            for ($_i513 = 0; $_i513 < $_size509; ++$_i513)
             {
-              $elem507 = null;
-              $xfer += $input->readI64($elem507);
-              $this->txn_ids []= $elem507;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size495 = 0;
-            $_etype498 = 0;
-            $xfer += $input->readListBegin($_etype498, $_size495);
-            for ($_i499 = 0; $_i499 < $_size495; ++$_i499)
-            {
-              $elem500 = null;
-              $xfer += $input->readI64($elem500);
-              $this->txn_ids []= $elem500;
-=======
-<<<<<<< HEAD
-            $_size481 = 0;
-            $_etype484 = 0;
-            $xfer += $input->readListBegin($_etype484, $_size481);
-            for ($_i485 = 0; $_i485 < $_size481; ++$_i485)
-            {
-              $elem486 = null;
-              $xfer += $input->readI64($elem486);
-              $this->txn_ids []= $elem486;
-=======
-            $_size497 = 0;
-            $_etype500 = 0;
-            $xfer += $input->readListBegin($_etype500, $_size497);
-            for ($_i501 = 0; $_i501 < $_size497; ++$_i501)
-            {
-              $elem502 = null;
-              $xfer += $input->readI64($elem502);
-              $this->txn_ids []= $elem502;
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-            $_size488 = 0;
-            $_etype491 = 0;
-            $xfer += $input->readListBegin($_etype491, $_size488);
-            for ($_i492 = 0; $_i492 < $_size488; ++$_i492)
-            {
-              $elem493 = null;
-              $xfer += $input->readI64($elem493);
-              $this->txn_ids []= $elem493;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem507 = null;
-              $xfer += $input->readI64($elem507);
-              $this->txn_ids []= $elem507;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem514 = null;
+              $xfer += $input->readI64($elem514);
+              $this->txn_ids []= $elem514;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -16242,44 +16183,9 @@ class OpenTxnsResponse {
       {
         $output->writeListBegin(TType::I64, count($this->txn_ids));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->txn_ids as $iter508)
+          foreach ($this->txn_ids as $iter515)
           {
-            $xfer += $output->writeI64($iter508);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->txn_ids as $iter501)
-          {
-            $xfer += $output->writeI64($iter501);
-=======
-<<<<<<< HEAD
-          foreach ($this->txn_ids as $iter487)
-          {
-            $xfer += $output->writeI64($iter487);
-=======
-          foreach ($this->txn_ids as $iter503)
-          {
-            $xfer += $output->writeI64($iter503);
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-          foreach ($this->txn_ids as $iter494)
-          {
-            $xfer += $output->writeI64($iter494);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->txn_ids as $iter508)
-          {
-            $xfer += $output->writeI64($iter508);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeI64($iter515);
           }
         }
         $output->writeListEnd();
@@ -16441,73 +16347,14 @@ class AbortTxnsRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->txn_ids = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size509 = 0;
-            $_etype512 = 0;
-            $xfer += $input->readListBegin($_etype512, $_size509);
-            for ($_i513 = 0; $_i513 < $_size509; ++$_i513)
-<<<<<<< HEAD
+            $_size516 = 0;
+            $_etype519 = 0;
+            $xfer += $input->readListBegin($_etype519, $_size516);
+            for ($_i520 = 0; $_i520 < $_size516; ++$_i520)
             {
-              $elem514 = null;
-              $xfer += $input->readI64($elem514);
-              $this->txn_ids []= $elem514;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size502 = 0;
-            $_etype505 = 0;
-            $xfer += $input->readListBegin($_etype505, $_size502);
-            for ($_i506 = 0; $_i506 < $_size502; ++$_i506)
-            {
-              $elem507 = null;
-              $xfer += $input->readI64($elem507);
-              $this->txn_ids []= $elem507;
-=======
-<<<<<<< HEAD
-            $_size488 = 0;
-            $_etype491 = 0;
-            $xfer += $input->readListBegin($_etype491, $_size488);
-            for ($_i492 = 0; $_i492 < $_size488; ++$_i492)
-            {
-              $elem493 = null;
-              $xfer += $input->readI64($elem493);
-              $this->txn_ids []= $elem493;
-=======
-            $_size504 = 0;
-            $_etype507 = 0;
-            $xfer += $input->readListBegin($_etype507, $_size504);
-            for ($_i508 = 0; $_i508 < $_size504; ++$_i508)
-            {
-              $elem509 = null;
-              $xfer += $input->readI64($elem509);
-              $this->txn_ids []= $elem509;
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-            $_size495 = 0;
-            $_etype498 = 0;
-            $xfer += $input->readListBegin($_etype498, $_size495);
-            for ($_i499 = 0; $_i499 < $_size495; ++$_i499)
-            {
-              $elem500 = null;
-              $xfer += $input->readI64($elem500);
-              $this->txn_ids []= $elem500;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem514 = null;
-              $xfer += $input->readI64($elem514);
-              $this->txn_ids []= $elem514;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem521 = null;
+              $xfer += $input->readI64($elem521);
+              $this->txn_ids []= $elem521;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -16535,44 +16382,9 @@ class AbortTxnsRequest {
       {
         $output->writeListBegin(TType::I64, count($this->txn_ids));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->txn_ids as $iter515)
+          foreach ($this->txn_ids as $iter522)
           {
-            $xfer += $output->writeI64($iter515);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->txn_ids as $iter508)
-          {
-            $xfer += $output->writeI64($iter508);
-=======
-<<<<<<< HEAD
-          foreach ($this->txn_ids as $iter494)
-          {
-            $xfer += $output->writeI64($iter494);
-=======
-          foreach ($this->txn_ids as $iter510)
-          {
-            $xfer += $output->writeI64($iter510);
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-          foreach ($this->txn_ids as $iter501)
-          {
-            $xfer += $output->writeI64($iter501);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->txn_ids as $iter515)
-          {
-            $xfer += $output->writeI64($iter515);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeI64($iter522);
           }
         }
         $output->writeListEnd();
@@ -16745,73 +16557,14 @@ class GetValidWriteIdsRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->fullTableNames = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size516 = 0;
-            $_etype519 = 0;
-            $xfer += $input->readListBegin($_etype519, $_size516);
-            for ($_i520 = 0; $_i520 < $_size516; ++$_i520)
-<<<<<<< HEAD
+            $_size523 = 0;
+            $_etype526 = 0;
+            $xfer += $input->readListBegin($_etype526, $_size523);
+            for ($_i527 = 0; $_i527 < $_size523; ++$_i527)
             {
-              $elem521 = null;
-              $xfer += $input->readString($elem521);
-              $this->fullTableNames []= $elem521;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size509 = 0;
-            $_etype512 = 0;
-            $xfer += $input->readListBegin($_etype512, $_size509);
-            for ($_i513 = 0; $_i513 < $_size509; ++$_i513)
-            {
-              $elem514 = null;
-              $xfer += $input->readString($elem514);
-              $this->fullTableNames []= $elem514;
-=======
-<<<<<<< HEAD
-            $_size495 = 0;
-            $_etype498 = 0;
-            $xfer += $input->readListBegin($_etype498, $_size495);
-            for ($_i499 = 0; $_i499 < $_size495; ++$_i499)
-            {
-              $elem500 = null;
-              $xfer += $input->readString($elem500);
-              $this->fullTableNames []= $elem500;
-=======
-            $_size511 = 0;
-            $_etype514 = 0;
-            $xfer += $input->readListBegin($_etype514, $_size511);
-            for ($_i515 = 0; $_i515 < $_size511; ++$_i515)
-            {
-              $elem516 = null;
-              $xfer += $input->readString($elem516);
-              $this->fullTableNames []= $elem516;
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-            $_size502 = 0;
-            $_etype505 = 0;
-            $xfer += $input->readListBegin($_etype505, $_size502);
-            for ($_i506 = 0; $_i506 < $_size502; ++$_i506)
-            {
-              $elem507 = null;
-              $xfer += $input->readString($elem507);
-              $this->fullTableNames []= $elem507;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem521 = null;
-              $xfer += $input->readString($elem521);
-              $this->fullTableNames []= $elem521;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem528 = null;
+              $xfer += $input->readString($elem528);
+              $this->fullTableNames []= $elem528;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -16846,44 +16599,9 @@ class GetValidWriteIdsRequest {
       {
         $output->writeListBegin(TType::STRING, count($this->fullTableNames));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->fullTableNames as $iter522)
+          foreach ($this->fullTableNames as $iter529)
           {
-            $xfer += $output->writeString($iter522);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->fullTableNames as $iter515)
-          {
-            $xfer += $output->writeString($iter515);
-=======
-<<<<<<< HEAD
-          foreach ($this->fullTableNames as $iter501)
-          {
-            $xfer += $output->writeString($iter501);
-=======
-          foreach ($this->fullTableNames as $iter517)
-          {
-            $xfer += $output->writeString($iter517);
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-          foreach ($this->fullTableNames as $iter508)
-          {
-            $xfer += $output->writeString($iter508);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->fullTableNames as $iter522)
-          {
-            $xfer += $output->writeString($iter522);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeString($iter529);
           }
         }
         $output->writeListEnd();
@@ -17010,73 +16728,14 @@ class TableValidWriteIds {
         case 3:
           if ($ftype == TType::LST) {
             $this->invalidWriteIds = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size523 = 0;
-            $_etype526 = 0;
-            $xfer += $input->readListBegin($_etype526, $_size523);
-            for ($_i527 = 0; $_i527 < $_size523; ++$_i527)
-<<<<<<< HEAD
+            $_size530 = 0;
+            $_etype533 = 0;
+            $xfer += $input->readListBegin($_etype533, $_size530);
+            for ($_i534 = 0; $_i534 < $_size530; ++$_i534)
             {
-              $elem528 = null;
-              $xfer += $input->readI64($elem528);
-              $this->invalidWriteIds []= $elem528;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size516 = 0;
-            $_etype519 = 0;
-            $xfer += $input->readListBegin($_etype519, $_size516);
-            for ($_i520 = 0; $_i520 < $_size516; ++$_i520)
-            {
-              $elem521 = null;
-              $xfer += $input->readI64($elem521);
-              $this->invalidWriteIds []= $elem521;
-=======
-<<<<<<< HEAD
-            $_size502 = 0;
-            $_etype505 = 0;
-            $xfer += $input->readListBegin($_etype505, $_size502);
-            for ($_i506 = 0; $_i506 < $_size502; ++$_i506)
-            {
-              $elem507 = null;
-              $xfer += $input->readI64($elem507);
-              $this->invalidWriteIds []= $elem507;
-=======
-            $_size518 = 0;
-            $_etype521 = 0;
-            $xfer += $input->readListBegin($_etype521, $_size518);
-            for ($_i522 = 0; $_i522 < $_size518; ++$_i522)
-            {
-              $elem523 = null;
-              $xfer += $input->readI64($elem523);
-              $this->invalidWriteIds []= $elem523;
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-            $_size509 = 0;
-            $_etype512 = 0;
-            $xfer += $input->readListBegin($_etype512, $_size509);
-            for ($_i513 = 0; $_i513 < $_size509; ++$_i513)
-            {
-              $elem514 = null;
-              $xfer += $input->readI64($elem514);
-              $this->invalidWriteIds []= $elem514;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem528 = null;
-              $xfer += $input->readI64($elem528);
-              $this->invalidWriteIds []= $elem528;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem535 = null;
+              $xfer += $input->readI64($elem535);
+              $this->invalidWriteIds []= $elem535;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -17128,44 +16787,9 @@ class TableValidWriteIds {
       {
         $output->writeListBegin(TType::I64, count($this->invalidWriteIds));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->invalidWriteIds as $iter529)
+          foreach ($this->invalidWriteIds as $iter536)
           {
-            $xfer += $output->writeI64($iter529);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->invalidWriteIds as $iter522)
-          {
-            $xfer += $output->writeI64($iter522);
-=======
-<<<<<<< HEAD
-          foreach ($this->invalidWriteIds as $iter508)
-          {
-            $xfer += $output->writeI64($iter508);
-=======
-          foreach ($this->invalidWriteIds as $iter524)
-          {
-            $xfer += $output->writeI64($iter524);
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-          foreach ($this->invalidWriteIds as $iter515)
-          {
-            $xfer += $output->writeI64($iter515);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->invalidWriteIds as $iter529)
-          {
-            $xfer += $output->writeI64($iter529);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeI64($iter536);
           }
         }
         $output->writeListEnd();
@@ -17240,106 +16864,15 @@ class GetValidWriteIdsResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->tblValidWriteIds = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size530 = 0;
-            $_etype533 = 0;
-            $xfer += $input->readListBegin($_etype533, $_size530);
-            for ($_i534 = 0; $_i534 < $_size530; ++$_i534)
-<<<<<<< HEAD
+            $_size537 = 0;
+            $_etype540 = 0;
+            $xfer += $input->readListBegin($_etype540, $_size537);
+            for ($_i541 = 0; $_i541 < $_size537; ++$_i541)
             {
-              $elem535 = null;
-              $elem535 = new \metastore\TableValidWriteIds();
-              $xfer += $elem535->read($input);
-              $this->tblValidWriteIds []= $elem535;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size523 = 0;
-            $_etype526 = 0;
-            $xfer += $input->readListBegin($_etype526, $_size523);
-            for ($_i527 = 0; $_i527 < $_size523; ++$_i527)
-            {
-              $elem528 = null;
-              $elem528 = new \metastore\TableValidWriteIds();
-              $xfer += $elem528->read($input);
-              $this->tblValidWriteIds []= $elem528;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size509 = 0;
-            $_etype512 = 0;
-            $xfer += $input->readListBegin($_etype512, $_size509);
-            for ($_i513 = 0; $_i513 < $_size509; ++$_i513)
-            {
-              $elem514 = null;
-              $elem514 = new \metastore\TableValidWriteIds();
-              $xfer += $elem514->read($input);
-              $this->tblValidWriteIds []= $elem514;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size525 = 0;
-            $_etype528 = 0;
-            $xfer += $input->readListBegin($_etype528, $_size525);
-            for ($_i529 = 0; $_i529 < $_size525; ++$_i529)
-            {
-              $elem530 = null;
-              $elem530 = new \metastore\TableValidWriteIds();
-              $xfer += $elem530->read($input);
-              $this->tblValidWriteIds []= $elem530;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size511 = 0;
-            $_etype514 = 0;
-            $xfer += $input->readListBegin($_etype514, $_size511);
-            for ($_i515 = 0; $_i515 < $_size511; ++$_i515)
-            {
-              $elem516 = null;
-              $elem516 = new \metastore\TableValidWriteIds();
-              $xfer += $elem516->read($input);
-              $this->tblValidWriteIds []= $elem516;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size516 = 0;
-            $_etype519 = 0;
-            $xfer += $input->readListBegin($_etype519, $_size516);
-            for ($_i520 = 0; $_i520 < $_size516; ++$_i520)
-            {
-              $elem521 = null;
-              $elem521 = new \metastore\TableValidWriteIds();
-              $xfer += $elem521->read($input);
-              $this->tblValidWriteIds []= $elem521;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem535 = null;
-              $elem535 = new \metastore\TableValidWriteIds();
-              $xfer += $elem535->read($input);
-              $this->tblValidWriteIds []= $elem535;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem542 = null;
+              $elem542 = new \metastore\TableValidWriteIds();
+              $xfer += $elem542->read($input);
+              $this->tblValidWriteIds []= $elem542;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -17367,65 +16900,9 @@ class GetValidWriteIdsResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->tblValidWriteIds));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->tblValidWriteIds as $iter536)
+          foreach ($this->tblValidWriteIds as $iter543)
           {
-            $xfer += $iter536->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->tblValidWriteIds as $iter529)
-          {
-            $xfer += $iter529->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->tblValidWriteIds as $iter515)
-          {
-            $xfer += $iter515->write($output);
-=======
-          foreach ($this->tblValidWriteIds as $iter531)
-          {
-            $xfer += $iter531->write($output);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->tblValidWriteIds as $iter531)
-          {
-            $xfer += $iter531->write($output);
-=======
-          foreach ($this->tblValidWriteIds as $iter517)
-          {
-            $xfer += $iter517->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->tblValidWriteIds as $iter522)
-          {
-            $xfer += $iter522->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->tblValidWriteIds as $iter536)
-          {
-            $xfer += $iter536->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $iter543->write($output);
           }
         }
         $output->writeListEnd();
@@ -17511,73 +16988,14 @@ class AllocateTableWriteIdsRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->txnIds = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size537 = 0;
-            $_etype540 = 0;
-            $xfer += $input->readListBegin($_etype540, $_size537);
-            for ($_i541 = 0; $_i541 < $_size537; ++$_i541)
-<<<<<<< HEAD
+            $_size544 = 0;
+            $_etype547 = 0;
+            $xfer += $input->readListBegin($_etype547, $_size544);
+            for ($_i548 = 0; $_i548 < $_size544; ++$_i548)
             {
-              $elem542 = null;
-              $xfer += $input->readI64($elem542);
-              $this->txnIds []= $elem542;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size530 = 0;
-            $_etype533 = 0;
-            $xfer += $input->readListBegin($_etype533, $_size530);
-            for ($_i534 = 0; $_i534 < $_size530; ++$_i534)
-            {
-              $elem535 = null;
-              $xfer += $input->readI64($elem535);
-              $this->txnIds []= $elem535;
-=======
-<<<<<<< HEAD
-            $_size516 = 0;
-            $_etype519 = 0;
-            $xfer += $input->readListBegin($_etype519, $_size516);
-            for ($_i520 = 0; $_i520 < $_size516; ++$_i520)
-            {
-              $elem521 = null;
-              $xfer += $input->readI64($elem521);
-              $this->txnIds []= $elem521;
-=======
-            $_size532 = 0;
-            $_etype535 = 0;
-            $xfer += $input->readListBegin($_etype535, $_size532);
-            for ($_i536 = 0; $_i536 < $_size532; ++$_i536)
-            {
-              $elem537 = null;
-              $xfer += $input->readI64($elem537);
-              $this->txnIds []= $elem537;
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-            $_size523 = 0;
-            $_etype526 = 0;
-            $xfer += $input->readListBegin($_etype526, $_size523);
-            for ($_i527 = 0; $_i527 < $_size523; ++$_i527)
-            {
-              $elem528 = null;
-              $xfer += $input->readI64($elem528);
-              $this->txnIds []= $elem528;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem542 = null;
-              $xfer += $input->readI64($elem542);
-              $this->txnIds []= $elem542;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem549 = null;
+              $xfer += $input->readI64($elem549);
+              $this->txnIds []= $elem549;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -17619,44 +17037,9 @@ class AllocateTableWriteIdsRequest {
       {
         $output->writeListBegin(TType::I64, count($this->txnIds));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->txnIds as $iter543)
+          foreach ($this->txnIds as $iter550)
           {
-            $xfer += $output->writeI64($iter543);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->txnIds as $iter536)
-          {
-            $xfer += $output->writeI64($iter536);
-=======
-<<<<<<< HEAD
-          foreach ($this->txnIds as $iter522)
-          {
-            $xfer += $output->writeI64($iter522);
-=======
-          foreach ($this->txnIds as $iter538)
-          {
-            $xfer += $output->writeI64($iter538);
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-          foreach ($this->txnIds as $iter529)
-          {
-            $xfer += $output->writeI64($iter529);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->txnIds as $iter543)
-          {
-            $xfer += $output->writeI64($iter543);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeI64($iter550);
           }
         }
         $output->writeListEnd();
@@ -17829,79 +17212,15 @@ class AllocateTableWriteIdsResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->txnToWriteIds = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size544 = 0;
-            $_etype547 = 0;
-            $xfer += $input->readListBegin($_etype547, $_size544);
-            for ($_i548 = 0; $_i548 < $_size544; ++$_i548)
-<<<<<<< HEAD
+            $_size551 = 0;
+            $_etype554 = 0;
+            $xfer += $input->readListBegin($_etype554, $_size551);
+            for ($_i555 = 0; $_i555 < $_size551; ++$_i555)
             {
-              $elem549 = null;
-              $elem549 = new \metastore\TxnToWriteId();
-              $xfer += $elem549->read($input);
-              $this->txnToWriteIds []= $elem549;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size537 = 0;
-            $_etype540 = 0;
-            $xfer += $input->readListBegin($_etype540, $_size537);
-            for ($_i541 = 0; $_i541 < $_size537; ++$_i541)
-            {
-              $elem542 = null;
-              $elem542 = new \metastore\TxnToWriteId();
-              $xfer += $elem542->read($input);
-              $this->txnToWriteIds []= $elem542;
-=======
-<<<<<<< HEAD
-            $_size523 = 0;
-            $_etype526 = 0;
-            $xfer += $input->readListBegin($_etype526, $_size523);
-            for ($_i527 = 0; $_i527 < $_size523; ++$_i527)
-            {
-              $elem528 = null;
-              $elem528 = new \metastore\TxnToWriteId();
-              $xfer += $elem528->read($input);
-              $this->txnToWriteIds []= $elem528;
-=======
-            $_size539 = 0;
-            $_etype542 = 0;
-            $xfer += $input->readListBegin($_etype542, $_size539);
-            for ($_i543 = 0; $_i543 < $_size539; ++$_i543)
-            {
-              $elem544 = null;
-              $elem544 = new \metastore\TxnToWriteId();
-              $xfer += $elem544->read($input);
-              $this->txnToWriteIds []= $elem544;
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-            $_size530 = 0;
-            $_etype533 = 0;
-            $xfer += $input->readListBegin($_etype533, $_size530);
-            for ($_i534 = 0; $_i534 < $_size530; ++$_i534)
-            {
-              $elem535 = null;
-              $elem535 = new \metastore\TxnToWriteId();
-              $xfer += $elem535->read($input);
-              $this->txnToWriteIds []= $elem535;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem549 = null;
-              $elem549 = new \metastore\TxnToWriteId();
-              $xfer += $elem549->read($input);
-              $this->txnToWriteIds []= $elem549;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem556 = null;
+              $elem556 = new \metastore\TxnToWriteId();
+              $xfer += $elem556->read($input);
+              $this->txnToWriteIds []= $elem556;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -17929,44 +17248,9 @@ class AllocateTableWriteIdsResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->txnToWriteIds));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->txnToWriteIds as $iter550)
+          foreach ($this->txnToWriteIds as $iter557)
           {
-            $xfer += $iter550->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->txnToWriteIds as $iter543)
-          {
-            $xfer += $iter543->write($output);
-=======
-<<<<<<< HEAD
-          foreach ($this->txnToWriteIds as $iter529)
-          {
-            $xfer += $iter529->write($output);
-=======
-          foreach ($this->txnToWriteIds as $iter545)
-          {
-            $xfer += $iter545->write($output);
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-          foreach ($this->txnToWriteIds as $iter536)
-          {
-            $xfer += $iter536->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->txnToWriteIds as $iter550)
-          {
-            $xfer += $iter550->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $iter557->write($output);
           }
         }
         $output->writeListEnd();
@@ -18311,106 +17595,15 @@ class LockRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->component = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size551 = 0;
-            $_etype554 = 0;
-            $xfer += $input->readListBegin($_etype554, $_size551);
-            for ($_i555 = 0; $_i555 < $_size551; ++$_i555)
-<<<<<<< HEAD
+            $_size558 = 0;
+            $_etype561 = 0;
+            $xfer += $input->readListBegin($_etype561, $_size558);
+            for ($_i562 = 0; $_i562 < $_size558; ++$_i562)
             {
-              $elem556 = null;
-              $elem556 = new \metastore\LockComponent();
-              $xfer += $elem556->read($input);
-              $this->component []= $elem556;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size544 = 0;
-            $_etype547 = 0;
-            $xfer += $input->readListBegin($_etype547, $_size544);
-            for ($_i548 = 0; $_i548 < $_size544; ++$_i548)
-            {
-              $elem549 = null;
-              $elem549 = new \metastore\LockComponent();
-              $xfer += $elem549->read($input);
-              $this->component []= $elem549;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size530 = 0;
-            $_etype533 = 0;
-            $xfer += $input->readListBegin($_etype533, $_size530);
-            for ($_i534 = 0; $_i534 < $_size530; ++$_i534)
-            {
-              $elem535 = null;
-              $elem535 = new \metastore\LockComponent();
-              $xfer += $elem535->read($input);
-              $this->component []= $elem535;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size546 = 0;
-            $_etype549 = 0;
-            $xfer += $input->readListBegin($_etype549, $_size546);
-            for ($_i550 = 0; $_i550 < $_size546; ++$_i550)
-            {
-              $elem551 = null;
-              $elem551 = new \metastore\LockComponent();
-              $xfer += $elem551->read($input);
-              $this->component []= $elem551;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size532 = 0;
-            $_etype535 = 0;
-            $xfer += $input->readListBegin($_etype535, $_size532);
-            for ($_i536 = 0; $_i536 < $_size532; ++$_i536)
-            {
-              $elem537 = null;
-              $elem537 = new \metastore\LockComponent();
-              $xfer += $elem537->read($input);
-              $this->component []= $elem537;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size537 = 0;
-            $_etype540 = 0;
-            $xfer += $input->readListBegin($_etype540, $_size537);
-            for ($_i541 = 0; $_i541 < $_size537; ++$_i541)
-            {
-              $elem542 = null;
-              $elem542 = new \metastore\LockComponent();
-              $xfer += $elem542->read($input);
-              $this->component []= $elem542;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem556 = null;
-              $elem556 = new \metastore\LockComponent();
-              $xfer += $elem556->read($input);
-              $this->component []= $elem556;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem563 = null;
+              $elem563 = new \metastore\LockComponent();
+              $xfer += $elem563->read($input);
+              $this->component []= $elem563;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -18466,65 +17659,9 @@ class LockRequest {
       {
         $output->writeListBegin(TType::STRUCT, count($this->component));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->component as $iter557)
+          foreach ($this->component as $iter564)
           {
-            $xfer += $iter557->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->component as $iter550)
-          {
-            $xfer += $iter550->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->component as $iter536)
-          {
-            $xfer += $iter536->write($output);
-=======
-          foreach ($this->component as $iter552)
-          {
-            $xfer += $iter552->write($output);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->component as $iter552)
-          {
-            $xfer += $iter552->write($output);
-=======
-          foreach ($this->component as $iter538)
-          {
-            $xfer += $iter538->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->component as $iter543)
-          {
-            $xfer += $iter543->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->component as $iter557)
-          {
-            $xfer += $iter557->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $iter564->write($output);
           }
         }
         $output->writeListEnd();
@@ -19467,106 +18604,15 @@ class ShowLocksResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->locks = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size558 = 0;
-            $_etype561 = 0;
-            $xfer += $input->readListBegin($_etype561, $_size558);
-            for ($_i562 = 0; $_i562 < $_size558; ++$_i562)
-<<<<<<< HEAD
+            $_size565 = 0;
+            $_etype568 = 0;
+            $xfer += $input->readListBegin($_etype568, $_size565);
+            for ($_i569 = 0; $_i569 < $_size565; ++$_i569)
             {
-              $elem563 = null;
-              $elem563 = new \metastore\ShowLocksResponseElement();
-              $xfer += $elem563->read($input);
-              $this->locks []= $elem563;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size551 = 0;
-            $_etype554 = 0;
-            $xfer += $input->readListBegin($_etype554, $_size551);
-            for ($_i555 = 0; $_i555 < $_size551; ++$_i555)
-            {
-              $elem556 = null;
-              $elem556 = new \metastore\ShowLocksResponseElement();
-              $xfer += $elem556->read($input);
-              $this->locks []= $elem556;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size537 = 0;
-            $_etype540 = 0;
-            $xfer += $input->readListBegin($_etype540, $_size537);
-            for ($_i541 = 0; $_i541 < $_size537; ++$_i541)
-            {
-              $elem542 = null;
-              $elem542 = new \metastore\ShowLocksResponseElement();
-              $xfer += $elem542->read($input);
-              $this->locks []= $elem542;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size553 = 0;
-            $_etype556 = 0;
-            $xfer += $input->readListBegin($_etype556, $_size553);
-            for ($_i557 = 0; $_i557 < $_size553; ++$_i557)
-            {
-              $elem558 = null;
-              $elem558 = new \metastore\ShowLocksResponseElement();
-              $xfer += $elem558->read($input);
-              $this->locks []= $elem558;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size539 = 0;
-            $_etype542 = 0;
-            $xfer += $input->readListBegin($_etype542, $_size539);
-            for ($_i543 = 0; $_i543 < $_size539; ++$_i543)
-            {
-              $elem544 = null;
-              $elem544 = new \metastore\ShowLocksResponseElement();
-              $xfer += $elem544->read($input);
-              $this->locks []= $elem544;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size544 = 0;
-            $_etype547 = 0;
-            $xfer += $input->readListBegin($_etype547, $_size544);
-            for ($_i548 = 0; $_i548 < $_size544; ++$_i548)
-            {
-              $elem549 = null;
-              $elem549 = new \metastore\ShowLocksResponseElement();
-              $xfer += $elem549->read($input);
-              $this->locks []= $elem549;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem563 = null;
-              $elem563 = new \metastore\ShowLocksResponseElement();
-              $xfer += $elem563->read($input);
-              $this->locks []= $elem563;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem570 = null;
+              $elem570 = new \metastore\ShowLocksResponseElement();
+              $xfer += $elem570->read($input);
+              $this->locks []= $elem570;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -19594,65 +18640,9 @@ class ShowLocksResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->locks));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->locks as $iter564)
+          foreach ($this->locks as $iter571)
           {
-            $xfer += $iter564->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->locks as $iter557)
-          {
-            $xfer += $iter557->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->locks as $iter543)
-          {
-            $xfer += $iter543->write($output);
-=======
-          foreach ($this->locks as $iter559)
-          {
-            $xfer += $iter559->write($output);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->locks as $iter559)
-          {
-            $xfer += $iter559->write($output);
-=======
-          foreach ($this->locks as $iter545)
-          {
-            $xfer += $iter545->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->locks as $iter550)
-          {
-            $xfer += $iter550->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->locks as $iter564)
-          {
-            $xfer += $iter564->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $iter571->write($output);
           }
         }
         $output->writeListEnd();
@@ -19927,111 +18917,17 @@ class HeartbeatTxnRangeResponse {
         case 1:
           if ($ftype == TType::SET) {
             $this->aborted = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size565 = 0;
-            $_etype568 = 0;
-            $xfer += $input->readSetBegin($_etype568, $_size565);
-            for ($_i569 = 0; $_i569 < $_size565; ++$_i569)
-<<<<<<< HEAD
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size558 = 0;
-            $_etype561 = 0;
-            $xfer += $input->readSetBegin($_etype561, $_size558);
-            for ($_i562 = 0; $_i562 < $_size558; ++$_i562)
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size544 = 0;
-            $_etype547 = 0;
-            $xfer += $input->readSetBegin($_etype547, $_size544);
-            for ($_i548 = 0; $_i548 < $_size544; ++$_i548)
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
+            $_size572 = 0;
+            $_etype575 = 0;
+            $xfer += $input->readSetBegin($_etype575, $_size572);
+            for ($_i576 = 0; $_i576 < $_size572; ++$_i576)
             {
-              $elem570 = null;
-              $xfer += $input->readI64($elem570);
-              if (is_scalar($elem570)) {
-                $this->aborted[$elem570] = true;
+              $elem577 = null;
+              $xfer += $input->readI64($elem577);
+              if (is_scalar($elem577)) {
+                $this->aborted[$elem577] = true;
               } else {
-<<<<<<< HEAD
-                $this->aborted []= $elem570;
-=======
-<<<<<<< HEAD
-                $this->aborted []= $elem563;
-=======
-                $this->aborted []= $elem549;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size560 = 0;
-            $_etype563 = 0;
-            $xfer += $input->readSetBegin($_etype563, $_size560);
-            for ($_i564 = 0; $_i564 < $_size560; ++$_i564)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            {
-              $elem570 = null;
-              $xfer += $input->readI64($elem570);
-              if (is_scalar($elem570)) {
-                $this->aborted[$elem570] = true;
-              } else {
-<<<<<<< HEAD
-                $this->aborted []= $elem565;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size546 = 0;
-            $_etype549 = 0;
-            $xfer += $input->readSetBegin($_etype549, $_size546);
-            for ($_i550 = 0; $_i550 < $_size546; ++$_i550)
-            {
-              $elem551 = null;
-              $xfer += $input->readI64($elem551);
-              if (is_scalar($elem551)) {
-                $this->aborted[$elem551] = true;
-              } else {
-                $this->aborted []= $elem551;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size551 = 0;
-            $_etype554 = 0;
-            $xfer += $input->readSetBegin($_etype554, $_size551);
-            for ($_i555 = 0; $_i555 < $_size551; ++$_i555)
-            {
-              $elem556 = null;
-              $xfer += $input->readI64($elem556);
-              if (is_scalar($elem556)) {
-                $this->aborted[$elem556] = true;
-              } else {
-                $this->aborted []= $elem556;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-                $this->aborted []= $elem570;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+                $this->aborted []= $elem577;
               }
             }
             $xfer += $input->readSetEnd();
@@ -20042,108 +18938,17 @@ class HeartbeatTxnRangeResponse {
         case 2:
           if ($ftype == TType::SET) {
             $this->nosuch = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size571 = 0;
-            $_etype574 = 0;
-            $xfer += $input->readSetBegin($_etype574, $_size571);
-            for ($_i575 = 0; $_i575 < $_size571; ++$_i575)
-<<<<<<< HEAD
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size564 = 0;
-            $_etype567 = 0;
-            $xfer += $input->readSetBegin($_etype567, $_size564);
-            for ($_i568 = 0; $_i568 < $_size564; ++$_i568)
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size550 = 0;
-            $_etype553 = 0;
-            $xfer += $input->readSetBegin($_etype553, $_size550);
-            for ($_i554 = 0; $_i554 < $_size550; ++$_i554)
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
+            $_size578 = 0;
+            $_etype581 = 0;
+            $xfer += $input->readSetBegin($_etype581, $_size578);
+            for ($_i582 = 0; $_i582 < $_size578; ++$_i582)
             {
-              $elem576 = null;
-              $xfer += $input->readI64($elem576);
-              if (is_scalar($elem576)) {
-                $this->nosuch[$elem576] = true;
+              $elem583 = null;
+              $xfer += $input->readI64($elem583);
+              if (is_scalar($elem583)) {
+                $this->nosuch[$elem583] = true;
               } else {
-<<<<<<< HEAD
-                $this->nosuch []= $elem576;
-=======
-<<<<<<< HEAD
-                $this->nosuch []= $elem569;
-=======
-                $this->nosuch []= $elem555;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size566 = 0;
-            $_etype569 = 0;
-            $xfer += $input->readSetBegin($_etype569, $_size566);
-            for ($_i570 = 0; $_i570 < $_size566; ++$_i570)
-            {
-              $elem571 = null;
-              $xfer += $input->readI64($elem571);
-              if (is_scalar($elem571)) {
-                $this->nosuch[$elem571] = true;
-              } else {
-                $this->nosuch []= $elem571;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size552 = 0;
-            $_etype555 = 0;
-            $xfer += $input->readSetBegin($_etype555, $_size552);
-            for ($_i556 = 0; $_i556 < $_size552; ++$_i556)
-=======
-            $_size557 = 0;
-            $_etype560 = 0;
-            $xfer += $input->readSetBegin($_etype560, $_size557);
-            for ($_i561 = 0; $_i561 < $_size557; ++$_i561)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            {
-              $elem576 = null;
-              $xfer += $input->readI64($elem576);
-              if (is_scalar($elem576)) {
-                $this->nosuch[$elem576] = true;
-              } else {
-<<<<<<< HEAD
-<<<<<<< HEAD
-                $this->nosuch []= $elem557;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-                $this->nosuch []= $elem562;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-                $this->nosuch []= $elem576;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+                $this->nosuch []= $elem583;
               }
             }
             $xfer += $input->readSetEnd();
@@ -20172,83 +18977,12 @@ class HeartbeatTxnRangeResponse {
       {
         $output->writeSetBegin(TType::I64, count($this->aborted));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->aborted as $iter577 => $iter578)
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->aborted as $iter570 => $iter571)
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->aborted as $iter556 => $iter557)
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-          foreach ($this->aborted as $iter577 => $iter578)
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+          foreach ($this->aborted as $iter584 => $iter585)
           {
-            if (is_scalar($iter578)) {
-            $xfer += $output->writeI64($iter577);
+            if (is_scalar($iter585)) {
+            $xfer += $output->writeI64($iter584);
             } else {
-<<<<<<< HEAD
-<<<<<<< HEAD
-            $xfer += $output->writeI64($iter578);
-=======
-<<<<<<< HEAD
-            $xfer += $output->writeI64($iter571);
-=======
-            $xfer += $output->writeI64($iter557);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-          foreach ($this->aborted as $iter572 => $iter573)
-          {
-            if (is_scalar($iter573)) {
-            $xfer += $output->writeI64($iter572);
-            } else {
-            $xfer += $output->writeI64($iter573);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-          foreach ($this->aborted as $iter558 => $iter559)
-          {
-            if (is_scalar($iter559)) {
-            $xfer += $output->writeI64($iter558);
-            } else {
-            $xfer += $output->writeI64($iter559);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->aborted as $iter563 => $iter564)
-          {
-            if (is_scalar($iter564)) {
-            $xfer += $output->writeI64($iter563);
-            } else {
-            $xfer += $output->writeI64($iter564);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            $xfer += $output->writeI64($iter578);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeI64($iter585);
             }
           }
         }
@@ -20264,81 +18998,12 @@ class HeartbeatTxnRangeResponse {
       {
         $output->writeSetBegin(TType::I64, count($this->nosuch));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->nosuch as $iter579 => $iter580)
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->nosuch as $iter572 => $iter573)
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->nosuch as $iter558 => $iter559)
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
+          foreach ($this->nosuch as $iter586 => $iter587)
           {
-            if (is_scalar($iter580)) {
-            $xfer += $output->writeI64($iter579);
+            if (is_scalar($iter587)) {
+            $xfer += $output->writeI64($iter586);
             } else {
-<<<<<<< HEAD
-            $xfer += $output->writeI64($iter580);
-=======
-<<<<<<< HEAD
-            $xfer += $output->writeI64($iter573);
-=======
-            $xfer += $output->writeI64($iter559);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-          foreach ($this->nosuch as $iter574 => $iter575)
-=======
-          foreach ($this->nosuch as $iter560 => $iter561)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-          foreach ($this->nosuch as $iter565 => $iter566)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->nosuch as $iter579 => $iter580)
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-          {
-            if (is_scalar($iter580)) {
-            $xfer += $output->writeI64($iter579);
-            } else {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            $xfer += $output->writeI64($iter575);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $xfer += $output->writeI64($iter561);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $xfer += $output->writeI64($iter566);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            $xfer += $output->writeI64($iter580);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeI64($iter587);
             }
           }
         }
@@ -20497,119 +19162,17 @@ class CompactionRequest {
         case 6:
           if ($ftype == TType::MAP) {
             $this->properties = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size581 = 0;
-            $_ktype582 = 0;
-            $_vtype583 = 0;
-            $xfer += $input->readMapBegin($_ktype582, $_vtype583, $_size581);
-            for ($_i585 = 0; $_i585 < $_size581; ++$_i585)
-<<<<<<< HEAD
+            $_size588 = 0;
+            $_ktype589 = 0;
+            $_vtype590 = 0;
+            $xfer += $input->readMapBegin($_ktype589, $_vtype590, $_size588);
+            for ($_i592 = 0; $_i592 < $_size588; ++$_i592)
             {
-              $key586 = '';
-              $val587 = '';
-              $xfer += $input->readString($key586);
-              $xfer += $input->readString($val587);
-              $this->properties[$key586] = $val587;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size574 = 0;
-            $_ktype575 = 0;
-            $_vtype576 = 0;
-            $xfer += $input->readMapBegin($_ktype575, $_vtype576, $_size574);
-            for ($_i578 = 0; $_i578 < $_size574; ++$_i578)
-            {
-              $key579 = '';
-              $val580 = '';
-              $xfer += $input->readString($key579);
-              $xfer += $input->readString($val580);
-              $this->properties[$key579] = $val580;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size560 = 0;
-            $_ktype561 = 0;
-            $_vtype562 = 0;
-            $xfer += $input->readMapBegin($_ktype561, $_vtype562, $_size560);
-            for ($_i564 = 0; $_i564 < $_size560; ++$_i564)
-            {
-              $key565 = '';
-              $val566 = '';
-              $xfer += $input->readString($key565);
-              $xfer += $input->readString($val566);
-              $this->properties[$key565] = $val566;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size576 = 0;
-            $_ktype577 = 0;
-            $_vtype578 = 0;
-            $xfer += $input->readMapBegin($_ktype577, $_vtype578, $_size576);
-            for ($_i580 = 0; $_i580 < $_size576; ++$_i580)
-            {
-              $key581 = '';
-              $val582 = '';
-              $xfer += $input->readString($key581);
-              $xfer += $input->readString($val582);
-              $this->properties[$key581] = $val582;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size562 = 0;
-            $_ktype563 = 0;
-            $_vtype564 = 0;
-            $xfer += $input->readMapBegin($_ktype563, $_vtype564, $_size562);
-            for ($_i566 = 0; $_i566 < $_size562; ++$_i566)
-            {
-              $key567 = '';
-              $val568 = '';
-              $xfer += $input->readString($key567);
-              $xfer += $input->readString($val568);
-              $this->properties[$key567] = $val568;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size567 = 0;
-            $_ktype568 = 0;
-            $_vtype569 = 0;
-            $xfer += $input->readMapBegin($_ktype568, $_vtype569, $_size567);
-            for ($_i571 = 0; $_i571 < $_size567; ++$_i571)
-            {
-              $key572 = '';
-              $val573 = '';
-              $xfer += $input->readString($key572);
-              $xfer += $input->readString($val573);
-              $this->properties[$key572] = $val573;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $key586 = '';
-              $val587 = '';
-              $xfer += $input->readString($key586);
-              $xfer += $input->readString($val587);
-              $this->properties[$key586] = $val587;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $key593 = '';
+              $val594 = '';
+              $xfer += $input->readString($key593);
+              $xfer += $input->readString($val594);
+              $this->properties[$key593] = $val594;
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -20662,72 +19225,10 @@ class CompactionRequest {
       {
         $output->writeMapBegin(TType::STRING, TType::STRING, count($this->properties));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->properties as $kiter588 => $viter589)
+          foreach ($this->properties as $kiter595 => $viter596)
           {
-            $xfer += $output->writeString($kiter588);
-            $xfer += $output->writeString($viter589);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->properties as $kiter581 => $viter582)
-          {
-            $xfer += $output->writeString($kiter581);
-            $xfer += $output->writeString($viter582);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->properties as $kiter567 => $viter568)
-          {
-            $xfer += $output->writeString($kiter567);
-            $xfer += $output->writeString($viter568);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-          foreach ($this->properties as $kiter583 => $viter584)
-          {
-            $xfer += $output->writeString($kiter583);
-            $xfer += $output->writeString($viter584);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-          foreach ($this->properties as $kiter569 => $viter570)
-          {
-            $xfer += $output->writeString($kiter569);
-            $xfer += $output->writeString($viter570);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->properties as $kiter574 => $viter575)
-          {
-            $xfer += $output->writeString($kiter574);
-            $xfer += $output->writeString($viter575);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->properties as $kiter588 => $viter589)
-          {
-            $xfer += $output->writeString($kiter588);
-            $xfer += $output->writeString($viter589);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeString($kiter595);
+            $xfer += $output->writeString($viter596);
           }
         }
         $output->writeMapEnd();
@@ -21314,106 +19815,15 @@ class ShowCompactResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->compacts = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size590 = 0;
-            $_etype593 = 0;
-            $xfer += $input->readListBegin($_etype593, $_size590);
-            for ($_i594 = 0; $_i594 < $_size590; ++$_i594)
-<<<<<<< HEAD
+            $_size597 = 0;
+            $_etype600 = 0;
+            $xfer += $input->readListBegin($_etype600, $_size597);
+            for ($_i601 = 0; $_i601 < $_size597; ++$_i601)
             {
-              $elem595 = null;
-              $elem595 = new \metastore\ShowCompactResponseElement();
-              $xfer += $elem595->read($input);
-              $this->compacts []= $elem595;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size583 = 0;
-            $_etype586 = 0;
-            $xfer += $input->readListBegin($_etype586, $_size583);
-            for ($_i587 = 0; $_i587 < $_size583; ++$_i587)
-            {
-              $elem588 = null;
-              $elem588 = new \metastore\ShowCompactResponseElement();
-              $xfer += $elem588->read($input);
-              $this->compacts []= $elem588;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size569 = 0;
-            $_etype572 = 0;
-            $xfer += $input->readListBegin($_etype572, $_size569);
-            for ($_i573 = 0; $_i573 < $_size569; ++$_i573)
-            {
-              $elem574 = null;
-              $elem574 = new \metastore\ShowCompactResponseElement();
-              $xfer += $elem574->read($input);
-              $this->compacts []= $elem574;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size585 = 0;
-            $_etype588 = 0;
-            $xfer += $input->readListBegin($_etype588, $_size585);
-            for ($_i589 = 0; $_i589 < $_size585; ++$_i589)
-            {
-              $elem590 = null;
-              $elem590 = new \metastore\ShowCompactResponseElement();
-              $xfer += $elem590->read($input);
-              $this->compacts []= $elem590;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size571 = 0;
-            $_etype574 = 0;
-            $xfer += $input->readListBegin($_etype574, $_size571);
-            for ($_i575 = 0; $_i575 < $_size571; ++$_i575)
-            {
-              $elem576 = null;
-              $elem576 = new \metastore\ShowCompactResponseElement();
-              $xfer += $elem576->read($input);
-              $this->compacts []= $elem576;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size576 = 0;
-            $_etype579 = 0;
-            $xfer += $input->readListBegin($_etype579, $_size576);
-            for ($_i580 = 0; $_i580 < $_size576; ++$_i580)
-            {
-              $elem581 = null;
-              $elem581 = new \metastore\ShowCompactResponseElement();
-              $xfer += $elem581->read($input);
-              $this->compacts []= $elem581;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem595 = null;
-              $elem595 = new \metastore\ShowCompactResponseElement();
-              $xfer += $elem595->read($input);
-              $this->compacts []= $elem595;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem602 = null;
+              $elem602 = new \metastore\ShowCompactResponseElement();
+              $xfer += $elem602->read($input);
+              $this->compacts []= $elem602;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -21441,65 +19851,9 @@ class ShowCompactResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->compacts));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->compacts as $iter596)
+          foreach ($this->compacts as $iter603)
           {
-            $xfer += $iter596->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->compacts as $iter589)
-          {
-            $xfer += $iter589->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->compacts as $iter575)
-          {
-            $xfer += $iter575->write($output);
-=======
-          foreach ($this->compacts as $iter591)
-          {
-            $xfer += $iter591->write($output);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->compacts as $iter591)
-          {
-            $xfer += $iter591->write($output);
-=======
-          foreach ($this->compacts as $iter577)
-          {
-            $xfer += $iter577->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->compacts as $iter582)
-          {
-            $xfer += $iter582->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->compacts as $iter596)
-          {
-            $xfer += $iter596->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $iter603->write($output);
           }
         }
         $output->writeListEnd();
@@ -21646,99 +20000,14 @@ class AddDynamicPartitions {
         case 5:
           if ($ftype == TType::LST) {
             $this->partitionnames = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size597 = 0;
-            $_etype600 = 0;
-            $xfer += $input->readListBegin($_etype600, $_size597);
-            for ($_i601 = 0; $_i601 < $_size597; ++$_i601)
-<<<<<<< HEAD
+            $_size604 = 0;
+            $_etype607 = 0;
+            $xfer += $input->readListBegin($_etype607, $_size604);
+            for ($_i608 = 0; $_i608 < $_size604; ++$_i608)
             {
-              $elem602 = null;
-              $xfer += $input->readString($elem602);
-              $this->partitionnames []= $elem602;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size590 = 0;
-            $_etype593 = 0;
-            $xfer += $input->readListBegin($_etype593, $_size590);
-            for ($_i594 = 0; $_i594 < $_size590; ++$_i594)
-            {
-              $elem595 = null;
-              $xfer += $input->readString($elem595);
-              $this->partitionnames []= $elem595;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size576 = 0;
-            $_etype579 = 0;
-            $xfer += $input->readListBegin($_etype579, $_size576);
-            for ($_i580 = 0; $_i580 < $_size576; ++$_i580)
-            {
-              $elem581 = null;
-              $xfer += $input->readString($elem581);
-              $this->partitionnames []= $elem581;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size592 = 0;
-            $_etype595 = 0;
-            $xfer += $input->readListBegin($_etype595, $_size592);
-            for ($_i596 = 0; $_i596 < $_size592; ++$_i596)
-            {
-              $elem597 = null;
-              $xfer += $input->readString($elem597);
-              $this->partitionnames []= $elem597;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size578 = 0;
-            $_etype581 = 0;
-            $xfer += $input->readListBegin($_etype581, $_size578);
-            for ($_i582 = 0; $_i582 < $_size578; ++$_i582)
-            {
-              $elem583 = null;
-              $xfer += $input->readString($elem583);
-              $this->partitionnames []= $elem583;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size583 = 0;
-            $_etype586 = 0;
-            $xfer += $input->readListBegin($_etype586, $_size583);
-            for ($_i587 = 0; $_i587 < $_size583; ++$_i587)
-            {
-              $elem588 = null;
-              $xfer += $input->readString($elem588);
-              $this->partitionnames []= $elem588;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem602 = null;
-              $xfer += $input->readString($elem602);
-              $this->partitionnames []= $elem602;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem609 = null;
+              $xfer += $input->readString($elem609);
+              $this->partitionnames []= $elem609;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -21793,65 +20062,9 @@ class AddDynamicPartitions {
       {
         $output->writeListBegin(TType::STRING, count($this->partitionnames));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->partitionnames as $iter603)
+          foreach ($this->partitionnames as $iter610)
           {
-            $xfer += $output->writeString($iter603);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->partitionnames as $iter596)
-          {
-            $xfer += $output->writeString($iter596);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->partitionnames as $iter582)
-          {
-            $xfer += $output->writeString($iter582);
-=======
-          foreach ($this->partitionnames as $iter598)
-          {
-            $xfer += $output->writeString($iter598);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->partitionnames as $iter598)
-          {
-            $xfer += $output->writeString($iter598);
-=======
-          foreach ($this->partitionnames as $iter584)
-          {
-            $xfer += $output->writeString($iter584);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->partitionnames as $iter589)
-          {
-            $xfer += $output->writeString($iter589);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->partitionnames as $iter603)
-          {
-            $xfer += $output->writeString($iter603);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeString($iter610);
           }
         }
         $output->writeListEnd();
@@ -22175,108 +20388,17 @@ class CreationMetadata {
         case 4:
           if ($ftype == TType::SET) {
             $this->tablesUsed = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size604 = 0;
-            $_etype607 = 0;
-            $xfer += $input->readSetBegin($_etype607, $_size604);
-            for ($_i608 = 0; $_i608 < $_size604; ++$_i608)
-<<<<<<< HEAD
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size597 = 0;
-            $_etype600 = 0;
-            $xfer += $input->readSetBegin($_etype600, $_size597);
-            for ($_i601 = 0; $_i601 < $_size597; ++$_i601)
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size583 = 0;
-            $_etype586 = 0;
-            $xfer += $input->readSetBegin($_etype586, $_size583);
-            for ($_i587 = 0; $_i587 < $_size583; ++$_i587)
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
+            $_size611 = 0;
+            $_etype614 = 0;
+            $xfer += $input->readSetBegin($_etype614, $_size611);
+            for ($_i615 = 0; $_i615 < $_size611; ++$_i615)
             {
-              $elem609 = null;
-              $xfer += $input->readString($elem609);
-              if (is_scalar($elem609)) {
-                $this->tablesUsed[$elem609] = true;
+              $elem616 = null;
+              $xfer += $input->readString($elem616);
+              if (is_scalar($elem616)) {
+                $this->tablesUsed[$elem616] = true;
               } else {
-<<<<<<< HEAD
-                $this->tablesUsed []= $elem609;
-=======
-<<<<<<< HEAD
-                $this->tablesUsed []= $elem602;
-=======
-                $this->tablesUsed []= $elem588;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size599 = 0;
-            $_etype602 = 0;
-            $xfer += $input->readSetBegin($_etype602, $_size599);
-            for ($_i603 = 0; $_i603 < $_size599; ++$_i603)
-            {
-              $elem604 = null;
-              $xfer += $input->readString($elem604);
-              if (is_scalar($elem604)) {
-                $this->tablesUsed[$elem604] = true;
-              } else {
-                $this->tablesUsed []= $elem604;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size585 = 0;
-            $_etype588 = 0;
-            $xfer += $input->readSetBegin($_etype588, $_size585);
-            for ($_i589 = 0; $_i589 < $_size585; ++$_i589)
-=======
-            $_size590 = 0;
-            $_etype593 = 0;
-            $xfer += $input->readSetBegin($_etype593, $_size590);
-            for ($_i594 = 0; $_i594 < $_size590; ++$_i594)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            {
-              $elem609 = null;
-              $xfer += $input->readString($elem609);
-              if (is_scalar($elem609)) {
-                $this->tablesUsed[$elem609] = true;
-              } else {
-<<<<<<< HEAD
-<<<<<<< HEAD
-                $this->tablesUsed []= $elem590;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-                $this->tablesUsed []= $elem595;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-                $this->tablesUsed []= $elem609;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+                $this->tablesUsed []= $elem616;
               }
             }
             $xfer += $input->readSetEnd();
@@ -22327,82 +20449,12 @@ class CreationMetadata {
       {
         $output->writeSetBegin(TType::STRING, count($this->tablesUsed));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->tablesUsed as $iter610 => $iter611)
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->tablesUsed as $iter603 => $iter604)
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->tablesUsed as $iter589 => $iter590)
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
+          foreach ($this->tablesUsed as $iter617 => $iter618)
           {
-            if (is_scalar($iter611)) {
-            $xfer += $output->writeString($iter610);
+            if (is_scalar($iter618)) {
+            $xfer += $output->writeString($iter617);
             } else {
-<<<<<<< HEAD
-            $xfer += $output->writeString($iter611);
-=======
-<<<<<<< HEAD
-            $xfer += $output->writeString($iter604);
-=======
-            $xfer += $output->writeString($iter590);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-          foreach ($this->tablesUsed as $iter605 => $iter606)
-=======
-          foreach ($this->tablesUsed as $iter596 => $iter597)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-          {
-            if (is_scalar($iter597)) {
-            $xfer += $output->writeString($iter596);
-            } else {
-<<<<<<< HEAD
-            $xfer += $output->writeString($iter606);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-          foreach ($this->tablesUsed as $iter591 => $iter592)
-=======
-          foreach ($this->tablesUsed as $iter610 => $iter611)
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-          {
-            if (is_scalar($iter611)) {
-            $xfer += $output->writeString($iter610);
-            } else {
-<<<<<<< HEAD
-            $xfer += $output->writeString($iter592);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $xfer += $output->writeString($iter597);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            $xfer += $output->writeString($iter611);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeString($iter618);
             }
           }
         }
@@ -22807,106 +20859,15 @@ class NotificationEventResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->events = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size612 = 0;
-            $_etype615 = 0;
-            $xfer += $input->readListBegin($_etype615, $_size612);
-            for ($_i616 = 0; $_i616 < $_size612; ++$_i616)
-<<<<<<< HEAD
+            $_size619 = 0;
+            $_etype622 = 0;
+            $xfer += $input->readListBegin($_etype622, $_size619);
+            for ($_i623 = 0; $_i623 < $_size619; ++$_i623)
             {
-              $elem617 = null;
-              $elem617 = new \metastore\NotificationEvent();
-              $xfer += $elem617->read($input);
-              $this->events []= $elem617;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size605 = 0;
-            $_etype608 = 0;
-            $xfer += $input->readListBegin($_etype608, $_size605);
-            for ($_i609 = 0; $_i609 < $_size605; ++$_i609)
-            {
-              $elem610 = null;
-              $elem610 = new \metastore\NotificationEvent();
-              $xfer += $elem610->read($input);
-              $this->events []= $elem610;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size591 = 0;
-            $_etype594 = 0;
-            $xfer += $input->readListBegin($_etype594, $_size591);
-            for ($_i595 = 0; $_i595 < $_size591; ++$_i595)
-            {
-              $elem596 = null;
-              $elem596 = new \metastore\NotificationEvent();
-              $xfer += $elem596->read($input);
-              $this->events []= $elem596;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size607 = 0;
-            $_etype610 = 0;
-            $xfer += $input->readListBegin($_etype610, $_size607);
-            for ($_i611 = 0; $_i611 < $_size607; ++$_i611)
-            {
-              $elem612 = null;
-              $elem612 = new \metastore\NotificationEvent();
-              $xfer += $elem612->read($input);
-              $this->events []= $elem612;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size593 = 0;
-            $_etype596 = 0;
-            $xfer += $input->readListBegin($_etype596, $_size593);
-            for ($_i597 = 0; $_i597 < $_size593; ++$_i597)
-            {
-              $elem598 = null;
-              $elem598 = new \metastore\NotificationEvent();
-              $xfer += $elem598->read($input);
-              $this->events []= $elem598;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size598 = 0;
-            $_etype601 = 0;
-            $xfer += $input->readListBegin($_etype601, $_size598);
-            for ($_i602 = 0; $_i602 < $_size598; ++$_i602)
-            {
-              $elem603 = null;
-              $elem603 = new \metastore\NotificationEvent();
-              $xfer += $elem603->read($input);
-              $this->events []= $elem603;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem617 = null;
-              $elem617 = new \metastore\NotificationEvent();
-              $xfer += $elem617->read($input);
-              $this->events []= $elem617;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem624 = null;
+              $elem624 = new \metastore\NotificationEvent();
+              $xfer += $elem624->read($input);
+              $this->events []= $elem624;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -22934,65 +20895,9 @@ class NotificationEventResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->events));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->events as $iter618)
+          foreach ($this->events as $iter625)
           {
-            $xfer += $iter618->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->events as $iter611)
-          {
-            $xfer += $iter611->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->events as $iter597)
-          {
-            $xfer += $iter597->write($output);
-=======
-          foreach ($this->events as $iter613)
-          {
-            $xfer += $iter613->write($output);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->events as $iter613)
-          {
-            $xfer += $iter613->write($output);
-=======
-          foreach ($this->events as $iter599)
-          {
-            $xfer += $iter599->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->events as $iter604)
-          {
-            $xfer += $iter604->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->events as $iter618)
-          {
-            $xfer += $iter618->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $iter625->write($output);
           }
         }
         $output->writeListEnd();
@@ -23360,99 +21265,14 @@ class InsertEventRequestData {
         case 2:
           if ($ftype == TType::LST) {
             $this->filesAdded = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size619 = 0;
-            $_etype622 = 0;
-            $xfer += $input->readListBegin($_etype622, $_size619);
-            for ($_i623 = 0; $_i623 < $_size619; ++$_i623)
-<<<<<<< HEAD
+            $_size626 = 0;
+            $_etype629 = 0;
+            $xfer += $input->readListBegin($_etype629, $_size626);
+            for ($_i630 = 0; $_i630 < $_size626; ++$_i630)
             {
-              $elem624 = null;
-              $xfer += $input->readString($elem624);
-              $this->filesAdded []= $elem624;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size612 = 0;
-            $_etype615 = 0;
-            $xfer += $input->readListBegin($_etype615, $_size612);
-            for ($_i616 = 0; $_i616 < $_size612; ++$_i616)
-            {
-              $elem617 = null;
-              $xfer += $input->readString($elem617);
-              $this->filesAdded []= $elem617;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size598 = 0;
-            $_etype601 = 0;
-            $xfer += $input->readListBegin($_etype601, $_size598);
-            for ($_i602 = 0; $_i602 < $_size598; ++$_i602)
-            {
-              $elem603 = null;
-              $xfer += $input->readString($elem603);
-              $this->filesAdded []= $elem603;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size614 = 0;
-            $_etype617 = 0;
-            $xfer += $input->readListBegin($_etype617, $_size614);
-            for ($_i618 = 0; $_i618 < $_size614; ++$_i618)
-            {
-              $elem619 = null;
-              $xfer += $input->readString($elem619);
-              $this->filesAdded []= $elem619;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size600 = 0;
-            $_etype603 = 0;
-            $xfer += $input->readListBegin($_etype603, $_size600);
-            for ($_i604 = 0; $_i604 < $_size600; ++$_i604)
-            {
-              $elem605 = null;
-              $xfer += $input->readString($elem605);
-              $this->filesAdded []= $elem605;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size605 = 0;
-            $_etype608 = 0;
-            $xfer += $input->readListBegin($_etype608, $_size605);
-            for ($_i609 = 0; $_i609 < $_size605; ++$_i609)
-            {
-              $elem610 = null;
-              $xfer += $input->readString($elem610);
-              $this->filesAdded []= $elem610;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem624 = null;
-              $xfer += $input->readString($elem624);
-              $this->filesAdded []= $elem624;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem631 = null;
+              $xfer += $input->readString($elem631);
+              $this->filesAdded []= $elem631;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -23462,99 +21282,14 @@ class InsertEventRequestData {
         case 3:
           if ($ftype == TType::LST) {
             $this->filesAddedChecksum = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size625 = 0;
-            $_etype628 = 0;
-            $xfer += $input->readListBegin($_etype628, $_size625);
-            for ($_i629 = 0; $_i629 < $_size625; ++$_i629)
-<<<<<<< HEAD
+            $_size632 = 0;
+            $_etype635 = 0;
+            $xfer += $input->readListBegin($_etype635, $_size632);
+            for ($_i636 = 0; $_i636 < $_size632; ++$_i636)
             {
-              $elem630 = null;
-              $xfer += $input->readString($elem630);
-              $this->filesAddedChecksum []= $elem630;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size618 = 0;
-            $_etype621 = 0;
-            $xfer += $input->readListBegin($_etype621, $_size618);
-            for ($_i622 = 0; $_i622 < $_size618; ++$_i622)
-            {
-              $elem623 = null;
-              $xfer += $input->readString($elem623);
-              $this->filesAddedChecksum []= $elem623;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size604 = 0;
-            $_etype607 = 0;
-            $xfer += $input->readListBegin($_etype607, $_size604);
-            for ($_i608 = 0; $_i608 < $_size604; ++$_i608)
-            {
-              $elem609 = null;
-              $xfer += $input->readString($elem609);
-              $this->filesAddedChecksum []= $elem609;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size620 = 0;
-            $_etype623 = 0;
-            $xfer += $input->readListBegin($_etype623, $_size620);
-            for ($_i624 = 0; $_i624 < $_size620; ++$_i624)
-            {
-              $elem625 = null;
-              $xfer += $input->readString($elem625);
-              $this->filesAddedChecksum []= $elem625;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size606 = 0;
-            $_etype609 = 0;
-            $xfer += $input->readListBegin($_etype609, $_size606);
-            for ($_i610 = 0; $_i610 < $_size606; ++$_i610)
-            {
-              $elem611 = null;
-              $xfer += $input->readString($elem611);
-              $this->filesAddedChecksum []= $elem611;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size611 = 0;
-            $_etype614 = 0;
-            $xfer += $input->readListBegin($_etype614, $_size611);
-            for ($_i615 = 0; $_i615 < $_size611; ++$_i615)
-            {
-              $elem616 = null;
-              $xfer += $input->readString($elem616);
-              $this->filesAddedChecksum []= $elem616;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem630 = null;
-              $xfer += $input->readString($elem630);
-              $this->filesAddedChecksum []= $elem630;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem637 = null;
+              $xfer += $input->readString($elem637);
+              $this->filesAddedChecksum []= $elem637;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -23587,65 +21322,9 @@ class InsertEventRequestData {
       {
         $output->writeListBegin(TType::STRING, count($this->filesAdded));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->filesAdded as $iter631)
+          foreach ($this->filesAdded as $iter638)
           {
-            $xfer += $output->writeString($iter631);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->filesAdded as $iter624)
-          {
-            $xfer += $output->writeString($iter624);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->filesAdded as $iter610)
-          {
-            $xfer += $output->writeString($iter610);
-=======
-          foreach ($this->filesAdded as $iter626)
-          {
-            $xfer += $output->writeString($iter626);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->filesAdded as $iter626)
-          {
-            $xfer += $output->writeString($iter626);
-=======
-          foreach ($this->filesAdded as $iter612)
-          {
-            $xfer += $output->writeString($iter612);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->filesAdded as $iter617)
-          {
-            $xfer += $output->writeString($iter617);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->filesAdded as $iter631)
-          {
-            $xfer += $output->writeString($iter631);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeString($iter638);
           }
         }
         $output->writeListEnd();
@@ -23660,65 +21339,9 @@ class InsertEventRequestData {
       {
         $output->writeListBegin(TType::STRING, count($this->filesAddedChecksum));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->filesAddedChecksum as $iter632)
+          foreach ($this->filesAddedChecksum as $iter639)
           {
-            $xfer += $output->writeString($iter632);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->filesAddedChecksum as $iter625)
-          {
-            $xfer += $output->writeString($iter625);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->filesAddedChecksum as $iter611)
-          {
-            $xfer += $output->writeString($iter611);
-=======
-          foreach ($this->filesAddedChecksum as $iter627)
-          {
-            $xfer += $output->writeString($iter627);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->filesAddedChecksum as $iter627)
-          {
-            $xfer += $output->writeString($iter627);
-=======
-          foreach ($this->filesAddedChecksum as $iter613)
-          {
-            $xfer += $output->writeString($iter613);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->filesAddedChecksum as $iter618)
-          {
-            $xfer += $output->writeString($iter618);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->filesAddedChecksum as $iter632)
-          {
-            $xfer += $output->writeString($iter632);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeString($iter639);
           }
         }
         $output->writeListEnd();
@@ -23947,99 +21570,14 @@ class FireEventRequest {
         case 5:
           if ($ftype == TType::LST) {
             $this->partitionVals = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size633 = 0;
-            $_etype636 = 0;
-            $xfer += $input->readListBegin($_etype636, $_size633);
-            for ($_i637 = 0; $_i637 < $_size633; ++$_i637)
-<<<<<<< HEAD
+            $_size640 = 0;
+            $_etype643 = 0;
+            $xfer += $input->readListBegin($_etype643, $_size640);
+            for ($_i644 = 0; $_i644 < $_size640; ++$_i644)
             {
-              $elem638 = null;
-              $xfer += $input->readString($elem638);
-              $this->partitionVals []= $elem638;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size626 = 0;
-            $_etype629 = 0;
-            $xfer += $input->readListBegin($_etype629, $_size626);
-            for ($_i630 = 0; $_i630 < $_size626; ++$_i630)
-            {
-              $elem631 = null;
-              $xfer += $input->readString($elem631);
-              $this->partitionVals []= $elem631;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size612 = 0;
-            $_etype615 = 0;
-            $xfer += $input->readListBegin($_etype615, $_size612);
-            for ($_i616 = 0; $_i616 < $_size612; ++$_i616)
-            {
-              $elem617 = null;
-              $xfer += $input->readString($elem617);
-              $this->partitionVals []= $elem617;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size628 = 0;
-            $_etype631 = 0;
-            $xfer += $input->readListBegin($_etype631, $_size628);
-            for ($_i632 = 0; $_i632 < $_size628; ++$_i632)
-            {
-              $elem633 = null;
-              $xfer += $input->readString($elem633);
-              $this->partitionVals []= $elem633;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size614 = 0;
-            $_etype617 = 0;
-            $xfer += $input->readListBegin($_etype617, $_size614);
-            for ($_i618 = 0; $_i618 < $_size614; ++$_i618)
-            {
-              $elem619 = null;
-              $xfer += $input->readString($elem619);
-              $this->partitionVals []= $elem619;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size619 = 0;
-            $_etype622 = 0;
-            $xfer += $input->readListBegin($_etype622, $_size619);
-            for ($_i623 = 0; $_i623 < $_size619; ++$_i623)
-            {
-              $elem624 = null;
-              $xfer += $input->readString($elem624);
-              $this->partitionVals []= $elem624;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem638 = null;
-              $xfer += $input->readString($elem638);
-              $this->partitionVals []= $elem638;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem645 = null;
+              $xfer += $input->readString($elem645);
+              $this->partitionVals []= $elem645;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -24097,65 +21635,9 @@ class FireEventRequest {
       {
         $output->writeListBegin(TType::STRING, count($this->partitionVals));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->partitionVals as $iter639)
+          foreach ($this->partitionVals as $iter646)
           {
-            $xfer += $output->writeString($iter639);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->partitionVals as $iter632)
-          {
-            $xfer += $output->writeString($iter632);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->partitionVals as $iter618)
-          {
-            $xfer += $output->writeString($iter618);
-=======
-          foreach ($this->partitionVals as $iter634)
-          {
-            $xfer += $output->writeString($iter634);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->partitionVals as $iter634)
-          {
-            $xfer += $output->writeString($iter634);
-=======
-          foreach ($this->partitionVals as $iter620)
-          {
-            $xfer += $output->writeString($iter620);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->partitionVals as $iter625)
-          {
-            $xfer += $output->writeString($iter625);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->partitionVals as $iter639)
-          {
-            $xfer += $output->writeString($iter639);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeString($iter646);
           }
         }
         $output->writeListEnd();
@@ -24388,126 +21870,18 @@ class GetFileMetadataByExprResult {
         case 1:
           if ($ftype == TType::MAP) {
             $this->metadata = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size640 = 0;
-            $_ktype641 = 0;
-            $_vtype642 = 0;
-            $xfer += $input->readMapBegin($_ktype641, $_vtype642, $_size640);
-            for ($_i644 = 0; $_i644 < $_size640; ++$_i644)
-<<<<<<< HEAD
+            $_size647 = 0;
+            $_ktype648 = 0;
+            $_vtype649 = 0;
+            $xfer += $input->readMapBegin($_ktype648, $_vtype649, $_size647);
+            for ($_i651 = 0; $_i651 < $_size647; ++$_i651)
             {
-              $key645 = 0;
-              $val646 = new \metastore\MetadataPpdResult();
-              $xfer += $input->readI64($key645);
-              $val646 = new \metastore\MetadataPpdResult();
-              $xfer += $val646->read($input);
-              $this->metadata[$key645] = $val646;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size633 = 0;
-            $_ktype634 = 0;
-            $_vtype635 = 0;
-            $xfer += $input->readMapBegin($_ktype634, $_vtype635, $_size633);
-            for ($_i637 = 0; $_i637 < $_size633; ++$_i637)
-            {
-              $key638 = 0;
-              $val639 = new \metastore\MetadataPpdResult();
-              $xfer += $input->readI64($key638);
-              $val639 = new \metastore\MetadataPpdResult();
-              $xfer += $val639->read($input);
-              $this->metadata[$key638] = $val639;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size619 = 0;
-            $_ktype620 = 0;
-            $_vtype621 = 0;
-            $xfer += $input->readMapBegin($_ktype620, $_vtype621, $_size619);
-            for ($_i623 = 0; $_i623 < $_size619; ++$_i623)
-            {
-              $key624 = 0;
-              $val625 = new \metastore\MetadataPpdResult();
-              $xfer += $input->readI64($key624);
-              $val625 = new \metastore\MetadataPpdResult();
-              $xfer += $val625->read($input);
-              $this->metadata[$key624] = $val625;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size635 = 0;
-            $_ktype636 = 0;
-            $_vtype637 = 0;
-            $xfer += $input->readMapBegin($_ktype636, $_vtype637, $_size635);
-            for ($_i639 = 0; $_i639 < $_size635; ++$_i639)
-            {
-              $key640 = 0;
-              $val641 = new \metastore\MetadataPpdResult();
-              $xfer += $input->readI64($key640);
-              $val641 = new \metastore\MetadataPpdResult();
-              $xfer += $val641->read($input);
-              $this->metadata[$key640] = $val641;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size621 = 0;
-            $_ktype622 = 0;
-            $_vtype623 = 0;
-            $xfer += $input->readMapBegin($_ktype622, $_vtype623, $_size621);
-            for ($_i625 = 0; $_i625 < $_size621; ++$_i625)
-            {
-              $key626 = 0;
-              $val627 = new \metastore\MetadataPpdResult();
-              $xfer += $input->readI64($key626);
-              $val627 = new \metastore\MetadataPpdResult();
-              $xfer += $val627->read($input);
-              $this->metadata[$key626] = $val627;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size626 = 0;
-            $_ktype627 = 0;
-            $_vtype628 = 0;
-            $xfer += $input->readMapBegin($_ktype627, $_vtype628, $_size626);
-            for ($_i630 = 0; $_i630 < $_size626; ++$_i630)
-            {
-              $key631 = 0;
-              $val632 = new \metastore\MetadataPpdResult();
-              $xfer += $input->readI64($key631);
-              $val632 = new \metastore\MetadataPpdResult();
-              $xfer += $val632->read($input);
-              $this->metadata[$key631] = $val632;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $key645 = 0;
-              $val646 = new \metastore\MetadataPpdResult();
-              $xfer += $input->readI64($key645);
-              $val646 = new \metastore\MetadataPpdResult();
-              $xfer += $val646->read($input);
-              $this->metadata[$key645] = $val646;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $key652 = 0;
+              $val653 = new \metastore\MetadataPpdResult();
+              $xfer += $input->readI64($key652);
+              $val653 = new \metastore\MetadataPpdResult();
+              $xfer += $val653->read($input);
+              $this->metadata[$key652] = $val653;
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -24542,72 +21916,10 @@ class GetFileMetadataByExprResult {
       {
         $output->writeMapBegin(TType::I64, TType::STRUCT, count($this->metadata));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->metadata as $kiter647 => $viter648)
+          foreach ($this->metadata as $kiter654 => $viter655)
           {
-            $xfer += $output->writeI64($kiter647);
-            $xfer += $viter648->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->metadata as $kiter640 => $viter641)
-          {
-            $xfer += $output->writeI64($kiter640);
-            $xfer += $viter641->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->metadata as $kiter626 => $viter627)
-          {
-            $xfer += $output->writeI64($kiter626);
-            $xfer += $viter627->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-          foreach ($this->metadata as $kiter642 => $viter643)
-          {
-            $xfer += $output->writeI64($kiter642);
-            $xfer += $viter643->write($output);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-          foreach ($this->metadata as $kiter628 => $viter629)
-          {
-            $xfer += $output->writeI64($kiter628);
-            $xfer += $viter629->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->metadata as $kiter633 => $viter634)
-          {
-            $xfer += $output->writeI64($kiter633);
-            $xfer += $viter634->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->metadata as $kiter647 => $viter648)
-          {
-            $xfer += $output->writeI64($kiter647);
-            $xfer += $viter648->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeI64($kiter654);
+            $xfer += $viter655->write($output);
           }
         }
         $output->writeMapEnd();
@@ -24709,99 +22021,14 @@ class GetFileMetadataByExprRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->fileIds = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size649 = 0;
-            $_etype652 = 0;
-            $xfer += $input->readListBegin($_etype652, $_size649);
-            for ($_i653 = 0; $_i653 < $_size649; ++$_i653)
-<<<<<<< HEAD
+            $_size656 = 0;
+            $_etype659 = 0;
+            $xfer += $input->readListBegin($_etype659, $_size656);
+            for ($_i660 = 0; $_i660 < $_size656; ++$_i660)
             {
-              $elem654 = null;
-              $xfer += $input->readI64($elem654);
-              $this->fileIds []= $elem654;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size642 = 0;
-            $_etype645 = 0;
-            $xfer += $input->readListBegin($_etype645, $_size642);
-            for ($_i646 = 0; $_i646 < $_size642; ++$_i646)
-            {
-              $elem647 = null;
-              $xfer += $input->readI64($elem647);
-              $this->fileIds []= $elem647;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size628 = 0;
-            $_etype631 = 0;
-            $xfer += $input->readListBegin($_etype631, $_size628);
-            for ($_i632 = 0; $_i632 < $_size628; ++$_i632)
-            {
-              $elem633 = null;
-              $xfer += $input->readI64($elem633);
-              $this->fileIds []= $elem633;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size644 = 0;
-            $_etype647 = 0;
-            $xfer += $input->readListBegin($_etype647, $_size644);
-            for ($_i648 = 0; $_i648 < $_size644; ++$_i648)
-            {
-              $elem649 = null;
-              $xfer += $input->readI64($elem649);
-              $this->fileIds []= $elem649;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size630 = 0;
-            $_etype633 = 0;
-            $xfer += $input->readListBegin($_etype633, $_size630);
-            for ($_i634 = 0; $_i634 < $_size630; ++$_i634)
-            {
-              $elem635 = null;
-              $xfer += $input->readI64($elem635);
-              $this->fileIds []= $elem635;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size635 = 0;
-            $_etype638 = 0;
-            $xfer += $input->readListBegin($_etype638, $_size635);
-            for ($_i639 = 0; $_i639 < $_size635; ++$_i639)
-            {
-              $elem640 = null;
-              $xfer += $input->readI64($elem640);
-              $this->fileIds []= $elem640;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem654 = null;
-              $xfer += $input->readI64($elem654);
-              $this->fileIds []= $elem654;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem661 = null;
+              $xfer += $input->readI64($elem661);
+              $this->fileIds []= $elem661;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -24850,65 +22077,9 @@ class GetFileMetadataByExprRequest {
       {
         $output->writeListBegin(TType::I64, count($this->fileIds));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->fileIds as $iter655)
+          foreach ($this->fileIds as $iter662)
           {
-            $xfer += $output->writeI64($iter655);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->fileIds as $iter648)
-          {
-            $xfer += $output->writeI64($iter648);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->fileIds as $iter634)
-          {
-            $xfer += $output->writeI64($iter634);
-=======
-          foreach ($this->fileIds as $iter650)
-          {
-            $xfer += $output->writeI64($iter650);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->fileIds as $iter650)
-          {
-            $xfer += $output->writeI64($iter650);
-=======
-          foreach ($this->fileIds as $iter636)
-          {
-            $xfer += $output->writeI64($iter636);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->fileIds as $iter641)
-          {
-            $xfer += $output->writeI64($iter641);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->fileIds as $iter655)
-          {
-            $xfer += $output->writeI64($iter655);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeI64($iter662);
           }
         }
         $output->writeListEnd();
@@ -25002,119 +22173,17 @@ class GetFileMetadataResult {
         case 1:
           if ($ftype == TType::MAP) {
             $this->metadata = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size656 = 0;
-            $_ktype657 = 0;
-            $_vtype658 = 0;
-            $xfer += $input->readMapBegin($_ktype657, $_vtype658, $_size656);
-            for ($_i660 = 0; $_i660 < $_size656; ++$_i660)
-<<<<<<< HEAD
+            $_size663 = 0;
+            $_ktype664 = 0;
+            $_vtype665 = 0;
+            $xfer += $input->readMapBegin($_ktype664, $_vtype665, $_size663);
+            for ($_i667 = 0; $_i667 < $_size663; ++$_i667)
             {
-              $key661 = 0;
-              $val662 = '';
-              $xfer += $input->readI64($key661);
-              $xfer += $input->readString($val662);
-              $this->metadata[$key661] = $val662;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size649 = 0;
-            $_ktype650 = 0;
-            $_vtype651 = 0;
-            $xfer += $input->readMapBegin($_ktype650, $_vtype651, $_size649);
-            for ($_i653 = 0; $_i653 < $_size649; ++$_i653)
-            {
-              $key654 = 0;
-              $val655 = '';
-              $xfer += $input->readI64($key654);
-              $xfer += $input->readString($val655);
-              $this->metadata[$key654] = $val655;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size635 = 0;
-            $_ktype636 = 0;
-            $_vtype637 = 0;
-            $xfer += $input->readMapBegin($_ktype636, $_vtype637, $_size635);
-            for ($_i639 = 0; $_i639 < $_size635; ++$_i639)
-            {
-              $key640 = 0;
-              $val641 = '';
-              $xfer += $input->readI64($key640);
-              $xfer += $input->readString($val641);
-              $this->metadata[$key640] = $val641;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size651 = 0;
-            $_ktype652 = 0;
-            $_vtype653 = 0;
-            $xfer += $input->readMapBegin($_ktype652, $_vtype653, $_size651);
-            for ($_i655 = 0; $_i655 < $_size651; ++$_i655)
-            {
-              $key656 = 0;
-              $val657 = '';
-              $xfer += $input->readI64($key656);
-              $xfer += $input->readString($val657);
-              $this->metadata[$key656] = $val657;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size637 = 0;
-            $_ktype638 = 0;
-            $_vtype639 = 0;
-            $xfer += $input->readMapBegin($_ktype638, $_vtype639, $_size637);
-            for ($_i641 = 0; $_i641 < $_size637; ++$_i641)
-            {
-              $key642 = 0;
-              $val643 = '';
-              $xfer += $input->readI64($key642);
-              $xfer += $input->readString($val643);
-              $this->metadata[$key642] = $val643;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size642 = 0;
-            $_ktype643 = 0;
-            $_vtype644 = 0;
-            $xfer += $input->readMapBegin($_ktype643, $_vtype644, $_size642);
-            for ($_i646 = 0; $_i646 < $_size642; ++$_i646)
-            {
-              $key647 = 0;
-              $val648 = '';
-              $xfer += $input->readI64($key647);
-              $xfer += $input->readString($val648);
-              $this->metadata[$key647] = $val648;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $key661 = 0;
-              $val662 = '';
-              $xfer += $input->readI64($key661);
-              $xfer += $input->readString($val662);
-              $this->metadata[$key661] = $val662;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $key668 = 0;
+              $val669 = '';
+              $xfer += $input->readI64($key668);
+              $xfer += $input->readString($val669);
+              $this->metadata[$key668] = $val669;
             }
             $xfer += $input->readMapEnd();
           } else {
@@ -25149,72 +22218,10 @@ class GetFileMetadataResult {
       {
         $output->writeMapBegin(TType::I64, TType::STRING, count($this->metadata));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->metadata as $kiter663 => $viter664)
+          foreach ($this->metadata as $kiter670 => $viter671)
           {
-            $xfer += $output->writeI64($kiter663);
-            $xfer += $output->writeString($viter664);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->metadata as $kiter656 => $viter657)
-          {
-            $xfer += $output->writeI64($kiter656);
-            $xfer += $output->writeString($viter657);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->metadata as $kiter642 => $viter643)
-          {
-            $xfer += $output->writeI64($kiter642);
-            $xfer += $output->writeString($viter643);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-          foreach ($this->metadata as $kiter658 => $viter659)
-          {
-            $xfer += $output->writeI64($kiter658);
-            $xfer += $output->writeString($viter659);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-          foreach ($this->metadata as $kiter644 => $viter645)
-          {
-            $xfer += $output->writeI64($kiter644);
-            $xfer += $output->writeString($viter645);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->metadata as $kiter649 => $viter650)
-          {
-            $xfer += $output->writeI64($kiter649);
-            $xfer += $output->writeString($viter650);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->metadata as $kiter663 => $viter664)
-          {
-            $xfer += $output->writeI64($kiter663);
-            $xfer += $output->writeString($viter664);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeI64($kiter670);
+            $xfer += $output->writeString($viter671);
           }
         }
         $output->writeMapEnd();
@@ -25283,99 +22290,14 @@ class GetFileMetadataRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->fileIds = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size665 = 0;
-            $_etype668 = 0;
-            $xfer += $input->readListBegin($_etype668, $_size665);
-            for ($_i669 = 0; $_i669 < $_size665; ++$_i669)
-<<<<<<< HEAD
+            $_size672 = 0;
+            $_etype675 = 0;
+            $xfer += $input->readListBegin($_etype675, $_size672);
+            for ($_i676 = 0; $_i676 < $_size672; ++$_i676)
             {
-              $elem670 = null;
-              $xfer += $input->readI64($elem670);
-              $this->fileIds []= $elem670;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size658 = 0;
-            $_etype661 = 0;
-            $xfer += $input->readListBegin($_etype661, $_size658);
-            for ($_i662 = 0; $_i662 < $_size658; ++$_i662)
-            {
-              $elem663 = null;
-              $xfer += $input->readI64($elem663);
-              $this->fileIds []= $elem663;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size644 = 0;
-            $_etype647 = 0;
-            $xfer += $input->readListBegin($_etype647, $_size644);
-            for ($_i648 = 0; $_i648 < $_size644; ++$_i648)
-            {
-              $elem649 = null;
-              $xfer += $input->readI64($elem649);
-              $this->fileIds []= $elem649;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size660 = 0;
-            $_etype663 = 0;
-            $xfer += $input->readListBegin($_etype663, $_size660);
-            for ($_i664 = 0; $_i664 < $_size660; ++$_i664)
-            {
-              $elem665 = null;
-              $xfer += $input->readI64($elem665);
-              $this->fileIds []= $elem665;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size646 = 0;
-            $_etype649 = 0;
-            $xfer += $input->readListBegin($_etype649, $_size646);
-            for ($_i650 = 0; $_i650 < $_size646; ++$_i650)
-            {
-              $elem651 = null;
-              $xfer += $input->readI64($elem651);
-              $this->fileIds []= $elem651;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size651 = 0;
-            $_etype654 = 0;
-            $xfer += $input->readListBegin($_etype654, $_size651);
-            for ($_i655 = 0; $_i655 < $_size651; ++$_i655)
-            {
-              $elem656 = null;
-              $xfer += $input->readI64($elem656);
-              $this->fileIds []= $elem656;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem670 = null;
-              $xfer += $input->readI64($elem670);
-              $this->fileIds []= $elem670;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem677 = null;
+              $xfer += $input->readI64($elem677);
+              $this->fileIds []= $elem677;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -25403,65 +22325,9 @@ class GetFileMetadataRequest {
       {
         $output->writeListBegin(TType::I64, count($this->fileIds));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->fileIds as $iter671)
+          foreach ($this->fileIds as $iter678)
           {
-            $xfer += $output->writeI64($iter671);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->fileIds as $iter664)
-          {
-            $xfer += $output->writeI64($iter664);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->fileIds as $iter650)
-          {
-            $xfer += $output->writeI64($iter650);
-=======
-          foreach ($this->fileIds as $iter666)
-          {
-            $xfer += $output->writeI64($iter666);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->fileIds as $iter666)
-          {
-            $xfer += $output->writeI64($iter666);
-=======
-          foreach ($this->fileIds as $iter652)
-          {
-            $xfer += $output->writeI64($iter652);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->fileIds as $iter657)
-          {
-            $xfer += $output->writeI64($iter657);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->fileIds as $iter671)
-          {
-            $xfer += $output->writeI64($iter671);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeI64($iter678);
           }
         }
         $output->writeListEnd();
@@ -25601,99 +22467,14 @@ class PutFileMetadataRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->fileIds = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size672 = 0;
-            $_etype675 = 0;
-            $xfer += $input->readListBegin($_etype675, $_size672);
-            for ($_i676 = 0; $_i676 < $_size672; ++$_i676)
-<<<<<<< HEAD
+            $_size679 = 0;
+            $_etype682 = 0;
+            $xfer += $input->readListBegin($_etype682, $_size679);
+            for ($_i683 = 0; $_i683 < $_size679; ++$_i683)
             {
-              $elem677 = null;
-              $xfer += $input->readI64($elem677);
-              $this->fileIds []= $elem677;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size665 = 0;
-            $_etype668 = 0;
-            $xfer += $input->readListBegin($_etype668, $_size665);
-            for ($_i669 = 0; $_i669 < $_size665; ++$_i669)
-            {
-              $elem670 = null;
-              $xfer += $input->readI64($elem670);
-              $this->fileIds []= $elem670;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size651 = 0;
-            $_etype654 = 0;
-            $xfer += $input->readListBegin($_etype654, $_size651);
-            for ($_i655 = 0; $_i655 < $_size651; ++$_i655)
-            {
-              $elem656 = null;
-              $xfer += $input->readI64($elem656);
-              $this->fileIds []= $elem656;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size667 = 0;
-            $_etype670 = 0;
-            $xfer += $input->readListBegin($_etype670, $_size667);
-            for ($_i671 = 0; $_i671 < $_size667; ++$_i671)
-            {
-              $elem672 = null;
-              $xfer += $input->readI64($elem672);
-              $this->fileIds []= $elem672;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size653 = 0;
-            $_etype656 = 0;
-            $xfer += $input->readListBegin($_etype656, $_size653);
-            for ($_i657 = 0; $_i657 < $_size653; ++$_i657)
-            {
-              $elem658 = null;
-              $xfer += $input->readI64($elem658);
-              $this->fileIds []= $elem658;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size658 = 0;
-            $_etype661 = 0;
-            $xfer += $input->readListBegin($_etype661, $_size658);
-            for ($_i662 = 0; $_i662 < $_size658; ++$_i662)
-            {
-              $elem663 = null;
-              $xfer += $input->readI64($elem663);
-              $this->fileIds []= $elem663;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem677 = null;
-              $xfer += $input->readI64($elem677);
-              $this->fileIds []= $elem677;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem684 = null;
+              $xfer += $input->readI64($elem684);
+              $this->fileIds []= $elem684;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -25703,99 +22484,14 @@ class PutFileMetadataRequest {
         case 2:
           if ($ftype == TType::LST) {
             $this->metadata = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size678 = 0;
-            $_etype681 = 0;
-            $xfer += $input->readListBegin($_etype681, $_size678);
-            for ($_i682 = 0; $_i682 < $_size678; ++$_i682)
-<<<<<<< HEAD
+            $_size685 = 0;
+            $_etype688 = 0;
+            $xfer += $input->readListBegin($_etype688, $_size685);
+            for ($_i689 = 0; $_i689 < $_size685; ++$_i689)
             {
-              $elem683 = null;
-              $xfer += $input->readString($elem683);
-              $this->metadata []= $elem683;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size671 = 0;
-            $_etype674 = 0;
-            $xfer += $input->readListBegin($_etype674, $_size671);
-            for ($_i675 = 0; $_i675 < $_size671; ++$_i675)
-            {
-              $elem676 = null;
-              $xfer += $input->readString($elem676);
-              $this->metadata []= $elem676;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size657 = 0;
-            $_etype660 = 0;
-            $xfer += $input->readListBegin($_etype660, $_size657);
-            for ($_i661 = 0; $_i661 < $_size657; ++$_i661)
-            {
-              $elem662 = null;
-              $xfer += $input->readString($elem662);
-              $this->metadata []= $elem662;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size673 = 0;
-            $_etype676 = 0;
-            $xfer += $input->readListBegin($_etype676, $_size673);
-            for ($_i677 = 0; $_i677 < $_size673; ++$_i677)
-            {
-              $elem678 = null;
-              $xfer += $input->readString($elem678);
-              $this->metadata []= $elem678;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size659 = 0;
-            $_etype662 = 0;
-            $xfer += $input->readListBegin($_etype662, $_size659);
-            for ($_i663 = 0; $_i663 < $_size659; ++$_i663)
-            {
-              $elem664 = null;
-              $xfer += $input->readString($elem664);
-              $this->metadata []= $elem664;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size664 = 0;
-            $_etype667 = 0;
-            $xfer += $input->readListBegin($_etype667, $_size664);
-            for ($_i668 = 0; $_i668 < $_size664; ++$_i668)
-            {
-              $elem669 = null;
-              $xfer += $input->readString($elem669);
-              $this->metadata []= $elem669;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem683 = null;
-              $xfer += $input->readString($elem683);
-              $this->metadata []= $elem683;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem690 = null;
+              $xfer += $input->readString($elem690);
+              $this->metadata []= $elem690;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -25830,65 +22526,9 @@ class PutFileMetadataRequest {
       {
         $output->writeListBegin(TType::I64, count($this->fileIds));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->fileIds as $iter684)
+          foreach ($this->fileIds as $iter691)
           {
-            $xfer += $output->writeI64($iter684);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->fileIds as $iter677)
-          {
-            $xfer += $output->writeI64($iter677);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->fileIds as $iter663)
-          {
-            $xfer += $output->writeI64($iter663);
-=======
-          foreach ($this->fileIds as $iter679)
-          {
-            $xfer += $output->writeI64($iter679);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->fileIds as $iter679)
-          {
-            $xfer += $output->writeI64($iter679);
-=======
-          foreach ($this->fileIds as $iter665)
-          {
-            $xfer += $output->writeI64($iter665);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->fileIds as $iter670)
-          {
-            $xfer += $output->writeI64($iter670);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->fileIds as $iter684)
-          {
-            $xfer += $output->writeI64($iter684);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeI64($iter691);
           }
         }
         $output->writeListEnd();
@@ -25903,65 +22543,9 @@ class PutFileMetadataRequest {
       {
         $output->writeListBegin(TType::STRING, count($this->metadata));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->metadata as $iter685)
+          foreach ($this->metadata as $iter692)
           {
-            $xfer += $output->writeString($iter685);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->metadata as $iter678)
-          {
-            $xfer += $output->writeString($iter678);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->metadata as $iter664)
-          {
-            $xfer += $output->writeString($iter664);
-=======
-          foreach ($this->metadata as $iter680)
-          {
-            $xfer += $output->writeString($iter680);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->metadata as $iter680)
-          {
-            $xfer += $output->writeString($iter680);
-=======
-          foreach ($this->metadata as $iter666)
-          {
-            $xfer += $output->writeString($iter666);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->metadata as $iter671)
-          {
-            $xfer += $output->writeString($iter671);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->metadata as $iter685)
-          {
-            $xfer += $output->writeString($iter685);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeString($iter692);
           }
         }
         $output->writeListEnd();
@@ -26080,99 +22664,14 @@ class ClearFileMetadataRequest {
         case 1:
           if ($ftype == TType::LST) {
             $this->fileIds = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size686 = 0;
-            $_etype689 = 0;
-            $xfer += $input->readListBegin($_etype689, $_size686);
-            for ($_i690 = 0; $_i690 < $_size686; ++$_i690)
-<<<<<<< HEAD
+            $_size693 = 0;
+            $_etype696 = 0;
+            $xfer += $input->readListBegin($_etype696, $_size693);
+            for ($_i697 = 0; $_i697 < $_size693; ++$_i697)
             {
-              $elem691 = null;
-              $xfer += $input->readI64($elem691);
-              $this->fileIds []= $elem691;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size679 = 0;
-            $_etype682 = 0;
-            $xfer += $input->readListBegin($_etype682, $_size679);
-            for ($_i683 = 0; $_i683 < $_size679; ++$_i683)
-            {
-              $elem684 = null;
-              $xfer += $input->readI64($elem684);
-              $this->fileIds []= $elem684;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size665 = 0;
-            $_etype668 = 0;
-            $xfer += $input->readListBegin($_etype668, $_size665);
-            for ($_i669 = 0; $_i669 < $_size665; ++$_i669)
-            {
-              $elem670 = null;
-              $xfer += $input->readI64($elem670);
-              $this->fileIds []= $elem670;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size681 = 0;
-            $_etype684 = 0;
-            $xfer += $input->readListBegin($_etype684, $_size681);
-            for ($_i685 = 0; $_i685 < $_size681; ++$_i685)
-            {
-              $elem686 = null;
-              $xfer += $input->readI64($elem686);
-              $this->fileIds []= $elem686;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size667 = 0;
-            $_etype670 = 0;
-            $xfer += $input->readListBegin($_etype670, $_size667);
-            for ($_i671 = 0; $_i671 < $_size667; ++$_i671)
-            {
-              $elem672 = null;
-              $xfer += $input->readI64($elem672);
-              $this->fileIds []= $elem672;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size672 = 0;
-            $_etype675 = 0;
-            $xfer += $input->readListBegin($_etype675, $_size672);
-            for ($_i676 = 0; $_i676 < $_size672; ++$_i676)
-            {
-              $elem677 = null;
-              $xfer += $input->readI64($elem677);
-              $this->fileIds []= $elem677;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem691 = null;
-              $xfer += $input->readI64($elem691);
-              $this->fileIds []= $elem691;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem698 = null;
+              $xfer += $input->readI64($elem698);
+              $this->fileIds []= $elem698;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -26200,65 +22699,9 @@ class ClearFileMetadataRequest {
       {
         $output->writeListBegin(TType::I64, count($this->fileIds));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->fileIds as $iter692)
+          foreach ($this->fileIds as $iter699)
           {
-            $xfer += $output->writeI64($iter692);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->fileIds as $iter685)
-          {
-            $xfer += $output->writeI64($iter685);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->fileIds as $iter671)
-          {
-            $xfer += $output->writeI64($iter671);
-=======
-          foreach ($this->fileIds as $iter687)
-          {
-            $xfer += $output->writeI64($iter687);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->fileIds as $iter687)
-          {
-            $xfer += $output->writeI64($iter687);
-=======
-          foreach ($this->fileIds as $iter673)
-          {
-            $xfer += $output->writeI64($iter673);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->fileIds as $iter678)
-          {
-            $xfer += $output->writeI64($iter678);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->fileIds as $iter692)
-          {
-            $xfer += $output->writeI64($iter692);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeI64($iter699);
           }
         }
         $output->writeListEnd();
@@ -26542,106 +22985,15 @@ class GetAllFunctionsResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->functions = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size693 = 0;
-            $_etype696 = 0;
-            $xfer += $input->readListBegin($_etype696, $_size693);
-            for ($_i697 = 0; $_i697 < $_size693; ++$_i697)
-<<<<<<< HEAD
+            $_size700 = 0;
+            $_etype703 = 0;
+            $xfer += $input->readListBegin($_etype703, $_size700);
+            for ($_i704 = 0; $_i704 < $_size700; ++$_i704)
             {
-              $elem698 = null;
-              $elem698 = new \metastore\Function();
-              $xfer += $elem698->read($input);
-              $this->functions []= $elem698;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size686 = 0;
-            $_etype689 = 0;
-            $xfer += $input->readListBegin($_etype689, $_size686);
-            for ($_i690 = 0; $_i690 < $_size686; ++$_i690)
-            {
-              $elem691 = null;
-              $elem691 = new \metastore\Function();
-              $xfer += $elem691->read($input);
-              $this->functions []= $elem691;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size672 = 0;
-            $_etype675 = 0;
-            $xfer += $input->readListBegin($_etype675, $_size672);
-            for ($_i676 = 0; $_i676 < $_size672; ++$_i676)
-            {
-              $elem677 = null;
-              $elem677 = new \metastore\Function();
-              $xfer += $elem677->read($input);
-              $this->functions []= $elem677;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size688 = 0;
-            $_etype691 = 0;
-            $xfer += $input->readListBegin($_etype691, $_size688);
-            for ($_i692 = 0; $_i692 < $_size688; ++$_i692)
-            {
-              $elem693 = null;
-              $elem693 = new \metastore\Function();
-              $xfer += $elem693->read($input);
-              $this->functions []= $elem693;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size674 = 0;
-            $_etype677 = 0;
-            $xfer += $input->readListBegin($_etype677, $_size674);
-            for ($_i678 = 0; $_i678 < $_size674; ++$_i678)
-            {
-              $elem679 = null;
-              $elem679 = new \metastore\Function();
-              $xfer += $elem679->read($input);
-              $this->functions []= $elem679;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size679 = 0;
-            $_etype682 = 0;
-            $xfer += $input->readListBegin($_etype682, $_size679);
-            for ($_i683 = 0; $_i683 < $_size679; ++$_i683)
-            {
-              $elem684 = null;
-              $elem684 = new \metastore\Function();
-              $xfer += $elem684->read($input);
-              $this->functions []= $elem684;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem698 = null;
-              $elem698 = new \metastore\Function();
-              $xfer += $elem698->read($input);
-              $this->functions []= $elem698;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem705 = null;
+              $elem705 = new \metastore\Function();
+              $xfer += $elem705->read($input);
+              $this->functions []= $elem705;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -26669,65 +23021,9 @@ class GetAllFunctionsResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->functions));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->functions as $iter699)
+          foreach ($this->functions as $iter706)
           {
-            $xfer += $iter699->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->functions as $iter692)
-          {
-            $xfer += $iter692->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->functions as $iter678)
-          {
-            $xfer += $iter678->write($output);
-=======
-          foreach ($this->functions as $iter694)
-          {
-            $xfer += $iter694->write($output);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->functions as $iter694)
-          {
-            $xfer += $iter694->write($output);
-=======
-          foreach ($this->functions as $iter680)
-          {
-            $xfer += $iter680->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->functions as $iter685)
-          {
-            $xfer += $iter685->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->functions as $iter699)
-          {
-            $xfer += $iter699->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $iter706->write($output);
           }
         }
         $output->writeListEnd();
@@ -26791,99 +23087,14 @@ class ClientCapabilities {
         case 1:
           if ($ftype == TType::LST) {
             $this->values = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size700 = 0;
-            $_etype703 = 0;
-            $xfer += $input->readListBegin($_etype703, $_size700);
-            for ($_i704 = 0; $_i704 < $_size700; ++$_i704)
-<<<<<<< HEAD
+            $_size707 = 0;
+            $_etype710 = 0;
+            $xfer += $input->readListBegin($_etype710, $_size707);
+            for ($_i711 = 0; $_i711 < $_size707; ++$_i711)
             {
-              $elem705 = null;
-              $xfer += $input->readI32($elem705);
-              $this->values []= $elem705;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size693 = 0;
-            $_etype696 = 0;
-            $xfer += $input->readListBegin($_etype696, $_size693);
-            for ($_i697 = 0; $_i697 < $_size693; ++$_i697)
-            {
-              $elem698 = null;
-              $xfer += $input->readI32($elem698);
-              $this->values []= $elem698;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size679 = 0;
-            $_etype682 = 0;
-            $xfer += $input->readListBegin($_etype682, $_size679);
-            for ($_i683 = 0; $_i683 < $_size679; ++$_i683)
-            {
-              $elem684 = null;
-              $xfer += $input->readI32($elem684);
-              $this->values []= $elem684;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size695 = 0;
-            $_etype698 = 0;
-            $xfer += $input->readListBegin($_etype698, $_size695);
-            for ($_i699 = 0; $_i699 < $_size695; ++$_i699)
-            {
-              $elem700 = null;
-              $xfer += $input->readI32($elem700);
-              $this->values []= $elem700;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size681 = 0;
-            $_etype684 = 0;
-            $xfer += $input->readListBegin($_etype684, $_size681);
-            for ($_i685 = 0; $_i685 < $_size681; ++$_i685)
-            {
-              $elem686 = null;
-              $xfer += $input->readI32($elem686);
-              $this->values []= $elem686;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size686 = 0;
-            $_etype689 = 0;
-            $xfer += $input->readListBegin($_etype689, $_size686);
-            for ($_i690 = 0; $_i690 < $_size686; ++$_i690)
-            {
-              $elem691 = null;
-              $xfer += $input->readI32($elem691);
-              $this->values []= $elem691;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem705 = null;
-              $xfer += $input->readI32($elem705);
-              $this->values []= $elem705;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem712 = null;
+              $xfer += $input->readI32($elem712);
+              $this->values []= $elem712;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -26911,66 +23122,9 @@ class ClientCapabilities {
       {
         $output->writeListBegin(TType::I32, count($this->values));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->values as $iter706)
+          foreach ($this->values as $iter713)
           {
-            $xfer += $output->writeI32($iter706);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->values as $iter699)
-          {
-            $xfer += $output->writeI32($iter699);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->values as $iter685)
-          {
-            $xfer += $output->writeI32($iter685);
-=======
-          foreach ($this->values as $iter701)
-          {
-            $xfer += $output->writeI32($iter701);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-          foreach ($this->values as $iter701)
-          {
-            $xfer += $output->writeI32($iter701);
-=======
-          foreach ($this->values as $iter687)
-          {
-            $xfer += $output->writeI32($iter687);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->values as $iter692)
-          {
-            $xfer += $output->writeI32($iter692);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->values as $iter706)
-          {
-            $xfer += $output->writeI32($iter706);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeI32($iter713);
           }
         }
         $output->writeListEnd();
@@ -27304,99 +23458,14 @@ class GetTablesRequest {
         case 2:
           if ($ftype == TType::LST) {
             $this->tblNames = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size707 = 0;
-            $_etype710 = 0;
-            $xfer += $input->readListBegin($_etype710, $_size707);
-            for ($_i711 = 0; $_i711 < $_size707; ++$_i711)
-<<<<<<< HEAD
+            $_size714 = 0;
+            $_etype717 = 0;
+            $xfer += $input->readListBegin($_etype717, $_size714);
+            for ($_i718 = 0; $_i718 < $_size714; ++$_i718)
             {
-              $elem712 = null;
-              $xfer += $input->readString($elem712);
-              $this->tblNames []= $elem712;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size700 = 0;
-            $_etype703 = 0;
-            $xfer += $input->readListBegin($_etype703, $_size700);
-            for ($_i704 = 0; $_i704 < $_size700; ++$_i704)
-            {
-              $elem705 = null;
-              $xfer += $input->readString($elem705);
-              $this->tblNames []= $elem705;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size686 = 0;
-            $_etype689 = 0;
-            $xfer += $input->readListBegin($_etype689, $_size686);
-            for ($_i690 = 0; $_i690 < $_size686; ++$_i690)
-            {
-              $elem691 = null;
-              $xfer += $input->readString($elem691);
-              $this->tblNames []= $elem691;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size702 = 0;
-            $_etype705 = 0;
-            $xfer += $input->readListBegin($_etype705, $_size702);
-            for ($_i706 = 0; $_i706 < $_size702; ++$_i706)
-            {
-              $elem707 = null;
-              $xfer += $input->readString($elem707);
-              $this->tblNames []= $elem707;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size688 = 0;
-            $_etype691 = 0;
-            $xfer += $input->readListBegin($_etype691, $_size688);
-            for ($_i692 = 0; $_i692 < $_size688; ++$_i692)
-            {
-              $elem693 = null;
-              $xfer += $input->readString($elem693);
-              $this->tblNames []= $elem693;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size693 = 0;
-            $_etype696 = 0;
-            $xfer += $input->readListBegin($_etype696, $_size693);
-            for ($_i697 = 0; $_i697 < $_size693; ++$_i697)
-            {
-              $elem698 = null;
-              $xfer += $input->readString($elem698);
-              $this->tblNames []= $elem698;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem712 = null;
-              $xfer += $input->readString($elem712);
-              $this->tblNames []= $elem712;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem719 = null;
+              $xfer += $input->readString($elem719);
+              $this->tblNames []= $elem719;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -27444,65 +23513,9 @@ class GetTablesRequest {
       {
         $output->writeListBegin(TType::STRING, count($this->tblNames));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->tblNames as $iter713)
+          foreach ($this->tblNames as $iter720)
           {
-            $xfer += $output->writeString($iter713);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->tblNames as $iter706)
-          {
-            $xfer += $output->writeString($iter706);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->tblNames as $iter692)
-          {
-            $xfer += $output->writeString($iter692);
-=======
-          foreach ($this->tblNames as $iter708)
-          {
-            $xfer += $output->writeString($iter708);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->tblNames as $iter708)
-          {
-            $xfer += $output->writeString($iter708);
-=======
-          foreach ($this->tblNames as $iter694)
-          {
-            $xfer += $output->writeString($iter694);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->tblNames as $iter699)
-          {
-            $xfer += $output->writeString($iter699);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->tblNames as $iter713)
-          {
-            $xfer += $output->writeString($iter713);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeString($iter720);
           }
         }
         $output->writeListEnd();
@@ -27580,106 +23593,15 @@ class GetTablesResult {
         case 1:
           if ($ftype == TType::LST) {
             $this->tables = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size714 = 0;
-            $_etype717 = 0;
-            $xfer += $input->readListBegin($_etype717, $_size714);
-            for ($_i718 = 0; $_i718 < $_size714; ++$_i718)
-<<<<<<< HEAD
+            $_size721 = 0;
+            $_etype724 = 0;
+            $xfer += $input->readListBegin($_etype724, $_size721);
+            for ($_i725 = 0; $_i725 < $_size721; ++$_i725)
             {
-              $elem719 = null;
-              $elem719 = new \metastore\Table();
-              $xfer += $elem719->read($input);
-              $this->tables []= $elem719;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size707 = 0;
-            $_etype710 = 0;
-            $xfer += $input->readListBegin($_etype710, $_size707);
-            for ($_i711 = 0; $_i711 < $_size707; ++$_i711)
-            {
-              $elem712 = null;
-              $elem712 = new \metastore\Table();
-              $xfer += $elem712->read($input);
-              $this->tables []= $elem712;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size693 = 0;
-            $_etype696 = 0;
-            $xfer += $input->readListBegin($_etype696, $_size693);
-            for ($_i697 = 0; $_i697 < $_size693; ++$_i697)
-            {
-              $elem698 = null;
-              $elem698 = new \metastore\Table();
-              $xfer += $elem698->read($input);
-              $this->tables []= $elem698;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size709 = 0;
-            $_etype712 = 0;
-            $xfer += $input->readListBegin($_etype712, $_size709);
-            for ($_i713 = 0; $_i713 < $_size709; ++$_i713)
-            {
-              $elem714 = null;
-              $elem714 = new \metastore\Table();
-              $xfer += $elem714->read($input);
-              $this->tables []= $elem714;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size695 = 0;
-            $_etype698 = 0;
-            $xfer += $input->readListBegin($_etype698, $_size695);
-            for ($_i699 = 0; $_i699 < $_size695; ++$_i699)
-            {
-              $elem700 = null;
-              $elem700 = new \metastore\Table();
-              $xfer += $elem700->read($input);
-              $this->tables []= $elem700;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size700 = 0;
-            $_etype703 = 0;
-            $xfer += $input->readListBegin($_etype703, $_size700);
-            for ($_i704 = 0; $_i704 < $_size700; ++$_i704)
-            {
-              $elem705 = null;
-              $elem705 = new \metastore\Table();
-              $xfer += $elem705->read($input);
-              $this->tables []= $elem705;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem719 = null;
-              $elem719 = new \metastore\Table();
-              $xfer += $elem719->read($input);
-              $this->tables []= $elem719;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem726 = null;
+              $elem726 = new \metastore\Table();
+              $xfer += $elem726->read($input);
+              $this->tables []= $elem726;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -27707,65 +23629,9 @@ class GetTablesResult {
       {
         $output->writeListBegin(TType::STRUCT, count($this->tables));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->tables as $iter720)
+          foreach ($this->tables as $iter727)
           {
-            $xfer += $iter720->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->tables as $iter713)
-          {
-            $xfer += $iter713->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->tables as $iter699)
-          {
-            $xfer += $iter699->write($output);
-=======
-          foreach ($this->tables as $iter715)
-          {
-            $xfer += $iter715->write($output);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->tables as $iter715)
-          {
-            $xfer += $iter715->write($output);
-=======
-          foreach ($this->tables as $iter701)
-          {
-            $xfer += $iter701->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->tables as $iter706)
-          {
-            $xfer += $iter706->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->tables as $iter720)
-          {
-            $xfer += $iter720->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $iter727->write($output);
           }
         }
         $output->writeListEnd();
@@ -28166,108 +24032,17 @@ class Materialization {
         case 1:
           if ($ftype == TType::SET) {
             $this->tablesUsed = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size721 = 0;
-            $_etype724 = 0;
-            $xfer += $input->readSetBegin($_etype724, $_size721);
-            for ($_i725 = 0; $_i725 < $_size721; ++$_i725)
-<<<<<<< HEAD
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size714 = 0;
-            $_etype717 = 0;
-            $xfer += $input->readSetBegin($_etype717, $_size714);
-            for ($_i718 = 0; $_i718 < $_size714; ++$_i718)
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size700 = 0;
-            $_etype703 = 0;
-            $xfer += $input->readSetBegin($_etype703, $_size700);
-            for ($_i704 = 0; $_i704 < $_size700; ++$_i704)
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
+            $_size728 = 0;
+            $_etype731 = 0;
+            $xfer += $input->readSetBegin($_etype731, $_size728);
+            for ($_i732 = 0; $_i732 < $_size728; ++$_i732)
             {
-              $elem726 = null;
-              $xfer += $input->readString($elem726);
-              if (is_scalar($elem726)) {
-                $this->tablesUsed[$elem726] = true;
+              $elem733 = null;
+              $xfer += $input->readString($elem733);
+              if (is_scalar($elem733)) {
+                $this->tablesUsed[$elem733] = true;
               } else {
-<<<<<<< HEAD
-                $this->tablesUsed []= $elem726;
-=======
-<<<<<<< HEAD
-                $this->tablesUsed []= $elem719;
-=======
-                $this->tablesUsed []= $elem705;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size716 = 0;
-            $_etype719 = 0;
-            $xfer += $input->readSetBegin($_etype719, $_size716);
-            for ($_i720 = 0; $_i720 < $_size716; ++$_i720)
-            {
-              $elem721 = null;
-              $xfer += $input->readString($elem721);
-              if (is_scalar($elem721)) {
-                $this->tablesUsed[$elem721] = true;
-              } else {
-                $this->tablesUsed []= $elem721;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size702 = 0;
-            $_etype705 = 0;
-            $xfer += $input->readSetBegin($_etype705, $_size702);
-            for ($_i706 = 0; $_i706 < $_size702; ++$_i706)
-=======
-            $_size707 = 0;
-            $_etype710 = 0;
-            $xfer += $input->readSetBegin($_etype710, $_size707);
-            for ($_i711 = 0; $_i711 < $_size707; ++$_i711)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            {
-              $elem726 = null;
-              $xfer += $input->readString($elem726);
-              if (is_scalar($elem726)) {
-                $this->tablesUsed[$elem726] = true;
-              } else {
-<<<<<<< HEAD
-<<<<<<< HEAD
-                $this->tablesUsed []= $elem707;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-                $this->tablesUsed []= $elem712;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-                $this->tablesUsed []= $elem726;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+                $this->tablesUsed []= $elem733;
               }
             }
             $xfer += $input->readSetEnd();
@@ -28310,82 +24085,12 @@ class Materialization {
       {
         $output->writeSetBegin(TType::STRING, count($this->tablesUsed));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->tablesUsed as $iter727 => $iter728)
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->tablesUsed as $iter720 => $iter721)
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->tablesUsed as $iter706 => $iter707)
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
+          foreach ($this->tablesUsed as $iter734 => $iter735)
           {
-            if (is_scalar($iter728)) {
-            $xfer += $output->writeString($iter727);
+            if (is_scalar($iter735)) {
+            $xfer += $output->writeString($iter734);
             } else {
-<<<<<<< HEAD
-            $xfer += $output->writeString($iter728);
-=======
-<<<<<<< HEAD
-            $xfer += $output->writeString($iter721);
-=======
-            $xfer += $output->writeString($iter707);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-          foreach ($this->tablesUsed as $iter722 => $iter723)
-          {
-            if (is_scalar($iter723)) {
-            $xfer += $output->writeString($iter722);
-            } else {
-            $xfer += $output->writeString($iter723);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-          foreach ($this->tablesUsed as $iter708 => $iter709)
-=======
-          foreach ($this->tablesUsed as $iter713 => $iter714)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->tablesUsed as $iter727 => $iter728)
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-          {
-            if (is_scalar($iter728)) {
-            $xfer += $output->writeString($iter727);
-            } else {
-<<<<<<< HEAD
-<<<<<<< HEAD
-            $xfer += $output->writeString($iter709);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $xfer += $output->writeString($iter714);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            $xfer += $output->writeString($iter728);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeString($iter735);
             }
           }
         }
@@ -29652,106 +25357,15 @@ class WMFullResourcePlan {
         case 2:
           if ($ftype == TType::LST) {
             $this->pools = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size729 = 0;
-            $_etype732 = 0;
-            $xfer += $input->readListBegin($_etype732, $_size729);
-            for ($_i733 = 0; $_i733 < $_size729; ++$_i733)
-<<<<<<< HEAD
+            $_size736 = 0;
+            $_etype739 = 0;
+            $xfer += $input->readListBegin($_etype739, $_size736);
+            for ($_i740 = 0; $_i740 < $_size736; ++$_i740)
             {
-              $elem734 = null;
-              $elem734 = new \metastore\WMPool();
-              $xfer += $elem734->read($input);
-              $this->pools []= $elem734;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size722 = 0;
-            $_etype725 = 0;
-            $xfer += $input->readListBegin($_etype725, $_size722);
-            for ($_i726 = 0; $_i726 < $_size722; ++$_i726)
-            {
-              $elem727 = null;
-              $elem727 = new \metastore\WMPool();
-              $xfer += $elem727->read($input);
-              $this->pools []= $elem727;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size708 = 0;
-            $_etype711 = 0;
-            $xfer += $input->readListBegin($_etype711, $_size708);
-            for ($_i712 = 0; $_i712 < $_size708; ++$_i712)
-            {
-              $elem713 = null;
-              $elem713 = new \metastore\WMPool();
-              $xfer += $elem713->read($input);
-              $this->pools []= $elem713;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size724 = 0;
-            $_etype727 = 0;
-            $xfer += $input->readListBegin($_etype727, $_size724);
-            for ($_i728 = 0; $_i728 < $_size724; ++$_i728)
-            {
-              $elem729 = null;
-              $elem729 = new \metastore\WMPool();
-              $xfer += $elem729->read($input);
-              $this->pools []= $elem729;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size710 = 0;
-            $_etype713 = 0;
-            $xfer += $input->readListBegin($_etype713, $_size710);
-            for ($_i714 = 0; $_i714 < $_size710; ++$_i714)
-            {
-              $elem715 = null;
-              $elem715 = new \metastore\WMPool();
-              $xfer += $elem715->read($input);
-              $this->pools []= $elem715;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size715 = 0;
-            $_etype718 = 0;
-            $xfer += $input->readListBegin($_etype718, $_size715);
-            for ($_i719 = 0; $_i719 < $_size715; ++$_i719)
-            {
-              $elem720 = null;
-              $elem720 = new \metastore\WMPool();
-              $xfer += $elem720->read($input);
-              $this->pools []= $elem720;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem734 = null;
-              $elem734 = new \metastore\WMPool();
-              $xfer += $elem734->read($input);
-              $this->pools []= $elem734;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem741 = null;
+              $elem741 = new \metastore\WMPool();
+              $xfer += $elem741->read($input);
+              $this->pools []= $elem741;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -29761,106 +25375,15 @@ class WMFullResourcePlan {
         case 3:
           if ($ftype == TType::LST) {
             $this->mappings = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size735 = 0;
-            $_etype738 = 0;
-            $xfer += $input->readListBegin($_etype738, $_size735);
-            for ($_i739 = 0; $_i739 < $_size735; ++$_i739)
-<<<<<<< HEAD
+            $_size742 = 0;
+            $_etype745 = 0;
+            $xfer += $input->readListBegin($_etype745, $_size742);
+            for ($_i746 = 0; $_i746 < $_size742; ++$_i746)
             {
-              $elem740 = null;
-              $elem740 = new \metastore\WMMapping();
-              $xfer += $elem740->read($input);
-              $this->mappings []= $elem740;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size728 = 0;
-            $_etype731 = 0;
-            $xfer += $input->readListBegin($_etype731, $_size728);
-            for ($_i732 = 0; $_i732 < $_size728; ++$_i732)
-            {
-              $elem733 = null;
-              $elem733 = new \metastore\WMMapping();
-              $xfer += $elem733->read($input);
-              $this->mappings []= $elem733;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size714 = 0;
-            $_etype717 = 0;
-            $xfer += $input->readListBegin($_etype717, $_size714);
-            for ($_i718 = 0; $_i718 < $_size714; ++$_i718)
-            {
-              $elem719 = null;
-              $elem719 = new \metastore\WMMapping();
-              $xfer += $elem719->read($input);
-              $this->mappings []= $elem719;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size730 = 0;
-            $_etype733 = 0;
-            $xfer += $input->readListBegin($_etype733, $_size730);
-            for ($_i734 = 0; $_i734 < $_size730; ++$_i734)
-            {
-              $elem735 = null;
-              $elem735 = new \metastore\WMMapping();
-              $xfer += $elem735->read($input);
-              $this->mappings []= $elem735;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size716 = 0;
-            $_etype719 = 0;
-            $xfer += $input->readListBegin($_etype719, $_size716);
-            for ($_i720 = 0; $_i720 < $_size716; ++$_i720)
-            {
-              $elem721 = null;
-              $elem721 = new \metastore\WMMapping();
-              $xfer += $elem721->read($input);
-              $this->mappings []= $elem721;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size721 = 0;
-            $_etype724 = 0;
-            $xfer += $input->readListBegin($_etype724, $_size721);
-            for ($_i725 = 0; $_i725 < $_size721; ++$_i725)
-            {
-              $elem726 = null;
-              $elem726 = new \metastore\WMMapping();
-              $xfer += $elem726->read($input);
-              $this->mappings []= $elem726;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem740 = null;
-              $elem740 = new \metastore\WMMapping();
-              $xfer += $elem740->read($input);
-              $this->mappings []= $elem740;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem747 = null;
+              $elem747 = new \metastore\WMMapping();
+              $xfer += $elem747->read($input);
+              $this->mappings []= $elem747;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -29870,106 +25393,15 @@ class WMFullResourcePlan {
         case 4:
           if ($ftype == TType::LST) {
             $this->triggers = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size741 = 0;
-            $_etype744 = 0;
-            $xfer += $input->readListBegin($_etype744, $_size741);
-            for ($_i745 = 0; $_i745 < $_size741; ++$_i745)
-<<<<<<< HEAD
+            $_size748 = 0;
+            $_etype751 = 0;
+            $xfer += $input->readListBegin($_etype751, $_size748);
+            for ($_i752 = 0; $_i752 < $_size748; ++$_i752)
             {
-              $elem746 = null;
-              $elem746 = new \metastore\WMTrigger();
-              $xfer += $elem746->read($input);
-              $this->triggers []= $elem746;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size734 = 0;
-            $_etype737 = 0;
-            $xfer += $input->readListBegin($_etype737, $_size734);
-            for ($_i738 = 0; $_i738 < $_size734; ++$_i738)
-            {
-              $elem739 = null;
-              $elem739 = new \metastore\WMTrigger();
-              $xfer += $elem739->read($input);
-              $this->triggers []= $elem739;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size720 = 0;
-            $_etype723 = 0;
-            $xfer += $input->readListBegin($_etype723, $_size720);
-            for ($_i724 = 0; $_i724 < $_size720; ++$_i724)
-            {
-              $elem725 = null;
-              $elem725 = new \metastore\WMTrigger();
-              $xfer += $elem725->read($input);
-              $this->triggers []= $elem725;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size736 = 0;
-            $_etype739 = 0;
-            $xfer += $input->readListBegin($_etype739, $_size736);
-            for ($_i740 = 0; $_i740 < $_size736; ++$_i740)
-            {
-              $elem741 = null;
-              $elem741 = new \metastore\WMTrigger();
-              $xfer += $elem741->read($input);
-              $this->triggers []= $elem741;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size722 = 0;
-            $_etype725 = 0;
-            $xfer += $input->readListBegin($_etype725, $_size722);
-            for ($_i726 = 0; $_i726 < $_size722; ++$_i726)
-            {
-              $elem727 = null;
-              $elem727 = new \metastore\WMTrigger();
-              $xfer += $elem727->read($input);
-              $this->triggers []= $elem727;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size727 = 0;
-            $_etype730 = 0;
-            $xfer += $input->readListBegin($_etype730, $_size727);
-            for ($_i731 = 0; $_i731 < $_size727; ++$_i731)
-            {
-              $elem732 = null;
-              $elem732 = new \metastore\WMTrigger();
-              $xfer += $elem732->read($input);
-              $this->triggers []= $elem732;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem746 = null;
-              $elem746 = new \metastore\WMTrigger();
-              $xfer += $elem746->read($input);
-              $this->triggers []= $elem746;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem753 = null;
+              $elem753 = new \metastore\WMTrigger();
+              $xfer += $elem753->read($input);
+              $this->triggers []= $elem753;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -29979,106 +25411,15 @@ class WMFullResourcePlan {
         case 5:
           if ($ftype == TType::LST) {
             $this->poolTriggers = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size747 = 0;
-            $_etype750 = 0;
-            $xfer += $input->readListBegin($_etype750, $_size747);
-            for ($_i751 = 0; $_i751 < $_size747; ++$_i751)
-<<<<<<< HEAD
+            $_size754 = 0;
+            $_etype757 = 0;
+            $xfer += $input->readListBegin($_etype757, $_size754);
+            for ($_i758 = 0; $_i758 < $_size754; ++$_i758)
             {
-              $elem752 = null;
-              $elem752 = new \metastore\WMPoolTrigger();
-              $xfer += $elem752->read($input);
-              $this->poolTriggers []= $elem752;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size740 = 0;
-            $_etype743 = 0;
-            $xfer += $input->readListBegin($_etype743, $_size740);
-            for ($_i744 = 0; $_i744 < $_size740; ++$_i744)
-            {
-              $elem745 = null;
-              $elem745 = new \metastore\WMPoolTrigger();
-              $xfer += $elem745->read($input);
-              $this->poolTriggers []= $elem745;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size726 = 0;
-            $_etype729 = 0;
-            $xfer += $input->readListBegin($_etype729, $_size726);
-            for ($_i730 = 0; $_i730 < $_size726; ++$_i730)
-            {
-              $elem731 = null;
-              $elem731 = new \metastore\WMPoolTrigger();
-              $xfer += $elem731->read($input);
-              $this->poolTriggers []= $elem731;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size742 = 0;
-            $_etype745 = 0;
-            $xfer += $input->readListBegin($_etype745, $_size742);
-            for ($_i746 = 0; $_i746 < $_size742; ++$_i746)
-            {
-              $elem747 = null;
-              $elem747 = new \metastore\WMPoolTrigger();
-              $xfer += $elem747->read($input);
-              $this->poolTriggers []= $elem747;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size728 = 0;
-            $_etype731 = 0;
-            $xfer += $input->readListBegin($_etype731, $_size728);
-            for ($_i732 = 0; $_i732 < $_size728; ++$_i732)
-            {
-              $elem733 = null;
-              $elem733 = new \metastore\WMPoolTrigger();
-              $xfer += $elem733->read($input);
-              $this->poolTriggers []= $elem733;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size733 = 0;
-            $_etype736 = 0;
-            $xfer += $input->readListBegin($_etype736, $_size733);
-            for ($_i737 = 0; $_i737 < $_size733; ++$_i737)
-            {
-              $elem738 = null;
-              $elem738 = new \metastore\WMPoolTrigger();
-              $xfer += $elem738->read($input);
-              $this->poolTriggers []= $elem738;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem752 = null;
-              $elem752 = new \metastore\WMPoolTrigger();
-              $xfer += $elem752->read($input);
-              $this->poolTriggers []= $elem752;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem759 = null;
+              $elem759 = new \metastore\WMPoolTrigger();
+              $xfer += $elem759->read($input);
+              $this->poolTriggers []= $elem759;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -30114,65 +25455,9 @@ class WMFullResourcePlan {
       {
         $output->writeListBegin(TType::STRUCT, count($this->pools));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->pools as $iter753)
+          foreach ($this->pools as $iter760)
           {
-            $xfer += $iter753->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->pools as $iter746)
-          {
-            $xfer += $iter746->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->pools as $iter732)
-          {
-            $xfer += $iter732->write($output);
-=======
-          foreach ($this->pools as $iter748)
-          {
-            $xfer += $iter748->write($output);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->pools as $iter748)
-          {
-            $xfer += $iter748->write($output);
-=======
-          foreach ($this->pools as $iter734)
-          {
-            $xfer += $iter734->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->pools as $iter739)
-          {
-            $xfer += $iter739->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->pools as $iter753)
-          {
-            $xfer += $iter753->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $iter760->write($output);
           }
         }
         $output->writeListEnd();
@@ -30187,65 +25472,9 @@ class WMFullResourcePlan {
       {
         $output->writeListBegin(TType::STRUCT, count($this->mappings));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->mappings as $iter754)
+          foreach ($this->mappings as $iter761)
           {
-            $xfer += $iter754->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->mappings as $iter747)
-          {
-            $xfer += $iter747->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->mappings as $iter733)
-          {
-            $xfer += $iter733->write($output);
-=======
-          foreach ($this->mappings as $iter749)
-          {
-            $xfer += $iter749->write($output);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->mappings as $iter749)
-          {
-            $xfer += $iter749->write($output);
-=======
-          foreach ($this->mappings as $iter735)
-          {
-            $xfer += $iter735->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->mappings as $iter740)
-          {
-            $xfer += $iter740->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->mappings as $iter754)
-          {
-            $xfer += $iter754->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $iter761->write($output);
           }
         }
         $output->writeListEnd();
@@ -30260,65 +25489,9 @@ class WMFullResourcePlan {
       {
         $output->writeListBegin(TType::STRUCT, count($this->triggers));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->triggers as $iter755)
+          foreach ($this->triggers as $iter762)
           {
-            $xfer += $iter755->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->triggers as $iter748)
-          {
-            $xfer += $iter748->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->triggers as $iter734)
-          {
-            $xfer += $iter734->write($output);
-=======
-          foreach ($this->triggers as $iter750)
-          {
-            $xfer += $iter750->write($output);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->triggers as $iter750)
-          {
-            $xfer += $iter750->write($output);
-=======
-          foreach ($this->triggers as $iter736)
-          {
-            $xfer += $iter736->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->triggers as $iter741)
-          {
-            $xfer += $iter741->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->triggers as $iter755)
-          {
-            $xfer += $iter755->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $iter762->write($output);
           }
         }
         $output->writeListEnd();
@@ -30333,65 +25506,9 @@ class WMFullResourcePlan {
       {
         $output->writeListBegin(TType::STRUCT, count($this->poolTriggers));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->poolTriggers as $iter756)
+          foreach ($this->poolTriggers as $iter763)
           {
-            $xfer += $iter756->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->poolTriggers as $iter749)
-          {
-            $xfer += $iter749->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->poolTriggers as $iter735)
-          {
-            $xfer += $iter735->write($output);
-=======
-          foreach ($this->poolTriggers as $iter751)
-          {
-            $xfer += $iter751->write($output);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->poolTriggers as $iter751)
-          {
-            $xfer += $iter751->write($output);
-=======
-          foreach ($this->poolTriggers as $iter737)
-          {
-            $xfer += $iter737->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->poolTriggers as $iter742)
-          {
-            $xfer += $iter742->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->poolTriggers as $iter756)
-          {
-            $xfer += $iter756->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $iter763->write($output);
           }
         }
         $output->writeListEnd();
@@ -30944,106 +26061,15 @@ class WMGetAllResourcePlanResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->resourcePlans = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size757 = 0;
-            $_etype760 = 0;
-            $xfer += $input->readListBegin($_etype760, $_size757);
-            for ($_i761 = 0; $_i761 < $_size757; ++$_i761)
-<<<<<<< HEAD
+            $_size764 = 0;
+            $_etype767 = 0;
+            $xfer += $input->readListBegin($_etype767, $_size764);
+            for ($_i768 = 0; $_i768 < $_size764; ++$_i768)
             {
-              $elem762 = null;
-              $elem762 = new \metastore\WMResourcePlan();
-              $xfer += $elem762->read($input);
-              $this->resourcePlans []= $elem762;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size750 = 0;
-            $_etype753 = 0;
-            $xfer += $input->readListBegin($_etype753, $_size750);
-            for ($_i754 = 0; $_i754 < $_size750; ++$_i754)
-            {
-              $elem755 = null;
-              $elem755 = new \metastore\WMResourcePlan();
-              $xfer += $elem755->read($input);
-              $this->resourcePlans []= $elem755;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size736 = 0;
-            $_etype739 = 0;
-            $xfer += $input->readListBegin($_etype739, $_size736);
-            for ($_i740 = 0; $_i740 < $_size736; ++$_i740)
-            {
-              $elem741 = null;
-              $elem741 = new \metastore\WMResourcePlan();
-              $xfer += $elem741->read($input);
-              $this->resourcePlans []= $elem741;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size752 = 0;
-            $_etype755 = 0;
-            $xfer += $input->readListBegin($_etype755, $_size752);
-            for ($_i756 = 0; $_i756 < $_size752; ++$_i756)
-            {
-              $elem757 = null;
-              $elem757 = new \metastore\WMResourcePlan();
-              $xfer += $elem757->read($input);
-              $this->resourcePlans []= $elem757;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size738 = 0;
-            $_etype741 = 0;
-            $xfer += $input->readListBegin($_etype741, $_size738);
-            for ($_i742 = 0; $_i742 < $_size738; ++$_i742)
-            {
-              $elem743 = null;
-              $elem743 = new \metastore\WMResourcePlan();
-              $xfer += $elem743->read($input);
-              $this->resourcePlans []= $elem743;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size743 = 0;
-            $_etype746 = 0;
-            $xfer += $input->readListBegin($_etype746, $_size743);
-            for ($_i747 = 0; $_i747 < $_size743; ++$_i747)
-            {
-              $elem748 = null;
-              $elem748 = new \metastore\WMResourcePlan();
-              $xfer += $elem748->read($input);
-              $this->resourcePlans []= $elem748;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem762 = null;
-              $elem762 = new \metastore\WMResourcePlan();
-              $xfer += $elem762->read($input);
-              $this->resourcePlans []= $elem762;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem769 = null;
+              $elem769 = new \metastore\WMResourcePlan();
+              $xfer += $elem769->read($input);
+              $this->resourcePlans []= $elem769;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -31071,65 +26097,9 @@ class WMGetAllResourcePlanResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->resourcePlans));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->resourcePlans as $iter763)
+          foreach ($this->resourcePlans as $iter770)
           {
-            $xfer += $iter763->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->resourcePlans as $iter756)
-          {
-            $xfer += $iter756->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->resourcePlans as $iter742)
-          {
-            $xfer += $iter742->write($output);
-=======
-          foreach ($this->resourcePlans as $iter758)
-          {
-            $xfer += $iter758->write($output);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->resourcePlans as $iter758)
-          {
-            $xfer += $iter758->write($output);
-=======
-          foreach ($this->resourcePlans as $iter744)
-          {
-            $xfer += $iter744->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->resourcePlans as $iter749)
-          {
-            $xfer += $iter749->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->resourcePlans as $iter763)
-          {
-            $xfer += $iter763->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $iter770->write($output);
           }
         }
         $output->writeListEnd();
@@ -31535,99 +26505,14 @@ class WMValidateResourcePlanResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->errors = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size764 = 0;
-            $_etype767 = 0;
-            $xfer += $input->readListBegin($_etype767, $_size764);
-            for ($_i768 = 0; $_i768 < $_size764; ++$_i768)
-<<<<<<< HEAD
+            $_size771 = 0;
+            $_etype774 = 0;
+            $xfer += $input->readListBegin($_etype774, $_size771);
+            for ($_i775 = 0; $_i775 < $_size771; ++$_i775)
             {
-              $elem769 = null;
-              $xfer += $input->readString($elem769);
-              $this->errors []= $elem769;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size757 = 0;
-            $_etype760 = 0;
-            $xfer += $input->readListBegin($_etype760, $_size757);
-            for ($_i761 = 0; $_i761 < $_size757; ++$_i761)
-            {
-              $elem762 = null;
-              $xfer += $input->readString($elem762);
-              $this->errors []= $elem762;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size743 = 0;
-            $_etype746 = 0;
-            $xfer += $input->readListBegin($_etype746, $_size743);
-            for ($_i747 = 0; $_i747 < $_size743; ++$_i747)
-            {
-              $elem748 = null;
-              $xfer += $input->readString($elem748);
-              $this->errors []= $elem748;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size759 = 0;
-            $_etype762 = 0;
-            $xfer += $input->readListBegin($_etype762, $_size759);
-            for ($_i763 = 0; $_i763 < $_size759; ++$_i763)
-            {
-              $elem764 = null;
-              $xfer += $input->readString($elem764);
-              $this->errors []= $elem764;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size745 = 0;
-            $_etype748 = 0;
-            $xfer += $input->readListBegin($_etype748, $_size745);
-            for ($_i749 = 0; $_i749 < $_size745; ++$_i749)
-            {
-              $elem750 = null;
-              $xfer += $input->readString($elem750);
-              $this->errors []= $elem750;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size750 = 0;
-            $_etype753 = 0;
-            $xfer += $input->readListBegin($_etype753, $_size750);
-            for ($_i754 = 0; $_i754 < $_size750; ++$_i754)
-            {
-              $elem755 = null;
-              $xfer += $input->readString($elem755);
-              $this->errors []= $elem755;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem769 = null;
-              $xfer += $input->readString($elem769);
-              $this->errors []= $elem769;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem776 = null;
+              $xfer += $input->readString($elem776);
+              $this->errors []= $elem776;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -31637,99 +26522,14 @@ class WMValidateResourcePlanResponse {
         case 2:
           if ($ftype == TType::LST) {
             $this->warnings = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size770 = 0;
-            $_etype773 = 0;
-            $xfer += $input->readListBegin($_etype773, $_size770);
-            for ($_i774 = 0; $_i774 < $_size770; ++$_i774)
-<<<<<<< HEAD
+            $_size777 = 0;
+            $_etype780 = 0;
+            $xfer += $input->readListBegin($_etype780, $_size777);
+            for ($_i781 = 0; $_i781 < $_size777; ++$_i781)
             {
-              $elem775 = null;
-              $xfer += $input->readString($elem775);
-              $this->warnings []= $elem775;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size763 = 0;
-            $_etype766 = 0;
-            $xfer += $input->readListBegin($_etype766, $_size763);
-            for ($_i767 = 0; $_i767 < $_size763; ++$_i767)
-            {
-              $elem768 = null;
-              $xfer += $input->readString($elem768);
-              $this->warnings []= $elem768;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size749 = 0;
-            $_etype752 = 0;
-            $xfer += $input->readListBegin($_etype752, $_size749);
-            for ($_i753 = 0; $_i753 < $_size749; ++$_i753)
-            {
-              $elem754 = null;
-              $xfer += $input->readString($elem754);
-              $this->warnings []= $elem754;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size765 = 0;
-            $_etype768 = 0;
-            $xfer += $input->readListBegin($_etype768, $_size765);
-            for ($_i769 = 0; $_i769 < $_size765; ++$_i769)
-            {
-              $elem770 = null;
-              $xfer += $input->readString($elem770);
-              $this->warnings []= $elem770;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size751 = 0;
-            $_etype754 = 0;
-            $xfer += $input->readListBegin($_etype754, $_size751);
-            for ($_i755 = 0; $_i755 < $_size751; ++$_i755)
-            {
-              $elem756 = null;
-              $xfer += $input->readString($elem756);
-              $this->warnings []= $elem756;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size756 = 0;
-            $_etype759 = 0;
-            $xfer += $input->readListBegin($_etype759, $_size756);
-            for ($_i760 = 0; $_i760 < $_size756; ++$_i760)
-            {
-              $elem761 = null;
-              $xfer += $input->readString($elem761);
-              $this->warnings []= $elem761;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem775 = null;
-              $xfer += $input->readString($elem775);
-              $this->warnings []= $elem775;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem782 = null;
+              $xfer += $input->readString($elem782);
+              $this->warnings []= $elem782;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -31757,65 +26557,9 @@ class WMValidateResourcePlanResponse {
       {
         $output->writeListBegin(TType::STRING, count($this->errors));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->errors as $iter776)
+          foreach ($this->errors as $iter783)
           {
-            $xfer += $output->writeString($iter776);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->errors as $iter769)
-          {
-            $xfer += $output->writeString($iter769);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->errors as $iter755)
-          {
-            $xfer += $output->writeString($iter755);
-=======
-          foreach ($this->errors as $iter771)
-          {
-            $xfer += $output->writeString($iter771);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->errors as $iter771)
-          {
-            $xfer += $output->writeString($iter771);
-=======
-          foreach ($this->errors as $iter757)
-          {
-            $xfer += $output->writeString($iter757);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->errors as $iter762)
-          {
-            $xfer += $output->writeString($iter762);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->errors as $iter776)
-          {
-            $xfer += $output->writeString($iter776);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeString($iter783);
           }
         }
         $output->writeListEnd();
@@ -31830,65 +26574,9 @@ class WMValidateResourcePlanResponse {
       {
         $output->writeListBegin(TType::STRING, count($this->warnings));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->warnings as $iter777)
+          foreach ($this->warnings as $iter784)
           {
-            $xfer += $output->writeString($iter777);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->warnings as $iter770)
-          {
-            $xfer += $output->writeString($iter770);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->warnings as $iter756)
-          {
-            $xfer += $output->writeString($iter756);
-=======
-          foreach ($this->warnings as $iter772)
-          {
-            $xfer += $output->writeString($iter772);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->warnings as $iter772)
-          {
-            $xfer += $output->writeString($iter772);
-=======
-          foreach ($this->warnings as $iter758)
-          {
-            $xfer += $output->writeString($iter758);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->warnings as $iter763)
-          {
-            $xfer += $output->writeString($iter763);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->warnings as $iter777)
-          {
-            $xfer += $output->writeString($iter777);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $output->writeString($iter784);
           }
         }
         $output->writeListEnd();
@@ -32561,106 +27249,15 @@ class WMGetTriggersForResourePlanResponse {
         case 1:
           if ($ftype == TType::LST) {
             $this->triggers = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size778 = 0;
-            $_etype781 = 0;
-            $xfer += $input->readListBegin($_etype781, $_size778);
-            for ($_i782 = 0; $_i782 < $_size778; ++$_i782)
-<<<<<<< HEAD
+            $_size785 = 0;
+            $_etype788 = 0;
+            $xfer += $input->readListBegin($_etype788, $_size785);
+            for ($_i789 = 0; $_i789 < $_size785; ++$_i789)
             {
-              $elem783 = null;
-              $elem783 = new \metastore\WMTrigger();
-              $xfer += $elem783->read($input);
-              $this->triggers []= $elem783;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-            $_size771 = 0;
-            $_etype774 = 0;
-            $xfer += $input->readListBegin($_etype774, $_size771);
-            for ($_i775 = 0; $_i775 < $_size771; ++$_i775)
-            {
-              $elem776 = null;
-              $elem776 = new \metastore\WMTrigger();
-              $xfer += $elem776->read($input);
-              $this->triggers []= $elem776;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            $_size757 = 0;
-            $_etype760 = 0;
-            $xfer += $input->readListBegin($_etype760, $_size757);
-            for ($_i761 = 0; $_i761 < $_size757; ++$_i761)
-            {
-              $elem762 = null;
-              $elem762 = new \metastore\WMTrigger();
-              $xfer += $elem762->read($input);
-              $this->triggers []= $elem762;
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            $_size773 = 0;
-            $_etype776 = 0;
-            $xfer += $input->readListBegin($_etype776, $_size773);
-            for ($_i777 = 0; $_i777 < $_size773; ++$_i777)
-            {
-              $elem778 = null;
-              $elem778 = new \metastore\WMTrigger();
-              $xfer += $elem778->read($input);
-              $this->triggers []= $elem778;
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-            $_size759 = 0;
-            $_etype762 = 0;
-            $xfer += $input->readListBegin($_etype762, $_size759);
-            for ($_i763 = 0; $_i763 < $_size759; ++$_i763)
-            {
-              $elem764 = null;
-              $elem764 = new \metastore\WMTrigger();
-              $xfer += $elem764->read($input);
-              $this->triggers []= $elem764;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-            $_size764 = 0;
-            $_etype767 = 0;
-            $xfer += $input->readListBegin($_etype767, $_size764);
-            for ($_i768 = 0; $_i768 < $_size764; ++$_i768)
-            {
-              $elem769 = null;
-              $elem769 = new \metastore\WMTrigger();
-              $xfer += $elem769->read($input);
-              $this->triggers []= $elem769;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem783 = null;
-              $elem783 = new \metastore\WMTrigger();
-              $xfer += $elem783->read($input);
-              $this->triggers []= $elem783;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem790 = null;
+              $elem790 = new \metastore\WMTrigger();
+              $xfer += $elem790->read($input);
+              $this->triggers []= $elem790;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -32688,65 +27285,9 @@ class WMGetTriggersForResourePlanResponse {
       {
         $output->writeListBegin(TType::STRUCT, count($this->triggers));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->triggers as $iter784)
+          foreach ($this->triggers as $iter791)
           {
-            $xfer += $iter784->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          foreach ($this->triggers as $iter777)
-          {
-            $xfer += $iter777->write($output);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          foreach ($this->triggers as $iter763)
-          {
-            $xfer += $iter763->write($output);
-=======
-          foreach ($this->triggers as $iter779)
-          {
-            $xfer += $iter779->write($output);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          foreach ($this->triggers as $iter779)
-          {
-            $xfer += $iter779->write($output);
-=======
-          foreach ($this->triggers as $iter765)
-          {
-            $xfer += $iter765->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          foreach ($this->triggers as $iter770)
-          {
-            $xfer += $iter770->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->triggers as $iter784)
-          {
-            $xfer += $iter784->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $iter791->write($output);
           }
         }
         $output->writeListEnd();
@@ -34330,50 +28871,15 @@ class SchemaVersion {
         case 4:
           if ($ftype == TType::LST) {
             $this->cols = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size785 = 0;
-            $_etype788 = 0;
-            $xfer += $input->readListBegin($_etype788, $_size785);
-            for ($_i789 = 0; $_i789 < $_size785; ++$_i789)
-<<<<<<< HEAD
+            $_size792 = 0;
+            $_etype795 = 0;
+            $xfer += $input->readListBegin($_etype795, $_size792);
+            for ($_i796 = 0; $_i796 < $_size792; ++$_i796)
             {
-              $elem790 = null;
-              $elem790 = new \metastore\FieldSchema();
-              $xfer += $elem790->read($input);
-              $this->cols []= $elem790;
-=======
-<<<<<<< HEAD
-            $_size778 = 0;
-            $_etype781 = 0;
-            $xfer += $input->readListBegin($_etype781, $_size778);
-            for ($_i782 = 0; $_i782 < $_size778; ++$_i782)
-            {
-              $elem783 = null;
-              $elem783 = new \metastore\FieldSchema();
-              $xfer += $elem783->read($input);
-              $this->cols []= $elem783;
-=======
-            $_size771 = 0;
-            $_etype774 = 0;
-            $xfer += $input->readListBegin($_etype774, $_size771);
-            for ($_i775 = 0; $_i775 < $_size771; ++$_i775)
-            {
-              $elem776 = null;
-              $elem776 = new \metastore\FieldSchema();
-              $xfer += $elem776->read($input);
-              $this->cols []= $elem776;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem790 = null;
-              $elem790 = new \metastore\FieldSchema();
-              $xfer += $elem790->read($input);
-              $this->cols []= $elem790;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem797 = null;
+              $elem797 = new \metastore\FieldSchema();
+              $xfer += $elem797->read($input);
+              $this->cols []= $elem797;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -34462,27 +28968,9 @@ class SchemaVersion {
       {
         $output->writeListBegin(TType::STRUCT, count($this->cols));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->cols as $iter791)
+          foreach ($this->cols as $iter798)
           {
-            $xfer += $iter791->write($output);
-=======
-<<<<<<< HEAD
-          foreach ($this->cols as $iter784)
-          {
-            $xfer += $iter784->write($output);
-=======
-          foreach ($this->cols as $iter777)
-          {
-            $xfer += $iter777->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->cols as $iter791)
-          {
-            $xfer += $iter791->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $iter798->write($output);
           }
         }
         $output->writeListEnd();
@@ -34804,50 +29292,15 @@ class FindSchemasByColsResp {
         case 1:
           if ($ftype == TType::LST) {
             $this->schemaVersions = array();
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-            $_size792 = 0;
-            $_etype795 = 0;
-            $xfer += $input->readListBegin($_etype795, $_size792);
-            for ($_i796 = 0; $_i796 < $_size792; ++$_i796)
-<<<<<<< HEAD
+            $_size799 = 0;
+            $_etype802 = 0;
+            $xfer += $input->readListBegin($_etype802, $_size799);
+            for ($_i803 = 0; $_i803 < $_size799; ++$_i803)
             {
-              $elem797 = null;
-              $elem797 = new \metastore\SchemaVersionDescriptor();
-              $xfer += $elem797->read($input);
-              $this->schemaVersions []= $elem797;
-=======
-<<<<<<< HEAD
-            $_size785 = 0;
-            $_etype788 = 0;
-            $xfer += $input->readListBegin($_etype788, $_size785);
-            for ($_i789 = 0; $_i789 < $_size785; ++$_i789)
-            {
-              $elem790 = null;
-              $elem790 = new \metastore\SchemaVersionDescriptor();
-              $xfer += $elem790->read($input);
-              $this->schemaVersions []= $elem790;
-=======
-            $_size778 = 0;
-            $_etype781 = 0;
-            $xfer += $input->readListBegin($_etype781, $_size778);
-            for ($_i782 = 0; $_i782 < $_size778; ++$_i782)
-            {
-              $elem783 = null;
-              $elem783 = new \metastore\SchemaVersionDescriptor();
-              $xfer += $elem783->read($input);
-              $this->schemaVersions []= $elem783;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-            {
-              $elem797 = null;
-              $elem797 = new \metastore\SchemaVersionDescriptor();
-              $xfer += $elem797->read($input);
-              $this->schemaVersions []= $elem797;
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+              $elem804 = null;
+              $elem804 = new \metastore\SchemaVersionDescriptor();
+              $xfer += $elem804->read($input);
+              $this->schemaVersions []= $elem804;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -34875,27 +29328,9 @@ class FindSchemasByColsResp {
       {
         $output->writeListBegin(TType::STRUCT, count($this->schemaVersions));
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-          foreach ($this->schemaVersions as $iter798)
+          foreach ($this->schemaVersions as $iter805)
           {
-            $xfer += $iter798->write($output);
-=======
-<<<<<<< HEAD
-          foreach ($this->schemaVersions as $iter791)
-          {
-            $xfer += $iter791->write($output);
-=======
-          foreach ($this->schemaVersions as $iter784)
-          {
-            $xfer += $iter784->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          foreach ($this->schemaVersions as $iter798)
-          {
-            $xfer += $iter798->write($output);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            $xfer += $iter805->write($output);
           }
         }
         $output->writeListEnd();

@@ -1119,46 +1119,14 @@ import org.slf4j.LoggerFactory;
           case 4: // COLS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-                org.apache.thrift.protocol.TList _list888 = iprot.readListBegin();
-                struct.cols = new ArrayList<FieldSchema>(_list888.size);
-                FieldSchema _elem889;
-                for (int _i890 = 0; _i890 < _list888.size; ++_i890)
-<<<<<<< HEAD
+                org.apache.thrift.protocol.TList _list896 = iprot.readListBegin();
+                struct.cols = new ArrayList<FieldSchema>(_list896.size);
+                FieldSchema _elem897;
+                for (int _i898 = 0; _i898 < _list896.size; ++_i898)
                 {
-                  _elem889 = new FieldSchema();
-                  _elem889.read(iprot);
-                  struct.cols.add(_elem889);
-=======
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list880 = iprot.readListBegin();
-                struct.cols = new ArrayList<FieldSchema>(_list880.size);
-                FieldSchema _elem881;
-                for (int _i882 = 0; _i882 < _list880.size; ++_i882)
-                {
-                  _elem881 = new FieldSchema();
-                  _elem881.read(iprot);
-                  struct.cols.add(_elem881);
-=======
-                org.apache.thrift.protocol.TList _list872 = iprot.readListBegin();
-                struct.cols = new ArrayList<FieldSchema>(_list872.size);
-                FieldSchema _elem873;
-                for (int _i874 = 0; _i874 < _list872.size; ++_i874)
-                {
-                  _elem873 = new FieldSchema();
-                  _elem873.read(iprot);
-                  struct.cols.add(_elem873);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-                {
-                  _elem889 = new FieldSchema();
-                  _elem889.read(iprot);
-                  struct.cols.add(_elem889);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+                  _elem897 = new FieldSchema();
+                  _elem897.read(iprot);
+                  struct.cols.add(_elem897);
                 }
                 iprot.readListEnd();
               }
@@ -1244,27 +1212,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(COLS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.cols.size()));
-<<<<<<< HEAD
-<<<<<<< HEAD
-          for (FieldSchema _iter891 : struct.cols)
+          for (FieldSchema _iter899 : struct.cols)
           {
-            _iter891.write(oprot);
-=======
-<<<<<<< HEAD
-          for (FieldSchema _iter883 : struct.cols)
-          {
-            _iter883.write(oprot);
-=======
-          for (FieldSchema _iter875 : struct.cols)
-          {
-            _iter875.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          for (FieldSchema _iter891 : struct.cols)
-          {
-            _iter891.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            _iter899.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1373,27 +1323,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetCols()) {
         {
           oprot.writeI32(struct.cols.size());
-<<<<<<< HEAD
-<<<<<<< HEAD
-          for (FieldSchema _iter892 : struct.cols)
+          for (FieldSchema _iter900 : struct.cols)
           {
-            _iter892.write(oprot);
-=======
-<<<<<<< HEAD
-          for (FieldSchema _iter884 : struct.cols)
-          {
-            _iter884.write(oprot);
-=======
-          for (FieldSchema _iter876 : struct.cols)
-          {
-            _iter876.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          for (FieldSchema _iter892 : struct.cols)
-          {
-            _iter892.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            _iter900.write(oprot);
           }
         }
       }
@@ -1436,46 +1368,14 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(3)) {
         {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-          org.apache.thrift.protocol.TList _list893 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.cols = new ArrayList<FieldSchema>(_list893.size);
-          FieldSchema _elem894;
-          for (int _i895 = 0; _i895 < _list893.size; ++_i895)
-<<<<<<< HEAD
+          org.apache.thrift.protocol.TList _list901 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.cols = new ArrayList<FieldSchema>(_list901.size);
+          FieldSchema _elem902;
+          for (int _i903 = 0; _i903 < _list901.size; ++_i903)
           {
-            _elem894 = new FieldSchema();
-            _elem894.read(iprot);
-            struct.cols.add(_elem894);
-=======
-<<<<<<< HEAD
-          org.apache.thrift.protocol.TList _list885 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.cols = new ArrayList<FieldSchema>(_list885.size);
-          FieldSchema _elem886;
-          for (int _i887 = 0; _i887 < _list885.size; ++_i887)
-          {
-            _elem886 = new FieldSchema();
-            _elem886.read(iprot);
-            struct.cols.add(_elem886);
-=======
-          org.apache.thrift.protocol.TList _list877 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.cols = new ArrayList<FieldSchema>(_list877.size);
-          FieldSchema _elem878;
-          for (int _i879 = 0; _i879 < _list877.size; ++_i879)
-          {
-            _elem878 = new FieldSchema();
-            _elem878.read(iprot);
-            struct.cols.add(_elem878);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          {
-            _elem894 = new FieldSchema();
-            _elem894.read(iprot);
-            struct.cols.add(_elem894);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            _elem902 = new FieldSchema();
+            _elem902.read(iprot);
+            struct.cols.add(_elem902);
           }
         }
         struct.setColsIsSet(true);

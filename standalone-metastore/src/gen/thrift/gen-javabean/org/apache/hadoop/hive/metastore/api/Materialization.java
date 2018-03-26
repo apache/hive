@@ -518,92 +518,13 @@ import org.slf4j.LoggerFactory;
           case 1: // TABLES_USED
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-                org.apache.thrift.protocol.TSet _set816 = iprot.readSetBegin();
-                struct.tablesUsed = new HashSet<String>(2*_set816.size);
-                String _elem817;
-                for (int _i818 = 0; _i818 < _set816.size; ++_i818)
-<<<<<<< HEAD
+                org.apache.thrift.protocol.TSet _set824 = iprot.readSetBegin();
+                struct.tablesUsed = new HashSet<String>(2*_set824.size);
+                String _elem825;
+                for (int _i826 = 0; _i826 < _set824.size; ++_i826)
                 {
-                  _elem817 = iprot.readString();
-                  struct.tablesUsed.add(_elem817);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TSet _set808 = iprot.readSetBegin();
-                struct.tablesUsed = new HashSet<String>(2*_set808.size);
-                String _elem809;
-                for (int _i810 = 0; _i810 < _set808.size; ++_i810)
-                {
-                  _elem809 = iprot.readString();
-                  struct.tablesUsed.add(_elem809);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TSet _set792 = iprot.readSetBegin();
-                struct.tablesUsed = new HashSet<String>(2*_set792.size);
-                String _elem793;
-                for (int _i794 = 0; _i794 < _set792.size; ++_i794)
-                {
-                  _elem793 = iprot.readString();
-                  struct.tablesUsed.add(_elem793);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-                org.apache.thrift.protocol.TSet _set810 = iprot.readSetBegin();
-                struct.tablesUsed = new HashSet<String>(2*_set810.size);
-                String _elem811;
-                for (int _i812 = 0; _i812 < _set810.size; ++_i812)
-                {
-                  _elem811 = iprot.readString();
-                  struct.tablesUsed.add(_elem811);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-                org.apache.thrift.protocol.TSet _set794 = iprot.readSetBegin();
-                struct.tablesUsed = new HashSet<String>(2*_set794.size);
-                String _elem795;
-                for (int _i796 = 0; _i796 < _set794.size; ++_i796)
-                {
-                  _elem795 = iprot.readString();
-                  struct.tablesUsed.add(_elem795);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-                org.apache.thrift.protocol.TSet _set800 = iprot.readSetBegin();
-                struct.tablesUsed = new HashSet<String>(2*_set800.size);
-                String _elem801;
-                for (int _i802 = 0; _i802 < _set800.size; ++_i802)
-                {
-                  _elem801 = iprot.readString();
-                  struct.tablesUsed.add(_elem801);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-                {
-                  _elem817 = iprot.readString();
-                  struct.tablesUsed.add(_elem817);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+                  _elem825 = iprot.readString();
+                  struct.tablesUsed.add(_elem825);
                 }
                 iprot.readSetEnd();
               }
@@ -645,65 +566,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(TABLES_USED_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, struct.tablesUsed.size()));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-          for (String _iter819 : struct.tablesUsed)
+          for (String _iter827 : struct.tablesUsed)
           {
-            oprot.writeString(_iter819);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-          for (String _iter811 : struct.tablesUsed)
-          {
-            oprot.writeString(_iter811);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-          for (String _iter795 : struct.tablesUsed)
-          {
-            oprot.writeString(_iter795);
-=======
-          for (String _iter813 : struct.tablesUsed)
-          {
-            oprot.writeString(_iter813);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-          for (String _iter813 : struct.tablesUsed)
-          {
-            oprot.writeString(_iter813);
-=======
-          for (String _iter797 : struct.tablesUsed)
-          {
-            oprot.writeString(_iter797);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-          for (String _iter803 : struct.tablesUsed)
-          {
-            oprot.writeString(_iter803);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-          for (String _iter819 : struct.tablesUsed)
-          {
-            oprot.writeString(_iter819);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+            oprot.writeString(_iter827);
           }
           oprot.writeSetEnd();
         }
@@ -738,65 +603,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.tablesUsed.size());
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        for (String _iter820 : struct.tablesUsed)
+        for (String _iter828 : struct.tablesUsed)
         {
-          oprot.writeString(_iter820);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-        for (String _iter812 : struct.tablesUsed)
-        {
-          oprot.writeString(_iter812);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-        for (String _iter796 : struct.tablesUsed)
-        {
-          oprot.writeString(_iter796);
-=======
-        for (String _iter814 : struct.tablesUsed)
-        {
-          oprot.writeString(_iter814);
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-        for (String _iter814 : struct.tablesUsed)
-        {
-          oprot.writeString(_iter814);
-=======
-        for (String _iter798 : struct.tablesUsed)
-        {
-          oprot.writeString(_iter798);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-        for (String _iter804 : struct.tablesUsed)
-        {
-          oprot.writeString(_iter804);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-        for (String _iter820 : struct.tablesUsed)
-        {
-          oprot.writeString(_iter820);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+          oprot.writeString(_iter828);
         }
       }
       oprot.writeI64(struct.invalidationTime);
@@ -814,92 +623,13 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, Materialization struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
-        org.apache.thrift.protocol.TSet _set821 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.tablesUsed = new HashSet<String>(2*_set821.size);
-        String _elem822;
-        for (int _i823 = 0; _i823 < _set821.size; ++_i823)
-<<<<<<< HEAD
+        org.apache.thrift.protocol.TSet _set829 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.tablesUsed = new HashSet<String>(2*_set829.size);
+        String _elem830;
+        for (int _i831 = 0; _i831 < _set829.size; ++_i831)
         {
-          _elem822 = iprot.readString();
-          struct.tablesUsed.add(_elem822);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-<<<<<<< HEAD
-        org.apache.thrift.protocol.TSet _set813 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.tablesUsed = new HashSet<String>(2*_set813.size);
-        String _elem814;
-        for (int _i815 = 0; _i815 < _set813.size; ++_i815)
-        {
-          _elem814 = iprot.readString();
-          struct.tablesUsed.add(_elem814);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-        org.apache.thrift.protocol.TSet _set797 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.tablesUsed = new HashSet<String>(2*_set797.size);
-        String _elem798;
-        for (int _i799 = 0; _i799 < _set797.size; ++_i799)
-        {
-          _elem798 = iprot.readString();
-          struct.tablesUsed.add(_elem798);
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-        org.apache.thrift.protocol.TSet _set815 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.tablesUsed = new HashSet<String>(2*_set815.size);
-        String _elem816;
-        for (int _i817 = 0; _i817 < _set815.size; ++_i817)
-        {
-          _elem816 = iprot.readString();
-          struct.tablesUsed.add(_elem816);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-=======
-        org.apache.thrift.protocol.TSet _set799 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.tablesUsed = new HashSet<String>(2*_set799.size);
-        String _elem800;
-        for (int _i801 = 0; _i801 < _set799.size; ++_i801)
-        {
-          _elem800 = iprot.readString();
-          struct.tablesUsed.add(_elem800);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-=======
-        org.apache.thrift.protocol.TSet _set805 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.tablesUsed = new HashSet<String>(2*_set805.size);
-        String _elem806;
-        for (int _i807 = 0; _i807 < _set805.size; ++_i807)
-        {
-          _elem806 = iprot.readString();
-          struct.tablesUsed.add(_elem806);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-=======
-        {
-          _elem822 = iprot.readString();
-          struct.tablesUsed.add(_elem822);
->>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
+          _elem830 = iprot.readString();
+          struct.tablesUsed.add(_elem830);
         }
       }
       struct.setTablesUsedIsSet(true);

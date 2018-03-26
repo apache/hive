@@ -135,7 +135,6 @@ import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
 
 /**
  * A handler to answer transaction related calls that come into the metastore
@@ -365,8 +364,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     maxOpenTxns = MetastoreConf.getIntVar(conf, ConfVars.MAX_OPEN_TXNS);
 
     try {
-      transactionalListeners = MetaStoreUtils.getMetaStoreListeners
-              (TransactionalMetaStoreEventListener.class,
+      transactionalListeners = MetaStoreUtils.getMetaStoreListeners(
+              TransactionalMetaStoreEventListener.class,
                       conf, MetastoreConf.getVar(conf, ConfVars.TRANSACTIONAL_EVENT_LISTENERS));
     } catch(MetaException e) {
       String msg = "Unable to get transaction listeners, " + e.getMessage();
@@ -644,8 +643,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
         }
 
-        MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+        if (transactionalListeners != null) {
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                   EventMessage.EventType.OPEN_TXN, new OpenTxnEvent(txnIds, dbConn, sqlGenerator));
+        }
 
         LOG.debug("Going to commit");
         dbConn.commit();
@@ -714,7 +715,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           if(status == TxnStatus.ABORTED) {
             if (rqst.isSetReplPolicy()) {
               // in case of replication, idempotent is taken care by getTargetTxnId
-              LOG.warn("Invalid state for transactions started using replication replay task");
+              LOG.warn("Invalid state ABORTED for transactions started using replication replay task");
+              String s = "delete from REPL_TXN_MAP where RTM_SRC_TXN_ID = " + sourceTxnId +
+                      " and RTM_REPL_POLICY = " + quoteString(rqst.getReplPolicy());
+              LOG.info("Going to execute  <" + s + ">");
+              stmt.executeUpdate(s);
             }
             LOG.info("abortTxn(" + JavaUtils.txnIdToString(txnid) +
               ") requested by it is already " + TxnStatus.ABORTED);
@@ -730,8 +735,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           stmt.executeUpdate(s);
         }
 
-        MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+        if (transactionalListeners != null) {
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                   EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnid, dbConn, sqlGenerator));
+        }
 
         LOG.debug("Going to commit");
         dbConn.commit();
@@ -767,8 +774,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         for (Long txnId : txnids) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnId, dbConn, sqlGenerator));
+          if (transactionalListeners != null) {
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                    EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnId, dbConn, sqlGenerator));
+          }
         }
         LOG.debug("Going to commit");
         dbConn.commit();
@@ -848,7 +857,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           if(actualTxnStatus == TxnStatus.COMMITTED) {
             if (rqst.isSetReplPolicy()) {
               // in case of replication, idempotent is taken care by getTargetTxnId
-              LOG.warn("Invalid state for transactions started using replication replay task");
+              LOG.warn("Invalid state COMMITTED for transactions started using replication replay task");
             }
             /**
              * This makes the operation idempotent
@@ -996,8 +1005,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           stmt.executeUpdate(s);
         }
 
-        MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                EventMessage.EventType.COMMIT_TXN, new CommitTxnEvent(txnid, dbConn, sqlGenerator));
+        if (transactionalListeners != null) {
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventMessage.EventType.COMMIT_TXN, new CommitTxnEvent(txnid, dbConn, sqlGenerator));
+        }
 
         close(rs);
         dbConn.commit();

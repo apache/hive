@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.load.message;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
 import org.apache.hadoop.hive.ql.exec.ReplTxnWork;
 import org.apache.hadoop.hive.ql.exec.Task;

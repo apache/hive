@@ -81,9 +81,7 @@ import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Lists;
-
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
 
@@ -657,19 +655,8 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       stmt.executeUpdate(s);
 
       List<String> insert = new ArrayList<>();
-      int trimmedNow;
 
-      long millis = System.currentTimeMillis();
-      millis /= 1000;
-      if (millis > Integer.MAX_VALUE) {
-        LOG.warn("We've passed max int value in seconds since the epoch, " +
-                "all notification times will be the same!");
-        trimmedNow = Integer.MAX_VALUE;
-      } else {
-        trimmedNow = (int) millis;
-      }
-
-      insert.add(0, nextNLId + "," + nextEventId + "," + trimmedNow + "," +
+      insert.add(0, nextNLId + "," + nextEventId + "," + now() + "," +
               quoteString(event.getEventType()) + "," + quoteString(event.getDbName()) + "," +
               quoteString(" ") + "," + quoteString(event.getMessage()) + "," +
               quoteString(event.getMessageFormat()));
@@ -690,23 +677,21 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
                 Long.toString(event.getEventId()));
       }
     } catch (SQLException e) {
-      LOG.warn("failed to add notification log" + getMessage(e));
+      LOG.warn("failed to add notification log" + e.getMessage());
       throw e;
     } finally {
       if (stmt != null && !stmt.isClosed()) {
         try {
           stmt.close();
         } catch (SQLException e) {
-          LOG.warn("Failed to close statement " + getMessage(e));
-          throw e;
+          LOG.warn("Failed to close statement " + e.getMessage());
         }
       }
       if (rs != null && !rs.isClosed()) {
         try {
           rs.close();
         } catch (SQLException e) {
-          LOG.warn("Failed to close result set " + getMessage(e));
-          throw e;
+          LOG.warn("Failed to close result set " + e.getMessage());
         }
       }
     }

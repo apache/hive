@@ -241,14 +241,6 @@ public abstract class MessageFactory {
                                                    boolean replace, Iterator<String> files);
 
   /**
-   * Factory method for building open txn message using a list of transaction ids
-   *
-   * @param txnIds List of ids of the newly opened transactions
-   * @return instance of OpenTxnMessage
-   */
-  public abstract OpenTxnMessage buildOpenTxnMessage(List<Long> txnIds);
-
-  /**
    * Factory method for building open txn message using start and end transaction range
    *
    * @param fromTxnId start transaction id (inclusive)

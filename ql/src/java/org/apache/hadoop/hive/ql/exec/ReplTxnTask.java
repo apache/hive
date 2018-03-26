@@ -57,17 +57,15 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
                 work.getTxnIds().toString() + " and target txn id " + txnIds.toString());
         return 0;
       case REPL_ABORT_TXN:
-        for (int idx = 0; idx < work.getTxnIds().size(); idx++) {
-          txnManager.replRollbackTxn(replPolicy, work.getTxnId(idx));
-          LOG.info("Replayed AbortTxn Event for policy " + replPolicy +
-                  " with srcTxn " + work.getTxnId(idx));
+        for (long txnId : work.getTxnIds()) {
+          txnManager.replRollbackTxn(replPolicy, txnId);
+          LOG.info("Replayed AbortTxn Event for policy " + replPolicy + " with srcTxn " + txnId);
         }
         return 0;
       case REPL_COMMIT_TXN:
-        for (int idx = 0; idx < work.getTxnIds().size(); idx++) {
-          txnManager.replCommitTxn(replPolicy, work.getTxnId(idx));
-          LOG.info("Replayed CommitTxn Event for policy " + replPolicy + " with srcTxn " +
-                  work.getTxnId(idx));
+        for (long txnId : work.getTxnIds()) {
+          txnManager.replCommitTxn(replPolicy, txnId);
+          LOG.info("Replayed CommitTxn Event for policy " + replPolicy + " with srcTxn " + txnId);
         }
         return 0;
       default:

@@ -51,7 +51,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.lang.RuntimeException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
