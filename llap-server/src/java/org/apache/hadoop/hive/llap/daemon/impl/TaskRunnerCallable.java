@@ -269,7 +269,8 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
           request.getContainerIdString(),
           fragmentId,
           initialEvent,
-          requestId);
+          requestId,
+          wmCounters);
 
       String attemptId = fragmentInfo.getFragmentIdentifierString();
       IOContextMap.setThreadAttemptId(attemptId);

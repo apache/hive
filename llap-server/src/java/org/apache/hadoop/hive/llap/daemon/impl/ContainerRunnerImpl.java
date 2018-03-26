@@ -268,8 +268,8 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
       Configuration callableConf = new Configuration(getConfig());
       UserGroupInformation fsTaskUgi = fsUgiFactory == null ? null : fsUgiFactory.createUgi();
       boolean isGuaranteed = request.hasIsGuaranteed() && request.getIsGuaranteed();
-      WmFragmentCounters wmCounters = new WmFragmentCounters(
-          FragmentCountersMap.getCountersForFragment(fragmentId));
+      // TODO: ideally we'd register TezCounters here, but it seems impossible before registerTask.
+      WmFragmentCounters wmCounters = new WmFragmentCounters();
       TaskRunnerCallable callable = new TaskRunnerCallable(request, fragmentInfo, callableConf,
           new ExecutionContextImpl(localAddress.get().getHostName()), env,
           credentials, memoryPerExecutor, amReporter, confParams, metrics, killedTaskHandler,
