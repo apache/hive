@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hive.llap.counters;
 
+
 import java.util.concurrent.atomic.AtomicLongArray;
+
 import org.apache.tez.common.counters.TezCounters;
 
 /**
@@ -29,11 +31,10 @@ public class WmFragmentCounters {
   private LlapWmCounters currentCounter = null;
   private long currentCounterStartTime = 0;
   private final AtomicLongArray fixedCounters;
-  private final TezCounters tezCounters;
 
-  public WmFragmentCounters(final TezCounters tezCounters) {
+  public WmFragmentCounters() {
+    // Note: WmFragmentCounters are created before Tez counters are created.
     this.fixedCounters = new AtomicLongArray(LlapWmCounters.values().length);
-    this.tezCounters = tezCounters;
   }
 
   public void changeStateQueued(boolean isGuaranteed) {
@@ -86,6 +87,8 @@ public class WmFragmentCounters {
 
 
   private void changeState(State newState, LlapWmCounters counter) {
+    // Note: there are so many different onSuccess/onFailure callbacks floating around that
+    //       this will probably be called twice for the done state. This is ok given the sync.
     long newTime = System.nanoTime();
     long oldTime = -1;
     LlapWmCounters oldCounter = null;
@@ -107,8 +110,14 @@ public class WmFragmentCounters {
 
   private void incrCounter(LlapWmCounters counter, long delta) {
     fixedCounters.addAndGet(counter.ordinal(), delta);
-    if (tezCounters != null) {
-      tezCounters.findCounter(LlapWmCounters.values()[counter.ordinal()]).increment(delta);
+  }
+
+  public void dumpToTezCounters(TezCounters tezCounters, boolean isLast) {
+    if (isLast) {
+      changeStateDone(); // Record the final counters.
+    }
+    for (int i = 0; i < fixedCounters.length(); ++i) {
+      tezCounters.findCounter(LlapWmCounters.values()[i]).setValue(fixedCounters.get(i));
     }
   }
 
@@ -125,9 +134,5 @@ public class WmFragmentCounters {
     }
     sb.append(" ]");
     return sb.toString();
-  }
-
-  public TezCounters getTezCounters() {
-    return tezCounters;
   }
 }
