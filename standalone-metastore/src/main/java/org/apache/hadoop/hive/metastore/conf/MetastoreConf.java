@@ -1142,8 +1142,8 @@ public class MetastoreConf {
     }
 
     if (!beenDumped.getAndSet(true) && getBoolVar(conf, ConfVars.DUMP_CONFIG_ON_CREATION) &&
-        LOG.isInfoEnabled()) {
-      LOG.info(dumpConfig(conf));
+        LOG.isDebugEnabled()) {
+      LOG.debug(dumpConfig(conf));
     }
     return conf;
   }
