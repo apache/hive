@@ -356,10 +356,14 @@ import org.slf4j.LoggerFactory;
               {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 org.apache.thrift.protocol.TList _list602 = iprot.readListBegin();
                 struct.tblValidWriteIds = new ArrayList<TableValidWriteIds>(_list602.size);
                 TableValidWriteIds _elem603;
                 for (int _i604 = 0; _i604 < _list602.size; ++_i604)
+<<<<<<< HEAD
                 {
                   _elem603 = new TableValidWriteIds();
                   _elem603.read(iprot);
@@ -411,6 +415,12 @@ import org.slf4j.LoggerFactory;
                   struct.tblValidWriteIds.add(_elem587);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+                {
+                  _elem603 = new TableValidWriteIds();
+                  _elem603.read(iprot);
+                  struct.tblValidWriteIds.add(_elem603);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 }
                 iprot.readListEnd();
               }
@@ -436,6 +446,7 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(TBL_VALID_WRITE_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.tblValidWriteIds.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
           for (TableValidWriteIds _iter605 : struct.tblValidWriteIds)
@@ -468,6 +479,11 @@ import org.slf4j.LoggerFactory;
             _iter589.write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          for (TableValidWriteIds _iter605 : struct.tblValidWriteIds)
+          {
+            _iter605.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
           oprot.writeListEnd();
         }
@@ -492,6 +508,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.tblValidWriteIds.size());
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         for (TableValidWriteIds _iter606 : struct.tblValidWriteIds)
@@ -524,6 +541,11 @@ import org.slf4j.LoggerFactory;
           _iter590.write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        for (TableValidWriteIds _iter606 : struct.tblValidWriteIds)
+        {
+          _iter606.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         }
       }
     }
@@ -534,10 +556,14 @@ import org.slf4j.LoggerFactory;
       {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         org.apache.thrift.protocol.TList _list607 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
         struct.tblValidWriteIds = new ArrayList<TableValidWriteIds>(_list607.size);
         TableValidWriteIds _elem608;
         for (int _i609 = 0; _i609 < _list607.size; ++_i609)
+<<<<<<< HEAD
         {
           _elem608 = new TableValidWriteIds();
           _elem608.read(iprot);
@@ -589,6 +615,12 @@ import org.slf4j.LoggerFactory;
           struct.tblValidWriteIds.add(_elem592);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        {
+          _elem608 = new TableValidWriteIds();
+          _elem608.read(iprot);
+          struct.tblValidWriteIds.add(_elem608);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         }
       }
       struct.setTblValidWriteIdsIsSet(true);

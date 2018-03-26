@@ -11144,10 +11144,10 @@ class OpenTxnRequest:
       elif fid == 6:
         if ftype == TType.LIST:
           self.replSrcTxnIds = []
-          (_etype484, _size481) = iprot.readListBegin()
-          for _i485 in xrange(_size481):
-            _elem486 = iprot.readI64()
-            self.replSrcTxnIds.append(_elem486)
+          (_etype498, _size495) = iprot.readListBegin()
+          for _i499 in xrange(_size495):
+            _elem500 = iprot.readI64()
+            self.replSrcTxnIds.append(_elem500)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -11184,8 +11184,8 @@ class OpenTxnRequest:
     if self.replSrcTxnIds is not None:
       oprot.writeFieldBegin('replSrcTxnIds', TType.LIST, 6)
       oprot.writeListBegin(TType.I64, len(self.replSrcTxnIds))
-      for iter487 in self.replSrcTxnIds:
-        oprot.writeI64(iter487)
+      for iter501 in self.replSrcTxnIds:
+        oprot.writeI64(iter501)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -11250,10 +11250,14 @@ class OpenTxnsResponse:
           self.txn_ids = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype505, _size502) = iprot.readListBegin()
           for _i506 in xrange(_size502):
             _elem507 = iprot.readI64()
             self.txn_ids.append(_elem507)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
@@ -11285,6 +11289,8 @@ class OpenTxnsResponse:
             self.txn_ids.append(_elem493)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -11301,6 +11307,7 @@ class OpenTxnsResponse:
     if self.txn_ids is not None:
       oprot.writeFieldBegin('txn_ids', TType.LIST, 1)
       oprot.writeListBegin(TType.I64, len(self.txn_ids))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
       for iter508 in self.txn_ids:
@@ -11328,6 +11335,10 @@ class OpenTxnsResponse:
         oprot.writeI64(iter494)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter508 in self.txn_ids:
+        oprot.writeI64(iter508)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -11463,10 +11474,14 @@ class AbortTxnsRequest:
           self.txn_ids = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype512, _size509) = iprot.readListBegin()
           for _i513 in xrange(_size509):
             _elem514 = iprot.readI64()
             self.txn_ids.append(_elem514)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
@@ -11498,6 +11513,8 @@ class AbortTxnsRequest:
             self.txn_ids.append(_elem500)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -11514,6 +11531,7 @@ class AbortTxnsRequest:
     if self.txn_ids is not None:
       oprot.writeFieldBegin('txn_ids', TType.LIST, 1)
       oprot.writeListBegin(TType.I64, len(self.txn_ids))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
       for iter515 in self.txn_ids:
@@ -11541,6 +11559,10 @@ class AbortTxnsRequest:
         oprot.writeI64(iter501)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter515 in self.txn_ids:
+        oprot.writeI64(iter515)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -11679,10 +11701,14 @@ class GetValidWriteIdsRequest:
           self.fullTableNames = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype519, _size516) = iprot.readListBegin()
           for _i520 in xrange(_size516):
             _elem521 = iprot.readString()
             self.fullTableNames.append(_elem521)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
@@ -11714,6 +11740,8 @@ class GetValidWriteIdsRequest:
             self.fullTableNames.append(_elem507)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -11735,6 +11763,7 @@ class GetValidWriteIdsRequest:
     if self.fullTableNames is not None:
       oprot.writeFieldBegin('fullTableNames', TType.LIST, 1)
       oprot.writeListBegin(TType.STRING, len(self.fullTableNames))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
       for iter522 in self.fullTableNames:
@@ -11762,6 +11791,10 @@ class GetValidWriteIdsRequest:
         oprot.writeString(iter508)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter522 in self.fullTableNames:
+        oprot.writeString(iter522)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.validTxnList is not None:
@@ -11846,10 +11879,14 @@ class TableValidWriteIds:
           self.invalidWriteIds = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype526, _size523) = iprot.readListBegin()
           for _i527 in xrange(_size523):
             _elem528 = iprot.readI64()
             self.invalidWriteIds.append(_elem528)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
@@ -11881,6 +11918,8 @@ class TableValidWriteIds:
             self.invalidWriteIds.append(_elem514)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -11917,6 +11956,7 @@ class TableValidWriteIds:
       oprot.writeListBegin(TType.I64, len(self.invalidWriteIds))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter529 in self.invalidWriteIds:
         oprot.writeI64(iter529)
 =======
@@ -11942,6 +11982,10 @@ class TableValidWriteIds:
         oprot.writeI64(iter515)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter529 in self.invalidWriteIds:
+        oprot.writeI64(iter529)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.minOpenWriteId is not None:
@@ -12016,11 +12060,15 @@ class GetValidWriteIdsResponse:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype533, _size530) = iprot.readListBegin()
           for _i534 in xrange(_size530):
             _elem535 = TableValidWriteIds()
             _elem535.read(iprot)
             self.tblValidWriteIds.append(_elem535)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -12078,6 +12126,8 @@ class GetValidWriteIdsResponse:
             self.tblValidWriteIds.append(_elem521)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -12094,6 +12144,7 @@ class GetValidWriteIdsResponse:
     if self.tblValidWriteIds is not None:
       oprot.writeFieldBegin('tblValidWriteIds', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.tblValidWriteIds))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -12140,6 +12191,10 @@ class GetValidWriteIdsResponse:
         iter522.write(oprot)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter536 in self.tblValidWriteIds:
+        iter536.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -12201,10 +12256,14 @@ class AllocateTableWriteIdsRequest:
           self.txnIds = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype540, _size537) = iprot.readListBegin()
           for _i541 in xrange(_size537):
             _elem542 = iprot.readI64()
             self.txnIds.append(_elem542)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
@@ -12236,6 +12295,8 @@ class AllocateTableWriteIdsRequest:
             self.txnIds.append(_elem528)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -12264,6 +12325,7 @@ class AllocateTableWriteIdsRequest:
       oprot.writeListBegin(TType.I64, len(self.txnIds))
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter543 in self.txnIds:
         oprot.writeI64(iter543)
 =======
@@ -12289,6 +12351,10 @@ class AllocateTableWriteIdsRequest:
         oprot.writeI64(iter529)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter543 in self.txnIds:
+        oprot.writeI64(iter543)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.dbName is not None:
@@ -12440,11 +12506,15 @@ class AllocateTableWriteIdsResponse:
           self.txnToWriteIds = []
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype547, _size544) = iprot.readListBegin()
           for _i548 in xrange(_size544):
             _elem549 = TxnToWriteId()
             _elem549.read(iprot)
             self.txnToWriteIds.append(_elem549)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
@@ -12480,6 +12550,8 @@ class AllocateTableWriteIdsResponse:
             self.txnToWriteIds.append(_elem535)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -12496,6 +12568,7 @@ class AllocateTableWriteIdsResponse:
     if self.txnToWriteIds is not None:
       oprot.writeFieldBegin('txnToWriteIds', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.txnToWriteIds))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
       for iter550 in self.txnToWriteIds:
@@ -12523,6 +12596,10 @@ class AllocateTableWriteIdsResponse:
         iter536.write(oprot)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter550 in self.txnToWriteIds:
+        iter550.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -12753,11 +12830,15 @@ class LockRequest:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype554, _size551) = iprot.readListBegin()
           for _i555 in xrange(_size551):
             _elem556 = LockComponent()
             _elem556.read(iprot)
             self.component.append(_elem556)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -12815,6 +12896,8 @@ class LockRequest:
             self.component.append(_elem542)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -12851,6 +12934,7 @@ class LockRequest:
     if self.component is not None:
       oprot.writeFieldBegin('component', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.component))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -12897,6 +12981,10 @@ class LockRequest:
         iter543.write(oprot)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter557 in self.component:
+        iter557.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.txnid is not None:
@@ -13597,11 +13685,15 @@ class ShowLocksResponse:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype561, _size558) = iprot.readListBegin()
           for _i562 in xrange(_size558):
             _elem563 = ShowLocksResponseElement()
             _elem563.read(iprot)
             self.locks.append(_elem563)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -13659,6 +13751,8 @@ class ShowLocksResponse:
             self.locks.append(_elem549)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -13675,6 +13769,7 @@ class ShowLocksResponse:
     if self.locks is not None:
       oprot.writeFieldBegin('locks', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.locks))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -13721,6 +13816,10 @@ class ShowLocksResponse:
         iter550.write(oprot)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter564 in self.locks:
+        iter564.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -13938,10 +14037,14 @@ class HeartbeatTxnRangeResponse:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype568, _size565) = iprot.readSetBegin()
           for _i569 in xrange(_size565):
             _elem570 = iprot.readI64()
             self.aborted.add(_elem570)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -13994,6 +14097,8 @@ class HeartbeatTxnRangeResponse:
             self.aborted.add(_elem556)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
@@ -14003,10 +14108,14 @@ class HeartbeatTxnRangeResponse:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype574, _size571) = iprot.readSetBegin()
           for _i575 in xrange(_size571):
             _elem576 = iprot.readI64()
             self.nosuch.add(_elem576)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -14059,6 +14168,8 @@ class HeartbeatTxnRangeResponse:
             self.nosuch.add(_elem562)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
@@ -14075,6 +14186,7 @@ class HeartbeatTxnRangeResponse:
     if self.aborted is not None:
       oprot.writeFieldBegin('aborted', TType.SET, 1)
       oprot.writeSetBegin(TType.I64, len(self.aborted))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -14121,11 +14233,16 @@ class HeartbeatTxnRangeResponse:
         oprot.writeI64(iter563)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter577 in self.aborted:
+        oprot.writeI64(iter577)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     if self.nosuch is not None:
       oprot.writeFieldBegin('nosuch', TType.SET, 2)
       oprot.writeSetBegin(TType.I64, len(self.nosuch))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -14172,6 +14289,10 @@ class HeartbeatTxnRangeResponse:
         oprot.writeI64(iter564)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter578 in self.nosuch:
+        oprot.writeI64(iter578)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -14271,11 +14392,15 @@ class CompactionRequest:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_ktype580, _vtype581, _size579 ) = iprot.readMapBegin()
           for _i583 in xrange(_size579):
             _key584 = iprot.readString()
             _val585 = iprot.readString()
             self.properties[_key584] = _val585
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -14333,6 +14458,8 @@ class CompactionRequest:
             self.properties[_key570] = _val571
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -14369,6 +14496,7 @@ class CompactionRequest:
     if self.properties is not None:
       oprot.writeFieldBegin('properties', TType.MAP, 6)
       oprot.writeMapBegin(TType.STRING, TType.STRING, len(self.properties))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -14422,6 +14550,11 @@ class CompactionRequest:
         oprot.writeString(viter573)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for kiter586,viter587 in self.properties.items():
+        oprot.writeString(kiter586)
+        oprot.writeString(viter587)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -14859,11 +14992,15 @@ class ShowCompactResponse:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype591, _size588) = iprot.readListBegin()
           for _i592 in xrange(_size588):
             _elem593 = ShowCompactResponseElement()
             _elem593.read(iprot)
             self.compacts.append(_elem593)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -14921,6 +15058,8 @@ class ShowCompactResponse:
             self.compacts.append(_elem579)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -14937,6 +15076,7 @@ class ShowCompactResponse:
     if self.compacts is not None:
       oprot.writeFieldBegin('compacts', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.compacts))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -14983,6 +15123,10 @@ class ShowCompactResponse:
         iter580.write(oprot)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter594 in self.compacts:
+        iter594.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -15074,10 +15218,14 @@ class AddDynamicPartitions:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype598, _size595) = iprot.readListBegin()
           for _i599 in xrange(_size595):
             _elem600 = iprot.readString()
             self.partitionnames.append(_elem600)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -15130,6 +15278,8 @@ class AddDynamicPartitions:
             self.partitionnames.append(_elem586)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -15167,6 +15317,7 @@ class AddDynamicPartitions:
     if self.partitionnames is not None:
       oprot.writeFieldBegin('partitionnames', TType.LIST, 5)
       oprot.writeListBegin(TType.STRING, len(self.partitionnames))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -15213,6 +15364,10 @@ class AddDynamicPartitions:
         oprot.writeString(iter587)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter601 in self.partitionnames:
+        oprot.writeString(iter601)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.operationType is not None:
@@ -15445,10 +15600,14 @@ class CreationMetadata:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype605, _size602) = iprot.readSetBegin()
           for _i606 in xrange(_size602):
             _elem607 = iprot.readString()
             self.tablesUsed.add(_elem607)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -15501,6 +15660,8 @@ class CreationMetadata:
             self.tablesUsed.add(_elem593)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
@@ -15534,6 +15695,7 @@ class CreationMetadata:
     if self.tablesUsed is not None:
       oprot.writeFieldBegin('tablesUsed', TType.SET, 4)
       oprot.writeSetBegin(TType.STRING, len(self.tablesUsed))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -15580,6 +15742,10 @@ class CreationMetadata:
         oprot.writeString(iter594)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter608 in self.tablesUsed:
+        oprot.writeString(iter608)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     if self.validTxnList is not None:
@@ -15894,11 +16060,15 @@ class NotificationEventResponse:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype612, _size609) = iprot.readListBegin()
           for _i613 in xrange(_size609):
             _elem614 = NotificationEvent()
             _elem614.read(iprot)
             self.events.append(_elem614)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -15956,6 +16126,8 @@ class NotificationEventResponse:
             self.events.append(_elem600)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -15972,6 +16144,7 @@ class NotificationEventResponse:
     if self.events is not None:
       oprot.writeFieldBegin('events', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.events))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -16018,6 +16191,10 @@ class NotificationEventResponse:
         iter601.write(oprot)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter615 in self.events:
+        iter615.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -16314,10 +16491,14 @@ class InsertEventRequestData:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype619, _size616) = iprot.readListBegin()
           for _i620 in xrange(_size616):
             _elem621 = iprot.readString()
             self.filesAdded.append(_elem621)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -16370,6 +16551,8 @@ class InsertEventRequestData:
             self.filesAdded.append(_elem607)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -16379,10 +16562,14 @@ class InsertEventRequestData:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype625, _size622) = iprot.readListBegin()
           for _i626 in xrange(_size622):
             _elem627 = iprot.readString()
             self.filesAddedChecksum.append(_elem627)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -16435,6 +16622,8 @@ class InsertEventRequestData:
             self.filesAddedChecksum.append(_elem613)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -16455,6 +16644,7 @@ class InsertEventRequestData:
     if self.filesAdded is not None:
       oprot.writeFieldBegin('filesAdded', TType.LIST, 2)
       oprot.writeListBegin(TType.STRING, len(self.filesAdded))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -16501,11 +16691,16 @@ class InsertEventRequestData:
         oprot.writeString(iter614)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter628 in self.filesAdded:
+        oprot.writeString(iter628)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.filesAddedChecksum is not None:
       oprot.writeFieldBegin('filesAddedChecksum', TType.LIST, 3)
       oprot.writeListBegin(TType.STRING, len(self.filesAddedChecksum))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -16552,6 +16747,10 @@ class InsertEventRequestData:
         oprot.writeString(iter615)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter629 in self.filesAddedChecksum:
+        oprot.writeString(iter629)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -16712,10 +16911,14 @@ class FireEventRequest:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype633, _size630) = iprot.readListBegin()
           for _i634 in xrange(_size630):
             _elem635 = iprot.readString()
             self.partitionVals.append(_elem635)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -16768,6 +16971,8 @@ class FireEventRequest:
             self.partitionVals.append(_elem621)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -16805,6 +17010,7 @@ class FireEventRequest:
     if self.partitionVals is not None:
       oprot.writeFieldBegin('partitionVals', TType.LIST, 5)
       oprot.writeListBegin(TType.STRING, len(self.partitionVals))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -16851,6 +17057,10 @@ class FireEventRequest:
         oprot.writeString(iter622)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter636 in self.partitionVals:
+        oprot.writeString(iter636)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.catName is not None:
@@ -17045,12 +17255,16 @@ class GetFileMetadataByExprResult:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_ktype638, _vtype639, _size637 ) = iprot.readMapBegin()
           for _i641 in xrange(_size637):
             _key642 = iprot.readI64()
             _val643 = MetadataPpdResult()
             _val643.read(iprot)
             self.metadata[_key642] = _val643
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -17113,6 +17327,8 @@ class GetFileMetadataByExprResult:
             self.metadata[_key628] = _val629
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -17134,6 +17350,7 @@ class GetFileMetadataByExprResult:
     if self.metadata is not None:
       oprot.writeFieldBegin('metadata', TType.MAP, 1)
       oprot.writeMapBegin(TType.I64, TType.STRUCT, len(self.metadata))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -17187,6 +17404,11 @@ class GetFileMetadataByExprResult:
         viter631.write(oprot)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for kiter644,viter645 in self.metadata.items():
+        oprot.writeI64(kiter644)
+        viter645.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.isSupported is not None:
@@ -17259,10 +17481,14 @@ class GetFileMetadataByExprRequest:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype649, _size646) = iprot.readListBegin()
           for _i650 in xrange(_size646):
             _elem651 = iprot.readI64()
             self.fileIds.append(_elem651)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -17315,6 +17541,8 @@ class GetFileMetadataByExprRequest:
             self.fileIds.append(_elem637)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -17346,6 +17574,7 @@ class GetFileMetadataByExprRequest:
     if self.fileIds is not None:
       oprot.writeFieldBegin('fileIds', TType.LIST, 1)
       oprot.writeListBegin(TType.I64, len(self.fileIds))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -17392,6 +17621,10 @@ class GetFileMetadataByExprRequest:
         oprot.writeI64(iter638)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter652 in self.fileIds:
+        oprot.writeI64(iter652)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.expr is not None:
@@ -17468,11 +17701,15 @@ class GetFileMetadataResult:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_ktype654, _vtype655, _size653 ) = iprot.readMapBegin()
           for _i657 in xrange(_size653):
             _key658 = iprot.readI64()
             _val659 = iprot.readString()
             self.metadata[_key658] = _val659
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -17530,6 +17767,8 @@ class GetFileMetadataResult:
             self.metadata[_key644] = _val645
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -17551,6 +17790,7 @@ class GetFileMetadataResult:
     if self.metadata is not None:
       oprot.writeFieldBegin('metadata', TType.MAP, 1)
       oprot.writeMapBegin(TType.I64, TType.STRING, len(self.metadata))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -17604,6 +17844,11 @@ class GetFileMetadataResult:
         oprot.writeString(viter647)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for kiter660,viter661 in self.metadata.items():
+        oprot.writeI64(kiter660)
+        oprot.writeString(viter661)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     if self.isSupported is not None:
@@ -17667,10 +17912,14 @@ class GetFileMetadataRequest:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype665, _size662) = iprot.readListBegin()
           for _i666 in xrange(_size662):
             _elem667 = iprot.readI64()
             self.fileIds.append(_elem667)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -17723,6 +17972,8 @@ class GetFileMetadataRequest:
             self.fileIds.append(_elem653)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -17739,6 +17990,7 @@ class GetFileMetadataRequest:
     if self.fileIds is not None:
       oprot.writeFieldBegin('fileIds', TType.LIST, 1)
       oprot.writeListBegin(TType.I64, len(self.fileIds))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -17785,6 +18037,10 @@ class GetFileMetadataRequest:
         oprot.writeI64(iter654)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter668 in self.fileIds:
+        oprot.writeI64(iter668)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -17893,10 +18149,14 @@ class PutFileMetadataRequest:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype672, _size669) = iprot.readListBegin()
           for _i673 in xrange(_size669):
             _elem674 = iprot.readI64()
             self.fileIds.append(_elem674)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -17949,6 +18209,8 @@ class PutFileMetadataRequest:
             self.fileIds.append(_elem660)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -17958,10 +18220,14 @@ class PutFileMetadataRequest:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype678, _size675) = iprot.readListBegin()
           for _i679 in xrange(_size675):
             _elem680 = iprot.readString()
             self.metadata.append(_elem680)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -18014,6 +18280,8 @@ class PutFileMetadataRequest:
             self.metadata.append(_elem666)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -18035,6 +18303,7 @@ class PutFileMetadataRequest:
     if self.fileIds is not None:
       oprot.writeFieldBegin('fileIds', TType.LIST, 1)
       oprot.writeListBegin(TType.I64, len(self.fileIds))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -18081,11 +18350,16 @@ class PutFileMetadataRequest:
         oprot.writeI64(iter667)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter681 in self.fileIds:
+        oprot.writeI64(iter681)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.metadata is not None:
       oprot.writeFieldBegin('metadata', TType.LIST, 2)
       oprot.writeListBegin(TType.STRING, len(self.metadata))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -18132,6 +18406,10 @@ class PutFileMetadataRequest:
         oprot.writeString(iter668)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter682 in self.metadata:
+        oprot.writeString(iter682)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.type is not None:
@@ -18242,10 +18520,14 @@ class ClearFileMetadataRequest:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype686, _size683) = iprot.readListBegin()
           for _i687 in xrange(_size683):
             _elem688 = iprot.readI64()
             self.fileIds.append(_elem688)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -18298,6 +18580,8 @@ class ClearFileMetadataRequest:
             self.fileIds.append(_elem674)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -18314,6 +18598,7 @@ class ClearFileMetadataRequest:
     if self.fileIds is not None:
       oprot.writeFieldBegin('fileIds', TType.LIST, 1)
       oprot.writeListBegin(TType.I64, len(self.fileIds))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -18360,6 +18645,10 @@ class ClearFileMetadataRequest:
         oprot.writeI64(iter675)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter689 in self.fileIds:
+        oprot.writeI64(iter689)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -18591,11 +18880,15 @@ class GetAllFunctionsResponse:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype693, _size690) = iprot.readListBegin()
           for _i694 in xrange(_size690):
             _elem695 = Function()
             _elem695.read(iprot)
             self.functions.append(_elem695)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -18653,6 +18946,8 @@ class GetAllFunctionsResponse:
             self.functions.append(_elem681)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -18669,6 +18964,7 @@ class GetAllFunctionsResponse:
     if self.functions is not None:
       oprot.writeFieldBegin('functions', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.functions))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -18715,6 +19011,10 @@ class GetAllFunctionsResponse:
         iter682.write(oprot)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter696 in self.functions:
+        iter696.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -18769,10 +19069,14 @@ class ClientCapabilities:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype700, _size697) = iprot.readListBegin()
           for _i701 in xrange(_size697):
             _elem702 = iprot.readI32()
             self.values.append(_elem702)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -18825,6 +19129,8 @@ class ClientCapabilities:
             self.values.append(_elem688)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -18841,6 +19147,7 @@ class ClientCapabilities:
     if self.values is not None:
       oprot.writeFieldBegin('values', TType.LIST, 1)
       oprot.writeListBegin(TType.I32, len(self.values))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -18887,6 +19194,10 @@ class ClientCapabilities:
         oprot.writeI32(iter689)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter703 in self.values:
+        oprot.writeI32(iter703)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -19134,10 +19445,14 @@ class GetTablesRequest:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype707, _size704) = iprot.readListBegin()
           for _i708 in xrange(_size704):
             _elem709 = iprot.readString()
             self.tblNames.append(_elem709)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -19190,6 +19505,8 @@ class GetTablesRequest:
             self.tblNames.append(_elem695)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -19221,6 +19538,7 @@ class GetTablesRequest:
     if self.tblNames is not None:
       oprot.writeFieldBegin('tblNames', TType.LIST, 2)
       oprot.writeListBegin(TType.STRING, len(self.tblNames))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -19267,6 +19585,10 @@ class GetTablesRequest:
         oprot.writeString(iter696)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter710 in self.tblNames:
+        oprot.writeString(iter710)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.capabilities is not None:
@@ -19334,11 +19656,15 @@ class GetTablesResult:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype714, _size711) = iprot.readListBegin()
           for _i715 in xrange(_size711):
             _elem716 = Table()
             _elem716.read(iprot)
             self.tables.append(_elem716)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -19396,6 +19722,8 @@ class GetTablesResult:
             self.tables.append(_elem702)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -19412,6 +19740,7 @@ class GetTablesResult:
     if self.tables is not None:
       oprot.writeFieldBegin('tables', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.tables))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -19458,6 +19787,10 @@ class GetTablesResult:
         iter703.write(oprot)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter717 in self.tables:
+        iter717.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -19771,10 +20104,14 @@ class Materialization:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype721, _size718) = iprot.readSetBegin()
           for _i722 in xrange(_size718):
             _elem723 = iprot.readString()
             self.tablesUsed.add(_elem723)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -19827,6 +20164,8 @@ class Materialization:
             self.tablesUsed.add(_elem709)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readSetEnd()
         else:
           iprot.skip(ftype)
@@ -19853,6 +20192,7 @@ class Materialization:
     if self.tablesUsed is not None:
       oprot.writeFieldBegin('tablesUsed', TType.SET, 1)
       oprot.writeSetBegin(TType.STRING, len(self.tablesUsed))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -19899,6 +20239,10 @@ class Materialization:
         oprot.writeString(iter710)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter724 in self.tablesUsed:
+        oprot.writeString(iter724)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeSetEnd()
       oprot.writeFieldEnd()
     if self.validTxnList is not None:
@@ -20803,11 +21147,15 @@ class WMFullResourcePlan:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype728, _size725) = iprot.readListBegin()
           for _i729 in xrange(_size725):
             _elem730 = WMPool()
             _elem730.read(iprot)
             self.pools.append(_elem730)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -20865,6 +21213,8 @@ class WMFullResourcePlan:
             self.pools.append(_elem716)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -20874,11 +21224,15 @@ class WMFullResourcePlan:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype734, _size731) = iprot.readListBegin()
           for _i735 in xrange(_size731):
             _elem736 = WMMapping()
             _elem736.read(iprot)
             self.mappings.append(_elem736)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -20936,6 +21290,8 @@ class WMFullResourcePlan:
             self.mappings.append(_elem722)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -20945,11 +21301,15 @@ class WMFullResourcePlan:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype740, _size737) = iprot.readListBegin()
           for _i741 in xrange(_size737):
             _elem742 = WMTrigger()
             _elem742.read(iprot)
             self.triggers.append(_elem742)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -21007,6 +21367,8 @@ class WMFullResourcePlan:
             self.triggers.append(_elem728)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -21016,11 +21378,15 @@ class WMFullResourcePlan:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype746, _size743) = iprot.readListBegin()
           for _i747 in xrange(_size743):
             _elem748 = WMPoolTrigger()
             _elem748.read(iprot)
             self.poolTriggers.append(_elem748)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -21078,6 +21444,8 @@ class WMFullResourcePlan:
             self.poolTriggers.append(_elem734)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -21098,6 +21466,7 @@ class WMFullResourcePlan:
     if self.pools is not None:
       oprot.writeFieldBegin('pools', TType.LIST, 2)
       oprot.writeListBegin(TType.STRUCT, len(self.pools))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -21144,11 +21513,16 @@ class WMFullResourcePlan:
         iter735.write(oprot)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter749 in self.pools:
+        iter749.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.mappings is not None:
       oprot.writeFieldBegin('mappings', TType.LIST, 3)
       oprot.writeListBegin(TType.STRUCT, len(self.mappings))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -21195,11 +21569,16 @@ class WMFullResourcePlan:
         iter736.write(oprot)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter750 in self.mappings:
+        iter750.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.triggers is not None:
       oprot.writeFieldBegin('triggers', TType.LIST, 4)
       oprot.writeListBegin(TType.STRUCT, len(self.triggers))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -21246,11 +21625,16 @@ class WMFullResourcePlan:
         iter737.write(oprot)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter751 in self.triggers:
+        iter751.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.poolTriggers is not None:
       oprot.writeFieldBegin('poolTriggers', TType.LIST, 5)
       oprot.writeListBegin(TType.STRUCT, len(self.poolTriggers))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -21297,6 +21681,10 @@ class WMFullResourcePlan:
         iter738.write(oprot)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter752 in self.poolTriggers:
+        iter752.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -21773,11 +22161,15 @@ class WMGetAllResourcePlanResponse:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype756, _size753) = iprot.readListBegin()
           for _i757 in xrange(_size753):
             _elem758 = WMResourcePlan()
             _elem758.read(iprot)
             self.resourcePlans.append(_elem758)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -21835,6 +22227,8 @@ class WMGetAllResourcePlanResponse:
             self.resourcePlans.append(_elem744)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -21851,6 +22245,7 @@ class WMGetAllResourcePlanResponse:
     if self.resourcePlans is not None:
       oprot.writeFieldBegin('resourcePlans', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.resourcePlans))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -21897,6 +22292,10 @@ class WMGetAllResourcePlanResponse:
         iter745.write(oprot)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter759 in self.resourcePlans:
+        iter759.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -22203,10 +22602,14 @@ class WMValidateResourcePlanResponse:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype763, _size760) = iprot.readListBegin()
           for _i764 in xrange(_size760):
             _elem765 = iprot.readString()
             self.errors.append(_elem765)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -22259,6 +22662,8 @@ class WMValidateResourcePlanResponse:
             self.errors.append(_elem751)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -22268,10 +22673,14 @@ class WMValidateResourcePlanResponse:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype769, _size766) = iprot.readListBegin()
           for _i770 in xrange(_size766):
             _elem771 = iprot.readString()
             self.warnings.append(_elem771)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -22324,6 +22733,8 @@ class WMValidateResourcePlanResponse:
             self.warnings.append(_elem757)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -22340,6 +22751,7 @@ class WMValidateResourcePlanResponse:
     if self.errors is not None:
       oprot.writeFieldBegin('errors', TType.LIST, 1)
       oprot.writeListBegin(TType.STRING, len(self.errors))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -22386,11 +22798,16 @@ class WMValidateResourcePlanResponse:
         oprot.writeString(iter758)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter772 in self.errors:
+        oprot.writeString(iter772)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.warnings is not None:
       oprot.writeFieldBegin('warnings', TType.LIST, 2)
       oprot.writeListBegin(TType.STRING, len(self.warnings))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -22437,6 +22854,10 @@ class WMValidateResourcePlanResponse:
         oprot.writeString(iter759)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter773 in self.warnings:
+        oprot.writeString(iter773)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -23016,11 +23437,15 @@ class WMGetTriggersForResourePlanResponse:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype777, _size774) = iprot.readListBegin()
           for _i778 in xrange(_size774):
             _elem779 = WMTrigger()
             _elem779.read(iprot)
             self.triggers.append(_elem779)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -23078,6 +23503,8 @@ class WMGetTriggersForResourePlanResponse:
             self.triggers.append(_elem765)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -23094,6 +23521,7 @@ class WMGetTriggersForResourePlanResponse:
     if self.triggers is not None:
       oprot.writeFieldBegin('triggers', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.triggers))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -23140,6 +23568,10 @@ class WMGetTriggersForResourePlanResponse:
         iter766.write(oprot)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter780 in self.triggers:
+        iter780.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -24324,11 +24756,15 @@ class SchemaVersion:
         if ftype == TType.LIST:
           self.cols = []
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype784, _size781) = iprot.readListBegin()
           for _i785 in xrange(_size781):
             _elem786 = FieldSchema()
             _elem786.read(iprot)
             self.cols.append(_elem786)
+<<<<<<< HEAD
 =======
 <<<<<<< HEAD
           (_etype777, _size774) = iprot.readListBegin()
@@ -24344,6 +24780,8 @@ class SchemaVersion:
             self.cols.append(_elem772)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -24404,6 +24842,7 @@ class SchemaVersion:
       oprot.writeFieldBegin('cols', TType.LIST, 4)
       oprot.writeListBegin(TType.STRUCT, len(self.cols))
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter787 in self.cols:
         iter787.write(oprot)
 =======
@@ -24415,6 +24854,10 @@ class SchemaVersion:
         iter773.write(oprot)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter787 in self.cols:
+        iter787.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.state is not None:
@@ -24670,11 +25113,15 @@ class FindSchemasByColsResp:
         if ftype == TType.LIST:
           self.schemaVersions = []
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           (_etype791, _size788) = iprot.readListBegin()
           for _i792 in xrange(_size788):
             _elem793 = SchemaVersionDescriptor()
             _elem793.read(iprot)
             self.schemaVersions.append(_elem793)
+<<<<<<< HEAD
 =======
 <<<<<<< HEAD
           (_etype784, _size781) = iprot.readListBegin()
@@ -24690,6 +25137,8 @@ class FindSchemasByColsResp:
             self.schemaVersions.append(_elem779)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -24707,6 +25156,7 @@ class FindSchemasByColsResp:
       oprot.writeFieldBegin('schemaVersions', TType.LIST, 1)
       oprot.writeListBegin(TType.STRUCT, len(self.schemaVersions))
 <<<<<<< HEAD
+<<<<<<< HEAD
       for iter794 in self.schemaVersions:
         iter794.write(oprot)
 =======
@@ -24718,6 +25168,10 @@ class FindSchemasByColsResp:
         iter780.write(oprot)
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      for iter794 in self.schemaVersions:
+        iter794.write(oprot)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()

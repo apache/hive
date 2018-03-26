@@ -447,11 +447,15 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 org.apache.thrift.protocol.TMap _map724 = iprot.readMapBegin();
                 struct.metadata = new HashMap<Long,MetadataPpdResult>(2*_map724.size);
                 long _key725;
                 MetadataPpdResult _val726;
                 for (int _i727 = 0; _i727 < _map724.size; ++_i727)
+<<<<<<< HEAD
                 {
                   _key725 = iprot.readI64();
                   _val726 = new MetadataPpdResult();
@@ -539,6 +543,13 @@ import org.slf4j.LoggerFactory;
                   struct.metadata.put(_key709, _val710);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+                {
+                  _key725 = iprot.readI64();
+                  _val726 = new MetadataPpdResult();
+                  _val726.read(iprot);
+                  struct.metadata.put(_key725, _val726);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 }
                 iprot.readMapEnd();
               }
@@ -572,6 +583,7 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(METADATA_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRUCT, struct.metadata.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -631,6 +643,12 @@ import org.slf4j.LoggerFactory;
             _iter712.getValue().write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          for (Map.Entry<Long, MetadataPpdResult> _iter728 : struct.metadata.entrySet())
+          {
+            oprot.writeI64(_iter728.getKey());
+            _iter728.getValue().write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
           oprot.writeMapEnd();
         }
@@ -658,6 +676,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.metadata.size());
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -717,6 +736,12 @@ import org.slf4j.LoggerFactory;
           _iter713.getValue().write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        for (Map.Entry<Long, MetadataPpdResult> _iter729 : struct.metadata.entrySet())
+        {
+          oprot.writeI64(_iter729.getKey());
+          _iter729.getValue().write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         }
       }
       oprot.writeBool(struct.isSupported);
@@ -729,11 +754,15 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         org.apache.thrift.protocol.TMap _map730 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
         struct.metadata = new HashMap<Long,MetadataPpdResult>(2*_map730.size);
         long _key731;
         MetadataPpdResult _val732;
         for (int _i733 = 0; _i733 < _map730.size; ++_i733)
+<<<<<<< HEAD
         {
           _key731 = iprot.readI64();
           _val732 = new MetadataPpdResult();
@@ -821,6 +850,13 @@ import org.slf4j.LoggerFactory;
           struct.metadata.put(_key715, _val716);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        {
+          _key731 = iprot.readI64();
+          _val732 = new MetadataPpdResult();
+          _val732.read(iprot);
+          struct.metadata.put(_key731, _val732);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         }
       }
       struct.setMetadataIsSet(true);

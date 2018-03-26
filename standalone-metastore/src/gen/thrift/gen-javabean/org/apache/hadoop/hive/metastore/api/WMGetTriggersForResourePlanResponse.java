@@ -349,10 +349,14 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 org.apache.thrift.protocol.TList _list880 = iprot.readListBegin();
                 struct.triggers = new ArrayList<WMTrigger>(_list880.size);
                 WMTrigger _elem881;
                 for (int _i882 = 0; _i882 < _list880.size; ++_i882)
+<<<<<<< HEAD
                 {
                   _elem881 = new WMTrigger();
                   _elem881.read(iprot);
@@ -429,6 +433,12 @@ import org.slf4j.LoggerFactory;
                   struct.triggers.add(_elem865);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+                {
+                  _elem881 = new WMTrigger();
+                  _elem881.read(iprot);
+                  struct.triggers.add(_elem881);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 }
                 iprot.readListEnd();
               }
@@ -455,6 +465,7 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(TRIGGERS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.triggers.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -508,6 +519,11 @@ import org.slf4j.LoggerFactory;
               _iter867.write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            for (WMTrigger _iter883 : struct.triggers)
+            {
+              _iter883.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             oprot.writeListEnd();
           }
@@ -539,6 +555,7 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetTriggers()) {
         {
           oprot.writeI32(struct.triggers.size());
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -592,6 +609,11 @@ import org.slf4j.LoggerFactory;
             _iter868.write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          for (WMTrigger _iter884 : struct.triggers)
+          {
+            _iter884.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
         }
       }
@@ -606,10 +628,14 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           org.apache.thrift.protocol.TList _list885 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
           struct.triggers = new ArrayList<WMTrigger>(_list885.size);
           WMTrigger _elem886;
           for (int _i887 = 0; _i887 < _list885.size; ++_i887)
+<<<<<<< HEAD
           {
             _elem886 = new WMTrigger();
             _elem886.read(iprot);
@@ -686,6 +712,12 @@ import org.slf4j.LoggerFactory;
             struct.triggers.add(_elem870);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          {
+            _elem886 = new WMTrigger();
+            _elem886.read(iprot);
+            struct.triggers.add(_elem886);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
         }
         struct.setTriggersIsSet(true);

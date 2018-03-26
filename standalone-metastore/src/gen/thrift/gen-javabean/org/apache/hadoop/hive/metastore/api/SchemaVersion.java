@@ -1120,10 +1120,14 @@ import org.slf4j.LoggerFactory;
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 org.apache.thrift.protocol.TList _list888 = iprot.readListBegin();
                 struct.cols = new ArrayList<FieldSchema>(_list888.size);
                 FieldSchema _elem889;
                 for (int _i890 = 0; _i890 < _list888.size; ++_i890)
+<<<<<<< HEAD
                 {
                   _elem889 = new FieldSchema();
                   _elem889.read(iprot);
@@ -1149,6 +1153,12 @@ import org.slf4j.LoggerFactory;
                   struct.cols.add(_elem873);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+                {
+                  _elem889 = new FieldSchema();
+                  _elem889.read(iprot);
+                  struct.cols.add(_elem889);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 }
                 iprot.readListEnd();
               }
@@ -1235,6 +1245,7 @@ import org.slf4j.LoggerFactory;
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.cols.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
           for (FieldSchema _iter891 : struct.cols)
           {
             _iter891.write(oprot);
@@ -1249,6 +1260,11 @@ import org.slf4j.LoggerFactory;
             _iter875.write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          for (FieldSchema _iter891 : struct.cols)
+          {
+            _iter891.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
           oprot.writeListEnd();
         }
@@ -1358,6 +1374,7 @@ import org.slf4j.LoggerFactory;
         {
           oprot.writeI32(struct.cols.size());
 <<<<<<< HEAD
+<<<<<<< HEAD
           for (FieldSchema _iter892 : struct.cols)
           {
             _iter892.write(oprot);
@@ -1372,6 +1389,11 @@ import org.slf4j.LoggerFactory;
             _iter876.write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          for (FieldSchema _iter892 : struct.cols)
+          {
+            _iter892.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
         }
       }
@@ -1415,10 +1437,14 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(3)) {
         {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           org.apache.thrift.protocol.TList _list893 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
           struct.cols = new ArrayList<FieldSchema>(_list893.size);
           FieldSchema _elem894;
           for (int _i895 = 0; _i895 < _list893.size; ++_i895)
+<<<<<<< HEAD
           {
             _elem894 = new FieldSchema();
             _elem894.read(iprot);
@@ -1444,6 +1470,12 @@ import org.slf4j.LoggerFactory;
             struct.cols.add(_elem878);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          {
+            _elem894 = new FieldSchema();
+            _elem894.read(iprot);
+            struct.cols.add(_elem894);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
         }
         struct.setColsIsSet(true);

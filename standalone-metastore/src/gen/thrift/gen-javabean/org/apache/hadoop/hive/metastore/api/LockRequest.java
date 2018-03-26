@@ -692,10 +692,14 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 org.apache.thrift.protocol.TList _list626 = iprot.readListBegin();
                 struct.component = new ArrayList<LockComponent>(_list626.size);
                 LockComponent _elem627;
                 for (int _i628 = 0; _i628 < _list626.size; ++_i628)
+<<<<<<< HEAD
                 {
                   _elem627 = new LockComponent();
                   _elem627.read(iprot);
@@ -772,6 +776,12 @@ import org.slf4j.LoggerFactory;
                   struct.component.add(_elem611);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+                {
+                  _elem627 = new LockComponent();
+                  _elem627.read(iprot);
+                  struct.component.add(_elem627);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 }
                 iprot.readListEnd();
               }
@@ -832,6 +842,7 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           for (LockComponent _iter629 : struct.component)
           {
             _iter629.write(oprot);
@@ -882,6 +893,11 @@ import org.slf4j.LoggerFactory;
             _iter613.write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          for (LockComponent _iter629 : struct.component)
+          {
+            _iter629.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
           oprot.writeListEnd();
         }
@@ -928,6 +944,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.component.size());
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -981,6 +998,11 @@ import org.slf4j.LoggerFactory;
           _iter614.write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        for (LockComponent _iter630 : struct.component)
+        {
+          _iter630.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         }
       }
       oprot.writeString(struct.user);
@@ -1008,10 +1030,14 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         org.apache.thrift.protocol.TList _list631 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
         struct.component = new ArrayList<LockComponent>(_list631.size);
         LockComponent _elem632;
         for (int _i633 = 0; _i633 < _list631.size; ++_i633)
+<<<<<<< HEAD
         {
           _elem632 = new LockComponent();
           _elem632.read(iprot);
@@ -1088,6 +1114,12 @@ import org.slf4j.LoggerFactory;
           struct.component.add(_elem616);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        {
+          _elem632 = new LockComponent();
+          _elem632.read(iprot);
+          struct.component.add(_elem632);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         }
       }
       struct.setComponentIsSet(true);

@@ -15984,14 +15984,14 @@ uint32_t OpenTxnRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->replSrcTxnIds.clear();
-            uint32_t _size606;
-            ::apache::thrift::protocol::TType _etype609;
-            xfer += iprot->readListBegin(_etype609, _size606);
-            this->replSrcTxnIds.resize(_size606);
-            uint32_t _i610;
-            for (_i610 = 0; _i610 < _size606; ++_i610)
+            uint32_t _size626;
+            ::apache::thrift::protocol::TType _etype629;
+            xfer += iprot->readListBegin(_etype629, _size626);
+            this->replSrcTxnIds.resize(_size626);
+            uint32_t _i630;
+            for (_i630 = 0; _i630 < _size626; ++_i630)
             {
-              xfer += iprot->readI64(this->replSrcTxnIds[_i610]);
+              xfer += iprot->readI64(this->replSrcTxnIds[_i630]);
             }
             xfer += iprot->readListEnd();
           }
@@ -16049,10 +16049,10 @@ uint32_t OpenTxnRequest::write(::apache::thrift::protocol::TProtocol* oprot) con
     xfer += oprot->writeFieldBegin("replSrcTxnIds", ::apache::thrift::protocol::T_LIST, 6);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->replSrcTxnIds.size()));
-      std::vector<int64_t> ::const_iterator _iter611;
-      for (_iter611 = this->replSrcTxnIds.begin(); _iter611 != this->replSrcTxnIds.end(); ++_iter611)
+      std::vector<int64_t> ::const_iterator _iter631;
+      for (_iter631 = this->replSrcTxnIds.begin(); _iter631 != this->replSrcTxnIds.end(); ++_iter631)
       {
-        xfer += oprot->writeI64((*_iter611));
+        xfer += oprot->writeI64((*_iter631));
       }
       xfer += oprot->writeListEnd();
     }
@@ -16074,6 +16074,7 @@ void swap(OpenTxnRequest &a, OpenTxnRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 OpenTxnRequest::OpenTxnRequest(const OpenTxnRequest& other644) {
@@ -16164,6 +16165,25 @@ OpenTxnRequest& OpenTxnRequest::operator=(const OpenTxnRequest& other613) {
   __isset = other613.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+OpenTxnRequest::OpenTxnRequest(const OpenTxnRequest& other632) {
+  num_txns = other632.num_txns;
+  user = other632.user;
+  hostname = other632.hostname;
+  agentInfo = other632.agentInfo;
+  replPolicy = other632.replPolicy;
+  replSrcTxnIds = other632.replSrcTxnIds;
+  __isset = other632.__isset;
+}
+OpenTxnRequest& OpenTxnRequest::operator=(const OpenTxnRequest& other633) {
+  num_txns = other633.num_txns;
+  user = other633.user;
+  hostname = other633.hostname;
+  agentInfo = other633.agentInfo;
+  replPolicy = other633.replPolicy;
+  replSrcTxnIds = other633.replSrcTxnIds;
+  __isset = other633.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void OpenTxnRequest::printTo(std::ostream& out) const {
@@ -16213,6 +16233,7 @@ uint32_t OpenTxnsResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->txn_ids.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             uint32_t _size646;
@@ -16270,6 +16291,16 @@ uint32_t OpenTxnsResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
               xfer += iprot->readI64(this->txn_ids[_i618]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size634;
+            ::apache::thrift::protocol::TType _etype637;
+            xfer += iprot->readListBegin(_etype637, _size634);
+            this->txn_ids.resize(_size634);
+            uint32_t _i638;
+            for (_i638 = 0; _i638 < _size634; ++_i638)
+            {
+              xfer += iprot->readI64(this->txn_ids[_i638]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -16300,6 +16331,7 @@ uint32_t OpenTxnsResponse::write(::apache::thrift::protocol::TProtocol* oprot) c
   xfer += oprot->writeFieldBegin("txn_ids", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->txn_ids.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter651;
@@ -16337,6 +16369,12 @@ uint32_t OpenTxnsResponse::write(::apache::thrift::protocol::TProtocol* oprot) c
       xfer += oprot->writeI64((*_iter619));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<int64_t> ::const_iterator _iter639;
+    for (_iter639 = this->txn_ids.begin(); _iter639 != this->txn_ids.end(); ++_iter639)
+    {
+      xfer += oprot->writeI64((*_iter639));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -16352,6 +16390,7 @@ void swap(OpenTxnsResponse &a, OpenTxnsResponse &b) {
   swap(a.txn_ids, b.txn_ids);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 OpenTxnsResponse::OpenTxnsResponse(const OpenTxnsResponse& other652) {
@@ -16394,6 +16433,13 @@ OpenTxnsResponse& OpenTxnsResponse::operator=(const OpenTxnsResponse& other621) 
   txn_ids = other621.txn_ids;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+OpenTxnsResponse::OpenTxnsResponse(const OpenTxnsResponse& other640) {
+  txn_ids = other640.txn_ids;
+}
+OpenTxnsResponse& OpenTxnsResponse::operator=(const OpenTxnsResponse& other641) {
+  txn_ids = other641.txn_ids;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void OpenTxnsResponse::printTo(std::ostream& out) const {
@@ -16498,6 +16544,7 @@ void swap(AbortTxnRequest &a, AbortTxnRequest &b) {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 AbortTxnRequest::AbortTxnRequest(const AbortTxnRequest& other654) {
   txnid = other654.txnid;
 }
@@ -16595,6 +16642,17 @@ AbortTxnRequest& AbortTxnRequest::operator=(const AbortTxnRequest& other623) {
   replPolicy = other623.replPolicy;
   __isset = other623.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+AbortTxnRequest::AbortTxnRequest(const AbortTxnRequest& other642) {
+  txnid = other642.txnid;
+  replPolicy = other642.replPolicy;
+  __isset = other642.__isset;
+}
+AbortTxnRequest& AbortTxnRequest::operator=(const AbortTxnRequest& other643) {
+  txnid = other643.txnid;
+  replPolicy = other643.replPolicy;
+  __isset = other643.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void AbortTxnRequest::printTo(std::ostream& out) const {
@@ -16640,6 +16698,7 @@ uint32_t AbortTxnsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->txn_ids.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             uint32_t _size656;
@@ -16697,6 +16756,16 @@ uint32_t AbortTxnsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
               xfer += iprot->readI64(this->txn_ids[_i628]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size644;
+            ::apache::thrift::protocol::TType _etype647;
+            xfer += iprot->readListBegin(_etype647, _size644);
+            this->txn_ids.resize(_size644);
+            uint32_t _i648;
+            for (_i648 = 0; _i648 < _size644; ++_i648)
+            {
+              xfer += iprot->readI64(this->txn_ids[_i648]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -16727,6 +16796,7 @@ uint32_t AbortTxnsRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
   xfer += oprot->writeFieldBegin("txn_ids", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->txn_ids.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter661;
@@ -16764,6 +16834,12 @@ uint32_t AbortTxnsRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
       xfer += oprot->writeI64((*_iter629));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<int64_t> ::const_iterator _iter649;
+    for (_iter649 = this->txn_ids.begin(); _iter649 != this->txn_ids.end(); ++_iter649)
+    {
+      xfer += oprot->writeI64((*_iter649));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -16779,6 +16855,7 @@ void swap(AbortTxnsRequest &a, AbortTxnsRequest &b) {
   swap(a.txn_ids, b.txn_ids);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 AbortTxnsRequest::AbortTxnsRequest(const AbortTxnsRequest& other662) {
@@ -16821,6 +16898,13 @@ AbortTxnsRequest& AbortTxnsRequest::operator=(const AbortTxnsRequest& other631) 
   txn_ids = other631.txn_ids;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+AbortTxnsRequest::AbortTxnsRequest(const AbortTxnsRequest& other650) {
+  txn_ids = other650.txn_ids;
+}
+AbortTxnsRequest& AbortTxnsRequest::operator=(const AbortTxnsRequest& other651) {
+  txn_ids = other651.txn_ids;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void AbortTxnsRequest::printTo(std::ostream& out) const {
@@ -16924,6 +17008,7 @@ void swap(CommitTxnRequest &a, CommitTxnRequest &b) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 CommitTxnRequest::CommitTxnRequest(const CommitTxnRequest& other664) {
   txnid = other664.txnid;
 }
@@ -16972,6 +17057,17 @@ CommitTxnRequest& CommitTxnRequest::operator=(const CommitTxnRequest& other633) 
   __isset = other633.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+CommitTxnRequest::CommitTxnRequest(const CommitTxnRequest& other652) {
+  txnid = other652.txnid;
+  replPolicy = other652.replPolicy;
+  __isset = other652.__isset;
+}
+CommitTxnRequest& CommitTxnRequest::operator=(const CommitTxnRequest& other653) {
+  txnid = other653.txnid;
+  replPolicy = other653.replPolicy;
+  __isset = other653.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void CommitTxnRequest::printTo(std::ostream& out) const {
@@ -17022,6 +17118,7 @@ uint32_t GetValidWriteIdsRequest::read(::apache::thrift::protocol::TProtocol* ip
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->fullTableNames.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -17105,6 +17202,16 @@ uint32_t GetValidWriteIdsRequest::read(::apache::thrift::protocol::TProtocol* ip
               xfer += iprot->readString(this->fullTableNames[_i638]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size654;
+            ::apache::thrift::protocol::TType _etype657;
+            xfer += iprot->readListBegin(_etype657, _size654);
+            this->fullTableNames.resize(_size654);
+            uint32_t _i658;
+            for (_i658 = 0; _i658 < _size654; ++_i658)
+            {
+              xfer += iprot->readString(this->fullTableNames[_i658]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -17145,6 +17252,7 @@ uint32_t GetValidWriteIdsRequest::write(::apache::thrift::protocol::TProtocol* o
   xfer += oprot->writeFieldBegin("fullTableNames", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->fullTableNames.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -17204,6 +17312,12 @@ uint32_t GetValidWriteIdsRequest::write(::apache::thrift::protocol::TProtocol* o
       xfer += oprot->writeString((*_iter639));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter659;
+    for (_iter659 = this->fullTableNames.begin(); _iter659 != this->fullTableNames.end(); ++_iter659)
+    {
+      xfer += oprot->writeString((*_iter659));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -17224,6 +17338,7 @@ void swap(GetValidWriteIdsRequest &a, GetValidWriteIdsRequest &b) {
   swap(a.validTxnList, b.validTxnList);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -17301,6 +17416,15 @@ GetValidWriteIdsRequest& GetValidWriteIdsRequest::operator=(const GetValidWriteI
   validTxnList = other641.validTxnList;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+GetValidWriteIdsRequest::GetValidWriteIdsRequest(const GetValidWriteIdsRequest& other660) {
+  fullTableNames = other660.fullTableNames;
+  validTxnList = other660.validTxnList;
+}
+GetValidWriteIdsRequest& GetValidWriteIdsRequest::operator=(const GetValidWriteIdsRequest& other661) {
+  fullTableNames = other661.fullTableNames;
+  validTxnList = other661.validTxnList;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void GetValidWriteIdsRequest::printTo(std::ostream& out) const {
@@ -17385,6 +17509,7 @@ uint32_t TableValidWriteIds::read(::apache::thrift::protocol::TProtocol* iprot) 
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size674;
             ::apache::thrift::protocol::TType _etype677;
             xfer += iprot->readListBegin(_etype677, _size674);
@@ -17465,6 +17590,16 @@ uint32_t TableValidWriteIds::read(::apache::thrift::protocol::TProtocol* iprot) 
               xfer += iprot->readI64(this->invalidWriteIds[_i646]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size662;
+            ::apache::thrift::protocol::TType _etype665;
+            xfer += iprot->readListBegin(_etype665, _size662);
+            this->invalidWriteIds.resize(_size662);
+            uint32_t _i666;
+            for (_i666 = 0; _i666 < _size662; ++_i666)
+            {
+              xfer += iprot->readI64(this->invalidWriteIds[_i666]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -17528,6 +17663,7 @@ uint32_t TableValidWriteIds::write(::apache::thrift::protocol::TProtocol* oprot)
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<int64_t> ::const_iterator _iter679;
     for (_iter679 = this->invalidWriteIds.begin(); _iter679 != this->invalidWriteIds.end(); ++_iter679)
     {
@@ -17584,6 +17720,12 @@ uint32_t TableValidWriteIds::write(::apache::thrift::protocol::TProtocol* oprot)
       xfer += oprot->writeI64((*_iter647));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<int64_t> ::const_iterator _iter667;
+    for (_iter667 = this->invalidWriteIds.begin(); _iter667 != this->invalidWriteIds.end(); ++_iter667)
+    {
+      xfer += oprot->writeI64((*_iter667));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -17613,6 +17755,7 @@ void swap(TableValidWriteIds &a, TableValidWriteIds &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -17734,6 +17877,23 @@ TableValidWriteIds& TableValidWriteIds::operator=(const TableValidWriteIds& othe
   __isset = other649.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+TableValidWriteIds::TableValidWriteIds(const TableValidWriteIds& other668) {
+  fullTableName = other668.fullTableName;
+  writeIdHighWaterMark = other668.writeIdHighWaterMark;
+  invalidWriteIds = other668.invalidWriteIds;
+  minOpenWriteId = other668.minOpenWriteId;
+  abortedBits = other668.abortedBits;
+  __isset = other668.__isset;
+}
+TableValidWriteIds& TableValidWriteIds::operator=(const TableValidWriteIds& other669) {
+  fullTableName = other669.fullTableName;
+  writeIdHighWaterMark = other669.writeIdHighWaterMark;
+  invalidWriteIds = other669.invalidWriteIds;
+  minOpenWriteId = other669.minOpenWriteId;
+  abortedBits = other669.abortedBits;
+  __isset = other669.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void TableValidWriteIds::printTo(std::ostream& out) const {
@@ -17782,6 +17942,7 @@ uint32_t GetValidWriteIdsResponse::read(::apache::thrift::protocol::TProtocol* i
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->tblValidWriteIds.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -17865,6 +18026,16 @@ uint32_t GetValidWriteIdsResponse::read(::apache::thrift::protocol::TProtocol* i
               xfer += this->tblValidWriteIds[_i654].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size670;
+            ::apache::thrift::protocol::TType _etype673;
+            xfer += iprot->readListBegin(_etype673, _size670);
+            this->tblValidWriteIds.resize(_size670);
+            uint32_t _i674;
+            for (_i674 = 0; _i674 < _size670; ++_i674)
+            {
+              xfer += this->tblValidWriteIds[_i674].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -17895,6 +18066,7 @@ uint32_t GetValidWriteIdsResponse::write(::apache::thrift::protocol::TProtocol* 
   xfer += oprot->writeFieldBegin("tblValidWriteIds", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->tblValidWriteIds.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -17954,6 +18126,12 @@ uint32_t GetValidWriteIdsResponse::write(::apache::thrift::protocol::TProtocol* 
       xfer += (*_iter655).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<TableValidWriteIds> ::const_iterator _iter675;
+    for (_iter675 = this->tblValidWriteIds.begin(); _iter675 != this->tblValidWriteIds.end(); ++_iter675)
+    {
+      xfer += (*_iter675).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -17969,6 +18147,7 @@ void swap(GetValidWriteIdsResponse &a, GetValidWriteIdsResponse &b) {
   swap(a.tblValidWriteIds, b.tblValidWriteIds);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -18034,6 +18213,13 @@ GetValidWriteIdsResponse& GetValidWriteIdsResponse::operator=(const GetValidWrit
   tblValidWriteIds = other657.tblValidWriteIds;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+GetValidWriteIdsResponse::GetValidWriteIdsResponse(const GetValidWriteIdsResponse& other676) {
+  tblValidWriteIds = other676.tblValidWriteIds;
+}
+GetValidWriteIdsResponse& GetValidWriteIdsResponse::operator=(const GetValidWriteIdsResponse& other677) {
+  tblValidWriteIds = other677.tblValidWriteIds;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void GetValidWriteIdsResponse::printTo(std::ostream& out) const {
@@ -18088,6 +18274,7 @@ uint32_t AllocateTableWriteIdsRequest::read(::apache::thrift::protocol::TProtoco
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->txnIds.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -18171,6 +18358,16 @@ uint32_t AllocateTableWriteIdsRequest::read(::apache::thrift::protocol::TProtoco
               xfer += iprot->readI64(this->txnIds[_i662]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size678;
+            ::apache::thrift::protocol::TType _etype681;
+            xfer += iprot->readListBegin(_etype681, _size678);
+            this->txnIds.resize(_size678);
+            uint32_t _i682;
+            for (_i682 = 0; _i682 < _size678; ++_i682)
+            {
+              xfer += iprot->readI64(this->txnIds[_i682]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -18221,6 +18418,7 @@ uint32_t AllocateTableWriteIdsRequest::write(::apache::thrift::protocol::TProtoc
   xfer += oprot->writeFieldBegin("txnIds", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->txnIds.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -18280,6 +18478,12 @@ uint32_t AllocateTableWriteIdsRequest::write(::apache::thrift::protocol::TProtoc
       xfer += oprot->writeI64((*_iter663));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<int64_t> ::const_iterator _iter683;
+    for (_iter683 = this->txnIds.begin(); _iter683 != this->txnIds.end(); ++_iter683)
+    {
+      xfer += oprot->writeI64((*_iter683));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -18305,6 +18509,7 @@ void swap(AllocateTableWriteIdsRequest &a, AllocateTableWriteIdsRequest &b) {
   swap(a.tableName, b.tableName);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -18394,6 +18599,17 @@ AllocateTableWriteIdsRequest& AllocateTableWriteIdsRequest::operator=(const Allo
   tableName = other665.tableName;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+AllocateTableWriteIdsRequest::AllocateTableWriteIdsRequest(const AllocateTableWriteIdsRequest& other684) {
+  txnIds = other684.txnIds;
+  dbName = other684.dbName;
+  tableName = other684.tableName;
+}
+AllocateTableWriteIdsRequest& AllocateTableWriteIdsRequest::operator=(const AllocateTableWriteIdsRequest& other685) {
+  txnIds = other685.txnIds;
+  dbName = other685.dbName;
+  tableName = other685.tableName;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void AllocateTableWriteIdsRequest::printTo(std::ostream& out) const {
@@ -18500,6 +18716,7 @@ void swap(TxnToWriteId &a, TxnToWriteId &b) {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 TxnToWriteId::TxnToWriteId(const TxnToWriteId& other698) {
   txnId = other698.txnId;
   writeId = other698.writeId;
@@ -18574,6 +18791,15 @@ TxnToWriteId& TxnToWriteId::operator=(const TxnToWriteId& other667) {
   writeId = other667.writeId;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+TxnToWriteId::TxnToWriteId(const TxnToWriteId& other686) {
+  txnId = other686.txnId;
+  writeId = other686.writeId;
+}
+TxnToWriteId& TxnToWriteId::operator=(const TxnToWriteId& other687) {
+  txnId = other687.txnId;
+  writeId = other687.writeId;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void TxnToWriteId::printTo(std::ostream& out) const {
@@ -18619,6 +18845,7 @@ uint32_t AllocateTableWriteIdsResponse::read(::apache::thrift::protocol::TProtoc
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->txnToWriteIds.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -18702,6 +18929,16 @@ uint32_t AllocateTableWriteIdsResponse::read(::apache::thrift::protocol::TProtoc
               xfer += this->txnToWriteIds[_i672].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size688;
+            ::apache::thrift::protocol::TType _etype691;
+            xfer += iprot->readListBegin(_etype691, _size688);
+            this->txnToWriteIds.resize(_size688);
+            uint32_t _i692;
+            for (_i692 = 0; _i692 < _size688; ++_i692)
+            {
+              xfer += this->txnToWriteIds[_i692].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -18732,6 +18969,7 @@ uint32_t AllocateTableWriteIdsResponse::write(::apache::thrift::protocol::TProto
   xfer += oprot->writeFieldBegin("txnToWriteIds", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->txnToWriteIds.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -18791,6 +19029,12 @@ uint32_t AllocateTableWriteIdsResponse::write(::apache::thrift::protocol::TProto
       xfer += (*_iter673).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<TxnToWriteId> ::const_iterator _iter693;
+    for (_iter693 = this->txnToWriteIds.begin(); _iter693 != this->txnToWriteIds.end(); ++_iter693)
+    {
+      xfer += (*_iter693).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -18806,6 +19050,7 @@ void swap(AllocateTableWriteIdsResponse &a, AllocateTableWriteIdsResponse &b) {
   swap(a.txnToWriteIds, b.txnToWriteIds);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -19097,6 +19342,13 @@ AllocateTableWriteIdsResponse::AllocateTableWriteIdsResponse(const AllocateTable
 AllocateTableWriteIdsResponse& AllocateTableWriteIdsResponse::operator=(const AllocateTableWriteIdsResponse& other675) {
   txnToWriteIds = other675.txnToWriteIds;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+AllocateTableWriteIdsResponse::AllocateTableWriteIdsResponse(const AllocateTableWriteIdsResponse& other694) {
+  txnToWriteIds = other694.txnToWriteIds;
+}
+AllocateTableWriteIdsResponse& AllocateTableWriteIdsResponse::operator=(const AllocateTableWriteIdsResponse& other695) {
+  txnToWriteIds = other695.txnToWriteIds;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void AllocateTableWriteIdsResponse::printTo(std::ostream& out) const {
@@ -19174,6 +19426,7 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -19272,6 +19525,11 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
           this->type = (LockType::type)ecast676;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast696;
+          xfer += iprot->readI32(ecast696);
+          this->type = (LockType::type)ecast696;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           isset_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -19279,6 +19537,7 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -19377,6 +19636,11 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
           this->level = (LockLevel::type)ecast677;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast697;
+          xfer += iprot->readI32(ecast697);
+          this->level = (LockLevel::type)ecast697;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           isset_level = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -19408,6 +19672,7 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 6:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -19506,6 +19771,11 @@ uint32_t LockComponent::read(::apache::thrift::protocol::TProtocol* iprot) {
           this->operationType = (DataOperationType::type)ecast678;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast698;
+          xfer += iprot->readI32(ecast698);
+          this->operationType = (DataOperationType::type)ecast698;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           this->__isset.operationType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -19605,6 +19875,7 @@ void swap(LockComponent &a, LockComponent &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -19862,6 +20133,29 @@ LockComponent& LockComponent::operator=(const LockComponent& other680) {
   __isset = other680.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+LockComponent::LockComponent(const LockComponent& other699) {
+  type = other699.type;
+  level = other699.level;
+  dbname = other699.dbname;
+  tablename = other699.tablename;
+  partitionname = other699.partitionname;
+  operationType = other699.operationType;
+  isTransactional = other699.isTransactional;
+  isDynamicPartitionWrite = other699.isDynamicPartitionWrite;
+  __isset = other699.__isset;
+}
+LockComponent& LockComponent::operator=(const LockComponent& other700) {
+  type = other700.type;
+  level = other700.level;
+  dbname = other700.dbname;
+  tablename = other700.tablename;
+  partitionname = other700.partitionname;
+  operationType = other700.operationType;
+  isTransactional = other700.isTransactional;
+  isDynamicPartitionWrite = other700.isDynamicPartitionWrite;
+  __isset = other700.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void LockComponent::printTo(std::ostream& out) const {
@@ -19933,6 +20227,7 @@ uint32_t LockRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->component.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -20080,6 +20375,16 @@ uint32_t LockRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
               xfer += this->component[_i685].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size701;
+            ::apache::thrift::protocol::TType _etype704;
+            xfer += iprot->readListBegin(_etype704, _size701);
+            this->component.resize(_size701);
+            uint32_t _i705;
+            for (_i705 = 0; _i705 < _size701; ++_i705)
+            {
+              xfer += this->component[_i705].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -20146,6 +20451,7 @@ uint32_t LockRequest::write(::apache::thrift::protocol::TProtocol* oprot) const 
   xfer += oprot->writeFieldBegin("component", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->component.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -20255,6 +20561,12 @@ uint32_t LockRequest::write(::apache::thrift::protocol::TProtocol* oprot) const 
       xfer += (*_iter686).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<LockComponent> ::const_iterator _iter706;
+    for (_iter706 = this->component.begin(); _iter706 != this->component.end(); ++_iter706)
+    {
+      xfer += (*_iter706).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -20293,6 +20605,7 @@ void swap(LockRequest &a, LockRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -20492,6 +20805,23 @@ LockRequest& LockRequest::operator=(const LockRequest& other688) {
   agentInfo = other688.agentInfo;
   __isset = other688.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+LockRequest::LockRequest(const LockRequest& other707) {
+  component = other707.component;
+  txnid = other707.txnid;
+  user = other707.user;
+  hostname = other707.hostname;
+  agentInfo = other707.agentInfo;
+  __isset = other707.__isset;
+}
+LockRequest& LockRequest::operator=(const LockRequest& other708) {
+  component = other708.component;
+  txnid = other708.txnid;
+  user = other708.user;
+  hostname = other708.hostname;
+  agentInfo = other708.agentInfo;
+  __isset = other708.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void LockRequest::printTo(std::ostream& out) const {
@@ -20551,6 +20881,7 @@ uint32_t LockResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -20649,6 +20980,11 @@ uint32_t LockResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
           this->state = (LockState::type)ecast689;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast709;
+          xfer += iprot->readI32(ecast709);
+          this->state = (LockState::type)ecast709;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           isset_state = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -20694,6 +21030,7 @@ void swap(LockResponse &a, LockResponse &b) {
   swap(a.state, b.state);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -20836,6 +21173,15 @@ LockResponse& LockResponse::operator=(const LockResponse& other691) {
   state = other691.state;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+LockResponse::LockResponse(const LockResponse& other710) {
+  lockid = other710.lockid;
+  state = other710.state;
+}
+LockResponse& LockResponse::operator=(const LockResponse& other711) {
+  lockid = other711.lockid;
+  state = other711.state;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void LockResponse::printTo(std::ostream& out) const {
@@ -20957,6 +21303,7 @@ void swap(CheckLockRequest &a, CheckLockRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -21139,6 +21486,19 @@ CheckLockRequest& CheckLockRequest::operator=(const CheckLockRequest& other693) 
   __isset = other693.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+CheckLockRequest::CheckLockRequest(const CheckLockRequest& other712) {
+  lockid = other712.lockid;
+  txnid = other712.txnid;
+  elapsed_ms = other712.elapsed_ms;
+  __isset = other712.__isset;
+}
+CheckLockRequest& CheckLockRequest::operator=(const CheckLockRequest& other713) {
+  lockid = other713.lockid;
+  txnid = other713.txnid;
+  elapsed_ms = other713.elapsed_ms;
+  __isset = other713.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void CheckLockRequest::printTo(std::ostream& out) const {
@@ -21222,6 +21582,7 @@ void swap(UnlockRequest &a, UnlockRequest &b) {
   swap(a.lockid, b.lockid);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -21342,6 +21703,13 @@ UnlockRequest& UnlockRequest::operator=(const UnlockRequest& other695) {
   lockid = other695.lockid;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+UnlockRequest::UnlockRequest(const UnlockRequest& other714) {
+  lockid = other714.lockid;
+}
+UnlockRequest& UnlockRequest::operator=(const UnlockRequest& other715) {
+  lockid = other715.lockid;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void UnlockRequest::printTo(std::ostream& out) const {
@@ -21480,6 +21848,7 @@ void swap(ShowLocksRequest &a, ShowLocksRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -21675,6 +22044,21 @@ ShowLocksRequest& ShowLocksRequest::operator=(const ShowLocksRequest& other697) 
   __isset = other697.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+ShowLocksRequest::ShowLocksRequest(const ShowLocksRequest& other716) {
+  dbname = other716.dbname;
+  tablename = other716.tablename;
+  partname = other716.partname;
+  isExtended = other716.isExtended;
+  __isset = other716.__isset;
+}
+ShowLocksRequest& ShowLocksRequest::operator=(const ShowLocksRequest& other717) {
+  dbname = other717.dbname;
+  tablename = other717.tablename;
+  partname = other717.partname;
+  isExtended = other717.isExtended;
+  __isset = other717.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void ShowLocksRequest::printTo(std::ostream& out) const {
@@ -21831,6 +22215,7 @@ uint32_t ShowLocksResponseElement::read(::apache::thrift::protocol::TProtocol* i
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast730;
           xfer += iprot->readI32(ecast730);
           this->state = (LockState::type)ecast730;
@@ -21925,6 +22310,11 @@ uint32_t ShowLocksResponseElement::read(::apache::thrift::protocol::TProtocol* i
           this->state = (LockState::type)ecast698;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast718;
+          xfer += iprot->readI32(ecast718);
+          this->state = (LockState::type)ecast718;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           isset_state = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -21932,6 +22322,7 @@ uint32_t ShowLocksResponseElement::read(::apache::thrift::protocol::TProtocol* i
         break;
       case 6:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -22030,6 +22421,11 @@ uint32_t ShowLocksResponseElement::read(::apache::thrift::protocol::TProtocol* i
           this->type = (LockType::type)ecast699;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast719;
+          xfer += iprot->readI32(ecast719);
+          this->type = (LockType::type)ecast719;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           isset_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -22245,6 +22641,7 @@ void swap(ShowLocksResponseElement &a, ShowLocksResponseElement &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -22631,6 +23028,45 @@ ShowLocksResponseElement& ShowLocksResponseElement::operator=(const ShowLocksRes
   lockIdInternal = other701.lockIdInternal;
   __isset = other701.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+ShowLocksResponseElement::ShowLocksResponseElement(const ShowLocksResponseElement& other720) {
+  lockid = other720.lockid;
+  dbname = other720.dbname;
+  tablename = other720.tablename;
+  partname = other720.partname;
+  state = other720.state;
+  type = other720.type;
+  txnid = other720.txnid;
+  lastheartbeat = other720.lastheartbeat;
+  acquiredat = other720.acquiredat;
+  user = other720.user;
+  hostname = other720.hostname;
+  heartbeatCount = other720.heartbeatCount;
+  agentInfo = other720.agentInfo;
+  blockedByExtId = other720.blockedByExtId;
+  blockedByIntId = other720.blockedByIntId;
+  lockIdInternal = other720.lockIdInternal;
+  __isset = other720.__isset;
+}
+ShowLocksResponseElement& ShowLocksResponseElement::operator=(const ShowLocksResponseElement& other721) {
+  lockid = other721.lockid;
+  dbname = other721.dbname;
+  tablename = other721.tablename;
+  partname = other721.partname;
+  state = other721.state;
+  type = other721.type;
+  txnid = other721.txnid;
+  lastheartbeat = other721.lastheartbeat;
+  acquiredat = other721.acquiredat;
+  user = other721.user;
+  hostname = other721.hostname;
+  heartbeatCount = other721.heartbeatCount;
+  agentInfo = other721.agentInfo;
+  blockedByExtId = other721.blockedByExtId;
+  blockedByIntId = other721.blockedByIntId;
+  lockIdInternal = other721.lockIdInternal;
+  __isset = other721.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void ShowLocksResponseElement::printTo(std::ostream& out) const {
@@ -22689,6 +23125,7 @@ uint32_t ShowLocksResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->locks.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -22837,6 +23274,16 @@ uint32_t ShowLocksResponse::read(::apache::thrift::protocol::TProtocol* iprot) {
               xfer += this->locks[_i706].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size722;
+            ::apache::thrift::protocol::TType _etype725;
+            xfer += iprot->readListBegin(_etype725, _size722);
+            this->locks.resize(_size722);
+            uint32_t _i726;
+            for (_i726 = 0; _i726 < _size722; ++_i726)
+            {
+              xfer += this->locks[_i726].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -22865,6 +23312,7 @@ uint32_t ShowLocksResponse::write(::apache::thrift::protocol::TProtocol* oprot) 
   xfer += oprot->writeFieldBegin("locks", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->locks.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -22973,6 +23421,12 @@ uint32_t ShowLocksResponse::write(::apache::thrift::protocol::TProtocol* oprot) 
       xfer += (*_iter707).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<ShowLocksResponseElement> ::const_iterator _iter727;
+    for (_iter727 = this->locks.begin(); _iter727 != this->locks.end(); ++_iter727)
+    {
+      xfer += (*_iter727).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -22989,6 +23443,7 @@ void swap(ShowLocksResponse &a, ShowLocksResponse &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -23127,6 +23582,15 @@ ShowLocksResponse& ShowLocksResponse::operator=(const ShowLocksResponse& other70
   __isset = other709.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+ShowLocksResponse::ShowLocksResponse(const ShowLocksResponse& other728) {
+  locks = other728.locks;
+  __isset = other728.__isset;
+}
+ShowLocksResponse& ShowLocksResponse::operator=(const ShowLocksResponse& other729) {
+  locks = other729.locks;
+  __isset = other729.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void ShowLocksResponse::printTo(std::ostream& out) const {
@@ -23227,6 +23691,7 @@ void swap(HeartbeatRequest &a, HeartbeatRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -23384,6 +23849,17 @@ HeartbeatRequest& HeartbeatRequest::operator=(const HeartbeatRequest& other711) 
   __isset = other711.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+HeartbeatRequest::HeartbeatRequest(const HeartbeatRequest& other730) {
+  lockid = other730.lockid;
+  txnid = other730.txnid;
+  __isset = other730.__isset;
+}
+HeartbeatRequest& HeartbeatRequest::operator=(const HeartbeatRequest& other731) {
+  lockid = other731.lockid;
+  txnid = other731.txnid;
+  __isset = other731.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void HeartbeatRequest::printTo(std::ostream& out) const {
@@ -23486,6 +23962,7 @@ void swap(HeartbeatTxnRangeRequest &a, HeartbeatTxnRangeRequest &b) {
   swap(a.max, b.max);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -23624,6 +24101,15 @@ HeartbeatTxnRangeRequest& HeartbeatTxnRangeRequest::operator=(const HeartbeatTxn
   max = other713.max;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+HeartbeatTxnRangeRequest::HeartbeatTxnRangeRequest(const HeartbeatTxnRangeRequest& other732) {
+  min = other732.min;
+  max = other732.max;
+}
+HeartbeatTxnRangeRequest& HeartbeatTxnRangeRequest::operator=(const HeartbeatTxnRangeRequest& other733) {
+  min = other733.min;
+  max = other733.max;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void HeartbeatTxnRangeRequest::printTo(std::ostream& out) const {
@@ -23674,6 +24160,7 @@ uint32_t HeartbeatTxnRangeResponse::read(::apache::thrift::protocol::TProtocol* 
         if (ftype == ::apache::thrift::protocol::T_SET) {
           {
             this->aborted.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -23834,6 +24321,17 @@ uint32_t HeartbeatTxnRangeResponse::read(::apache::thrift::protocol::TProtocol* 
               this->aborted.insert(_elem719);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size734;
+            ::apache::thrift::protocol::TType _etype737;
+            xfer += iprot->readSetBegin(_etype737, _size734);
+            uint32_t _i738;
+            for (_i738 = 0; _i738 < _size734; ++_i738)
+            {
+              int64_t _elem739;
+              xfer += iprot->readI64(_elem739);
+              this->aborted.insert(_elem739);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readSetEnd();
           }
@@ -23846,6 +24344,7 @@ uint32_t HeartbeatTxnRangeResponse::read(::apache::thrift::protocol::TProtocol* 
         if (ftype == ::apache::thrift::protocol::T_SET) {
           {
             this->nosuch.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -24008,6 +24507,17 @@ uint32_t HeartbeatTxnRangeResponse::read(::apache::thrift::protocol::TProtocol* 
               this->nosuch.insert(_elem725);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size740;
+            ::apache::thrift::protocol::TType _etype743;
+            xfer += iprot->readSetBegin(_etype743, _size740);
+            uint32_t _i744;
+            for (_i744 = 0; _i744 < _size740; ++_i744)
+            {
+              int64_t _elem745;
+              xfer += iprot->readI64(_elem745);
+              this->nosuch.insert(_elem745);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readSetEnd();
           }
@@ -24040,6 +24550,7 @@ uint32_t HeartbeatTxnRangeResponse::write(::apache::thrift::protocol::TProtocol*
   xfer += oprot->writeFieldBegin("aborted", ::apache::thrift::protocol::T_SET, 1);
   {
     xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->aborted.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -24149,6 +24660,12 @@ uint32_t HeartbeatTxnRangeResponse::write(::apache::thrift::protocol::TProtocol*
       xfer += oprot->writeI64((*_iter726));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::set<int64_t> ::const_iterator _iter746;
+    for (_iter746 = this->aborted.begin(); _iter746 != this->aborted.end(); ++_iter746)
+    {
+      xfer += oprot->writeI64((*_iter746));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeSetEnd();
   }
@@ -24157,6 +24674,7 @@ uint32_t HeartbeatTxnRangeResponse::write(::apache::thrift::protocol::TProtocol*
   xfer += oprot->writeFieldBegin("nosuch", ::apache::thrift::protocol::T_SET, 2);
   {
     xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->nosuch.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -24266,6 +24784,12 @@ uint32_t HeartbeatTxnRangeResponse::write(::apache::thrift::protocol::TProtocol*
       xfer += oprot->writeI64((*_iter727));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::set<int64_t> ::const_iterator _iter747;
+    for (_iter747 = this->nosuch.begin(); _iter747 != this->nosuch.end(); ++_iter747)
+    {
+      xfer += oprot->writeI64((*_iter747));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeSetEnd();
   }
@@ -24282,6 +24806,7 @@ void swap(HeartbeatTxnRangeResponse &a, HeartbeatTxnRangeResponse &b) {
   swap(a.nosuch, b.nosuch);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -24420,6 +24945,15 @@ HeartbeatTxnRangeResponse& HeartbeatTxnRangeResponse::operator=(const HeartbeatT
   nosuch = other729.nosuch;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+HeartbeatTxnRangeResponse::HeartbeatTxnRangeResponse(const HeartbeatTxnRangeResponse& other748) {
+  aborted = other748.aborted;
+  nosuch = other748.nosuch;
+}
+HeartbeatTxnRangeResponse& HeartbeatTxnRangeResponse::operator=(const HeartbeatTxnRangeResponse& other749) {
+  aborted = other749.aborted;
+  nosuch = other749.nosuch;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void HeartbeatTxnRangeResponse::printTo(std::ostream& out) const {
@@ -24512,6 +25046,7 @@ uint32_t CompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 4:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -24610,6 +25145,11 @@ uint32_t CompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           this->type = (CompactionType::type)ecast730;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast750;
+          xfer += iprot->readI32(ecast750);
+          this->type = (CompactionType::type)ecast750;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           isset_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -24627,6 +25167,7 @@ uint32_t CompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->properties.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -24804,6 +25345,19 @@ uint32_t CompactionRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
               xfer += iprot->readString(_val737);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size751;
+            ::apache::thrift::protocol::TType _ktype752;
+            ::apache::thrift::protocol::TType _vtype753;
+            xfer += iprot->readMapBegin(_ktype752, _vtype753, _size751);
+            uint32_t _i755;
+            for (_i755 = 0; _i755 < _size751; ++_i755)
+            {
+              std::string _key756;
+              xfer += iprot->readString(_key756);
+              std::string& _val757 = this->properties[_key756];
+              xfer += iprot->readString(_val757);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readMapEnd();
           }
@@ -24861,6 +25415,7 @@ uint32_t CompactionRequest::write(::apache::thrift::protocol::TProtocol* oprot) 
     xfer += oprot->writeFieldBegin("properties", ::apache::thrift::protocol::T_MAP, 6);
     {
       xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->properties.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -24979,6 +25534,13 @@ uint32_t CompactionRequest::write(::apache::thrift::protocol::TProtocol* oprot) 
         xfer += oprot->writeString(_iter738->second);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::map<std::string, std::string> ::const_iterator _iter758;
+      for (_iter758 = this->properties.begin(); _iter758 != this->properties.end(); ++_iter758)
+      {
+        xfer += oprot->writeString(_iter758->first);
+        xfer += oprot->writeString(_iter758->second);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeMapEnd();
     }
@@ -25000,6 +25562,7 @@ void swap(CompactionRequest &a, CompactionRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -25216,6 +25779,25 @@ CompactionRequest& CompactionRequest::operator=(const CompactionRequest& other74
   __isset = other740.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+CompactionRequest::CompactionRequest(const CompactionRequest& other759) {
+  dbname = other759.dbname;
+  tablename = other759.tablename;
+  partitionname = other759.partitionname;
+  type = other759.type;
+  runas = other759.runas;
+  properties = other759.properties;
+  __isset = other759.__isset;
+}
+CompactionRequest& CompactionRequest::operator=(const CompactionRequest& other760) {
+  dbname = other760.dbname;
+  tablename = other760.tablename;
+  partitionname = other760.partitionname;
+  type = other760.type;
+  runas = other760.runas;
+  properties = other760.properties;
+  __isset = other760.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void CompactionRequest::printTo(std::ostream& out) const {
@@ -25342,6 +25924,7 @@ void swap(CompactionResponse &a, CompactionResponse &b) {
   swap(a.accepted, b.accepted);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -25504,6 +26087,17 @@ CompactionResponse& CompactionResponse::operator=(const CompactionResponse& othe
   accepted = other742.accepted;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+CompactionResponse::CompactionResponse(const CompactionResponse& other761) {
+  id = other761.id;
+  state = other761.state;
+  accepted = other761.accepted;
+}
+CompactionResponse& CompactionResponse::operator=(const CompactionResponse& other762) {
+  id = other762.id;
+  state = other762.state;
+  accepted = other762.accepted;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void CompactionResponse::printTo(std::ostream& out) const {
@@ -25564,6 +26158,7 @@ void swap(ShowCompactRequest &a, ShowCompactRequest &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -25682,6 +26277,13 @@ ShowCompactRequest& ShowCompactRequest::operator=(const ShowCompactRequest& othe
   (void) other744;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+ShowCompactRequest::ShowCompactRequest(const ShowCompactRequest& other763) {
+  (void) other763;
+}
+ShowCompactRequest& ShowCompactRequest::operator=(const ShowCompactRequest& other764) {
+  (void) other764;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void ShowCompactRequest::printTo(std::ostream& out) const {
@@ -25811,6 +26413,7 @@ uint32_t ShowCompactResponseElement::read(::apache::thrift::protocol::TProtocol*
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast777;
           xfer += iprot->readI32(ecast777);
           this->type = (CompactionType::type)ecast777;
@@ -25905,6 +26508,11 @@ uint32_t ShowCompactResponseElement::read(::apache::thrift::protocol::TProtocol*
           this->type = (CompactionType::type)ecast745;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast765;
+          xfer += iprot->readI32(ecast765);
+          this->type = (CompactionType::type)ecast765;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           isset_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -26091,6 +26699,7 @@ void swap(ShowCompactResponseElement &a, ShowCompactResponseElement &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -26426,6 +27035,39 @@ ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowComp
   __isset = other747.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+ShowCompactResponseElement::ShowCompactResponseElement(const ShowCompactResponseElement& other766) {
+  dbname = other766.dbname;
+  tablename = other766.tablename;
+  partitionname = other766.partitionname;
+  type = other766.type;
+  state = other766.state;
+  workerid = other766.workerid;
+  start = other766.start;
+  runAs = other766.runAs;
+  hightestTxnId = other766.hightestTxnId;
+  metaInfo = other766.metaInfo;
+  endTime = other766.endTime;
+  hadoopJobId = other766.hadoopJobId;
+  id = other766.id;
+  __isset = other766.__isset;
+}
+ShowCompactResponseElement& ShowCompactResponseElement::operator=(const ShowCompactResponseElement& other767) {
+  dbname = other767.dbname;
+  tablename = other767.tablename;
+  partitionname = other767.partitionname;
+  type = other767.type;
+  state = other767.state;
+  workerid = other767.workerid;
+  start = other767.start;
+  runAs = other767.runAs;
+  hightestTxnId = other767.hightestTxnId;
+  metaInfo = other767.metaInfo;
+  endTime = other767.endTime;
+  hadoopJobId = other767.hadoopJobId;
+  id = other767.id;
+  __isset = other767.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void ShowCompactResponseElement::printTo(std::ostream& out) const {
@@ -26482,6 +27124,7 @@ uint32_t ShowCompactResponse::read(::apache::thrift::protocol::TProtocol* iprot)
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->compacts.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -26630,6 +27273,16 @@ uint32_t ShowCompactResponse::read(::apache::thrift::protocol::TProtocol* iprot)
               xfer += this->compacts[_i752].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size768;
+            ::apache::thrift::protocol::TType _etype771;
+            xfer += iprot->readListBegin(_etype771, _size768);
+            this->compacts.resize(_size768);
+            uint32_t _i772;
+            for (_i772 = 0; _i772 < _size768; ++_i772)
+            {
+              xfer += this->compacts[_i772].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -26660,6 +27313,7 @@ uint32_t ShowCompactResponse::write(::apache::thrift::protocol::TProtocol* oprot
   xfer += oprot->writeFieldBegin("compacts", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->compacts.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -26768,6 +27422,12 @@ uint32_t ShowCompactResponse::write(::apache::thrift::protocol::TProtocol* oprot
       xfer += (*_iter753).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<ShowCompactResponseElement> ::const_iterator _iter773;
+    for (_iter773 = this->compacts.begin(); _iter773 != this->compacts.end(); ++_iter773)
+    {
+      xfer += (*_iter773).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -26783,6 +27443,7 @@ void swap(ShowCompactResponse &a, ShowCompactResponse &b) {
   swap(a.compacts, b.compacts);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -26901,6 +27562,13 @@ ShowCompactResponse& ShowCompactResponse::operator=(const ShowCompactResponse& o
   compacts = other755.compacts;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+ShowCompactResponse::ShowCompactResponse(const ShowCompactResponse& other774) {
+  compacts = other774.compacts;
+}
+ShowCompactResponse& ShowCompactResponse::operator=(const ShowCompactResponse& other775) {
+  compacts = other775.compacts;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void ShowCompactResponse::printTo(std::ostream& out) const {
@@ -27002,6 +27670,7 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->partitionnames.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -27150,6 +27819,16 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
               xfer += iprot->readString(this->partitionnames[_i760]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size776;
+            ::apache::thrift::protocol::TType _etype779;
+            xfer += iprot->readListBegin(_etype779, _size776);
+            this->partitionnames.resize(_size776);
+            uint32_t _i780;
+            for (_i780 = 0; _i780 < _size776; ++_i780)
+            {
+              xfer += iprot->readString(this->partitionnames[_i780]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -27160,6 +27839,7 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
         break;
       case 6:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -27258,6 +27938,11 @@ uint32_t AddDynamicPartitions::read(::apache::thrift::protocol::TProtocol* iprot
           this->operationType = (DataOperationType::type)ecast761;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast781;
+          xfer += iprot->readI32(ecast781);
+          this->operationType = (DataOperationType::type)ecast781;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           this->__isset.operationType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -27309,6 +27994,7 @@ uint32_t AddDynamicPartitions::write(::apache::thrift::protocol::TProtocol* opro
   xfer += oprot->writeFieldBegin("partitionnames", ::apache::thrift::protocol::T_LIST, 5);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->partitionnames.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -27418,6 +28104,12 @@ uint32_t AddDynamicPartitions::write(::apache::thrift::protocol::TProtocol* opro
       xfer += oprot->writeString((*_iter762));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter782;
+    for (_iter782 = this->partitionnames.begin(); _iter782 != this->partitionnames.end(); ++_iter782)
+    {
+      xfer += oprot->writeString((*_iter782));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -27444,6 +28136,7 @@ void swap(AddDynamicPartitions &a, AddDynamicPartitions &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -27623,6 +28316,25 @@ AddDynamicPartitions& AddDynamicPartitions::operator=(const AddDynamicPartitions
   operationType = other764.operationType;
   __isset = other764.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+AddDynamicPartitions::AddDynamicPartitions(const AddDynamicPartitions& other783) {
+  txnid = other783.txnid;
+  writeid = other783.writeid;
+  dbname = other783.dbname;
+  tablename = other783.tablename;
+  partitionnames = other783.partitionnames;
+  operationType = other783.operationType;
+  __isset = other783.__isset;
+}
+AddDynamicPartitions& AddDynamicPartitions::operator=(const AddDynamicPartitions& other784) {
+  txnid = other784.txnid;
+  writeid = other784.writeid;
+  dbname = other784.dbname;
+  tablename = other784.tablename;
+  partitionnames = other784.partitionnames;
+  operationType = other784.operationType;
+  __isset = other784.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void AddDynamicPartitions::printTo(std::ostream& out) const {
@@ -27805,6 +28517,7 @@ void swap(BasicTxnInfo &a, BasicTxnInfo &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -28021,6 +28734,25 @@ BasicTxnInfo& BasicTxnInfo::operator=(const BasicTxnInfo& other766) {
   __isset = other766.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+BasicTxnInfo::BasicTxnInfo(const BasicTxnInfo& other785) {
+  isnull = other785.isnull;
+  time = other785.time;
+  txnid = other785.txnid;
+  dbname = other785.dbname;
+  tablename = other785.tablename;
+  partitionname = other785.partitionname;
+  __isset = other785.__isset;
+}
+BasicTxnInfo& BasicTxnInfo::operator=(const BasicTxnInfo& other786) {
+  isnull = other786.isnull;
+  time = other786.time;
+  txnid = other786.txnid;
+  dbname = other786.dbname;
+  tablename = other786.tablename;
+  partitionname = other786.partitionname;
+  __isset = other786.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void BasicTxnInfo::printTo(std::ostream& out) const {
@@ -28114,6 +28846,7 @@ uint32_t CreationMetadata::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_SET) {
           {
             this->tablesUsed.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -28272,6 +29005,17 @@ uint32_t CreationMetadata::read(::apache::thrift::protocol::TProtocol* iprot) {
               this->tablesUsed.insert(_elem772);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size787;
+            ::apache::thrift::protocol::TType _etype790;
+            xfer += iprot->readSetBegin(_etype790, _size787);
+            uint32_t _i791;
+            for (_i791 = 0; _i791 < _size787; ++_i791)
+            {
+              std::string _elem792;
+              xfer += iprot->readString(_elem792);
+              this->tablesUsed.insert(_elem792);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readSetEnd();
           }
@@ -28328,6 +29072,7 @@ uint32_t CreationMetadata::write(::apache::thrift::protocol::TProtocol* oprot) c
   xfer += oprot->writeFieldBegin("tablesUsed", ::apache::thrift::protocol::T_SET, 4);
   {
     xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->tablesUsed.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -28436,6 +29181,12 @@ uint32_t CreationMetadata::write(::apache::thrift::protocol::TProtocol* oprot) c
       xfer += oprot->writeString((*_iter773));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::set<std::string> ::const_iterator _iter793;
+    for (_iter793 = this->tablesUsed.begin(); _iter793 != this->tablesUsed.end(); ++_iter793)
+    {
+      xfer += oprot->writeString((*_iter793));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeSetEnd();
   }
@@ -28461,6 +29212,7 @@ void swap(CreationMetadata &a, CreationMetadata &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -28658,6 +29410,21 @@ CreationMetadata& CreationMetadata::operator=(const CreationMetadata& other775) 
   __isset = other775.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+CreationMetadata::CreationMetadata(const CreationMetadata& other794) {
+  dbName = other794.dbName;
+  tblName = other794.tblName;
+  tablesUsed = other794.tablesUsed;
+  validTxnList = other794.validTxnList;
+  __isset = other794.__isset;
+}
+CreationMetadata& CreationMetadata::operator=(const CreationMetadata& other795) {
+  dbName = other795.dbName;
+  tblName = other795.tblName;
+  tablesUsed = other795.tablesUsed;
+  validTxnList = other795.validTxnList;
+  __isset = other795.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void CreationMetadata::printTo(std::ostream& out) const {
@@ -28763,6 +29530,7 @@ void swap(NotificationEventRequest &a, NotificationEventRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -28920,6 +29688,17 @@ NotificationEventRequest& NotificationEventRequest::operator=(const Notification
   __isset = other777.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+NotificationEventRequest::NotificationEventRequest(const NotificationEventRequest& other796) {
+  lastEvent = other796.lastEvent;
+  maxEvents = other796.maxEvents;
+  __isset = other796.__isset;
+}
+NotificationEventRequest& NotificationEventRequest::operator=(const NotificationEventRequest& other797) {
+  lastEvent = other797.lastEvent;
+  maxEvents = other797.maxEvents;
+  __isset = other797.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void NotificationEventRequest::printTo(std::ostream& out) const {
@@ -29139,6 +29918,7 @@ void swap(NotificationEvent &a, NotificationEvent &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -29374,6 +30154,27 @@ NotificationEvent& NotificationEvent::operator=(const NotificationEvent& other77
   __isset = other779.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+NotificationEvent::NotificationEvent(const NotificationEvent& other798) {
+  eventId = other798.eventId;
+  eventTime = other798.eventTime;
+  eventType = other798.eventType;
+  dbName = other798.dbName;
+  tableName = other798.tableName;
+  message = other798.message;
+  messageFormat = other798.messageFormat;
+  __isset = other798.__isset;
+}
+NotificationEvent& NotificationEvent::operator=(const NotificationEvent& other799) {
+  eventId = other799.eventId;
+  eventTime = other799.eventTime;
+  eventType = other799.eventType;
+  dbName = other799.dbName;
+  tableName = other799.tableName;
+  message = other799.message;
+  messageFormat = other799.messageFormat;
+  __isset = other799.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void NotificationEvent::printTo(std::ostream& out) const {
@@ -29425,6 +30226,7 @@ uint32_t NotificationEventResponse::read(::apache::thrift::protocol::TProtocol* 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->events.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -29572,6 +30374,16 @@ uint32_t NotificationEventResponse::read(::apache::thrift::protocol::TProtocol* 
               xfer += this->events[_i784].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size800;
+            ::apache::thrift::protocol::TType _etype803;
+            xfer += iprot->readListBegin(_etype803, _size800);
+            this->events.resize(_size800);
+            uint32_t _i804;
+            for (_i804 = 0; _i804 < _size800; ++_i804)
+            {
+              xfer += this->events[_i804].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -29602,6 +30414,7 @@ uint32_t NotificationEventResponse::write(::apache::thrift::protocol::TProtocol*
   xfer += oprot->writeFieldBegin("events", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->events.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -29711,6 +30524,12 @@ uint32_t NotificationEventResponse::write(::apache::thrift::protocol::TProtocol*
       xfer += (*_iter785).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<NotificationEvent> ::const_iterator _iter805;
+    for (_iter805 = this->events.begin(); _iter805 != this->events.end(); ++_iter805)
+    {
+      xfer += (*_iter805).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -29726,6 +30545,7 @@ void swap(NotificationEventResponse &a, NotificationEventResponse &b) {
   swap(a.events, b.events);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -29846,6 +30666,13 @@ NotificationEventResponse& NotificationEventResponse::operator=(const Notificati
   events = other787.events;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+NotificationEventResponse::NotificationEventResponse(const NotificationEventResponse& other806) {
+  events = other806.events;
+}
+NotificationEventResponse& NotificationEventResponse::operator=(const NotificationEventResponse& other807) {
+  events = other807.events;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void NotificationEventResponse::printTo(std::ostream& out) const {
@@ -29927,6 +30754,7 @@ void swap(CurrentNotificationEventId &a, CurrentNotificationEventId &b) {
   swap(a.eventId, b.eventId);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -30047,6 +30875,13 @@ CurrentNotificationEventId& CurrentNotificationEventId::operator=(const CurrentN
   eventId = other789.eventId;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+CurrentNotificationEventId::CurrentNotificationEventId(const CurrentNotificationEventId& other808) {
+  eventId = other808.eventId;
+}
+CurrentNotificationEventId& CurrentNotificationEventId::operator=(const CurrentNotificationEventId& other809) {
+  eventId = other809.eventId;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void CurrentNotificationEventId::printTo(std::ostream& out) const {
@@ -30168,6 +31003,7 @@ void swap(NotificationEventsCountRequest &a, NotificationEventsCountRequest &b) 
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -30310,6 +31146,15 @@ NotificationEventsCountRequest& NotificationEventsCountRequest::operator=(const 
   dbName = other791.dbName;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+NotificationEventsCountRequest::NotificationEventsCountRequest(const NotificationEventsCountRequest& other810) {
+  fromEventId = other810.fromEventId;
+  dbName = other810.dbName;
+}
+NotificationEventsCountRequest& NotificationEventsCountRequest::operator=(const NotificationEventsCountRequest& other811) {
+  fromEventId = other811.fromEventId;
+  dbName = other811.dbName;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void NotificationEventsCountRequest::printTo(std::ostream& out) const {
@@ -30393,6 +31238,7 @@ void swap(NotificationEventsCountResponse &a, NotificationEventsCountResponse &b
   swap(a.eventsCount, b.eventsCount);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -30511,6 +31357,13 @@ NotificationEventsCountResponse& NotificationEventsCountResponse::operator=(cons
   eventsCount = other793.eventsCount;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+NotificationEventsCountResponse::NotificationEventsCountResponse(const NotificationEventsCountResponse& other812) {
+  eventsCount = other812.eventsCount;
+}
+NotificationEventsCountResponse& NotificationEventsCountResponse::operator=(const NotificationEventsCountResponse& other813) {
+  eventsCount = other813.eventsCount;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void NotificationEventsCountResponse::printTo(std::ostream& out) const {
@@ -30573,6 +31426,7 @@ uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->filesAdded.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -30721,6 +31575,16 @@ uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* ipr
               xfer += iprot->readString(this->filesAdded[_i798]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size814;
+            ::apache::thrift::protocol::TType _etype817;
+            xfer += iprot->readListBegin(_etype817, _size814);
+            this->filesAdded.resize(_size814);
+            uint32_t _i818;
+            for (_i818 = 0; _i818 < _size814; ++_i818)
+            {
+              xfer += iprot->readString(this->filesAdded[_i818]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -30733,6 +31597,7 @@ uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->filesAddedChecksum.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -30881,6 +31746,16 @@ uint32_t InsertEventRequestData::read(::apache::thrift::protocol::TProtocol* ipr
               xfer += iprot->readString(this->filesAddedChecksum[_i803]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size819;
+            ::apache::thrift::protocol::TType _etype822;
+            xfer += iprot->readListBegin(_etype822, _size819);
+            this->filesAddedChecksum.resize(_size819);
+            uint32_t _i823;
+            for (_i823 = 0; _i823 < _size819; ++_i823)
+            {
+              xfer += iprot->readString(this->filesAddedChecksum[_i823]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -30916,6 +31791,7 @@ uint32_t InsertEventRequestData::write(::apache::thrift::protocol::TProtocol* op
   xfer += oprot->writeFieldBegin("filesAdded", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->filesAdded.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -31024,6 +31900,12 @@ uint32_t InsertEventRequestData::write(::apache::thrift::protocol::TProtocol* op
       xfer += oprot->writeString((*_iter804));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter824;
+    for (_iter824 = this->filesAdded.begin(); _iter824 != this->filesAdded.end(); ++_iter824)
+    {
+      xfer += oprot->writeString((*_iter824));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -31033,6 +31915,7 @@ uint32_t InsertEventRequestData::write(::apache::thrift::protocol::TProtocol* op
     xfer += oprot->writeFieldBegin("filesAddedChecksum", ::apache::thrift::protocol::T_LIST, 3);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->filesAddedChecksum.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -31142,6 +32025,12 @@ uint32_t InsertEventRequestData::write(::apache::thrift::protocol::TProtocol* op
         xfer += oprot->writeString((*_iter805));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<std::string> ::const_iterator _iter825;
+      for (_iter825 = this->filesAddedChecksum.begin(); _iter825 != this->filesAddedChecksum.end(); ++_iter825)
+      {
+        xfer += oprot->writeString((*_iter825));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -31160,6 +32049,7 @@ void swap(InsertEventRequestData &a, InsertEventRequestData &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -31342,6 +32232,19 @@ InsertEventRequestData& InsertEventRequestData::operator=(const InsertEventReque
   __isset = other807.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+InsertEventRequestData::InsertEventRequestData(const InsertEventRequestData& other826) {
+  replace = other826.replace;
+  filesAdded = other826.filesAdded;
+  filesAddedChecksum = other826.filesAddedChecksum;
+  __isset = other826.__isset;
+}
+InsertEventRequestData& InsertEventRequestData::operator=(const InsertEventRequestData& other827) {
+  replace = other827.replace;
+  filesAdded = other827.filesAdded;
+  filesAddedChecksum = other827.filesAddedChecksum;
+  __isset = other827.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void InsertEventRequestData::printTo(std::ostream& out) const {
@@ -31423,6 +32326,7 @@ void swap(FireEventRequestData &a, FireEventRequestData &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -31561,6 +32465,15 @@ FireEventRequestData& FireEventRequestData::operator=(const FireEventRequestData
   __isset = other809.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+FireEventRequestData::FireEventRequestData(const FireEventRequestData& other828) {
+  insertData = other828.insertData;
+  __isset = other828.__isset;
+}
+FireEventRequestData& FireEventRequestData::operator=(const FireEventRequestData& other829) {
+  insertData = other829.insertData;
+  __isset = other829.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void FireEventRequestData::printTo(std::ostream& out) const {
@@ -31662,6 +32575,7 @@ uint32_t FireEventRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->partitionVals.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -31812,6 +32726,16 @@ uint32_t FireEventRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
               xfer += iprot->readString(this->partitionVals[_i814]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size830;
+            ::apache::thrift::protocol::TType _etype833;
+            xfer += iprot->readListBegin(_etype833, _size830);
+            this->partitionVals.resize(_size830);
+            uint32_t _i834;
+            for (_i834 = 0; _i834 < _size830; ++_i834)
+            {
+              xfer += iprot->readString(this->partitionVals[_i834]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -31871,6 +32795,7 @@ uint32_t FireEventRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
     xfer += oprot->writeFieldBegin("partitionVals", ::apache::thrift::protocol::T_LIST, 5);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->partitionVals.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -31980,6 +32905,12 @@ uint32_t FireEventRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
         xfer += oprot->writeString((*_iter815));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<std::string> ::const_iterator _iter835;
+      for (_iter835 = this->partitionVals.begin(); _iter835 != this->partitionVals.end(); ++_iter835)
+      {
+        xfer += oprot->writeString((*_iter835));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -32006,6 +32937,7 @@ void swap(FireEventRequest &a, FireEventRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -32207,6 +33139,23 @@ FireEventRequest& FireEventRequest::operator=(const FireEventRequest& other817) 
   __isset = other817.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+FireEventRequest::FireEventRequest(const FireEventRequest& other836) {
+  successful = other836.successful;
+  data = other836.data;
+  dbName = other836.dbName;
+  tableName = other836.tableName;
+  partitionVals = other836.partitionVals;
+  __isset = other836.__isset;
+}
+FireEventRequest& FireEventRequest::operator=(const FireEventRequest& other837) {
+  successful = other837.successful;
+  data = other837.data;
+  dbName = other837.dbName;
+  tableName = other837.tableName;
+  partitionVals = other837.partitionVals;
+  __isset = other837.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void FireEventRequest::printTo(std::ostream& out) const {
@@ -32270,6 +33219,7 @@ void swap(FireEventResponse &a, FireEventResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -32388,6 +33338,13 @@ FireEventResponse& FireEventResponse::operator=(const FireEventResponse& other81
   (void) other819;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+FireEventResponse::FireEventResponse(const FireEventResponse& other838) {
+  (void) other838;
+}
+FireEventResponse& FireEventResponse::operator=(const FireEventResponse& other839) {
+  (void) other839;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void FireEventResponse::printTo(std::ostream& out) const {
@@ -32487,6 +33444,7 @@ void swap(MetadataPpdResult &a, MetadataPpdResult &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -32638,6 +33596,17 @@ MetadataPpdResult& MetadataPpdResult::operator=(const MetadataPpdResult& other82
   includeBitset = other821.includeBitset;
   __isset = other821.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+MetadataPpdResult::MetadataPpdResult(const MetadataPpdResult& other840) {
+  metadata = other840.metadata;
+  includeBitset = other840.includeBitset;
+  __isset = other840.__isset;
+}
+MetadataPpdResult& MetadataPpdResult::operator=(const MetadataPpdResult& other841) {
+  metadata = other841.metadata;
+  includeBitset = other841.includeBitset;
+  __isset = other841.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void MetadataPpdResult::printTo(std::ostream& out) const {
@@ -32688,6 +33657,7 @@ uint32_t GetFileMetadataByExprResult::read(::apache::thrift::protocol::TProtocol
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->metadata.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -32868,6 +33838,19 @@ uint32_t GetFileMetadataByExprResult::read(::apache::thrift::protocol::TProtocol
               xfer += _val828.read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size842;
+            ::apache::thrift::protocol::TType _ktype843;
+            ::apache::thrift::protocol::TType _vtype844;
+            xfer += iprot->readMapBegin(_ktype843, _vtype844, _size842);
+            uint32_t _i846;
+            for (_i846 = 0; _i846 < _size842; ++_i846)
+            {
+              int64_t _key847;
+              xfer += iprot->readI64(_key847);
+              MetadataPpdResult& _val848 = this->metadata[_key847];
+              xfer += _val848.read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readMapEnd();
           }
@@ -32908,6 +33891,7 @@ uint32_t GetFileMetadataByExprResult::write(::apache::thrift::protocol::TProtoco
   xfer += oprot->writeFieldBegin("metadata", ::apache::thrift::protocol::T_MAP, 1);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_I64, ::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->metadata.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -33026,6 +34010,13 @@ uint32_t GetFileMetadataByExprResult::write(::apache::thrift::protocol::TProtoco
       xfer += _iter829->second.write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::map<int64_t, MetadataPpdResult> ::const_iterator _iter849;
+    for (_iter849 = this->metadata.begin(); _iter849 != this->metadata.end(); ++_iter849)
+    {
+      xfer += oprot->writeI64(_iter849->first);
+      xfer += _iter849->second.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeMapEnd();
   }
@@ -33046,6 +34037,7 @@ void swap(GetFileMetadataByExprResult &a, GetFileMetadataByExprResult &b) {
   swap(a.isSupported, b.isSupported);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -33184,6 +34176,15 @@ GetFileMetadataByExprResult& GetFileMetadataByExprResult::operator=(const GetFil
   isSupported = other831.isSupported;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+GetFileMetadataByExprResult::GetFileMetadataByExprResult(const GetFileMetadataByExprResult& other850) {
+  metadata = other850.metadata;
+  isSupported = other850.isSupported;
+}
+GetFileMetadataByExprResult& GetFileMetadataByExprResult::operator=(const GetFileMetadataByExprResult& other851) {
+  metadata = other851.metadata;
+  isSupported = other851.isSupported;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void GetFileMetadataByExprResult::printTo(std::ostream& out) const {
@@ -33244,6 +34245,7 @@ uint32_t GetFileMetadataByExprRequest::read(::apache::thrift::protocol::TProtoco
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->fileIds.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -33392,6 +34394,16 @@ uint32_t GetFileMetadataByExprRequest::read(::apache::thrift::protocol::TProtoco
               xfer += iprot->readI64(this->fileIds[_i836]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size852;
+            ::apache::thrift::protocol::TType _etype855;
+            xfer += iprot->readListBegin(_etype855, _size852);
+            this->fileIds.resize(_size852);
+            uint32_t _i856;
+            for (_i856 = 0; _i856 < _size852; ++_i856)
+            {
+              xfer += iprot->readI64(this->fileIds[_i856]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -33418,6 +34430,7 @@ uint32_t GetFileMetadataByExprRequest::read(::apache::thrift::protocol::TProtoco
         break;
       case 4:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -33516,6 +34529,11 @@ uint32_t GetFileMetadataByExprRequest::read(::apache::thrift::protocol::TProtoco
           this->type = (FileMetadataExprType::type)ecast837;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast857;
+          xfer += iprot->readI32(ecast857);
+          this->type = (FileMetadataExprType::type)ecast857;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           this->__isset.type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -33545,6 +34563,7 @@ uint32_t GetFileMetadataByExprRequest::write(::apache::thrift::protocol::TProtoc
   xfer += oprot->writeFieldBegin("fileIds", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->fileIds.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -33653,6 +34672,12 @@ uint32_t GetFileMetadataByExprRequest::write(::apache::thrift::protocol::TProtoc
       xfer += oprot->writeI64((*_iter838));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<int64_t> ::const_iterator _iter858;
+    for (_iter858 = this->fileIds.begin(); _iter858 != this->fileIds.end(); ++_iter858)
+    {
+      xfer += oprot->writeI64((*_iter858));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -33686,6 +34711,7 @@ void swap(GetFileMetadataByExprRequest &a, GetFileMetadataByExprRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -33881,6 +34907,21 @@ GetFileMetadataByExprRequest& GetFileMetadataByExprRequest::operator=(const GetF
   __isset = other840.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+GetFileMetadataByExprRequest::GetFileMetadataByExprRequest(const GetFileMetadataByExprRequest& other859) {
+  fileIds = other859.fileIds;
+  expr = other859.expr;
+  doGetFooters = other859.doGetFooters;
+  type = other859.type;
+  __isset = other859.__isset;
+}
+GetFileMetadataByExprRequest& GetFileMetadataByExprRequest::operator=(const GetFileMetadataByExprRequest& other860) {
+  fileIds = other860.fileIds;
+  expr = other860.expr;
+  doGetFooters = other860.doGetFooters;
+  type = other860.type;
+  __isset = other860.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void GetFileMetadataByExprRequest::printTo(std::ostream& out) const {
@@ -33933,6 +34974,7 @@ uint32_t GetFileMetadataResult::read(::apache::thrift::protocol::TProtocol* ipro
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->metadata.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -34110,6 +35152,19 @@ uint32_t GetFileMetadataResult::read(::apache::thrift::protocol::TProtocol* ipro
               xfer += iprot->readBinary(_val847);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size861;
+            ::apache::thrift::protocol::TType _ktype862;
+            ::apache::thrift::protocol::TType _vtype863;
+            xfer += iprot->readMapBegin(_ktype862, _vtype863, _size861);
+            uint32_t _i865;
+            for (_i865 = 0; _i865 < _size861; ++_i865)
+            {
+              int64_t _key866;
+              xfer += iprot->readI64(_key866);
+              std::string& _val867 = this->metadata[_key866];
+              xfer += iprot->readBinary(_val867);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readMapEnd();
           }
@@ -34150,6 +35205,7 @@ uint32_t GetFileMetadataResult::write(::apache::thrift::protocol::TProtocol* opr
   xfer += oprot->writeFieldBegin("metadata", ::apache::thrift::protocol::T_MAP, 1);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_I64, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->metadata.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -34268,6 +35324,13 @@ uint32_t GetFileMetadataResult::write(::apache::thrift::protocol::TProtocol* opr
       xfer += oprot->writeBinary(_iter848->second);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::map<int64_t, std::string> ::const_iterator _iter868;
+    for (_iter868 = this->metadata.begin(); _iter868 != this->metadata.end(); ++_iter868)
+    {
+      xfer += oprot->writeI64(_iter868->first);
+      xfer += oprot->writeBinary(_iter868->second);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeMapEnd();
   }
@@ -34288,6 +35351,7 @@ void swap(GetFileMetadataResult &a, GetFileMetadataResult &b) {
   swap(a.isSupported, b.isSupported);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -34426,6 +35490,15 @@ GetFileMetadataResult& GetFileMetadataResult::operator=(const GetFileMetadataRes
   isSupported = other850.isSupported;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+GetFileMetadataResult::GetFileMetadataResult(const GetFileMetadataResult& other869) {
+  metadata = other869.metadata;
+  isSupported = other869.isSupported;
+}
+GetFileMetadataResult& GetFileMetadataResult::operator=(const GetFileMetadataResult& other870) {
+  metadata = other870.metadata;
+  isSupported = other870.isSupported;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void GetFileMetadataResult::printTo(std::ostream& out) const {
@@ -34471,6 +35544,7 @@ uint32_t GetFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->fileIds.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -34618,6 +35692,16 @@ uint32_t GetFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
               xfer += iprot->readI64(this->fileIds[_i855]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size871;
+            ::apache::thrift::protocol::TType _etype874;
+            xfer += iprot->readListBegin(_etype874, _size871);
+            this->fileIds.resize(_size871);
+            uint32_t _i875;
+            for (_i875 = 0; _i875 < _size871; ++_i875)
+            {
+              xfer += iprot->readI64(this->fileIds[_i875]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -34648,6 +35732,7 @@ uint32_t GetFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
   xfer += oprot->writeFieldBegin("fileIds", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->fileIds.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -34757,6 +35842,12 @@ uint32_t GetFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
       xfer += oprot->writeI64((*_iter856));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<int64_t> ::const_iterator _iter876;
+    for (_iter876 = this->fileIds.begin(); _iter876 != this->fileIds.end(); ++_iter876)
+    {
+      xfer += oprot->writeI64((*_iter876));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -34772,6 +35863,7 @@ void swap(GetFileMetadataRequest &a, GetFileMetadataRequest &b) {
   swap(a.fileIds, b.fileIds);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -34892,6 +35984,13 @@ GetFileMetadataRequest& GetFileMetadataRequest::operator=(const GetFileMetadataR
   fileIds = other858.fileIds;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+GetFileMetadataRequest::GetFileMetadataRequest(const GetFileMetadataRequest& other877) {
+  fileIds = other877.fileIds;
+}
+GetFileMetadataRequest& GetFileMetadataRequest::operator=(const GetFileMetadataRequest& other878) {
+  fileIds = other878.fileIds;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void GetFileMetadataRequest::printTo(std::ostream& out) const {
@@ -34950,6 +36049,7 @@ void swap(PutFileMetadataResult &a, PutFileMetadataResult &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -35070,6 +36170,13 @@ PutFileMetadataResult& PutFileMetadataResult::operator=(const PutFileMetadataRes
   (void) other860;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+PutFileMetadataResult::PutFileMetadataResult(const PutFileMetadataResult& other879) {
+  (void) other879;
+}
+PutFileMetadataResult& PutFileMetadataResult::operator=(const PutFileMetadataResult& other880) {
+  (void) other880;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void PutFileMetadataResult::printTo(std::ostream& out) const {
@@ -35123,6 +36230,7 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->fileIds.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -35273,6 +36381,16 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
               xfer += iprot->readI64(this->fileIds[_i865]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size881;
+            ::apache::thrift::protocol::TType _etype884;
+            xfer += iprot->readListBegin(_etype884, _size881);
+            this->fileIds.resize(_size881);
+            uint32_t _i885;
+            for (_i885 = 0; _i885 < _size881; ++_i885)
+            {
+              xfer += iprot->readI64(this->fileIds[_i885]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -35285,6 +36403,7 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->metadata.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -35433,6 +36552,16 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
               xfer += iprot->readBinary(this->metadata[_i870]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size886;
+            ::apache::thrift::protocol::TType _etype889;
+            xfer += iprot->readListBegin(_etype889, _size886);
+            this->metadata.resize(_size886);
+            uint32_t _i890;
+            for (_i890 = 0; _i890 < _size886; ++_i890)
+            {
+              xfer += iprot->readBinary(this->metadata[_i890]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -35443,6 +36572,7 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
         break;
       case 3:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -35541,6 +36671,11 @@ uint32_t PutFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* ipr
           this->type = (FileMetadataExprType::type)ecast871;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast891;
+          xfer += iprot->readI32(ecast891);
+          this->type = (FileMetadataExprType::type)ecast891;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           this->__isset.type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -35570,6 +36705,7 @@ uint32_t PutFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
   xfer += oprot->writeFieldBegin("fileIds", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->fileIds.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -35678,6 +36814,12 @@ uint32_t PutFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
       xfer += oprot->writeI64((*_iter872));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<int64_t> ::const_iterator _iter892;
+    for (_iter892 = this->fileIds.begin(); _iter892 != this->fileIds.end(); ++_iter892)
+    {
+      xfer += oprot->writeI64((*_iter892));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -35686,6 +36828,7 @@ uint32_t PutFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
   xfer += oprot->writeFieldBegin("metadata", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->metadata.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -35794,6 +36937,12 @@ uint32_t PutFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* op
       xfer += oprot->writeBinary((*_iter873));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter893;
+    for (_iter893 = this->metadata.begin(); _iter893 != this->metadata.end(); ++_iter893)
+    {
+      xfer += oprot->writeBinary((*_iter893));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -35817,6 +36966,7 @@ void swap(PutFileMetadataRequest &a, PutFileMetadataRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -35999,6 +37149,19 @@ PutFileMetadataRequest& PutFileMetadataRequest::operator=(const PutFileMetadataR
   __isset = other875.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+PutFileMetadataRequest::PutFileMetadataRequest(const PutFileMetadataRequest& other894) {
+  fileIds = other894.fileIds;
+  metadata = other894.metadata;
+  type = other894.type;
+  __isset = other894.__isset;
+}
+PutFileMetadataRequest& PutFileMetadataRequest::operator=(const PutFileMetadataRequest& other895) {
+  fileIds = other895.fileIds;
+  metadata = other895.metadata;
+  type = other895.type;
+  __isset = other895.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void PutFileMetadataRequest::printTo(std::ostream& out) const {
@@ -36059,6 +37222,7 @@ void swap(ClearFileMetadataResult &a, ClearFileMetadataResult &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -36177,6 +37341,13 @@ ClearFileMetadataResult& ClearFileMetadataResult::operator=(const ClearFileMetad
   (void) other877;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+ClearFileMetadataResult::ClearFileMetadataResult(const ClearFileMetadataResult& other896) {
+  (void) other896;
+}
+ClearFileMetadataResult& ClearFileMetadataResult::operator=(const ClearFileMetadataResult& other897) {
+  (void) other897;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void ClearFileMetadataResult::printTo(std::ostream& out) const {
@@ -36220,6 +37391,7 @@ uint32_t ClearFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* i
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->fileIds.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -36368,6 +37540,16 @@ uint32_t ClearFileMetadataRequest::read(::apache::thrift::protocol::TProtocol* i
               xfer += iprot->readI64(this->fileIds[_i882]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size898;
+            ::apache::thrift::protocol::TType _etype901;
+            xfer += iprot->readListBegin(_etype901, _size898);
+            this->fileIds.resize(_size898);
+            uint32_t _i902;
+            for (_i902 = 0; _i902 < _size898; ++_i902)
+            {
+              xfer += iprot->readI64(this->fileIds[_i902]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -36398,6 +37580,7 @@ uint32_t ClearFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* 
   xfer += oprot->writeFieldBegin("fileIds", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->fileIds.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -36506,6 +37689,12 @@ uint32_t ClearFileMetadataRequest::write(::apache::thrift::protocol::TProtocol* 
       xfer += oprot->writeI64((*_iter883));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<int64_t> ::const_iterator _iter903;
+    for (_iter903 = this->fileIds.begin(); _iter903 != this->fileIds.end(); ++_iter903)
+    {
+      xfer += oprot->writeI64((*_iter903));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -36521,6 +37710,7 @@ void swap(ClearFileMetadataRequest &a, ClearFileMetadataRequest &b) {
   swap(a.fileIds, b.fileIds);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -36641,6 +37831,13 @@ ClearFileMetadataRequest& ClearFileMetadataRequest::operator=(const ClearFileMet
   fileIds = other885.fileIds;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+ClearFileMetadataRequest::ClearFileMetadataRequest(const ClearFileMetadataRequest& other904) {
+  fileIds = other904.fileIds;
+}
+ClearFileMetadataRequest& ClearFileMetadataRequest::operator=(const ClearFileMetadataRequest& other905) {
+  fileIds = other905.fileIds;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void ClearFileMetadataRequest::printTo(std::ostream& out) const {
@@ -36722,6 +37919,7 @@ void swap(CacheFileMetadataResult &a, CacheFileMetadataResult &b) {
   swap(a.isSupported, b.isSupported);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -36840,6 +38038,13 @@ CacheFileMetadataResult& CacheFileMetadataResult::operator=(const CacheFileMetad
   isSupported = other887.isSupported;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+CacheFileMetadataResult::CacheFileMetadataResult(const CacheFileMetadataResult& other906) {
+  isSupported = other906.isSupported;
+}
+CacheFileMetadataResult& CacheFileMetadataResult::operator=(const CacheFileMetadataResult& other907) {
+  isSupported = other907.isSupported;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void CacheFileMetadataResult::printTo(std::ostream& out) const {
@@ -36980,6 +38185,7 @@ void swap(CacheFileMetadataRequest &a, CacheFileMetadataRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -37175,6 +38381,21 @@ CacheFileMetadataRequest& CacheFileMetadataRequest::operator=(const CacheFileMet
   __isset = other889.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+CacheFileMetadataRequest::CacheFileMetadataRequest(const CacheFileMetadataRequest& other908) {
+  dbName = other908.dbName;
+  tblName = other908.tblName;
+  partName = other908.partName;
+  isAllParts = other908.isAllParts;
+  __isset = other908.__isset;
+}
+CacheFileMetadataRequest& CacheFileMetadataRequest::operator=(const CacheFileMetadataRequest& other909) {
+  dbName = other909.dbName;
+  tblName = other909.tblName;
+  partName = other909.partName;
+  isAllParts = other909.isAllParts;
+  __isset = other909.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void CacheFileMetadataRequest::printTo(std::ostream& out) const {
@@ -37222,6 +38443,7 @@ uint32_t GetAllFunctionsResponse::read(::apache::thrift::protocol::TProtocol* ip
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->functions.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -37370,6 +38592,16 @@ uint32_t GetAllFunctionsResponse::read(::apache::thrift::protocol::TProtocol* ip
               xfer += this->functions[_i894].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size910;
+            ::apache::thrift::protocol::TType _etype913;
+            xfer += iprot->readListBegin(_etype913, _size910);
+            this->functions.resize(_size910);
+            uint32_t _i914;
+            for (_i914 = 0; _i914 < _size910; ++_i914)
+            {
+              xfer += this->functions[_i914].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -37399,6 +38631,7 @@ uint32_t GetAllFunctionsResponse::write(::apache::thrift::protocol::TProtocol* o
     xfer += oprot->writeFieldBegin("functions", ::apache::thrift::protocol::T_LIST, 1);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->functions.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -37507,6 +38740,12 @@ uint32_t GetAllFunctionsResponse::write(::apache::thrift::protocol::TProtocol* o
         xfer += (*_iter895).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<Function> ::const_iterator _iter915;
+      for (_iter915 = this->functions.begin(); _iter915 != this->functions.end(); ++_iter915)
+      {
+        xfer += (*_iter915).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -37523,6 +38762,7 @@ void swap(GetAllFunctionsResponse &a, GetAllFunctionsResponse &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -37665,6 +38905,15 @@ GetAllFunctionsResponse& GetAllFunctionsResponse::operator=(const GetAllFunction
   __isset = other897.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+GetAllFunctionsResponse::GetAllFunctionsResponse(const GetAllFunctionsResponse& other916) {
+  functions = other916.functions;
+  __isset = other916.__isset;
+}
+GetAllFunctionsResponse& GetAllFunctionsResponse::operator=(const GetAllFunctionsResponse& other917) {
+  functions = other917.functions;
+  __isset = other917.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void GetAllFunctionsResponse::printTo(std::ostream& out) const {
@@ -37709,6 +38958,7 @@ uint32_t ClientCapabilities::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->values.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -37877,6 +39127,18 @@ uint32_t ClientCapabilities::read(::apache::thrift::protocol::TProtocol* iprot) 
               this->values[_i902] = (ClientCapability::type)ecast903;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size918;
+            ::apache::thrift::protocol::TType _etype921;
+            xfer += iprot->readListBegin(_etype921, _size918);
+            this->values.resize(_size918);
+            uint32_t _i922;
+            for (_i922 = 0; _i922 < _size918; ++_i922)
+            {
+              int32_t ecast923;
+              xfer += iprot->readI32(ecast923);
+              this->values[_i922] = (ClientCapability::type)ecast923;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -37907,6 +39169,7 @@ uint32_t ClientCapabilities::write(::apache::thrift::protocol::TProtocol* oprot)
   xfer += oprot->writeFieldBegin("values", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I32, static_cast<uint32_t>(this->values.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -38015,6 +39278,12 @@ uint32_t ClientCapabilities::write(::apache::thrift::protocol::TProtocol* oprot)
       xfer += oprot->writeI32((int32_t)(*_iter904));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<ClientCapability::type> ::const_iterator _iter924;
+    for (_iter924 = this->values.begin(); _iter924 != this->values.end(); ++_iter924)
+    {
+      xfer += oprot->writeI32((int32_t)(*_iter924));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -38030,6 +39299,7 @@ void swap(ClientCapabilities &a, ClientCapabilities &b) {
   swap(a.values, b.values);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -38148,6 +39418,13 @@ ClientCapabilities& ClientCapabilities::operator=(const ClientCapabilities& othe
   values = other906.values;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+ClientCapabilities::ClientCapabilities(const ClientCapabilities& other925) {
+  values = other925.values;
+}
+ClientCapabilities& ClientCapabilities::operator=(const ClientCapabilities& other926) {
+  values = other926.values;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void ClientCapabilities::printTo(std::ostream& out) const {
@@ -38288,6 +39565,7 @@ void swap(GetTableRequest &a, GetTableRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -38474,6 +39752,19 @@ GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other908) {
   __isset = other908.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+GetTableRequest::GetTableRequest(const GetTableRequest& other927) {
+  dbName = other927.dbName;
+  tblName = other927.tblName;
+  capabilities = other927.capabilities;
+  __isset = other927.__isset;
+}
+GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other928) {
+  dbName = other928.dbName;
+  tblName = other928.tblName;
+  capabilities = other928.capabilities;
+  __isset = other928.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void GetTableRequest::printTo(std::ostream& out) const {
@@ -38558,6 +39849,7 @@ void swap(GetTableResult &a, GetTableResult &b) {
   swap(a.table, b.table);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -38678,6 +39970,13 @@ GetTableResult& GetTableResult::operator=(const GetTableResult& other910) {
   table = other910.table;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+GetTableResult::GetTableResult(const GetTableResult& other929) {
+  table = other929.table;
+}
+GetTableResult& GetTableResult::operator=(const GetTableResult& other930) {
+  table = other930.table;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void GetTableResult::printTo(std::ostream& out) const {
@@ -38745,6 +40044,7 @@ uint32_t GetTablesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->tblNames.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -38892,6 +40192,16 @@ uint32_t GetTablesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
               xfer += iprot->readString(this->tblNames[_i915]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size931;
+            ::apache::thrift::protocol::TType _etype934;
+            xfer += iprot->readListBegin(_etype934, _size931);
+            this->tblNames.resize(_size931);
+            uint32_t _i935;
+            for (_i935 = 0; _i935 < _size931; ++_i935)
+            {
+              xfer += iprot->readString(this->tblNames[_i935]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -38943,6 +40253,7 @@ uint32_t GetTablesRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
     xfer += oprot->writeFieldBegin("tblNames", ::apache::thrift::protocol::T_LIST, 2);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->tblNames.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -39052,6 +40363,12 @@ uint32_t GetTablesRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
         xfer += oprot->writeString((*_iter916));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<std::string> ::const_iterator _iter936;
+      for (_iter936 = this->tblNames.begin(); _iter936 != this->tblNames.end(); ++_iter936)
+      {
+        xfer += oprot->writeString((*_iter936));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -39081,6 +40398,7 @@ void swap(GetTablesRequest &a, GetTablesRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -39259,6 +40577,19 @@ GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other918) 
   __isset = other918.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+GetTablesRequest::GetTablesRequest(const GetTablesRequest& other937) {
+  dbName = other937.dbName;
+  tblNames = other937.tblNames;
+  capabilities = other937.capabilities;
+  __isset = other937.__isset;
+}
+GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other938) {
+  dbName = other938.dbName;
+  tblNames = other938.tblNames;
+  capabilities = other938.capabilities;
+  __isset = other938.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void GetTablesRequest::printTo(std::ostream& out) const {
@@ -39306,6 +40637,7 @@ uint32_t GetTablesResult::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->tables.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -39454,6 +40786,16 @@ uint32_t GetTablesResult::read(::apache::thrift::protocol::TProtocol* iprot) {
               xfer += this->tables[_i923].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size939;
+            ::apache::thrift::protocol::TType _etype942;
+            xfer += iprot->readListBegin(_etype942, _size939);
+            this->tables.resize(_size939);
+            uint32_t _i943;
+            for (_i943 = 0; _i943 < _size939; ++_i943)
+            {
+              xfer += this->tables[_i943].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -39484,6 +40826,7 @@ uint32_t GetTablesResult::write(::apache::thrift::protocol::TProtocol* oprot) co
   xfer += oprot->writeFieldBegin("tables", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->tables.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -39592,6 +40935,12 @@ uint32_t GetTablesResult::write(::apache::thrift::protocol::TProtocol* oprot) co
       xfer += (*_iter924).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<Table> ::const_iterator _iter944;
+    for (_iter944 = this->tables.begin(); _iter944 != this->tables.end(); ++_iter944)
+    {
+      xfer += (*_iter944).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -39607,6 +40956,7 @@ void swap(GetTablesResult &a, GetTablesResult &b) {
   swap(a.tables, b.tables);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -39725,6 +41075,13 @@ GetTablesResult& GetTablesResult::operator=(const GetTablesResult& other926) {
   tables = other926.tables;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+GetTablesResult::GetTablesResult(const GetTablesResult& other945) {
+  tables = other945.tables;
+}
+GetTablesResult& GetTablesResult::operator=(const GetTablesResult& other946) {
+  tables = other946.tables;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void GetTablesResult::printTo(std::ostream& out) const {
@@ -39826,6 +41183,7 @@ void swap(CmRecycleRequest &a, CmRecycleRequest &b) {
   swap(a.purge, b.purge);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -39964,6 +41322,15 @@ CmRecycleRequest& CmRecycleRequest::operator=(const CmRecycleRequest& other928) 
   purge = other928.purge;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+CmRecycleRequest::CmRecycleRequest(const CmRecycleRequest& other947) {
+  dataPath = other947.dataPath;
+  purge = other947.purge;
+}
+CmRecycleRequest& CmRecycleRequest::operator=(const CmRecycleRequest& other948) {
+  dataPath = other948.dataPath;
+  purge = other948.purge;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void CmRecycleRequest::printTo(std::ostream& out) const {
@@ -40023,6 +41390,7 @@ void swap(CmRecycleResponse &a, CmRecycleResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 CmRecycleResponse::CmRecycleResponse(const CmRecycleResponse& other961) {
@@ -40135,6 +41503,13 @@ CmRecycleResponse& CmRecycleResponse::operator=(const CmRecycleResponse& other93
   (void) other930;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+CmRecycleResponse::CmRecycleResponse(const CmRecycleResponse& other949) {
+  (void) other949;
+}
+CmRecycleResponse& CmRecycleResponse::operator=(const CmRecycleResponse& other950) {
+  (void) other950;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void CmRecycleResponse::printTo(std::ostream& out) const {
@@ -40294,6 +41669,7 @@ void swap(TableMeta &a, TableMeta &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -40499,6 +41875,21 @@ TableMeta& TableMeta::operator=(const TableMeta& other932) {
   __isset = other932.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+TableMeta::TableMeta(const TableMeta& other951) {
+  dbName = other951.dbName;
+  tableName = other951.tableName;
+  tableType = other951.tableType;
+  comments = other951.comments;
+  __isset = other951.__isset;
+}
+TableMeta& TableMeta::operator=(const TableMeta& other952) {
+  dbName = other952.dbName;
+  tableName = other952.tableName;
+  tableType = other952.tableType;
+  comments = other952.comments;
+  __isset = other952.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void TableMeta::printTo(std::ostream& out) const {
@@ -40557,6 +41948,7 @@ uint32_t Materialization::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_SET) {
           {
             this->tablesUsed.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -40715,6 +42107,17 @@ uint32_t Materialization::read(::apache::thrift::protocol::TProtocol* iprot) {
               this->tablesUsed.insert(_elem938);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size953;
+            ::apache::thrift::protocol::TType _etype956;
+            xfer += iprot->readSetBegin(_etype956, _size953);
+            uint32_t _i957;
+            for (_i957 = 0; _i957 < _size953; ++_i957)
+            {
+              std::string _elem958;
+              xfer += iprot->readString(_elem958);
+              this->tablesUsed.insert(_elem958);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readSetEnd();
           }
@@ -40763,6 +42166,7 @@ uint32_t Materialization::write(::apache::thrift::protocol::TProtocol* oprot) co
   xfer += oprot->writeFieldBegin("tablesUsed", ::apache::thrift::protocol::T_SET, 1);
   {
     xfer += oprot->writeSetBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->tablesUsed.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -40872,6 +42276,12 @@ uint32_t Materialization::write(::apache::thrift::protocol::TProtocol* oprot) co
       xfer += oprot->writeString((*_iter939));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::set<std::string> ::const_iterator _iter959;
+    for (_iter959 = this->tablesUsed.begin(); _iter959 != this->tablesUsed.end(); ++_iter959)
+    {
+      xfer += oprot->writeString((*_iter959));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeSetEnd();
   }
@@ -40899,6 +42309,7 @@ void swap(Materialization &a, Materialization &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -41070,6 +42481,19 @@ Materialization& Materialization::operator=(const Materialization& other941) {
   __isset = other941.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+Materialization::Materialization(const Materialization& other960) {
+  tablesUsed = other960.tablesUsed;
+  validTxnList = other960.validTxnList;
+  invalidationTime = other960.invalidationTime;
+  __isset = other960.__isset;
+}
+Materialization& Materialization::operator=(const Materialization& other961) {
+  tablesUsed = other961.tablesUsed;
+  validTxnList = other961.validTxnList;
+  invalidationTime = other961.invalidationTime;
+  __isset = other961.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void Materialization::printTo(std::ostream& out) const {
@@ -41137,6 +42561,7 @@ uint32_t WMResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -41235,6 +42660,11 @@ uint32_t WMResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) {
           this->status = (WMResourcePlanStatus::type)ecast942;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast962;
+          xfer += iprot->readI32(ecast962);
+          this->status = (WMResourcePlanStatus::type)ecast962;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           this->__isset.status = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -41308,6 +42738,7 @@ void swap(WMResourcePlan &a, WMResourcePlan &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -41510,6 +42941,21 @@ WMResourcePlan& WMResourcePlan::operator=(const WMResourcePlan& other944) {
   __isset = other944.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMResourcePlan::WMResourcePlan(const WMResourcePlan& other963) {
+  name = other963.name;
+  status = other963.status;
+  queryParallelism = other963.queryParallelism;
+  defaultPoolPath = other963.defaultPoolPath;
+  __isset = other963.__isset;
+}
+WMResourcePlan& WMResourcePlan::operator=(const WMResourcePlan& other964) {
+  name = other964.name;
+  status = other964.status;
+  queryParallelism = other964.queryParallelism;
+  defaultPoolPath = other964.defaultPoolPath;
+  __isset = other964.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMResourcePlan::printTo(std::ostream& out) const {
@@ -41588,6 +43034,7 @@ uint32_t WMNullableResourcePlan::read(::apache::thrift::protocol::TProtocol* ipr
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -41686,6 +43133,11 @@ uint32_t WMNullableResourcePlan::read(::apache::thrift::protocol::TProtocol* ipr
           this->status = (WMResourcePlanStatus::type)ecast945;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast965;
+          xfer += iprot->readI32(ecast965);
+          this->status = (WMResourcePlanStatus::type)ecast965;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           this->__isset.status = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -41786,6 +43238,7 @@ void swap(WMNullableResourcePlan &a, WMNullableResourcePlan &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -41998,6 +43451,25 @@ WMNullableResourcePlan& WMNullableResourcePlan::operator=(const WMNullableResour
   isSetDefaultPoolPath = other947.isSetDefaultPoolPath;
   __isset = other947.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMNullableResourcePlan::WMNullableResourcePlan(const WMNullableResourcePlan& other966) {
+  name = other966.name;
+  status = other966.status;
+  queryParallelism = other966.queryParallelism;
+  isSetQueryParallelism = other966.isSetQueryParallelism;
+  defaultPoolPath = other966.defaultPoolPath;
+  isSetDefaultPoolPath = other966.isSetDefaultPoolPath;
+  __isset = other966.__isset;
+}
+WMNullableResourcePlan& WMNullableResourcePlan::operator=(const WMNullableResourcePlan& other967) {
+  name = other967.name;
+  status = other967.status;
+  queryParallelism = other967.queryParallelism;
+  isSetQueryParallelism = other967.isSetQueryParallelism;
+  defaultPoolPath = other967.defaultPoolPath;
+  isSetDefaultPoolPath = other967.isSetDefaultPoolPath;
+  __isset = other967.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMNullableResourcePlan::printTo(std::ostream& out) const {
@@ -42162,6 +43634,7 @@ void swap(WMPool &a, WMPool &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -42368,6 +43841,23 @@ WMPool& WMPool::operator=(const WMPool& other949) {
   schedulingPolicy = other949.schedulingPolicy;
   __isset = other949.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMPool::WMPool(const WMPool& other968) {
+  resourcePlanName = other968.resourcePlanName;
+  poolPath = other968.poolPath;
+  allocFraction = other968.allocFraction;
+  queryParallelism = other968.queryParallelism;
+  schedulingPolicy = other968.schedulingPolicy;
+  __isset = other968.__isset;
+}
+WMPool& WMPool::operator=(const WMPool& other969) {
+  resourcePlanName = other969.resourcePlanName;
+  poolPath = other969.poolPath;
+  allocFraction = other969.allocFraction;
+  queryParallelism = other969.queryParallelism;
+  schedulingPolicy = other969.schedulingPolicy;
+  __isset = other969.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMPool::printTo(std::ostream& out) const {
@@ -42550,6 +44040,7 @@ void swap(WMNullablePool &a, WMNullablePool &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -42775,6 +44266,25 @@ WMNullablePool& WMNullablePool::operator=(const WMNullablePool& other951) {
   __isset = other951.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMNullablePool::WMNullablePool(const WMNullablePool& other970) {
+  resourcePlanName = other970.resourcePlanName;
+  poolPath = other970.poolPath;
+  allocFraction = other970.allocFraction;
+  queryParallelism = other970.queryParallelism;
+  schedulingPolicy = other970.schedulingPolicy;
+  isSetSchedulingPolicy = other970.isSetSchedulingPolicy;
+  __isset = other970.__isset;
+}
+WMNullablePool& WMNullablePool::operator=(const WMNullablePool& other971) {
+  resourcePlanName = other971.resourcePlanName;
+  poolPath = other971.poolPath;
+  allocFraction = other971.allocFraction;
+  queryParallelism = other971.queryParallelism;
+  schedulingPolicy = other971.schedulingPolicy;
+  isSetSchedulingPolicy = other971.isSetSchedulingPolicy;
+  __isset = other971.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMNullablePool::printTo(std::ostream& out) const {
@@ -42939,6 +44449,7 @@ void swap(WMTrigger &a, WMTrigger &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -43131,6 +44642,23 @@ WMTrigger& WMTrigger::operator=(const WMTrigger& other953) {
   isInUnmanaged = other953.isInUnmanaged;
   __isset = other953.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMTrigger::WMTrigger(const WMTrigger& other972) {
+  resourcePlanName = other972.resourcePlanName;
+  triggerName = other972.triggerName;
+  triggerExpression = other972.triggerExpression;
+  actionExpression = other972.actionExpression;
+  isInUnmanaged = other972.isInUnmanaged;
+  __isset = other972.__isset;
+}
+WMTrigger& WMTrigger::operator=(const WMTrigger& other973) {
+  resourcePlanName = other973.resourcePlanName;
+  triggerName = other973.triggerName;
+  triggerExpression = other973.triggerExpression;
+  actionExpression = other973.actionExpression;
+  isInUnmanaged = other973.isInUnmanaged;
+  __isset = other973.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMTrigger::printTo(std::ostream& out) const {
@@ -43295,6 +44823,7 @@ void swap(WMMapping &a, WMMapping &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -43494,6 +45023,23 @@ WMMapping& WMMapping::operator=(const WMMapping& other955) {
   ordering = other955.ordering;
   __isset = other955.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMMapping::WMMapping(const WMMapping& other974) {
+  resourcePlanName = other974.resourcePlanName;
+  entityType = other974.entityType;
+  entityName = other974.entityName;
+  poolPath = other974.poolPath;
+  ordering = other974.ordering;
+  __isset = other974.__isset;
+}
+WMMapping& WMMapping::operator=(const WMMapping& other975) {
+  resourcePlanName = other975.resourcePlanName;
+  entityType = other975.entityType;
+  entityName = other975.entityName;
+  poolPath = other975.poolPath;
+  ordering = other975.ordering;
+  __isset = other975.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMMapping::printTo(std::ostream& out) const {
@@ -43599,6 +45145,7 @@ void swap(WMPoolTrigger &a, WMPoolTrigger &b) {
   swap(a.trigger, b.trigger);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -43737,6 +45284,15 @@ WMPoolTrigger& WMPoolTrigger::operator=(const WMPoolTrigger& other957) {
   trigger = other957.trigger;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMPoolTrigger::WMPoolTrigger(const WMPoolTrigger& other976) {
+  pool = other976.pool;
+  trigger = other976.trigger;
+}
+WMPoolTrigger& WMPoolTrigger::operator=(const WMPoolTrigger& other977) {
+  pool = other977.pool;
+  trigger = other977.trigger;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMPoolTrigger::printTo(std::ostream& out) const {
@@ -43810,6 +45366,7 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->pools.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -43957,6 +45514,16 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
               xfer += this->pools[_i962].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size978;
+            ::apache::thrift::protocol::TType _etype981;
+            xfer += iprot->readListBegin(_etype981, _size978);
+            this->pools.resize(_size978);
+            uint32_t _i982;
+            for (_i982 = 0; _i982 < _size978; ++_i982)
+            {
+              xfer += this->pools[_i982].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -43969,6 +45536,7 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->mappings.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -44116,6 +45684,16 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
               xfer += this->mappings[_i967].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size983;
+            ::apache::thrift::protocol::TType _etype986;
+            xfer += iprot->readListBegin(_etype986, _size983);
+            this->mappings.resize(_size983);
+            uint32_t _i987;
+            for (_i987 = 0; _i987 < _size983; ++_i987)
+            {
+              xfer += this->mappings[_i987].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -44128,6 +45706,7 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->triggers.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -44276,6 +45855,16 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
               xfer += this->triggers[_i972].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size988;
+            ::apache::thrift::protocol::TType _etype991;
+            xfer += iprot->readListBegin(_etype991, _size988);
+            this->triggers.resize(_size988);
+            uint32_t _i992;
+            for (_i992 = 0; _i992 < _size988; ++_i992)
+            {
+              xfer += this->triggers[_i992].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -44288,6 +45877,7 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->poolTriggers.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -44438,6 +46028,16 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
               xfer += this->poolTriggers[_i977].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size993;
+            ::apache::thrift::protocol::TType _etype996;
+            xfer += iprot->readListBegin(_etype996, _size993);
+            this->poolTriggers.resize(_size993);
+            uint32_t _i997;
+            for (_i997 = 0; _i997 < _size993; ++_i997)
+            {
+              xfer += this->poolTriggers[_i997].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -44474,6 +46074,7 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
   xfer += oprot->writeFieldBegin("pools", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->pools.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -44583,6 +46184,12 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
       xfer += (*_iter978).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<WMPool> ::const_iterator _iter998;
+    for (_iter998 = this->pools.begin(); _iter998 != this->pools.end(); ++_iter998)
+    {
+      xfer += (*_iter998).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -44592,6 +46199,7 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeFieldBegin("mappings", ::apache::thrift::protocol::T_LIST, 3);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->mappings.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -44701,6 +46309,12 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
         xfer += (*_iter979).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<WMMapping> ::const_iterator _iter999;
+      for (_iter999 = this->mappings.begin(); _iter999 != this->mappings.end(); ++_iter999)
+      {
+        xfer += (*_iter999).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -44710,6 +46324,7 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeFieldBegin("triggers", ::apache::thrift::protocol::T_LIST, 4);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->triggers.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -44825,6 +46440,12 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
         xfer += (*_iter980).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<WMTrigger> ::const_iterator _iter1000;
+      for (_iter1000 = this->triggers.begin(); _iter1000 != this->triggers.end(); ++_iter1000)
+      {
+        xfer += (*_iter1000).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -44834,6 +46455,7 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeFieldBegin("poolTriggers", ::apache::thrift::protocol::T_LIST, 5);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->poolTriggers.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -44943,6 +46565,12 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
         xfer += (*_iter981).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<WMPoolTrigger> ::const_iterator _iter1001;
+      for (_iter1001 = this->poolTriggers.begin(); _iter1001 != this->poolTriggers.end(); ++_iter1001)
+      {
+        xfer += (*_iter1001).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -44963,6 +46591,7 @@ void swap(WMFullResourcePlan &a, WMFullResourcePlan &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -45162,6 +46791,23 @@ WMFullResourcePlan& WMFullResourcePlan::operator=(const WMFullResourcePlan& othe
   __isset = other983.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMFullResourcePlan::WMFullResourcePlan(const WMFullResourcePlan& other1002) {
+  plan = other1002.plan;
+  pools = other1002.pools;
+  mappings = other1002.mappings;
+  triggers = other1002.triggers;
+  poolTriggers = other1002.poolTriggers;
+  __isset = other1002.__isset;
+}
+WMFullResourcePlan& WMFullResourcePlan::operator=(const WMFullResourcePlan& other1003) {
+  plan = other1003.plan;
+  pools = other1003.pools;
+  mappings = other1003.mappings;
+  triggers = other1003.triggers;
+  poolTriggers = other1003.poolTriggers;
+  __isset = other1003.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMFullResourcePlan::printTo(std::ostream& out) const {
@@ -45266,6 +46912,7 @@ void swap(WMCreateResourcePlanRequest &a, WMCreateResourcePlanRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -45428,6 +47075,17 @@ WMCreateResourcePlanRequest& WMCreateResourcePlanRequest::operator=(const WMCrea
   __isset = other985.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMCreateResourcePlanRequest::WMCreateResourcePlanRequest(const WMCreateResourcePlanRequest& other1004) {
+  resourcePlan = other1004.resourcePlan;
+  copyFrom = other1004.copyFrom;
+  __isset = other1004.__isset;
+}
+WMCreateResourcePlanRequest& WMCreateResourcePlanRequest::operator=(const WMCreateResourcePlanRequest& other1005) {
+  resourcePlan = other1005.resourcePlan;
+  copyFrom = other1005.copyFrom;
+  __isset = other1005.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMCreateResourcePlanRequest::printTo(std::ostream& out) const {
@@ -45487,6 +47145,7 @@ void swap(WMCreateResourcePlanResponse &a, WMCreateResourcePlanResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -45607,6 +47266,13 @@ WMCreateResourcePlanResponse& WMCreateResourcePlanResponse::operator=(const WMCr
   (void) other987;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMCreateResourcePlanResponse::WMCreateResourcePlanResponse(const WMCreateResourcePlanResponse& other1006) {
+  (void) other1006;
+}
+WMCreateResourcePlanResponse& WMCreateResourcePlanResponse::operator=(const WMCreateResourcePlanResponse& other1007) {
+  (void) other1007;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMCreateResourcePlanResponse::printTo(std::ostream& out) const {
@@ -45664,6 +47330,7 @@ void swap(WMGetActiveResourcePlanRequest &a, WMGetActiveResourcePlanRequest &b) 
   (void) b;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -45784,6 +47451,13 @@ WMGetActiveResourcePlanRequest& WMGetActiveResourcePlanRequest::operator=(const 
   (void) other989;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMGetActiveResourcePlanRequest::WMGetActiveResourcePlanRequest(const WMGetActiveResourcePlanRequest& other1008) {
+  (void) other1008;
+}
+WMGetActiveResourcePlanRequest& WMGetActiveResourcePlanRequest::operator=(const WMGetActiveResourcePlanRequest& other1009) {
+  (void) other1009;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMGetActiveResourcePlanRequest::printTo(std::ostream& out) const {
@@ -45864,6 +47538,7 @@ void swap(WMGetActiveResourcePlanResponse &a, WMGetActiveResourcePlanResponse &b
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -46006,6 +47681,15 @@ WMGetActiveResourcePlanResponse& WMGetActiveResourcePlanResponse::operator=(cons
   __isset = other991.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMGetActiveResourcePlanResponse::WMGetActiveResourcePlanResponse(const WMGetActiveResourcePlanResponse& other1010) {
+  resourcePlan = other1010.resourcePlan;
+  __isset = other1010.__isset;
+}
+WMGetActiveResourcePlanResponse& WMGetActiveResourcePlanResponse::operator=(const WMGetActiveResourcePlanResponse& other1011) {
+  resourcePlan = other1011.resourcePlan;
+  __isset = other1011.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMGetActiveResourcePlanResponse::printTo(std::ostream& out) const {
@@ -46087,6 +47771,7 @@ void swap(WMGetResourcePlanRequest &a, WMGetResourcePlanRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -46225,6 +47910,15 @@ WMGetResourcePlanRequest& WMGetResourcePlanRequest::operator=(const WMGetResourc
   __isset = other993.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMGetResourcePlanRequest::WMGetResourcePlanRequest(const WMGetResourcePlanRequest& other1012) {
+  resourcePlanName = other1012.resourcePlanName;
+  __isset = other1012.__isset;
+}
+WMGetResourcePlanRequest& WMGetResourcePlanRequest::operator=(const WMGetResourcePlanRequest& other1013) {
+  resourcePlanName = other1013.resourcePlanName;
+  __isset = other1013.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMGetResourcePlanRequest::printTo(std::ostream& out) const {
@@ -46306,6 +48000,7 @@ void swap(WMGetResourcePlanResponse &a, WMGetResourcePlanResponse &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -46448,6 +48143,15 @@ WMGetResourcePlanResponse& WMGetResourcePlanResponse::operator=(const WMGetResou
   __isset = other995.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMGetResourcePlanResponse::WMGetResourcePlanResponse(const WMGetResourcePlanResponse& other1014) {
+  resourcePlan = other1014.resourcePlan;
+  __isset = other1014.__isset;
+}
+WMGetResourcePlanResponse& WMGetResourcePlanResponse::operator=(const WMGetResourcePlanResponse& other1015) {
+  resourcePlan = other1015.resourcePlan;
+  __isset = other1015.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMGetResourcePlanResponse::printTo(std::ostream& out) const {
@@ -46506,6 +48210,7 @@ void swap(WMGetAllResourcePlanRequest &a, WMGetAllResourcePlanRequest &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -46630,6 +48335,13 @@ WMGetAllResourcePlanRequest& WMGetAllResourcePlanRequest::operator=(const WMGetA
   (void) other997;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMGetAllResourcePlanRequest::WMGetAllResourcePlanRequest(const WMGetAllResourcePlanRequest& other1016) {
+  (void) other1016;
+}
+WMGetAllResourcePlanRequest& WMGetAllResourcePlanRequest::operator=(const WMGetAllResourcePlanRequest& other1017) {
+  (void) other1017;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMGetAllResourcePlanRequest::printTo(std::ostream& out) const {
@@ -46673,6 +48385,7 @@ uint32_t WMGetAllResourcePlanResponse::read(::apache::thrift::protocol::TProtoco
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->resourcePlans.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -46820,6 +48533,16 @@ uint32_t WMGetAllResourcePlanResponse::read(::apache::thrift::protocol::TProtoco
               xfer += this->resourcePlans[_i1002].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1018;
+            ::apache::thrift::protocol::TType _etype1021;
+            xfer += iprot->readListBegin(_etype1021, _size1018);
+            this->resourcePlans.resize(_size1018);
+            uint32_t _i1022;
+            for (_i1022 = 0; _i1022 < _size1018; ++_i1022)
+            {
+              xfer += this->resourcePlans[_i1022].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -46849,6 +48572,7 @@ uint32_t WMGetAllResourcePlanResponse::write(::apache::thrift::protocol::TProtoc
     xfer += oprot->writeFieldBegin("resourcePlans", ::apache::thrift::protocol::T_LIST, 1);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->resourcePlans.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -46958,6 +48682,12 @@ uint32_t WMGetAllResourcePlanResponse::write(::apache::thrift::protocol::TProtoc
         xfer += (*_iter1003).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<WMResourcePlan> ::const_iterator _iter1023;
+      for (_iter1023 = this->resourcePlans.begin(); _iter1023 != this->resourcePlans.end(); ++_iter1023)
+      {
+        xfer += (*_iter1023).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -46974,6 +48704,7 @@ void swap(WMGetAllResourcePlanResponse &a, WMGetAllResourcePlanResponse &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -47116,6 +48847,15 @@ WMGetAllResourcePlanResponse& WMGetAllResourcePlanResponse::operator=(const WMGe
   __isset = other1005.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMGetAllResourcePlanResponse::WMGetAllResourcePlanResponse(const WMGetAllResourcePlanResponse& other1024) {
+  resourcePlans = other1024.resourcePlans;
+  __isset = other1024.__isset;
+}
+WMGetAllResourcePlanResponse& WMGetAllResourcePlanResponse::operator=(const WMGetAllResourcePlanResponse& other1025) {
+  resourcePlans = other1025.resourcePlans;
+  __isset = other1025.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMGetAllResourcePlanResponse::printTo(std::ostream& out) const {
@@ -47273,6 +49013,7 @@ void swap(WMAlterResourcePlanRequest &a, WMAlterResourcePlanRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -47439,6 +49180,23 @@ WMAlterResourcePlanRequest& WMAlterResourcePlanRequest::operator=(const WMAlterR
   isReplace = other1007.isReplace;
   __isset = other1007.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMAlterResourcePlanRequest::WMAlterResourcePlanRequest(const WMAlterResourcePlanRequest& other1026) {
+  resourcePlanName = other1026.resourcePlanName;
+  resourcePlan = other1026.resourcePlan;
+  isEnableAndActivate = other1026.isEnableAndActivate;
+  isForceDeactivate = other1026.isForceDeactivate;
+  isReplace = other1026.isReplace;
+  __isset = other1026.__isset;
+}
+WMAlterResourcePlanRequest& WMAlterResourcePlanRequest::operator=(const WMAlterResourcePlanRequest& other1027) {
+  resourcePlanName = other1027.resourcePlanName;
+  resourcePlan = other1027.resourcePlan;
+  isEnableAndActivate = other1027.isEnableAndActivate;
+  isForceDeactivate = other1027.isForceDeactivate;
+  isReplace = other1027.isReplace;
+  __isset = other1027.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMAlterResourcePlanRequest::printTo(std::ostream& out) const {
@@ -47524,6 +49282,7 @@ void swap(WMAlterResourcePlanResponse &a, WMAlterResourcePlanResponse &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -47666,6 +49425,15 @@ WMAlterResourcePlanResponse& WMAlterResourcePlanResponse::operator=(const WMAlte
   __isset = other1009.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMAlterResourcePlanResponse::WMAlterResourcePlanResponse(const WMAlterResourcePlanResponse& other1028) {
+  fullResourcePlan = other1028.fullResourcePlan;
+  __isset = other1028.__isset;
+}
+WMAlterResourcePlanResponse& WMAlterResourcePlanResponse::operator=(const WMAlterResourcePlanResponse& other1029) {
+  fullResourcePlan = other1029.fullResourcePlan;
+  __isset = other1029.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMAlterResourcePlanResponse::printTo(std::ostream& out) const {
@@ -47747,6 +49515,7 @@ void swap(WMValidateResourcePlanRequest &a, WMValidateResourcePlanRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -47885,6 +49654,15 @@ WMValidateResourcePlanRequest& WMValidateResourcePlanRequest::operator=(const WM
   __isset = other1011.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMValidateResourcePlanRequest::WMValidateResourcePlanRequest(const WMValidateResourcePlanRequest& other1030) {
+  resourcePlanName = other1030.resourcePlanName;
+  __isset = other1030.__isset;
+}
+WMValidateResourcePlanRequest& WMValidateResourcePlanRequest::operator=(const WMValidateResourcePlanRequest& other1031) {
+  resourcePlanName = other1031.resourcePlanName;
+  __isset = other1031.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMValidateResourcePlanRequest::printTo(std::ostream& out) const {
@@ -47934,6 +49712,7 @@ uint32_t WMValidateResourcePlanResponse::read(::apache::thrift::protocol::TProto
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->errors.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -48081,6 +49860,16 @@ uint32_t WMValidateResourcePlanResponse::read(::apache::thrift::protocol::TProto
               xfer += iprot->readString(this->errors[_i1016]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1032;
+            ::apache::thrift::protocol::TType _etype1035;
+            xfer += iprot->readListBegin(_etype1035, _size1032);
+            this->errors.resize(_size1032);
+            uint32_t _i1036;
+            for (_i1036 = 0; _i1036 < _size1032; ++_i1036)
+            {
+              xfer += iprot->readString(this->errors[_i1036]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -48093,6 +49882,7 @@ uint32_t WMValidateResourcePlanResponse::read(::apache::thrift::protocol::TProto
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->warnings.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -48246,6 +50036,16 @@ uint32_t WMValidateResourcePlanResponse::read(::apache::thrift::protocol::TProto
               xfer += iprot->readString(this->warnings[_i1021]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1037;
+            ::apache::thrift::protocol::TType _etype1040;
+            xfer += iprot->readListBegin(_etype1040, _size1037);
+            this->warnings.resize(_size1037);
+            uint32_t _i1041;
+            for (_i1041 = 0; _i1041 < _size1037; ++_i1041)
+            {
+              xfer += iprot->readString(this->warnings[_i1041]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -48275,6 +50075,7 @@ uint32_t WMValidateResourcePlanResponse::write(::apache::thrift::protocol::TProt
     xfer += oprot->writeFieldBegin("errors", ::apache::thrift::protocol::T_LIST, 1);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->errors.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -48384,6 +50185,12 @@ uint32_t WMValidateResourcePlanResponse::write(::apache::thrift::protocol::TProt
         xfer += oprot->writeString((*_iter1022));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<std::string> ::const_iterator _iter1042;
+      for (_iter1042 = this->errors.begin(); _iter1042 != this->errors.end(); ++_iter1042)
+      {
+        xfer += oprot->writeString((*_iter1042));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -48393,6 +50200,7 @@ uint32_t WMValidateResourcePlanResponse::write(::apache::thrift::protocol::TProt
     xfer += oprot->writeFieldBegin("warnings", ::apache::thrift::protocol::T_LIST, 2);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->warnings.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -48502,6 +50310,12 @@ uint32_t WMValidateResourcePlanResponse::write(::apache::thrift::protocol::TProt
         xfer += oprot->writeString((*_iter1023));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<std::string> ::const_iterator _iter1043;
+      for (_iter1043 = this->warnings.begin(); _iter1043 != this->warnings.end(); ++_iter1043)
+      {
+        xfer += oprot->writeString((*_iter1043));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -48519,6 +50333,7 @@ void swap(WMValidateResourcePlanResponse &a, WMValidateResourcePlanResponse &b) 
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -48686,6 +50501,17 @@ WMValidateResourcePlanResponse& WMValidateResourcePlanResponse::operator=(const 
   __isset = other1025.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMValidateResourcePlanResponse::WMValidateResourcePlanResponse(const WMValidateResourcePlanResponse& other1044) {
+  errors = other1044.errors;
+  warnings = other1044.warnings;
+  __isset = other1044.__isset;
+}
+WMValidateResourcePlanResponse& WMValidateResourcePlanResponse::operator=(const WMValidateResourcePlanResponse& other1045) {
+  errors = other1045.errors;
+  warnings = other1045.warnings;
+  __isset = other1045.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMValidateResourcePlanResponse::printTo(std::ostream& out) const {
@@ -48768,6 +50594,7 @@ void swap(WMDropResourcePlanRequest &a, WMDropResourcePlanRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -48906,6 +50733,15 @@ WMDropResourcePlanRequest& WMDropResourcePlanRequest::operator=(const WMDropReso
   __isset = other1027.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMDropResourcePlanRequest::WMDropResourcePlanRequest(const WMDropResourcePlanRequest& other1046) {
+  resourcePlanName = other1046.resourcePlanName;
+  __isset = other1046.__isset;
+}
+WMDropResourcePlanRequest& WMDropResourcePlanRequest::operator=(const WMDropResourcePlanRequest& other1047) {
+  resourcePlanName = other1047.resourcePlanName;
+  __isset = other1047.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMDropResourcePlanRequest::printTo(std::ostream& out) const {
@@ -48964,6 +50800,7 @@ void swap(WMDropResourcePlanResponse &a, WMDropResourcePlanResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 WMDropResourcePlanResponse::WMDropResourcePlanResponse(const WMDropResourcePlanResponse& other1060) {
@@ -49074,6 +50911,13 @@ WMDropResourcePlanResponse& WMDropResourcePlanResponse::operator=(const WMDropRe
   (void) other1029;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMDropResourcePlanResponse::WMDropResourcePlanResponse(const WMDropResourcePlanResponse& other1048) {
+  (void) other1048;
+}
+WMDropResourcePlanResponse& WMDropResourcePlanResponse::operator=(const WMDropResourcePlanResponse& other1049) {
+  (void) other1049;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMDropResourcePlanResponse::printTo(std::ostream& out) const {
@@ -49154,6 +50998,7 @@ void swap(WMCreateTriggerRequest &a, WMCreateTriggerRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -49296,6 +51141,15 @@ WMCreateTriggerRequest& WMCreateTriggerRequest::operator=(const WMCreateTriggerR
   __isset = other1031.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMCreateTriggerRequest::WMCreateTriggerRequest(const WMCreateTriggerRequest& other1050) {
+  trigger = other1050.trigger;
+  __isset = other1050.__isset;
+}
+WMCreateTriggerRequest& WMCreateTriggerRequest::operator=(const WMCreateTriggerRequest& other1051) {
+  trigger = other1051.trigger;
+  __isset = other1051.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMCreateTriggerRequest::printTo(std::ostream& out) const {
@@ -49354,6 +51208,7 @@ void swap(WMCreateTriggerResponse &a, WMCreateTriggerResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -49472,6 +51327,13 @@ WMCreateTriggerResponse& WMCreateTriggerResponse::operator=(const WMCreateTrigge
   (void) other1033;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMCreateTriggerResponse::WMCreateTriggerResponse(const WMCreateTriggerResponse& other1052) {
+  (void) other1052;
+}
+WMCreateTriggerResponse& WMCreateTriggerResponse::operator=(const WMCreateTriggerResponse& other1053) {
+  (void) other1053;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMCreateTriggerResponse::printTo(std::ostream& out) const {
@@ -49552,6 +51414,7 @@ void swap(WMAlterTriggerRequest &a, WMAlterTriggerRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -49694,6 +51557,15 @@ WMAlterTriggerRequest& WMAlterTriggerRequest::operator=(const WMAlterTriggerRequ
   __isset = other1035.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMAlterTriggerRequest::WMAlterTriggerRequest(const WMAlterTriggerRequest& other1054) {
+  trigger = other1054.trigger;
+  __isset = other1054.__isset;
+}
+WMAlterTriggerRequest& WMAlterTriggerRequest::operator=(const WMAlterTriggerRequest& other1055) {
+  trigger = other1055.trigger;
+  __isset = other1055.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMAlterTriggerRequest::printTo(std::ostream& out) const {
@@ -49752,6 +51624,7 @@ void swap(WMAlterTriggerResponse &a, WMAlterTriggerResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -49876,6 +51749,13 @@ WMAlterTriggerResponse& WMAlterTriggerResponse::operator=(const WMAlterTriggerRe
   (void) other1037;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMAlterTriggerResponse::WMAlterTriggerResponse(const WMAlterTriggerResponse& other1056) {
+  (void) other1056;
+}
+WMAlterTriggerResponse& WMAlterTriggerResponse::operator=(const WMAlterTriggerResponse& other1057) {
+  (void) other1057;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMAlterTriggerResponse::printTo(std::ostream& out) const {
@@ -49975,6 +51855,7 @@ void swap(WMDropTriggerRequest &a, WMDropTriggerRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -50137,6 +52018,17 @@ WMDropTriggerRequest& WMDropTriggerRequest::operator=(const WMDropTriggerRequest
   __isset = other1039.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMDropTriggerRequest::WMDropTriggerRequest(const WMDropTriggerRequest& other1058) {
+  resourcePlanName = other1058.resourcePlanName;
+  triggerName = other1058.triggerName;
+  __isset = other1058.__isset;
+}
+WMDropTriggerRequest& WMDropTriggerRequest::operator=(const WMDropTriggerRequest& other1059) {
+  resourcePlanName = other1059.resourcePlanName;
+  triggerName = other1059.triggerName;
+  __isset = other1059.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMDropTriggerRequest::printTo(std::ostream& out) const {
@@ -50196,6 +52088,7 @@ void swap(WMDropTriggerResponse &a, WMDropTriggerResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -50314,6 +52207,13 @@ WMDropTriggerResponse& WMDropTriggerResponse::operator=(const WMDropTriggerRespo
   (void) other1041;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMDropTriggerResponse::WMDropTriggerResponse(const WMDropTriggerResponse& other1060) {
+  (void) other1060;
+}
+WMDropTriggerResponse& WMDropTriggerResponse::operator=(const WMDropTriggerResponse& other1061) {
+  (void) other1061;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMDropTriggerResponse::printTo(std::ostream& out) const {
@@ -50394,6 +52294,7 @@ void swap(WMGetTriggersForResourePlanRequest &a, WMGetTriggersForResourePlanRequ
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -50536,6 +52437,15 @@ WMGetTriggersForResourePlanRequest& WMGetTriggersForResourePlanRequest::operator
   __isset = other1043.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMGetTriggersForResourePlanRequest::WMGetTriggersForResourePlanRequest(const WMGetTriggersForResourePlanRequest& other1062) {
+  resourcePlanName = other1062.resourcePlanName;
+  __isset = other1062.__isset;
+}
+WMGetTriggersForResourePlanRequest& WMGetTriggersForResourePlanRequest::operator=(const WMGetTriggersForResourePlanRequest& other1063) {
+  resourcePlanName = other1063.resourcePlanName;
+  __isset = other1063.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMGetTriggersForResourePlanRequest::printTo(std::ostream& out) const {
@@ -50580,6 +52490,7 @@ uint32_t WMGetTriggersForResourePlanResponse::read(::apache::thrift::protocol::T
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->triggers.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -50730,6 +52641,16 @@ uint32_t WMGetTriggersForResourePlanResponse::read(::apache::thrift::protocol::T
               xfer += this->triggers[_i1048].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1064;
+            ::apache::thrift::protocol::TType _etype1067;
+            xfer += iprot->readListBegin(_etype1067, _size1064);
+            this->triggers.resize(_size1064);
+            uint32_t _i1068;
+            for (_i1068 = 0; _i1068 < _size1064; ++_i1068)
+            {
+              xfer += this->triggers[_i1068].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -50759,6 +52680,7 @@ uint32_t WMGetTriggersForResourePlanResponse::write(::apache::thrift::protocol::
     xfer += oprot->writeFieldBegin("triggers", ::apache::thrift::protocol::T_LIST, 1);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->triggers.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -50869,6 +52791,12 @@ uint32_t WMGetTriggersForResourePlanResponse::write(::apache::thrift::protocol::
         xfer += (*_iter1049).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<WMTrigger> ::const_iterator _iter1069;
+      for (_iter1069 = this->triggers.begin(); _iter1069 != this->triggers.end(); ++_iter1069)
+      {
+        xfer += (*_iter1069).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -50885,6 +52813,7 @@ void swap(WMGetTriggersForResourePlanResponse &a, WMGetTriggersForResourePlanRes
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -51027,6 +52956,15 @@ WMGetTriggersForResourePlanResponse& WMGetTriggersForResourePlanResponse::operat
   __isset = other1051.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMGetTriggersForResourePlanResponse::WMGetTriggersForResourePlanResponse(const WMGetTriggersForResourePlanResponse& other1070) {
+  triggers = other1070.triggers;
+  __isset = other1070.__isset;
+}
+WMGetTriggersForResourePlanResponse& WMGetTriggersForResourePlanResponse::operator=(const WMGetTriggersForResourePlanResponse& other1071) {
+  triggers = other1071.triggers;
+  __isset = other1071.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMGetTriggersForResourePlanResponse::printTo(std::ostream& out) const {
@@ -51108,6 +53046,7 @@ void swap(WMCreatePoolRequest &a, WMCreatePoolRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -51250,6 +53189,15 @@ WMCreatePoolRequest& WMCreatePoolRequest::operator=(const WMCreatePoolRequest& o
   __isset = other1053.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMCreatePoolRequest::WMCreatePoolRequest(const WMCreatePoolRequest& other1072) {
+  pool = other1072.pool;
+  __isset = other1072.__isset;
+}
+WMCreatePoolRequest& WMCreatePoolRequest::operator=(const WMCreatePoolRequest& other1073) {
+  pool = other1073.pool;
+  __isset = other1073.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMCreatePoolRequest::printTo(std::ostream& out) const {
@@ -51308,6 +53256,7 @@ void swap(WMCreatePoolResponse &a, WMCreatePoolResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -51428,6 +53377,13 @@ WMCreatePoolResponse& WMCreatePoolResponse::operator=(const WMCreatePoolResponse
   (void) other1055;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMCreatePoolResponse::WMCreatePoolResponse(const WMCreatePoolResponse& other1074) {
+  (void) other1074;
+}
+WMCreatePoolResponse& WMCreatePoolResponse::operator=(const WMCreatePoolResponse& other1075) {
+  (void) other1075;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMCreatePoolResponse::printTo(std::ostream& out) const {
@@ -51527,6 +53483,7 @@ void swap(WMAlterPoolRequest &a, WMAlterPoolRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -51689,6 +53646,17 @@ WMAlterPoolRequest& WMAlterPoolRequest::operator=(const WMAlterPoolRequest& othe
   __isset = other1057.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMAlterPoolRequest::WMAlterPoolRequest(const WMAlterPoolRequest& other1076) {
+  pool = other1076.pool;
+  poolPath = other1076.poolPath;
+  __isset = other1076.__isset;
+}
+WMAlterPoolRequest& WMAlterPoolRequest::operator=(const WMAlterPoolRequest& other1077) {
+  pool = other1077.pool;
+  poolPath = other1077.poolPath;
+  __isset = other1077.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMAlterPoolRequest::printTo(std::ostream& out) const {
@@ -51748,6 +53716,7 @@ void swap(WMAlterPoolResponse &a, WMAlterPoolResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -51868,6 +53837,13 @@ WMAlterPoolResponse& WMAlterPoolResponse::operator=(const WMAlterPoolResponse& o
   (void) other1059;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMAlterPoolResponse::WMAlterPoolResponse(const WMAlterPoolResponse& other1078) {
+  (void) other1078;
+}
+WMAlterPoolResponse& WMAlterPoolResponse::operator=(const WMAlterPoolResponse& other1079) {
+  (void) other1079;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMAlterPoolResponse::printTo(std::ostream& out) const {
@@ -51967,6 +53943,7 @@ void swap(WMDropPoolRequest &a, WMDropPoolRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -52124,6 +54101,17 @@ WMDropPoolRequest& WMDropPoolRequest::operator=(const WMDropPoolRequest& other10
   __isset = other1061.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMDropPoolRequest::WMDropPoolRequest(const WMDropPoolRequest& other1080) {
+  resourcePlanName = other1080.resourcePlanName;
+  poolPath = other1080.poolPath;
+  __isset = other1080.__isset;
+}
+WMDropPoolRequest& WMDropPoolRequest::operator=(const WMDropPoolRequest& other1081) {
+  resourcePlanName = other1081.resourcePlanName;
+  poolPath = other1081.poolPath;
+  __isset = other1081.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMDropPoolRequest::printTo(std::ostream& out) const {
@@ -52183,6 +54171,7 @@ void swap(WMDropPoolResponse &a, WMDropPoolResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -52301,6 +54290,13 @@ WMDropPoolResponse& WMDropPoolResponse::operator=(const WMDropPoolResponse& othe
   (void) other1063;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMDropPoolResponse::WMDropPoolResponse(const WMDropPoolResponse& other1082) {
+  (void) other1082;
+}
+WMDropPoolResponse& WMDropPoolResponse::operator=(const WMDropPoolResponse& other1083) {
+  (void) other1083;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMDropPoolResponse::printTo(std::ostream& out) const {
@@ -52400,6 +54396,7 @@ void swap(WMCreateOrUpdateMappingRequest &a, WMCreateOrUpdateMappingRequest &b) 
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -52557,6 +54554,17 @@ WMCreateOrUpdateMappingRequest& WMCreateOrUpdateMappingRequest::operator=(const 
   __isset = other1065.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMCreateOrUpdateMappingRequest::WMCreateOrUpdateMappingRequest(const WMCreateOrUpdateMappingRequest& other1084) {
+  mapping = other1084.mapping;
+  update = other1084.update;
+  __isset = other1084.__isset;
+}
+WMCreateOrUpdateMappingRequest& WMCreateOrUpdateMappingRequest::operator=(const WMCreateOrUpdateMappingRequest& other1085) {
+  mapping = other1085.mapping;
+  update = other1085.update;
+  __isset = other1085.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMCreateOrUpdateMappingRequest::printTo(std::ostream& out) const {
@@ -52616,6 +54624,7 @@ void swap(WMCreateOrUpdateMappingResponse &a, WMCreateOrUpdateMappingResponse &b
   (void) b;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -52736,6 +54745,13 @@ WMCreateOrUpdateMappingResponse& WMCreateOrUpdateMappingResponse::operator=(cons
   (void) other1067;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMCreateOrUpdateMappingResponse::WMCreateOrUpdateMappingResponse(const WMCreateOrUpdateMappingResponse& other1086) {
+  (void) other1086;
+}
+WMCreateOrUpdateMappingResponse& WMCreateOrUpdateMappingResponse::operator=(const WMCreateOrUpdateMappingResponse& other1087) {
+  (void) other1087;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMCreateOrUpdateMappingResponse::printTo(std::ostream& out) const {
@@ -52816,6 +54832,7 @@ void swap(WMDropMappingRequest &a, WMDropMappingRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -52958,6 +54975,15 @@ WMDropMappingRequest& WMDropMappingRequest::operator=(const WMDropMappingRequest
   __isset = other1069.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMDropMappingRequest::WMDropMappingRequest(const WMDropMappingRequest& other1088) {
+  mapping = other1088.mapping;
+  __isset = other1088.__isset;
+}
+WMDropMappingRequest& WMDropMappingRequest::operator=(const WMDropMappingRequest& other1089) {
+  mapping = other1089.mapping;
+  __isset = other1089.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMDropMappingRequest::printTo(std::ostream& out) const {
@@ -53016,6 +55042,7 @@ void swap(WMDropMappingResponse &a, WMDropMappingResponse &b) {
   (void) b;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -53142,6 +55169,13 @@ WMDropMappingResponse& WMDropMappingResponse::operator=(const WMDropMappingRespo
   (void) other1071;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMDropMappingResponse::WMDropMappingResponse(const WMDropMappingResponse& other1090) {
+  (void) other1090;
+}
+WMDropMappingResponse& WMDropMappingResponse::operator=(const WMDropMappingResponse& other1091) {
+  (void) other1091;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMDropMappingResponse::printTo(std::ostream& out) const {
@@ -53279,6 +55313,7 @@ void swap(WMCreateOrDropTriggerToPoolMappingRequest &a, WMCreateOrDropTriggerToP
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -53474,6 +55509,21 @@ WMCreateOrDropTriggerToPoolMappingRequest& WMCreateOrDropTriggerToPoolMappingReq
   __isset = other1073.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+WMCreateOrDropTriggerToPoolMappingRequest::WMCreateOrDropTriggerToPoolMappingRequest(const WMCreateOrDropTriggerToPoolMappingRequest& other1092) {
+  resourcePlanName = other1092.resourcePlanName;
+  triggerName = other1092.triggerName;
+  poolPath = other1092.poolPath;
+  drop = other1092.drop;
+  __isset = other1092.__isset;
+}
+WMCreateOrDropTriggerToPoolMappingRequest& WMCreateOrDropTriggerToPoolMappingRequest::operator=(const WMCreateOrDropTriggerToPoolMappingRequest& other1093) {
+  resourcePlanName = other1093.resourcePlanName;
+  triggerName = other1093.triggerName;
+  poolPath = other1093.poolPath;
+  drop = other1093.drop;
+  __isset = other1093.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void WMCreateOrDropTriggerToPoolMappingRequest::printTo(std::ostream& out) const {
@@ -53535,6 +55585,7 @@ void swap(WMCreateOrDropTriggerToPoolMappingResponse &a, WMCreateOrDropTriggerTo
   (void) b;
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -53639,10 +55690,13 @@ WMCreateOrDropTriggerToPoolMappingResponse& WMCreateOrDropTriggerToPoolMappingRe
 =======
 WMCreateOrDropTriggerToPoolMappingResponse::WMCreateOrDropTriggerToPoolMappingResponse(const WMCreateOrDropTriggerToPoolMappingResponse& other1074) {
   (void) other1074;
+=======
+WMCreateOrDropTriggerToPoolMappingResponse::WMCreateOrDropTriggerToPoolMappingResponse(const WMCreateOrDropTriggerToPoolMappingResponse& other1094) {
+  (void) other1094;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
 }
-WMCreateOrDropTriggerToPoolMappingResponse& WMCreateOrDropTriggerToPoolMappingResponse::operator=(const WMCreateOrDropTriggerToPoolMappingResponse& other1075) {
-  (void) other1075;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+WMCreateOrDropTriggerToPoolMappingResponse& WMCreateOrDropTriggerToPoolMappingResponse::operator=(const WMCreateOrDropTriggerToPoolMappingResponse& other1095) {
+  (void) other1095;
   return *this;
 }
 void WMCreateOrDropTriggerToPoolMappingResponse::printTo(std::ostream& out) const {
@@ -53842,6 +55896,7 @@ uint32_t ISchema::read(::apache::thrift::protocol::TProtocol* iprot) {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I32) {
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast1108;
           xfer += iprot->readI32(ecast1108);
           this->schemaType = (SchemaType::type)ecast1108;
@@ -53856,6 +55911,11 @@ uint32_t ISchema::read(::apache::thrift::protocol::TProtocol* iprot) {
           this->schemaType = (SchemaType::type)ecast1076;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast1096;
+          xfer += iprot->readI32(ecast1096);
+          this->schemaType = (SchemaType::type)ecast1096;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           this->__isset.schemaType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -54155,15 +56215,9 @@ uint32_t ISchemaName::read(::apache::thrift::protocol::TProtocol* iprot) {
 =======
       case 4:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-<<<<<<< HEAD
-          int32_t ecast1091;
-          xfer += iprot->readI32(ecast1091);
-          this->compatibility = (SchemaCompatibility::type)ecast1091;
-=======
-          int32_t ecast1077;
-          xfer += iprot->readI32(ecast1077);
-          this->compatibility = (SchemaCompatibility::type)ecast1077;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+          int32_t ecast1097;
+          xfer += iprot->readI32(ecast1097);
+          this->compatibility = (SchemaCompatibility::type)ecast1097;
           this->__isset.compatibility = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -54171,15 +56225,9 @@ uint32_t ISchemaName::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 5:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-<<<<<<< HEAD
-          int32_t ecast1092;
-          xfer += iprot->readI32(ecast1092);
-          this->validationLevel = (SchemaValidation::type)ecast1092;
-=======
-          int32_t ecast1078;
-          xfer += iprot->readI32(ecast1078);
-          this->validationLevel = (SchemaValidation::type)ecast1078;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+          int32_t ecast1098;
+          xfer += iprot->readI32(ecast1098);
+          this->validationLevel = (SchemaValidation::type)ecast1098;
           this->__isset.validationLevel = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -54278,85 +56326,27 @@ void swap(ISchema &a, ISchema &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-ISchema::ISchema(const ISchema& other1093) {
-  schemaType = other1093.schemaType;
-  name = other1093.name;
-  dbName = other1093.dbName;
-  compatibility = other1093.compatibility;
-  validationLevel = other1093.validationLevel;
-  canEvolve = other1093.canEvolve;
-  schemaGroup = other1093.schemaGroup;
-  description = other1093.description;
-  __isset = other1093.__isset;
+ISchema::ISchema(const ISchema& other1099) {
+  schemaType = other1099.schemaType;
+  name = other1099.name;
+  dbName = other1099.dbName;
+  compatibility = other1099.compatibility;
+  validationLevel = other1099.validationLevel;
+  canEvolve = other1099.canEvolve;
+  schemaGroup = other1099.schemaGroup;
+  description = other1099.description;
+  __isset = other1099.__isset;
 }
-ISchema& ISchema::operator=(const ISchema& other1094) {
-  schemaType = other1094.schemaType;
-  name = other1094.name;
-  dbName = other1094.dbName;
-  compatibility = other1094.compatibility;
-  validationLevel = other1094.validationLevel;
-  canEvolve = other1094.canEvolve;
-  schemaGroup = other1094.schemaGroup;
-  description = other1094.description;
-  __isset = other1094.__isset;
-=======
-<<<<<<< HEAD
-ISchema::ISchema(const ISchema& other1073) {
-  schemaType = other1073.schemaType;
-  name = other1073.name;
-  dbName = other1073.dbName;
-  compatibility = other1073.compatibility;
-  validationLevel = other1073.validationLevel;
-  canEvolve = other1073.canEvolve;
-  schemaGroup = other1073.schemaGroup;
-  description = other1073.description;
-  __isset = other1073.__isset;
-}
-ISchema& ISchema::operator=(const ISchema& other1074) {
-  schemaType = other1074.schemaType;
-  name = other1074.name;
-  dbName = other1074.dbName;
-  compatibility = other1074.compatibility;
-  validationLevel = other1074.validationLevel;
-  canEvolve = other1074.canEvolve;
-  schemaGroup = other1074.schemaGroup;
-  description = other1074.description;
-  __isset = other1074.__isset;
-=======
-MetaException::MetaException(const MetaException& other1089) : TException() {
-  message = other1089.message;
-  __isset = other1089.__isset;
-}
-MetaException& MetaException::operator=(const MetaException& other1090) {
-  message = other1090.message;
-  __isset = other1090.__isset;
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-ISchema::ISchema(const ISchema& other1079) {
-  schemaType = other1079.schemaType;
-  name = other1079.name;
-  dbName = other1079.dbName;
-  compatibility = other1079.compatibility;
-  validationLevel = other1079.validationLevel;
-  canEvolve = other1079.canEvolve;
-  schemaGroup = other1079.schemaGroup;
-  description = other1079.description;
-  __isset = other1079.__isset;
-}
-ISchema& ISchema::operator=(const ISchema& other1080) {
-  schemaType = other1080.schemaType;
-  name = other1080.name;
-  dbName = other1080.dbName;
-  compatibility = other1080.compatibility;
-  validationLevel = other1080.validationLevel;
-  canEvolve = other1080.canEvolve;
-  schemaGroup = other1080.schemaGroup;
-  description = other1080.description;
-  __isset = other1080.__isset;
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+ISchema& ISchema::operator=(const ISchema& other1100) {
+  schemaType = other1100.schemaType;
+  name = other1100.name;
+  dbName = other1100.dbName;
+  compatibility = other1100.compatibility;
+  validationLevel = other1100.validationLevel;
+  canEvolve = other1100.canEvolve;
+  schemaGroup = other1100.schemaGroup;
+  description = other1100.description;
+  __isset = other1100.__isset;
   return *this;
 }
 void ISchema::printTo(std::ostream& out) const {
@@ -54467,6 +56457,7 @@ void swap(ISchemaName &a, ISchemaName &b) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ISchemaName::ISchemaName(const ISchemaName& other1113) {
   catName = other1113.catName;
   dbName = other1113.dbName;
@@ -54501,6 +56492,17 @@ ISchemaName& ISchemaName::operator=(const ISchemaName& other1082) {
   __isset = other1082.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+ISchemaName::ISchemaName(const ISchemaName& other1101) {
+  dbName = other1101.dbName;
+  schemaName = other1101.schemaName;
+  __isset = other1101.__isset;
+}
+ISchemaName& ISchemaName::operator=(const ISchemaName& other1102) {
+  dbName = other1102.dbName;
+  schemaName = other1102.schemaName;
+  __isset = other1102.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void ISchemaName::printTo(std::ostream& out) const {
@@ -54600,6 +56602,7 @@ void swap(AlterISchemaRequest &a, AlterISchemaRequest &b) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 AlterISchemaRequest::AlterISchemaRequest(const AlterISchemaRequest& other1115) {
   name = other1115.name;
   newSchema = other1115.newSchema;
@@ -54632,6 +56635,17 @@ AlterISchemaRequest& AlterISchemaRequest::operator=(const AlterISchemaRequest& o
   __isset = other1084.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+AlterISchemaRequest::AlterISchemaRequest(const AlterISchemaRequest& other1103) {
+  name = other1103.name;
+  newSchema = other1103.newSchema;
+  __isset = other1103.__isset;
+}
+AlterISchemaRequest& AlterISchemaRequest::operator=(const AlterISchemaRequest& other1104) {
+  name = other1104.name;
+  newSchema = other1104.newSchema;
+  __isset = other1104.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void AlterISchemaRequest::printTo(std::ostream& out) const {
@@ -54743,6 +56757,7 @@ uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
           {
             this->cols.clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1117;
             ::apache::thrift::protocol::TType _etype1120;
             xfer += iprot->readListBegin(_etype1120, _size1117);
@@ -54772,6 +56787,16 @@ uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
               xfer += this->cols[_i1089].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1105;
+            ::apache::thrift::protocol::TType _etype1108;
+            xfer += iprot->readListBegin(_etype1108, _size1105);
+            this->cols.resize(_size1105);
+            uint32_t _i1109;
+            for (_i1109 = 0; _i1109 < _size1105; ++_i1109)
+            {
+              xfer += this->cols[_i1109].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -54782,6 +56807,7 @@ uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 5:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
 <<<<<<< HEAD
           int32_t ecast1122;
           xfer += iprot->readI32(ecast1122);
@@ -54797,6 +56823,11 @@ uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
           this->state = (SchemaVersionState::type)ecast1090;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast1110;
+          xfer += iprot->readI32(ecast1110);
+          this->state = (SchemaVersionState::type)ecast1110;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           this->__isset.state = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -54875,6 +56906,7 @@ uint32_t SchemaVersion::write(::apache::thrift::protocol::TProtocol* oprot) cons
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->cols.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<FieldSchema> ::const_iterator _iter1123;
     for (_iter1123 = this->cols.begin(); _iter1123 != this->cols.end(); ++_iter1123)
     {
@@ -54892,6 +56924,12 @@ uint32_t SchemaVersion::write(::apache::thrift::protocol::TProtocol* oprot) cons
       xfer += (*_iter1091).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<FieldSchema> ::const_iterator _iter1111;
+    for (_iter1111 = this->cols.begin(); _iter1111 != this->cols.end(); ++_iter1111)
+    {
+      xfer += (*_iter1111).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -54947,6 +56985,7 @@ void swap(SchemaVersion &a, SchemaVersion &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 SchemaVersion::SchemaVersion(const SchemaVersion& other1124) {
   schema = other1124.schema;
@@ -55028,6 +57067,33 @@ SchemaVersion& SchemaVersion::operator=(const SchemaVersion& other1093) {
   __isset = other1093.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+SchemaVersion::SchemaVersion(const SchemaVersion& other1112) {
+  schema = other1112.schema;
+  version = other1112.version;
+  createdAt = other1112.createdAt;
+  cols = other1112.cols;
+  state = other1112.state;
+  description = other1112.description;
+  schemaText = other1112.schemaText;
+  fingerprint = other1112.fingerprint;
+  name = other1112.name;
+  serDe = other1112.serDe;
+  __isset = other1112.__isset;
+}
+SchemaVersion& SchemaVersion::operator=(const SchemaVersion& other1113) {
+  schema = other1113.schema;
+  version = other1113.version;
+  createdAt = other1113.createdAt;
+  cols = other1113.cols;
+  state = other1113.state;
+  description = other1113.description;
+  schemaText = other1113.schemaText;
+  fingerprint = other1113.fingerprint;
+  name = other1113.name;
+  serDe = other1113.serDe;
+  __isset = other1113.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void SchemaVersion::printTo(std::ostream& out) const {
@@ -55134,6 +57200,7 @@ void swap(SchemaVersionDescriptor &a, SchemaVersionDescriptor &b) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 SchemaVersionDescriptor::SchemaVersionDescriptor(const SchemaVersionDescriptor& other1126) {
   schema = other1126.schema;
   version = other1126.version;
@@ -55166,6 +57233,17 @@ SchemaVersionDescriptor& SchemaVersionDescriptor::operator=(const SchemaVersionD
   __isset = other1095.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+SchemaVersionDescriptor::SchemaVersionDescriptor(const SchemaVersionDescriptor& other1114) {
+  schema = other1114.schema;
+  version = other1114.version;
+  __isset = other1114.__isset;
+}
+SchemaVersionDescriptor& SchemaVersionDescriptor::operator=(const SchemaVersionDescriptor& other1115) {
+  schema = other1115.schema;
+  version = other1115.version;
+  __isset = other1115.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void SchemaVersionDescriptor::printTo(std::ostream& out) const {
@@ -55287,6 +57365,7 @@ void swap(FindSchemasByColsRqst &a, FindSchemasByColsRqst &b) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 FindSchemasByColsRqst::FindSchemasByColsRqst(const FindSchemasByColsRqst& other1128) {
   colName = other1128.colName;
   colNamespace = other1128.colNamespace;
@@ -55325,6 +57404,19 @@ FindSchemasByColsRqst& FindSchemasByColsRqst::operator=(const FindSchemasByColsR
   __isset = other1097.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+FindSchemasByColsRqst::FindSchemasByColsRqst(const FindSchemasByColsRqst& other1116) {
+  colName = other1116.colName;
+  colNamespace = other1116.colNamespace;
+  type = other1116.type;
+  __isset = other1116.__isset;
+}
+FindSchemasByColsRqst& FindSchemasByColsRqst::operator=(const FindSchemasByColsRqst& other1117) {
+  colName = other1117.colName;
+  colNamespace = other1117.colNamespace;
+  type = other1117.type;
+  __isset = other1117.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void FindSchemasByColsRqst::printTo(std::ostream& out) const {
@@ -55371,6 +57463,7 @@ uint32_t FindSchemasByColsResp::read(::apache::thrift::protocol::TProtocol* ipro
           {
             this->schemaVersions.clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1130;
             ::apache::thrift::protocol::TType _etype1133;
             xfer += iprot->readListBegin(_etype1133, _size1130);
@@ -55400,6 +57493,16 @@ uint32_t FindSchemasByColsResp::read(::apache::thrift::protocol::TProtocol* ipro
               xfer += this->schemaVersions[_i1102].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1118;
+            ::apache::thrift::protocol::TType _etype1121;
+            xfer += iprot->readListBegin(_etype1121, _size1118);
+            this->schemaVersions.resize(_size1118);
+            uint32_t _i1122;
+            for (_i1122 = 0; _i1122 < _size1118; ++_i1122)
+            {
+              xfer += this->schemaVersions[_i1122].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -55429,6 +57532,7 @@ uint32_t FindSchemasByColsResp::write(::apache::thrift::protocol::TProtocol* opr
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->schemaVersions.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<SchemaVersionDescriptor> ::const_iterator _iter1135;
     for (_iter1135 = this->schemaVersions.begin(); _iter1135 != this->schemaVersions.end(); ++_iter1135)
     {
@@ -55446,6 +57550,12 @@ uint32_t FindSchemasByColsResp::write(::apache::thrift::protocol::TProtocol* opr
       xfer += (*_iter1103).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<SchemaVersionDescriptor> ::const_iterator _iter1123;
+    for (_iter1123 = this->schemaVersions.begin(); _iter1123 != this->schemaVersions.end(); ++_iter1123)
+    {
+      xfer += (*_iter1123).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -55462,6 +57572,7 @@ void swap(FindSchemasByColsResp &a, FindSchemasByColsResp &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 FindSchemasByColsResp::FindSchemasByColsResp(const FindSchemasByColsResp& other1136) {
   schemaVersions = other1136.schemaVersions;
@@ -55489,6 +57600,15 @@ FindSchemasByColsResp& FindSchemasByColsResp::operator=(const FindSchemasByColsR
   __isset = other1105.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+FindSchemasByColsResp::FindSchemasByColsResp(const FindSchemasByColsResp& other1124) {
+  schemaVersions = other1124.schemaVersions;
+  __isset = other1124.__isset;
+}
+FindSchemasByColsResp& FindSchemasByColsResp::operator=(const FindSchemasByColsResp& other1125) {
+  schemaVersions = other1125.schemaVersions;
+  __isset = other1125.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void FindSchemasByColsResp::printTo(std::ostream& out) const {
@@ -55586,6 +57706,7 @@ void swap(MapSchemaVersionToSerdeRequest &a, MapSchemaVersionToSerdeRequest &b) 
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 MapSchemaVersionToSerdeRequest::MapSchemaVersionToSerdeRequest(const MapSchemaVersionToSerdeRequest& other1138) {
   schemaVersion = other1138.schemaVersion;
   serdeName = other1138.serdeName;
@@ -55618,6 +57739,17 @@ MapSchemaVersionToSerdeRequest& MapSchemaVersionToSerdeRequest::operator=(const 
   __isset = other1107.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+MapSchemaVersionToSerdeRequest::MapSchemaVersionToSerdeRequest(const MapSchemaVersionToSerdeRequest& other1126) {
+  schemaVersion = other1126.schemaVersion;
+  serdeName = other1126.serdeName;
+  __isset = other1126.__isset;
+}
+MapSchemaVersionToSerdeRequest& MapSchemaVersionToSerdeRequest::operator=(const MapSchemaVersionToSerdeRequest& other1127) {
+  schemaVersion = other1127.schemaVersion;
+  serdeName = other1127.serdeName;
+  __isset = other1127.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void MapSchemaVersionToSerdeRequest::printTo(std::ostream& out) const {
@@ -55673,6 +57805,7 @@ uint32_t SetSchemaVersionStateRequest::read(::apache::thrift::protocol::TProtoco
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast1140;
           xfer += iprot->readI32(ecast1140);
           this->state = (SchemaVersionState::type)ecast1140;
@@ -55687,6 +57820,11 @@ uint32_t SetSchemaVersionStateRequest::read(::apache::thrift::protocol::TProtoco
           this->state = (SchemaVersionState::type)ecast1108;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast1128;
+          xfer += iprot->readI32(ecast1128);
+          this->state = (SchemaVersionState::type)ecast1128;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           this->__isset.state = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -55730,6 +57868,7 @@ void swap(SetSchemaVersionStateRequest &a, SetSchemaVersionStateRequest &b) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 SetSchemaVersionStateRequest::SetSchemaVersionStateRequest(const SetSchemaVersionStateRequest& other1141) {
   schemaVersion = other1141.schemaVersion;
   state = other1141.state;
@@ -55762,6 +57901,17 @@ SetSchemaVersionStateRequest& SetSchemaVersionStateRequest::operator=(const SetS
   __isset = other1110.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+SetSchemaVersionStateRequest::SetSchemaVersionStateRequest(const SetSchemaVersionStateRequest& other1129) {
+  schemaVersion = other1129.schemaVersion;
+  state = other1129.state;
+  __isset = other1129.__isset;
+}
+SetSchemaVersionStateRequest& SetSchemaVersionStateRequest::operator=(const SetSchemaVersionStateRequest& other1130) {
+  schemaVersion = other1130.schemaVersion;
+  state = other1130.state;
+  __isset = other1130.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void SetSchemaVersionStateRequest::printTo(std::ostream& out) const {
@@ -55842,6 +57992,7 @@ void swap(GetSerdeRequest &a, GetSerdeRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 GetSerdeRequest::GetSerdeRequest(const GetSerdeRequest& other1143) {
@@ -55944,6 +58095,15 @@ GetSerdeRequest& GetSerdeRequest::operator=(const GetSerdeRequest& other1112) {
   __isset = other1112.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+GetSerdeRequest::GetSerdeRequest(const GetSerdeRequest& other1131) {
+  serdeName = other1131.serdeName;
+  __isset = other1131.__isset;
+}
+GetSerdeRequest& GetSerdeRequest::operator=(const GetSerdeRequest& other1132) {
+  serdeName = other1132.serdeName;
+  __isset = other1132.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void GetSerdeRequest::printTo(std::ostream& out) const {
@@ -56023,6 +58183,7 @@ void swap(MetaException &a, MetaException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -56165,6 +58326,15 @@ MetaException& MetaException::operator=(const MetaException& other1114) {
   __isset = other1114.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+MetaException::MetaException(const MetaException& other1133) : TException() {
+  message = other1133.message;
+  __isset = other1133.__isset;
+}
+MetaException& MetaException::operator=(const MetaException& other1134) {
+  message = other1134.message;
+  __isset = other1134.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void MetaException::printTo(std::ostream& out) const {
@@ -56255,6 +58425,7 @@ void swap(UnknownTableException &a, UnknownTableException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -56393,6 +58564,15 @@ UnknownTableException& UnknownTableException::operator=(const UnknownTableExcept
   __isset = other1116.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+UnknownTableException::UnknownTableException(const UnknownTableException& other1135) : TException() {
+  message = other1135.message;
+  __isset = other1135.__isset;
+}
+UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1136) {
+  message = other1136.message;
+  __isset = other1136.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void UnknownTableException::printTo(std::ostream& out) const {
@@ -56483,6 +58663,7 @@ void swap(UnknownDBException &a, UnknownDBException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -56625,6 +58806,15 @@ UnknownDBException& UnknownDBException::operator=(const UnknownDBException& othe
   __isset = other1118.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+UnknownDBException::UnknownDBException(const UnknownDBException& other1137) : TException() {
+  message = other1137.message;
+  __isset = other1137.__isset;
+}
+UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1138) {
+  message = other1138.message;
+  __isset = other1138.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void UnknownDBException::printTo(std::ostream& out) const {
@@ -56715,6 +58905,7 @@ void swap(AlreadyExistsException &a, AlreadyExistsException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -56857,6 +59048,15 @@ AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsExc
   __isset = other1120.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1139) : TException() {
+  message = other1139.message;
+  __isset = other1139.__isset;
+}
+AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1140) {
+  message = other1140.message;
+  __isset = other1140.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void AlreadyExistsException::printTo(std::ostream& out) const {
@@ -56947,6 +59147,7 @@ void swap(InvalidPartitionException &a, InvalidPartitionException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -57089,6 +59290,15 @@ InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPar
   __isset = other1122.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1141) : TException() {
+  message = other1141.message;
+  __isset = other1141.__isset;
+}
+InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1142) {
+  message = other1142.message;
+  __isset = other1142.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void InvalidPartitionException::printTo(std::ostream& out) const {
@@ -57179,6 +59389,7 @@ void swap(UnknownPartitionException &a, UnknownPartitionException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -57328,6 +59539,15 @@ UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPar
   __isset = other1124.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1143) : TException() {
+  message = other1143.message;
+  __isset = other1143.__isset;
+}
+UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1144) {
+  message = other1144.message;
+  __isset = other1144.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void UnknownPartitionException::printTo(std::ostream& out) const {
@@ -57418,6 +59638,7 @@ void swap(InvalidObjectException &a, InvalidObjectException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -57562,6 +59783,15 @@ InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectExc
   __isset = other1126.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1145) : TException() {
+  message = other1145.message;
+  __isset = other1145.__isset;
+}
+InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1146) {
+  message = other1146.message;
+  __isset = other1146.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void InvalidObjectException::printTo(std::ostream& out) const {
@@ -57652,6 +59882,7 @@ void swap(NoSuchObjectException &a, NoSuchObjectException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -57794,6 +60025,15 @@ NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectExcept
   __isset = other1128.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1147) : TException() {
+  message = other1147.message;
+  __isset = other1147.__isset;
+}
+NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other1148) {
+  message = other1148.message;
+  __isset = other1148.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void NoSuchObjectException::printTo(std::ostream& out) const {
@@ -57884,6 +60124,7 @@ void swap(InvalidOperationException &a, InvalidOperationException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -58026,6 +60267,15 @@ InvalidOperationException& InvalidOperationException::operator=(const InvalidOpe
   __isset = other1130.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1149) : TException() {
+  message = other1149.message;
+  __isset = other1149.__isset;
+}
+InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other1150) {
+  message = other1150.message;
+  __isset = other1150.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void InvalidOperationException::printTo(std::ostream& out) const {
@@ -58116,6 +60366,7 @@ void swap(ConfigValSecurityException &a, ConfigValSecurityException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -58258,6 +60509,15 @@ ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigVa
   __isset = other1132.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1151) : TException() {
+  message = other1151.message;
+  __isset = other1151.__isset;
+}
+ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other1152) {
+  message = other1152.message;
+  __isset = other1152.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void ConfigValSecurityException::printTo(std::ostream& out) const {
@@ -58348,6 +60608,7 @@ void swap(InvalidInputException &a, InvalidInputException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -58490,6 +60751,15 @@ InvalidInputException& InvalidInputException::operator=(const InvalidInputExcept
   __isset = other1134.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+InvalidInputException::InvalidInputException(const InvalidInputException& other1153) : TException() {
+  message = other1153.message;
+  __isset = other1153.__isset;
+}
+InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other1154) {
+  message = other1154.message;
+  __isset = other1154.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void InvalidInputException::printTo(std::ostream& out) const {
@@ -58580,6 +60850,7 @@ void swap(NoSuchTxnException &a, NoSuchTxnException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -58722,6 +60993,15 @@ NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& othe
   __isset = other1136.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1155) : TException() {
+  message = other1155.message;
+  __isset = other1155.__isset;
+}
+NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other1156) {
+  message = other1156.message;
+  __isset = other1156.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void NoSuchTxnException::printTo(std::ostream& out) const {
@@ -58812,6 +61092,7 @@ void swap(TxnAbortedException &a, TxnAbortedException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -58950,6 +61231,15 @@ TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& o
   __isset = other1138.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1157) : TException() {
+  message = other1157.message;
+  __isset = other1157.__isset;
+}
+TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other1158) {
+  message = other1158.message;
+  __isset = other1158.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void TxnAbortedException::printTo(std::ostream& out) const {
@@ -59040,6 +61330,7 @@ void swap(TxnOpenException &a, TxnOpenException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -59178,6 +61469,15 @@ TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1140)
   __isset = other1140.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+TxnOpenException::TxnOpenException(const TxnOpenException& other1159) : TException() {
+  message = other1159.message;
+  __isset = other1159.__isset;
+}
+TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1160) {
+  message = other1160.message;
+  __isset = other1160.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void TxnOpenException::printTo(std::ostream& out) const {
@@ -59268,6 +61568,7 @@ void swap(NoSuchLockException &a, NoSuchLockException &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -59406,6 +61707,15 @@ NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& o
   __isset = other1142.__isset;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1161) : TException() {
+  message = other1161.message;
+  __isset = other1161.__isset;
+}
+NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other1162) {
+  message = other1162.message;
+  __isset = other1162.__isset;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
   return *this;
 }
 void NoSuchLockException::printTo(std::ostream& out) const {

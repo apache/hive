@@ -817,11 +817,15 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 org.apache.thrift.protocol.TMap _map658 = iprot.readMapBegin();
                 struct.properties = new HashMap<String,String>(2*_map658.size);
                 String _key659;
                 String _val660;
                 for (int _i661 = 0; _i661 < _map658.size; ++_i661)
+<<<<<<< HEAD
                 {
                   _key659 = iprot.readString();
                   _val660 = iprot.readString();
@@ -903,6 +907,12 @@ import org.slf4j.LoggerFactory;
                   struct.properties.put(_key643, _val644);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+                {
+                  _key659 = iprot.readString();
+                  _val660 = iprot.readString();
+                  struct.properties.put(_key659, _val660);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 }
                 iprot.readMapEnd();
               }
@@ -958,6 +968,7 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(PROPERTIES_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.properties.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1017,6 +1028,12 @@ import org.slf4j.LoggerFactory;
               oprot.writeString(_iter646.getValue());
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            for (Map.Entry<String, String> _iter662 : struct.properties.entrySet())
+            {
+              oprot.writeString(_iter662.getKey());
+              oprot.writeString(_iter662.getValue());
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             oprot.writeMapEnd();
           }
@@ -1063,6 +1080,7 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetProperties()) {
         {
           oprot.writeI32(struct.properties.size());
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1122,6 +1140,12 @@ import org.slf4j.LoggerFactory;
             oprot.writeString(_iter647.getValue());
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          for (Map.Entry<String, String> _iter663 : struct.properties.entrySet())
+          {
+            oprot.writeString(_iter663.getKey());
+            oprot.writeString(_iter663.getValue());
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
         }
       }
@@ -1150,11 +1174,15 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           org.apache.thrift.protocol.TMap _map664 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
           struct.properties = new HashMap<String,String>(2*_map664.size);
           String _key665;
           String _val666;
           for (int _i667 = 0; _i667 < _map664.size; ++_i667)
+<<<<<<< HEAD
           {
             _key665 = iprot.readString();
             _val666 = iprot.readString();
@@ -1236,6 +1264,12 @@ import org.slf4j.LoggerFactory;
             struct.properties.put(_key649, _val650);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          {
+            _key665 = iprot.readString();
+            _val666 = iprot.readString();
+            struct.properties.put(_key665, _val666);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
         }
         struct.setPropertiesIsSet(true);

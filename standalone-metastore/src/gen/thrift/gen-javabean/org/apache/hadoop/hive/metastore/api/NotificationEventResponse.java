@@ -357,10 +357,14 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 org.apache.thrift.protocol.TList _list692 = iprot.readListBegin();
                 struct.events = new ArrayList<NotificationEvent>(_list692.size);
                 NotificationEvent _elem693;
                 for (int _i694 = 0; _i694 < _list692.size; ++_i694)
+<<<<<<< HEAD
                 {
                   _elem693 = new NotificationEvent();
                   _elem693.read(iprot);
@@ -437,6 +441,12 @@ import org.slf4j.LoggerFactory;
                   struct.events.add(_elem677);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+                {
+                  _elem693 = new NotificationEvent();
+                  _elem693.read(iprot);
+                  struct.events.add(_elem693);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 }
                 iprot.readListEnd();
               }
@@ -462,6 +472,7 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(EVENTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.events.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -515,6 +526,11 @@ import org.slf4j.LoggerFactory;
             _iter679.write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          for (NotificationEvent _iter695 : struct.events)
+          {
+            _iter695.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
           oprot.writeListEnd();
         }
@@ -539,6 +555,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.events.size());
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -592,6 +609,11 @@ import org.slf4j.LoggerFactory;
           _iter680.write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        for (NotificationEvent _iter696 : struct.events)
+        {
+          _iter696.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         }
       }
     }
@@ -603,10 +625,14 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         org.apache.thrift.protocol.TList _list697 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
         struct.events = new ArrayList<NotificationEvent>(_list697.size);
         NotificationEvent _elem698;
         for (int _i699 = 0; _i699 < _list697.size; ++_i699)
+<<<<<<< HEAD
         {
           _elem698 = new NotificationEvent();
           _elem698.read(iprot);
@@ -683,6 +709,12 @@ import org.slf4j.LoggerFactory;
           struct.events.add(_elem682);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        {
+          _elem698 = new NotificationEvent();
+          _elem698.read(iprot);
+          struct.events.add(_elem698);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         }
       }
       struct.setEventsIsSet(true);

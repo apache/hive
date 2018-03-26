@@ -356,10 +356,14 @@ import org.slf4j.LoggerFactory;
               {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 org.apache.thrift.protocol.TList _list618 = iprot.readListBegin();
                 struct.txnToWriteIds = new ArrayList<TxnToWriteId>(_list618.size);
                 TxnToWriteId _elem619;
                 for (int _i620 = 0; _i620 < _list618.size; ++_i620)
+<<<<<<< HEAD
                 {
                   _elem619 = new TxnToWriteId();
                   _elem619.read(iprot);
@@ -411,6 +415,12 @@ import org.slf4j.LoggerFactory;
                   struct.txnToWriteIds.add(_elem603);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+                {
+                  _elem619 = new TxnToWriteId();
+                  _elem619.read(iprot);
+                  struct.txnToWriteIds.add(_elem619);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 }
                 iprot.readListEnd();
               }
@@ -436,6 +446,7 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(TXN_TO_WRITE_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.txnToWriteIds.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
           for (TxnToWriteId _iter621 : struct.txnToWriteIds)
@@ -468,6 +479,11 @@ import org.slf4j.LoggerFactory;
             _iter605.write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          for (TxnToWriteId _iter621 : struct.txnToWriteIds)
+          {
+            _iter621.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
           oprot.writeListEnd();
         }
@@ -492,6 +508,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.txnToWriteIds.size());
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         for (TxnToWriteId _iter622 : struct.txnToWriteIds)
@@ -524,6 +541,11 @@ import org.slf4j.LoggerFactory;
           _iter606.write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        for (TxnToWriteId _iter622 : struct.txnToWriteIds)
+        {
+          _iter622.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         }
       }
     }
@@ -534,10 +556,14 @@ import org.slf4j.LoggerFactory;
       {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         org.apache.thrift.protocol.TList _list623 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
         struct.txnToWriteIds = new ArrayList<TxnToWriteId>(_list623.size);
         TxnToWriteId _elem624;
         for (int _i625 = 0; _i625 < _list623.size; ++_i625)
+<<<<<<< HEAD
         {
           _elem624 = new TxnToWriteId();
           _elem624.read(iprot);
@@ -589,6 +615,12 @@ import org.slf4j.LoggerFactory;
           struct.txnToWriteIds.add(_elem608);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        {
+          _elem624 = new TxnToWriteId();
+          _elem624.read(iprot);
+          struct.txnToWriteIds.add(_elem624);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         }
       }
       struct.setTxnToWriteIdsIsSet(true);

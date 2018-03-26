@@ -353,10 +353,14 @@ import org.slf4j.LoggerFactory;
               {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 org.apache.thrift.protocol.TList _list570 = iprot.readListBegin();
                 struct.txn_ids = new ArrayList<Long>(_list570.size);
                 long _elem571;
                 for (int _i572 = 0; _i572 < _list570.size; ++_i572)
+<<<<<<< HEAD
                 {
                   _elem571 = iprot.readI64();
                   struct.txn_ids.add(_elem571);
@@ -403,6 +407,11 @@ import org.slf4j.LoggerFactory;
                   struct.txn_ids.add(_elem555);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+                {
+                  _elem571 = iprot.readI64();
+                  struct.txn_ids.add(_elem571);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 }
                 iprot.readListEnd();
               }
@@ -428,6 +437,7 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(TXN_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.txn_ids.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
           for (long _iter573 : struct.txn_ids)
@@ -460,6 +470,11 @@ import org.slf4j.LoggerFactory;
             oprot.writeI64(_iter557);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          for (long _iter573 : struct.txn_ids)
+          {
+            oprot.writeI64(_iter573);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
           oprot.writeListEnd();
         }
@@ -484,6 +499,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.txn_ids.size());
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
         for (long _iter574 : struct.txn_ids)
@@ -516,6 +532,11 @@ import org.slf4j.LoggerFactory;
           oprot.writeI64(_iter558);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        for (long _iter574 : struct.txn_ids)
+        {
+          oprot.writeI64(_iter574);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         }
       }
     }
@@ -526,10 +547,14 @@ import org.slf4j.LoggerFactory;
       {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         org.apache.thrift.protocol.TList _list575 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
         struct.txn_ids = new ArrayList<Long>(_list575.size);
         long _elem576;
         for (int _i577 = 0; _i577 < _list575.size; ++_i577)
+<<<<<<< HEAD
         {
           _elem576 = iprot.readI64();
           struct.txn_ids.add(_elem576);
@@ -576,6 +601,11 @@ import org.slf4j.LoggerFactory;
           struct.txn_ids.add(_elem560);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        {
+          _elem576 = iprot.readI64();
+          struct.txn_ids.add(_elem576);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         }
       }
       struct.setTxn_idsIsSet(true);

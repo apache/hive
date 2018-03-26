@@ -521,10 +521,14 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 org.apache.thrift.protocol.TSet _set816 = iprot.readSetBegin();
                 struct.tablesUsed = new HashSet<String>(2*_set816.size);
                 String _elem817;
                 for (int _i818 = 0; _i818 < _set816.size; ++_i818)
+<<<<<<< HEAD
                 {
                   _elem817 = iprot.readString();
                   struct.tablesUsed.add(_elem817);
@@ -595,6 +599,11 @@ import org.slf4j.LoggerFactory;
                   struct.tablesUsed.add(_elem801);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+                {
+                  _elem817 = iprot.readString();
+                  struct.tablesUsed.add(_elem817);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 }
                 iprot.readSetEnd();
               }
@@ -636,6 +645,7 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(TABLES_USED_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, struct.tablesUsed.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -689,6 +699,11 @@ import org.slf4j.LoggerFactory;
             oprot.writeString(_iter803);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          for (String _iter819 : struct.tablesUsed)
+          {
+            oprot.writeString(_iter819);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
           oprot.writeSetEnd();
         }
@@ -723,6 +738,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.tablesUsed.size());
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -776,6 +792,11 @@ import org.slf4j.LoggerFactory;
           oprot.writeString(_iter804);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        for (String _iter820 : struct.tablesUsed)
+        {
+          oprot.writeString(_iter820);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         }
       }
       oprot.writeI64(struct.invalidationTime);
@@ -796,10 +817,14 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         org.apache.thrift.protocol.TSet _set821 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
         struct.tablesUsed = new HashSet<String>(2*_set821.size);
         String _elem822;
         for (int _i823 = 0; _i823 < _set821.size; ++_i823)
+<<<<<<< HEAD
         {
           _elem822 = iprot.readString();
           struct.tablesUsed.add(_elem822);
@@ -870,6 +895,11 @@ import org.slf4j.LoggerFactory;
           struct.tablesUsed.add(_elem806);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        {
+          _elem822 = iprot.readString();
+          struct.tablesUsed.add(_elem822);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         }
       }
       struct.setTablesUsedIsSet(true);

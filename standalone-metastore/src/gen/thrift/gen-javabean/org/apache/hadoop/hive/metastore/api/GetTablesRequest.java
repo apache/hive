@@ -609,10 +609,14 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 org.apache.thrift.protocol.TList _list800 = iprot.readListBegin();
                 struct.tblNames = new ArrayList<String>(_list800.size);
                 String _elem801;
                 for (int _i802 = 0; _i802 < _list800.size; ++_i802)
+<<<<<<< HEAD
                 {
                   _elem801 = iprot.readString();
                   struct.tblNames.add(_elem801);
@@ -683,6 +687,11 @@ import org.slf4j.LoggerFactory;
                   struct.tblNames.add(_elem785);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+                {
+                  _elem801 = iprot.readString();
+                  struct.tblNames.add(_elem801);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 }
                 iprot.readListEnd();
               }
@@ -731,6 +740,7 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(TBL_NAMES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.tblNames.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -784,6 +794,11 @@ import org.slf4j.LoggerFactory;
               oprot.writeString(_iter787);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            for (String _iter803 : struct.tblNames)
+            {
+              oprot.writeString(_iter803);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             oprot.writeListEnd();
           }
@@ -839,6 +854,7 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           for (String _iter804 : struct.tblNames)
           {
             oprot.writeString(_iter804);
@@ -889,6 +905,11 @@ import org.slf4j.LoggerFactory;
             oprot.writeString(_iter788);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          for (String _iter804 : struct.tblNames)
+          {
+            oprot.writeString(_iter804);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
         }
       }
@@ -911,10 +932,14 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           org.apache.thrift.protocol.TList _list805 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
           struct.tblNames = new ArrayList<String>(_list805.size);
           String _elem806;
           for (int _i807 = 0; _i807 < _list805.size; ++_i807)
+<<<<<<< HEAD
           {
             _elem806 = iprot.readString();
             struct.tblNames.add(_elem806);
@@ -985,6 +1010,11 @@ import org.slf4j.LoggerFactory;
             struct.tblNames.add(_elem790);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          {
+            _elem806 = iprot.readString();
+            struct.tblNames.add(_elem806);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
         }
         struct.setTblNamesIsSet(true);

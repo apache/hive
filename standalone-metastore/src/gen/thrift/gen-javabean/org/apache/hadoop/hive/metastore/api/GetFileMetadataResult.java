@@ -436,11 +436,15 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 org.apache.thrift.protocol.TMap _map742 = iprot.readMapBegin();
                 struct.metadata = new HashMap<Long,ByteBuffer>(2*_map742.size);
                 long _key743;
                 ByteBuffer _val744;
                 for (int _i745 = 0; _i745 < _map742.size; ++_i745)
+<<<<<<< HEAD
                 {
                   _key743 = iprot.readI64();
                   _val744 = iprot.readBinary();
@@ -522,6 +526,12 @@ import org.slf4j.LoggerFactory;
                   struct.metadata.put(_key727, _val728);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+                {
+                  _key743 = iprot.readI64();
+                  _val744 = iprot.readBinary();
+                  struct.metadata.put(_key743, _val744);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 }
                 iprot.readMapEnd();
               }
@@ -555,6 +565,7 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(METADATA_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRING, struct.metadata.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -614,6 +625,12 @@ import org.slf4j.LoggerFactory;
             oprot.writeBinary(_iter730.getValue());
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          for (Map.Entry<Long, ByteBuffer> _iter746 : struct.metadata.entrySet())
+          {
+            oprot.writeI64(_iter746.getKey());
+            oprot.writeBinary(_iter746.getValue());
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
           oprot.writeMapEnd();
         }
@@ -641,6 +658,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.metadata.size());
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -700,6 +718,12 @@ import org.slf4j.LoggerFactory;
           oprot.writeBinary(_iter731.getValue());
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        for (Map.Entry<Long, ByteBuffer> _iter747 : struct.metadata.entrySet())
+        {
+          oprot.writeI64(_iter747.getKey());
+          oprot.writeBinary(_iter747.getValue());
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         }
       }
       oprot.writeBool(struct.isSupported);
@@ -712,11 +736,15 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         org.apache.thrift.protocol.TMap _map748 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.I64, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
         struct.metadata = new HashMap<Long,ByteBuffer>(2*_map748.size);
         long _key749;
         ByteBuffer _val750;
         for (int _i751 = 0; _i751 < _map748.size; ++_i751)
+<<<<<<< HEAD
         {
           _key749 = iprot.readI64();
           _val750 = iprot.readBinary();
@@ -798,6 +826,12 @@ import org.slf4j.LoggerFactory;
           struct.metadata.put(_key733, _val734);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        {
+          _key749 = iprot.readI64();
+          _val750 = iprot.readBinary();
+          struct.metadata.put(_key749, _val750);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         }
       }
       struct.setMetadataIsSet(true);

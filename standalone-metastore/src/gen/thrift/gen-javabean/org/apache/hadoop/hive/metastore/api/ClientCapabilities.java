@@ -357,10 +357,14 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 org.apache.thrift.protocol.TList _list792 = iprot.readListBegin();
                 struct.values = new ArrayList<ClientCapability>(_list792.size);
                 ClientCapability _elem793;
                 for (int _i794 = 0; _i794 < _list792.size; ++_i794)
+<<<<<<< HEAD
                 {
                   _elem793 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
                   struct.values.add(_elem793);
@@ -431,6 +435,11 @@ import org.slf4j.LoggerFactory;
                   struct.values.add(_elem777);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+                {
+                  _elem793 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
+                  struct.values.add(_elem793);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 }
                 iprot.readListEnd();
               }
@@ -456,6 +465,7 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(VALUES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, struct.values.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -509,6 +519,11 @@ import org.slf4j.LoggerFactory;
             oprot.writeI32(_iter779.getValue());
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          for (ClientCapability _iter795 : struct.values)
+          {
+            oprot.writeI32(_iter795.getValue());
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
           oprot.writeListEnd();
         }
@@ -533,6 +548,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.values.size());
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -586,6 +602,11 @@ import org.slf4j.LoggerFactory;
           oprot.writeI32(_iter780.getValue());
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        for (ClientCapability _iter796 : struct.values)
+        {
+          oprot.writeI32(_iter796.getValue());
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         }
       }
     }
@@ -597,10 +618,14 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         org.apache.thrift.protocol.TList _list797 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I32, iprot.readI32());
         struct.values = new ArrayList<ClientCapability>(_list797.size);
         ClientCapability _elem798;
         for (int _i799 = 0; _i799 < _list797.size; ++_i799)
+<<<<<<< HEAD
         {
           _elem798 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
           struct.values.add(_elem798);
@@ -671,6 +696,11 @@ import org.slf4j.LoggerFactory;
           struct.values.add(_elem782);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        {
+          _elem798 = org.apache.hadoop.hive.metastore.api.ClientCapability.findByValue(iprot.readI32());
+          struct.values.add(_elem798);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         }
       }
       struct.setValuesIsSet(true);

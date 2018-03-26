@@ -1038,133 +1038,14 @@ uint32_t ThriftHiveMetastore_get_catalogs_presult::read(::apache::thrift::protoc
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1157;
-            ::apache::thrift::protocol::TType _etype1160;
-            xfer += iprot->readListBegin(_etype1160, _size1157);
-            this->success.resize(_size1157);
-            uint32_t _i1161;
-            for (_i1161 = 0; _i1161 < _size1157; ++_i1161)
+            uint32_t _size1163;
+            ::apache::thrift::protocol::TType _etype1166;
+            xfer += iprot->readListBegin(_etype1166, _size1163);
+            this->success.resize(_size1163);
+            uint32_t _i1167;
+            for (_i1167 = 0; _i1167 < _size1163; ++_i1167)
             {
-              xfer += iprot->readString(this->success[_i1161]);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            uint32_t _size1137;
-            ::apache::thrift::protocol::TType _etype1140;
-            xfer += iprot->readListBegin(_etype1140, _size1137);
-            this->success.resize(_size1137);
-            uint32_t _i1141;
-            for (_i1141 = 0; _i1141 < _size1137; ++_i1141)
-            {
-              xfer += iprot->readString(this->success[_i1141]);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            uint32_t _size1121;
-            ::apache::thrift::protocol::TType _etype1124;
-            xfer += iprot->readListBegin(_etype1124, _size1121);
-            this->success.resize(_size1121);
-            uint32_t _i1125;
-            for (_i1125 = 0; _i1125 < _size1121; ++_i1125)
-            {
-              xfer += iprot->readString(this->success[_i1125]);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1097;
-            ::apache::thrift::protocol::TType _etype1100;
-            xfer += iprot->readListBegin(_etype1100, _size1097);
-            this->success.resize(_size1097);
-            uint32_t _i1101;
-            for (_i1101 = 0; _i1101 < _size1097; ++_i1101)
-            {
-              xfer += iprot->readString(this->success[_i1101]);
-=======
-            uint32_t _size1055;
-            ::apache::thrift::protocol::TType _etype1058;
-            xfer += iprot->readListBegin(_etype1058, _size1055);
-            this->success.resize(_size1055);
-            uint32_t _i1059;
-            for (_i1059 = 0; _i1059 < _size1055; ++_i1059)
-            {
-              xfer += iprot->readString(this->success[_i1059]);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-            uint32_t _size1059;
-            ::apache::thrift::protocol::TType _etype1062;
-            xfer += iprot->readListBegin(_etype1062, _size1059);
-            this->success.resize(_size1059);
-            uint32_t _i1063;
-            for (_i1063 = 0; _i1063 < _size1059; ++_i1063)
-            {
-              xfer += iprot->readString(this->success[_i1063]);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-            uint32_t _size1055;
-            ::apache::thrift::protocol::TType _etype1058;
-            xfer += iprot->readListBegin(_etype1058, _size1055);
-            this->success.resize(_size1055);
-            uint32_t _i1059;
-            for (_i1059 = 0; _i1059 < _size1055; ++_i1059)
-            {
-              xfer += iprot->readString(this->success[_i1059]);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-            uint32_t _size1059;
-            ::apache::thrift::protocol::TType _etype1062;
-            xfer += iprot->readListBegin(_etype1062, _size1059);
-            this->success.resize(_size1059);
-            uint32_t _i1063;
-            for (_i1063 = 0; _i1063 < _size1059; ++_i1063)
-            {
-              xfer += iprot->readString(this->success[_i1063]);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-=======
-=======
-            uint32_t _size1101;
-            ::apache::thrift::protocol::TType _etype1104;
-            xfer += iprot->readListBegin(_etype1104, _size1101);
-            this->success.resize(_size1101);
-            uint32_t _i1105;
-            for (_i1105 = 0; _i1105 < _size1101; ++_i1105)
-            {
-              xfer += iprot->readString(this->success[_i1105]);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-            uint32_t _size1143;
-            ::apache::thrift::protocol::TType _etype1146;
-            xfer += iprot->readListBegin(_etype1146, _size1143);
-            this->success.resize(_size1143);
-            uint32_t _i1147;
-            for (_i1147 = 0; _i1147 < _size1143; ++_i1147)
-            {
-              xfer += iprot->readString(this->success[_i1147]);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+              xfer += iprot->readString(this->success[_i1167]);
             }
             xfer += iprot->readListEnd();
           }
@@ -1202,92 +1083,10 @@ ThriftHiveMetastore_drop_catalog_args::~ThriftHiveMetastore_drop_catalog_args() 
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1162;
-      for (_iter1162 = this->success.begin(); _iter1162 != this->success.end(); ++_iter1162)
+      std::vector<std::string> ::const_iterator _iter1168;
+      for (_iter1168 = this->success.begin(); _iter1168 != this->success.end(); ++_iter1168)
       {
-        xfer += oprot->writeString((*_iter1162));
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1142;
-      for (_iter1142 = this->success.begin(); _iter1142 != this->success.end(); ++_iter1142)
-      {
-        xfer += oprot->writeString((*_iter1142));
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-      std::vector<std::string> ::const_iterator _iter1126;
-      for (_iter1126 = this->success.begin(); _iter1126 != this->success.end(); ++_iter1126)
-      {
-        xfer += oprot->writeString((*_iter1126));
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1102;
-      for (_iter1102 = this->success.begin(); _iter1102 != this->success.end(); ++_iter1102)
-      {
-        xfer += oprot->writeString((*_iter1102));
-=======
-=======
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-      std::vector<std::string> ::const_iterator _iter1060;
-      for (_iter1060 = this->success.begin(); _iter1060 != this->success.end(); ++_iter1060)
-      {
-        xfer += oprot->writeString((*_iter1060));
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-      std::vector<std::string> ::const_iterator _iter1064;
-      for (_iter1064 = this->success.begin(); _iter1064 != this->success.end(); ++_iter1064)
-      {
-        xfer += oprot->writeString((*_iter1064));
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-      std::vector<std::string> ::const_iterator _iter1064;
-      for (_iter1064 = this->success.begin(); _iter1064 != this->success.end(); ++_iter1064)
-      {
-        xfer += oprot->writeString((*_iter1064));
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-=======
-=======
-      std::vector<std::string> ::const_iterator _iter1106;
-      for (_iter1106 = this->success.begin(); _iter1106 != this->success.end(); ++_iter1106)
-      {
-        xfer += oprot->writeString((*_iter1106));
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-      std::vector<std::string> ::const_iterator _iter1148;
-      for (_iter1148 = this->success.begin(); _iter1148 != this->success.end(); ++_iter1148)
-      {
-        xfer += oprot->writeString((*_iter1148));
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+        xfer += oprot->writeString((*_iter1168));
       }
       xfer += oprot->writeListEnd();
     }
@@ -1335,127 +1134,14 @@ uint32_t ThriftHiveMetastore_drop_catalog_args::read(::apache::thrift::protocol:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1163;
-            ::apache::thrift::protocol::TType _etype1166;
-            xfer += iprot->readListBegin(_etype1166, _size1163);
-            (*(this->success)).resize(_size1163);
-            uint32_t _i1167;
-            for (_i1167 = 0; _i1167 < _size1163; ++_i1167)
+            uint32_t _size1169;
+            ::apache::thrift::protocol::TType _etype1172;
+            xfer += iprot->readListBegin(_etype1172, _size1169);
+            (*(this->success)).resize(_size1169);
+            uint32_t _i1173;
+            for (_i1173 = 0; _i1173 < _size1169; ++_i1173)
             {
-              xfer += iprot->readString((*(this->success))[_i1167]);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            uint32_t _size1143;
-            ::apache::thrift::protocol::TType _etype1146;
-            xfer += iprot->readListBegin(_etype1146, _size1143);
-            (*(this->success)).resize(_size1143);
-            uint32_t _i1147;
-            for (_i1147 = 0; _i1147 < _size1143; ++_i1147)
-            {
-              xfer += iprot->readString((*(this->success))[_i1147]);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            uint32_t _size1127;
-            ::apache::thrift::protocol::TType _etype1130;
-            xfer += iprot->readListBegin(_etype1130, _size1127);
-            (*(this->success)).resize(_size1127);
-            uint32_t _i1131;
-            for (_i1131 = 0; _i1131 < _size1127; ++_i1131)
-            {
-              xfer += iprot->readString((*(this->success))[_i1131]);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1103;
-            ::apache::thrift::protocol::TType _etype1106;
-            xfer += iprot->readListBegin(_etype1106, _size1103);
-            (*(this->success)).resize(_size1103);
-            uint32_t _i1107;
-            for (_i1107 = 0; _i1107 < _size1103; ++_i1107)
-            {
-              xfer += iprot->readString((*(this->success))[_i1107]);
-=======
-=======
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-            uint32_t _size1061;
-            ::apache::thrift::protocol::TType _etype1064;
-            xfer += iprot->readListBegin(_etype1064, _size1061);
-            (*(this->success)).resize(_size1061);
-            uint32_t _i1065;
-            for (_i1065 = 0; _i1065 < _size1061; ++_i1065)
-<<<<<<< HEAD
-            {
-              xfer += iprot->readString((*(this->success))[_i1065]);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-            uint32_t _size1065;
-            ::apache::thrift::protocol::TType _etype1068;
-            xfer += iprot->readListBegin(_etype1068, _size1065);
-            (*(this->success)).resize(_size1065);
-            uint32_t _i1069;
-            for (_i1069 = 0; _i1069 < _size1065; ++_i1069)
-<<<<<<< HEAD
-            {
-              xfer += iprot->readString((*(this->success))[_i1069]);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-            {
-              xfer += iprot->readString((*(this->success))[_i1065]);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-            {
-              xfer += iprot->readString((*(this->success))[_i1069]);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-=======
-=======
-            uint32_t _size1107;
-            ::apache::thrift::protocol::TType _etype1110;
-            xfer += iprot->readListBegin(_etype1110, _size1107);
-            (*(this->success)).resize(_size1107);
-            uint32_t _i1111;
-            for (_i1111 = 0; _i1111 < _size1107; ++_i1111)
-            {
-              xfer += iprot->readString((*(this->success))[_i1111]);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-            uint32_t _size1149;
-            ::apache::thrift::protocol::TType _etype1152;
-            xfer += iprot->readListBegin(_etype1152, _size1149);
-            (*(this->success)).resize(_size1149);
-            uint32_t _i1153;
-            for (_i1153 = 0; _i1153 < _size1149; ++_i1153)
-            {
-              xfer += iprot->readString((*(this->success))[_i1153]);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+              xfer += iprot->readString((*(this->success))[_i1173]);
             }
             xfer += iprot->readListEnd();
           }
@@ -1554,6 +1240,7 @@ uint32_t ThriftHiveMetastore_drop_catalog_result::read(::apache::thrift::protoco
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -1868,9 +1555,16 @@ uint32_t ThriftHiveMetastore_drop_catalog_presult::read(::apache::thrift::protoc
             this->success.resize(_size1154);
             uint32_t _i1158;
             for (_i1158 = 0; _i1158 < _size1154; ++_i1158)
+=======
+            uint32_t _size1174;
+            ::apache::thrift::protocol::TType _etype1177;
+            xfer += iprot->readListBegin(_etype1177, _size1174);
+            this->success.resize(_size1174);
+            uint32_t _i1178;
+            for (_i1178 = 0; _i1178 < _size1174; ++_i1178)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             {
-              xfer += iprot->readString(this->success[_i1158]);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+              xfer += iprot->readString(this->success[_i1178]);
             }
             xfer += iprot->readListEnd();
           }
@@ -1909,92 +1603,10 @@ uint32_t ThriftHiveMetastore_get_all_databases_result::write(::apache::thrift::p
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1173;
-      for (_iter1173 = this->success.begin(); _iter1173 != this->success.end(); ++_iter1173)
+      std::vector<std::string> ::const_iterator _iter1179;
+      for (_iter1179 = this->success.begin(); _iter1179 != this->success.end(); ++_iter1179)
       {
-        xfer += oprot->writeString((*_iter1173));
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1153;
-      for (_iter1153 = this->success.begin(); _iter1153 != this->success.end(); ++_iter1153)
-      {
-        xfer += oprot->writeString((*_iter1153));
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-      std::vector<std::string> ::const_iterator _iter1137;
-      for (_iter1137 = this->success.begin(); _iter1137 != this->success.end(); ++_iter1137)
-      {
-        xfer += oprot->writeString((*_iter1137));
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1113;
-      for (_iter1113 = this->success.begin(); _iter1113 != this->success.end(); ++_iter1113)
-      {
-        xfer += oprot->writeString((*_iter1113));
-=======
-=======
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-      std::vector<std::string> ::const_iterator _iter1071;
-      for (_iter1071 = this->success.begin(); _iter1071 != this->success.end(); ++_iter1071)
-      {
-        xfer += oprot->writeString((*_iter1071));
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-      std::vector<std::string> ::const_iterator _iter1075;
-      for (_iter1075 = this->success.begin(); _iter1075 != this->success.end(); ++_iter1075)
-      {
-        xfer += oprot->writeString((*_iter1075));
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-      std::vector<std::string> ::const_iterator _iter1075;
-      for (_iter1075 = this->success.begin(); _iter1075 != this->success.end(); ++_iter1075)
-      {
-        xfer += oprot->writeString((*_iter1075));
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-=======
-=======
-      std::vector<std::string> ::const_iterator _iter1117;
-      for (_iter1117 = this->success.begin(); _iter1117 != this->success.end(); ++_iter1117)
-      {
-        xfer += oprot->writeString((*_iter1117));
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-      std::vector<std::string> ::const_iterator _iter1159;
-      for (_iter1159 = this->success.begin(); _iter1159 != this->success.end(); ++_iter1159)
-      {
-        xfer += oprot->writeString((*_iter1159));
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+        xfer += oprot->writeString((*_iter1179));
       }
       xfer += oprot->writeListEnd();
     }
@@ -2039,130 +1651,14 @@ uint32_t ThriftHiveMetastore_get_all_databases_presult::read(::apache::thrift::p
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1174;
-            ::apache::thrift::protocol::TType _etype1177;
-            xfer += iprot->readListBegin(_etype1177, _size1174);
-            (*(this->success)).resize(_size1174);
-            uint32_t _i1178;
-            for (_i1178 = 0; _i1178 < _size1174; ++_i1178)
+            uint32_t _size1180;
+            ::apache::thrift::protocol::TType _etype1183;
+            xfer += iprot->readListBegin(_etype1183, _size1180);
+            (*(this->success)).resize(_size1180);
+            uint32_t _i1184;
+            for (_i1184 = 0; _i1184 < _size1180; ++_i1184)
             {
-              xfer += iprot->readString((*(this->success))[_i1178]);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            uint32_t _size1154;
-            ::apache::thrift::protocol::TType _etype1157;
-            xfer += iprot->readListBegin(_etype1157, _size1154);
-            (*(this->success)).resize(_size1154);
-            uint32_t _i1158;
-            for (_i1158 = 0; _i1158 < _size1154; ++_i1158)
-            {
-              xfer += iprot->readString((*(this->success))[_i1158]);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            uint32_t _size1138;
-            ::apache::thrift::protocol::TType _etype1141;
-            xfer += iprot->readListBegin(_etype1141, _size1138);
-            (*(this->success)).resize(_size1138);
-            uint32_t _i1142;
-            for (_i1142 = 0; _i1142 < _size1138; ++_i1142)
-            {
-              xfer += iprot->readString((*(this->success))[_i1142]);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1114;
-            ::apache::thrift::protocol::TType _etype1117;
-            xfer += iprot->readListBegin(_etype1117, _size1114);
-            (*(this->success)).resize(_size1114);
-            uint32_t _i1118;
-            for (_i1118 = 0; _i1118 < _size1114; ++_i1118)
-            {
-              xfer += iprot->readString((*(this->success))[_i1118]);
-=======
-=======
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-            uint32_t _size1072;
-            ::apache::thrift::protocol::TType _etype1075;
-            xfer += iprot->readListBegin(_etype1075, _size1072);
-            (*(this->success)).resize(_size1072);
-            uint32_t _i1076;
-            for (_i1076 = 0; _i1076 < _size1072; ++_i1076)
-<<<<<<< HEAD
-            {
-              xfer += iprot->readString((*(this->success))[_i1076]);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-            uint32_t _size1076;
-            ::apache::thrift::protocol::TType _etype1079;
-            xfer += iprot->readListBegin(_etype1079, _size1076);
-            (*(this->success)).resize(_size1076);
-            uint32_t _i1080;
-            for (_i1080 = 0; _i1080 < _size1076; ++_i1080)
-            {
-              xfer += iprot->readString((*(this->success))[_i1080]);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-            {
-              xfer += iprot->readString((*(this->success))[_i1076]);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-            uint32_t _size1076;
-            ::apache::thrift::protocol::TType _etype1079;
-            xfer += iprot->readListBegin(_etype1079, _size1076);
-            (*(this->success)).resize(_size1076);
-            uint32_t _i1080;
-            for (_i1080 = 0; _i1080 < _size1076; ++_i1080)
-            {
-              xfer += iprot->readString((*(this->success))[_i1080]);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-=======
-=======
-            uint32_t _size1118;
-            ::apache::thrift::protocol::TType _etype1121;
-            xfer += iprot->readListBegin(_etype1121, _size1118);
-            (*(this->success)).resize(_size1118);
-            uint32_t _i1122;
-            for (_i1122 = 0; _i1122 < _size1118; ++_i1122)
-            {
-              xfer += iprot->readString((*(this->success))[_i1122]);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-            uint32_t _size1160;
-            ::apache::thrift::protocol::TType _etype1163;
-            xfer += iprot->readListBegin(_etype1163, _size1160);
-            (*(this->success)).resize(_size1160);
-            uint32_t _i1164;
-            for (_i1164 = 0; _i1164 < _size1160; ++_i1164)
-            {
-              xfer += iprot->readString((*(this->success))[_i1164]);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+              xfer += iprot->readString((*(this->success))[_i1184]);
             }
             xfer += iprot->readListEnd();
           }
@@ -3244,6 +2740,7 @@ uint32_t ThriftHiveMetastore_get_all_databases_result::read(::apache::thrift::pr
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1186;
             ::apache::thrift::protocol::TType _etype1189;
             xfer += iprot->readListBegin(_etype1189, _size1186);
@@ -3522,12 +3019,19 @@ uint32_t ThriftHiveMetastore_get_all_databases_presult::read(::apache::thrift::p
             xfer += iprot->readMapBegin(_ktype1166, _vtype1167, _size1165);
             uint32_t _i1169;
             for (_i1169 = 0; _i1169 < _size1165; ++_i1169)
+=======
+            uint32_t _size1185;
+            ::apache::thrift::protocol::TType _ktype1186;
+            ::apache::thrift::protocol::TType _vtype1187;
+            xfer += iprot->readMapBegin(_ktype1186, _vtype1187, _size1185);
+            uint32_t _i1189;
+            for (_i1189 = 0; _i1189 < _size1185; ++_i1189)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             {
-              std::string _key1170;
-              xfer += iprot->readString(_key1170);
-              Type& _val1171 = this->success[_key1170];
-              xfer += _val1171.read(iprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+              std::string _key1190;
+              xfer += iprot->readString(_key1190);
+              Type& _val1191 = this->success[_key1190];
+              xfer += _val1191.read(iprot);
             }
             xfer += iprot->readMapEnd();
           }
@@ -3566,101 +3070,11 @@ uint32_t ThriftHiveMetastore_get_type_all_result::write(::apache::thrift::protoc
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_MAP, 0);
     {
       xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      std::map<std::string, Type> ::const_iterator _iter1186;
-      for (_iter1186 = this->success.begin(); _iter1186 != this->success.end(); ++_iter1186)
+      std::map<std::string, Type> ::const_iterator _iter1192;
+      for (_iter1192 = this->success.begin(); _iter1192 != this->success.end(); ++_iter1192)
       {
-        xfer += oprot->writeString(_iter1186->first);
-        xfer += _iter1186->second.write(oprot);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-      std::map<std::string, Type> ::const_iterator _iter1166;
-      for (_iter1166 = this->success.begin(); _iter1166 != this->success.end(); ++_iter1166)
-      {
-        xfer += oprot->writeString(_iter1166->first);
-        xfer += _iter1166->second.write(oprot);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-      std::map<std::string, Type> ::const_iterator _iter1150;
-      for (_iter1150 = this->success.begin(); _iter1150 != this->success.end(); ++_iter1150)
-      {
-        xfer += oprot->writeString(_iter1150->first);
-        xfer += _iter1150->second.write(oprot);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      std::map<std::string, Type> ::const_iterator _iter1126;
-      for (_iter1126 = this->success.begin(); _iter1126 != this->success.end(); ++_iter1126)
-      {
-        xfer += oprot->writeString(_iter1126->first);
-        xfer += _iter1126->second.write(oprot);
-=======
-=======
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-      std::map<std::string, Type> ::const_iterator _iter1084;
-      for (_iter1084 = this->success.begin(); _iter1084 != this->success.end(); ++_iter1084)
-      {
-        xfer += oprot->writeString(_iter1084->first);
-        xfer += _iter1084->second.write(oprot);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-      std::map<std::string, Type> ::const_iterator _iter1088;
-      for (_iter1088 = this->success.begin(); _iter1088 != this->success.end(); ++_iter1088)
-      {
-        xfer += oprot->writeString(_iter1088->first);
-        xfer += _iter1088->second.write(oprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-      std::map<std::string, Type> ::const_iterator _iter1088;
-      for (_iter1088 = this->success.begin(); _iter1088 != this->success.end(); ++_iter1088)
-      {
-        xfer += oprot->writeString(_iter1088->first);
-        xfer += _iter1088->second.write(oprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-=======
-=======
-      std::map<std::string, Type> ::const_iterator _iter1130;
-      for (_iter1130 = this->success.begin(); _iter1130 != this->success.end(); ++_iter1130)
-      {
-        xfer += oprot->writeString(_iter1130->first);
-        xfer += _iter1130->second.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-      std::map<std::string, Type> ::const_iterator _iter1172;
-      for (_iter1172 = this->success.begin(); _iter1172 != this->success.end(); ++_iter1172)
-      {
-        xfer += oprot->writeString(_iter1172->first);
-        xfer += _iter1172->second.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+        xfer += oprot->writeString(_iter1192->first);
+        xfer += _iter1192->second.write(oprot);
       }
       xfer += oprot->writeMapEnd();
     }
@@ -3705,6 +3119,7 @@ uint32_t ThriftHiveMetastore_get_type_all_presult::read(::apache::thrift::protoc
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -3866,6 +3281,19 @@ uint32_t ThriftHiveMetastore_get_type_all_presult::read(::apache::thrift::protoc
               xfer += _val1179.read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1193;
+            ::apache::thrift::protocol::TType _ktype1194;
+            ::apache::thrift::protocol::TType _vtype1195;
+            xfer += iprot->readMapBegin(_ktype1194, _vtype1195, _size1193);
+            uint32_t _i1197;
+            for (_i1197 = 0; _i1197 < _size1193; ++_i1197)
+            {
+              std::string _key1198;
+              xfer += iprot->readString(_key1198);
+              Type& _val1199 = (*(this->success))[_key1198];
+              xfer += _val1199.read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -4021,57 +3449,14 @@ uint32_t ThriftHiveMetastore_alter_database_result::read(::apache::thrift::proto
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1194;
-            ::apache::thrift::protocol::TType _etype1197;
-            xfer += iprot->readListBegin(_etype1197, _size1194);
-            this->success.resize(_size1194);
-            uint32_t _i1198;
-            for (_i1198 = 0; _i1198 < _size1194; ++_i1198)
+            uint32_t _size1200;
+            ::apache::thrift::protocol::TType _etype1203;
+            xfer += iprot->readListBegin(_etype1203, _size1200);
+            this->success.resize(_size1200);
+            uint32_t _i1204;
+            for (_i1204 = 0; _i1204 < _size1200; ++_i1204)
             {
-              xfer += this->success[_i1198].read(iprot);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            uint32_t _size1174;
-            ::apache::thrift::protocol::TType _etype1177;
-            xfer += iprot->readListBegin(_etype1177, _size1174);
-            this->success.resize(_size1174);
-            uint32_t _i1178;
-            for (_i1178 = 0; _i1178 < _size1174; ++_i1178)
-            {
-              xfer += this->success[_i1178].read(iprot);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            uint32_t _size1158;
-            ::apache::thrift::protocol::TType _etype1161;
-            xfer += iprot->readListBegin(_etype1161, _size1158);
-            this->success.resize(_size1158);
-            uint32_t _i1162;
-            for (_i1162 = 0; _i1162 < _size1158; ++_i1162)
-            {
-              xfer += this->success[_i1162].read(iprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-            uint32_t _size1180;
-            ::apache::thrift::protocol::TType _etype1183;
-            xfer += iprot->readListBegin(_etype1183, _size1180);
-            this->success.resize(_size1180);
-            uint32_t _i1184;
-            for (_i1184 = 0; _i1184 < _size1180; ++_i1184)
-            {
-              xfer += this->success[_i1184].read(iprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+              xfer += this->success[_i1204].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -4122,31 +3507,10 @@ uint32_t ThriftHiveMetastore_alter_database_result::write(::apache::thrift::prot
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-<<<<<<< HEAD
-<<<<<<< HEAD
-      std::vector<FieldSchema> ::const_iterator _iter1199;
-      for (_iter1199 = this->success.begin(); _iter1199 != this->success.end(); ++_iter1199)
+      std::vector<FieldSchema> ::const_iterator _iter1205;
+      for (_iter1205 = this->success.begin(); _iter1205 != this->success.end(); ++_iter1205)
       {
-        xfer += (*_iter1199).write(oprot);
-=======
-<<<<<<< HEAD
-      std::vector<FieldSchema> ::const_iterator _iter1179;
-      for (_iter1179 = this->success.begin(); _iter1179 != this->success.end(); ++_iter1179)
-      {
-        xfer += (*_iter1179).write(oprot);
-=======
-      std::vector<FieldSchema> ::const_iterator _iter1163;
-      for (_iter1163 = this->success.begin(); _iter1163 != this->success.end(); ++_iter1163)
-      {
-        xfer += (*_iter1163).write(oprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-      std::vector<FieldSchema> ::const_iterator _iter1185;
-      for (_iter1185 = this->success.begin(); _iter1185 != this->success.end(); ++_iter1185)
-      {
-        xfer += (*_iter1185).write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+        xfer += (*_iter1205).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -4198,89 +3562,14 @@ uint32_t ThriftHiveMetastore_alter_database_presult::read(::apache::thrift::prot
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1200;
-            ::apache::thrift::protocol::TType _etype1203;
-            xfer += iprot->readListBegin(_etype1203, _size1200);
-            (*(this->success)).resize(_size1200);
-            uint32_t _i1204;
-            for (_i1204 = 0; _i1204 < _size1200; ++_i1204)
+            uint32_t _size1206;
+            ::apache::thrift::protocol::TType _etype1209;
+            xfer += iprot->readListBegin(_etype1209, _size1206);
+            (*(this->success)).resize(_size1206);
+            uint32_t _i1210;
+            for (_i1210 = 0; _i1210 < _size1206; ++_i1210)
             {
-              xfer += (*(this->success))[_i1204].read(iprot);
-=======
-<<<<<<< HEAD
-            uint32_t _size1180;
-            ::apache::thrift::protocol::TType _etype1183;
-            xfer += iprot->readListBegin(_etype1183, _size1180);
-            (*(this->success)).resize(_size1180);
-            uint32_t _i1184;
-            for (_i1184 = 0; _i1184 < _size1180; ++_i1184)
-            {
-              xfer += (*(this->success))[_i1184].read(iprot);
-=======
-            uint32_t _size1164;
-            ::apache::thrift::protocol::TType _etype1167;
-            xfer += iprot->readListBegin(_etype1167, _size1164);
-            (*(this->success)).resize(_size1164);
-            uint32_t _i1168;
-            for (_i1168 = 0; _i1168 < _size1164; ++_i1168)
-            {
-              xfer += (*(this->success))[_i1168].read(iprot);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1134;
-            ::apache::thrift::protocol::TType _etype1137;
-            xfer += iprot->readListBegin(_etype1137, _size1134);
-            this->success.resize(_size1134);
-            uint32_t _i1138;
-            for (_i1138 = 0; _i1138 < _size1134; ++_i1138)
-            {
-              xfer += this->success[_i1138].read(iprot);
-=======
-            uint32_t _size1092;
-            ::apache::thrift::protocol::TType _etype1095;
-            xfer += iprot->readListBegin(_etype1095, _size1092);
-            this->success.resize(_size1092);
-            uint32_t _i1096;
-            for (_i1096 = 0; _i1096 < _size1092; ++_i1096)
-            {
-              xfer += this->success[_i1096].read(iprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-            uint32_t _size1096;
-            ::apache::thrift::protocol::TType _etype1099;
-            xfer += iprot->readListBegin(_etype1099, _size1096);
-            this->success.resize(_size1096);
-            uint32_t _i1100;
-            for (_i1100 = 0; _i1100 < _size1096; ++_i1100)
-=======
-            uint32_t _size1138;
-            ::apache::thrift::protocol::TType _etype1141;
-            xfer += iprot->readListBegin(_etype1141, _size1138);
-            this->success.resize(_size1138);
-            uint32_t _i1142;
-            for (_i1142 = 0; _i1142 < _size1138; ++_i1142)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-            uint32_t _size1186;
-            ::apache::thrift::protocol::TType _etype1189;
-            xfer += iprot->readListBegin(_etype1189, _size1186);
-            (*(this->success)).resize(_size1186);
-            uint32_t _i1190;
-            for (_i1190 = 0; _i1190 < _size1186; ++_i1190)
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
-            {
-              xfer += (*(this->success))[_i1190].read(iprot);
+              xfer += (*(this->success))[_i1210].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -4466,32 +3755,14 @@ uint32_t ThriftHiveMetastore_get_fields_with_environment_context_result::read(::
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-            uint32_t _size1191;
-            ::apache::thrift::protocol::TType _etype1194;
-            xfer += iprot->readListBegin(_etype1194, _size1191);
-            this->success.resize(_size1191);
-            uint32_t _i1195;
-            for (_i1195 = 0; _i1195 < _size1191; ++_i1195)
+            uint32_t _size1211;
+            ::apache::thrift::protocol::TType _etype1214;
+            xfer += iprot->readListBegin(_etype1214, _size1211);
+            this->success.resize(_size1211);
+            uint32_t _i1215;
+            for (_i1215 = 0; _i1215 < _size1211; ++_i1215)
             {
-<<<<<<< HEAD
-<<<<<<< HEAD
-              xfer += (*(this->success))[_i1106].read(iprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-=======
-=======
-              xfer += (*(this->success))[_i1148].read(iprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-              xfer += this->success[_i1195].read(iprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+              xfer += this->success[_i1215].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -4546,10 +3817,10 @@ uint32_t ThriftHiveMetastore_get_fields_with_environment_context_result::write(:
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<FieldSchema> ::const_iterator _iter1196;
-      for (_iter1196 = this->success.begin(); _iter1196 != this->success.end(); ++_iter1196)
+      std::vector<FieldSchema> ::const_iterator _iter1216;
+      for (_iter1216 = this->success.begin(); _iter1216 != this->success.end(); ++_iter1216)
       {
-        xfer += (*_iter1196).write(oprot);
+        xfer += (*_iter1216).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -4602,14 +3873,14 @@ uint32_t ThriftHiveMetastore_get_fields_with_environment_context_presult::read(:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-            uint32_t _size1197;
-            ::apache::thrift::protocol::TType _etype1200;
-            xfer += iprot->readListBegin(_etype1200, _size1197);
-            (*(this->success)).resize(_size1197);
-            uint32_t _i1201;
-            for (_i1201 = 0; _i1201 < _size1197; ++_i1201)
+            uint32_t _size1217;
+            ::apache::thrift::protocol::TType _etype1220;
+            xfer += iprot->readListBegin(_etype1220, _size1217);
+            (*(this->success)).resize(_size1217);
+            uint32_t _i1221;
+            for (_i1221 = 0; _i1221 < _size1217; ++_i1221)
             {
-              xfer += (*(this->success))[_i1201].read(iprot);
+              xfer += (*(this->success))[_i1221].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -4825,130 +4096,14 @@ uint32_t ThriftHiveMetastore_get_schema_result::read(::apache::thrift::protocol:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1205;
-            ::apache::thrift::protocol::TType _etype1208;
-            xfer += iprot->readListBegin(_etype1208, _size1205);
-            this->success.resize(_size1205);
-            uint32_t _i1209;
-            for (_i1209 = 0; _i1209 < _size1205; ++_i1209)
+            uint32_t _size1222;
+            ::apache::thrift::protocol::TType _etype1225;
+            xfer += iprot->readListBegin(_etype1225, _size1222);
+            this->success.resize(_size1222);
+            uint32_t _i1226;
+            for (_i1226 = 0; _i1226 < _size1222; ++_i1226)
             {
-              xfer += this->success[_i1209].read(iprot);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            uint32_t _size1185;
-            ::apache::thrift::protocol::TType _etype1188;
-            xfer += iprot->readListBegin(_etype1188, _size1185);
-            this->success.resize(_size1185);
-            uint32_t _i1189;
-            for (_i1189 = 0; _i1189 < _size1185; ++_i1189)
-            {
-              xfer += this->success[_i1189].read(iprot);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            uint32_t _size1169;
-            ::apache::thrift::protocol::TType _etype1172;
-            xfer += iprot->readListBegin(_etype1172, _size1169);
-            this->success.resize(_size1169);
-            uint32_t _i1173;
-            for (_i1173 = 0; _i1173 < _size1169; ++_i1173)
-            {
-              xfer += this->success[_i1173].read(iprot);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1145;
-            ::apache::thrift::protocol::TType _etype1148;
-            xfer += iprot->readListBegin(_etype1148, _size1145);
-            this->success.resize(_size1145);
-            uint32_t _i1149;
-            for (_i1149 = 0; _i1149 < _size1145; ++_i1149)
-            {
-              xfer += this->success[_i1149].read(iprot);
-=======
-            uint32_t _size1103;
-            ::apache::thrift::protocol::TType _etype1106;
-            xfer += iprot->readListBegin(_etype1106, _size1103);
-            this->success.resize(_size1103);
-            uint32_t _i1107;
-            for (_i1107 = 0; _i1107 < _size1103; ++_i1107)
-            {
-              xfer += this->success[_i1107].read(iprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-            uint32_t _size1107;
-            ::apache::thrift::protocol::TType _etype1110;
-            xfer += iprot->readListBegin(_etype1110, _size1107);
-            this->success.resize(_size1107);
-            uint32_t _i1111;
-            for (_i1111 = 0; _i1111 < _size1107; ++_i1111)
-<<<<<<< HEAD
-            {
-              xfer += this->success[_i1111].read(iprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-            uint32_t _size1103;
-            ::apache::thrift::protocol::TType _etype1106;
-            xfer += iprot->readListBegin(_etype1106, _size1103);
-            this->success.resize(_size1103);
-            uint32_t _i1107;
-            for (_i1107 = 0; _i1107 < _size1103; ++_i1107)
-            {
-              xfer += this->success[_i1107].read(iprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-            {
-              xfer += this->success[_i1111].read(iprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-=======
-=======
-            uint32_t _size1149;
-            ::apache::thrift::protocol::TType _etype1152;
-            xfer += iprot->readListBegin(_etype1152, _size1149);
-            this->success.resize(_size1149);
-            uint32_t _i1153;
-            for (_i1153 = 0; _i1153 < _size1149; ++_i1153)
-            {
-              xfer += this->success[_i1153].read(iprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-            uint32_t _size1202;
-            ::apache::thrift::protocol::TType _etype1205;
-            xfer += iprot->readListBegin(_etype1205, _size1202);
-            this->success.resize(_size1202);
-            uint32_t _i1206;
-            for (_i1206 = 0; _i1206 < _size1202; ++_i1206)
-            {
-              xfer += this->success[_i1206].read(iprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+              xfer += this->success[_i1226].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -5008,93 +4163,10 @@ uint32_t ThriftHiveMetastore_get_schema_result::write(::apache::thrift::protocol
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      std::vector<FieldSchema> ::const_iterator _iter1210;
-      for (_iter1210 = this->success.begin(); _iter1210 != this->success.end(); ++_iter1210)
+      std::vector<FieldSchema> ::const_iterator _iter1227;
+      for (_iter1227 = this->success.begin(); _iter1227 != this->success.end(); ++_iter1227)
       {
-        xfer += (*_iter1210).write(oprot);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-      std::vector<FieldSchema> ::const_iterator _iter1190;
-      for (_iter1190 = this->success.begin(); _iter1190 != this->success.end(); ++_iter1190)
-      {
-        xfer += (*_iter1190).write(oprot);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-      std::vector<FieldSchema> ::const_iterator _iter1174;
-      for (_iter1174 = this->success.begin(); _iter1174 != this->success.end(); ++_iter1174)
-      {
-        xfer += (*_iter1174).write(oprot);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      std::vector<FieldSchema> ::const_iterator _iter1150;
-      for (_iter1150 = this->success.begin(); _iter1150 != this->success.end(); ++_iter1150)
-      {
-        xfer += (*_iter1150).write(oprot);
-=======
-      std::vector<FieldSchema> ::const_iterator _iter1108;
-      for (_iter1108 = this->success.begin(); _iter1108 != this->success.end(); ++_iter1108)
-      {
-        xfer += (*_iter1108).write(oprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-      std::vector<FieldSchema> ::const_iterator _iter1112;
-      for (_iter1112 = this->success.begin(); _iter1112 != this->success.end(); ++_iter1112)
-      {
-        xfer += (*_iter1112).write(oprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-      std::vector<FieldSchema> ::const_iterator _iter1108;
-      for (_iter1108 = this->success.begin(); _iter1108 != this->success.end(); ++_iter1108)
-      {
-        xfer += (*_iter1108).write(oprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-      std::vector<FieldSchema> ::const_iterator _iter1112;
-      for (_iter1112 = this->success.begin(); _iter1112 != this->success.end(); ++_iter1112)
-      {
-        xfer += (*_iter1112).write(oprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-=======
-=======
-      std::vector<FieldSchema> ::const_iterator _iter1154;
-      for (_iter1154 = this->success.begin(); _iter1154 != this->success.end(); ++_iter1154)
-      {
-        xfer += (*_iter1154).write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-      std::vector<FieldSchema> ::const_iterator _iter1207;
-      for (_iter1207 = this->success.begin(); _iter1207 != this->success.end(); ++_iter1207)
-      {
-        xfer += (*_iter1207).write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+        xfer += (*_iter1227).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -5156,133 +4228,14 @@ uint32_t ThriftHiveMetastore_get_schema_presult::read(::apache::thrift::protocol
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1211;
-            ::apache::thrift::protocol::TType _etype1214;
-            xfer += iprot->readListBegin(_etype1214, _size1211);
-            (*(this->success)).resize(_size1211);
-            uint32_t _i1215;
-            for (_i1215 = 0; _i1215 < _size1211; ++_i1215)
+            uint32_t _size1228;
+            ::apache::thrift::protocol::TType _etype1231;
+            xfer += iprot->readListBegin(_etype1231, _size1228);
+            (*(this->success)).resize(_size1228);
+            uint32_t _i1232;
+            for (_i1232 = 0; _i1232 < _size1228; ++_i1232)
             {
-              xfer += (*(this->success))[_i1215].read(iprot);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            uint32_t _size1191;
-            ::apache::thrift::protocol::TType _etype1194;
-            xfer += iprot->readListBegin(_etype1194, _size1191);
-            (*(this->success)).resize(_size1191);
-            uint32_t _i1195;
-            for (_i1195 = 0; _i1195 < _size1191; ++_i1195)
-            {
-              xfer += (*(this->success))[_i1195].read(iprot);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            uint32_t _size1175;
-            ::apache::thrift::protocol::TType _etype1178;
-            xfer += iprot->readListBegin(_etype1178, _size1175);
-            (*(this->success)).resize(_size1175);
-            uint32_t _i1179;
-            for (_i1179 = 0; _i1179 < _size1175; ++_i1179)
-            {
-              xfer += (*(this->success))[_i1179].read(iprot);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1151;
-            ::apache::thrift::protocol::TType _etype1154;
-            xfer += iprot->readListBegin(_etype1154, _size1151);
-            (*(this->success)).resize(_size1151);
-            uint32_t _i1155;
-            for (_i1155 = 0; _i1155 < _size1151; ++_i1155)
-            {
-              xfer += (*(this->success))[_i1155].read(iprot);
-=======
-            uint32_t _size1109;
-            ::apache::thrift::protocol::TType _etype1112;
-            xfer += iprot->readListBegin(_etype1112, _size1109);
-            (*(this->success)).resize(_size1109);
-            uint32_t _i1113;
-            for (_i1113 = 0; _i1113 < _size1109; ++_i1113)
-            {
-              xfer += (*(this->success))[_i1113].read(iprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-            uint32_t _size1113;
-            ::apache::thrift::protocol::TType _etype1116;
-            xfer += iprot->readListBegin(_etype1116, _size1113);
-            (*(this->success)).resize(_size1113);
-            uint32_t _i1117;
-            for (_i1117 = 0; _i1117 < _size1113; ++_i1117)
-            {
-              xfer += (*(this->success))[_i1117].read(iprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-            uint32_t _size1109;
-            ::apache::thrift::protocol::TType _etype1112;
-            xfer += iprot->readListBegin(_etype1112, _size1109);
-            (*(this->success)).resize(_size1109);
-            uint32_t _i1113;
-            for (_i1113 = 0; _i1113 < _size1109; ++_i1113)
-            {
-              xfer += (*(this->success))[_i1113].read(iprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-            uint32_t _size1113;
-            ::apache::thrift::protocol::TType _etype1116;
-            xfer += iprot->readListBegin(_etype1116, _size1113);
-            (*(this->success)).resize(_size1113);
-            uint32_t _i1117;
-            for (_i1117 = 0; _i1117 < _size1113; ++_i1117)
-            {
-              xfer += (*(this->success))[_i1117].read(iprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-=======
-=======
-            uint32_t _size1155;
-            ::apache::thrift::protocol::TType _etype1158;
-            xfer += iprot->readListBegin(_etype1158, _size1155);
-            (*(this->success)).resize(_size1155);
-            uint32_t _i1159;
-            for (_i1159 = 0; _i1159 < _size1155; ++_i1159)
-            {
-              xfer += (*(this->success))[_i1159].read(iprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-            uint32_t _size1208;
-            ::apache::thrift::protocol::TType _etype1211;
-            xfer += iprot->readListBegin(_etype1211, _size1208);
-            (*(this->success)).resize(_size1208);
-            uint32_t _i1212;
-            for (_i1212 = 0; _i1212 < _size1208; ++_i1212)
-            {
-              xfer += (*(this->success))[_i1212].read(iprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+              xfer += (*(this->success))[_i1232].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -5491,130 +4444,14 @@ uint32_t ThriftHiveMetastore_get_schema_with_environment_context_result::read(::
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1216;
-            ::apache::thrift::protocol::TType _etype1219;
-            xfer += iprot->readListBegin(_etype1219, _size1216);
-            this->success.resize(_size1216);
-            uint32_t _i1220;
-            for (_i1220 = 0; _i1220 < _size1216; ++_i1220)
+            uint32_t _size1233;
+            ::apache::thrift::protocol::TType _etype1236;
+            xfer += iprot->readListBegin(_etype1236, _size1233);
+            this->success.resize(_size1233);
+            uint32_t _i1237;
+            for (_i1237 = 0; _i1237 < _size1233; ++_i1237)
             {
-              xfer += this->success[_i1220].read(iprot);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-            uint32_t _size1196;
-            ::apache::thrift::protocol::TType _etype1199;
-            xfer += iprot->readListBegin(_etype1199, _size1196);
-            this->success.resize(_size1196);
-            uint32_t _i1200;
-            for (_i1200 = 0; _i1200 < _size1196; ++_i1200)
-            {
-              xfer += this->success[_i1200].read(iprot);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            uint32_t _size1180;
-            ::apache::thrift::protocol::TType _etype1183;
-            xfer += iprot->readListBegin(_etype1183, _size1180);
-            this->success.resize(_size1180);
-            uint32_t _i1184;
-            for (_i1184 = 0; _i1184 < _size1180; ++_i1184)
-            {
-              xfer += this->success[_i1184].read(iprot);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1156;
-            ::apache::thrift::protocol::TType _etype1159;
-            xfer += iprot->readListBegin(_etype1159, _size1156);
-            this->success.resize(_size1156);
-            uint32_t _i1160;
-            for (_i1160 = 0; _i1160 < _size1156; ++_i1160)
-            {
-              xfer += this->success[_i1160].read(iprot);
-=======
-            uint32_t _size1114;
-            ::apache::thrift::protocol::TType _etype1117;
-            xfer += iprot->readListBegin(_etype1117, _size1114);
-            this->success.resize(_size1114);
-            uint32_t _i1118;
-            for (_i1118 = 0; _i1118 < _size1114; ++_i1118)
-            {
-              xfer += this->success[_i1118].read(iprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-            uint32_t _size1118;
-            ::apache::thrift::protocol::TType _etype1121;
-            xfer += iprot->readListBegin(_etype1121, _size1118);
-            this->success.resize(_size1118);
-            uint32_t _i1122;
-            for (_i1122 = 0; _i1122 < _size1118; ++_i1122)
-<<<<<<< HEAD
-            {
-              xfer += this->success[_i1122].read(iprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-            uint32_t _size1114;
-            ::apache::thrift::protocol::TType _etype1117;
-            xfer += iprot->readListBegin(_etype1117, _size1114);
-            this->success.resize(_size1114);
-            uint32_t _i1118;
-            for (_i1118 = 0; _i1118 < _size1114; ++_i1118)
-            {
-              xfer += this->success[_i1118].read(iprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-            {
-              xfer += this->success[_i1122].read(iprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-=======
-=======
-            uint32_t _size1160;
-            ::apache::thrift::protocol::TType _etype1163;
-            xfer += iprot->readListBegin(_etype1163, _size1160);
-            this->success.resize(_size1160);
-            uint32_t _i1164;
-            for (_i1164 = 0; _i1164 < _size1160; ++_i1164)
-            {
-              xfer += this->success[_i1164].read(iprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-            uint32_t _size1213;
-            ::apache::thrift::protocol::TType _etype1216;
-            xfer += iprot->readListBegin(_etype1216, _size1213);
-            this->success.resize(_size1213);
-            uint32_t _i1217;
-            for (_i1217 = 0; _i1217 < _size1213; ++_i1217)
-            {
-              xfer += this->success[_i1217].read(iprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+              xfer += this->success[_i1237].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -5682,87 +4519,10 @@ uint32_t ThriftHiveMetastore_get_schema_with_environment_context_result::write(:
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      std::vector<FieldSchema> ::const_iterator _iter1221;
-      for (_iter1221 = this->success.begin(); _iter1221 != this->success.end(); ++_iter1221)
+      std::vector<FieldSchema> ::const_iterator _iter1238;
+      for (_iter1238 = this->success.begin(); _iter1238 != this->success.end(); ++_iter1238)
       {
-        xfer += (*_iter1221).write(oprot);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-      std::vector<FieldSchema> ::const_iterator _iter1201;
-      for (_iter1201 = this->success.begin(); _iter1201 != this->success.end(); ++_iter1201)
-      {
-        xfer += (*_iter1201).write(oprot);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-      std::vector<FieldSchema> ::const_iterator _iter1185;
-      for (_iter1185 = this->success.begin(); _iter1185 != this->success.end(); ++_iter1185)
-      {
-        xfer += (*_iter1185).write(oprot);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      std::vector<FieldSchema> ::const_iterator _iter1161;
-      for (_iter1161 = this->success.begin(); _iter1161 != this->success.end(); ++_iter1161)
-      {
-        xfer += (*_iter1161).write(oprot);
-=======
-      std::vector<FieldSchema> ::const_iterator _iter1119;
-      for (_iter1119 = this->success.begin(); _iter1119 != this->success.end(); ++_iter1119)
-      {
-        xfer += (*_iter1119).write(oprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-      std::vector<FieldSchema> ::const_iterator _iter1123;
-      for (_iter1123 = this->success.begin(); _iter1123 != this->success.end(); ++_iter1123)
-      {
-        xfer += (*_iter1123).write(oprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-      std::vector<FieldSchema> ::const_iterator _iter1119;
-      for (_iter1119 = this->success.begin(); _iter1119 != this->success.end(); ++_iter1119)
-      {
-        xfer += (*_iter1119).write(oprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-      std::vector<FieldSchema> ::const_iterator _iter1123;
-      for (_iter1123 = this->success.begin(); _iter1123 != this->success.end(); ++_iter1123)
-      {
-        xfer += (*_iter1123).write(oprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-=======
-=======
-      std::vector<FieldSchema> ::const_iterator _iter1165;
-      for (_iter1165 = this->success.begin(); _iter1165 != this->success.end(); ++_iter1165)
-      {
-        xfer += (*_iter1165).write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+        xfer += (*_iter1238).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -5787,11 +4547,19 @@ uint32_t ThriftHiveMetastore_get_schema_with_environment_context_result::write(:
 }
 
 
+<<<<<<< HEAD
 ThriftHiveMetastore_create_type_presult::~ThriftHiveMetastore_create_type_presult() throw() {
 }
 
 
 uint32_t ThriftHiveMetastore_create_type_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+=======
+ThriftHiveMetastore_get_schema_with_environment_context_presult::~ThriftHiveMetastore_get_schema_with_environment_context_presult() throw() {
+}
+
+
+uint32_t ThriftHiveMetastore_get_schema_with_environment_context_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -5820,113 +4588,14 @@ uint32_t ThriftHiveMetastore_create_type_presult::read(::apache::thrift::protoco
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1222;
-            ::apache::thrift::protocol::TType _etype1225;
-            xfer += iprot->readListBegin(_etype1225, _size1222);
-            (*(this->success)).resize(_size1222);
-            uint32_t _i1226;
-            for (_i1226 = 0; _i1226 < _size1222; ++_i1226)
+            uint32_t _size1239;
+            ::apache::thrift::protocol::TType _etype1242;
+            xfer += iprot->readListBegin(_etype1242, _size1239);
+            (*(this->success)).resize(_size1239);
+            uint32_t _i1243;
+            for (_i1243 = 0; _i1243 < _size1239; ++_i1243)
             {
-              xfer += (*(this->success))[_i1226].read(iprot);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
-            uint32_t _size1202;
-            ::apache::thrift::protocol::TType _etype1205;
-            xfer += iprot->readListBegin(_etype1205, _size1202);
-            (*(this->success)).resize(_size1202);
-            uint32_t _i1206;
-            for (_i1206 = 0; _i1206 < _size1202; ++_i1206)
-            {
-              xfer += (*(this->success))[_i1206].read(iprot);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            uint32_t _size1186;
-            ::apache::thrift::protocol::TType _etype1189;
-            xfer += iprot->readListBegin(_etype1189, _size1186);
-            (*(this->success)).resize(_size1186);
-            uint32_t _i1190;
-            for (_i1190 = 0; _i1190 < _size1186; ++_i1190)
-            {
-              xfer += (*(this->success))[_i1190].read(iprot);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1162;
-            ::apache::thrift::protocol::TType _etype1165;
-            xfer += iprot->readListBegin(_etype1165, _size1162);
-            (*(this->success)).resize(_size1162);
-            uint32_t _i1166;
-            for (_i1166 = 0; _i1166 < _size1162; ++_i1166)
-            {
-              xfer += (*(this->success))[_i1166].read(iprot);
-=======
-=======
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-            uint32_t _size1120;
-            ::apache::thrift::protocol::TType _etype1123;
-            xfer += iprot->readListBegin(_etype1123, _size1120);
-            (*(this->success)).resize(_size1120);
-            uint32_t _i1124;
-            for (_i1124 = 0; _i1124 < _size1120; ++_i1124)
-            {
-              xfer += (*(this->success))[_i1124].read(iprot);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-            uint32_t _size1124;
-            ::apache::thrift::protocol::TType _etype1127;
-            xfer += iprot->readListBegin(_etype1127, _size1124);
-            (*(this->success)).resize(_size1124);
-            uint32_t _i1128;
-            for (_i1128 = 0; _i1128 < _size1124; ++_i1128)
-            {
-              xfer += (*(this->success))[_i1128].read(iprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-            uint32_t _size1124;
-            ::apache::thrift::protocol::TType _etype1127;
-            xfer += iprot->readListBegin(_etype1127, _size1124);
-            (*(this->success)).resize(_size1124);
-            uint32_t _i1128;
-            for (_i1128 = 0; _i1128 < _size1124; ++_i1128)
-            {
-              xfer += (*(this->success))[_i1128].read(iprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-=======
-=======
-            uint32_t _size1166;
-            ::apache::thrift::protocol::TType _etype1169;
-            xfer += iprot->readListBegin(_etype1169, _size1166);
-            (*(this->success)).resize(_size1166);
-            uint32_t _i1170;
-            for (_i1170 = 0; _i1170 < _size1166; ++_i1170)
-            {
               xfer += (*(this->success))[_i1170].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
@@ -6795,6 +5464,9 @@ uint32_t ThriftHiveMetastore_drop_type_presult::read(::apache::thrift::protocol:
               xfer += (*(this->success))[_i1223].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+              xfer += (*(this->success))[_i1243].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -8958,6 +7630,7 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::read(::apache::
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1256;
             ::apache::thrift::protocol::TType _etype1259;
             xfer += iprot->readListBegin(_etype1259, _size1256);
@@ -9101,6 +7774,16 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::read(::apache::
               xfer += this->primaryKeys[_i1228].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1244;
+            ::apache::thrift::protocol::TType _etype1247;
+            xfer += iprot->readListBegin(_etype1247, _size1244);
+            this->primaryKeys.resize(_size1244);
+            uint32_t _i1248;
+            for (_i1248 = 0; _i1248 < _size1244; ++_i1248)
+            {
+              xfer += this->primaryKeys[_i1248].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -9113,6 +7796,7 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::read(::apache::
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->foreignKeys.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -9263,6 +7947,16 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::read(::apache::
               xfer += this->foreignKeys[_i1233].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1249;
+            ::apache::thrift::protocol::TType _etype1252;
+            xfer += iprot->readListBegin(_etype1252, _size1249);
+            this->foreignKeys.resize(_size1249);
+            uint32_t _i1253;
+            for (_i1253 = 0; _i1253 < _size1249; ++_i1253)
+            {
+              xfer += this->foreignKeys[_i1253].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -9275,6 +7969,7 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::read(::apache::
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->uniqueConstraints.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -9423,6 +8118,16 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::read(::apache::
               xfer += this->uniqueConstraints[_i1238].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1254;
+            ::apache::thrift::protocol::TType _etype1257;
+            xfer += iprot->readListBegin(_etype1257, _size1254);
+            this->uniqueConstraints.resize(_size1254);
+            uint32_t _i1258;
+            for (_i1258 = 0; _i1258 < _size1254; ++_i1258)
+            {
+              xfer += this->uniqueConstraints[_i1258].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -9435,6 +8140,7 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::read(::apache::
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->notNullConstraints.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -9588,6 +8294,16 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::read(::apache::
               xfer += this->notNullConstraints[_i1243].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1259;
+            ::apache::thrift::protocol::TType _etype1262;
+            xfer += iprot->readListBegin(_etype1262, _size1259);
+            this->notNullConstraints.resize(_size1259);
+            uint32_t _i1263;
+            for (_i1263 = 0; _i1263 < _size1259; ++_i1263)
+            {
+              xfer += this->notNullConstraints[_i1263].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -9600,6 +8316,7 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::read(::apache::
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->defaultConstraints.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             uint32_t _size1276;
@@ -9657,6 +8374,16 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::read(::apache::
               xfer += this->defaultConstraints[_i1248].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1264;
+            ::apache::thrift::protocol::TType _etype1267;
+            xfer += iprot->readListBegin(_etype1267, _size1264);
+            this->defaultConstraints.resize(_size1264);
+            uint32_t _i1268;
+            for (_i1268 = 0; _i1268 < _size1264; ++_i1268)
+            {
+              xfer += this->defaultConstraints[_i1268].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -9669,6 +8396,7 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::read(::apache::
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->checkConstraints.clear();
+<<<<<<< HEAD
             uint32_t _size1281;
             ::apache::thrift::protocol::TType _etype1284;
             xfer += iprot->readListBegin(_etype1284, _size1281);
@@ -9677,6 +8405,16 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::read(::apache::
             for (_i1285 = 0; _i1285 < _size1281; ++_i1285)
             {
               xfer += this->checkConstraints[_i1285].read(iprot);
+=======
+            uint32_t _size1269;
+            ::apache::thrift::protocol::TType _etype1272;
+            xfer += iprot->readListBegin(_etype1272, _size1269);
+            this->checkConstraints.resize(_size1269);
+            uint32_t _i1273;
+            for (_i1273 = 0; _i1273 < _size1269; ++_i1273)
+            {
+              xfer += this->checkConstraints[_i1273].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -9709,6 +8447,7 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::write(::apache:
   xfer += oprot->writeFieldBegin("primaryKeys", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->primaryKeys.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -9818,6 +8557,12 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::write(::apache:
       xfer += (*_iter1249).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<SQLPrimaryKey> ::const_iterator _iter1274;
+    for (_iter1274 = this->primaryKeys.begin(); _iter1274 != this->primaryKeys.end(); ++_iter1274)
+    {
+      xfer += (*_iter1274).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -9826,6 +8571,7 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::write(::apache:
   xfer += oprot->writeFieldBegin("foreignKeys", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->foreignKeys.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -9935,6 +8681,12 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::write(::apache:
       xfer += (*_iter1250).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<SQLForeignKey> ::const_iterator _iter1275;
+    for (_iter1275 = this->foreignKeys.begin(); _iter1275 != this->foreignKeys.end(); ++_iter1275)
+    {
+      xfer += (*_iter1275).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -9943,6 +8695,7 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::write(::apache:
   xfer += oprot->writeFieldBegin("uniqueConstraints", ::apache::thrift::protocol::T_LIST, 4);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->uniqueConstraints.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -10052,6 +8805,12 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::write(::apache:
       xfer += (*_iter1251).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<SQLUniqueConstraint> ::const_iterator _iter1276;
+    for (_iter1276 = this->uniqueConstraints.begin(); _iter1276 != this->uniqueConstraints.end(); ++_iter1276)
+    {
+      xfer += (*_iter1276).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -10060,6 +8819,7 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::write(::apache:
   xfer += oprot->writeFieldBegin("notNullConstraints", ::apache::thrift::protocol::T_LIST, 5);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->notNullConstraints.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -10111,6 +8871,12 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::write(::apache:
       xfer += (*_iter1252).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<SQLNotNullConstraint> ::const_iterator _iter1277;
+    for (_iter1277 = this->notNullConstraints.begin(); _iter1277 != this->notNullConstraints.end(); ++_iter1277)
+    {
+      xfer += (*_iter1277).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -10119,6 +8885,7 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::write(::apache:
   xfer += oprot->writeFieldBegin("defaultConstraints", ::apache::thrift::protocol::T_LIST, 6);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->defaultConstraints.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     std::vector<SQLDefaultConstraint> ::const_iterator _iter1290;
@@ -10132,6 +8899,12 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::write(::apache:
 >>>>>>> HIVE-18679 : create/replicate open transaction event
     {
       xfer += (*_iter1290).write(oprot);
+=======
+    std::vector<SQLDefaultConstraint> ::const_iterator _iter1278;
+    for (_iter1278 = this->defaultConstraints.begin(); _iter1278 != this->defaultConstraints.end(); ++_iter1278)
+    {
+      xfer += (*_iter1278).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -10140,6 +8913,7 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::write(::apache:
   xfer += oprot->writeFieldBegin("checkConstraints", ::apache::thrift::protocol::T_LIST, 7);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->checkConstraints.size()));
+<<<<<<< HEAD
     std::vector<SQLCheckConstraint> ::const_iterator _iter1291;
     for (_iter1291 = this->checkConstraints.begin(); _iter1291 != this->checkConstraints.end(); ++_iter1291)
     {
@@ -10228,6 +9002,12 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_args::write(::apache:
       xfer += (*_iter1253).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<SQLCheckConstraint> ::const_iterator _iter1279;
+    for (_iter1279 = this->checkConstraints.begin(); _iter1279 != this->checkConstraints.end(); ++_iter1279)
+    {
+      xfer += (*_iter1279).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -10255,6 +9035,7 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_pargs::write(::apache
   xfer += oprot->writeFieldBegin("primaryKeys", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>((*(this->primaryKeys)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -10364,6 +9145,12 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_pargs::write(::apache
       xfer += (*_iter1254).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<SQLPrimaryKey> ::const_iterator _iter1280;
+    for (_iter1280 = (*(this->primaryKeys)).begin(); _iter1280 != (*(this->primaryKeys)).end(); ++_iter1280)
+    {
+      xfer += (*_iter1280).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -10372,6 +9159,7 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_pargs::write(::apache
   xfer += oprot->writeFieldBegin("foreignKeys", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>((*(this->foreignKeys)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -10481,6 +9269,12 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_pargs::write(::apache
       xfer += (*_iter1255).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<SQLForeignKey> ::const_iterator _iter1281;
+    for (_iter1281 = (*(this->foreignKeys)).begin(); _iter1281 != (*(this->foreignKeys)).end(); ++_iter1281)
+    {
+      xfer += (*_iter1281).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -10489,6 +9283,7 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_pargs::write(::apache
   xfer += oprot->writeFieldBegin("uniqueConstraints", ::apache::thrift::protocol::T_LIST, 4);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>((*(this->uniqueConstraints)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -10598,6 +9393,12 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_pargs::write(::apache
       xfer += (*_iter1256).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<SQLUniqueConstraint> ::const_iterator _iter1282;
+    for (_iter1282 = (*(this->uniqueConstraints)).begin(); _iter1282 != (*(this->uniqueConstraints)).end(); ++_iter1282)
+    {
+      xfer += (*_iter1282).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -10606,6 +9407,7 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_pargs::write(::apache
   xfer += oprot->writeFieldBegin("notNullConstraints", ::apache::thrift::protocol::T_LIST, 5);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>((*(this->notNullConstraints)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -10657,6 +9459,12 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_pargs::write(::apache
       xfer += (*_iter1257).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<SQLNotNullConstraint> ::const_iterator _iter1283;
+    for (_iter1283 = (*(this->notNullConstraints)).begin(); _iter1283 != (*(this->notNullConstraints)).end(); ++_iter1283)
+    {
+      xfer += (*_iter1283).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -10665,6 +9473,7 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_pargs::write(::apache
   xfer += oprot->writeFieldBegin("defaultConstraints", ::apache::thrift::protocol::T_LIST, 6);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>((*(this->defaultConstraints)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
     std::vector<SQLDefaultConstraint> ::const_iterator _iter1296;
@@ -10678,6 +9487,12 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_pargs::write(::apache
 >>>>>>> HIVE-18679 : create/replicate open transaction event
     {
       xfer += (*_iter1296).write(oprot);
+=======
+    std::vector<SQLDefaultConstraint> ::const_iterator _iter1284;
+    for (_iter1284 = (*(this->defaultConstraints)).begin(); _iter1284 != (*(this->defaultConstraints)).end(); ++_iter1284)
+    {
+      xfer += (*_iter1284).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -10686,6 +9501,7 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_pargs::write(::apache
   xfer += oprot->writeFieldBegin("checkConstraints", ::apache::thrift::protocol::T_LIST, 7);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>((*(this->checkConstraints)).size()));
+<<<<<<< HEAD
     std::vector<SQLCheckConstraint> ::const_iterator _iter1297;
     for (_iter1297 = (*(this->checkConstraints)).begin(); _iter1297 != (*(this->checkConstraints)).end(); ++_iter1297)
     {
@@ -10774,6 +9590,12 @@ uint32_t ThriftHiveMetastore_create_table_with_constraints_pargs::write(::apache
       xfer += (*_iter1258).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<SQLCheckConstraint> ::const_iterator _iter1285;
+    for (_iter1285 = (*(this->checkConstraints)).begin(); _iter1285 != (*(this->checkConstraints)).end(); ++_iter1285)
+    {
+      xfer += (*_iter1285).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -12944,6 +11766,7 @@ uint32_t ThriftHiveMetastore_truncate_table_args::read(::apache::thrift::protoco
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1298;
             ::apache::thrift::protocol::TType _etype1301;
             xfer += iprot->readListBegin(_etype1301, _size1298);
@@ -13024,6 +11847,16 @@ uint32_t ThriftHiveMetastore_truncate_table_args::read(::apache::thrift::protoco
               xfer += iprot->readString(this->partNames[_i1263]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1286;
+            ::apache::thrift::protocol::TType _etype1289;
+            xfer += iprot->readListBegin(_etype1289, _size1286);
+            this->partNames.resize(_size1286);
+            uint32_t _i1290;
+            for (_i1290 = 0; _i1290 < _size1286; ++_i1290)
+            {
+              xfer += iprot->readString(this->partNames[_i1290]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -13481,48 +12314,10 @@ uint32_t ThriftHiveMetastore_get_tables_args::write(::apache::thrift::protocol::
   xfer += oprot->writeFieldBegin("partNames", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->partNames.size()));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    std::vector<std::string> ::const_iterator _iter1285;
-    for (_iter1285 = this->partNames.begin(); _iter1285 != this->partNames.end(); ++_iter1285)
+    std::vector<std::string> ::const_iterator _iter1291;
+    for (_iter1291 = this->partNames.begin(); _iter1291 != this->partNames.end(); ++_iter1291)
     {
-      xfer += oprot->writeString((*_iter1285));
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-    std::vector<std::string> ::const_iterator _iter1258;
-    for (_iter1258 = this->partNames.begin(); _iter1258 != this->partNames.end(); ++_iter1258)
-    {
-      xfer += oprot->writeString((*_iter1258));
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-    std::vector<std::string> ::const_iterator _iter1242;
-    for (_iter1242 = this->partNames.begin(); _iter1242 != this->partNames.end(); ++_iter1242)
-    {
-      xfer += oprot->writeString((*_iter1242));
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-    std::vector<std::string> ::const_iterator _iter1215;
-    for (_iter1215 = this->partNames.begin(); _iter1215 != this->partNames.end(); ++_iter1215)
-    {
-      xfer += oprot->writeString((*_iter1215));
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-    std::vector<std::string> ::const_iterator _iter1264;
-    for (_iter1264 = this->partNames.begin(); _iter1264 != this->partNames.end(); ++_iter1264)
-    {
-      xfer += oprot->writeString((*_iter1264));
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+      xfer += oprot->writeString((*_iter1291));
     }
     xfer += oprot->writeListEnd();
   }
@@ -13555,48 +12350,10 @@ uint32_t ThriftHiveMetastore_get_tables_pargs::write(::apache::thrift::protocol:
   xfer += oprot->writeFieldBegin("partNames", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->partNames)).size()));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    std::vector<std::string> ::const_iterator _iter1286;
-    for (_iter1286 = (*(this->partNames)).begin(); _iter1286 != (*(this->partNames)).end(); ++_iter1286)
+    std::vector<std::string> ::const_iterator _iter1292;
+    for (_iter1292 = (*(this->partNames)).begin(); _iter1292 != (*(this->partNames)).end(); ++_iter1292)
     {
-      xfer += oprot->writeString((*_iter1286));
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-    std::vector<std::string> ::const_iterator _iter1259;
-    for (_iter1259 = (*(this->partNames)).begin(); _iter1259 != (*(this->partNames)).end(); ++_iter1259)
-    {
-      xfer += oprot->writeString((*_iter1259));
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-    std::vector<std::string> ::const_iterator _iter1243;
-    for (_iter1243 = (*(this->partNames)).begin(); _iter1243 != (*(this->partNames)).end(); ++_iter1243)
-    {
-      xfer += oprot->writeString((*_iter1243));
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-    std::vector<std::string> ::const_iterator _iter1216;
-    for (_iter1216 = (*(this->partNames)).begin(); _iter1216 != (*(this->partNames)).end(); ++_iter1216)
-    {
-      xfer += oprot->writeString((*_iter1216));
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-    std::vector<std::string> ::const_iterator _iter1265;
-    for (_iter1265 = (*(this->partNames)).begin(); _iter1265 != (*(this->partNames)).end(); ++_iter1265)
-    {
-      xfer += oprot->writeString((*_iter1265));
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+      xfer += oprot->writeString((*_iter1292));
     }
     xfer += oprot->writeListEnd();
   }
@@ -14150,6 +12907,7 @@ uint32_t ThriftHiveMetastore_get_tables_by_type_result::read(::apache::thrift::p
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1316;
             ::apache::thrift::protocol::TType _etype1319;
             xfer += iprot->readListBegin(_etype1319, _size1316);
@@ -14296,9 +13054,16 @@ uint32_t ThriftHiveMetastore_get_tables_by_type_result::read(::apache::thrift::p
             this->success.resize(_size1266);
             uint32_t _i1270;
             for (_i1270 = 0; _i1270 < _size1266; ++_i1270)
+=======
+            uint32_t _size1293;
+            ::apache::thrift::protocol::TType _etype1296;
+            xfer += iprot->readListBegin(_etype1296, _size1293);
+            this->success.resize(_size1293);
+            uint32_t _i1297;
+            for (_i1297 = 0; _i1297 < _size1293; ++_i1297)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             {
-              xfer += iprot->readString(this->success[_i1270]);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+              xfer += iprot->readString(this->success[_i1297]);
             }
             xfer += iprot->readListEnd();
           }
@@ -14337,6 +13102,7 @@ uint32_t ThriftHiveMetastore_get_tables_by_type_result::write(::apache::thrift::
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -14444,6 +13210,12 @@ uint32_t ThriftHiveMetastore_get_tables_by_type_result::write(::apache::thrift::
       {
         xfer += oprot->writeString((*_iter1271));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<std::string> ::const_iterator _iter1298;
+      for (_iter1298 = this->success.begin(); _iter1298 != this->success.end(); ++_iter1298)
+      {
+        xfer += oprot->writeString((*_iter1298));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -14488,6 +13260,7 @@ uint32_t ThriftHiveMetastore_get_tables_by_type_presult::read(::apache::thrift::
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -14636,9 +13409,16 @@ uint32_t ThriftHiveMetastore_get_tables_by_type_presult::read(::apache::thrift::
             (*(this->success)).resize(_size1272);
             uint32_t _i1276;
             for (_i1276 = 0; _i1276 < _size1272; ++_i1276)
+=======
+            uint32_t _size1299;
+            ::apache::thrift::protocol::TType _etype1302;
+            xfer += iprot->readListBegin(_etype1302, _size1299);
+            (*(this->success)).resize(_size1299);
+            uint32_t _i1303;
+            for (_i1303 = 0; _i1303 < _size1299; ++_i1303)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             {
-              xfer += iprot->readString((*(this->success))[_i1276]);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+              xfer += iprot->readString((*(this->success))[_i1303]);
             }
             xfer += iprot->readListEnd();
           }
@@ -14780,6 +13560,7 @@ uint32_t ThriftHiveMetastore_get_materialized_views_for_rewriting_result::read(:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
@@ -14912,9 +13693,16 @@ uint32_t ThriftHiveMetastore_get_materialized_views_for_rewriting_result::read(:
             this->success.resize(_size1277);
             uint32_t _i1281;
             for (_i1281 = 0; _i1281 < _size1277; ++_i1281)
+=======
+            uint32_t _size1304;
+            ::apache::thrift::protocol::TType _etype1307;
+            xfer += iprot->readListBegin(_etype1307, _size1304);
+            this->success.resize(_size1304);
+            uint32_t _i1308;
+            for (_i1308 = 0; _i1308 < _size1304; ++_i1308)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             {
-              xfer += iprot->readString(this->success[_i1281]);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+              xfer += iprot->readString(this->success[_i1308]);
             }
             xfer += iprot->readListEnd();
           }
@@ -14953,6 +13741,7 @@ uint32_t ThriftHiveMetastore_get_materialized_views_for_rewriting_result::write(
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -15045,6 +13834,12 @@ uint32_t ThriftHiveMetastore_get_materialized_views_for_rewriting_result::write(
       {
         xfer += oprot->writeString((*_iter1282));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<std::string> ::const_iterator _iter1309;
+      for (_iter1309 = this->success.begin(); _iter1309 != this->success.end(); ++_iter1309)
+      {
+        xfer += oprot->writeString((*_iter1309));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -15089,6 +13884,7 @@ uint32_t ThriftHiveMetastore_get_materialized_views_for_rewriting_presult::read(
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -15193,6 +13989,16 @@ uint32_t ThriftHiveMetastore_get_materialized_views_for_rewriting_presult::read(
               xfer += iprot->readString((*(this->success))[_i1287]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1310;
+            ::apache::thrift::protocol::TType _etype1313;
+            xfer += iprot->readListBegin(_etype1313, _size1310);
+            (*(this->success)).resize(_size1310);
+            uint32_t _i1314;
+            for (_i1314 = 0; _i1314 < _size1310; ++_i1314)
+            {
+              xfer += iprot->readString((*(this->success))[_i1314]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -15440,6 +14246,7 @@ uint32_t ThriftHiveMetastore_get_table_meta_result::read(::apache::thrift::proto
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> HIVE-18679 : create/replicate open transaction event
@@ -15590,9 +14397,16 @@ uint32_t ThriftHiveMetastore_get_table_meta_result::read(::apache::thrift::proto
             this->success.resize(_size1288);
             uint32_t _i1292;
             for (_i1292 = 0; _i1292 < _size1288; ++_i1292)
+=======
+            uint32_t _size1315;
+            ::apache::thrift::protocol::TType _etype1318;
+            xfer += iprot->readListBegin(_etype1318, _size1315);
+            this->success.resize(_size1315);
+            uint32_t _i1319;
+            for (_i1319 = 0; _i1319 < _size1315; ++_i1319)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             {
-              xfer += iprot->readString(this->success[_i1292]);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+              xfer += iprot->readString(this->success[_i1319]);
             }
             xfer += iprot->readListEnd();
           }
@@ -15630,6 +14444,7 @@ uint32_t ThriftHiveMetastore_get_materialized_views_for_rewriting_result::write(
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
@@ -15677,6 +14492,13 @@ uint32_t ThriftHiveMetastore_get_materialized_views_for_rewriting_result::write(
         xfer += oprot->writeString((*_iter1293));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
+      std::vector<std::string> ::const_iterator _iter1320;
+      for (_iter1320 = this->success.begin(); _iter1320 != this->success.end(); ++_iter1320)
+      {
+        xfer += oprot->writeString((*_iter1320));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -15721,6 +14543,7 @@ uint32_t ThriftHiveMetastore_get_materialized_views_for_rewriting_presult::read(
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
             uint32_t _size1333;
@@ -15851,6 +14674,16 @@ uint32_t ThriftHiveMetastore_get_materialized_views_for_rewriting_presult::read(
               xfer += iprot->readString((*(this->success))[_i1298]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1321;
+            ::apache::thrift::protocol::TType _etype1324;
+            xfer += iprot->readListBegin(_etype1324, _size1321);
+            (*(this->success)).resize(_size1321);
+            uint32_t _i1325;
+            for (_i1325 = 0; _i1325 < _size1321; ++_i1325)
+            {
+              xfer += iprot->readString((*(this->success))[_i1325]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -15925,6 +14758,7 @@ uint32_t ThriftHiveMetastore_get_table_meta_args::read(::apache::thrift::protoco
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->tbl_types.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
             uint32_t _size1338;
             ::apache::thrift::protocol::TType _etype1341;
@@ -16064,6 +14898,16 @@ uint32_t ThriftHiveMetastore_get_table_meta_args::read(::apache::thrift::protoco
               xfer += iprot->readString(this->tbl_types[_i1303]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1326;
+            ::apache::thrift::protocol::TType _etype1329;
+            xfer += iprot->readListBegin(_etype1329, _size1326);
+            this->tbl_types.resize(_size1326);
+            uint32_t _i1330;
+            for (_i1330 = 0; _i1330 < _size1326; ++_i1330)
+            {
+              xfer += iprot->readString(this->tbl_types[_i1330]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -16100,6 +14944,7 @@ uint32_t ThriftHiveMetastore_get_table_meta_args::write(::apache::thrift::protoc
   xfer += oprot->writeFieldBegin("tbl_types", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->tbl_types.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter1343;
     for (_iter1343 = this->tbl_types.begin(); _iter1343 != this->tbl_types.end(); ++_iter1343)
@@ -16200,6 +15045,12 @@ uint32_t ThriftHiveMetastore_get_table_meta_args::write(::apache::thrift::protoc
       xfer += oprot->writeString((*_iter1304));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1331;
+    for (_iter1331 = this->tbl_types.begin(); _iter1331 != this->tbl_types.end(); ++_iter1331)
+    {
+      xfer += oprot->writeString((*_iter1331));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -16231,6 +15082,7 @@ uint32_t ThriftHiveMetastore_get_table_meta_pargs::write(::apache::thrift::proto
   xfer += oprot->writeFieldBegin("tbl_types", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->tbl_types)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter1344;
     for (_iter1344 = (*(this->tbl_types)).begin(); _iter1344 != (*(this->tbl_types)).end(); ++_iter1344)
@@ -16331,6 +15183,12 @@ uint32_t ThriftHiveMetastore_get_table_meta_pargs::write(::apache::thrift::proto
       xfer += oprot->writeString((*_iter1305));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1332;
+    for (_iter1332 = (*(this->tbl_types)).begin(); _iter1332 != (*(this->tbl_types)).end(); ++_iter1332)
+    {
+      xfer += oprot->writeString((*_iter1332));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -16371,6 +15229,7 @@ uint32_t ThriftHiveMetastore_get_table_meta_result::read(::apache::thrift::proto
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
             uint32_t _size1345;
             ::apache::thrift::protocol::TType _etype1348;
@@ -16512,6 +15371,16 @@ uint32_t ThriftHiveMetastore_get_table_meta_result::read(::apache::thrift::proto
               xfer += this->success[_i1310].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1333;
+            ::apache::thrift::protocol::TType _etype1336;
+            xfer += iprot->readListBegin(_etype1336, _size1333);
+            this->success.resize(_size1333);
+            uint32_t _i1337;
+            for (_i1337 = 0; _i1337 < _size1333; ++_i1337)
+            {
+              xfer += this->success[_i1337].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -16550,6 +15419,7 @@ uint32_t ThriftHiveMetastore_get_table_meta_result::write(::apache::thrift::prot
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
       std::vector<TableMeta> ::const_iterator _iter1350;
       for (_iter1350 = this->success.begin(); _iter1350 != this->success.end(); ++_iter1350)
@@ -16649,6 +15519,12 @@ uint32_t ThriftHiveMetastore_get_table_meta_result::write(::apache::thrift::prot
         xfer += (*_iter1311).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<TableMeta> ::const_iterator _iter1338;
+      for (_iter1338 = this->success.begin(); _iter1338 != this->success.end(); ++_iter1338)
+      {
+        xfer += (*_iter1338).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -16693,6 +15569,7 @@ uint32_t ThriftHiveMetastore_get_table_meta_presult::read(::apache::thrift::prot
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
             uint32_t _size1351;
             ::apache::thrift::protocol::TType _etype1354;
@@ -16836,6 +15713,16 @@ uint32_t ThriftHiveMetastore_get_table_meta_presult::read(::apache::thrift::prot
               xfer += (*(this->success))[_i1316].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1339;
+            ::apache::thrift::protocol::TType _etype1342;
+            xfer += iprot->readListBegin(_etype1342, _size1339);
+            (*(this->success)).resize(_size1339);
+            uint32_t _i1343;
+            for (_i1343 = 0; _i1343 < _size1339; ++_i1343)
+            {
+              xfer += (*(this->success))[_i1343].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -16973,6 +15860,7 @@ uint32_t ThriftHiveMetastore_get_all_tables_result::read(::apache::thrift::proto
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -17126,6 +16014,16 @@ uint32_t ThriftHiveMetastore_get_all_tables_result::read(::apache::thrift::proto
               xfer += iprot->readString(this->success[_i1321]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1344;
+            ::apache::thrift::protocol::TType _etype1347;
+            xfer += iprot->readListBegin(_etype1347, _size1344);
+            this->success.resize(_size1344);
+            uint32_t _i1348;
+            for (_i1348 = 0; _i1348 < _size1344; ++_i1348)
+            {
+              xfer += iprot->readString(this->success[_i1348]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -17164,6 +16062,7 @@ uint32_t ThriftHiveMetastore_get_all_tables_result::write(::apache::thrift::prot
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -17273,6 +16172,12 @@ uint32_t ThriftHiveMetastore_get_all_tables_result::write(::apache::thrift::prot
         xfer += oprot->writeString((*_iter1322));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<std::string> ::const_iterator _iter1349;
+      for (_iter1349 = this->success.begin(); _iter1349 != this->success.end(); ++_iter1349)
+      {
+        xfer += oprot->writeString((*_iter1349));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -17317,6 +16222,7 @@ uint32_t ThriftHiveMetastore_get_all_tables_presult::read(::apache::thrift::prot
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -17464,6 +16370,16 @@ uint32_t ThriftHiveMetastore_get_all_tables_presult::read(::apache::thrift::prot
               xfer += iprot->readString((*(this->success))[_i1327]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1350;
+            ::apache::thrift::protocol::TType _etype1353;
+            xfer += iprot->readListBegin(_etype1353, _size1350);
+            (*(this->success)).resize(_size1350);
+            uint32_t _i1354;
+            for (_i1354 = 0; _i1354 < _size1350; ++_i1354)
+            {
+              xfer += iprot->readString((*(this->success))[_i1354]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -17777,6 +16693,7 @@ uint32_t ThriftHiveMetastore_get_table_objects_by_name_args::read(::apache::thri
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1367;
             ::apache::thrift::protocol::TType _etype1370;
             xfer += iprot->readListBegin(_etype1370, _size1367);
@@ -17923,6 +16840,16 @@ uint32_t ThriftHiveMetastore_get_table_objects_by_name_args::read(::apache::thri
               xfer += iprot->readString(this->tbl_names[_i1332]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1355;
+            ::apache::thrift::protocol::TType _etype1358;
+            xfer += iprot->readListBegin(_etype1358, _size1355);
+            this->tbl_names.resize(_size1355);
+            uint32_t _i1359;
+            for (_i1359 = 0; _i1359 < _size1355; ++_i1359)
+            {
+              xfer += iprot->readString(this->tbl_names[_i1359]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -17955,6 +16882,7 @@ uint32_t ThriftHiveMetastore_get_table_objects_by_name_args::write(::apache::thr
   xfer += oprot->writeFieldBegin("tbl_names", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->tbl_names.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -18064,6 +16992,12 @@ uint32_t ThriftHiveMetastore_get_table_objects_by_name_args::write(::apache::thr
       xfer += oprot->writeString((*_iter1333));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1360;
+    for (_iter1360 = this->tbl_names.begin(); _iter1360 != this->tbl_names.end(); ++_iter1360)
+    {
+      xfer += oprot->writeString((*_iter1360));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -18091,6 +17025,7 @@ uint32_t ThriftHiveMetastore_get_table_objects_by_name_pargs::write(::apache::th
   xfer += oprot->writeFieldBegin("tbl_names", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->tbl_names)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -18200,6 +17135,12 @@ uint32_t ThriftHiveMetastore_get_table_objects_by_name_pargs::write(::apache::th
       xfer += oprot->writeString((*_iter1334));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1361;
+    for (_iter1361 = (*(this->tbl_names)).begin(); _iter1361 != (*(this->tbl_names)).end(); ++_iter1361)
+    {
+      xfer += oprot->writeString((*_iter1361));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -18240,6 +17181,7 @@ uint32_t ThriftHiveMetastore_get_table_objects_by_name_result::read(::apache::th
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -18388,6 +17330,16 @@ uint32_t ThriftHiveMetastore_get_table_objects_by_name_result::read(::apache::th
               xfer += this->success[_i1339].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1362;
+            ::apache::thrift::protocol::TType _etype1365;
+            xfer += iprot->readListBegin(_etype1365, _size1362);
+            this->success.resize(_size1362);
+            uint32_t _i1366;
+            for (_i1366 = 0; _i1366 < _size1362; ++_i1366)
+            {
+              xfer += this->success[_i1366].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -18418,6 +17370,7 @@ uint32_t ThriftHiveMetastore_get_table_objects_by_name_result::write(::apache::t
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -18527,6 +17480,12 @@ uint32_t ThriftHiveMetastore_get_table_objects_by_name_result::write(::apache::t
         xfer += (*_iter1340).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<Table> ::const_iterator _iter1367;
+      for (_iter1367 = this->success.begin(); _iter1367 != this->success.end(); ++_iter1367)
+      {
+        xfer += (*_iter1367).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -18567,6 +17526,7 @@ uint32_t ThriftHiveMetastore_get_table_objects_by_name_presult::read(::apache::t
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -18715,6 +17675,16 @@ uint32_t ThriftHiveMetastore_get_table_objects_by_name_presult::read(::apache::t
               xfer += (*(this->success))[_i1345].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1368;
+            ::apache::thrift::protocol::TType _etype1371;
+            xfer += iprot->readListBegin(_etype1371, _size1368);
+            (*(this->success)).resize(_size1368);
+            uint32_t _i1372;
+            for (_i1372 = 0; _i1372 < _size1368; ++_i1372)
+            {
+              xfer += (*(this->success))[_i1372].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -19251,6 +18221,7 @@ uint32_t ThriftHiveMetastore_get_materialization_invalidation_info_args::read(::
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1385;
             ::apache::thrift::protocol::TType _etype1388;
             xfer += iprot->readListBegin(_etype1388, _size1385);
@@ -19395,6 +18366,16 @@ uint32_t ThriftHiveMetastore_get_materialization_invalidation_info_args::read(::
               xfer += iprot->readString(this->tbl_names[_i1350]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1373;
+            ::apache::thrift::protocol::TType _etype1376;
+            xfer += iprot->readListBegin(_etype1376, _size1373);
+            this->tbl_names.resize(_size1373);
+            uint32_t _i1377;
+            for (_i1377 = 0; _i1377 < _size1373; ++_i1377)
+            {
+              xfer += iprot->readString(this->tbl_names[_i1377]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -19427,6 +18408,7 @@ uint32_t ThriftHiveMetastore_get_materialization_invalidation_info_args::write(:
   xfer += oprot->writeFieldBegin("tbl_names", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->tbl_names.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -19536,6 +18518,12 @@ uint32_t ThriftHiveMetastore_get_materialization_invalidation_info_args::write(:
       xfer += oprot->writeString((*_iter1351));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1378;
+    for (_iter1378 = this->tbl_names.begin(); _iter1378 != this->tbl_names.end(); ++_iter1378)
+    {
+      xfer += oprot->writeString((*_iter1378));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -19563,6 +18551,7 @@ uint32_t ThriftHiveMetastore_get_materialization_invalidation_info_pargs::write(
   xfer += oprot->writeFieldBegin("tbl_names", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->tbl_names)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -19672,6 +18661,12 @@ uint32_t ThriftHiveMetastore_get_materialization_invalidation_info_pargs::write(
       xfer += oprot->writeString((*_iter1352));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1379;
+    for (_iter1379 = (*(this->tbl_names)).begin(); _iter1379 != (*(this->tbl_names)).end(); ++_iter1379)
+    {
+      xfer += oprot->writeString((*_iter1379));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -19712,6 +18707,7 @@ uint32_t ThriftHiveMetastore_get_materialization_invalidation_info_result::read(
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->success.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -20126,12 +19122,19 @@ uint32_t ThriftHiveMetastore_get_materialization_invalidation_info_presult::read
             xfer += iprot->readMapBegin(_ktype1354, _vtype1355, _size1353);
             uint32_t _i1357;
             for (_i1357 = 0; _i1357 < _size1353; ++_i1357)
+=======
+            uint32_t _size1380;
+            ::apache::thrift::protocol::TType _ktype1381;
+            ::apache::thrift::protocol::TType _vtype1382;
+            xfer += iprot->readMapBegin(_ktype1381, _vtype1382, _size1380);
+            uint32_t _i1384;
+            for (_i1384 = 0; _i1384 < _size1380; ++_i1384)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             {
-              std::string _key1358;
-              xfer += iprot->readString(_key1358);
-              Materialization& _val1359 = this->success[_key1358];
-              xfer += _val1359.read(iprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+              std::string _key1385;
+              xfer += iprot->readString(_key1385);
+              Materialization& _val1386 = this->success[_key1385];
+              xfer += _val1386.read(iprot);
             }
             xfer += iprot->readMapEnd();
           }
@@ -20186,103 +19189,11 @@ uint32_t ThriftHiveMetastore_get_materialization_invalidation_info_result::write
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_MAP, 0);
     {
       xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      std::map<std::string, Materialization> ::const_iterator _iter1381;
-      for (_iter1381 = this->success.begin(); _iter1381 != this->success.end(); ++_iter1381)
+      std::map<std::string, Materialization> ::const_iterator _iter1387;
+      for (_iter1387 = this->success.begin(); _iter1387 != this->success.end(); ++_iter1387)
       {
-        xfer += oprot->writeString(_iter1381->first);
-        xfer += _iter1381->second.write(oprot);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-      std::map<std::string, Materialization> ::const_iterator _iter1354;
-      for (_iter1354 = this->success.begin(); _iter1354 != this->success.end(); ++_iter1354)
-      {
-        xfer += oprot->writeString(_iter1354->first);
-        xfer += _iter1354->second.write(oprot);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-      std::map<std::string, Materialization> ::const_iterator _iter1338;
-      for (_iter1338 = this->success.begin(); _iter1338 != this->success.end(); ++_iter1338)
-      {
-        xfer += oprot->writeString(_iter1338->first);
-        xfer += _iter1338->second.write(oprot);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      std::map<std::string, Materialization> ::const_iterator _iter1307;
-      for (_iter1307 = this->success.begin(); _iter1307 != this->success.end(); ++_iter1307)
-      {
-        xfer += oprot->writeString(_iter1307->first);
-        xfer += _iter1307->second.write(oprot);
-=======
-      std::map<std::string, Materialization> ::const_iterator _iter1265;
-      for (_iter1265 = this->success.begin(); _iter1265 != this->success.end(); ++_iter1265)
-      {
-        xfer += oprot->writeString(_iter1265->first);
-        xfer += _iter1265->second.write(oprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-      std::map<std::string, Materialization> ::const_iterator _iter1269;
-      for (_iter1269 = this->success.begin(); _iter1269 != this->success.end(); ++_iter1269)
-      {
-        xfer += oprot->writeString(_iter1269->first);
-        xfer += _iter1269->second.write(oprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-      std::map<std::string, Materialization> ::const_iterator _iter1265;
-      for (_iter1265 = this->success.begin(); _iter1265 != this->success.end(); ++_iter1265)
-      {
-        xfer += oprot->writeString(_iter1265->first);
-        xfer += _iter1265->second.write(oprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-      std::map<std::string, Materialization> ::const_iterator _iter1269;
-      for (_iter1269 = this->success.begin(); _iter1269 != this->success.end(); ++_iter1269)
-      {
-        xfer += oprot->writeString(_iter1269->first);
-        xfer += _iter1269->second.write(oprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-=======
-=======
-      std::map<std::string, Materialization> ::const_iterator _iter1311;
-      for (_iter1311 = this->success.begin(); _iter1311 != this->success.end(); ++_iter1311)
-      {
-        xfer += oprot->writeString(_iter1311->first);
-        xfer += _iter1311->second.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-      std::map<std::string, Materialization> ::const_iterator _iter1360;
-      for (_iter1360 = this->success.begin(); _iter1360 != this->success.end(); ++_iter1360)
-      {
-        xfer += oprot->writeString(_iter1360->first);
-        xfer += _iter1360->second.write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+        xfer += oprot->writeString(_iter1387->first);
+        xfer += _iter1387->second.write(oprot);
       }
       xfer += oprot->writeMapEnd();
     }
@@ -20335,6 +19246,7 @@ uint32_t ThriftHiveMetastore_get_materialization_invalidation_info_presult::read
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
@@ -20720,12 +19632,19 @@ uint32_t ThriftHiveMetastore_update_creation_metadata_result::read(::apache::thr
             xfer += iprot->readMapBegin(_ktype1362, _vtype1363, _size1361);
             uint32_t _i1365;
             for (_i1365 = 0; _i1365 < _size1361; ++_i1365)
+=======
+            uint32_t _size1388;
+            ::apache::thrift::protocol::TType _ktype1389;
+            ::apache::thrift::protocol::TType _vtype1390;
+            xfer += iprot->readMapBegin(_ktype1389, _vtype1390, _size1388);
+            uint32_t _i1392;
+            for (_i1392 = 0; _i1392 < _size1388; ++_i1392)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             {
-              std::string _key1366;
-              xfer += iprot->readString(_key1366);
-              Materialization& _val1367 = (*(this->success))[_key1366];
-              xfer += _val1367.read(iprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+              std::string _key1393;
+              xfer += iprot->readString(_key1393);
+              Materialization& _val1394 = (*(this->success))[_key1393];
+              xfer += _val1394.read(iprot);
             }
             xfer += iprot->readMapEnd();
           }
@@ -21393,6 +20312,7 @@ uint32_t ThriftHiveMetastore_get_table_names_by_filter_presult::read(::apache::t
       case 0:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
+<<<<<<< HEAD
             (*(this->success)).clear();
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
@@ -21422,9 +20342,17 @@ uint32_t ThriftHiveMetastore_get_table_names_by_filter_presult::read(::apache::t
             this->success.resize(_size1368);
             uint32_t _i1372;
             for (_i1372 = 0; _i1372 < _size1368; ++_i1372)
+=======
+            this->success.clear();
+            uint32_t _size1395;
+            ::apache::thrift::protocol::TType _etype1398;
+            xfer += iprot->readListBegin(_etype1398, _size1395);
+            this->success.resize(_size1395);
+            uint32_t _i1399;
+            for (_i1399 = 0; _i1399 < _size1395; ++_i1399)
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             {
-              xfer += iprot->readString(this->success[_i1372]);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+              xfer += iprot->readString(this->success[_i1399]);
             }
             xfer += iprot->readListEnd();
           }
@@ -21479,48 +20407,10 @@ uint32_t ThriftHiveMetastore_get_table_names_by_filter_result::write(::apache::t
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1394;
-      for (_iter1394 = this->success.begin(); _iter1394 != this->success.end(); ++_iter1394)
+      std::vector<std::string> ::const_iterator _iter1400;
+      for (_iter1400 = this->success.begin(); _iter1400 != this->success.end(); ++_iter1400)
       {
-        xfer += oprot->writeString((*_iter1394));
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1367;
-      for (_iter1367 = this->success.begin(); _iter1367 != this->success.end(); ++_iter1367)
-      {
-        xfer += oprot->writeString((*_iter1367));
-=======
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-      std::vector<std::string> ::const_iterator _iter1351;
-      for (_iter1351 = this->success.begin(); _iter1351 != this->success.end(); ++_iter1351)
-      {
-        xfer += oprot->writeString((*_iter1351));
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-      std::vector<std::string> ::const_iterator _iter1324;
-      for (_iter1324 = this->success.begin(); _iter1324 != this->success.end(); ++_iter1324)
-      {
-        xfer += oprot->writeString((*_iter1324));
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-      std::vector<std::string> ::const_iterator _iter1373;
-      for (_iter1373 = this->success.begin(); _iter1373 != this->success.end(); ++_iter1373)
-      {
-        xfer += oprot->writeString((*_iter1373));
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+        xfer += oprot->writeString((*_iter1400));
       }
       xfer += oprot->writeListEnd();
     }
@@ -21573,6 +20463,7 @@ uint32_t ThriftHiveMetastore_get_table_names_by_filter_presult::read(::apache::t
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
@@ -21643,6 +20534,16 @@ uint32_t ThriftHiveMetastore_get_table_names_by_filter_presult::read(::apache::t
               xfer += iprot->readString((*(this->success))[_i1378]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1401;
+            ::apache::thrift::protocol::TType _etype1404;
+            xfer += iprot->readListBegin(_etype1404, _size1401);
+            (*(this->success)).resize(_size1401);
+            uint32_t _i1405;
+            for (_i1405 = 0; _i1405 < _size1401; ++_i1405)
+            {
+              xfer += iprot->readString((*(this->success))[_i1405]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -22980,6 +21881,7 @@ uint32_t ThriftHiveMetastore_add_partitions_args::read(::apache::thrift::protoco
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1418;
             ::apache::thrift::protocol::TType _etype1421;
             xfer += iprot->readListBegin(_etype1421, _size1418);
@@ -23126,6 +22028,16 @@ uint32_t ThriftHiveMetastore_add_partitions_args::read(::apache::thrift::protoco
               xfer += this->new_parts[_i1383].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1406;
+            ::apache::thrift::protocol::TType _etype1409;
+            xfer += iprot->readListBegin(_etype1409, _size1406);
+            this->new_parts.resize(_size1406);
+            uint32_t _i1410;
+            for (_i1410 = 0; _i1410 < _size1406; ++_i1410)
+            {
+              xfer += this->new_parts[_i1410].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -23154,6 +22066,7 @@ uint32_t ThriftHiveMetastore_add_partitions_args::write(::apache::thrift::protoc
   xfer += oprot->writeFieldBegin("new_parts", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->new_parts.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -23263,6 +22176,12 @@ uint32_t ThriftHiveMetastore_add_partitions_args::write(::apache::thrift::protoc
       xfer += (*_iter1384).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<Partition> ::const_iterator _iter1411;
+    for (_iter1411 = this->new_parts.begin(); _iter1411 != this->new_parts.end(); ++_iter1411)
+    {
+      xfer += (*_iter1411).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -23286,6 +22205,7 @@ uint32_t ThriftHiveMetastore_add_partitions_pargs::write(::apache::thrift::proto
   xfer += oprot->writeFieldBegin("new_parts", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>((*(this->new_parts)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -23395,6 +22315,12 @@ uint32_t ThriftHiveMetastore_add_partitions_pargs::write(::apache::thrift::proto
       xfer += (*_iter1385).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<Partition> ::const_iterator _iter1412;
+    for (_iter1412 = (*(this->new_parts)).begin(); _iter1412 != (*(this->new_parts)).end(); ++_iter1412)
+    {
+      xfer += (*_iter1412).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -23607,6 +22533,7 @@ uint32_t ThriftHiveMetastore_add_partitions_pspec_args::read(::apache::thrift::p
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1425;
             ::apache::thrift::protocol::TType _etype1428;
             xfer += iprot->readListBegin(_etype1428, _size1425);
@@ -23753,6 +22680,16 @@ uint32_t ThriftHiveMetastore_add_partitions_pspec_args::read(::apache::thrift::p
               xfer += this->new_parts[_i1390].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1413;
+            ::apache::thrift::protocol::TType _etype1416;
+            xfer += iprot->readListBegin(_etype1416, _size1413);
+            this->new_parts.resize(_size1413);
+            uint32_t _i1417;
+            for (_i1417 = 0; _i1417 < _size1413; ++_i1417)
+            {
+              xfer += this->new_parts[_i1417].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -23781,6 +22718,7 @@ uint32_t ThriftHiveMetastore_add_partitions_pspec_args::write(::apache::thrift::
   xfer += oprot->writeFieldBegin("new_parts", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->new_parts.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -23890,6 +22828,12 @@ uint32_t ThriftHiveMetastore_add_partitions_pspec_args::write(::apache::thrift::
       xfer += (*_iter1391).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<PartitionSpec> ::const_iterator _iter1418;
+    for (_iter1418 = this->new_parts.begin(); _iter1418 != this->new_parts.end(); ++_iter1418)
+    {
+      xfer += (*_iter1418).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -23913,6 +22857,7 @@ uint32_t ThriftHiveMetastore_add_partitions_pspec_pargs::write(::apache::thrift:
   xfer += oprot->writeFieldBegin("new_parts", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>((*(this->new_parts)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -24021,6 +22966,12 @@ uint32_t ThriftHiveMetastore_add_partitions_pspec_pargs::write(::apache::thrift:
       xfer += (*_iter1392).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<PartitionSpec> ::const_iterator _iter1419;
+    for (_iter1419 = (*(this->new_parts)).begin(); _iter1419 != (*(this->new_parts)).end(); ++_iter1419)
+    {
+      xfer += (*_iter1419).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -24249,6 +23200,7 @@ uint32_t ThriftHiveMetastore_append_partition_args::read(::apache::thrift::proto
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1432;
             ::apache::thrift::protocol::TType _etype1435;
             xfer += iprot->readListBegin(_etype1435, _size1432);
@@ -24393,6 +23345,16 @@ uint32_t ThriftHiveMetastore_append_partition_args::read(::apache::thrift::proto
               xfer += iprot->readString(this->part_vals[_i1397]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1420;
+            ::apache::thrift::protocol::TType _etype1423;
+            xfer += iprot->readListBegin(_etype1423, _size1420);
+            this->part_vals.resize(_size1420);
+            uint32_t _i1424;
+            for (_i1424 = 0; _i1424 < _size1420; ++_i1424)
+            {
+              xfer += iprot->readString(this->part_vals[_i1424]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -24429,6 +23391,7 @@ uint32_t ThriftHiveMetastore_append_partition_args::write(::apache::thrift::prot
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->part_vals.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -24537,6 +23500,12 @@ uint32_t ThriftHiveMetastore_append_partition_args::write(::apache::thrift::prot
       xfer += oprot->writeString((*_iter1398));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1425;
+    for (_iter1425 = this->part_vals.begin(); _iter1425 != this->part_vals.end(); ++_iter1425)
+    {
+      xfer += oprot->writeString((*_iter1425));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -24568,6 +23537,7 @@ uint32_t ThriftHiveMetastore_append_partition_pargs::write(::apache::thrift::pro
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->part_vals)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -24677,6 +23647,12 @@ uint32_t ThriftHiveMetastore_append_partition_pargs::write(::apache::thrift::pro
       xfer += oprot->writeString((*_iter1399));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1426;
+    for (_iter1426 = (*(this->part_vals)).begin(); _iter1426 != (*(this->part_vals)).end(); ++_iter1426)
+    {
+      xfer += oprot->writeString((*_iter1426));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -25152,6 +24128,7 @@ uint32_t ThriftHiveMetastore_append_partition_with_environment_context_args::rea
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1439;
             ::apache::thrift::protocol::TType _etype1442;
             xfer += iprot->readListBegin(_etype1442, _size1439);
@@ -25296,6 +24273,16 @@ uint32_t ThriftHiveMetastore_append_partition_with_environment_context_args::rea
               xfer += iprot->readString(this->part_vals[_i1404]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1427;
+            ::apache::thrift::protocol::TType _etype1430;
+            xfer += iprot->readListBegin(_etype1430, _size1427);
+            this->part_vals.resize(_size1427);
+            uint32_t _i1431;
+            for (_i1431 = 0; _i1431 < _size1427; ++_i1431)
+            {
+              xfer += iprot->readString(this->part_vals[_i1431]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -25340,6 +24327,7 @@ uint32_t ThriftHiveMetastore_append_partition_with_environment_context_args::wri
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->part_vals.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -25449,6 +24437,12 @@ uint32_t ThriftHiveMetastore_append_partition_with_environment_context_args::wri
       xfer += oprot->writeString((*_iter1405));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1432;
+    for (_iter1432 = this->part_vals.begin(); _iter1432 != this->part_vals.end(); ++_iter1432)
+    {
+      xfer += oprot->writeString((*_iter1432));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -25484,6 +24478,7 @@ uint32_t ThriftHiveMetastore_append_partition_with_environment_context_pargs::wr
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->part_vals)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -25593,6 +24588,12 @@ uint32_t ThriftHiveMetastore_append_partition_with_environment_context_pargs::wr
       xfer += oprot->writeString((*_iter1406));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1433;
+    for (_iter1433 = (*(this->part_vals)).begin(); _iter1433 != (*(this->part_vals)).end(); ++_iter1433)
+    {
+      xfer += oprot->writeString((*_iter1433));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -26399,6 +25400,7 @@ uint32_t ThriftHiveMetastore_drop_partition_args::read(::apache::thrift::protoco
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1446;
             ::apache::thrift::protocol::TType _etype1449;
             xfer += iprot->readListBegin(_etype1449, _size1446);
@@ -26543,6 +25545,16 @@ uint32_t ThriftHiveMetastore_drop_partition_args::read(::apache::thrift::protoco
               xfer += iprot->readString(this->part_vals[_i1411]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1434;
+            ::apache::thrift::protocol::TType _etype1437;
+            xfer += iprot->readListBegin(_etype1437, _size1434);
+            this->part_vals.resize(_size1434);
+            uint32_t _i1438;
+            for (_i1438 = 0; _i1438 < _size1434; ++_i1438)
+            {
+              xfer += iprot->readString(this->part_vals[_i1438]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -26587,6 +25599,7 @@ uint32_t ThriftHiveMetastore_drop_partition_args::write(::apache::thrift::protoc
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->part_vals.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -26696,6 +25709,12 @@ uint32_t ThriftHiveMetastore_drop_partition_args::write(::apache::thrift::protoc
       xfer += oprot->writeString((*_iter1412));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1439;
+    for (_iter1439 = this->part_vals.begin(); _iter1439 != this->part_vals.end(); ++_iter1439)
+    {
+      xfer += oprot->writeString((*_iter1439));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -26731,6 +25750,7 @@ uint32_t ThriftHiveMetastore_drop_partition_pargs::write(::apache::thrift::proto
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->part_vals)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -26840,6 +25860,12 @@ uint32_t ThriftHiveMetastore_drop_partition_pargs::write(::apache::thrift::proto
       xfer += oprot->writeString((*_iter1413));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1440;
+    for (_iter1440 = (*(this->part_vals)).begin(); _iter1440 != (*(this->part_vals)).end(); ++_iter1440)
+    {
+      xfer += oprot->writeString((*_iter1440));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -27052,6 +26078,7 @@ uint32_t ThriftHiveMetastore_drop_partition_with_environment_context_args::read(
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1453;
             ::apache::thrift::protocol::TType _etype1456;
             xfer += iprot->readListBegin(_etype1456, _size1453);
@@ -27198,6 +26225,16 @@ uint32_t ThriftHiveMetastore_drop_partition_with_environment_context_args::read(
               xfer += iprot->readString(this->part_vals[_i1418]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1441;
+            ::apache::thrift::protocol::TType _etype1444;
+            xfer += iprot->readListBegin(_etype1444, _size1441);
+            this->part_vals.resize(_size1441);
+            uint32_t _i1445;
+            for (_i1445 = 0; _i1445 < _size1441; ++_i1445)
+            {
+              xfer += iprot->readString(this->part_vals[_i1445]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -27250,6 +26287,7 @@ uint32_t ThriftHiveMetastore_drop_partition_with_environment_context_args::write
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->part_vals.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -27359,6 +26397,12 @@ uint32_t ThriftHiveMetastore_drop_partition_with_environment_context_args::write
       xfer += oprot->writeString((*_iter1419));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1446;
+    for (_iter1446 = this->part_vals.begin(); _iter1446 != this->part_vals.end(); ++_iter1446)
+    {
+      xfer += oprot->writeString((*_iter1446));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -27398,6 +26442,7 @@ uint32_t ThriftHiveMetastore_drop_partition_with_environment_context_pargs::writ
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->part_vals)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -27507,6 +26552,12 @@ uint32_t ThriftHiveMetastore_drop_partition_with_environment_context_pargs::writ
       xfer += oprot->writeString((*_iter1420));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1447;
+    for (_iter1447 = (*(this->part_vals)).begin(); _iter1447 != (*(this->part_vals)).end(); ++_iter1447)
+    {
+      xfer += oprot->writeString((*_iter1447));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -28516,6 +27567,7 @@ uint32_t ThriftHiveMetastore_get_partition_args::read(::apache::thrift::protocol
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1460;
             ::apache::thrift::protocol::TType _etype1463;
             xfer += iprot->readListBegin(_etype1463, _size1460);
@@ -28660,6 +27712,16 @@ uint32_t ThriftHiveMetastore_get_partition_args::read(::apache::thrift::protocol
               xfer += iprot->readString(this->part_vals[_i1425]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1448;
+            ::apache::thrift::protocol::TType _etype1451;
+            xfer += iprot->readListBegin(_etype1451, _size1448);
+            this->part_vals.resize(_size1448);
+            uint32_t _i1452;
+            for (_i1452 = 0; _i1452 < _size1448; ++_i1452)
+            {
+              xfer += iprot->readString(this->part_vals[_i1452]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -28696,6 +27758,7 @@ uint32_t ThriftHiveMetastore_get_partition_args::write(::apache::thrift::protoco
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->part_vals.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -28805,6 +27868,12 @@ uint32_t ThriftHiveMetastore_get_partition_args::write(::apache::thrift::protoco
       xfer += oprot->writeString((*_iter1426));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1453;
+    for (_iter1453 = this->part_vals.begin(); _iter1453 != this->part_vals.end(); ++_iter1453)
+    {
+      xfer += oprot->writeString((*_iter1453));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -28836,6 +27905,7 @@ uint32_t ThriftHiveMetastore_get_partition_pargs::write(::apache::thrift::protoc
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->part_vals)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -28944,6 +28014,12 @@ uint32_t ThriftHiveMetastore_get_partition_pargs::write(::apache::thrift::protoc
       xfer += oprot->writeString((*_iter1427));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1454;
+    for (_iter1454 = (*(this->part_vals)).begin(); _iter1454 != (*(this->part_vals)).end(); ++_iter1454)
+    {
+      xfer += oprot->writeString((*_iter1454));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -29136,6 +28212,7 @@ uint32_t ThriftHiveMetastore_exchange_partition_args::read(::apache::thrift::pro
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1467;
             ::apache::thrift::protocol::TType _ktype1468;
             ::apache::thrift::protocol::TType _vtype1469;
@@ -29309,6 +28386,19 @@ uint32_t ThriftHiveMetastore_exchange_partition_args::read(::apache::thrift::pro
               xfer += iprot->readString(_val1434);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1455;
+            ::apache::thrift::protocol::TType _ktype1456;
+            ::apache::thrift::protocol::TType _vtype1457;
+            xfer += iprot->readMapBegin(_ktype1456, _vtype1457, _size1455);
+            uint32_t _i1459;
+            for (_i1459 = 0; _i1459 < _size1455; ++_i1459)
+            {
+              std::string _key1460;
+              xfer += iprot->readString(_key1460);
+              std::string& _val1461 = this->partitionSpecs[_key1460];
+              xfer += iprot->readString(_val1461);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readMapEnd();
           }
@@ -29369,6 +28459,7 @@ uint32_t ThriftHiveMetastore_exchange_partition_args::write(::apache::thrift::pr
   xfer += oprot->writeFieldBegin("partitionSpecs", ::apache::thrift::protocol::T_MAP, 1);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->partitionSpecs.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -29489,6 +28580,13 @@ uint32_t ThriftHiveMetastore_exchange_partition_args::write(::apache::thrift::pr
       xfer += oprot->writeString(_iter1435->second);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::map<std::string, std::string> ::const_iterator _iter1462;
+    for (_iter1462 = this->partitionSpecs.begin(); _iter1462 != this->partitionSpecs.end(); ++_iter1462)
+    {
+      xfer += oprot->writeString(_iter1462->first);
+      xfer += oprot->writeString(_iter1462->second);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeMapEnd();
   }
@@ -29528,6 +28626,7 @@ uint32_t ThriftHiveMetastore_exchange_partition_pargs::write(::apache::thrift::p
   xfer += oprot->writeFieldBegin("partitionSpecs", ::apache::thrift::protocol::T_MAP, 1);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->partitionSpecs)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -29646,6 +28745,13 @@ uint32_t ThriftHiveMetastore_exchange_partition_pargs::write(::apache::thrift::p
       xfer += oprot->writeString(_iter1436->second);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::map<std::string, std::string> ::const_iterator _iter1463;
+    for (_iter1463 = (*(this->partitionSpecs)).begin(); _iter1463 != (*(this->partitionSpecs)).end(); ++_iter1463)
+    {
+      xfer += oprot->writeString(_iter1463->first);
+      xfer += oprot->writeString(_iter1463->second);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeMapEnd();
   }
@@ -29894,6 +29000,7 @@ uint32_t ThriftHiveMetastore_exchange_partitions_args::read(::apache::thrift::pr
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1476;
             ::apache::thrift::protocol::TType _ktype1477;
             ::apache::thrift::protocol::TType _vtype1478;
@@ -30067,6 +29174,19 @@ uint32_t ThriftHiveMetastore_exchange_partitions_args::read(::apache::thrift::pr
               xfer += iprot->readString(_val1443);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1464;
+            ::apache::thrift::protocol::TType _ktype1465;
+            ::apache::thrift::protocol::TType _vtype1466;
+            xfer += iprot->readMapBegin(_ktype1465, _vtype1466, _size1464);
+            uint32_t _i1468;
+            for (_i1468 = 0; _i1468 < _size1464; ++_i1468)
+            {
+              std::string _key1469;
+              xfer += iprot->readString(_key1469);
+              std::string& _val1470 = this->partitionSpecs[_key1469];
+              xfer += iprot->readString(_val1470);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readMapEnd();
           }
@@ -30127,6 +29247,7 @@ uint32_t ThriftHiveMetastore_exchange_partitions_args::write(::apache::thrift::p
   xfer += oprot->writeFieldBegin("partitionSpecs", ::apache::thrift::protocol::T_MAP, 1);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->partitionSpecs.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -30245,6 +29366,13 @@ uint32_t ThriftHiveMetastore_exchange_partitions_args::write(::apache::thrift::p
       xfer += oprot->writeString(_iter1444->second);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::map<std::string, std::string> ::const_iterator _iter1471;
+    for (_iter1471 = this->partitionSpecs.begin(); _iter1471 != this->partitionSpecs.end(); ++_iter1471)
+    {
+      xfer += oprot->writeString(_iter1471->first);
+      xfer += oprot->writeString(_iter1471->second);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeMapEnd();
   }
@@ -30284,6 +29412,7 @@ uint32_t ThriftHiveMetastore_exchange_partitions_pargs::write(::apache::thrift::
   xfer += oprot->writeFieldBegin("partitionSpecs", ::apache::thrift::protocol::T_MAP, 1);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->partitionSpecs)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -30402,6 +29531,13 @@ uint32_t ThriftHiveMetastore_exchange_partitions_pargs::write(::apache::thrift::
       xfer += oprot->writeString(_iter1445->second);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::map<std::string, std::string> ::const_iterator _iter1472;
+    for (_iter1472 = (*(this->partitionSpecs)).begin(); _iter1472 != (*(this->partitionSpecs)).end(); ++_iter1472)
+    {
+      xfer += oprot->writeString(_iter1472->first);
+      xfer += oprot->writeString(_iter1472->second);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeMapEnd();
   }
@@ -30458,6 +29594,7 @@ uint32_t ThriftHiveMetastore_exchange_partitions_result::read(::apache::thrift::
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -30606,6 +29743,16 @@ uint32_t ThriftHiveMetastore_exchange_partitions_result::read(::apache::thrift::
               xfer += this->success[_i1450].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1473;
+            ::apache::thrift::protocol::TType _etype1476;
+            xfer += iprot->readListBegin(_etype1476, _size1473);
+            this->success.resize(_size1473);
+            uint32_t _i1477;
+            for (_i1477 = 0; _i1477 < _size1473; ++_i1477)
+            {
+              xfer += this->success[_i1477].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -30668,6 +29815,7 @@ uint32_t ThriftHiveMetastore_exchange_partitions_result::write(::apache::thrift:
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -30776,6 +29924,12 @@ uint32_t ThriftHiveMetastore_exchange_partitions_result::write(::apache::thrift:
         xfer += (*_iter1451).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<Partition> ::const_iterator _iter1478;
+      for (_iter1478 = this->success.begin(); _iter1478 != this->success.end(); ++_iter1478)
+      {
+        xfer += (*_iter1478).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -30832,6 +29986,7 @@ uint32_t ThriftHiveMetastore_exchange_partitions_presult::read(::apache::thrift:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -30979,6 +30134,16 @@ uint32_t ThriftHiveMetastore_exchange_partitions_presult::read(::apache::thrift:
               xfer += (*(this->success))[_i1456].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1479;
+            ::apache::thrift::protocol::TType _etype1482;
+            xfer += iprot->readListBegin(_etype1482, _size1479);
+            (*(this->success)).resize(_size1479);
+            uint32_t _i1483;
+            for (_i1483 = 0; _i1483 < _size1479; ++_i1483)
+            {
+              xfer += (*(this->success))[_i1483].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -31077,6 +30242,7 @@ uint32_t ThriftHiveMetastore_get_partition_with_auth_args::read(::apache::thrift
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->part_vals.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -31227,6 +30393,16 @@ uint32_t ThriftHiveMetastore_get_partition_with_auth_args::read(::apache::thrift
               xfer += iprot->readString(this->part_vals[_i1461]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1484;
+            ::apache::thrift::protocol::TType _etype1487;
+            xfer += iprot->readListBegin(_etype1487, _size1484);
+            this->part_vals.resize(_size1484);
+            uint32_t _i1488;
+            for (_i1488 = 0; _i1488 < _size1484; ++_i1488)
+            {
+              xfer += iprot->readString(this->part_vals[_i1488]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -31247,6 +30423,7 @@ uint32_t ThriftHiveMetastore_get_partition_with_auth_args::read(::apache::thrift
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->group_names.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -31395,6 +30572,16 @@ uint32_t ThriftHiveMetastore_get_partition_with_auth_args::read(::apache::thrift
               xfer += iprot->readString(this->group_names[_i1466]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1489;
+            ::apache::thrift::protocol::TType _etype1492;
+            xfer += iprot->readListBegin(_etype1492, _size1489);
+            this->group_names.resize(_size1489);
+            uint32_t _i1493;
+            for (_i1493 = 0; _i1493 < _size1489; ++_i1493)
+            {
+              xfer += iprot->readString(this->group_names[_i1493]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -31431,6 +30618,7 @@ uint32_t ThriftHiveMetastore_get_partition_with_auth_args::write(::apache::thrif
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->part_vals.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -31540,6 +30728,12 @@ uint32_t ThriftHiveMetastore_get_partition_with_auth_args::write(::apache::thrif
       xfer += oprot->writeString((*_iter1467));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1494;
+    for (_iter1494 = this->part_vals.begin(); _iter1494 != this->part_vals.end(); ++_iter1494)
+    {
+      xfer += oprot->writeString((*_iter1494));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -31552,6 +30746,7 @@ uint32_t ThriftHiveMetastore_get_partition_with_auth_args::write(::apache::thrif
   xfer += oprot->writeFieldBegin("group_names", ::apache::thrift::protocol::T_LIST, 5);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->group_names.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -31661,6 +30856,12 @@ uint32_t ThriftHiveMetastore_get_partition_with_auth_args::write(::apache::thrif
       xfer += oprot->writeString((*_iter1468));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1495;
+    for (_iter1495 = this->group_names.begin(); _iter1495 != this->group_names.end(); ++_iter1495)
+    {
+      xfer += oprot->writeString((*_iter1495));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -31692,6 +30893,7 @@ uint32_t ThriftHiveMetastore_get_partition_with_auth_pargs::write(::apache::thri
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->part_vals)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -31801,6 +31003,12 @@ uint32_t ThriftHiveMetastore_get_partition_with_auth_pargs::write(::apache::thri
       xfer += oprot->writeString((*_iter1469));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1496;
+    for (_iter1496 = (*(this->part_vals)).begin(); _iter1496 != (*(this->part_vals)).end(); ++_iter1496)
+    {
+      xfer += oprot->writeString((*_iter1496));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -31813,6 +31021,7 @@ uint32_t ThriftHiveMetastore_get_partition_with_auth_pargs::write(::apache::thri
   xfer += oprot->writeFieldBegin("group_names", ::apache::thrift::protocol::T_LIST, 5);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->group_names)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -31922,6 +31131,12 @@ uint32_t ThriftHiveMetastore_get_partition_with_auth_pargs::write(::apache::thri
       xfer += oprot->writeString((*_iter1470));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1497;
+    for (_iter1497 = (*(this->group_names)).begin(); _iter1497 != (*(this->group_names)).end(); ++_iter1497)
+    {
+      xfer += oprot->writeString((*_iter1497));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -32306,6 +31521,7 @@ uint32_t ThriftHiveMetastore_get_partition_by_name_presult::read(::apache::thrif
       case 0:
         if (ftype == ::apache::thrift::protocol::T_STRUCT) {
           xfer += (*(this->success)).read(iprot);
+<<<<<<< HEAD
           this->__isset.success = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -32600,6 +31816,8 @@ uint32_t ThriftHiveMetastore_get_partitions_result::read(::apache::thrift::proto
             }
             xfer += iprot->readListEnd();
           }
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           this->__isset.success = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -32633,15 +31851,33 @@ uint32_t ThriftHiveMetastore_get_partitions_result::read(::apache::thrift::proto
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_get_partitions_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
+ThriftHiveMetastore_get_partitions_args::~ThriftHiveMetastore_get_partitions_args() throw() {
+}
+
+
+uint32_t ThriftHiveMetastore_get_partitions_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
 
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_partitions_result");
+  xfer += iprot->readStructBegin(fname);
 
-  if (this->__isset.success) {
-    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
     {
+<<<<<<< HEAD
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -32715,28 +31951,99 @@ uint32_t ThriftHiveMetastore_get_partitions_result::write(::apache::thrift::prot
 >>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
       }
       xfer += oprot->writeListEnd();
+=======
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->db_name);
+          this->__isset.db_name = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->tbl_name);
+          this->__isset.tbl_name = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_I16) {
+          xfer += iprot->readI16(this->max_parts);
+          this->__isset.max_parts = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
-    xfer += oprot->writeFieldEnd();
-  } else if (this->__isset.o1) {
-    xfer += oprot->writeFieldBegin("o1", ::apache::thrift::protocol::T_STRUCT, 1);
-    xfer += this->o1.write(oprot);
-    xfer += oprot->writeFieldEnd();
-  } else if (this->__isset.o2) {
-    xfer += oprot->writeFieldBegin("o2", ::apache::thrift::protocol::T_STRUCT, 2);
-    xfer += this->o2.write(oprot);
-    xfer += oprot->writeFieldEnd();
+    xfer += iprot->readFieldEnd();
   }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t ThriftHiveMetastore_get_partitions_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_partitions_args");
+
+  xfer += oprot->writeFieldBegin("db_name", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->db_name);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tbl_name", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->tbl_name);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("max_parts", ::apache::thrift::protocol::T_I16, 3);
+  xfer += oprot->writeI16(this->max_parts);
+  xfer += oprot->writeFieldEnd();
+
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
 }
 
 
-ThriftHiveMetastore_get_partitions_presult::~ThriftHiveMetastore_get_partitions_presult() throw() {
+ThriftHiveMetastore_get_partitions_pargs::~ThriftHiveMetastore_get_partitions_pargs() throw() {
 }
 
 
-uint32_t ThriftHiveMetastore_get_partitions_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_get_partitions_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_partitions_pargs");
+
+  xfer += oprot->writeFieldBegin("db_name", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString((*(this->db_name)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tbl_name", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString((*(this->tbl_name)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("max_parts", ::apache::thrift::protocol::T_I16, 3);
+  xfer += oprot->writeI16((*(this->max_parts)));
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+
+ThriftHiveMetastore_get_partitions_result::~ThriftHiveMetastore_get_partitions_result() throw() {
+}
+
+
+uint32_t ThriftHiveMetastore_get_partitions_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -32760,122 +32067,15 @@ uint32_t ThriftHiveMetastore_get_partitions_presult::read(::apache::thrift::prot
       case 0:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
-            (*(this->success)).clear();
-<<<<<<< HEAD
-<<<<<<< HEAD
+            this->success.clear();
             uint32_t _size1498;
             ::apache::thrift::protocol::TType _etype1501;
             xfer += iprot->readListBegin(_etype1501, _size1498);
-            (*(this->success)).resize(_size1498);
+            this->success.resize(_size1498);
             uint32_t _i1502;
             for (_i1502 = 0; _i1502 < _size1498; ++_i1502)
             {
-              xfer += (*(this->success))[_i1502].read(iprot);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
-            uint32_t _size1471;
-            ::apache::thrift::protocol::TType _etype1474;
-            xfer += iprot->readListBegin(_etype1474, _size1471);
-            (*(this->success)).resize(_size1471);
-            uint32_t _i1475;
-            for (_i1475 = 0; _i1475 < _size1471; ++_i1475)
-            {
-              xfer += (*(this->success))[_i1475].read(iprot);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-            uint32_t _size1455;
-            ::apache::thrift::protocol::TType _etype1458;
-            xfer += iprot->readListBegin(_etype1458, _size1455);
-            (*(this->success)).resize(_size1455);
-            uint32_t _i1459;
-            for (_i1459 = 0; _i1459 < _size1455; ++_i1459)
-            {
-              xfer += (*(this->success))[_i1459].read(iprot);
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1424;
-            ::apache::thrift::protocol::TType _etype1427;
-            xfer += iprot->readListBegin(_etype1427, _size1424);
-            (*(this->success)).resize(_size1424);
-            uint32_t _i1428;
-            for (_i1428 = 0; _i1428 < _size1424; ++_i1428)
-            {
-              xfer += (*(this->success))[_i1428].read(iprot);
-=======
-            uint32_t _size1382;
-            ::apache::thrift::protocol::TType _etype1385;
-            xfer += iprot->readListBegin(_etype1385, _size1382);
-            (*(this->success)).resize(_size1382);
-            uint32_t _i1386;
-            for (_i1386 = 0; _i1386 < _size1382; ++_i1386)
-            {
-              xfer += (*(this->success))[_i1386].read(iprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-            uint32_t _size1386;
-            ::apache::thrift::protocol::TType _etype1389;
-            xfer += iprot->readListBegin(_etype1389, _size1386);
-            (*(this->success)).resize(_size1386);
-            uint32_t _i1390;
-            for (_i1390 = 0; _i1390 < _size1386; ++_i1390)
-<<<<<<< HEAD
-            {
-              xfer += (*(this->success))[_i1390].read(iprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-            uint32_t _size1382;
-            ::apache::thrift::protocol::TType _etype1385;
-            xfer += iprot->readListBegin(_etype1385, _size1382);
-            (*(this->success)).resize(_size1382);
-            uint32_t _i1386;
-            for (_i1386 = 0; _i1386 < _size1382; ++_i1386)
-            {
-              xfer += (*(this->success))[_i1386].read(iprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-            uint32_t _size1422;
-            ::apache::thrift::protocol::TType _etype1425;
-            xfer += iprot->readListBegin(_etype1425, _size1422);
-            this->success.resize(_size1422);
-            uint32_t _i1426;
-            for (_i1426 = 0; _i1426 < _size1422; ++_i1426)
-            {
-<<<<<<< HEAD
-              xfer += (*(this->success))[_i1390].read(iprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-              xfer += this->success[_i1426].read(iprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-=======
-            uint32_t _size1471;
-            ::apache::thrift::protocol::TType _etype1474;
-            xfer += iprot->readListBegin(_etype1474, _size1471);
-            this->success.resize(_size1471);
-            uint32_t _i1475;
-            for (_i1475 = 0; _i1475 < _size1471; ++_i1475)
-            {
-              xfer += this->success[_i1475].read(iprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+              xfer += this->success[_i1502].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -32922,9 +32122,10 @@ uint32_t ThriftHiveMetastore_get_partitions_result::write(::apache::thrift::prot
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<Partition> ::const_iterator _iter1476;
-      for (_iter1476 = this->success.begin(); _iter1476 != this->success.end(); ++_iter1476)
+      std::vector<Partition> ::const_iterator _iter1503;
+      for (_iter1503 = this->success.begin(); _iter1503 != this->success.end(); ++_iter1503)
       {
+<<<<<<< HEAD
 <<<<<<< HEAD
         xfer += (*_iter1423).write(oprot);
 =======
@@ -32968,6 +32169,9 @@ uint32_t ThriftHiveMetastore_get_partitions_result::write(::apache::thrift::prot
 =======
         xfer += (*_iter1476).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        xfer += (*_iter1503).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -33016,6 +32220,7 @@ uint32_t ThriftHiveMetastore_get_partitions_presult::read(::apache::thrift::prot
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -33164,6 +32369,16 @@ uint32_t ThriftHiveMetastore_get_partitions_presult::read(::apache::thrift::prot
               xfer += (*(this->success))[_i1481].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1504;
+            ::apache::thrift::protocol::TType _etype1507;
+            xfer += iprot->readListBegin(_etype1507, _size1504);
+            (*(this->success)).resize(_size1504);
+            uint32_t _i1508;
+            for (_i1508 = 0; _i1508 < _size1504; ++_i1508)
+            {
+              xfer += (*(this->success))[_i1508].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -33262,6 +32477,7 @@ uint32_t ThriftHiveMetastore_get_partitions_with_auth_args::read(::apache::thrif
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->group_names.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -33409,6 +32625,16 @@ uint32_t ThriftHiveMetastore_get_partitions_with_auth_args::read(::apache::thrif
               xfer += iprot->readString(this->group_names[_i1486]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1509;
+            ::apache::thrift::protocol::TType _etype1512;
+            xfer += iprot->readListBegin(_etype1512, _size1509);
+            this->group_names.resize(_size1509);
+            uint32_t _i1513;
+            for (_i1513 = 0; _i1513 < _size1509; ++_i1513)
+            {
+              xfer += iprot->readString(this->group_names[_i1513]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -33453,6 +32679,7 @@ uint32_t ThriftHiveMetastore_get_partitions_with_auth_args::write(::apache::thri
   xfer += oprot->writeFieldBegin("group_names", ::apache::thrift::protocol::T_LIST, 5);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->group_names.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -33562,6 +32789,12 @@ uint32_t ThriftHiveMetastore_get_partitions_with_auth_args::write(::apache::thri
       xfer += oprot->writeString((*_iter1487));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1514;
+    for (_iter1514 = this->group_names.begin(); _iter1514 != this->group_names.end(); ++_iter1514)
+    {
+      xfer += oprot->writeString((*_iter1514));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -33601,6 +32834,7 @@ uint32_t ThriftHiveMetastore_get_partitions_with_auth_pargs::write(::apache::thr
   xfer += oprot->writeFieldBegin("group_names", ::apache::thrift::protocol::T_LIST, 5);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->group_names)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -33710,6 +32944,12 @@ uint32_t ThriftHiveMetastore_get_partitions_with_auth_pargs::write(::apache::thr
       xfer += oprot->writeString((*_iter1488));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1515;
+    for (_iter1515 = (*(this->group_names)).begin(); _iter1515 != (*(this->group_names)).end(); ++_iter1515)
+    {
+      xfer += oprot->writeString((*_iter1515));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -33750,6 +32990,7 @@ uint32_t ThriftHiveMetastore_get_partitions_with_auth_result::read(::apache::thr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -33900,6 +33141,16 @@ uint32_t ThriftHiveMetastore_get_partitions_with_auth_result::read(::apache::thr
               xfer += this->success[_i1493].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1516;
+            ::apache::thrift::protocol::TType _etype1519;
+            xfer += iprot->readListBegin(_etype1519, _size1516);
+            this->success.resize(_size1516);
+            uint32_t _i1520;
+            for (_i1520 = 0; _i1520 < _size1516; ++_i1520)
+            {
+              xfer += this->success[_i1520].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -33946,6 +33197,7 @@ uint32_t ThriftHiveMetastore_get_partitions_with_auth_result::write(::apache::th
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -34054,6 +33306,12 @@ uint32_t ThriftHiveMetastore_get_partitions_with_auth_result::write(::apache::th
         xfer += (*_iter1494).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<Partition> ::const_iterator _iter1521;
+      for (_iter1521 = this->success.begin(); _iter1521 != this->success.end(); ++_iter1521)
+      {
+        xfer += (*_iter1521).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -34102,6 +33360,7 @@ uint32_t ThriftHiveMetastore_get_partitions_with_auth_presult::read(::apache::th
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -34249,6 +33508,16 @@ uint32_t ThriftHiveMetastore_get_partitions_with_auth_presult::read(::apache::th
               xfer += (*(this->success))[_i1499].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1522;
+            ::apache::thrift::protocol::TType _etype1525;
+            xfer += iprot->readListBegin(_etype1525, _size1522);
+            (*(this->success)).resize(_size1522);
+            uint32_t _i1526;
+            for (_i1526 = 0; _i1526 < _size1522; ++_i1526)
+            {
+              xfer += (*(this->success))[_i1526].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -34430,6 +33699,7 @@ uint32_t ThriftHiveMetastore_get_partitions_pspec_result::read(::apache::thrift:
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1539;
             ::apache::thrift::protocol::TType _etype1542;
             xfer += iprot->readListBegin(_etype1542, _size1539);
@@ -34573,6 +33843,16 @@ uint32_t ThriftHiveMetastore_get_partitions_pspec_result::read(::apache::thrift:
               xfer += this->success[_i1504].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1527;
+            ::apache::thrift::protocol::TType _etype1530;
+            xfer += iprot->readListBegin(_etype1530, _size1527);
+            this->success.resize(_size1527);
+            uint32_t _i1531;
+            for (_i1531 = 0; _i1531 < _size1527; ++_i1531)
+            {
+              xfer += this->success[_i1531].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -34619,6 +33899,7 @@ uint32_t ThriftHiveMetastore_get_partitions_pspec_result::write(::apache::thrift
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -34728,6 +34009,12 @@ uint32_t ThriftHiveMetastore_get_partitions_pspec_result::write(::apache::thrift
         xfer += (*_iter1505).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<PartitionSpec> ::const_iterator _iter1532;
+      for (_iter1532 = this->success.begin(); _iter1532 != this->success.end(); ++_iter1532)
+      {
+        xfer += (*_iter1532).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -34776,6 +34063,7 @@ uint32_t ThriftHiveMetastore_get_partitions_pspec_presult::read(::apache::thrift
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -34926,6 +34214,16 @@ uint32_t ThriftHiveMetastore_get_partitions_pspec_presult::read(::apache::thrift
               xfer += (*(this->success))[_i1510].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1533;
+            ::apache::thrift::protocol::TType _etype1536;
+            xfer += iprot->readListBegin(_etype1536, _size1533);
+            (*(this->success)).resize(_size1533);
+            uint32_t _i1537;
+            for (_i1537 = 0; _i1537 < _size1533; ++_i1537)
+            {
+              xfer += (*(this->success))[_i1537].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -35103,6 +34401,7 @@ uint32_t ThriftHiveMetastore_get_partition_names_result::read(::apache::thrift::
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -35430,36 +34729,16 @@ uint32_t ThriftHiveMetastore_get_partition_names_presult::read(::apache::thrift:
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 <<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             uint32_t _size1538;
             ::apache::thrift::protocol::TType _etype1541;
             xfer += iprot->readListBegin(_etype1541, _size1538);
-            (*(this->success)).resize(_size1538);
+            this->success.resize(_size1538);
             uint32_t _i1542;
             for (_i1542 = 0; _i1542 < _size1538; ++_i1542)
             {
-              xfer += iprot->readString((*(this->success))[_i1542]);
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
-            uint32_t _size1511;
-            ::apache::thrift::protocol::TType _etype1514;
-            xfer += iprot->readListBegin(_etype1514, _size1511);
-            (*(this->success)).resize(_size1511);
-            uint32_t _i1515;
-            for (_i1515 = 0; _i1515 < _size1511; ++_i1515)
-            {
-=======
-            uint32_t _size1462;
-            ::apache::thrift::protocol::TType _etype1465;
-            xfer += iprot->readListBegin(_etype1465, _size1462);
-            this->success.resize(_size1462);
-            uint32_t _i1466;
-            for (_i1466 = 0; _i1466 < _size1462; ++_i1466)
-            {
-              xfer += iprot->readString(this->success[_i1466]);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+              xfer += iprot->readString(this->success[_i1542]);
             }
             xfer += iprot->readListEnd();
           }
@@ -35506,68 +34785,10 @@ uint32_t ThriftHiveMetastore_get_partition_names_result::write(::apache::thrift:
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1510;
-      for (_iter1510 = this->success.begin(); _iter1510 != this->success.end(); ++_iter1510)
+      std::vector<std::string> ::const_iterator _iter1543;
+      for (_iter1543 = this->success.begin(); _iter1543 != this->success.end(); ++_iter1543)
       {
-        xfer += oprot->writeString((*_iter1510));
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-      std::vector<std::string> ::const_iterator _iter1494;
-      for (_iter1494 = this->success.begin(); _iter1494 != this->success.end(); ++_iter1494)
-      {
-        xfer += oprot->writeString((*_iter1494));
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1463;
-      for (_iter1463 = this->success.begin(); _iter1463 != this->success.end(); ++_iter1463)
-      {
-        xfer += oprot->writeString((*_iter1463));
-=======
-=======
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-      std::vector<std::string> ::const_iterator _iter1421;
-      for (_iter1421 = this->success.begin(); _iter1421 != this->success.end(); ++_iter1421)
-      {
-        xfer += oprot->writeString((*_iter1421));
-<<<<<<< HEAD
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-      std::vector<std::string> ::const_iterator _iter1425;
-      for (_iter1425 = this->success.begin(); _iter1425 != this->success.end(); ++_iter1425)
-      {
-        xfer += oprot->writeString((*_iter1425));
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-      std::vector<std::string> ::const_iterator _iter1425;
-      for (_iter1425 = this->success.begin(); _iter1425 != this->success.end(); ++_iter1425)
-      {
-        xfer += oprot->writeString((*_iter1425));
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-<<<<<<< HEAD
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-=======
-      std::vector<std::string> ::const_iterator _iter1467;
-      for (_iter1467 = this->success.begin(); _iter1467 != this->success.end(); ++_iter1467)
-      {
-        xfer += oprot->writeString((*_iter1467));
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+        xfer += oprot->writeString((*_iter1543));
       }
       xfer += oprot->writeListEnd();
     }
@@ -35616,6 +34837,7 @@ uint32_t ThriftHiveMetastore_get_partition_names_presult::read(::apache::thrift:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -35741,6 +34963,16 @@ uint32_t ThriftHiveMetastore_get_partition_names_presult::read(::apache::thrift:
               xfer += iprot->readString((*(this->success))[_i1521]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1544;
+            ::apache::thrift::protocol::TType _etype1547;
+            xfer += iprot->readListBegin(_etype1547, _size1544);
+            (*(this->success)).resize(_size1544);
+            uint32_t _i1548;
+            for (_i1548 = 0; _i1548 < _size1544; ++_i1548)
+            {
+              xfer += iprot->readString((*(this->success))[_i1548]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -36054,6 +35286,7 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_args::read(::apache::thrift::prot
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1561;
             ::apache::thrift::protocol::TType _etype1564;
             xfer += iprot->readListBegin(_etype1564, _size1561);
@@ -36198,6 +35431,16 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_args::read(::apache::thrift::prot
               xfer += iprot->readString(this->part_vals[_i1526]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1549;
+            ::apache::thrift::protocol::TType _etype1552;
+            xfer += iprot->readListBegin(_etype1552, _size1549);
+            this->part_vals.resize(_size1549);
+            uint32_t _i1553;
+            for (_i1553 = 0; _i1553 < _size1549; ++_i1553)
+            {
+              xfer += iprot->readString(this->part_vals[_i1553]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -36242,6 +35485,7 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_args::write(::apache::thrift::pro
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->part_vals.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -36350,6 +35594,12 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_args::write(::apache::thrift::pro
       xfer += oprot->writeString((*_iter1527));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1554;
+    for (_iter1554 = this->part_vals.begin(); _iter1554 != this->part_vals.end(); ++_iter1554)
+    {
+      xfer += oprot->writeString((*_iter1554));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -36385,6 +35635,7 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_pargs::write(::apache::thrift::pr
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->part_vals)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -36493,6 +35744,12 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_pargs::write(::apache::thrift::pr
       xfer += oprot->writeString((*_iter1528));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1555;
+    for (_iter1555 = (*(this->part_vals)).begin(); _iter1555 != (*(this->part_vals)).end(); ++_iter1555)
+    {
+      xfer += oprot->writeString((*_iter1555));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -36537,6 +35794,7 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_result::read(::apache::thrift::pr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -36684,6 +35942,16 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_result::read(::apache::thrift::pr
               xfer += this->success[_i1533].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1556;
+            ::apache::thrift::protocol::TType _etype1559;
+            xfer += iprot->readListBegin(_etype1559, _size1556);
+            this->success.resize(_size1556);
+            uint32_t _i1560;
+            for (_i1560 = 0; _i1560 < _size1556; ++_i1560)
+            {
+              xfer += this->success[_i1560].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -36730,6 +35998,7 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_result::write(::apache::thrift::p
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -36839,6 +36108,12 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_result::write(::apache::thrift::p
         xfer += (*_iter1534).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<Partition> ::const_iterator _iter1561;
+      for (_iter1561 = this->success.begin(); _iter1561 != this->success.end(); ++_iter1561)
+      {
+        xfer += (*_iter1561).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -36887,6 +36162,7 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_presult::read(::apache::thrift::p
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -37037,6 +36313,16 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_presult::read(::apache::thrift::p
               xfer += (*(this->success))[_i1539].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1562;
+            ::apache::thrift::protocol::TType _etype1565;
+            xfer += iprot->readListBegin(_etype1565, _size1562);
+            (*(this->success)).resize(_size1562);
+            uint32_t _i1566;
+            for (_i1566 = 0; _i1566 < _size1562; ++_i1566)
+            {
+              xfer += (*(this->success))[_i1566].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -37119,6 +36405,7 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_with_auth_args::read(::apache::th
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->part_vals.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -37267,6 +36554,16 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_with_auth_args::read(::apache::th
               xfer += iprot->readString(this->part_vals[_i1544]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1567;
+            ::apache::thrift::protocol::TType _etype1570;
+            xfer += iprot->readListBegin(_etype1570, _size1567);
+            this->part_vals.resize(_size1567);
+            uint32_t _i1571;
+            for (_i1571 = 0; _i1571 < _size1567; ++_i1571)
+            {
+              xfer += iprot->readString(this->part_vals[_i1571]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -37295,6 +36592,7 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_with_auth_args::read(::apache::th
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->group_names.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -37445,6 +36743,16 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_with_auth_args::read(::apache::th
               xfer += iprot->readString(this->group_names[_i1549]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1572;
+            ::apache::thrift::protocol::TType _etype1575;
+            xfer += iprot->readListBegin(_etype1575, _size1572);
+            this->group_names.resize(_size1572);
+            uint32_t _i1576;
+            for (_i1576 = 0; _i1576 < _size1572; ++_i1576)
+            {
+              xfer += iprot->readString(this->group_names[_i1576]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -37481,6 +36789,7 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_with_auth_args::write(::apache::t
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->part_vals.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -37590,6 +36899,12 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_with_auth_args::write(::apache::t
       xfer += oprot->writeString((*_iter1550));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1577;
+    for (_iter1577 = this->part_vals.begin(); _iter1577 != this->part_vals.end(); ++_iter1577)
+    {
+      xfer += oprot->writeString((*_iter1577));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -37606,6 +36921,7 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_with_auth_args::write(::apache::t
   xfer += oprot->writeFieldBegin("group_names", ::apache::thrift::protocol::T_LIST, 6);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->group_names.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -37714,6 +37030,12 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_with_auth_args::write(::apache::t
       xfer += oprot->writeString((*_iter1551));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1578;
+    for (_iter1578 = this->group_names.begin(); _iter1578 != this->group_names.end(); ++_iter1578)
+    {
+      xfer += oprot->writeString((*_iter1578));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -37745,6 +37067,7 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_with_auth_pargs::write(::apache::
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->part_vals)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -37853,6 +37176,12 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_with_auth_pargs::write(::apache::
       xfer += oprot->writeString((*_iter1552));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1579;
+    for (_iter1579 = (*(this->part_vals)).begin(); _iter1579 != (*(this->part_vals)).end(); ++_iter1579)
+    {
+      xfer += oprot->writeString((*_iter1579));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -37869,6 +37198,7 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_with_auth_pargs::write(::apache::
   xfer += oprot->writeFieldBegin("group_names", ::apache::thrift::protocol::T_LIST, 6);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->group_names)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -37977,6 +37307,12 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_with_auth_pargs::write(::apache::
       xfer += oprot->writeString((*_iter1553));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1580;
+    for (_iter1580 = (*(this->group_names)).begin(); _iter1580 != (*(this->group_names)).end(); ++_iter1580)
+    {
+      xfer += oprot->writeString((*_iter1580));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -38017,6 +37353,7 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_with_auth_result::read(::apache::
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -38167,6 +37504,16 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_with_auth_result::read(::apache::
               xfer += this->success[_i1558].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1581;
+            ::apache::thrift::protocol::TType _etype1584;
+            xfer += iprot->readListBegin(_etype1584, _size1581);
+            this->success.resize(_size1581);
+            uint32_t _i1585;
+            for (_i1585 = 0; _i1585 < _size1581; ++_i1585)
+            {
+              xfer += this->success[_i1585].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -38213,6 +37560,7 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_with_auth_result::write(::apache:
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -38321,6 +37669,12 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_with_auth_result::write(::apache:
         xfer += (*_iter1559).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<Partition> ::const_iterator _iter1586;
+      for (_iter1586 = this->success.begin(); _iter1586 != this->success.end(); ++_iter1586)
+      {
+        xfer += (*_iter1586).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -38369,6 +37723,7 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_with_auth_presult::read(::apache:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -38516,6 +37871,16 @@ uint32_t ThriftHiveMetastore_get_partitions_ps_with_auth_presult::read(::apache:
               xfer += (*(this->success))[_i1564].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1587;
+            ::apache::thrift::protocol::TType _etype1590;
+            xfer += iprot->readListBegin(_etype1590, _size1587);
+            (*(this->success)).resize(_size1587);
+            uint32_t _i1591;
+            for (_i1591 = 0; _i1591 < _size1587; ++_i1591)
+            {
+              xfer += (*(this->success))[_i1591].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -38598,6 +37963,7 @@ uint32_t ThriftHiveMetastore_get_partition_names_ps_args::read(::apache::thrift:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->part_vals.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -38746,6 +38112,16 @@ uint32_t ThriftHiveMetastore_get_partition_names_ps_args::read(::apache::thrift:
               xfer += iprot->readString(this->part_vals[_i1569]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1592;
+            ::apache::thrift::protocol::TType _etype1595;
+            xfer += iprot->readListBegin(_etype1595, _size1592);
+            this->part_vals.resize(_size1592);
+            uint32_t _i1596;
+            for (_i1596 = 0; _i1596 < _size1592; ++_i1596)
+            {
+              xfer += iprot->readString(this->part_vals[_i1596]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -38790,6 +38166,7 @@ uint32_t ThriftHiveMetastore_get_partition_names_ps_args::write(::apache::thrift
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->part_vals.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -38898,6 +38275,12 @@ uint32_t ThriftHiveMetastore_get_partition_names_ps_args::write(::apache::thrift
       xfer += oprot->writeString((*_iter1570));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1597;
+    for (_iter1597 = this->part_vals.begin(); _iter1597 != this->part_vals.end(); ++_iter1597)
+    {
+      xfer += oprot->writeString((*_iter1597));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -38933,6 +38316,7 @@ uint32_t ThriftHiveMetastore_get_partition_names_ps_pargs::write(::apache::thrif
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->part_vals)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -39041,6 +38425,12 @@ uint32_t ThriftHiveMetastore_get_partition_names_ps_pargs::write(::apache::thrif
       xfer += oprot->writeString((*_iter1571));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1598;
+    for (_iter1598 = (*(this->part_vals)).begin(); _iter1598 != (*(this->part_vals)).end(); ++_iter1598)
+    {
+      xfer += oprot->writeString((*_iter1598));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -39085,6 +38475,7 @@ uint32_t ThriftHiveMetastore_get_partition_names_ps_result::read(::apache::thrif
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -39324,6 +38715,16 @@ uint32_t ThriftHiveMetastore_get_partition_names_ps_presult::read(::apache::thri
               xfer += iprot->readString(this->success[_i1576]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1599;
+            ::apache::thrift::protocol::TType _etype1602;
+            xfer += iprot->readListBegin(_etype1602, _size1599);
+            this->success.resize(_size1599);
+            uint32_t _i1603;
+            for (_i1603 = 0; _i1603 < _size1599; ++_i1603)
+            {
+              xfer += iprot->readString(this->success[_i1603]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -39370,6 +38771,7 @@ uint32_t ThriftHiveMetastore_get_partition_names_ps_result::write(::apache::thri
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -39457,6 +38859,12 @@ uint32_t ThriftHiveMetastore_get_partition_names_ps_result::write(::apache::thri
         xfer += oprot->writeString((*_iter1577));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<std::string> ::const_iterator _iter1604;
+      for (_iter1604 = this->success.begin(); _iter1604 != this->success.end(); ++_iter1604)
+      {
+        xfer += oprot->writeString((*_iter1604));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -39505,6 +38913,7 @@ uint32_t ThriftHiveMetastore_get_partition_names_ps_presult::read(::apache::thri
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -39639,6 +39048,16 @@ uint32_t ThriftHiveMetastore_get_partition_names_ps_presult::read(::apache::thri
               xfer += iprot->readString((*(this->success))[_i1582]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1605;
+            ::apache::thrift::protocol::TType _etype1608;
+            xfer += iprot->readListBegin(_etype1608, _size1605);
+            (*(this->success)).resize(_size1605);
+            uint32_t _i1609;
+            for (_i1609 = 0; _i1609 < _size1605; ++_i1609)
+            {
+              xfer += iprot->readString((*(this->success))[_i1609]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -39836,6 +39255,7 @@ uint32_t ThriftHiveMetastore_get_partitions_by_filter_result::read(::apache::thr
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1622;
             ::apache::thrift::protocol::TType _etype1625;
             xfer += iprot->readListBegin(_etype1625, _size1622);
@@ -39982,6 +39402,16 @@ uint32_t ThriftHiveMetastore_get_partitions_by_filter_result::read(::apache::thr
               xfer += this->success[_i1587].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1610;
+            ::apache::thrift::protocol::TType _etype1613;
+            xfer += iprot->readListBegin(_etype1613, _size1610);
+            this->success.resize(_size1610);
+            uint32_t _i1614;
+            for (_i1614 = 0; _i1614 < _size1610; ++_i1614)
+            {
+              xfer += this->success[_i1614].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -40028,6 +39458,7 @@ uint32_t ThriftHiveMetastore_get_partitions_by_filter_result::write(::apache::th
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -40136,6 +39567,12 @@ uint32_t ThriftHiveMetastore_get_partitions_by_filter_result::write(::apache::th
         xfer += (*_iter1588).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<Partition> ::const_iterator _iter1615;
+      for (_iter1615 = this->success.begin(); _iter1615 != this->success.end(); ++_iter1615)
+      {
+        xfer += (*_iter1615).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -40184,6 +39621,7 @@ uint32_t ThriftHiveMetastore_get_partitions_by_filter_presult::read(::apache::th
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -40332,6 +39770,16 @@ uint32_t ThriftHiveMetastore_get_partitions_by_filter_presult::read(::apache::th
               xfer += (*(this->success))[_i1593].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1616;
+            ::apache::thrift::protocol::TType _etype1619;
+            xfer += iprot->readListBegin(_etype1619, _size1616);
+            (*(this->success)).resize(_size1616);
+            uint32_t _i1620;
+            for (_i1620 = 0; _i1620 < _size1616; ++_i1620)
+            {
+              xfer += (*(this->success))[_i1620].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -40529,6 +39977,7 @@ uint32_t ThriftHiveMetastore_get_part_specs_by_filter_result::read(::apache::thr
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1633;
             ::apache::thrift::protocol::TType _etype1636;
             xfer += iprot->readListBegin(_etype1636, _size1633);
@@ -40675,6 +40124,16 @@ uint32_t ThriftHiveMetastore_get_part_specs_by_filter_result::read(::apache::thr
               xfer += this->success[_i1598].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1621;
+            ::apache::thrift::protocol::TType _etype1624;
+            xfer += iprot->readListBegin(_etype1624, _size1621);
+            this->success.resize(_size1621);
+            uint32_t _i1625;
+            for (_i1625 = 0; _i1625 < _size1621; ++_i1625)
+            {
+              xfer += this->success[_i1625].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -40721,6 +40180,7 @@ uint32_t ThriftHiveMetastore_get_part_specs_by_filter_result::write(::apache::th
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -40830,6 +40290,12 @@ uint32_t ThriftHiveMetastore_get_part_specs_by_filter_result::write(::apache::th
         xfer += (*_iter1599).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<PartitionSpec> ::const_iterator _iter1626;
+      for (_iter1626 = this->success.begin(); _iter1626 != this->success.end(); ++_iter1626)
+      {
+        xfer += (*_iter1626).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -40878,6 +40344,7 @@ uint32_t ThriftHiveMetastore_get_part_specs_by_filter_presult::read(::apache::th
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -41026,6 +40493,16 @@ uint32_t ThriftHiveMetastore_get_part_specs_by_filter_presult::read(::apache::th
               xfer += (*(this->success))[_i1604].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1627;
+            ::apache::thrift::protocol::TType _etype1630;
+            xfer += iprot->readListBegin(_etype1630, _size1627);
+            (*(this->success)).resize(_size1627);
+            uint32_t _i1631;
+            for (_i1631 = 0; _i1631 < _size1627; ++_i1631)
+            {
+              xfer += (*(this->success))[_i1631].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -41598,6 +41075,7 @@ uint32_t ThriftHiveMetastore_get_partitions_by_names_args::read(::apache::thrift
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1644;
             ::apache::thrift::protocol::TType _etype1647;
             xfer += iprot->readListBegin(_etype1647, _size1644);
@@ -41742,6 +41220,16 @@ uint32_t ThriftHiveMetastore_get_partitions_by_names_args::read(::apache::thrift
               xfer += iprot->readString(this->names[_i1609]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1632;
+            ::apache::thrift::protocol::TType _etype1635;
+            xfer += iprot->readListBegin(_etype1635, _size1632);
+            this->names.resize(_size1632);
+            uint32_t _i1636;
+            for (_i1636 = 0; _i1636 < _size1632; ++_i1636)
+            {
+              xfer += iprot->readString(this->names[_i1636]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -41778,6 +41266,7 @@ uint32_t ThriftHiveMetastore_get_partitions_by_names_args::write(::apache::thrif
   xfer += oprot->writeFieldBegin("names", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->names.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -41886,6 +41375,12 @@ uint32_t ThriftHiveMetastore_get_partitions_by_names_args::write(::apache::thrif
       xfer += oprot->writeString((*_iter1610));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1637;
+    for (_iter1637 = this->names.begin(); _iter1637 != this->names.end(); ++_iter1637)
+    {
+      xfer += oprot->writeString((*_iter1637));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -41917,6 +41412,7 @@ uint32_t ThriftHiveMetastore_get_partitions_by_names_pargs::write(::apache::thri
   xfer += oprot->writeFieldBegin("names", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->names)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -42025,6 +41521,12 @@ uint32_t ThriftHiveMetastore_get_partitions_by_names_pargs::write(::apache::thri
       xfer += oprot->writeString((*_iter1611));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1638;
+    for (_iter1638 = (*(this->names)).begin(); _iter1638 != (*(this->names)).end(); ++_iter1638)
+    {
+      xfer += oprot->writeString((*_iter1638));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -42065,6 +41567,7 @@ uint32_t ThriftHiveMetastore_get_partitions_by_names_result::read(::apache::thri
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -42215,6 +41718,16 @@ uint32_t ThriftHiveMetastore_get_partitions_by_names_result::read(::apache::thri
               xfer += this->success[_i1616].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1639;
+            ::apache::thrift::protocol::TType _etype1642;
+            xfer += iprot->readListBegin(_etype1642, _size1639);
+            this->success.resize(_size1639);
+            uint32_t _i1643;
+            for (_i1643 = 0; _i1643 < _size1639; ++_i1643)
+            {
+              xfer += this->success[_i1643].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -42261,6 +41774,7 @@ uint32_t ThriftHiveMetastore_get_partitions_by_names_result::write(::apache::thr
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -42370,6 +41884,12 @@ uint32_t ThriftHiveMetastore_get_partitions_by_names_result::write(::apache::thr
         xfer += (*_iter1617).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<Partition> ::const_iterator _iter1644;
+      for (_iter1644 = this->success.begin(); _iter1644 != this->success.end(); ++_iter1644)
+      {
+        xfer += (*_iter1644).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -42418,6 +41938,7 @@ uint32_t ThriftHiveMetastore_get_partitions_by_names_presult::read(::apache::thr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -42566,6 +42087,16 @@ uint32_t ThriftHiveMetastore_get_partitions_by_names_presult::read(::apache::thr
               xfer += (*(this->success))[_i1622].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1645;
+            ::apache::thrift::protocol::TType _etype1648;
+            xfer += iprot->readListBegin(_etype1648, _size1645);
+            (*(this->success)).resize(_size1645);
+            uint32_t _i1649;
+            for (_i1649 = 0; _i1649 < _size1645; ++_i1649)
+            {
+              xfer += (*(this->success))[_i1649].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -42891,6 +42422,7 @@ uint32_t ThriftHiveMetastore_alter_partitions_args::read(::apache::thrift::proto
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1662;
             ::apache::thrift::protocol::TType _etype1665;
             xfer += iprot->readListBegin(_etype1665, _size1662);
@@ -43035,6 +42567,16 @@ uint32_t ThriftHiveMetastore_alter_partitions_args::read(::apache::thrift::proto
               xfer += this->new_parts[_i1627].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1650;
+            ::apache::thrift::protocol::TType _etype1653;
+            xfer += iprot->readListBegin(_etype1653, _size1650);
+            this->new_parts.resize(_size1650);
+            uint32_t _i1654;
+            for (_i1654 = 0; _i1654 < _size1650; ++_i1654)
+            {
+              xfer += this->new_parts[_i1654].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -43071,6 +42613,7 @@ uint32_t ThriftHiveMetastore_alter_partitions_args::write(::apache::thrift::prot
   xfer += oprot->writeFieldBegin("new_parts", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->new_parts.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -43179,6 +42722,12 @@ uint32_t ThriftHiveMetastore_alter_partitions_args::write(::apache::thrift::prot
       xfer += (*_iter1628).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<Partition> ::const_iterator _iter1655;
+    for (_iter1655 = this->new_parts.begin(); _iter1655 != this->new_parts.end(); ++_iter1655)
+    {
+      xfer += (*_iter1655).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -43210,6 +42759,7 @@ uint32_t ThriftHiveMetastore_alter_partitions_pargs::write(::apache::thrift::pro
   xfer += oprot->writeFieldBegin("new_parts", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>((*(this->new_parts)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -43319,6 +42869,12 @@ uint32_t ThriftHiveMetastore_alter_partitions_pargs::write(::apache::thrift::pro
       xfer += (*_iter1629).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<Partition> ::const_iterator _iter1656;
+    for (_iter1656 = (*(this->new_parts)).begin(); _iter1656 != (*(this->new_parts)).end(); ++_iter1656)
+    {
+      xfer += (*_iter1656).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -43507,6 +43063,7 @@ uint32_t ThriftHiveMetastore_alter_partitions_with_environment_context_args::rea
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1669;
             ::apache::thrift::protocol::TType _etype1672;
             xfer += iprot->readListBegin(_etype1672, _size1669);
@@ -43651,6 +43208,16 @@ uint32_t ThriftHiveMetastore_alter_partitions_with_environment_context_args::rea
               xfer += this->new_parts[_i1634].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1657;
+            ::apache::thrift::protocol::TType _etype1660;
+            xfer += iprot->readListBegin(_etype1660, _size1657);
+            this->new_parts.resize(_size1657);
+            uint32_t _i1661;
+            for (_i1661 = 0; _i1661 < _size1657; ++_i1661)
+            {
+              xfer += this->new_parts[_i1661].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -43695,6 +43262,7 @@ uint32_t ThriftHiveMetastore_alter_partitions_with_environment_context_args::wri
   xfer += oprot->writeFieldBegin("new_parts", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->new_parts.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -43804,6 +43372,12 @@ uint32_t ThriftHiveMetastore_alter_partitions_with_environment_context_args::wri
       xfer += (*_iter1635).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<Partition> ::const_iterator _iter1662;
+    for (_iter1662 = this->new_parts.begin(); _iter1662 != this->new_parts.end(); ++_iter1662)
+    {
+      xfer += (*_iter1662).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -43839,6 +43413,7 @@ uint32_t ThriftHiveMetastore_alter_partitions_with_environment_context_pargs::wr
   xfer += oprot->writeFieldBegin("new_parts", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>((*(this->new_parts)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -43947,6 +43522,12 @@ uint32_t ThriftHiveMetastore_alter_partitions_with_environment_context_pargs::wr
       xfer += (*_iter1636).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<Partition> ::const_iterator _iter1663;
+    for (_iter1663 = (*(this->new_parts)).begin(); _iter1663 != (*(this->new_parts)).end(); ++_iter1663)
+    {
+      xfer += (*_iter1663).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -44394,6 +43975,7 @@ uint32_t ThriftHiveMetastore_rename_partition_args::read(::apache::thrift::proto
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1676;
             ::apache::thrift::protocol::TType _etype1679;
             xfer += iprot->readListBegin(_etype1679, _size1676);
@@ -44540,6 +44122,16 @@ uint32_t ThriftHiveMetastore_rename_partition_args::read(::apache::thrift::proto
               xfer += iprot->readString(this->part_vals[_i1641]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1664;
+            ::apache::thrift::protocol::TType _etype1667;
+            xfer += iprot->readListBegin(_etype1667, _size1664);
+            this->part_vals.resize(_size1664);
+            uint32_t _i1668;
+            for (_i1668 = 0; _i1668 < _size1664; ++_i1668)
+            {
+              xfer += iprot->readString(this->part_vals[_i1668]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -44584,6 +44176,7 @@ uint32_t ThriftHiveMetastore_rename_partition_args::write(::apache::thrift::prot
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->part_vals.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -44693,6 +44286,12 @@ uint32_t ThriftHiveMetastore_rename_partition_args::write(::apache::thrift::prot
       xfer += oprot->writeString((*_iter1642));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1669;
+    for (_iter1669 = this->part_vals.begin(); _iter1669 != this->part_vals.end(); ++_iter1669)
+    {
+      xfer += oprot->writeString((*_iter1669));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -44728,6 +44327,7 @@ uint32_t ThriftHiveMetastore_rename_partition_pargs::write(::apache::thrift::pro
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 3);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->part_vals)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -44837,6 +44437,12 @@ uint32_t ThriftHiveMetastore_rename_partition_pargs::write(::apache::thrift::pro
       xfer += oprot->writeString((*_iter1643));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1670;
+    for (_iter1670 = (*(this->part_vals)).begin(); _iter1670 != (*(this->part_vals)).end(); ++_iter1670)
+    {
+      xfer += oprot->writeString((*_iter1670));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -45013,6 +44619,7 @@ uint32_t ThriftHiveMetastore_partition_name_has_valid_characters_args::read(::ap
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1683;
             ::apache::thrift::protocol::TType _etype1686;
             xfer += iprot->readListBegin(_etype1686, _size1683);
@@ -45159,6 +44766,16 @@ uint32_t ThriftHiveMetastore_partition_name_has_valid_characters_args::read(::ap
               xfer += iprot->readString(this->part_vals[_i1648]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1671;
+            ::apache::thrift::protocol::TType _etype1674;
+            xfer += iprot->readListBegin(_etype1674, _size1671);
+            this->part_vals.resize(_size1671);
+            uint32_t _i1675;
+            for (_i1675 = 0; _i1675 < _size1671; ++_i1675)
+            {
+              xfer += iprot->readString(this->part_vals[_i1675]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -45195,6 +44812,7 @@ uint32_t ThriftHiveMetastore_partition_name_has_valid_characters_args::write(::a
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->part_vals.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -45304,6 +44922,12 @@ uint32_t ThriftHiveMetastore_partition_name_has_valid_characters_args::write(::a
       xfer += oprot->writeString((*_iter1649));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1676;
+    for (_iter1676 = this->part_vals.begin(); _iter1676 != this->part_vals.end(); ++_iter1676)
+    {
+      xfer += oprot->writeString((*_iter1676));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -45331,6 +44955,7 @@ uint32_t ThriftHiveMetastore_partition_name_has_valid_characters_pargs::write(::
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->part_vals)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -45440,6 +45065,12 @@ uint32_t ThriftHiveMetastore_partition_name_has_valid_characters_pargs::write(::
       xfer += oprot->writeString((*_iter1650));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1677;
+    for (_iter1677 = (*(this->part_vals)).begin(); _iter1677 != (*(this->part_vals)).end(); ++_iter1677)
+    {
+      xfer += oprot->writeString((*_iter1677));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -45918,6 +45549,7 @@ uint32_t ThriftHiveMetastore_partition_name_to_vals_result::read(::apache::thrif
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1690;
             ::apache::thrift::protocol::TType _etype1693;
             xfer += iprot->readListBegin(_etype1693, _size1690);
@@ -46062,6 +45694,16 @@ uint32_t ThriftHiveMetastore_partition_name_to_vals_result::read(::apache::thrif
               xfer += iprot->readString(this->success[_i1655]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1678;
+            ::apache::thrift::protocol::TType _etype1681;
+            xfer += iprot->readListBegin(_etype1681, _size1678);
+            this->success.resize(_size1678);
+            uint32_t _i1682;
+            for (_i1682 = 0; _i1682 < _size1678; ++_i1682)
+            {
+              xfer += iprot->readString(this->success[_i1682]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -46100,6 +45742,7 @@ uint32_t ThriftHiveMetastore_partition_name_to_vals_result::write(::apache::thri
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -46208,6 +45851,12 @@ uint32_t ThriftHiveMetastore_partition_name_to_vals_result::write(::apache::thri
         xfer += oprot->writeString((*_iter1656));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<std::string> ::const_iterator _iter1683;
+      for (_iter1683 = this->success.begin(); _iter1683 != this->success.end(); ++_iter1683)
+      {
+        xfer += oprot->writeString((*_iter1683));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -46252,6 +45901,7 @@ uint32_t ThriftHiveMetastore_partition_name_to_vals_presult::read(::apache::thri
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -46399,6 +46049,16 @@ uint32_t ThriftHiveMetastore_partition_name_to_vals_presult::read(::apache::thri
               xfer += iprot->readString((*(this->success))[_i1661]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1684;
+            ::apache::thrift::protocol::TType _etype1687;
+            xfer += iprot->readListBegin(_etype1687, _size1684);
+            (*(this->success)).resize(_size1684);
+            uint32_t _i1688;
+            for (_i1688 = 0; _i1688 < _size1684; ++_i1688)
+            {
+              xfer += iprot->readString((*(this->success))[_i1688]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -46772,6 +46432,7 @@ uint32_t ThriftHiveMetastore_partition_name_to_spec_presult::read(::apache::thri
       case 0:
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
+<<<<<<< HEAD
             (*(this->success)).clear();
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -46879,6 +46540,20 @@ uint32_t ThriftHiveMetastore_partition_name_to_spec_presult::read(::apache::thri
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+            this->success.clear();
+            uint32_t _size1689;
+            ::apache::thrift::protocol::TType _ktype1690;
+            ::apache::thrift::protocol::TType _vtype1691;
+            xfer += iprot->readMapBegin(_ktype1690, _vtype1691, _size1689);
+            uint32_t _i1693;
+            for (_i1693 = 0; _i1693 < _size1689; ++_i1693)
+            {
+              std::string _key1694;
+              xfer += iprot->readString(_key1694);
+              std::string& _val1695 = this->success[_key1694];
+              xfer += iprot->readString(_val1695);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readMapEnd();
           }
@@ -46917,6 +46592,7 @@ uint32_t ThriftHiveMetastore_partition_name_to_spec_result::write(::apache::thri
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_MAP, 0);
     {
       xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -46982,6 +46658,13 @@ uint32_t ThriftHiveMetastore_partition_name_to_spec_result::write(::apache::thri
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
+=======
+      std::map<std::string, std::string> ::const_iterator _iter1696;
+      for (_iter1696 = this->success.begin(); _iter1696 != this->success.end(); ++_iter1696)
+      {
+        xfer += oprot->writeString(_iter1696->first);
+        xfer += oprot->writeString(_iter1696->second);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeMapEnd();
     }
@@ -47026,6 +46709,7 @@ uint32_t ThriftHiveMetastore_partition_name_to_spec_presult::read(::apache::thri
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
@@ -47166,6 +46850,19 @@ uint32_t ThriftHiveMetastore_partition_name_to_spec_presult::read(::apache::thri
               xfer += iprot->readString(_val1676);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1697;
+            ::apache::thrift::protocol::TType _ktype1698;
+            ::apache::thrift::protocol::TType _vtype1699;
+            xfer += iprot->readMapBegin(_ktype1698, _vtype1699, _size1697);
+            uint32_t _i1701;
+            for (_i1701 = 0; _i1701 < _size1697; ++_i1701)
+            {
+              std::string _key1702;
+              xfer += iprot->readString(_key1702);
+              std::string& _val1703 = (*(this->success))[_key1702];
+              xfer += iprot->readString(_val1703);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readMapEnd();
           }
@@ -47240,6 +46937,7 @@ uint32_t ThriftHiveMetastore_markPartitionForEvent_args::read(::apache::thrift::
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->part_vals.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -47417,6 +47115,19 @@ uint32_t ThriftHiveMetastore_markPartitionForEvent_args::read(::apache::thrift::
               xfer += iprot->readString(_val1683);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1704;
+            ::apache::thrift::protocol::TType _ktype1705;
+            ::apache::thrift::protocol::TType _vtype1706;
+            xfer += iprot->readMapBegin(_ktype1705, _vtype1706, _size1704);
+            uint32_t _i1708;
+            for (_i1708 = 0; _i1708 < _size1704; ++_i1708)
+            {
+              std::string _key1709;
+              xfer += iprot->readString(_key1709);
+              std::string& _val1710 = this->part_vals[_key1709];
+              xfer += iprot->readString(_val1710);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readMapEnd();
           }
@@ -47427,6 +47138,7 @@ uint32_t ThriftHiveMetastore_markPartitionForEvent_args::read(::apache::thrift::
         break;
       case 4:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -47525,6 +47237,11 @@ uint32_t ThriftHiveMetastore_markPartitionForEvent_args::read(::apache::thrift::
           this->eventType = (PartitionEventType::type)ecast1684;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast1711;
+          xfer += iprot->readI32(ecast1711);
+          this->eventType = (PartitionEventType::type)ecast1711;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           this->__isset.eventType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -47558,6 +47275,7 @@ uint32_t ThriftHiveMetastore_markPartitionForEvent_args::write(::apache::thrift:
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_MAP, 3);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->part_vals.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -47678,6 +47396,13 @@ uint32_t ThriftHiveMetastore_markPartitionForEvent_args::write(::apache::thrift:
       xfer += oprot->writeString(_iter1685->second);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::map<std::string, std::string> ::const_iterator _iter1712;
+    for (_iter1712 = this->part_vals.begin(); _iter1712 != this->part_vals.end(); ++_iter1712)
+    {
+      xfer += oprot->writeString(_iter1712->first);
+      xfer += oprot->writeString(_iter1712->second);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeMapEnd();
   }
@@ -47713,6 +47438,7 @@ uint32_t ThriftHiveMetastore_markPartitionForEvent_pargs::write(::apache::thrift
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_MAP, 3);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->part_vals)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -47833,6 +47559,13 @@ uint32_t ThriftHiveMetastore_markPartitionForEvent_pargs::write(::apache::thrift
       xfer += oprot->writeString(_iter1686->second);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::map<std::string, std::string> ::const_iterator _iter1713;
+    for (_iter1713 = (*(this->part_vals)).begin(); _iter1713 != (*(this->part_vals)).end(); ++_iter1713)
+    {
+      xfer += oprot->writeString(_iter1713->first);
+      xfer += oprot->writeString(_iter1713->second);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeMapEnd();
   }
@@ -48105,6 +47838,7 @@ uint32_t ThriftHiveMetastore_isPartitionMarkedForEvent_args::read(::apache::thri
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1726;
             ::apache::thrift::protocol::TType _ktype1727;
             ::apache::thrift::protocol::TType _vtype1728;
@@ -48285,6 +48019,19 @@ uint32_t ThriftHiveMetastore_isPartitionMarkedForEvent_args::read(::apache::thri
               xfer += iprot->readString(_val1693);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1714;
+            ::apache::thrift::protocol::TType _ktype1715;
+            ::apache::thrift::protocol::TType _vtype1716;
+            xfer += iprot->readMapBegin(_ktype1715, _vtype1716, _size1714);
+            uint32_t _i1718;
+            for (_i1718 = 0; _i1718 < _size1714; ++_i1718)
+            {
+              std::string _key1719;
+              xfer += iprot->readString(_key1719);
+              std::string& _val1720 = this->part_vals[_key1719];
+              xfer += iprot->readString(_val1720);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readMapEnd();
           }
@@ -48295,6 +48042,7 @@ uint32_t ThriftHiveMetastore_isPartitionMarkedForEvent_args::read(::apache::thri
         break;
       case 4:
         if (ftype == ::apache::thrift::protocol::T_I32) {
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -48393,6 +48141,11 @@ uint32_t ThriftHiveMetastore_isPartitionMarkedForEvent_args::read(::apache::thri
           this->eventType = (PartitionEventType::type)ecast1694;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast1721;
+          xfer += iprot->readI32(ecast1721);
+          this->eventType = (PartitionEventType::type)ecast1721;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           this->__isset.eventType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -48426,6 +48179,7 @@ uint32_t ThriftHiveMetastore_isPartitionMarkedForEvent_args::write(::apache::thr
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_MAP, 3);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->part_vals.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -48544,6 +48298,13 @@ uint32_t ThriftHiveMetastore_isPartitionMarkedForEvent_args::write(::apache::thr
       xfer += oprot->writeString(_iter1695->second);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::map<std::string, std::string> ::const_iterator _iter1722;
+    for (_iter1722 = this->part_vals.begin(); _iter1722 != this->part_vals.end(); ++_iter1722)
+    {
+      xfer += oprot->writeString(_iter1722->first);
+      xfer += oprot->writeString(_iter1722->second);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeMapEnd();
   }
@@ -48579,6 +48340,7 @@ uint32_t ThriftHiveMetastore_isPartitionMarkedForEvent_pargs::write(::apache::th
   xfer += oprot->writeFieldBegin("part_vals", ::apache::thrift::protocol::T_MAP, 3);
   {
     xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->part_vals)).size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -48697,6 +48459,13 @@ uint32_t ThriftHiveMetastore_isPartitionMarkedForEvent_pargs::write(::apache::th
       xfer += oprot->writeString(_iter1696->second);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::map<std::string, std::string> ::const_iterator _iter1723;
+    for (_iter1723 = (*(this->part_vals)).begin(); _iter1723 != (*(this->part_vals)).end(); ++_iter1723)
+    {
+      xfer += oprot->writeString(_iter1723->first);
+      xfer += oprot->writeString(_iter1723->second);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeMapEnd();
   }
@@ -49953,26 +49722,8 @@ uint32_t ThriftHiveMetastore_get_default_constraints_result::read(::apache::thri
     switch (fid)
     {
       case 0:
-<<<<<<< HEAD
         if (ftype == ::apache::thrift::protocol::T_STRUCT) {
           xfer += this->success.read(iprot);
-=======
-        if (ftype == ::apache::thrift::protocol::T_LIST) {
-          {
-            this->success.clear();
-<<<<<<< HEAD
-            uint32_t _size1675;
-            ::apache::thrift::protocol::TType _etype1678;
-            xfer += iprot->readListBegin(_etype1678, _size1675);
-            this->success.resize(_size1675);
-            uint32_t _i1679;
-            for (_i1679 = 0; _i1679 < _size1675; ++_i1679)
-            {
-              xfer += this->success[_i1679].read(iprot);
-            }
-            xfer += iprot->readListEnd();
-          }
->>>>>>> HIVE-18679 : create/replicate open transaction event
           this->__isset.success = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -50013,21 +49764,8 @@ uint32_t ThriftHiveMetastore_get_default_constraints_result::write(::apache::thr
   xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_default_constraints_result");
 
   if (this->__isset.success) {
-<<<<<<< HEAD
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
     xfer += this->success.write(oprot);
-=======
-    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
-    {
-      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<Index> ::const_iterator _iter1680;
-      for (_iter1680 = this->success.begin(); _iter1680 != this->success.end(); ++_iter1680)
-      {
-        xfer += (*_iter1680).write(oprot);
-      }
-      xfer += oprot->writeListEnd();
-    }
->>>>>>> HIVE-18679 : create/replicate open transaction event
     xfer += oprot->writeFieldEnd();
   } else if (this->__isset.o1) {
     xfer += oprot->writeFieldBegin("o1", ::apache::thrift::protocol::T_STRUCT, 1);
@@ -50070,25 +49808,8 @@ uint32_t ThriftHiveMetastore_get_default_constraints_presult::read(::apache::thr
     switch (fid)
     {
       case 0:
-<<<<<<< HEAD
         if (ftype == ::apache::thrift::protocol::T_STRUCT) {
           xfer += (*(this->success)).read(iprot);
-=======
-        if (ftype == ::apache::thrift::protocol::T_LIST) {
-          {
-            (*(this->success)).clear();
-            uint32_t _size1681;
-            ::apache::thrift::protocol::TType _etype1684;
-            xfer += iprot->readListBegin(_etype1684, _size1681);
-            (*(this->success)).resize(_size1681);
-            uint32_t _i1685;
-            for (_i1685 = 0; _i1685 < _size1681; ++_i1685)
-            {
-              xfer += (*(this->success))[_i1685].read(iprot);
-            }
-            xfer += iprot->readListEnd();
-          }
->>>>>>> HIVE-18679 : create/replicate open transaction event
           this->__isset.success = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -50230,89 +49951,6 @@ uint32_t ThriftHiveMetastore_get_check_constraints_result::read(::apache::thrift
       case 0:
         if (ftype == ::apache::thrift::protocol::T_STRUCT) {
           xfer += this->success.read(iprot);
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-        if (ftype == ::apache::thrift::protocol::T_BOOL) {
-          xfer += iprot->readBool(this->success);
-=======
-        if (ftype == ::apache::thrift::protocol::T_LIST) {
-          {
-            this->success.clear();
-<<<<<<< HEAD
-            uint32_t _size1686;
-            ::apache::thrift::protocol::TType _etype1689;
-            xfer += iprot->readListBegin(_etype1689, _size1686);
-            this->success.resize(_size1686);
-            uint32_t _i1690;
-            for (_i1690 = 0; _i1690 < _size1686; ++_i1690)
-            {
-              xfer += iprot->readString(this->success[_i1690]);
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1644;
-            ::apache::thrift::protocol::TType _etype1647;
-            xfer += iprot->readListBegin(_etype1647, _size1644);
-            this->success.resize(_size1644);
-            uint32_t _i1648;
-            for (_i1648 = 0; _i1648 < _size1644; ++_i1648)
-            {
-              xfer += this->success[_i1648].read(iprot);
-=======
-=======
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-            uint32_t _size1602;
-            ::apache::thrift::protocol::TType _etype1605;
-            xfer += iprot->readListBegin(_etype1605, _size1602);
-            this->success.resize(_size1602);
-            uint32_t _i1606;
-            for (_i1606 = 0; _i1606 < _size1602; ++_i1606)
-<<<<<<< HEAD
-            {
-              xfer += this->success[_i1606].read(iprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-=======
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-            uint32_t _size1606;
-            ::apache::thrift::protocol::TType _etype1609;
-            xfer += iprot->readListBegin(_etype1609, _size1606);
-            this->success.resize(_size1606);
-            uint32_t _i1610;
-            for (_i1610 = 0; _i1610 < _size1606; ++_i1610)
-<<<<<<< HEAD
-            {
-              xfer += this->success[_i1610].read(iprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-            {
-              xfer += this->success[_i1606].read(iprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-            {
-              xfer += this->success[_i1610].read(iprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-            uint32_t _size1648;
-            ::apache::thrift::protocol::TType _etype1651;
-            xfer += iprot->readListBegin(_etype1651, _size1648);
-            this->success.resize(_size1648);
-            uint32_t _i1652;
-            for (_i1652 = 0; _i1652 < _size1648; ++_i1652)
-            {
-              xfer += this->success[_i1652].read(iprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            }
-            xfer += iprot->readListEnd();
-          }
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           this->__isset.success = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -50355,49 +49993,10 @@ uint32_t ThriftHiveMetastore_get_check_constraints_result::write(::apache::thrif
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
     xfer += this->success.write(oprot);
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_BOOL, 0);
-    xfer += oprot->writeBool(this->success);
->>>>>>> HIVE-18679 : create/replicate open transaction event
     xfer += oprot->writeFieldEnd();
   } else if (this->__isset.o1) {
     xfer += oprot->writeFieldBegin("o1", ::apache::thrift::protocol::T_STRUCT, 1);
     xfer += this->o1.write(oprot);
-=======
-    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
-    {
-<<<<<<< HEAD
-      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
-      std::vector<std::string> ::const_iterator _iter1691;
-      for (_iter1691 = this->success.begin(); _iter1691 != this->success.end(); ++_iter1691)
-      {
-        xfer += oprot->writeString((*_iter1691));
-=======
-      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<Index> ::const_iterator _iter1653;
-      for (_iter1653 = this->success.begin(); _iter1653 != this->success.end(); ++_iter1653)
-      {
-<<<<<<< HEAD
-        xfer += (*_iter1607).write(oprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-      std::vector<Index> ::const_iterator _iter1611;
-      for (_iter1611 = this->success.begin(); _iter1611 != this->success.end(); ++_iter1611)
-      {
-        xfer += (*_iter1611).write(oprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-        xfer += (*_iter1653).write(oprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-      }
-      xfer += oprot->writeListEnd();
-    }
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
     xfer += oprot->writeFieldEnd();
   } else if (this->__isset.o2) {
     xfer += oprot->writeFieldBegin("o2", ::apache::thrift::protocol::T_STRUCT, 2);
@@ -50438,93 +50037,6 @@ uint32_t ThriftHiveMetastore_get_check_constraints_presult::read(::apache::thrif
       case 0:
         if (ftype == ::apache::thrift::protocol::T_STRUCT) {
           xfer += (*(this->success)).read(iprot);
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-        if (ftype == ::apache::thrift::protocol::T_BOOL) {
-          xfer += iprot->readBool((*(this->success)));
-=======
-        if (ftype == ::apache::thrift::protocol::T_LIST) {
-          {
-            (*(this->success)).clear();
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1692;
-            ::apache::thrift::protocol::TType _etype1695;
-            xfer += iprot->readListBegin(_etype1695, _size1692);
-            (*(this->success)).resize(_size1692);
-            uint32_t _i1696;
-            for (_i1696 = 0; _i1696 < _size1692; ++_i1696)
-            {
-              xfer += iprot->readString((*(this->success))[_i1696]);
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-            uint32_t _size1650;
-            ::apache::thrift::protocol::TType _etype1653;
-            xfer += iprot->readListBegin(_etype1653, _size1650);
-            (*(this->success)).resize(_size1650);
-            uint32_t _i1654;
-            for (_i1654 = 0; _i1654 < _size1650; ++_i1654)
-            {
-              xfer += (*(this->success))[_i1654].read(iprot);
-=======
-=======
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-            uint32_t _size1608;
-            ::apache::thrift::protocol::TType _etype1611;
-            xfer += iprot->readListBegin(_etype1611, _size1608);
-            (*(this->success)).resize(_size1608);
-            uint32_t _i1612;
-            for (_i1612 = 0; _i1612 < _size1608; ++_i1612)
-<<<<<<< HEAD
-            {
-              xfer += (*(this->success))[_i1612].read(iprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-            uint32_t _size1612;
-            ::apache::thrift::protocol::TType _etype1615;
-            xfer += iprot->readListBegin(_etype1615, _size1612);
-            (*(this->success)).resize(_size1612);
-            uint32_t _i1616;
-            for (_i1616 = 0; _i1616 < _size1612; ++_i1616)
-            {
-              xfer += (*(this->success))[_i1616].read(iprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-            {
-              xfer += (*(this->success))[_i1612].read(iprot);
->>>>>>> HIVE-18679 : create/replicate open transaction event : After Sankar's review comment fix
-=======
-            uint32_t _size1612;
-            ::apache::thrift::protocol::TType _etype1615;
-            xfer += iprot->readListBegin(_etype1615, _size1612);
-            (*(this->success)).resize(_size1612);
-            uint32_t _i1616;
-            for (_i1616 = 0; _i1616 < _size1612; ++_i1616)
-            {
-              xfer += (*(this->success))[_i1616].read(iprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
-            uint32_t _size1654;
-            ::apache::thrift::protocol::TType _etype1657;
-            xfer += iprot->readListBegin(_etype1657, _size1654);
-            (*(this->success)).resize(_size1654);
-            uint32_t _i1658;
-            for (_i1658 = 0; _i1658 < _size1654; ++_i1658)
-            {
-              xfer += (*(this->success))[_i1658].read(iprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
-            }
-            xfer += iprot->readListEnd();
-          }
->>>>>>> HIVE-18679 : create/replicate open transaction event
->>>>>>> HIVE-18679 : create/replicate open transaction event
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           this->__isset.success = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -50666,30 +50178,6 @@ uint32_t ThriftHiveMetastore_update_table_column_statistics_result::read(::apach
       case 0:
         if (ftype == ::apache::thrift::protocol::T_BOOL) {
           xfer += iprot->readBool(this->success);
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
-          xfer += this->success.read(iprot);
-=======
-        if (ftype == ::apache::thrift::protocol::T_LIST) {
-          {
-            this->success.clear();
-            uint32_t _size1659;
-            ::apache::thrift::protocol::TType _etype1662;
-            xfer += iprot->readListBegin(_etype1662, _size1659);
-            this->success.resize(_size1659);
-            uint32_t _i1663;
-            for (_i1663 = 0; _i1663 < _size1659; ++_i1663)
-            {
-              xfer += iprot->readString(this->success[_i1663]);
-            }
-            xfer += iprot->readListEnd();
-          }
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           this->__isset.success = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -50748,30 +50236,10 @@ uint32_t ThriftHiveMetastore_update_table_column_statistics_result::write(::apac
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_BOOL, 0);
     xfer += oprot->writeBool(this->success);
-=======
-<<<<<<< HEAD
-    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_STRUCT, 0);
-    xfer += this->success.write(oprot);
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
     xfer += oprot->writeFieldEnd();
   } else if (this->__isset.o1) {
     xfer += oprot->writeFieldBegin("o1", ::apache::thrift::protocol::T_STRUCT, 1);
     xfer += this->o1.write(oprot);
-<<<<<<< HEAD
-=======
-    xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
-    {
-      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
-      std::vector<std::string> ::const_iterator _iter1664;
-      for (_iter1664 = this->success.begin(); _iter1664 != this->success.end(); ++_iter1664)
-      {
-        xfer += oprot->writeString((*_iter1664));
-      }
-      xfer += oprot->writeListEnd();
-    }
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
     xfer += oprot->writeFieldEnd();
   } else if (this->__isset.o2) {
     xfer += oprot->writeFieldBegin("o2", ::apache::thrift::protocol::T_STRUCT, 2);
@@ -50820,30 +50288,6 @@ uint32_t ThriftHiveMetastore_update_table_column_statistics_presult::read(::apac
       case 0:
         if (ftype == ::apache::thrift::protocol::T_BOOL) {
           xfer += iprot->readBool((*(this->success)));
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
-          xfer += (*(this->success)).read(iprot);
-=======
-        if (ftype == ::apache::thrift::protocol::T_LIST) {
-          {
-            (*(this->success)).clear();
-            uint32_t _size1665;
-            ::apache::thrift::protocol::TType _etype1668;
-            xfer += iprot->readListBegin(_etype1668, _size1665);
-            (*(this->success)).resize(_size1665);
-            uint32_t _i1669;
-            for (_i1669 = 0; _i1669 < _size1665; ++_i1669)
-            {
-              xfer += iprot->readString((*(this->success))[_i1669]);
-            }
-            xfer += iprot->readListEnd();
-          }
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
->>>>>>> HIVE-18720 : Replicate Commit Txn operation (without writes)
-=======
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
           this->__isset.success = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -54171,6 +53615,7 @@ uint32_t ThriftHiveMetastore_get_functions_result::read(::apache::thrift::protoc
           {
             this->success.clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1736;
             ::apache::thrift::protocol::TType _etype1739;
             xfer += iprot->readListBegin(_etype1739, _size1736);
@@ -54200,6 +53645,16 @@ uint32_t ThriftHiveMetastore_get_functions_result::read(::apache::thrift::protoc
               xfer += iprot->readString(this->success[_i1701]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1724;
+            ::apache::thrift::protocol::TType _etype1727;
+            xfer += iprot->readListBegin(_etype1727, _size1724);
+            this->success.resize(_size1724);
+            uint32_t _i1728;
+            for (_i1728 = 0; _i1728 < _size1724; ++_i1728)
+            {
+              xfer += iprot->readString(this->success[_i1728]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -54239,6 +53694,7 @@ uint32_t ThriftHiveMetastore_get_functions_result::write(::apache::thrift::proto
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter1741;
       for (_iter1741 = this->success.begin(); _iter1741 != this->success.end(); ++_iter1741)
       {
@@ -54256,6 +53712,12 @@ uint32_t ThriftHiveMetastore_get_functions_result::write(::apache::thrift::proto
         xfer += oprot->writeString((*_iter1702));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<std::string> ::const_iterator _iter1729;
+      for (_iter1729 = this->success.begin(); _iter1729 != this->success.end(); ++_iter1729)
+      {
+        xfer += oprot->writeString((*_iter1729));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -54301,6 +53763,7 @@ uint32_t ThriftHiveMetastore_get_functions_presult::read(::apache::thrift::proto
           {
             (*(this->success)).clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1742;
             ::apache::thrift::protocol::TType _etype1745;
             xfer += iprot->readListBegin(_etype1745, _size1742);
@@ -54330,6 +53793,16 @@ uint32_t ThriftHiveMetastore_get_functions_presult::read(::apache::thrift::proto
               xfer += iprot->readString((*(this->success))[_i1707]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1730;
+            ::apache::thrift::protocol::TType _etype1733;
+            xfer += iprot->readListBegin(_etype1733, _size1730);
+            (*(this->success)).resize(_size1730);
+            uint32_t _i1734;
+            for (_i1734 = 0; _i1734 < _size1730; ++_i1734)
+            {
+              xfer += iprot->readString((*(this->success))[_i1734]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -55290,6 +54763,7 @@ uint32_t ThriftHiveMetastore_get_role_names_result::read(::apache::thrift::proto
           {
             this->success.clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1747;
             ::apache::thrift::protocol::TType _etype1750;
             xfer += iprot->readListBegin(_etype1750, _size1747);
@@ -55319,6 +54793,16 @@ uint32_t ThriftHiveMetastore_get_role_names_result::read(::apache::thrift::proto
               xfer += iprot->readString(this->success[_i1712]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1735;
+            ::apache::thrift::protocol::TType _etype1738;
+            xfer += iprot->readListBegin(_etype1738, _size1735);
+            this->success.resize(_size1735);
+            uint32_t _i1739;
+            for (_i1739 = 0; _i1739 < _size1735; ++_i1739)
+            {
+              xfer += iprot->readString(this->success[_i1739]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -55358,6 +54842,7 @@ uint32_t ThriftHiveMetastore_get_role_names_result::write(::apache::thrift::prot
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter1752;
       for (_iter1752 = this->success.begin(); _iter1752 != this->success.end(); ++_iter1752)
       {
@@ -55375,6 +54860,12 @@ uint32_t ThriftHiveMetastore_get_role_names_result::write(::apache::thrift::prot
         xfer += oprot->writeString((*_iter1713));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<std::string> ::const_iterator _iter1740;
+      for (_iter1740 = this->success.begin(); _iter1740 != this->success.end(); ++_iter1740)
+      {
+        xfer += oprot->writeString((*_iter1740));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -55420,6 +54911,7 @@ uint32_t ThriftHiveMetastore_get_role_names_presult::read(::apache::thrift::prot
           {
             (*(this->success)).clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1753;
             ::apache::thrift::protocol::TType _etype1756;
             xfer += iprot->readListBegin(_etype1756, _size1753);
@@ -55449,6 +54941,16 @@ uint32_t ThriftHiveMetastore_get_role_names_presult::read(::apache::thrift::prot
               xfer += iprot->readString((*(this->success))[_i1718]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1741;
+            ::apache::thrift::protocol::TType _etype1744;
+            xfer += iprot->readListBegin(_etype1744, _size1741);
+            (*(this->success)).resize(_size1741);
+            uint32_t _i1745;
+            for (_i1745 = 0; _i1745 < _size1741; ++_i1745)
+            {
+              xfer += iprot->readString((*(this->success))[_i1745]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -55522,6 +55024,7 @@ uint32_t ThriftHiveMetastore_grant_role_args::read(::apache::thrift::protocol::T
       case 3:
         if (ftype == ::apache::thrift::protocol::T_I32) {
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast1758;
           xfer += iprot->readI32(ecast1758);
           this->principal_type = (PrincipalType::type)ecast1758;
@@ -55536,6 +55039,11 @@ uint32_t ThriftHiveMetastore_grant_role_args::read(::apache::thrift::protocol::T
           this->principal_type = (PrincipalType::type)ecast1719;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast1746;
+          xfer += iprot->readI32(ecast1746);
+          this->principal_type = (PrincipalType::type)ecast1746;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           this->__isset.principal_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -55552,6 +55060,7 @@ uint32_t ThriftHiveMetastore_grant_role_args::read(::apache::thrift::protocol::T
       case 5:
         if (ftype == ::apache::thrift::protocol::T_I32) {
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast1759;
           xfer += iprot->readI32(ecast1759);
           this->grantorType = (PrincipalType::type)ecast1759;
@@ -55566,6 +55075,11 @@ uint32_t ThriftHiveMetastore_grant_role_args::read(::apache::thrift::protocol::T
           this->grantorType = (PrincipalType::type)ecast1720;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast1747;
+          xfer += iprot->readI32(ecast1747);
+          this->grantorType = (PrincipalType::type)ecast1747;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           this->__isset.grantorType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -55837,6 +55351,7 @@ uint32_t ThriftHiveMetastore_revoke_role_args::read(::apache::thrift::protocol::
       case 3:
         if (ftype == ::apache::thrift::protocol::T_I32) {
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast1760;
           xfer += iprot->readI32(ecast1760);
           this->principal_type = (PrincipalType::type)ecast1760;
@@ -55851,6 +55366,11 @@ uint32_t ThriftHiveMetastore_revoke_role_args::read(::apache::thrift::protocol::
           this->principal_type = (PrincipalType::type)ecast1721;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast1748;
+          xfer += iprot->readI32(ecast1748);
+          this->principal_type = (PrincipalType::type)ecast1748;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           this->__isset.principal_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -56082,6 +55602,7 @@ uint32_t ThriftHiveMetastore_list_roles_args::read(::apache::thrift::protocol::T
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast1761;
           xfer += iprot->readI32(ecast1761);
           this->principal_type = (PrincipalType::type)ecast1761;
@@ -56096,6 +55617,11 @@ uint32_t ThriftHiveMetastore_list_roles_args::read(::apache::thrift::protocol::T
           this->principal_type = (PrincipalType::type)ecast1722;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast1749;
+          xfer += iprot->readI32(ecast1749);
+          this->principal_type = (PrincipalType::type)ecast1749;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           this->__isset.principal_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -56185,6 +55711,7 @@ uint32_t ThriftHiveMetastore_list_roles_result::read(::apache::thrift::protocol:
           {
             this->success.clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1762;
             ::apache::thrift::protocol::TType _etype1765;
             xfer += iprot->readListBegin(_etype1765, _size1762);
@@ -56214,6 +55741,16 @@ uint32_t ThriftHiveMetastore_list_roles_result::read(::apache::thrift::protocol:
               xfer += this->success[_i1727].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1750;
+            ::apache::thrift::protocol::TType _etype1753;
+            xfer += iprot->readListBegin(_etype1753, _size1750);
+            this->success.resize(_size1750);
+            uint32_t _i1754;
+            for (_i1754 = 0; _i1754 < _size1750; ++_i1754)
+            {
+              xfer += this->success[_i1754].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -56253,6 +55790,7 @@ uint32_t ThriftHiveMetastore_list_roles_result::write(::apache::thrift::protocol
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
       std::vector<Role> ::const_iterator _iter1767;
       for (_iter1767 = this->success.begin(); _iter1767 != this->success.end(); ++_iter1767)
       {
@@ -56270,6 +55808,12 @@ uint32_t ThriftHiveMetastore_list_roles_result::write(::apache::thrift::protocol
         xfer += (*_iter1728).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<Role> ::const_iterator _iter1755;
+      for (_iter1755 = this->success.begin(); _iter1755 != this->success.end(); ++_iter1755)
+      {
+        xfer += (*_iter1755).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -56315,6 +55859,7 @@ uint32_t ThriftHiveMetastore_list_roles_presult::read(::apache::thrift::protocol
           {
             (*(this->success)).clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1768;
             ::apache::thrift::protocol::TType _etype1771;
             xfer += iprot->readListBegin(_etype1771, _size1768);
@@ -56344,6 +55889,16 @@ uint32_t ThriftHiveMetastore_list_roles_presult::read(::apache::thrift::protocol
               xfer += (*(this->success))[_i1733].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1756;
+            ::apache::thrift::protocol::TType _etype1759;
+            xfer += iprot->readListBegin(_etype1759, _size1756);
+            (*(this->success)).resize(_size1756);
+            uint32_t _i1760;
+            for (_i1760 = 0; _i1760 < _size1756; ++_i1760)
+            {
+              xfer += (*(this->success))[_i1760].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -57040,6 +56595,7 @@ uint32_t ThriftHiveMetastore_get_privilege_set_args::read(::apache::thrift::prot
           {
             this->group_names.clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1773;
             ::apache::thrift::protocol::TType _etype1776;
             xfer += iprot->readListBegin(_etype1776, _size1773);
@@ -57069,6 +56625,16 @@ uint32_t ThriftHiveMetastore_get_privilege_set_args::read(::apache::thrift::prot
               xfer += iprot->readString(this->group_names[_i1738]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1761;
+            ::apache::thrift::protocol::TType _etype1764;
+            xfer += iprot->readListBegin(_etype1764, _size1761);
+            this->group_names.resize(_size1761);
+            uint32_t _i1765;
+            for (_i1765 = 0; _i1765 < _size1761; ++_i1765)
+            {
+              xfer += iprot->readString(this->group_names[_i1765]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -57106,6 +56672,7 @@ uint32_t ThriftHiveMetastore_get_privilege_set_args::write(::apache::thrift::pro
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->group_names.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter1778;
     for (_iter1778 = this->group_names.begin(); _iter1778 != this->group_names.end(); ++_iter1778)
     {
@@ -57123,6 +56690,12 @@ uint32_t ThriftHiveMetastore_get_privilege_set_args::write(::apache::thrift::pro
       xfer += oprot->writeString((*_iter1739));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1766;
+    for (_iter1766 = this->group_names.begin(); _iter1766 != this->group_names.end(); ++_iter1766)
+    {
+      xfer += oprot->writeString((*_iter1766));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -57155,6 +56728,7 @@ uint32_t ThriftHiveMetastore_get_privilege_set_pargs::write(::apache::thrift::pr
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->group_names)).size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter1779;
     for (_iter1779 = (*(this->group_names)).begin(); _iter1779 != (*(this->group_names)).end(); ++_iter1779)
     {
@@ -57172,6 +56746,12 @@ uint32_t ThriftHiveMetastore_get_privilege_set_pargs::write(::apache::thrift::pr
       xfer += oprot->writeString((*_iter1740));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1767;
+    for (_iter1767 = (*(this->group_names)).begin(); _iter1767 != (*(this->group_names)).end(); ++_iter1767)
+    {
+      xfer += oprot->writeString((*_iter1767));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -57350,6 +56930,7 @@ uint32_t ThriftHiveMetastore_list_privileges_args::read(::apache::thrift::protoc
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           int32_t ecast1780;
           xfer += iprot->readI32(ecast1780);
           this->principal_type = (PrincipalType::type)ecast1780;
@@ -57444,6 +57025,11 @@ uint32_t ThriftHiveMetastore_list_privileges_args::read(::apache::thrift::protoc
           this->principal_type = (PrincipalType::type)ecast1741;
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          int32_t ecast1768;
+          xfer += iprot->readI32(ecast1768);
+          this->principal_type = (PrincipalType::type)ecast1768;
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           this->__isset.principal_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -57548,6 +57134,7 @@ uint32_t ThriftHiveMetastore_list_privileges_result::read(::apache::thrift::prot
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->success.clear();
+<<<<<<< HEAD
 <<<<<<< HEAD
             uint32_t _size1781;
             ::apache::thrift::protocol::TType _etype1784;
@@ -57664,24 +57251,16 @@ uint32_t ThriftHiveMetastore_list_privileges_presult::read(::apache::thrift::pro
             {
               xfer += (*(this->success))[_i1791].read(iprot);
 =======
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             uint32_t _size1769;
             ::apache::thrift::protocol::TType _etype1772;
             xfer += iprot->readListBegin(_etype1772, _size1769);
-            (*(this->success)).resize(_size1769);
+            this->success.resize(_size1769);
             uint32_t _i1773;
             for (_i1773 = 0; _i1773 < _size1769; ++_i1773)
             {
-              xfer += (*(this->success))[_i1773].read(iprot);
-=======
-            uint32_t _size1742;
-            ::apache::thrift::protocol::TType _etype1745;
-            xfer += iprot->readListBegin(_etype1745, _size1742);
-            this->success.resize(_size1742);
-            uint32_t _i1746;
-            for (_i1746 = 0; _i1746 < _size1742; ++_i1746)
-            {
-              xfer += this->success[_i1746].read(iprot);
->>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+              xfer += this->success[_i1773].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -57720,10 +57299,10 @@ uint32_t ThriftHiveMetastore_list_privileges_result::write(::apache::thrift::pro
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<HiveObjectPrivilege> ::const_iterator _iter1747;
-      for (_iter1747 = this->success.begin(); _iter1747 != this->success.end(); ++_iter1747)
+      std::vector<HiveObjectPrivilege> ::const_iterator _iter1774;
+      for (_iter1774 = this->success.begin(); _iter1774 != this->success.end(); ++_iter1774)
       {
-        xfer += (*_iter1747).write(oprot);
+        xfer += (*_iter1774).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -57768,6 +57347,7 @@ uint32_t ThriftHiveMetastore_list_privileges_presult::read(::apache::thrift::pro
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
             uint32_t _size1748;
             ::apache::thrift::protocol::TType _etype1751;
             xfer += iprot->readListBegin(_etype1751, _size1748);
@@ -57777,6 +57357,16 @@ uint32_t ThriftHiveMetastore_list_privileges_presult::read(::apache::thrift::pro
             {
               xfer += (*(this->success))[_i1752].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1775;
+            ::apache::thrift::protocol::TType _etype1778;
+            xfer += iprot->readListBegin(_etype1778, _size1775);
+            (*(this->success)).resize(_size1775);
+            uint32_t _i1779;
+            for (_i1779 = 0; _i1779 < _size1775; ++_i1779)
+            {
+              xfer += (*(this->success))[_i1779].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -58465,6 +58055,7 @@ uint32_t ThriftHiveMetastore_set_ugi_args::read(::apache::thrift::protocol::TPro
           {
             this->group_names.clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1792;
             ::apache::thrift::protocol::TType _etype1795;
             xfer += iprot->readListBegin(_etype1795, _size1792);
@@ -58494,6 +58085,16 @@ uint32_t ThriftHiveMetastore_set_ugi_args::read(::apache::thrift::protocol::TPro
               xfer += iprot->readString(this->group_names[_i1757]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1780;
+            ::apache::thrift::protocol::TType _etype1783;
+            xfer += iprot->readListBegin(_etype1783, _size1780);
+            this->group_names.resize(_size1780);
+            uint32_t _i1784;
+            for (_i1784 = 0; _i1784 < _size1780; ++_i1784)
+            {
+              xfer += iprot->readString(this->group_names[_i1784]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -58527,6 +58128,7 @@ uint32_t ThriftHiveMetastore_set_ugi_args::write(::apache::thrift::protocol::TPr
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->group_names.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter1797;
     for (_iter1797 = this->group_names.begin(); _iter1797 != this->group_names.end(); ++_iter1797)
     {
@@ -58544,6 +58146,12 @@ uint32_t ThriftHiveMetastore_set_ugi_args::write(::apache::thrift::protocol::TPr
       xfer += oprot->writeString((*_iter1758));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1785;
+    for (_iter1785 = this->group_names.begin(); _iter1785 != this->group_names.end(); ++_iter1785)
+    {
+      xfer += oprot->writeString((*_iter1785));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -58572,6 +58180,7 @@ uint32_t ThriftHiveMetastore_set_ugi_pargs::write(::apache::thrift::protocol::TP
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*(this->group_names)).size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
     std::vector<std::string> ::const_iterator _iter1798;
     for (_iter1798 = (*(this->group_names)).begin(); _iter1798 != (*(this->group_names)).end(); ++_iter1798)
     {
@@ -58589,6 +58198,12 @@ uint32_t ThriftHiveMetastore_set_ugi_pargs::write(::apache::thrift::protocol::TP
       xfer += oprot->writeString((*_iter1759));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+    std::vector<std::string> ::const_iterator _iter1786;
+    for (_iter1786 = (*(this->group_names)).begin(); _iter1786 != (*(this->group_names)).end(); ++_iter1786)
+    {
+      xfer += oprot->writeString((*_iter1786));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
     }
     xfer += oprot->writeListEnd();
   }
@@ -58630,6 +58245,7 @@ uint32_t ThriftHiveMetastore_set_ugi_result::read(::apache::thrift::protocol::TP
           {
             this->success.clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1799;
             ::apache::thrift::protocol::TType _etype1802;
             xfer += iprot->readListBegin(_etype1802, _size1799);
@@ -58659,6 +58275,16 @@ uint32_t ThriftHiveMetastore_set_ugi_result::read(::apache::thrift::protocol::TP
               xfer += iprot->readString(this->success[_i1764]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1787;
+            ::apache::thrift::protocol::TType _etype1790;
+            xfer += iprot->readListBegin(_etype1790, _size1787);
+            this->success.resize(_size1787);
+            uint32_t _i1791;
+            for (_i1791 = 0; _i1791 < _size1787; ++_i1791)
+            {
+              xfer += iprot->readString(this->success[_i1791]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -58698,6 +58324,7 @@ uint32_t ThriftHiveMetastore_set_ugi_result::write(::apache::thrift::protocol::T
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter1804;
       for (_iter1804 = this->success.begin(); _iter1804 != this->success.end(); ++_iter1804)
       {
@@ -58715,6 +58342,12 @@ uint32_t ThriftHiveMetastore_set_ugi_result::write(::apache::thrift::protocol::T
         xfer += oprot->writeString((*_iter1765));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<std::string> ::const_iterator _iter1792;
+      for (_iter1792 = this->success.begin(); _iter1792 != this->success.end(); ++_iter1792)
+      {
+        xfer += oprot->writeString((*_iter1792));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -58760,6 +58393,7 @@ uint32_t ThriftHiveMetastore_set_ugi_presult::read(::apache::thrift::protocol::T
           {
             (*(this->success)).clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1805;
             ::apache::thrift::protocol::TType _etype1808;
             xfer += iprot->readListBegin(_etype1808, _size1805);
@@ -58789,6 +58423,16 @@ uint32_t ThriftHiveMetastore_set_ugi_presult::read(::apache::thrift::protocol::T
               xfer += iprot->readString((*(this->success))[_i1770]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1793;
+            ::apache::thrift::protocol::TType _etype1796;
+            xfer += iprot->readListBegin(_etype1796, _size1793);
+            (*(this->success)).resize(_size1793);
+            uint32_t _i1797;
+            for (_i1797 = 0; _i1797 < _size1793; ++_i1797)
+            {
+              xfer += iprot->readString((*(this->success))[_i1797]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -60103,6 +59747,7 @@ uint32_t ThriftHiveMetastore_get_all_token_identifiers_result::read(::apache::th
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1810;
             ::apache::thrift::protocol::TType _etype1813;
             xfer += iprot->readListBegin(_etype1813, _size1810);
@@ -60417,13 +60062,16 @@ uint32_t ThriftHiveMetastore_get_all_token_identifiers_presult::read(::apache::t
 =======
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event
 <<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             uint32_t _size1798;
             ::apache::thrift::protocol::TType _etype1801;
             xfer += iprot->readListBegin(_etype1801, _size1798);
-            (*(this->success)).resize(_size1798);
+            this->success.resize(_size1798);
             uint32_t _i1802;
             for (_i1802 = 0; _i1802 < _size1798; ++_i1802)
             {
+<<<<<<< HEAD
               xfer += iprot->readString((*(this->success))[_i1802]);
 =======
 =======
@@ -60544,6 +60192,9 @@ uint32_t ThriftHiveMetastore_get_all_token_identifiers_presult::read(::apache::t
 =======
 =======
               xfer += iprot->readString(this->success[_i1775]);
+=======
+              xfer += iprot->readString(this->success[_i1802]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -60574,10 +60225,10 @@ uint32_t ThriftHiveMetastore_get_all_token_identifiers_result::write(::apache::t
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
-      std::vector<std::string> ::const_iterator _iter1776;
-      for (_iter1776 = this->success.begin(); _iter1776 != this->success.end(); ++_iter1776)
+      std::vector<std::string> ::const_iterator _iter1803;
+      for (_iter1803 = this->success.begin(); _iter1803 != this->success.end(); ++_iter1803)
       {
-        xfer += oprot->writeString((*_iter1776));
+        xfer += oprot->writeString((*_iter1803));
       }
       xfer += oprot->writeListEnd();
     }
@@ -60618,6 +60269,7 @@ uint32_t ThriftHiveMetastore_get_all_token_identifiers_presult::read(::apache::t
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             (*(this->success)).clear();
+<<<<<<< HEAD
             uint32_t _size1777;
             ::apache::thrift::protocol::TType _etype1780;
             xfer += iprot->readListBegin(_etype1780, _size1777);
@@ -60628,6 +60280,16 @@ uint32_t ThriftHiveMetastore_get_all_token_identifiers_presult::read(::apache::t
               xfer += iprot->readString((*(this->success))[_i1781]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1804;
+            ::apache::thrift::protocol::TType _etype1807;
+            xfer += iprot->readListBegin(_etype1807, _size1804);
+            (*(this->success)).resize(_size1804);
+            uint32_t _i1808;
+            for (_i1808 = 0; _i1808 < _size1804; ++_i1808)
+            {
+              xfer += iprot->readString((*(this->success))[_i1808]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -61354,6 +61016,7 @@ uint32_t ThriftHiveMetastore_get_master_keys_result::read(::apache::thrift::prot
           {
             this->success.clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1821;
             ::apache::thrift::protocol::TType _etype1824;
             xfer += iprot->readListBegin(_etype1824, _size1821);
@@ -61383,6 +61046,16 @@ uint32_t ThriftHiveMetastore_get_master_keys_result::read(::apache::thrift::prot
               xfer += iprot->readString(this->success[_i1786]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1809;
+            ::apache::thrift::protocol::TType _etype1812;
+            xfer += iprot->readListBegin(_etype1812, _size1809);
+            this->success.resize(_size1809);
+            uint32_t _i1813;
+            for (_i1813 = 0; _i1813 < _size1809; ++_i1813)
+            {
+              xfer += iprot->readString(this->success[_i1813]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -61414,6 +61087,7 @@ uint32_t ThriftHiveMetastore_get_master_keys_result::write(::apache::thrift::pro
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter1826;
       for (_iter1826 = this->success.begin(); _iter1826 != this->success.end(); ++_iter1826)
       {
@@ -61431,6 +61105,12 @@ uint32_t ThriftHiveMetastore_get_master_keys_result::write(::apache::thrift::pro
         xfer += oprot->writeString((*_iter1787));
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<std::string> ::const_iterator _iter1814;
+      for (_iter1814 = this->success.begin(); _iter1814 != this->success.end(); ++_iter1814)
+      {
+        xfer += oprot->writeString((*_iter1814));
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -61472,6 +61152,7 @@ uint32_t ThriftHiveMetastore_get_master_keys_presult::read(::apache::thrift::pro
           {
             (*(this->success)).clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1827;
             ::apache::thrift::protocol::TType _etype1830;
             xfer += iprot->readListBegin(_etype1830, _size1827);
@@ -61501,6 +61182,16 @@ uint32_t ThriftHiveMetastore_get_master_keys_presult::read(::apache::thrift::pro
               xfer += iprot->readString((*(this->success))[_i1792]);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1815;
+            ::apache::thrift::protocol::TType _etype1818;
+            xfer += iprot->readListBegin(_etype1818, _size1815);
+            (*(this->success)).resize(_size1815);
+            uint32_t _i1819;
+            for (_i1819 = 0; _i1819 < _size1815; ++_i1819)
+            {
+              xfer += iprot->readString((*(this->success))[_i1819]);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -73142,6 +72833,7 @@ uint32_t ThriftHiveMetastore_get_schema_all_versions_result::read(::apache::thri
           {
             this->success.clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1832;
             ::apache::thrift::protocol::TType _etype1835;
             xfer += iprot->readListBegin(_etype1835, _size1832);
@@ -73171,6 +72863,16 @@ uint32_t ThriftHiveMetastore_get_schema_all_versions_result::read(::apache::thri
               xfer += this->success[_i1797].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1820;
+            ::apache::thrift::protocol::TType _etype1823;
+            xfer += iprot->readListBegin(_etype1823, _size1820);
+            this->success.resize(_size1820);
+            uint32_t _i1824;
+            for (_i1824 = 0; _i1824 < _size1820; ++_i1824)
+            {
+              xfer += this->success[_i1824].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }
@@ -73218,6 +72920,7 @@ uint32_t ThriftHiveMetastore_get_schema_all_versions_result::write(::apache::thr
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
 <<<<<<< HEAD
+<<<<<<< HEAD
       std::vector<SchemaVersion> ::const_iterator _iter1837;
       for (_iter1837 = this->success.begin(); _iter1837 != this->success.end(); ++_iter1837)
       {
@@ -73235,6 +72938,12 @@ uint32_t ThriftHiveMetastore_get_schema_all_versions_result::write(::apache::thr
         xfer += (*_iter1798).write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+      std::vector<SchemaVersion> ::const_iterator _iter1825;
+      for (_iter1825 = this->success.begin(); _iter1825 != this->success.end(); ++_iter1825)
+      {
+        xfer += (*_iter1825).write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
       }
       xfer += oprot->writeListEnd();
     }
@@ -73284,6 +72993,7 @@ uint32_t ThriftHiveMetastore_get_schema_all_versions_presult::read(::apache::thr
           {
             (*(this->success)).clear();
 <<<<<<< HEAD
+<<<<<<< HEAD
             uint32_t _size1838;
             ::apache::thrift::protocol::TType _etype1841;
             xfer += iprot->readListBegin(_etype1841, _size1838);
@@ -73313,6 +73023,16 @@ uint32_t ThriftHiveMetastore_get_schema_all_versions_presult::read(::apache::thr
               xfer += (*(this->success))[_i1803].read(iprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            uint32_t _size1826;
+            ::apache::thrift::protocol::TType _etype1829;
+            xfer += iprot->readListBegin(_etype1829, _size1826);
+            (*(this->success)).resize(_size1826);
+            uint32_t _i1830;
+            for (_i1830 = 0; _i1830 < _size1826; ++_i1830)
+            {
+              xfer += (*(this->success))[_i1830].read(iprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             xfer += iprot->readListEnd();
           }

@@ -353,10 +353,14 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 org.apache.thrift.protocol.TList _list634 = iprot.readListBegin();
                 struct.locks = new ArrayList<ShowLocksResponseElement>(_list634.size);
                 ShowLocksResponseElement _elem635;
                 for (int _i636 = 0; _i636 < _list634.size; ++_i636)
+<<<<<<< HEAD
                 {
                   _elem635 = new ShowLocksResponseElement();
                   _elem635.read(iprot);
@@ -433,6 +437,12 @@ import org.slf4j.LoggerFactory;
                   struct.locks.add(_elem619);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+                {
+                  _elem635 = new ShowLocksResponseElement();
+                  _elem635.read(iprot);
+                  struct.locks.add(_elem635);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 }
                 iprot.readListEnd();
               }
@@ -458,6 +468,7 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(LOCKS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.locks.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -511,6 +522,11 @@ import org.slf4j.LoggerFactory;
             _iter621.write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          for (ShowLocksResponseElement _iter637 : struct.locks)
+          {
+            _iter637.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
           oprot.writeListEnd();
         }
@@ -541,6 +557,7 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetLocks()) {
         {
           oprot.writeI32(struct.locks.size());
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -594,6 +611,11 @@ import org.slf4j.LoggerFactory;
             _iter622.write(oprot);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          for (ShowLocksResponseElement _iter638 : struct.locks)
+          {
+            _iter638.write(oprot);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
         }
       }
@@ -608,10 +630,14 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           org.apache.thrift.protocol.TList _list639 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
           struct.locks = new ArrayList<ShowLocksResponseElement>(_list639.size);
           ShowLocksResponseElement _elem640;
           for (int _i641 = 0; _i641 < _list639.size; ++_i641)
+<<<<<<< HEAD
           {
             _elem640 = new ShowLocksResponseElement();
             _elem640.read(iprot);
@@ -688,6 +714,12 @@ import org.slf4j.LoggerFactory;
             struct.locks.add(_elem624);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          {
+            _elem640 = new ShowLocksResponseElement();
+            _elem640.read(iprot);
+            struct.locks.add(_elem640);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
         }
         struct.setLocksIsSet(true);

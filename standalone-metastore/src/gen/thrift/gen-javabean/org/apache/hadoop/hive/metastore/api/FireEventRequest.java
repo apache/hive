@@ -797,10 +797,14 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 org.apache.thrift.protocol.TList _list716 = iprot.readListBegin();
                 struct.partitionVals = new ArrayList<String>(_list716.size);
                 String _elem717;
                 for (int _i718 = 0; _i718 < _list716.size; ++_i718)
+<<<<<<< HEAD
                 {
                   _elem717 = iprot.readString();
                   struct.partitionVals.add(_elem717);
@@ -871,6 +875,11 @@ import org.slf4j.LoggerFactory;
                   struct.partitionVals.add(_elem701);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+                {
+                  _elem717 = iprot.readString();
+                  struct.partitionVals.add(_elem717);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 }
                 iprot.readListEnd();
               }
@@ -930,6 +939,7 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             for (String _iter719 : struct.partitionVals)
             {
               oprot.writeString(_iter719);
@@ -980,6 +990,11 @@ import org.slf4j.LoggerFactory;
               oprot.writeString(_iter703);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            for (String _iter719 : struct.partitionVals)
+            {
+              oprot.writeString(_iter719);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             oprot.writeListEnd();
           }
@@ -1038,6 +1053,7 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
           for (String _iter720 : struct.partitionVals)
           {
             oprot.writeString(_iter720);
@@ -1088,6 +1104,11 @@ import org.slf4j.LoggerFactory;
             oprot.writeString(_iter704);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          for (String _iter720 : struct.partitionVals)
+          {
+            oprot.writeString(_iter720);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
         }
       }
@@ -1118,10 +1139,14 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           org.apache.thrift.protocol.TList _list721 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
           struct.partitionVals = new ArrayList<String>(_list721.size);
           String _elem722;
           for (int _i723 = 0; _i723 < _list721.size; ++_i723)
+<<<<<<< HEAD
           {
             _elem722 = iprot.readString();
             struct.partitionVals.add(_elem722);
@@ -1192,6 +1217,11 @@ import org.slf4j.LoggerFactory;
             struct.partitionVals.add(_elem706);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          {
+            _elem722 = iprot.readString();
+            struct.partitionVals.add(_elem722);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
         }
         struct.setPartitionValsIsSet(true);

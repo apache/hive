@@ -541,10 +541,14 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 org.apache.thrift.protocol.TList _list700 = iprot.readListBegin();
                 struct.filesAdded = new ArrayList<String>(_list700.size);
                 String _elem701;
                 for (int _i702 = 0; _i702 < _list700.size; ++_i702)
+<<<<<<< HEAD
                 {
                   _elem701 = iprot.readString();
                   struct.filesAdded.add(_elem701);
@@ -615,6 +619,11 @@ import org.slf4j.LoggerFactory;
                   struct.filesAdded.add(_elem685);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+                {
+                  _elem701 = iprot.readString();
+                  struct.filesAdded.add(_elem701);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 }
                 iprot.readListEnd();
               }
@@ -629,10 +638,14 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 org.apache.thrift.protocol.TList _list703 = iprot.readListBegin();
                 struct.filesAddedChecksum = new ArrayList<String>(_list703.size);
                 String _elem704;
                 for (int _i705 = 0; _i705 < _list703.size; ++_i705)
+<<<<<<< HEAD
                 {
                   _elem704 = iprot.readString();
                   struct.filesAddedChecksum.add(_elem704);
@@ -703,6 +716,11 @@ import org.slf4j.LoggerFactory;
                   struct.filesAddedChecksum.add(_elem688);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+                {
+                  _elem704 = iprot.readString();
+                  struct.filesAddedChecksum.add(_elem704);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
                 }
                 iprot.readListEnd();
               }
@@ -733,6 +751,7 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(FILES_ADDED_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.filesAdded.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -786,6 +805,11 @@ import org.slf4j.LoggerFactory;
             oprot.writeString(_iter690);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          for (String _iter706 : struct.filesAdded)
+          {
+            oprot.writeString(_iter706);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
           oprot.writeListEnd();
         }
@@ -796,6 +820,7 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(FILES_ADDED_CHECKSUM_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.filesAddedChecksum.size()));
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -849,6 +874,11 @@ import org.slf4j.LoggerFactory;
               oprot.writeString(_iter691);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+            for (String _iter707 : struct.filesAddedChecksum)
+            {
+              oprot.writeString(_iter707);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
             }
             oprot.writeListEnd();
           }
@@ -874,6 +904,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.filesAdded.size());
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -927,6 +958,11 @@ import org.slf4j.LoggerFactory;
           oprot.writeString(_iter692);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        for (String _iter708 : struct.filesAdded)
+        {
+          oprot.writeString(_iter708);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         }
       }
       BitSet optionals = new BitSet();
@@ -943,6 +979,7 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetFilesAddedChecksum()) {
         {
           oprot.writeI32(struct.filesAddedChecksum.size());
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -996,6 +1033,11 @@ import org.slf4j.LoggerFactory;
             oprot.writeString(_iter693);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          for (String _iter709 : struct.filesAddedChecksum)
+          {
+            oprot.writeString(_iter709);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
         }
       }
@@ -1008,10 +1050,14 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         org.apache.thrift.protocol.TList _list710 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
         struct.filesAdded = new ArrayList<String>(_list710.size);
         String _elem711;
         for (int _i712 = 0; _i712 < _list710.size; ++_i712)
+<<<<<<< HEAD
         {
           _elem711 = iprot.readString();
           struct.filesAdded.add(_elem711);
@@ -1082,6 +1128,11 @@ import org.slf4j.LoggerFactory;
           struct.filesAdded.add(_elem695);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+        {
+          _elem711 = iprot.readString();
+          struct.filesAdded.add(_elem711);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
         }
       }
       struct.setFilesAddedIsSet(true);
@@ -1095,10 +1146,14 @@ import org.slf4j.LoggerFactory;
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           org.apache.thrift.protocol.TList _list713 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
           struct.filesAddedChecksum = new ArrayList<String>(_list713.size);
           String _elem714;
           for (int _i715 = 0; _i715 < _list713.size; ++_i715)
+<<<<<<< HEAD
           {
             _elem714 = iprot.readString();
             struct.filesAddedChecksum.add(_elem714);
@@ -1169,6 +1224,11 @@ import org.slf4j.LoggerFactory;
             struct.filesAddedChecksum.add(_elem698);
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
 >>>>>>> HIVE-18781 : Create/Replicate Abort Txn event : After fixing review comments and test failures
+=======
+          {
+            _elem714 = iprot.readString();
+            struct.filesAddedChecksum.add(_elem714);
+>>>>>>> HIVE-18781 : Create/Replicate Open, Commit(without write) and Abort Txn event : Thrift changes
           }
         }
         struct.setFilesAddedChecksumIsSet(true);
