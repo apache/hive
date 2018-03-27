@@ -2999,6 +2999,11 @@ public class HiveConf extends Configuration {
         "internal use only, used to override the hive.vectorized.execution.enabled setting and\n" +
         "turn off vectorization.  The default is false, of course",
         true),
+    HIVE_TEST_VECTORIZATION_SUPPRESS_EXPLAIN_EXECUTION_MODE(
+        "hive.test.vectorization.suppress.explain.execution.mode", false,
+            "internal use only, used to suppress \"Execution mode: vectorized\" EXPLAIN display.\n" +
+            "The default is false, of course",
+            true),
 
     HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true, "This property has been extended to control "
         + "whether to check, convert, and normalize partition value to conform to its column type in "

@@ -99,6 +99,9 @@ public abstract class BaseWork extends AbstractOperatorDesc {
   protected long vectorizedVertexNum;
   protected int vectorizedTestingReducerBatchSize;
 
+  private boolean isTestForcedVectorizationEnable;
+  private boolean isTestVectorizationSuppressExplainExecutionMode;
+
   protected boolean llapMode = false;
   protected boolean uberMode = false;
 
@@ -262,6 +265,24 @@ public abstract class BaseWork extends AbstractOperatorDesc {
     return allNative;
   }
 
+  public void setIsTestForcedVectorizationEnable(boolean isTestForcedVectorizationEnable) {
+    this.isTestForcedVectorizationEnable = isTestForcedVectorizationEnable;
+  }
+
+  public boolean getIsTestForcedVectorizationEnable() {
+    return isTestForcedVectorizationEnable;
+  }
+
+  public void setIsTestVectorizationSuppressExplainExecutionMode(
+      boolean isTestVectorizationSuppressExplainExecutionMode) {
+    this.isTestVectorizationSuppressExplainExecutionMode =
+        isTestVectorizationSuppressExplainExecutionMode;
+  }
+
+  public boolean getIsTestVectorizationSuppressExplainExecutionMode() {
+    return isTestVectorizationSuppressExplainExecutionMode;
+  }
+
   public static class BaseExplainVectorization {
 
     private final BaseWork baseWork;
@@ -287,12 +308,14 @@ public abstract class BaseWork extends AbstractOperatorDesc {
       return result;
     }
 
-    @Explain(vectorization = Vectorization.SUMMARY, displayName = "enabled", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "enabled",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public boolean enabled() {
       return baseWork.getVectorizationEnabled();
     }
 
-    @Explain(vectorization = Vectorization.SUMMARY, displayName = "vectorized", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "vectorized",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public Boolean vectorized() {
       if (!baseWork.getVectorizationEnabled()) {
         return null;
@@ -300,7 +323,8 @@ public abstract class BaseWork extends AbstractOperatorDesc {
       return baseWork.getVectorMode();
     }
 
-    @Explain(vectorization = Vectorization.SUMMARY, displayName = "notVectorizedReason", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "notVectorizedReason",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public String notVectorizedReason() {
       if (!baseWork.getVectorizationEnabled() || baseWork.getVectorMode()) {
         return null;
@@ -312,7 +336,8 @@ public abstract class BaseWork extends AbstractOperatorDesc {
       return notVectorizedReason.toString();
     }
 
-    @Explain(vectorization = Vectorization.SUMMARY, displayName = "allNative", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "allNative",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public Boolean nativeVectorized() {
       if (!baseWork.getVectorMode()) {
         return null;
@@ -320,7 +345,45 @@ public abstract class BaseWork extends AbstractOperatorDesc {
       return baseWork.getAllNative();
     }
 
-    @Explain(vectorization = Vectorization.SUMMARY, displayName = "usesVectorUDFAdaptor", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    public static List<String> getColumns(VectorizedRowBatchCtx vectorizedRowBatchCtx,
+        int startIndex, int count) {
+      String[] rowColumnNames = vectorizedRowBatchCtx.getRowColumnNames();
+      TypeInfo[] rowColumnTypeInfos = vectorizedRowBatchCtx.getRowColumnTypeInfos();
+      DataTypePhysicalVariation[]  dataTypePhysicalVariations =
+          vectorizedRowBatchCtx.getRowdataTypePhysicalVariations();
+
+      List<String> result = new ArrayList<String>(count);
+      final int end = startIndex + count;
+      for (int i = startIndex; i < end; i++) {
+        String displayString = rowColumnNames[i] + ":" + rowColumnTypeInfos[i];
+        if (dataTypePhysicalVariations != null &&
+            dataTypePhysicalVariations[i] != DataTypePhysicalVariation.NONE) {
+          displayString += "/" + dataTypePhysicalVariations[i].toString();
+        }
+        result.add(displayString);
+      }
+      return result;
+    }
+
+    public static String getScratchColumns(VectorizedRowBatchCtx vectorizedRowBatchCtx) {
+      String[] scratchColumnTypeNames = vectorizedRowBatchCtx.getScratchColumnTypeNames();
+      DataTypePhysicalVariation[] scratchDataTypePhysicalVariations =
+          vectorizedRowBatchCtx.getScratchDataTypePhysicalVariations();
+      final int size = scratchColumnTypeNames.length;
+      List<String> result = new ArrayList<String>(size);
+      for (int i = 0; i < size; i++) {
+        String displayString = scratchColumnTypeNames[i];
+        if (scratchDataTypePhysicalVariations != null &&
+            scratchDataTypePhysicalVariations[i] != DataTypePhysicalVariation.NONE) {
+          displayString += "/" + scratchDataTypePhysicalVariations[i].toString();
+        }
+        result.add(displayString);
+      }
+      return result.toString();
+    }
+
+    @Explain(vectorization = Vectorization.SUMMARY, displayName = "usesVectorUDFAdaptor",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public Boolean usesVectorUDFAdaptor() {
       if (!baseWork.getVectorMode()) {
         return null;
@@ -336,71 +399,54 @@ public abstract class BaseWork extends AbstractOperatorDesc {
         this.vectorizedRowBatchCtx = vectorizedRowBatchCtx;
       }
 
-      private List<String> getColumns(int startIndex, int count) {
-        String[] rowColumnNames = vectorizedRowBatchCtx.getRowColumnNames();
-        TypeInfo[] rowColumnTypeInfos = vectorizedRowBatchCtx.getRowColumnTypeInfos();
-        DataTypePhysicalVariation[]  dataTypePhysicalVariations =
-            vectorizedRowBatchCtx.getRowdataTypePhysicalVariations();
-
-        List<String> result = new ArrayList<String>(count);
-        final int end = startIndex + count;
-        for (int i = startIndex; i < end; i++) {
-          String displayString = rowColumnNames[i] + ":" + rowColumnTypeInfos[i];
-          if (dataTypePhysicalVariations != null &&
-              dataTypePhysicalVariations[i] != DataTypePhysicalVariation.NONE) {
-            displayString += "/" + dataTypePhysicalVariations[i].toString();
-          }
-          result.add(displayString);
-        }
-        return result;
-      }
-
-      @Explain(vectorization = Vectorization.DETAIL, displayName = "dataColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+      @Explain(vectorization = Vectorization.DETAIL, displayName = "dataColumns",
+          explainLevels = { Level.DEFAULT, Level.EXTENDED })
       public List<String> getDataColumns() {
-        return getColumns(0, vectorizedRowBatchCtx.getDataColumnCount());
+        return getColumns(
+            vectorizedRowBatchCtx,
+            0,
+            vectorizedRowBatchCtx.getDataColumnCount());
       }
 
-      @Explain(vectorization = Vectorization.DETAIL, displayName = "partitionColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+      @Explain(vectorization = Vectorization.DETAIL, displayName = "partitionColumns",
+          explainLevels = { Level.DEFAULT, Level.EXTENDED })
       public List<String> getPartitionColumns() {
-        return getColumns(vectorizedRowBatchCtx.getDataColumnCount(), vectorizedRowBatchCtx.getPartitionColumnCount());
+        return getColumns(
+            vectorizedRowBatchCtx,
+            vectorizedRowBatchCtx.getDataColumnCount(),
+            vectorizedRowBatchCtx.getPartitionColumnCount());
       }
 
-      @Explain(vectorization = Vectorization.DETAIL, displayName = "includeColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+      @Explain(vectorization = Vectorization.DETAIL, displayName = "includeColumns",
+          explainLevels = { Level.DEFAULT, Level.EXTENDED })
       public String getDataColumnNums() {
         int[] dataColumnNums = vectorizedRowBatchCtx.getDataColumnNums();
         if (dataColumnNums == null) {
           return null;
         }
-        return Arrays.toString(vectorizedRowBatchCtx.getDataColumnNums());
+        return Arrays.toString(dataColumnNums);
       }
 
-      @Explain(vectorization = Vectorization.DETAIL, displayName = "dataColumnCount", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+      @Explain(vectorization = Vectorization.DETAIL, displayName = "dataColumnCount",
+          explainLevels = { Level.DEFAULT, Level.EXTENDED })
       public int getDataColumnCount() {
         return vectorizedRowBatchCtx.getDataColumnCount();
       }
 
-      @Explain(vectorization = Vectorization.DETAIL, displayName = "partitionColumnCount", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+      @Explain(vectorization = Vectorization.DETAIL, displayName = "partitionColumnCount",
+          explainLevels = { Level.DEFAULT, Level.EXTENDED })
       public int getPartitionColumnCount() {
         return vectorizedRowBatchCtx.getPartitionColumnCount();
       }
 
-      @Explain(vectorization = Vectorization.DETAIL, displayName = "scratchColumnTypeNames", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+      @Explain(vectorization = Vectorization.DETAIL, displayName = "scratchColumnTypeNames",
+          explainLevels = { Level.DEFAULT, Level.EXTENDED })
       public String getScratchColumnTypeNames() {
-        String[] scratchColumnTypeNames = vectorizedRowBatchCtx.getScratchColumnTypeNames();
-        DataTypePhysicalVariation[] scratchDataTypePhysicalVariations = vectorizedRowBatchCtx.getScratchDataTypePhysicalVariations();
-        final int size = scratchColumnTypeNames.length;
-        List<String> result = new ArrayList<String>(size);
-        for (int i = 0; i < size; i++) {
-          String displayString = scratchColumnTypeNames[i];
-          if (scratchDataTypePhysicalVariations != null && scratchDataTypePhysicalVariations[i] != DataTypePhysicalVariation.NONE) {
-            displayString += "/" + scratchDataTypePhysicalVariations[i].toString();
-          }
-          result.add(displayString);
-        }
-        return result.toString();
+        return getScratchColumns(vectorizedRowBatchCtx);
       }
 
-      @Explain(vectorization = Vectorization.DETAIL, displayName = "neededVirtualColumns", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+      @Explain(vectorization = Vectorization.DETAIL, displayName = "neededVirtualColumns",
+          explainLevels = { Level.DEFAULT, Level.EXTENDED })
       public String getNeededVirtualColumns() {
         VirtualColumn[] neededVirtualColumns = vectorizedRowBatchCtx.getNeededVirtualColumns();
         if (neededVirtualColumns == null || neededVirtualColumns.length == 0) {
@@ -411,7 +457,8 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
     }
 
-    @Explain(vectorization = Vectorization.DETAIL, displayName = "rowBatchContext", explainLevels = { Level.DEFAULT, Level.EXTENDED })
+    @Explain(vectorization = Vectorization.DETAIL, displayName = "rowBatchContext",
+        explainLevels = { Level.DEFAULT, Level.EXTENDED })
     public RowBatchContextExplainVectorization vectorizedRowBatchContext() {
       if (!baseWork.getVectorMode()) {
         return null;

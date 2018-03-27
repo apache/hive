@@ -126,15 +126,17 @@ public class ReduceWork extends BaseWork {
   @Explain(displayName = "Execution mode", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED },
       vectorization = Vectorization.SUMMARY_PATH)
   public String getExecutionMode() {
-    if (vectorMode) {
+    if (vectorMode &&
+        !(getIsTestForcedVectorizationEnable() &&
+          getIsTestVectorizationSuppressExplainExecutionMode())) {
       if (llapMode) {
-	if (uberMode) {
-	  return "vectorized, uber";
-	} else {
-	  return "vectorized, llap";
-	}
+        if (uberMode) {
+          return "vectorized, uber";
+        } else {
+          return "vectorized, llap";
+        }
       } else {
-	return "vectorized";
+        return "vectorized";
       }
     } else if (llapMode) {
       return uberMode? "uber" : "llap";
