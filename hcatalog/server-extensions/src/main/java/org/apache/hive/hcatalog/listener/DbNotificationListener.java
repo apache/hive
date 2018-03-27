@@ -68,22 +68,37 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 
 /**
- * An implementation of {@link org.apache.hadoop.hive.metastore.MetaStoreEventListener} that
- * stores events in the database.
+ * <p>This listener takes a ListenerEvent, builds a NotificationEvent,
+ * and stores it in the database.This class can be configured as a listener (transaction or non-transactional) so that the listener
+ * events are logged into the database.
+ * </p>
  *
- * Design overview:  This listener takes any event, builds a NotificationEventResponse,
- * and puts it on a queue.  There is a dedicated thread that reads entries from the queue and
- * places them in the database.  The reason for doing it in a separate thread is that we want to
- * avoid slowing down other metadata operations with the work of putting the notification into
- * the database.  Also, occasionally the thread needs to clean the database of old records.  We
- * definitely don't want to do that as part of another metadata operation.
+ * <p>Design overview: This class implements{@link org.apache.hadoop.hive.metastore.MetaStoreEventListener}
+ * When a NotificationEvent is created, an unique and monotonically
+ * increasing EVENT_ID is generated from the database and it assigned to each NotificationEvent.
+ * It is important to note that this Listener can be configured as a transaction listener
+ * in cases where client applications rely on the fact that the event is generated only when
+ * the metadata transaction is successful. Each NotificationEvent requires a EVENT_ID which is generated
+ * using a RW row lock in the database in the method RawStore.addNotificationEvent. This means any
+ * other concurrent transaction thread trying to create a event at the same time will block until the
+ * lock is released. This is required to satisfy the strict constraints (monotonically increasing event id,
+ * with no holes and generated only when transaction successful) on the client side
+ * </p>
+ * <p>
+ * Also, there is a cleaner thread which deletes old notification events at a regular interval. The
+ * time-to-live for the Notification Events can be configured by setting
+ * hive.metastore.event.db.listener.timetolive appropriately
+ * </p>
+ * <p>TODO : The code to generate EVENT_ID gets a database R/W row lock using SELECT FOR UPDATE for the single row
+ * on the NOTIFICATION_SEQUENCE table which blocks all the other metadata transactions until the
+ * event is committed along with parent transaction. This is likely to cause performance problem and the
+ * design needs to be improved
+ * </p>
  */
 public class DbNotificationListener extends MetaStoreEventListener {
 
   private static final Logger LOG = LoggerFactory.getLogger(DbNotificationListener.class.getName());
   private static CleanerThread cleaner = null;
-
-  private static final Object NOTIFICATION_TBL_LOCK = new Object();
 
   // This is the same object as super.conf, but it's convenient to keep a copy of it as a
   // HiveConf rather than a Configuration.
@@ -477,19 +492,17 @@ public class DbNotificationListener extends MetaStoreEventListener {
    *                      DB_NOTIFICATION_EVENT_ID_KEY_NAME for future reference by other listeners.
    */
   private void process(NotificationEvent event, ListenerEvent listenerEvent) throws MetaException {
+    //no need for a synchronized block since synchronization accross multiple threads is done
+    //at database level in addNotificationEvent method.
     event.setMessageFormat(msgFactory.getMessageFormat());
-    synchronized (NOTIFICATION_TBL_LOCK) {
-      LOG.debug("DbNotificationListener: Processing : {}:{}", event.getEventId(),
-          event.getMessage());
-      HMSHandler.getMSForConf(hiveConf).addNotificationEvent(event);
-    }
+    LOG.debug("DbNotificationListener: Processing : {}:{}", event.getEventId(), event.getMessage());
+    HMSHandler.getMSForConf(hiveConf).addNotificationEvent(event);
 
-      // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
-      if (event.isSetEventId()) {
-        listenerEvent.putParameter(
-            MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME,
-            Long.toString(event.getEventId()));
-      }
+    // Set the DB_NOTIFICATION_EVENT_ID for future reference by other listeners.
+    if (event.isSetEventId()) {
+      listenerEvent.putParameter(MetaStoreEventListenerConstants.DB_NOTIFICATION_EVENT_ID_KEY_NAME,
+          Long.toString(event.getEventId()));
+    }
   }
 
   private static class CleanerThread extends Thread {
@@ -508,9 +521,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
     @Override
     public void run() {
       while (true) {
-        synchronized(NOTIFICATION_TBL_LOCK) {
-          rs.cleanNotificationEvents(ttl);
-        }
+        rs.cleanNotificationEvents(ttl);
         LOG.debug("Cleaner thread done");
         try {
           Thread.sleep(sleepTime);
