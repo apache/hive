@@ -420,6 +420,10 @@ public class MiniHS2 extends AbstractHiveService {
     this.pamAuthenticator = pamAuthenticator;
   }
 
+  public int getOpenSessionsCount() {
+    return hiveServer2.getOpenSessionsCount();
+  }
+
   public CLIServiceClient getServiceClient() {
     verifyStarted();
     return getServiceClientInternal();

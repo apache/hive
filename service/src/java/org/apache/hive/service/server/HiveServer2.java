@@ -96,7 +96,8 @@ import org.apache.hive.http.security.PamAuthenticator;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.ServiceException;
 import org.apache.hive.service.cli.CLIService;
-import org.apache.hive.service.cli.session.SessionManager;
+import org.apache.hive.service.cli.HiveSQLException;
+import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.cli.thrift.ThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.hive.service.cli.thrift.ThriftHttpCLIService;
@@ -548,6 +549,10 @@ public class HiveServer2 extends CompositeService {
     return isLeader.get();
   }
 
+  public int getOpenSessionsCount() {
+    return cliService != null ? cliService.getSessionManager().getOpenSessionCount() : 0;
+  }
+
   interface FailoverHandler {
     void failover() throws Exception;
   }
@@ -694,9 +699,7 @@ public class HiveServer2 extends CompositeService {
     public void notLeader() {
       LOG.info("HS2 instance {} LOST LEADERSHIP. Stopping/Disconnecting tez sessions..", hiveServer2.serviceUri);
       hiveServer2.isLeader.set(false);
-      // TODO: should we explicitly close client connections with appropriate error msg? SessionManager.closeSession()
-      // will shut itself down upon explicit --deregister after all connections are closed. Something similar but for
-      // failover.
+      hiveServer2.closeHiveSessions();
       hiveServer2.stopOrDisconnectTezSessions();
       LOG.info("Stopped/Disconnected tez sessions.");
     }
@@ -759,8 +762,22 @@ public class HiveServer2 extends CompositeService {
     }
   }
 
+  private void closeHiveSessions() {
+    LOG.info("Closing all open hive sessions.");
+    if (cliService != null && cliService.getSessionManager().getOpenSessionCount() > 0) {
+      try {
+        for (HiveSession session : cliService.getSessionManager().getSessions()) {
+          cliService.getSessionManager().closeSession(session.getSessionHandle());
+        }
+        LOG.info("Closed all open hive sessions");
+      } catch (HiveSQLException e) {
+        LOG.error("Unable to close all open sessions.", e);
+      }
+    }
+  }
+
   private void stopOrDisconnectTezSessions() {
-    LOG.info("Stoppping/Disconnecting tez sessions.");
+    LOG.info("Stopping/Disconnecting tez sessions.");
     // There should already be an instance of the session pool manager.
     // If not, ignoring is fine while stopping HiveServer2.
     if (tezSessionPoolManager != null) {
@@ -768,8 +785,7 @@ public class HiveServer2 extends CompositeService {
         tezSessionPoolManager.stop();
         LOG.info("Stopped tez session pool manager.");
       } catch (Exception e) {
-        LOG.error("Tez session pool manager stop had an error during stop of HiveServer2. "
-          + "Shutting down HiveServer2 anyway.", e);
+        LOG.error("Error while stopping tez session pool manager.", e);
       }
     }
     if (wm != null) {
@@ -777,8 +793,7 @@ public class HiveServer2 extends CompositeService {
         wm.stop();
         LOG.info("Stopped workload manager.");
       } catch (Exception e) {
-        LOG.error("Workload manager stop had an error during stop of HiveServer2. "
-          + "Shutting down HiveServer2 anyway.", e);
+        LOG.error("Error while stopping workload manager.", e);
       }
     }
   }
