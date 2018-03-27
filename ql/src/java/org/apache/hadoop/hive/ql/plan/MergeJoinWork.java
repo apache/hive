@@ -175,7 +175,7 @@ public class MergeJoinWork extends BaseWork {
   public boolean getLlapMode() {
     return getMainWork().getLlapMode();
   }
-  
+
   public void addDummyOp(HashTableDummyOperator dummyOp) {
     getMainWork().addDummyOp(dummyOp);
   }
