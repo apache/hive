@@ -108,6 +108,10 @@ public class FixAcidKeyIndex {
   }
 
   static boolean isAcidKeyIndexValid(Reader reader) {
+    if (reader.getNumberOfRows() == 0) {
+      return true;
+    }
+
     // The number of stripes should match the key index count
     List<StripeInformation> stripes = reader.getStripes();
     RecordIdentifier[] keyIndex = OrcRecordUpdater.parseKeyIndex(reader);
