@@ -280,7 +280,7 @@ public final class DruidStorageHandlerUtils {
     }
     for (FileStatus fileStatus : fss) {
       final DataSegment segment = JSON_MAPPER
-              .readValue(fs.open(fileStatus.getPath()), DataSegment.class);
+              .readValue((InputStream) fs.open(fileStatus.getPath()), DataSegment.class);
       publishedSegmentsBuilder.add(segment);
     }
     return publishedSegmentsBuilder.build();
