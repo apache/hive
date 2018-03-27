@@ -211,6 +211,12 @@ public class TestFixAcidKeyIndex {
 
   @Test
   public void testValidKeyIndex() throws Exception {
+    // Try with 0 row file.
+    createTestAcidFile(testFilePath, 0, new GoodKeyIndexBuilder());
+    checkValidKeyIndex(testFilePath);
+    // Attempting to fix a valid - should not result in a new file.
+    fixValidIndex(testFilePath);
+
     // Try single stripe
     createTestAcidFile(testFilePath, 100, new GoodKeyIndexBuilder());
     checkValidKeyIndex(testFilePath);
