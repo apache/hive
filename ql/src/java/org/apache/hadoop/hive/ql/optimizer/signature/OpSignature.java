@@ -36,14 +36,10 @@ public class OpSignature {
    * Holds the signature of the operator; the keys are are the methods name marked by {@link Signature}.
    */
   private Map<String, Object> sigMap;
-  // FIXME: this is currently retained...
-  // but later the signature should be able to serve the same comparision granulaty level as op.logicalEquals right now
-  private Operator<? extends OperatorDesc> op;
 
   private OpSignature(Operator<? extends OperatorDesc> op) {
-    this.op = op;
     sigMap = new HashMap<>();
-    // FIXME: consider to operator info as well..not just conf?
+    // FIXME: consider other operator info as well..not just conf?
     SignatureUtils.write(sigMap, op.getConf());
   }
 
@@ -65,7 +61,7 @@ public class OpSignature {
       return true;
     }
     OpSignature o = (OpSignature) obj;
-    return op.logicalEquals(o.op);
+    return signatureCompare(o);
   }
 
   public boolean signatureCompare(OpSignature other) {
@@ -91,4 +87,20 @@ public class OpSignature {
     }
   }
 
+  @Override
+  public String toString() {
+    return toString("");
+  }
+
+  public String toString(String pad) {
+    StringBuffer sb = new StringBuffer();
+    for (Entry<String, Object> e : sigMap.entrySet()) {
+      sb.append(pad);
+      sb.append(e.getKey());
+      sb.append(" = ");
+      sb.append(e.getValue());
+      sb.append('\n');
+    }
+    return sb.toString();
+  }
 }

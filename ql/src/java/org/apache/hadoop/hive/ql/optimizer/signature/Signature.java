@@ -28,9 +28,7 @@ import java.lang.annotation.Target;
  *
  * The signature is used to enable logical level tree comparisions between operator trees.
  */
-@Target(value = ElementType.METHOD)
+@Target(value = { ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Signature {
-
-
 }

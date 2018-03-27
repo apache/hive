@@ -64,15 +64,15 @@ Stage-0
     Stage-1
       Reducer 3 llap
       File Output Operator [FS_15]
-        Group By Operator [GBY_13] (rows=1 width=8)
+        Group By Operator [GBY_13] (runtime: rows=1 width=8)
           Output:["_col0"],aggregations:["sum(VALUE._col0)"]
         <-Reducer 2 [CUSTOM_SIMPLE_EDGE] llap
           PARTITION_ONLY_SHUFFLE [RS_12]
-            Group By Operator [GBY_11] (rows=1 width=8)
+            Group By Operator [GBY_11] (runtime: rows=1 width=8)
               Output:["_col0"],aggregations:["sum(_col0)"]
-              Select Operator [SEL_9] (rows=15 width=8)
+              Select Operator [SEL_9] (runtime: rows=3 width=8)
                 Output:["_col0"]
-                Merge Join Operator [MERGEJOIN_20] (rows=15 width=8)
+                Merge Join Operator [MERGEJOIN_20] (runtime: rows=3 width=8)
                   Conds:RS_6._col0=RS_7._col0(Inner),Output:["_col0","_col1"]
                 <-Map 1 [SIMPLE_EDGE] llap
                   SHUFFLE [RS_6]

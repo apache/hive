@@ -28,13 +28,11 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  * Operator tree signature.
  */
 public class OpTreeSignature {
-  private Operator<?> op;
   private int hashCode;
   private OpSignature sig;
   private ArrayList<OpTreeSignature> parentSig;
 
   OpTreeSignature(Operator<?> op, OpTreeSignatureFactory osf) {
-    this.op = op;
     sig = OpSignature.of(op);
     parentSig = new ArrayList<>();
     for (Operator<? extends OperatorDesc> parentOp : op.getParentOperators()) {
@@ -65,26 +63,23 @@ public class OpTreeSignature {
       return true;
     }
     OpTreeSignature o = (OpTreeSignature) obj;
-    // TODO: this should be removed as soon as signatures are able to provide the same level of confidentiality as logicalEquals
-    return logicalEqualsTree(op, o.op);
+
+    return sig.equals(o.sig) && parentSig.equals(o.parentSig);
   }
 
-  // XXX: this is ain't cheap! :)
-  private final boolean logicalEqualsTree(Operator<?> o1, Operator<?> o) {
-    if (!o1.logicalEquals(o)) {
-      return false;
+  @Override
+  public String toString() {
+    return toString("");
+  }
+
+  public String toString(String pad) {
+    StringBuffer sb = new StringBuffer();
+    sb.append(pad + "hashcode:" + hashCode + "\n");
+    sb.append(sig.toString(pad));
+    for (OpTreeSignature p : parentSig) {
+      sb.append(p.toString(pad + " "));
     }
-    if (o.getNumParent() != o1.getNumParent()) {
-      return false;
-    }
-    for (int i = 0; i < o1.getNumParent(); i++) {
-      Operator<? extends OperatorDesc> copL = o1.getParentOperators().get(i);
-      Operator<? extends OperatorDesc> copR = o.getParentOperators().get(i);
-      if (!copL.logicalEquals(copR)) {
-        return false;
-      }
-    }
-    return true;
+    return sb.toString();
   }
 
 }

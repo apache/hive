@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -53,6 +54,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -75,7 +77,8 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
-import org.apache.hadoop.hive.ql.plan.mapper.RuntimeStatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
@@ -2493,12 +2496,20 @@ public class StatsRulesProcFactory {
 
 
   private static Statistics applyRuntimeStats(Context context, Statistics stats, Operator<?> op) {
-    if (!context.getRuntimeStatsSource().isPresent()) {
+    if (!((HiveConf) context.getConf()).getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ENABLED)) {
       return stats;
     }
-    RuntimeStatsSource rss = context.getRuntimeStatsSource().get();
 
-    Optional<OperatorStats> os = rss.lookup(op);
+    PlanMapper pm = context.getPlanMapper();
+    OpTreeSignature treeSig = pm.getSignatureOf(op);
+    pm.link(op, treeSig);
+
+    StatsSource statsSource = context.getStatsSource();
+    if (!statsSource.canProvideStatsFor(op.getClass())) {
+      return stats;
+    }
+
+    Optional<OperatorStats> os = statsSource.lookup(treeSig);
 
     if (!os.isPresent()) {
       return stats;

@@ -94,7 +94,7 @@ public class TestOperatorSignature {
     checkNotEquals(t1, t2);
   }
 
-  private void checkEquals(Operator<?> o1, Operator<?> o2) {
+  public static void checkEquals(Operator<?> o1, Operator<?> o2) {
     assertTrue(o1.logicalEquals(o2));
     OpSignature s1 = OpSignature.of(o1);
     OpSignature s2 = OpSignature.of(o2);
@@ -106,7 +106,7 @@ public class TestOperatorSignature {
   }
 
 
-  private void checkNotEquals(Operator<? extends OperatorDesc> o1, Operator<? extends OperatorDesc> o2) {
+  public static void checkNotEquals(Operator<? extends OperatorDesc> o1, Operator<? extends OperatorDesc> o2) {
     assertFalse(o1.logicalEquals(o2));
     OpSignature s1 = OpSignature.of(o1);
     OpSignature s2 = OpSignature.of(o2);
@@ -117,7 +117,7 @@ public class TestOperatorSignature {
     assertNotEquals(s1, s2);
   }
 
-  private void checkTreeEquals(Operator<?> o1, Operator<?> o2) {
+  public static void checkTreeEquals(Operator<?> o1, Operator<?> o2) {
     OpTreeSignature ts1 = OpTreeSignature.of(o1);
     OpTreeSignature ts2 = OpTreeSignature.of(o2);
 
@@ -125,12 +125,13 @@ public class TestOperatorSignature {
     assertEquals(ts1, ts2);
   }
 
-  private void checkTreeNotEquals(Operator<? extends OperatorDesc> o1, Operator<? extends OperatorDesc> o2) {
+  public static void checkTreeNotEquals(Operator<? extends OperatorDesc> o1, Operator<? extends OperatorDesc> o2) {
 
     OpTreeSignature ts1 = OpTreeSignature.of(o1);
     OpTreeSignature ts2 = OpTreeSignature.of(o2);
 
     assertNotEquals(ts1.hashCode(), ts2.hashCode());
+    ts1.equals(ts2);
     assertNotEquals(ts1, ts2);
   }
 

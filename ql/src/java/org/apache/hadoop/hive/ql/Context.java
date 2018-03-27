@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,7 +60,6 @@ import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.mapper.EmptyStatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.RuntimeStatsSource;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.wm.WmContext;
@@ -161,7 +159,7 @@ public class Context {
 
   private boolean isExplainPlan = false;
   private PlanMapper planMapper = new PlanMapper();
-  private RuntimeStatsSource runtimeStatsSource;
+  private StatsSource runtimeStatsSource;
   private int executionIndex;
 
   public void setOperation(Operation operation) {
@@ -1049,12 +1047,8 @@ public class Context {
     return planMapper;
   }
 
-  public void setRuntimeStatsSource(RuntimeStatsSource runtimeStatsSource) {
+  public void setStatsSource(StatsSource runtimeStatsSource) {
     this.runtimeStatsSource = runtimeStatsSource;
-  }
-
-  public Optional<RuntimeStatsSource> getRuntimeStatsSource() {
-    return Optional.ofNullable(runtimeStatsSource);
   }
 
   public StatsSource getStatsSource() {
