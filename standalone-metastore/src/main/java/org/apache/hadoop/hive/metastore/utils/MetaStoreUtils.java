@@ -1771,6 +1771,10 @@ public class MetaStoreUtils {
   public static final int DB_NAME = 1;
 
   public static String getDefaultCatalog(Configuration conf) {
+    if (conf == null) {
+      LOG.warn("Configuration is null, so going with default catalog.");
+      return Warehouse.DEFAULT_CATALOG_NAME;
+    }
     String catName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT);
     if (catName == null || "".equals(catName)) catName = Warehouse.DEFAULT_CATALOG_NAME;
     return catName;

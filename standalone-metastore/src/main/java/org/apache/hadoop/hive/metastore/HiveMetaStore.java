@@ -1705,11 +1705,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Path tblPath = null;
       boolean success = false, madeDir = false;
       try {
+        if (!tbl.isSetCatName()) tbl.setCatName(getDefaultCatalog(conf));
         firePreEvent(new PreCreateTableEvent(tbl, this));
 
         ms.openTransaction();
 
-        if (!tbl.isSetCatName()) tbl.setCatName(getDefaultCatalog(conf));
         Database db = ms.getDatabase(tbl.getCatName(), tbl.getDbName());
         if (db == null) {
           throw new NoSuchObjectException("The database " +
@@ -2792,7 +2792,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         t = getMS().getTable(catName, dbname, name);
         if (t == null) {
-          throw new NoSuchObjectException(getCatalogQualifiedTableName(catName, dbname, name));
+          throw new NoSuchObjectException(getCatalogQualifiedTableName(catName, dbname, name) +
+            " table not found");
         }
       } catch (Exception e) {
         throwMetaException(e);
@@ -3458,7 +3459,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         while(partitionIterator.hasNext()) {
           final Partition part = partitionIterator.getCurrent();
 
-          if (!part.getTableName().equals(tblName) || !part.getDbName().equals(dbName)) {
+          if (!part.getTableName().equalsIgnoreCase(tblName) || !part.getDbName().equalsIgnoreCase(dbName)) {
             throw new MetaException("Partition does not belong to target table "
                 + dbName + "." + tblName + ": " + part);
           }
