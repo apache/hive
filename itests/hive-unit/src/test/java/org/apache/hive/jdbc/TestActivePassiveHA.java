@@ -66,6 +66,7 @@ public class TestActivePassiveHA {
   private Connection hs2Conn = null;
   private static String ADMIN_USER = "user1"; // user from TestPamAuthenticator
   private static String ADMIN_PASSWORD = "1";
+  private static String serviceDiscoveryMode = "zooKeeperHA";
   private static String zkHANamespace = "hs2ActivePassiveHATest";
   private HiveConf hiveConf1;
   private HiveConf hiveConf2;
@@ -276,7 +277,6 @@ public class TestActivePassiveHA {
     String zkJdbcUrl = miniHS2_1.getJdbcURL();
     // getAllUrls will parse zkJdbcUrl and will plugin the active HS2's host:port
     String parsedUrl = HiveConnection.getAllUrls(zkJdbcUrl).get(0).getJdbcUriString();
-    final String serviceDiscoveryMode = "zooKeeperHA";
     String hs2_1_directUrl = "jdbc:hive2://" + miniHS2_1.getHost() + ":" + miniHS2_1.getBinaryPort() +
       "/default;serviceDiscoveryMode=" + serviceDiscoveryMode + ";zooKeeperNamespace=" + zkHANamespace + ";";
     assertTrue(zkJdbcUrl.contains(zkConnectString));
@@ -393,6 +393,96 @@ public class TestActivePassiveHA {
     } finally {
       // revert configs to not affect other tests
       unsetPamConfs(hiveConf1);
+    }
+  }
+
+  @Test(timeout = 60000)
+  public void testClientConnectionsOnFailover() throws Exception {
+    setPamConfs(hiveConf1);
+    setPamConfs(hiveConf2);
+    PamAuthenticator pamAuthenticator1 = new TestHS2HttpServerPam.TestPamAuthenticator(hiveConf1);
+    PamAuthenticator pamAuthenticator2 = new TestHS2HttpServerPam.TestPamAuthenticator(hiveConf2);
+    try {
+      String instanceId1 = UUID.randomUUID().toString();
+      miniHS2_1.setPamAuthenticator(pamAuthenticator1);
+      miniHS2_1.start(getSecureConfOverlay(instanceId1));
+      String instanceId2 = UUID.randomUUID().toString();
+      Map<String, String> confOverlay = getSecureConfOverlay(instanceId2);
+      confOverlay.put(ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname, "http");
+      confOverlay.put(ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH.varname, "clidriverTest");
+      miniHS2_2.setPamAuthenticator(pamAuthenticator2);
+      miniHS2_2.start(confOverlay);
+      String url1 = "http://localhost:" + hiveConf1.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+      String url2 = "http://localhost:" + hiveConf2.get(ConfVars.HIVE_SERVER2_WEBUI_PORT.varname) + "/leader";
+      String zkJdbcUrl = miniHS2_1.getJdbcURL();
+      String zkConnectString = zkServer.getConnectString();
+      assertTrue(zkJdbcUrl.contains(zkConnectString));
+
+      // when we start miniHS2_1 will be leader (sequential start)
+      assertEquals(true, miniHS2_1.isLeader());
+      assertEquals("true", sendGet(url1, true));
+
+      // before failover, check if we are getting connection from miniHS2_1
+      String hs2_1_directUrl = "jdbc:hive2://" + miniHS2_1.getHost() + ":" + miniHS2_1.getBinaryPort() +
+        "/default;serviceDiscoveryMode=" + serviceDiscoveryMode + ";zooKeeperNamespace=" + zkHANamespace + ";";
+      String parsedUrl = HiveConnection.getAllUrls(zkJdbcUrl).get(0).getJdbcUriString();
+      assertEquals(hs2_1_directUrl, parsedUrl);
+      hs2Conn = getConnection(zkJdbcUrl, System.getProperty("user.name"));
+      while (miniHS2_1.getOpenSessionsCount() != 1) {
+        Thread.sleep(100);
+      }
+
+      // trigger failover on miniHS2_1 and make sure the connections are closed
+      String resp = sendDelete(url1, true);
+      assertTrue(resp.contains("Failover successful!"));
+      // wait for failover to close sessions
+      while (miniHS2_1.getOpenSessionsCount() != 0) {
+        Thread.sleep(100);
+      }
+
+      // make sure miniHS2_1 is not leader
+      assertEquals(false, miniHS2_1.isLeader());
+      assertEquals("false", sendGet(url1, true));
+
+      // make sure miniHS2_2 is the new leader
+      assertEquals(true, miniHS2_2.isLeader());
+      assertEquals("true", sendGet(url2, true));
+
+      // when we make a new connection we should get it from miniHS2_2 this time
+      String hs2_2_directUrl = "jdbc:hive2://" + miniHS2_2.getHost() + ":" + miniHS2_2.getHttpPort() +
+        "/default;serviceDiscoveryMode=" + serviceDiscoveryMode + ";zooKeeperNamespace=" + zkHANamespace + ";";
+      parsedUrl = HiveConnection.getAllUrls(zkJdbcUrl).get(0).getJdbcUriString();
+      assertEquals(hs2_2_directUrl, parsedUrl);
+      hs2Conn = getConnection(zkJdbcUrl, System.getProperty("user.name"));
+      while (miniHS2_2.getOpenSessionsCount() != 1) {
+        Thread.sleep(100);
+      }
+
+      // send failover request again to miniHS2_1 and get a failure
+      resp = sendDelete(url1, true);
+      assertTrue(resp.contains("Cannot failover an instance that is not a leader"));
+      assertEquals(false, miniHS2_1.isLeader());
+
+      // send failover request to miniHS2_2 and make sure miniHS2_1 takes over (returning back to leader, test listeners)
+      resp = sendDelete(url2, true);
+      assertTrue(resp.contains("Failover successful!"));
+      assertEquals(true, miniHS2_1.isLeader());
+      assertEquals("true", sendGet(url1, true));
+      assertEquals("false", sendGet(url2, true));
+      assertEquals(false, miniHS2_2.isLeader());
+      // make sure miniHS2_2 closes all its connections
+      while (miniHS2_2.getOpenSessionsCount() != 0) {
+        Thread.sleep(100);
+      }
+      // new connections goes to miniHS2_1 now
+      hs2Conn = getConnection(zkJdbcUrl, System.getProperty("user.name"));
+      while (miniHS2_1.getOpenSessionsCount() != 1) {
+        Thread.sleep(100);
+      }
+    } finally {
+      // revert configs to not affect other tests
+      unsetPamConfs(hiveConf1);
+      unsetPamConfs(hiveConf2);
     }
   }
 
