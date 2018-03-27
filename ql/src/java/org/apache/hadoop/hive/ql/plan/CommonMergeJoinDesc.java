@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
-import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
@@ -40,7 +39,6 @@ public class CommonMergeJoinDesc extends MapJoinDesc implements Serializable {
     this.mapJoinConversionPos = mapJoinConversionPos;
   }
 
-  @Signature
   public int getNumBuckets() {
     return numBuckets;
   }

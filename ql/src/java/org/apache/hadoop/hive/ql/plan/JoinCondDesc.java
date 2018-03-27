@@ -27,6 +27,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Objects;
 
 /**
  * Join conditions Descriptor implementation.
@@ -201,5 +202,8 @@ public class JoinCondDesc implements Serializable {
     return true;
   }
 
-  // XXX: is hashCode missing here?
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(type, left, right, preserved);
+  }
 }

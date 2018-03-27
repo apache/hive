@@ -181,7 +181,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // map join operator by default has no bucket cols and num of reduce sinks
     // reduced by 1
     mapJoinOp.setOpTraits(new OpTraits(null, -1, null, joinOp.getOpTraits().getNumReduceSinks()));
-    mapJoinOp.setStatistics(joinOp.getStatistics());
+    preserveOperatorInfos(mapJoinOp, joinOp, context);
     // propagate this change till the next RS
     for (Operator<? extends OperatorDesc> childOp : mapJoinOp.getChildOperators()) {
       setAllChildrenTraits(childOp, mapJoinOp.getOpTraits());
@@ -215,7 +215,9 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // Determine the size of small table inputs
     long totalSize = 0;
     for (int pos = 0; pos < joinOp.getParentOperators().size(); pos++) {
-      if (pos == mapJoinConversionPos) continue;
+      if (pos == mapJoinConversionPos) {
+        continue;
+      }
       Operator<? extends OperatorDesc> parentOp = joinOp.getParentOperators().get(pos);
       totalSize += parentOp.getStatistics().getDataSize();
     }
@@ -376,11 +378,12 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         (CommonMergeJoinOperator) OperatorFactory.get(joinOp.getCompilationOpContext(),
             new CommonMergeJoinDesc(numBuckets, mapJoinConversionPos, mapJoinDesc),
             joinOp.getSchema());
+    context.parseContext.getContext().getPlanMapper().link(joinOp, mergeJoinOp);
     int numReduceSinks = joinOp.getOpTraits().getNumReduceSinks();
     OpTraits opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(), numBuckets,
       joinOp.getOpTraits().getSortCols(), numReduceSinks);
     mergeJoinOp.setOpTraits(opTraits);
-    mergeJoinOp.setStatistics(joinOp.getStatistics());
+    preserveOperatorInfos(mergeJoinOp, joinOp, context);
 
     for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
       int pos = parentOp.getChildOperators().indexOf(joinOp);
@@ -500,7 +503,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(),
         tezBucketJoinProcCtx.getNumBuckets(), null, joinOp.getOpTraits().getNumReduceSinks());
     mapJoinOp.setOpTraits(opTraits);
-    mapJoinOp.setStatistics(joinOp.getStatistics());
+    preserveOperatorInfos(mapJoinOp, joinOp, context);
     setNumberOfBucketsOnChildren(mapJoinOp);
 
     // Once the conversion is done, we can set the partitioner to bucket cols on the small table
@@ -513,7 +516,9 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       // use the positions to only pick the partitionCols which are required
       // on the small table side.
       for (Operator<?> op : mapJoinOp.getParentOperators()) {
-        if (!(op instanceof ReduceSinkOperator)) continue;;
+        if (!(op instanceof ReduceSinkOperator)) {
+          continue;
+        }
 
         ReduceSinkOperator rsOp = (ReduceSinkOperator) op;
         ArrayList<ExprNodeDesc> newPartitionCols = new ArrayList<>();
@@ -532,6 +537,19 @@ public class ConvertJoinMapJoin implements NodeProcessor {
       memoryMonitorInfo.setMemoryOverSubscriptionFactor(0);
     }
     return true;
+  }
+
+
+  /**
+   * Preserves additional informations about the operator.
+   *
+   * When an operator is replaced by a new one; some of the information of the old have to be retained.
+   */
+  private void preserveOperatorInfos(Operator<?> newOp, Operator<?> oldOp, OptimizeTezProcContext context) {
+    newOp.setStatistics(oldOp.getStatistics());
+    // linking these two operator declares that they are representing the same thing
+    // currently important because statistincs are actually gather for newOp; but the lookup is done using oldOp
+    context.parseContext.getContext().getPlanMapper().link(oldOp, newOp);
   }
 
   /*
@@ -1058,7 +1076,9 @@ public class ConvertJoinMapJoin implements NodeProcessor {
               break;
             }
           }
-          if (found) break;
+          if (found) {
+            break;
+          }
         }
       }
     }
@@ -1171,7 +1191,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
             null,
             joinOp.getOpTraits().getNumReduceSinks());
         mapJoinOp.setOpTraits(opTraits);
-        mapJoinOp.setStatistics(joinOp.getStatistics());
+        preserveOperatorInfos(mapJoinOp, joinOp, context);
         // propagate this change till the next RS
         for (Operator<? extends OperatorDesc> childOp : mapJoinOp.getChildOperators()) {
           setAllChildrenTraits(childOp, mapJoinOp.getOpTraits());

@@ -73,4 +73,6 @@ public interface IDriver extends CommandProcessor {
 
   Context getContext();
 
+  boolean hasResultSet();
+
 }

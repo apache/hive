@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStats;
@@ -101,10 +101,10 @@ public class TestReOptimization {
     String query = "select assert_true_oom(${hiveconf:zzz} > sum(u*v)) from tu join tv on (tu.id_uv=tv.id_uv) where u<10 and v>1";
 
     PlanMapper pm = getMapperForQuery(driver, query);
-    Iterator<LinkGroup> itG = pm.iterateGroups();
+    Iterator<EquivGroup> itG = pm.iterateGroups();
     int checkedOperators = 0;
     while (itG.hasNext()) {
-      LinkGroup g = itG.next();
+      EquivGroup g = itG.next();
       List<FilterOperator> fos = g.getAll(FilterOperator.class);
       List<OperatorStats> oss = g.getAll(OperatorStats.class);
       // FIXME: oss seems to contain duplicates

@@ -18,11 +18,21 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import java.util.Optional;
+
+import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
+import org.apache.hadoop.hive.ql.stats.OperatorStats;
+
 public class EmptyStatsSource implements StatsSource {
 
   @Override
   public boolean canProvideStatsFor(Class<?> class1) {
     return false;
+  }
+
+  @Override
+  public Optional<OperatorStats> lookup(OpTreeSignature treeSig) {
+    return Optional.empty();
   }
 
 }

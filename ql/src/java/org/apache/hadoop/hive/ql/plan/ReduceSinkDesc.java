@@ -203,11 +203,11 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "key expressions")
+  @Signature
   public String getKeyColString() {
     return PlanUtils.getExprListString(keyCols);
   }
 
-  @Signature
   public java.util.ArrayList<ExprNodeDesc> getKeyCols() {
     return keyCols;
   }
@@ -225,11 +225,11 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "value expressions")
+  @Signature
   public String getValueColsString() {
     return PlanUtils.getExprListString(valueCols);
   }
 
-  @Signature
   public java.util.ArrayList<ExprNodeDesc> getValueCols() {
     return valueCols;
   }
@@ -244,11 +244,11 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "PartitionCols", explainLevels = { Level.USER })
+  @Signature
   public String getUserLevelExplainParitionColsString() {
     return PlanUtils.getExprListString(partitionCols, true);
   }
 
-  @Signature
   public java.util.ArrayList<ExprNodeDesc> getPartitionCols() {
     return partitionCols;
   }
@@ -444,7 +444,6 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return forwarding;
   }
 
-  @Signature
   @Explain(displayName = "auto parallelism", explainLevels = { Level.EXTENDED })
   public final boolean isAutoParallel() {
     return (this.reduceTraits.contains(ReducerTraits.AUTOPARALLEL));

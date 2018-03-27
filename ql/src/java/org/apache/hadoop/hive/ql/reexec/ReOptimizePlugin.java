@@ -91,7 +91,7 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
   public void prepareToReExecute() {
     statsReaderHook.setCollectOnSuccess(true);
     PlanMapper pm = coreDriver.getContext().getPlanMapper();
-    coreDriver.setRuntimeStatsSource(new SimpleRuntimeStatsSource(pm));
+    coreDriver.setStatsSource(new SimpleRuntimeStatsSource(pm));
     retryPossible = false;
   }
 
