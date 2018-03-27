@@ -198,7 +198,6 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
 
           // Has to use full name to make sure it does not conflict with
           // org.apache.commons.lang.StringUtils
-          LOG.error(msg, e);
           console.printError(msg, "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
         }
         rc = 1;
