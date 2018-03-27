@@ -18,8 +18,15 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
+import java.util.Optional;
+
+import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
+import org.apache.hadoop.hive.ql.stats.OperatorStats;
+
 public interface StatsSource {
 
   boolean canProvideStatsFor(Class<?> class1);
+
+  Optional<OperatorStats> lookup(OpTreeSignature treeSig);
 
 }

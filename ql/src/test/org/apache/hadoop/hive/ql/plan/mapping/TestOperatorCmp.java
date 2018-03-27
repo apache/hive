@@ -27,12 +27,15 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
+import org.apache.hadoop.hive.ql.optimizer.signature.TestOperatorSignature;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.apache.hive.testutils.HiveTestEnvSetup;
@@ -99,11 +102,15 @@ public class TestOperatorCmp {
     String query = "select u from tu where id_uv = 1 union all select v from tv where id_uv = 1";
 
     PlanMapper pm = getMapperForQuery(driver, query);
-    Iterator<LinkGroup> itG = pm.iterateGroups();
+    Iterator<EquivGroup> itG = pm.iterateGroups();
     List<FilterOperator> fos = pm.getAll(FilterOperator.class);
-    assertEquals(2, fos.size());
+    // the same operator is present 2 times
+    fos.sort(TestCounterMapping.OPERATOR_ID_COMPARATOR.reversed());
+    assertEquals(4, fos.size());
 
-    assertFalse("logicalEquals", compareOperators(fos.get(0), fos.get(1)));
+    assertTrue("logicalEquals", compareOperators(fos.get(0), fos.get(1)));
+    assertFalse("logicalEquals", compareOperators(fos.get(0), fos.get(2)));
+    assertTrue("logicalEquals", compareOperators(fos.get(2), fos.get(3)));
 
   }
 
@@ -121,7 +128,7 @@ public class TestOperatorCmp {
   }
 
   @Test
-  public void testDifferentFiltersAreNotMatched1() throws ParseException {
+  public void testDifferentFiltersAreNotMatched() throws ParseException {
     IDriver driver = createDriver();
     PlanMapper pm0 = getMapperForQuery(driver, "select u from tu where id_uv = 1 group by u");
     PlanMapper pm1 = getMapperForQuery(driver, "select u from tu where id_uv = 2 group by u");
@@ -132,7 +139,7 @@ public class TestOperatorCmp {
   }
 
   @Test
-  public void testSameFiltersMatched1() throws ParseException, Exception {
+  public void testSameFiltersMatched() throws ParseException, Exception {
     IDriver driver = createDriver();
     PlanMapper pm0 = getMapperForQuery(driver, "select u from tu where id_uv = 1 group by u");
     PlanMapper pm1 = getMapperForQuery(driver, "select u from tu where id_uv = 1 group by u");
@@ -141,6 +148,18 @@ public class TestOperatorCmp {
     assertHelper(AssertHelperOp.SAME, pm0, pm1, TableScanOperator.class);
   }
 
+  @Test
+  public void testSameJoinMatched() throws ParseException, Exception {
+    IDriver driver = createDriver();
+    PlanMapper pm0 =
+        getMapperForQuery(driver, "select u,v from tu,tv where tu.id_uv = tv.id_uv and u>1 and v<10 group by u,v");
+    PlanMapper pm1 =
+        getMapperForQuery(driver, "select u,v from tu,tv where tu.id_uv = tv.id_uv and u>1 and v<10 group by u,v");
+
+    assertHelper(AssertHelperOp.SAME, pm0, pm1, CommonMergeJoinOperator.class);
+    assertHelper(AssertHelperOp.SAME, pm0, pm1, JoinOperator.class);
+    //    assertHelper(AssertHelperOp.SAME, pm0, pm1, TableScanOperator.class);
+  }
 
   enum AssertHelperOp {
     SAME, NOT_SAME
@@ -152,10 +171,16 @@ public class TestOperatorCmp {
     assertEquals(1, fos0.size());
     assertEquals(1, fos1.size());
 
+    T opL = fos0.get(0);
+    T opR = fos1.get(0);
     if (same == AssertHelperOp.SAME) {
-      assertTrue(clazz + " " + same, compareOperators(fos0.get(0), fos1.get(0)));
+      assertTrue(clazz + " " + same, compareOperators(opL, opR));
+      TestOperatorSignature.checkEquals(opL, opR);
+      TestOperatorSignature.checkTreeEquals(opL, opR);
     } else {
-      assertFalse(clazz + " " + same, compareOperators(fos0.get(0), fos1.get(0)));
+      assertFalse(clazz + " " + same, compareOperators(opL, opR));
+      TestOperatorSignature.checkNotEquals(opL, opR);
+      TestOperatorSignature.checkTreeNotEquals(opL, opR);
     }
   }
 
@@ -181,6 +206,4 @@ public class TestOperatorCmp {
     IDriver driver = DriverFactory.newDriver(conf);
     return driver;
   }
-
-
 }

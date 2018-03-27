@@ -48,6 +48,8 @@ public class SignatureUtils {
 
     private List<Method> sigMethods;
 
+    private String classLabel;
+
     public SignatureMapper(Class<?> o) {
       Method[] f = o.getMethods();
       sigMethods = new ArrayList<>();
@@ -61,15 +63,17 @@ public class SignatureUtils {
           sigMethods.add(method);
         }
       }
+
+      classLabel = o.getName();
     }
 
     public void write(Map<String, Object> ret, Object o) {
       if (sigMethods.isEmpty()) {
         // by supplying using "o" this enforces identity/equls matching
         // which will most probably make the signature very unique
-        ret.put(o.getClass().getName(), o);
+        ret.put(classLabel, o);
       } else {
-        ret.put(o.getClass().getName(), "1");
+        ret.put(classLabel, "1");
         for (Method method : sigMethods) {
           try {
             Object res = method.invoke(o);

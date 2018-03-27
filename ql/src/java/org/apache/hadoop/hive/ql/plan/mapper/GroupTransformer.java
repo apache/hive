@@ -18,8 +18,8 @@
 
 package org.apache.hadoop.hive.ql.plan.mapper;
 
-import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.LinkGroup;
+import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper.EquivGroup;
 
 public interface GroupTransformer {
-  void map(LinkGroup group);
+  void map(EquivGroup group);
 }
