@@ -468,7 +468,9 @@ public class MapWork extends BaseWork {
   @Explain(displayName = "Execution mode", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED },
       vectorization = Vectorization.SUMMARY_PATH)
   public String getExecutionMode() {
-    if (vectorMode) {
+    if (vectorMode &&
+        !(getIsTestForcedVectorizationEnable() &&
+          getIsTestVectorizationSuppressExplainExecutionMode())) {
       if (llapMode) {
         if (uberMode) {
           return "vectorized, uber";
