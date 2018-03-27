@@ -1555,7 +1555,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ret;
     }
 
-
     @Override
     public List<String> get_all_databases() throws MetaException {
       return get_databases(MetaStoreUtils.prependCatalogToDbName(null, null, conf));
@@ -4724,6 +4723,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Exception ex = null;
       try {
         for (Partition tmpPart : new_parts) {
+          // Make sure the catalog name is set in the new partition
+          if (!tmpPart.isSetCatName()) tmpPart.setCatName(getDefaultCatalog(conf));
           firePreEvent(new PreAlterPartitionEvent(parsedDbName[DB_NAME], tbl_name, null, tmpPart, this));
         }
         oldParts = alterHandler.alterPartitions(getMS(), wh, parsedDbName[CAT_NAME],
