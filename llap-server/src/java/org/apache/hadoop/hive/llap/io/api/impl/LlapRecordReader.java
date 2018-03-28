@@ -476,7 +476,7 @@ class LlapRecordReader
           isClosed, isInterrupted, pendingError.get(), queue.size());
     }
     LlapIoImpl.LOG.info("Maximum queue length observed " + maxQueueSize);
-    LlapIoImpl.LOG.info("Llap counters: {}" ,counters); // This is where counters are logged!
+    LlapIoImpl.LOG.info("Llap counters: {}" , counters); // This is where counters are logged!
     feedback.stop();
     isClosed = true;
     rethrowErrorIfAny(pendingError.get());

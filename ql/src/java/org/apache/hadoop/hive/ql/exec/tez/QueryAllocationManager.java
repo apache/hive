@@ -32,8 +32,14 @@ interface QueryAllocationManager {
    *                      avoid various artifacts, esp. with small numbers and double weirdness.
    *                      Null means the total is unknown.
    * @param sessions Sessions to update based on their allocation fraction.
+   * @return The number of executors/cpus allocated.
    */
-  void updateSessionsAsync(Double totalMaxAlloc, List<WmTezSession> sessions);
+  int updateSessionsAsync(Double totalMaxAlloc, List<WmTezSession> sessions);
+
+  /**
+   * @return the number of CPUs equivalent to percentage allocation, for information purposes.
+   */
+  int translateAllocationToCpus(double allocation);
 
   /**
    * Sets a callback to be invoked on cluster changes relevant to resource allocation.

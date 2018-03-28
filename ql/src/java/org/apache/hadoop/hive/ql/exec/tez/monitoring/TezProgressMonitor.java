@@ -94,6 +94,7 @@ class TezProgressMonitor implements ProgressMonitor {
         if (progress != null) {
           // Map 1 .......... container  SUCCEEDED      7          7        0        0       0       0
 
+          // TODO: can we pass custom things thru the progress?
           results.add(
             Arrays.asList(
               getNameWithProgress(vertexName, progress.succeededTaskCount, progress.totalTaskCount),

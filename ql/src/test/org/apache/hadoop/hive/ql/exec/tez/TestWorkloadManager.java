@@ -107,8 +107,9 @@ public class TestWorkloadManager {
     }
 
     @Override
-    public void updateSessionsAsync(Double totalMaxAlloc, List<WmTezSession> sessions) {
+    public int updateSessionsAsync(Double totalMaxAlloc, List<WmTezSession> sessions) {
       isCalled = true;
+      return 0;
     }
     
     @Override
@@ -122,6 +123,11 @@ public class TestWorkloadManager {
 
     @Override
     public void setClusterChangedCallback(Runnable clusterChangedCallback) {
+    }
+
+    @Override
+    public int translateAllocationToCpus(double allocation) {
+      return 0;
     }
   }
 

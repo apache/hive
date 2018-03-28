@@ -2488,6 +2488,8 @@ public class HiveConf extends Configuration {
         "Applies when a user specifies a target WM pool in the JDBC connection string. If\n" +
         "false, the user can only specify a pool he is mapped to (e.g. make a choice among\n" +
         "multiple group mappings); if true, the user can specify any existing pool."),
+    HIVE_SERVER2_WM_POOL_METRICS("hive.server2.wm.pool.metrics", true,
+        "Whether per-pool WM metrics should be enabled."),
     HIVE_SERVER2_TEZ_WM_AM_REGISTRY_TIMEOUT("hive.server2.tez.wm.am.registry.timeout", "30s",
         new TimeValidator(TimeUnit.SECONDS),
         "The timeout for AM registry registration, after which (on attempting to use the\n" +

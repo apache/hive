@@ -294,6 +294,21 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
     addGaugeInternal(name, gauge);
   }
 
+
+  @Override
+  public void removeGauge(String name) {
+    try {
+      gaugesLock.lock();
+      gauges.remove(name);
+      // Metrics throws an Exception if we don't do this when the key already exists
+      if (metricRegistry.getGauges().containsKey(name)) {
+        metricRegistry.remove(name);
+      }
+    } finally {
+      gaugesLock.unlock();
+    }
+  }
+
   @Override
   public void addRatio(String name, MetricsVariable<Integer> numerator,
                            MetricsVariable<Integer> denominator) {
@@ -409,6 +424,7 @@ public class CodahaleMetrics implements org.apache.hadoop.hive.common.metrics.co
         throw new IllegalArgumentException(e);
       }
       try {
+        // Note: Hadoop metric reporter does not support tags. We create a single reporter for all metrics.
         Constructor constructor = name.getConstructor(MetricRegistry.class, HiveConf.class);
         CodahaleReporter reporter = (CodahaleReporter) constructor.newInstance(metricRegistry, conf);
         reporter.start();

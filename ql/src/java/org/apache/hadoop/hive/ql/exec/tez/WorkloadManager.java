@@ -72,6 +72,8 @@ import org.apache.hadoop.hive.ql.wm.SessionTriggerProvider;
 import org.apache.hadoop.hive.ql.wm.Trigger;
 import org.apache.hadoop.hive.ql.wm.TriggerActionHandler;
 import org.apache.hadoop.hive.ql.wm.WmContext;
+import org.apache.hadoop.metrics2.MetricsSystem;
+import org.apache.hadoop.metrics2.lib.DefaultMetricsSystem;
 import org.apache.hive.common.util.Ref;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.codehaus.jackson.annotate.JsonAutoDetect;
@@ -110,8 +112,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
   private final boolean recoverAms;
   private final int amRegistryTimeoutMs;
   private final boolean allowAnyPool;
+  private final MetricsSystem metricsSystem;
   // Note: it's not clear that we need to track this - unlike PoolManager we don't have non-pool
-  //       sessions, so the pool itself could internally track the sessions it gave out, since
+  //       sessions, so the pool itself could internally track the ses  sions it gave out, since
   //       calling close on an unopened session is probably harmless.
   private final IdentityHashMap<TezSessionPoolSession, Boolean> openSessions =
       new IdentityHashMap<>();
@@ -223,6 +226,11 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       .setDaemon(true).setNameFormat("Workload management timeout thread").build());
 
     allowAnyPool = HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_WM_ALLOW_ANY_POOL_VIA_JDBC);
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_WM_POOL_METRICS)) {
+      metricsSystem = DefaultMetricsSystem.instance();
+    } else {
+      metricsSystem = null;
+    }
 
     wmThread = new Thread(() -> runWmThread(), "Workload management master");
     wmThread.setDaemon(true);
@@ -773,7 +781,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       WmEvent moveEvent = new WmEvent(WmEvent.EventType.MOVE);
       // remove from src pool
       RemoveSessionResult rr = checkAndRemoveSessionFromItsPool(
-          moveSession.srcSession, poolsToRedistribute, true);
+          moveSession.srcSession, poolsToRedistribute, true, true);
       if (rr == RemoveSessionResult.OK) {
         // check if there is capacity in dest pool, if so move else kill the session
         if (capacityAvailable(destPoolName)) {
@@ -877,7 +885,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       reuseRequest.future.setException(new AssertionError("Invalid reuse attempt"));
     }
     session.setQueryId(null);
-    return checkAndRemoveSessionFromItsPool(session, poolsToRedistribute, isReturn);
+    return checkAndRemoveSessionFromItsPool(session, poolsToRedistribute, isReturn, true);
   }
 
   private void handeReopenRequestOnMasterThread(EventState e, WmTezSession session,
@@ -894,7 +902,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     // anything. Instead, we will try to give out an existing session from the pool, and restart
     // the problematic one in background.
     String poolName = session.getPoolName();
-    RemoveSessionResult rr = checkAndRemoveSessionFromItsPool(session, poolsToRedistribute, false);
+    // Do not update metrics, we'd immediately add the session back if we are able to remove.
+    RemoveSessionResult rr = checkAndRemoveSessionFromItsPool(
+        session, poolsToRedistribute, false, false);
     switch (rr) {
     case OK:
       // If pool didn't exist, checkAndRemoveSessionFromItsPool wouldn't have returned OK.
@@ -903,6 +913,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
           session.getWmContext(), session.extractHiveResources());
       // We have just removed the session from the same pool, so don't check concurrency here.
       pool.initializingSessions.add(sw);
+      // Do not update metrics - see above.
       sw.start();
       syncWork.toRestartInUse.add(session);
       return;
@@ -938,10 +949,10 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       // This session is bad, so don't allow reuse; just convert it to normal get.
       reuseRequest.sessionToReuse = null;
     }
-    // TODO: we should communicate this to the user more explicitly (use kill query API, or
-    //       add an option for bg kill checking to TezTask/monitor?
+
     // We are assuming the update-error AM is bad and just try to kill it.
-    RemoveSessionResult rr = checkAndRemoveSessionFromItsPool(session, poolsToRedistribute, null);
+    RemoveSessionResult rr = checkAndRemoveSessionFromItsPool(
+        session, poolsToRedistribute, null, true);
     switch (rr) {
     case OK:
     case NOT_FOUND:
@@ -1007,7 +1018,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         }
         PoolState state = oldPools == null ? null : oldPools.remove(fullName);
         if (state == null) {
-          state = new PoolState(fullName, qp, fraction, pool.getSchedulingPolicy());
+          state = new PoolState(fullName, qp, fraction, pool.getSchedulingPolicy(), metricsSystem);
         } else {
           // This will also take care of the queries if query parallelism changed.
           state.update(qp, fraction, syncWork, e, pool.getSchedulingPolicy());
@@ -1017,6 +1028,12 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         LOG.info("Adding Hive pool: " + state);
         pools.put(fullName, state);
         totalQueryParallelism += qp;
+      }
+    }
+    for (PoolState pool : pools.values()) {
+      if (pool.metrics != null) {
+        pool.metrics.setMaxExecutors(
+            allocationManager.translateAllocationToCpus(pool.finalFractionRemaining));
       }
     }
     // TODO: in the current impl, triggers are added to RP. For tez, no pool triggers (mapping between trigger name and
@@ -1112,12 +1129,18 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       String oldPoolName = req.sessionToReuse.getPoolName();
       oldPool = pools.get(oldPoolName);
       RemoveSessionResult rr = checkAndRemoveSessionFromItsPool(
-          req.sessionToReuse, poolsToRedistribute, true);
+          req.sessionToReuse, poolsToRedistribute, true, false);
       if (rr != RemoveSessionResult.OK) {
+        if (oldPool.metrics != null) {
+          oldPool.metrics.removeRunningQueries(1);
+        }
         // Abandon the reuse attempt.
         returnSessionOnFailedReuse(req, syncWork, null);
         req.sessionToReuse = null;
       } else if (pool.getTotalActiveSessions() + pool.queue.size() >= pool.queryParallelism) {
+        if (oldPool.metrics != null) {
+          oldPool.metrics.removeRunningQueries(1);
+        }
         // One cannot simply reuse the session if there are other queries waiting; to maintain
         // fairness, we'll try to take a query slot instantly, and if that fails we'll return
         // this session back to the pool and give the user a new session later.
@@ -1131,6 +1154,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       req.sessionToReuse.setPoolName(poolName);
       req.sessionToReuse.setQueueName(yarnQueue);
       req.sessionToReuse.setQueryId(req.queryId);
+      // Do not update metrics - we didn't update on removal.
       pool.sessions.add(req.sessionToReuse);
       if (pool != oldPool) {
         poolsToRedistribute.add(poolName);
@@ -1141,6 +1165,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
     // Otherwise, queue the session and make sure we update this pool.
     pool.queue.addLast(req);
+    if (pool.metrics != null) {
+      pool.metrics.addQueuedQuery();
+    }
     poolsToRedistribute.add(poolName);
   }
 
@@ -1152,7 +1179,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
     // 1. First, start the queries from the queue.
     int queriesToStart = Math.min(pool.queue.size(),
-      pool.queryParallelism - pool.getTotalActiveSessions());
+        pool.queryParallelism - pool.getTotalActiveSessions());
 
     if (queriesToStart > 0) {
       LOG.info("Starting {} queries in pool {}", queriesToStart, pool);
@@ -1163,6 +1190,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     }
     for (int i = 0; i < queriesToStart; ++i) {
       GetRequest queueReq = pool.queue.pollFirst();
+      if (pool.metrics != null) {
+        pool.metrics.moveQueuedToRunning();
+      }
       assert queueReq.sessionToReuse == null;
       // Note that in theory, we are guaranteed to have a session waiting for us here, but
       // the expiration, failures, etc. may cause one to be missing pending restart.
@@ -1188,7 +1218,14 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     // logic to be consistent between all the separate calls in one master thread processing round.
     // Note: If allocation manager does not have cluster state, it won't update anything. When the
     //       cluster state changes, it will notify us, and we'd update the queries again.
-    allocationManager.updateSessionsAsync(totalAlloc, pool.sessions);
+    int cpusAllocated = allocationManager.updateSessionsAsync(totalAlloc, pool.sessions);
+    if (pool.metrics != null) {
+      pool.metrics.setExecutors(cpusAllocated);
+      if (cpusAllocated > 0) {
+        // Update max executors now that cluster info is definitely available.
+        pool.metrics.setMaxExecutors(allocationManager.translateAllocationToCpus(totalAlloc));
+      }
+    }
   }
 
   private void returnSessionOnFailedReuse(
@@ -1199,7 +1236,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     session.setQueryId(null);
     if (poolsToRedistribute != null) {
       RemoveSessionResult rr = checkAndRemoveSessionFromItsPool(
-          session, poolsToRedistribute, true);
+          session, poolsToRedistribute, true, true);
       // The session cannot have been killed just now; this happens after all the kills in
       // the current iteration, so we would have cleared sessionToReuse when killing this.
       boolean isOk = (rr == RemoveSessionResult.OK);
@@ -1235,8 +1272,8 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
    *         thread (so we are dealing with an outdated request); null if the session should be
    *         in WM but wasn't found in the requisite pool (internal error?).
    */
-  private RemoveSessionResult checkAndRemoveSessionFromItsPool(
-      WmTezSession session, Set<String> poolsToRedistribute, Boolean isSessionOk) {
+  private RemoveSessionResult checkAndRemoveSessionFromItsPool(WmTezSession session,
+      Set<String> poolsToRedistribute, Boolean isSessionOk, boolean updateMetrics) {
     // It is possible for some request to be queued after a main thread has decided to kill this
     // session; on the next iteration, we'd be processing that request with an irrelevant session.
     if (session.isIrrelevantForWm()) {
@@ -1255,6 +1292,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       PoolState pool = pools.get(poolName);
       session.clearWm();
       if (pool != null && pool.sessions.remove(session)) {
+        if (updateMetrics && pool.metrics != null) {
+          pool.metrics.removeRunningQueries(1);
+        }
         return RemoveSessionResult.OK;
       }
     }
@@ -1273,6 +1313,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
     PoolState destPool = pools.get(destPoolName);
     if (destPool != null && destPool.sessions.add(session)) {
+      if (destPool.metrics != null) {
+        destPool.metrics.addRunningQuery();
+      }
       session.setPoolName(destPoolName);
       updateTriggers(session);
       poolsToRedistribute.add(destPoolName);
@@ -1694,6 +1737,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     // Note: the list is expected to be a few items; if it's longer we may want an IHM.
     private final LinkedList<WmTezSession> sessions = new LinkedList<>();
     private final LinkedList<GetRequest> queue = new LinkedList<>();
+    private final WmPoolMetrics metrics;
 
     private final String fullName;
     private double finalFraction;
@@ -1703,8 +1747,11 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     private WMPoolSchedulingPolicy schedulingPolicy;
 
     public PoolState(String fullName, int queryParallelism, double fraction,
-        String schedulingPolicy) {
+        String schedulingPolicy, MetricsSystem ms) {
       this.fullName = fullName;
+      // TODO: this actually calls the metrics system and getMetrics - that may be expensive.
+      //       For now it looks like it should be ok to do on WM thread.
+      this.metrics = ms == null ? null : WmPoolMetrics.create(fullName, ms);
       update(queryParallelism, fraction, null, null, schedulingPolicy);
     }
 
@@ -1716,6 +1763,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         WmThreadSyncWork syncWork, EventState e, String schedulingPolicy) {
       this.finalFraction = this.finalFractionRemaining = fraction;
       this.queryParallelism = queryParallelism;
+      if (metrics != null) {
+        metrics.setParallelQueries(queryParallelism);
+      }
       try {
         this.schedulingPolicy = MetaStoreUtils.parseSchedulingPolicy(schedulingPolicy);
       } catch (IllegalArgumentException ex) {
@@ -1735,6 +1785,10 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       // We will requeue, and not kill, the queries that are not running yet.
       // Insert them all before the get requests from this iteration.
       GetRequest req;
+      if (metrics != null) {
+        metrics.removeQueuedQueries(queue.size());
+      }
+
       while ((req = queue.pollLast()) != null) {
         e.getRequests.addFirst(req);
       }
@@ -1746,6 +1800,10 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
       // All the pending get requests should just be requeued elsewhere.
       // Note that we never queue session reuse so sessionToReuse would be null.
       globalQueue.addAll(0, queue);
+      if (metrics != null) {
+        metrics.removeQueuedQueries(queue.size());
+        metrics.destroy();
+      }
       queue.clear();
     }
 
@@ -1793,6 +1851,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     private void extractAllSessionsToKill(String killReason,
         IdentityHashMap<WmTezSession, GetRequest> toReuse,
         WmThreadSyncWork syncWork) {
+      int totalCount = sessions.size() + initializingSessions.size();
       for (WmTezSession sessionToKill : sessions) {
         resetRemovedSessionToKill(syncWork.toKillQuery,
           new KillQueryContext(sessionToKill, killReason), toReuse);
@@ -1810,6 +1869,9 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
           new KillQueryContext(sessionToKill, killReason), toReuse);
       }
       initializingSessions.clear();
+      if (metrics != null) {
+        metrics.removeRunningQueries(totalCount);
+      }
     }
 
     public void setTriggers(final LinkedList<Trigger> triggers) {
