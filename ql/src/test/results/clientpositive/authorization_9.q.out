@@ -71,10 +71,6 @@ default	part			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	part			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	part			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	part			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	primitives			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	primitives			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	primitives			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	primitives			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	src			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	src			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	src			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -172,10 +168,6 @@ default	part			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	part			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	part			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	part			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	primitives			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	primitives			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	primitives			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	primitives			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	src			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	src			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	src			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -251,10 +243,6 @@ default	part			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	part			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	part			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	part			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	primitives			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	primitives			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	primitives			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	primitives			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	src			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	src			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	src			hive_test_user	USER	SELECT	true	-1	hive_test_user
