@@ -485,7 +485,8 @@ public abstract class ZkRegistryBase<InstanceType extends ServiceInstance> {
     private final Logger LOG = LoggerFactory.getLogger(InstanceStateChangeListener.class);
 
     @Override
-    public void childEvent(final CuratorFramework client, final PathChildrenCacheEvent event) {
+    public void childEvent(final CuratorFramework client,
+        final PathChildrenCacheEvent event) throws IOException {
       Preconditions.checkArgument(client != null
           && client.getState() == CuratorFrameworkState.STARTED, "client is not started");
 

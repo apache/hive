@@ -100,7 +100,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
 
   public void startPool(HiveConf conf, final WMFullResourcePlan resourcePlan) throws Exception {
     if (defaultSessionPool != null) {
-      defaultSessionPool.start();
+      defaultSessionPool.start(false);
     }
     if (expirationTracker != null) {
       expirationTracker.start();
@@ -125,16 +125,16 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     int numSessions = conf.getIntVar(ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE);
     int numSessionsTotal = numSessions * (defaultQueueList.length - emptyNames);
     if (numSessionsTotal > 0) {
-      boolean enableAmRegistry = false;
-      defaultSessionPool = new TezSessionPool<>(initConf, numSessionsTotal, enableAmRegistry,
+      defaultSessionPool = new TezSessionPool<>(initConf, numSessionsTotal, null,
           new TezSessionPool.SessionObjectFactory<TezSessionPoolSession>() {
             int queueIx = 0;
 
             @Override
-            public TezSessionPoolSession create(TezSessionPoolSession oldSession) {
+            public TezSessionPoolSession create(
+                TezSessionPoolSession oldSession, String sessionId) {
               if (oldSession != null) {
-                return createAndInitSession(
-                    oldSession.getQueueName(), oldSession.isDefault(), oldSession.getConf());
+                return createAndInitSession(null, oldSession.getQueueName(),
+                    oldSession.isDefault(), oldSession.getConf());
               }
               // We never resize the pool, so assume this is initialization.
               // If that changes, we might have to make the factory interface more complicated.
@@ -154,7 +154,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
                 }
               }
               HiveConf sessionConf = new HiveConf(initConf);
-              return createAndInitSession(defaultQueueList[localQueueIx], true, sessionConf);
+              return createAndInitSession(null, defaultQueueList[localQueueIx], true, sessionConf);
           }
       });
     }
@@ -196,8 +196,9 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
 
   // TODO Create and init session sets up queue, isDefault - but does not initialize the configuration
   private TezSessionPoolSession createAndInitSession(
-      String queue, boolean isDefault, HiveConf conf) {
-    TezSessionPoolSession sessionState = createSession(TezSessionState.makeSessionId(), conf);
+      String sessionId, String queue, boolean isDefault, HiveConf conf) {
+    TezSessionPoolSession sessionState = createSession(
+        sessionId != null ? sessionId : TezSessionState.makeSessionId(), conf);
     // TODO When will the queue ever be null.
     // Pass queue and default in as constructor parameters, and make them final.
     if (queue != null) {
@@ -271,7 +272,7 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
    */
   private TezSessionState getNewSessionState(HiveConf conf,
       String queueName, boolean doOpen) throws Exception {
-    TezSessionPoolSession retTezSessionState = createAndInitSession(queueName, false, conf);
+    TezSessionPoolSession retTezSessionState = createAndInitSession(null, queueName, false, conf);
     if (queueName != null) {
       conf.set(TezConfiguration.TEZ_QUEUE_NAME, queueName);
     }

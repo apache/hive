@@ -194,10 +194,22 @@ class SessionExpirationTracker {
     }
   }
 
+  // A paranoid safety margin to ageMs in case of recovery.
+  private static final double AM_AGE_SAFETY_MARGIN = 1.05;
 
-  public void addToExpirationQueue(TezSessionPoolSession session) {
+  public boolean isOldAmUsable(long amAgeMs) {
+    return sessionLifetimeMs > (long)(amAgeMs * AM_AGE_SAFETY_MARGIN);
+  }
+
+  public boolean addToExpirationQueue(TezSessionPoolSession session, long amAgeMs) {
     long jitterModMs = (long)(sessionLifetimeJitterMs * rdm.nextFloat());
-    session.setExpirationNs(System.nanoTime() + (sessionLifetimeMs + jitterModMs) * 1000000L);
+    // We'll add a paranoid safety margin to ageMs in case of recovery.
+    long amLifetimeMs = sessionLifetimeMs + jitterModMs - (long)(amAgeMs * AM_AGE_SAFETY_MARGIN);
+    if (amLifetimeMs <= 0) {
+      assert amAgeMs > 0;
+      return false;
+    }
+    session.setExpirationNs(System.nanoTime() + amLifetimeMs * 1000000L);
     if (LOG.isDebugEnabled()) {
       LOG.debug("Adding a pool session [" + this + "] to expiration queue");
     }
@@ -218,6 +230,7 @@ class SessionExpirationTracker {
       expirationQueue.add(session);
       expirationQueue.notifyAll();
     }
+    return true;
   }
 
 

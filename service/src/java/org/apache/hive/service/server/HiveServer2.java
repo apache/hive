@@ -143,6 +143,7 @@ public class HiveServer2 extends CompositeService {
   private String serviceUri;
   private boolean serviceDiscovery;
   private boolean activePassiveHA;
+  private boolean recoverAms;
   private LeaderLatchListener leaderLatchListener;
   private ExecutorService leaderActionsExecutorService;
   private HS2ActivePassiveHARegistry hs2HARegistry;
@@ -237,6 +238,8 @@ public class HiveServer2 extends CompositeService {
 
     this.serviceDiscovery = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_SUPPORT_DYNAMIC_SERVICE_DISCOVERY);
     this.activePassiveHA = hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_ACTIVE_PASSIVE_HA_ENABLE);
+    this.recoverAms = activePassiveHA
+        && hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_AP_HA_RECOVER_SESSIONS);
 
     try {
       if (serviceDiscovery) {
@@ -355,7 +358,7 @@ public class HiveServer2 extends CompositeService {
     pool.setQueryParallelism(1);
     resourcePlan = new WMFullResourcePlan(
         new WMResourcePlan("testDefault"), Lists.newArrayList(pool));
-    resourcePlan.getPlan().setDefaultPoolPath("testDefault");
+    resourcePlan.getPlan().setDefaultPoolPath("llap");
     return resourcePlan;
   }
 
@@ -700,7 +703,7 @@ public class HiveServer2 extends CompositeService {
       LOG.info("HS2 instance {} LOST LEADERSHIP. Stopping/Disconnecting tez sessions..", hiveServer2.serviceUri);
       hiveServer2.isLeader.set(false);
       hiveServer2.closeHiveSessions();
-      hiveServer2.stopOrDisconnectTezSessions();
+      hiveServer2.stopOrDisconnectTezSessions(false);
       LOG.info("Stopped/Disconnected tez sessions.");
     }
   }
@@ -737,6 +740,11 @@ public class HiveServer2 extends CompositeService {
       LOG.info("Initializing tez session pool manager");
       tezSessionPoolManager = TezSessionPoolManager.getInstance();
       if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_TEZ_INITIALIZE_DEFAULT_SESSIONS)) {
+        if (recoverAms) {
+          // Note: the main problem being the setups with multiple default queues.
+          //       the session factory will also need to be adjusted by recovery.
+          LOG.warn("AM recovery for non-WM pool is not yet supported.");
+        }
         tezSessionPoolManager.setupPool(hiveConf);
       }
       tezSessionPoolManager.startPool(hiveConf, resourcePlan);
@@ -747,18 +755,17 @@ public class HiveServer2 extends CompositeService {
   }
 
   private void initAndStartWorkloadManager(final WMFullResourcePlan resourcePlan) {
-    if (!StringUtils.isEmpty(wmQueue)) {
-      // Initialize workload management.
-      LOG.info("Initializing workload management");
-      try {
-        wm = WorkloadManager.create(wmQueue, hiveConf, resourcePlan);
-        wm.start();
-        LOG.info("Workload manager initialized.");
-      } catch (Exception e) {
-        throw new ServiceException("Unable to instantiate and start Workload Manager", e);
-      }
-    } else {
+    if (StringUtils.isEmpty(wmQueue)) {
       LOG.info("Workload management is not enabled.");
+      return;
+    }
+    LOG.info("Initializing workload management");
+    try {
+      wm = WorkloadManager.create(wmQueue, hiveConf, resourcePlan, recoverAms);
+      wm.start();
+      LOG.info("Workload manager initialized.");
+    } catch (Exception e) {
+      throw new ServiceException("Unable to instantiate and start Workload Manager", e);
     }
   }
 
@@ -776,7 +783,7 @@ public class HiveServer2 extends CompositeService {
     }
   }
 
-  private void stopOrDisconnectTezSessions() {
+  private void stopOrDisconnectTezSessions(boolean isStop) {
     LOG.info("Stopping/Disconnecting tez sessions.");
     // There should already be an instance of the session pool manager.
     // If not, ignoring is fine while stopping HiveServer2.
@@ -790,7 +797,7 @@ public class HiveServer2 extends CompositeService {
     }
     if (wm != null) {
       try {
-        wm.stop();
+        wm.stop(isStop);
         LOG.info("Stopped workload manager.");
       } catch (Exception e) {
         LOG.error("Error while stopping workload manager.", e);
@@ -835,7 +842,7 @@ public class HiveServer2 extends CompositeService {
       }
     }
 
-    stopOrDisconnectTezSessions();
+    stopOrDisconnectTezSessions(true);
 
     if (hiveConf != null && hiveConf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals("spark")) {
       try {

@@ -268,6 +268,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private long tgVersionSent = Long.MIN_VALUE;
 
   private LlapTaskCommunicator communicator;
+  private final String amAppId, amHiveSessionId;
   private final int amPort;
   private final String serializedToken, jobIdForToken;
   // We expect the DAGs to not be super large, so store full dependency set for each vertex to
@@ -287,11 +288,12 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   public static final String LLAP_PLUGIN_ENDPOINT_ENABLED = "llap.plugin.endpoint.enabled";
 
   @VisibleForTesting
-  public LlapTaskSchedulerService(TaskSchedulerContext taskSchedulerContext, Clock clock,
-      boolean initMetrics) {
+  public LlapTaskSchedulerService(
+      TaskSchedulerContext taskSchedulerContext, Clock clock, boolean initMetrics) {
     super(taskSchedulerContext);
     this.clock = clock;
     this.amPort = taskSchedulerContext.getAppClientPort();
+    this.amAppId = taskSchedulerContext.getApplicationAttemptId().getApplicationId().toString();
     this.delayedTaskSchedulerCallable = createDelayedTaskSchedulerCallable();
     try {
       this.conf = TezUtils.createConfFromUserPayload(taskSchedulerContext.getInitialUserPayload());
@@ -299,6 +301,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       throw new TezUncheckedException(
           "Failed to parse user payload for " + LlapTaskSchedulerService.class.getSimpleName(), e);
     }
+    this.amHiveSessionId = HiveConf.getVar(conf, ConfVars.HIVESESSIONID);
 
     if (conf.getBoolean(LLAP_PLUGIN_ENDPOINT_ENABLED, false)) {
       JobTokenSecretManager sm = null;
@@ -394,7 +397,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     LOG.info("Running with configuration: hosts={}, numSchedulableTasksPerNode={}, "
         + "nodeBlacklistConf={}, localityConf={}",
         hostsString, numSchedulableTasksPerNode, nodeBlacklistConf, localityDelayConf);
-    this.amRegistry = TezAmRegistryImpl.create(conf, true);
+    String registryName = HiveConf.getVar(conf, ConfVars.LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME);
+    this.amRegistry = TezAmRegistryImpl.create(registryName, conf, true);
 
     synchronized (LlapTaskCommunicator.pluginInitLock) {
       LlapTaskCommunicator peer = LlapTaskCommunicator.instance;
@@ -764,8 +768,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       if (amRegistry != null) {
         amRegistry.start();
         int pluginPort = pluginEndpoint != null ? pluginEndpoint.getActualPort() : -1;
-        amRegistry.register(amPort, pluginPort, HiveConf.getVar(conf, ConfVars.HIVESESSIONID),
-            serializedToken, jobIdForToken, 0);
+        amRegistry.register(amPort, pluginPort, amHiveSessionId,
+            serializedToken, jobIdForToken, 0, amAppId);
       }
     } finally {
       writeLock.unlock();

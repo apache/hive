@@ -58,8 +58,20 @@ public class TezAmInstance extends ServiceInstanceBase {
     return Integer.parseInt(str);
   }
 
+  public String getApplicationId() {
+    return getProperties().get(TezAmRegistryImpl.AM_APP_ID);
+  }
+
   public String getPluginTokenJobId() {
     return getProperties().get(TezAmRegistryImpl.AM_PLUGIN_JOBID);
+  }
+
+  public long getAmAgeMs() {
+    // See the TODO where AM_APP_START_MS is populated in the service record.
+    String amStartMsStr = getProperties().get(TezAmRegistryImpl.AM_APP_START_MS);
+    if (StringUtils.isBlank(amStartMsStr)) return -1;
+    long amStartMs = Long.parseLong(amStartMsStr);
+    return System.currentTimeMillis() - amStartMs;
   }
 
   public Token<JobTokenIdentifier> getPluginToken() {
@@ -83,5 +95,4 @@ public class TezAmInstance extends ServiceInstanceBase {
     return "TezAmInstance [" + getSessionId() + ", host=" + getHost() + ", rpcPort=" + getRpcPort() +
         ", pluginPort=" + pluginPort + ", token=" + token + "]";
   }
-
 }

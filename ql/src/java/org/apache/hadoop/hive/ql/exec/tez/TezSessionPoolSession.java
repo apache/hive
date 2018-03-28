@@ -124,7 +124,35 @@ class TezSessionPoolSession extends TezSessionState {
     super.openInternal(additionalFiles, isAsync, console, resources);
     parent.registerOpenSession(this);
     if (expirationTracker != null) {
-      expirationTracker.addToExpirationQueue(this);
+      boolean isNotExpired = expirationTracker.addToExpirationQueue(this, 0L);
+      assert isNotExpired;
+    }
+  }
+
+  @Override
+  public boolean reconnect(String applicationId, long amAgeMs) throws IOException,
+      LoginException, URISyntaxException, TezException {
+    if (expirationTracker != null && !expirationTracker.isOldAmUsable(amAgeMs)) {
+      closeExpiredOnReconnect(applicationId);
+      return false;
+    }
+    if (!super.reconnect(applicationId, amAgeMs)) {
+      return false;
+    }
+    parent.registerOpenSession(this);
+    if (expirationTracker != null && !expirationTracker.addToExpirationQueue(this, amAgeMs)) {
+      closeExpiredOnReconnect(applicationId);
+      return false;
+    }
+    return true;
+  }
+
+  private void closeExpiredOnReconnect(String applicationId) {
+    LOG.warn("Not using an old AM due to expiration timeout: " + applicationId);
+    try {
+      this.close(false);
+    } catch (Exception e) {
+      LOG.info("Failed to close the old AM", e);
     }
   }
 

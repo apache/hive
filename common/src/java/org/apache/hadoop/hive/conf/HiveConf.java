@@ -2472,6 +2472,8 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_ACTIVE_PASSIVE_HA_ENABLE("hive.server2.active.passive.ha.enable", false,
       "Whether HiveServer2 Active/Passive High Availability be enabled when Hive Interactive sessions are enabled." +
         "This will also require hive.server2.support.dynamic.service.discovery to be enabled."),
+    HIVE_SERVER2_AP_HA_RECOVER_SESSIONS("hive.server2.active.passive.ha.recover.sessions",
+        true, "Whether to recover sessions if using active-passive HA."),
     HIVE_SERVER2_ACTIVE_PASSIVE_HA_REGISTRY_NAMESPACE("hive.server2.active.passive.ha.registry.namespace",
       "hs2ActivePassiveHA",
       "When HiveServer2 Active/Passive High Availability is enabled, uses this namespace for registering HS2\n" +

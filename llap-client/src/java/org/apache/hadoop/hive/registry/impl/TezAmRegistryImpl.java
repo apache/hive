@@ -36,15 +36,17 @@ public class TezAmRegistryImpl extends ZkRegistryBase<TezAmInstance> {
   static final String IPC_TEZCLIENT = "tez-client";
   static final String IPC_PLUGIN = "llap-plugin";
   static final String AM_SESSION_ID = "am.session.id", AM_PLUGIN_TOKEN = "am.plugin.token",
-      AM_PLUGIN_JOBID = "am.plugin.jobid", AM_GUARANTEED_COUNT = "am.guaranteed.count";
+      AM_PLUGIN_JOBID = "am.plugin.jobid", AM_GUARANTEED_COUNT = "am.guaranteed.count",
+      AM_APP_ID = "am.app.id", AM_APP_START_MS = "am.age";
+
   private final static String NAMESPACE_PREFIX = "tez-am-";
   private static final String SASL_LOGIN_CONTEXT_NAME = "TezAmZooKeeperClient";
 
   private final String registryName;
   private ServiceRecord srv;
 
-  public static TezAmRegistryImpl create(Configuration conf, boolean useSecureZk) {
-    String amRegistryName = HiveConf.getVar(conf, ConfVars.LLAP_TASK_SCHEDULER_AM_REGISTRY_NAME);
+  public static TezAmRegistryImpl create(
+      String amRegistryName, Configuration conf, boolean useSecureZk) {
     return StringUtils.isBlank(amRegistryName) ? null
         : new TezAmRegistryImpl(amRegistryName, conf, useSecureZk);
   }
@@ -69,8 +71,8 @@ public class TezAmRegistryImpl extends ZkRegistryBase<TezAmInstance> {
     populateCache(pcc, doInvokeListeners);
   }
 
-  public String register(int amPort, int pluginPort, String sessionId,
-      String serializedToken, String jobIdForToken, int guaranteedCount) throws IOException {
+  public String register(int amPort, int pluginPort, String sessionId, String serializedToken,
+    String jobIdForToken, int guaranteedCount, String applicationId) throws IOException {
     if (srv != null) {
       throw new UnsupportedOperationException("Already registered with " + srv);
     }
@@ -84,8 +86,14 @@ public class TezAmRegistryImpl extends ZkRegistryBase<TezAmInstance> {
           IPC_PLUGIN, new InetSocketAddress(hostname, pluginPort));
       srv.addInternalEndpoint(pluginEndpoint);
     }
+    srv.set(AM_APP_ID, applicationId);
     srv.set(AM_SESSION_ID, sessionId);
     boolean hasToken = serializedToken != null;
+    // TODO: this is kind of brittle. First, the clock can be adjusted and then, there could be
+    //       discrepancies between machines. A better approach would be storing AM age based on
+    //       nanoTime, and updating it every now and then. However, we are measuring days, or at
+    //       least hours, so this should be reasonable for the first cut.
+    srv.set(AM_APP_START_MS, System.currentTimeMillis());
     srv.set(AM_PLUGIN_TOKEN, hasToken ? serializedToken : "");
     srv.set(AM_PLUGIN_JOBID, jobIdForToken != null ? jobIdForToken : "");
     srv.set(AM_GUARANTEED_COUNT, Integer.toString(guaranteedCount));

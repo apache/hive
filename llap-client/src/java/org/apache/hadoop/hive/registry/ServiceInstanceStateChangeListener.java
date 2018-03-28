@@ -15,6 +15,8 @@
  */
 package org.apache.hadoop.hive.registry;
 
+import java.io.IOException;
+
 /**
  * Callback listener for instance state change events
  */
@@ -24,7 +26,7 @@ public interface ServiceInstanceStateChangeListener<InstanceType extends Service
    *
    * @param serviceInstance - created service instance
    */
-  void onCreate(InstanceType serviceInstance, int ephSeqVersion);
+  void onCreate(InstanceType serviceInstance, int ephSeqVersion) throws IOException;
 
   /**
    * Called when an existing {@link ServiceInstance} is updated.

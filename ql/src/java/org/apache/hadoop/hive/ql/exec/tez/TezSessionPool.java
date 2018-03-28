@@ -23,13 +23,12 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.google.common.util.concurrent.SettableFuture;
+
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.FutureTask;
@@ -37,7 +36,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-import org.apache.hadoop.fs.Path;
+
+import javax.security.auth.login.LoginException;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -45,6 +47,7 @@ import org.apache.hadoop.hive.registry.ServiceInstanceStateChangeListener;
 import org.apache.hadoop.hive.registry.impl.TezAmInstance;
 import org.apache.hadoop.hive.registry.impl.TezAmRegistryImpl;
 import org.apache.tez.dag.api.TezConfiguration;
+import org.apache.tez.dag.api.TezException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,15 +58,18 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
   private static final Logger LOG = LoggerFactory.getLogger(TezSessionPool.class);
 
   public interface SessionObjectFactory<SessionType> {
-    SessionType create(SessionType oldSession);
+    SessionType create(SessionType oldSession, String sessionId);
   }
 
   private final HiveConf initConf;
-  private int initialSize = 0; // For testing only.
+  private int initialSize = 0;
   private final SessionObjectFactory<SessionType> sessionObjFactory;
 
+  /** The main lock for pool, asyncRequests, etc. */
   private final ReentrantLock poolLock = new ReentrantLock(true);
   private final Condition notEmpty = poolLock.newCondition();
+  /** The exclusion between pool initialization and resize; see resizeAsync comments. */
+  private final Object poolInitLock = new Object();
   private final LinkedList<SessionType> pool = new LinkedList<>();
   private final LinkedList<SettableFuture<SessionType>> asyncRequests = new LinkedList<>();
   /**
@@ -79,6 +85,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
 
   private final String amRegistryName;
   private final TezAmRegistryImpl amRegistry;
+  private final ChangeListener amChangeListener;
 
   private final ConcurrentHashMap<String, SessionType> bySessionId =
       new ConcurrentHashMap<>();
@@ -86,38 +93,80 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
   // TODO: rather, Tez sessions should not depend on SessionState.
   private SessionState parentSessionState;
 
-  TezSessionPool(HiveConf initConf, int numSessionsTotal, boolean useAmRegistryIfPresent,
+  TezSessionPool(HiveConf initConf, int numSessionsTotal, String amRegistryName,
       SessionObjectFactory<SessionType> sessionFactory) {
     this.initConf = initConf;
     this.initialSize = numSessionsTotal;
-    this.amRegistry = useAmRegistryIfPresent ? TezAmRegistryImpl.create(initConf, true) : null;
-    this.amRegistryName = amRegistry == null ? null : amRegistry.getRegistryName();
+    if (amRegistryName != null) {
+      this.amRegistry = TezAmRegistryImpl.create(amRegistryName, initConf, true);
+      this.amRegistryName = amRegistry.getRegistryName();
+      this.amChangeListener = new ChangeListener();
+    } else {
+      this.amRegistry = null;
+      this.amRegistryName = null;
+      this.amChangeListener = null;
+    }
     this.sessionObjFactory = sessionFactory;
   }
 
-  void start() throws Exception {
+  void start(boolean recoverAms) throws Exception {
+    if (amRegistry == null && recoverAms) {
+      throw new IllegalStateException("Registry not initialized for AM recovery");
+    }
+    this.parentSessionState = SessionState.get();
+    if (parentSessionState == null) {
+      // Tez session wrapper currently depends on SessionState for some unnecessary stuff.
+      LOG.warn("Hive session state is not present during initialization");
+    }
+
+    synchronized (poolInitLock) {
+      startUnderInitLock(recoverAms);
+    }
+  }
+
+  private void startUnderInitLock(boolean recoverAms) throws Exception {
     if (amRegistry != null) {
       amRegistry.start();
       amRegistry.initializeWithoutRegistering();
-      // Note: we may later have special logic to pick up old AMs, if any.
-      amRegistry.registerStateChangeListener(new ChangeListener());
+      // Note: this style of state management assumes that noone else (in this process)
+      //       will use the pool, or create sessions, while this is ongoing.
+      amChangeListener.setRecoveryMode(recoverAms);
+      amRegistry.registerStateChangeListener(amChangeListener);
       amRegistry.populateCache(true);
+      amChangeListener.setRecoveryMode(false);
     }
 
-    this.parentSessionState = SessionState.get();
-    if (initialSize == 0) return; // May be resized later.
+    int sessionsToCreate = initialSize;
 
-    int threadCount = Math.min(initialSize,
+    if (recoverAms) {
+      poolLock.lock();
+      try {
+        if (sessionsToCreate < pool.size()) {
+          // The recovery code should have handled this.
+          throw new AssertionError("We've recovered more sessions than we need: "
+              + pool.size() + "/" + sessionsToCreate);
+        }
+        sessionsToCreate -= pool.size();
+      } finally {
+        poolLock.unlock();
+      }
+    }
+
+    LOG.info("Creating " + sessionsToCreate + " new sessions");
+
+    if (sessionsToCreate == 0) return; // May be resized later.
+
+    int threadCount = Math.min(sessionsToCreate,
         HiveConf.getIntVar(initConf, ConfVars.HIVE_SERVER2_TEZ_SESSION_MAX_INIT_THREADS));
     Preconditions.checkArgument(threadCount > 0);
     if (threadCount == 1) {
-      for (int i = 0; i < initialSize; ++i) {
-        SessionType session = sessionObjFactory.create(null);
+      for (int i = 0; i < sessionsToCreate; ++i) {
+        SessionType session = sessionObjFactory.create(null, null);
         if (session == null) break;
         startInitialSession(session);
       }
     } else {
-      final AtomicInteger remaining = new AtomicInteger(initialSize);
+      final AtomicInteger remaining = new AtomicInteger(sessionsToCreate);
       @SuppressWarnings("unchecked")
       FutureTask<Boolean>[] threadTasks = new FutureTask[threadCount];
       for (int i = threadTasks.length - 1; i >= 0; --i) {
@@ -186,7 +235,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
       sessionState.setTezSession(null);
     }
     if (!session.stopUsing()) return true; // The session will be restarted and return to us.
-    boolean canPutBack = putSessionBack(session, true);
+    boolean canPutBack = putSessionBack(session, true, false);
     if (canPutBack) return true;
     if (LOG.isDebugEnabled()) {
       LOG.debug("Closing an unneeded returned session " + session);
@@ -205,7 +254,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
    * Puts session back into the pool.
    * @return true if the session has been put back; false if it's not needed and should be killed.
    */
-  private boolean putSessionBack(SessionType session, boolean isFirst) {
+  private boolean putSessionBack(SessionType session, boolean isFirst, boolean isRecovery) {
     SettableFuture<SessionType> future = null;
     poolLock.lock();
     try {
@@ -217,6 +266,14 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
         if (deltaRemaining.compareAndSet(-remainingToKill, -remainingToKill + 1)) {
           return false;
         }
+      }
+      if (isRecovery && initialSize <= pool.size()) { 
+        // For the reconnect case only, validate against the initialSize.
+        // When not in recovery mode, we'll never put back more sessions than needed unless the
+        // pool has been resized down, which is handled by delta due to sync convenience for
+        // multiple parallel resize requests; recovery cannot use the delta because the initial
+        // pool size is unknown.
+        return false;
       }
       // If there are async requests, satisfy them first.
       if (!asyncRequests.isEmpty()) {
@@ -245,7 +302,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
 
   void replaceSession(SessionType oldSession) throws Exception {
     // Re-setting the queue config is an old hack that we may remove in future.
-    SessionType newSession = sessionObjFactory.create(oldSession);
+    SessionType newSession = sessionObjFactory.create(oldSession, null);
     String queueName = oldSession.getQueueName();
     try {
       oldSession.close(false);
@@ -274,7 +331,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
         SessionState.setCurrentSessionState(parentSessionState);
       }
       newSession.open();
-      if (!putSessionBack(newSession, false)) {
+      if (!putSessionBack(newSession, false, false)) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Closing an unneeded session " + newSession
               + "; trying to replace " + oldSession);
@@ -296,7 +353,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
     configureAmRegistry(session);
     session.open();
     if (session.stopUsing()) {
-      if (!putSessionBack(session, false)) {
+      if (!putSessionBack(session, false, false)) {
         LOG.warn("Couldn't add a session during initialization");
         try {
           session.close(false);
@@ -320,10 +377,32 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
   private final class ChangeListener
     implements ServiceInstanceStateChangeListener<TezAmInstance> {
 
+    private boolean isRecoveryMode = false;
+
+    public void setRecoveryMode(boolean value) {
+      this.isRecoveryMode = value;
+    }
+
     @Override
-    public void onCreate(TezAmInstance si, int ephSeqVersion) {
+    public void onCreate(TezAmInstance si, int ephSeqVersion) throws IOException {
       String sessionId = si.getSessionId();
       SessionType session = bySessionId.get(sessionId);
+      if (!isRecoveryMode) {
+        onCreateNew(si, ephSeqVersion, sessionId, session);
+        return;
+      }
+      // In collect mode, we treat every AM as old; this HS2 is definitely not starting AMs.
+      // We don't expect anyone else to be either, but there could be Tez-side recovery.
+      if (session != null) {
+        // No one should populate bySessionId at this stage. Ignore; we could also kill it in YARN.
+        LOG.warn("We are collecting existing AMs; the session " + session + " is unexpected");
+        return;
+      }
+      reconnectToExistingSession(si, ephSeqVersion, sessionId);
+    }
+
+    private void onCreateNew(TezAmInstance si, int ephSeqVersion,
+        String sessionId, SessionType session) {
       if (session != null) {
         LOG.info("AM for " + sessionId + ", v." + ephSeqVersion + " has registered; updating ["
             + session + "] with an endpoint at " + si.getPluginPort());
@@ -374,15 +453,21 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
    */
   public ListenableFuture<?> resizeAsync(int delta, List<SessionType> toClose) {
     if (delta == 0) return createDummyFuture();
-    poolLock.lock();
-    try {
-      if (delta < 0) {
-        return resizeDownInternal(-delta, toClose);
-      } else {
-        return resizeUpInternal(delta);
+    // We are potentially going to block the WM thread here for a long time, a terrible crime.
+    // This only happens if the resource plan changes during pool initialization; the complexity
+    // of syncing resize with initialization in a non-blocking manner is not justified, esp. given
+    // that no-one can use the sessions anyway until the initialization is completed.
+    synchronized (poolInitLock) {
+      poolLock.lock();
+      try {
+        if (delta < 0) {
+          return resizeDownInternal(-delta, toClose);
+        } else {
+          return resizeUpInternal(delta);
+        }
+      } finally {
+        poolLock.unlock();
       }
-    } finally {
-      poolLock.unlock();
     }
   }
 
@@ -463,7 +548,7 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
         int oldVal = remaining.get();
         if (oldVal <= 0) return true;
         if (!remaining.compareAndSet(oldVal, oldVal - 1)) continue;
-        startInitialSession(sessionObjFactory.create(null));
+        startInitialSession(sessionObjFactory.create(null, null));
       }
     }
   }
@@ -483,5 +568,53 @@ class TezSessionPool<SessionType extends TezSessionPoolSession> {
    */
   public void notifyClosed(TezSessionState session) {
     bySessionId.remove(session.getSessionId());
+  }
+
+  private void reconnectToExistingSession(
+      TezAmInstance si, int ephSeqVersion, String sessionId) throws IOException {
+    SessionType session = sessionObjFactory.create(null, sessionId);
+    if (session == null) {
+      // This can only happen in the non-WM factory; the factory itself would need to be fixed.
+      throw new RuntimeException("Cannot create a session object");
+    }
+    String applicationId = si.getApplicationId();
+    if (StringUtils.isBlank(applicationId)) {
+      LOG.warn("Cannot reconnect; no applicationId in " + si);
+      return; // Ignore; we couldn't even kill it in YARN; maybe via Tez AM host/port info.
+    }
+    boolean isUsable = session.tryUse(true);
+    if (!isUsable) {
+      throw new IOException(session + " is not usable at pool startup");
+    }
+    session.getConf().set(TezConfiguration.TEZ_QUEUE_NAME, session.getQueueName());
+    long ageMs = si.getAmAgeMs();
+    try {
+      // Note: this depends on SessionState object, sadly (e.g. for scratch dir).
+      //       We need to make sure it's set up - right now, we are running on the init
+      //       thread, so it should be ok.
+      // TODO: how expensive can this be? do we need a threadpool, like the one for init?
+      if (!session.reconnect(applicationId, ageMs)) {
+        return; // The session is too old; reconnect takes care of getting rid of it.
+      }
+    } catch (LoginException | URISyntaxException | TezException e) {
+      throw new IOException(e);
+    }
+    // Account for the session in internal structures, and update session conf.
+    configureAmRegistry(session);
+    if (!session.stopUsing()) {
+      LOG.warn("The session has expired during initialization: " + session);
+      return;
+    }
+    // See if we need this session. There may be more running than configured pool size.
+    if (!putSessionBack(session, false, true)) {
+      LOG.warn("Closing an unneeded session during initialization: " + session);
+      try {
+        session.close(false);
+      } catch (Exception ex) {
+        LOG.error("Failed to close an unneeded session", ex);
+      }
+    }
+    // Propagate registry information to the session itself.
+    session.updateFromRegistry(si, ephSeqVersion);
   }
 }
