@@ -61,12 +61,12 @@ public class CreateDatabaseHandler extends AbstractMessageHandler {
         new CreateDatabaseDesc(destinationDBName, db.getDescription(), null, true);
     createDatabaseDesc.setDatabaseProperties(db.getParameters());
     Task<DDLWork> createDBTask = TaskFactory.get(
-        new DDLWork(new HashSet<>(), new HashSet<>(), createDatabaseDesc));
+        new DDLWork(new HashSet<>(), new HashSet<>(), createDatabaseDesc), context.hiveConf);
     if (!db.getParameters().isEmpty()) {
       AlterDatabaseDesc alterDbDesc = new AlterDatabaseDesc(destinationDBName, db.getParameters(),
           context.eventOnlyReplicationSpec());
       Task<DDLWork> alterDbProperties = TaskFactory
-          .get(new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc));
+          .get(new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc), context.hiveConf);
       createDBTask.addDependentTask(alterDbProperties);
     }
     if (StringUtils.isNotEmpty(db.getOwnerName())) {
@@ -74,7 +74,7 @@ public class CreateDatabaseHandler extends AbstractMessageHandler {
           new PrincipalDesc(db.getOwnerName(), db.getOwnerType()),
           context.eventOnlyReplicationSpec());
       Task<DDLWork> alterDbTask = TaskFactory
-          .get(new DDLWork(new HashSet<>(), new HashSet<>(), alterDbOwner));
+          .get(new DDLWork(new HashSet<>(), new HashSet<>(), alterDbOwner), context.hiveConf);
       createDBTask.addDependentTask(alterDbTask);
     }
     updatedMetadata

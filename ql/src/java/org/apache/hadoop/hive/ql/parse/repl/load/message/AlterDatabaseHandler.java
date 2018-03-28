@@ -80,7 +80,7 @@ public class AlterDatabaseHandler extends AbstractMessageHandler {
       }
 
       Task<DDLWork> alterDbTask = TaskFactory.get(
-          new DDLWork(readEntitySet, writeEntitySet, alterDbDesc));
+          new DDLWork(readEntitySet, writeEntitySet, alterDbDesc), context.hiveConf);
       context.log.debug("Added alter database task : {}:{}",
               alterDbTask.getId(), actualDbName);
 
