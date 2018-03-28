@@ -1379,6 +1379,7 @@ class MetaStoreDirectSql {
       return null;
     }
     ColumnStatisticsDesc csd = new ColumnStatisticsDesc(true, dbName, tableName);
+    csd.setCatName(catName);
     ColumnStatistics result = makeColumnStats(list, csd, 0);
     b.closeAllQueries();
     return result;
