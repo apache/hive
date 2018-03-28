@@ -524,4 +524,100 @@ public class TestReplicationScenariosAcrossInstances {
     */
 
   }
+
+  @Test
+  public void testReplLoadFromSourceUsingWithClause() throws Throwable {
+    HiveConf replicaConf = replica.getConf();
+    List<String> withConfigs = Arrays.asList(
+            "'hive.metastore.warehouse.dir'='" + replicaConf.getVar(HiveConf.ConfVars.METASTOREWAREHOUSE) + "'",
+            "'hive.metastore.uris'='" + replicaConf.getVar(HiveConf.ConfVars.METASTOREURIS) + "'",
+            "'hive.repl.replica.functions.root.dir'='" + replicaConf.getVar(HiveConf.ConfVars.REPL_FUNCTIONS_ROOT_DIR) + "'");
+
+    ////////////  Bootstrap   ////////////
+    WarehouseInstance.Tuple bootstrapTuple = primary
+            .run("use " + primaryDbName)
+            .run("create table table1 (i int)")
+            .run("create table table2 (id int) partitioned by (country string)")
+            .run("insert into table1 values (1)")
+            .dump(primaryDbName, null);
+
+    // Run load on primary itself
+    primary.load(replicatedDbName, bootstrapTuple.dumpLocation, withConfigs)
+            .status(replicatedDbName, withConfigs)
+            .verifyResult(bootstrapTuple.lastReplicationId);
+
+    replica.run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] { "table1", "table2" })
+            .run("select * from table1")
+            .verifyResults(new String[]{ "1" });
+
+    ////////////  First Incremental ////////////
+    WarehouseInstance.Tuple incrementalOneTuple = primary
+                    .run("use " + primaryDbName)
+                    .run("alter table table1 rename to renamed_table1")
+                    .run("insert into table2 partition(country='india') values (1) ")
+                    .run("insert into table2 partition(country='usa') values (2) ")
+                    .run("create table table3 (i int)")
+                    .run("insert into table3 values(10)")
+                    .run("create function " + primaryDbName
+                      + ".testFunctionOne as 'hivemall.tools.string.StopwordUDF' "
+                      + "using jar  'ivy://io.github.myui:hivemall:0.4.0-2'")
+                    .dump(primaryDbName, bootstrapTuple.lastReplicationId);
+
+    // Run load on primary itself
+    primary.load(replicatedDbName, incrementalOneTuple.dumpLocation, withConfigs)
+            .status(replicatedDbName, withConfigs)
+            .verifyResult(incrementalOneTuple.lastReplicationId);
+
+    replica.run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] { "renamed_table1", "table2", "table3" })
+            .run("select * from renamed_table1")
+            .verifyResults(new String[] { "1" })
+            .run("select id from table2 order by id")
+            .verifyResults(new String[] { "1", "2" })
+            .run("select * from table3")
+            .verifyResults(new String[] { "10" })
+            .run("show functions like '" + replicatedDbName + "*'")
+            .verifyResult(replicatedDbName + ".testFunctionOne");
+
+    ////////////  Second Incremental ////////////
+    WarehouseInstance.Tuple secondIncremental = primary
+            .run("use " + primaryDbName)
+            .run("alter table table2 add columns (zipcode int)")
+            .run("alter table table3 set tblproperties('custom.property'='custom.value')")
+            .run("drop table renamed_table1")
+            .run("alter table table2 drop partition(country='usa')")
+            .run("truncate table table3")
+            .run("drop function " + primaryDbName + ".testFunctionOne ")
+            .dump(primaryDbName, incrementalOneTuple.lastReplicationId);
+
+    // Run load on primary itself
+    primary.load(replicatedDbName, secondIncremental.dumpLocation, withConfigs)
+            .status(replicatedDbName, withConfigs)
+            .verifyResult(secondIncremental.lastReplicationId);
+
+    replica.run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] { "table2", "table3"})
+            .run("desc table2")
+            .verifyResults(new String[] {
+                    "id                  \tint                 \t                    ",
+                    "country             \tstring              \t                    ",
+                    "zipcode             \tint                 \t                    ",
+                    "\t \t ",
+                    "# Partition Information\t \t ",
+                    "# col_name            \tdata_type           \tcomment             ",
+                    "country             \tstring              \t                    ",
+            })
+            .run("show tblproperties table3('custom.property')")
+            .verifyResults(new String[] { "custom.value\t " })
+            .run("select id from table2 order by id")
+            .verifyResults(new String[] { "1" })
+            .run("select * from table3")
+            .verifyResults(Collections.emptyList())
+            .run("show functions like '" + replicatedDbName + "*'")
+            .verifyResult(null);
+  }
 }

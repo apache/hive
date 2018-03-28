@@ -65,7 +65,7 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
 
       context.log.debug("Loading function desc : {}", descToLoad.toString());
       Task<FunctionWork> createTask = TaskFactory.get(
-          new FunctionWork(descToLoad));
+          new FunctionWork(descToLoad), context.hiveConf);
       context.log.debug("Added create function task : {}:{},{}", createTask.getId(),
           descToLoad.getFunctionName(), descToLoad.getClassName());
       // This null check is specifically done as the same class is used to handle both incremental and
@@ -92,7 +92,7 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
          *  which should only happen when the last task is finished, at which point the child of the barrier task is picked up.
          */
         Task<? extends Serializable> barrierTask =
-            TaskFactory.get(new DependencyCollectionWork());
+            TaskFactory.get(new DependencyCollectionWork(), context.hiveConf);
         builder.replCopyTasks.forEach(t -> t.addDependentTask(barrierTask));
         barrierTask.addDependentTask(createTask);
         return builder.replCopyTasks;
