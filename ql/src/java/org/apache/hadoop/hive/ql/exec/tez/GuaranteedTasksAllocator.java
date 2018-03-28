@@ -102,13 +102,20 @@ public class GuaranteedTasksAllocator implements QueryAllocationManager {
   }
 
   @Override
-  public void updateSessionsAsync(Double totalMaxAlloc, List<WmTezSession> sessionsToUpdate) {
+  public int translateAllocationToCpus(double allocation) {
+    // Do not make a remote call under any circumstances - this is supposed to be async.
+    return (int)Math.round(getExecutorCount(false) * allocation);
+  }
+
+  @Override
+  public int updateSessionsAsync(Double totalMaxAlloc, List<WmTezSession> sessionsToUpdate) {
     // Do not make a remote call under any circumstances - this is supposed to be async.
     int totalCount = getExecutorCount(false);
     int totalToDistribute = -1;
     if (totalMaxAlloc != null) {
       totalToDistribute = (int)Math.round(totalCount * totalMaxAlloc);
     }
+    int totalDistributed = 0;
     double lastDelta = 0;
     for (int i = 0; i < sessionsToUpdate.size(); ++i) {
       WmTezSession session = sessionsToUpdate.get(i);
@@ -139,8 +146,10 @@ public class GuaranteedTasksAllocator implements QueryAllocationManager {
         totalToDistribute -= intAlloc;
       }
       // This will only send update if it's necessary.
+      totalDistributed += intAlloc;
       updateSessionAsync(session, intAlloc);
     }
+    return totalDistributed;
   }
 
   @Override
