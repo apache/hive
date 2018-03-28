@@ -4662,6 +4662,12 @@ public class Vectorizer implements PhysicalPlanResolver {
 
               SMBJoinDesc smbJoinSinkDesc = (SMBJoinDesc) op.getConf();
 
+              // Check additional constraint.
+              if (smbJoinSinkDesc.getFilterMap() != null) {
+                setOperatorIssue("FilterMaps not supported for Vector Pass-Thru SMB MapJoin");
+                throw new VectorizerCannotVectorizeException();
+              }
+
               VectorSMBJoinDesc vectorSMBJoinDesc = new VectorSMBJoinDesc();
               vectorOp = OperatorFactory.getVectorOperator(
                   op.getCompilationOpContext(), smbJoinSinkDesc, vContext, vectorSMBJoinDesc);
