@@ -129,13 +129,17 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
         // ignore partitions
         continue;
       case COMMAND_PARAMS:
-      case FUNCTION:
-        // operations that have objects of type COMMAND_PARAMS, FUNCTION are authorized
+        // operations that have objects of type COMMAND_PARAMS are authorized
         // solely on the type
         if (privController.isUserAdmin()) {
           availPrivs.addPrivilege(SQLPrivTypeGrant.ADMIN_PRIV);
         }
         break;
+      case FUNCTION:
+        // create/drop functions are marked as ADMIN functions
+        // Usage of available functions in query are not restricted by sql
+        // standard authorization.
+        continue;
       default:
         availPrivs = SQLAuthorizationUtils.getPrivilegesFromMetaStore(metastoreClient, userName,
             hiveObj, privController.getCurrentRoleNames(), privController.isUserAdmin());
