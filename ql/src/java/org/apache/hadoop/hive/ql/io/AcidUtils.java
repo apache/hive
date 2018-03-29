@@ -1653,6 +1653,9 @@ public class AcidUtils {
         //directory is empty or doesn't have any that could have been produced by load data
         return false;
       }
+      return isRawFormatFile(dataFile, fs);
+    }
+    public static boolean isRawFormatFile(Path dataFile, FileSystem fs) throws IOException {
       try {
         Reader reader = OrcFile.createReader(dataFile, OrcFile.readerOptions(fs.getConf()));
         /*

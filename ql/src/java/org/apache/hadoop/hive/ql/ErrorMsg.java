@@ -457,6 +457,10 @@ public enum ErrorMsg {
   HIVE_GROUPING_SETS_SIZE_LIMIT(10411,
     "Grouping sets size cannot be greater than 64"),
   REBUILD_NO_MATERIALIZED_VIEW(10412, "Rebuild command only valid for materialized views"),
+  LOAD_DATA_ACID_FILE(10413,
+      "\"{0}\" was created created by Acid write - it cannot be loaded into anther Acid table",
+      true),
+
 
   //========================== 20000 range starts here ========================//
 

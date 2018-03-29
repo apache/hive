@@ -150,7 +150,8 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     try {
-      srcs = matchFilesOrDir(FileSystem.get(fromURI, conf), new Path(fromURI));
+      FileSystem fileSystem = FileSystem.get(fromURI, conf);
+      srcs = matchFilesOrDir(fileSystem, new Path(fromURI));
       if (srcs == null || srcs.length == 0) {
         throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(ast,
             "No files matching path " + fromURI));
@@ -162,6 +163,7 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
               "source contains directory: " + oneSrc.getPath().toString()));
         }
       }
+      validateAcidFiles(table, srcs, fileSystem);
       // Do another loop if table is bucketed
       List<String> bucketCols = table.getBucketCols();
       if (bucketCols != null && !bucketCols.isEmpty()) {
@@ -198,11 +200,23 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
           if (bucketArray[bucketId]) {
             throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(
                     "Multiple files for same bucket : " + bucketId
-                            + ". Only 1 file per bucket allowed in single load command. To load multiple files for same bucket, use multiple statements for table "
+                            + ". Only 1 file per bucket allowed in single load command. To load " +
+                        "multiple files for same bucket, use multiple statements for table "
             + table.getFullyQualifiedName()));
           }
           bucketArray[bucketId] = true;
         }
+      }
+      else {
+        /**
+         * for loading into un-bucketed acid table, files can be named arbitrarily but they will
+         * be renamed during load.
+         * {@link Hive#mvFile(HiveConf, FileSystem, Path, FileSystem, Path, boolean, boolean,
+         * boolean, int)}
+         * and
+         * {@link Hive#copyFiles(HiveConf, FileSystem, FileStatus[], FileSystem, Path, boolean,
+         * boolean, List, boolean)}
+         */
       }
     } catch (IOException e) {
       // Has to use full name to make sure it does not conflict with
@@ -211,6 +225,28 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return Lists.newArrayList(srcs);
+  }
+
+  /**
+   * Safety check to make sure a file take from one acid table is not added into another acid table
+   * since the ROW__IDs embedded as part a write to one table won't make sense in different
+   * table/cluster.
+   */
+  private static void validateAcidFiles(Table table, FileStatus[] srcs, FileSystem fs)
+      throws SemanticException {
+    if(!AcidUtils.isFullAcidTable(table)) {
+      return;
+    }
+    try {
+      for (FileStatus oneSrc : srcs) {
+        if (!AcidUtils.MetaDataFile.isRawFormatFile(oneSrc.getPath(), fs)) {
+          throw new SemanticException(ErrorMsg.LOAD_DATA_ACID_FILE, oneSrc.getPath().toString());
+        }
+      }
+    }
+    catch(IOException ex) {
+      throw new SemanticException(ex);
+    }
   }
 
   @Override

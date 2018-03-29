@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -453,9 +454,30 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
    * which will currently make the query non-vectorizable.  This means we can't check the file name
    * for vectorized version of the test.
    */
-  private void checkResult(String[][] expectedResult, String query, boolean isVectorized, String msg) throws Exception{
+  private void checkResult(String[][] expectedResult, String query, boolean isVectorized,
+      String msg) throws Exception{
     List<String> rs = runStatementOnDriver(query);
     checkExpected(rs, expectedResult, msg + (isVectorized ? " vect" : ""), LOG, !isVectorized);
     assertVectorized(isVectorized, query);
+  }
+  @Test
+  public void testLoadAcidFile() throws Exception {
+    MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);
+    runStatementOnDriver("drop table if exists T");
+    runStatementOnDriver("drop table if exists T2");
+    runStatementOnDriver(
+        "create table T (a int, b int) stored as orc");
+    //This is just a simple way to generate test data
+    runStatementOnDriver("create table T2(a int, b int) stored as orc");
+    runStatementOnDriver("insert into T values(1,2)");
+    List<String> rs = runStatementOnDriver("select INPUT__FILE__NAME from T");
+    Assert.assertEquals(1, rs.size());
+    Assert.assertTrue("Unexpcted file name", rs.get(0)
+        .endsWith("t/delta_0000001_0000001_0000/bucket_00000"));
+    //T2 is an acid table so this should fail
+    CommandProcessorResponse cpr = runStatementOnDriverNegative(
+        "load data local inpath '" + rs.get(0) + "' into table T2");
+    Assert.assertEquals("Unexpected error code",
+        ErrorMsg.LOAD_DATA_ACID_FILE.getErrorCode(), cpr.getErrorCode());
   }
 }
