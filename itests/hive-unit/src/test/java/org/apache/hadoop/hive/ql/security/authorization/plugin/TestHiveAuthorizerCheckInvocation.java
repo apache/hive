@@ -287,7 +287,8 @@ public class TestHiveAuthorizerCheckInvocation {
     assertTrue("db name", dbName.equalsIgnoreCase(dbObj.getDbname()));
 
     // actually create the permanent function
-    driver.run(null, true);
+    CommandProcessorResponse cresponse = driver.run(null, true);
+    assertEquals(0, cresponse.getResponseCode());
 
     // Verify privilege objects
     reset(mockedAuthorizer);
@@ -295,7 +296,7 @@ public class TestHiveAuthorizerCheckInvocation {
     assertEquals(0, status);
 
     List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
-    assertEquals("number of input objects", 2, outputs.size());
+    assertEquals("number of input objects", 2, inputs.size());
     HivePrivilegeObject tableObj;
     if (inputs.get(0).getType() == HivePrivilegeObjectType.FUNCTION) {
       funcObj = inputs.get(0);
@@ -311,6 +312,62 @@ public class TestHiveAuthorizerCheckInvocation {
 
     assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, tableObj.getType());
     assertEquals("table name", tableName.toLowerCase(), tableObj.getObjectName().toLowerCase());
+
+    // create 2nd permanent function
+    String funcName2 = "funcName2";
+    cresponse = driver
+        .run("create function " + dbName + "." + funcName2 + " as 'org.apache.hadoop.hive.ql.udf.UDFRand'");
+    assertEquals(0, cresponse.getResponseCode());
+
+    // try using 2nd permanent function and verify its only 2nd one that shows up
+    // for auth
+    reset(mockedAuthorizer);
+    status = driver.compile("select  " + dbName + "." + funcName2 + "(i)  from " + tableName);
+    assertEquals(0, status);
+
+    inputs = getHivePrivilegeObjectInputs().getLeft();
+    assertEquals("number of input objects", 2, inputs.size());
+    if (inputs.get(0).getType() == HivePrivilegeObjectType.FUNCTION) {
+      funcObj = inputs.get(0);
+      tableObj = inputs.get(1);
+    } else {
+      funcObj = inputs.get(1);
+      tableObj = inputs.get(0);
+    }
+
+    assertEquals("input type", HivePrivilegeObjectType.FUNCTION, funcObj.getType());
+    assertEquals("function name", funcName2.toLowerCase(), funcObj.getObjectName().toLowerCase());
+    assertEquals("db name", dbName.toLowerCase(), funcObj.getDbname().toLowerCase());
+
+    assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, tableObj.getType());
+    assertEquals("table name", tableName.toLowerCase(), tableObj.getObjectName().toLowerCase());
+
+    // try using both permanent functions
+    reset(mockedAuthorizer);
+    status = driver.compile(
+        "select  " + dbName + "." + funcName2 + "(i), " + dbName + "." + funcName + "(), j  from " + tableName);
+    assertEquals(0, status);
+
+    inputs = getHivePrivilegeObjectInputs().getLeft();
+    assertEquals("number of input objects", 3, inputs.size());
+    boolean foundF1 = false;
+    boolean foundF2 = false;
+    boolean foundTable = false;
+    for (HivePrivilegeObject inp : inputs) {
+      if (inp.getType() == HivePrivilegeObjectType.FUNCTION) {
+        if (funcName.equalsIgnoreCase(inp.getObjectName())) {
+          foundF1 = true;
+        } else if (funcName2.equalsIgnoreCase(inp.getObjectName())) {
+          foundF2 = true;
+        }
+      } else if (inp.getType() == HivePrivilegeObjectType.TABLE_OR_VIEW
+          && tableName.equalsIgnoreCase(inp.getObjectName().toLowerCase())) {
+        foundTable = true;
+      }
+    }
+    assertTrue("Found " + funcName, foundF1);
+    assertTrue("Found " + funcName2, foundF2);
+    assertTrue("Found Table", foundTable);
   }
 
   @Test
