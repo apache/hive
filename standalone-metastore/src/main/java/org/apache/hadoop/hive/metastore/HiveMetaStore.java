@@ -2810,6 +2810,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public Partition append_partition_with_environment_context(final String dbName,
         final String tableName, final List<String> part_vals, final EnvironmentContext envContext)
         throws InvalidObjectException, AlreadyExistsException, MetaException {
+      if (part_vals == null) {
+        throw new MetaException("The partition values must not be null.");
+      }
       startPartitionFunction("append_partition", dbName, tableName, part_vals);
       if (LOG.isDebugEnabled()) {
         for (String part : part_vals) {
