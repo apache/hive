@@ -23,6 +23,7 @@ import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -57,6 +58,7 @@ import org.apache.hadoop.hive.druid.serde.DruidSerDe;
 import org.apache.hadoop.hive.metastore.DefaultHiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -102,6 +104,8 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
   public static final String INTERMEDIATE_SEGMENT_DIR_NAME = "intermediateSegmentDir";
 
   private static final HttpClient HTTP_CLIENT;
+
+  private static List<String> allowedAlterTypes = ImmutableList.of("ADDPROPS", "DROPPROPS", "ADDCOLS");
 
   static {
     final Lifecycle lifecycle = new Lifecycle();
@@ -680,5 +684,15 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
 
   public static HttpClient getHttpClient() {
     return HTTP_CLIENT;
+  }
+
+  @Override
+  public void preAlterTable(Table table, EnvironmentContext context) throws MetaException {
+    String alterOpType = context.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
+    // alterOpType is null in case of stats update
+    if (alterOpType != null && !allowedAlterTypes.contains(alterOpType)) {
+      throw new MetaException(
+          "ALTER TABLE can not be used for " + alterOpType + " to a non-native table ");
+    }
   }
 }
