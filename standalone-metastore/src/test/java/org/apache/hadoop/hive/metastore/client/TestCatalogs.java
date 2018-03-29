@@ -163,7 +163,7 @@ public class TestCatalogs extends MetaStoreClientTest {
   public void createCatalogWithBadLocation() throws TException {
     Catalog cat = new CatalogBuilder()
         .setName("goodluck")
-        .setLocation("/nosuchdir/nosuch")
+        .setLocation("/:&@!@#$%@#@#/nosuch")
         .build();
     client.createCatalog(cat);
   }

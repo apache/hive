@@ -68,6 +68,8 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.thrift.TException;
 
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+
 public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements IMetaStoreClient {
 
   SessionHiveMetaStoreClient(Configuration conf, Boolean allowEmbedded) throws MetaException {
@@ -150,9 +152,20 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     if (table != null) {
       return deepCopy(table);  // Original method used deepCopy(), do the same here.
     }
-
     // Try underlying client
-    return super.getTable(dbname, name);
+    return super.getTable(DEFAULT_CATALOG_NAME, dbname, name);
+  }
+
+  // Need to override this one too or dropTable breaks because it doesn't find the table when checks
+  // before the drop.
+  @Override
+  public org.apache.hadoop.hive.metastore.api.Table getTable(String catName, String dbName,
+                                                             String tableName) throws TException {
+    if (!DEFAULT_CATALOG_NAME.equals(catName)) {
+      return super.getTable(catName, dbName, tableName);
+    } else {
+      return getTable(dbName, tableName);
+    }
   }
 
   @Override
