@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
@@ -62,7 +63,7 @@ import static org.mockito.Mockito.when;
 public class TestHiveAuthorizerCheckInvocation {
   private final Logger LOG = LoggerFactory.getLogger(this.getClass().getName());;
   protected static HiveConf conf;
-  protected static IDriver driver;
+  protected static Driver driver;
   private static final String tableName = TestHiveAuthorizerCheckInvocation.class.getSimpleName()
       + "Table";
   private static final String viewName = TestHiveAuthorizerCheckInvocation.class.getSimpleName()
@@ -102,7 +103,7 @@ public class TestHiveAuthorizerCheckInvocation {
     conf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
 
     SessionState.start(conf);
-    driver = DriverFactory.newDriver(conf);
+    driver = new Driver(conf);
     runCmd("create table " + tableName
         + " (i int, j int, k string) partitioned by (city string, `date` string) ");
     runCmd("create view " + viewName + " as select * from " + tableName);
@@ -125,7 +126,7 @@ public class TestHiveAuthorizerCheckInvocation {
     runCmd("drop table if exists " + tableName);
     runCmd("drop table if exists " + viewName);
     runCmd("drop table if exists " + fullInTableName);
-    runCmd("drop database if exists " + dbName );
+    runCmd("drop database if exists " + dbName + " CASCADE");
     driver.close();
   }
 
@@ -269,7 +270,7 @@ public class TestHiveAuthorizerCheckInvocation {
 
     HivePrivilegeObject funcObj;
     HivePrivilegeObject dbObj;
-    assertEquals("number of output object", 2, outputs.size());
+    assertEquals("number of output objects", 2, outputs.size());
     if(outputs.get(0).getType() == HivePrivilegeObjectType.FUNCTION) {
       funcObj = outputs.get(0);
       dbObj = outputs.get(1);
@@ -284,6 +285,32 @@ public class TestHiveAuthorizerCheckInvocation {
 
     assertEquals("input type", HivePrivilegeObjectType.DATABASE, dbObj.getType());
     assertTrue("db name", dbName.equalsIgnoreCase(dbObj.getDbname()));
+
+    // actually create the permanent function
+    driver.run(null, true);
+
+    // Verify privilege objects
+    reset(mockedAuthorizer);
+    status = driver.compile("select  " + dbName + "." + funcName + "() , i from " + tableName);
+    assertEquals(0, status);
+
+    List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
+    assertEquals("number of input objects", 2, outputs.size());
+    HivePrivilegeObject tableObj;
+    if (inputs.get(0).getType() == HivePrivilegeObjectType.FUNCTION) {
+      funcObj = inputs.get(0);
+      tableObj = inputs.get(1);
+    } else {
+      funcObj = inputs.get(1);
+      tableObj = inputs.get(0);
+    }
+
+    assertEquals("input type", HivePrivilegeObjectType.FUNCTION, funcObj.getType());
+    assertEquals("function name", funcName.toLowerCase(), funcObj.getObjectName().toLowerCase());
+    assertEquals("db name", dbName.toLowerCase(), funcObj.getDbname().toLowerCase());
+
+    assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, tableObj.getType());
+    assertEquals("table name", tableName.toLowerCase(), tableObj.getObjectName().toLowerCase());
   }
 
   @Test

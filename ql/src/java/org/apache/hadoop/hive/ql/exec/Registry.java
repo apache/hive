@@ -342,7 +342,7 @@ public class Registry {
   }
 
   private void addToCurrentFunctions(String functionName, FunctionInfo functionInfo) {
-    if (SessionState.get() != null) {
+    if (SessionState.get() != null && functionInfo != null) {
       SessionState.get().getCurrentFunctionsInUse().put(functionName, functionInfo);
     }
   }

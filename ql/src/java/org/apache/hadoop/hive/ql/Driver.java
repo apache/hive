@@ -946,10 +946,16 @@ public class Driver implements IDriver {
       Map<String, List<String>> updateTab2Cols = sem.getUpdateColumnAccessInfo() != null
           ? sem.getUpdateColumnAccessInfo().getTableToColumnAccessMap() : null;
 
-      // get names of permanent UDFs being used
-      List<ReadEntity> functionEntities = getPermanentFunctionEntities(ss);
-      inputs.addAll(functionEntities);
-      doAuthorizationV2(ss, op, inputs, outputs, command, selectTab2Cols, updateTab2Cols);
+      // convert to List as above Set was created using Sets.union (for reasons
+      // explained there)
+      // but that Set is immutable
+      List<ReadEntity> inputList = new ArrayList<ReadEntity>(inputs);
+      List<WriteEntity> outputList = new ArrayList<WriteEntity>(outputs);
+
+      // add permanent UDFs being used
+      inputList.addAll(getPermanentFunctionEntities(ss));
+
+      doAuthorizationV2(ss, op, inputList, outputList, command, selectTab2Cols, updateTab2Cols);
       return;
     }
     if (op == null) {
@@ -1167,8 +1173,8 @@ public class Driver implements IDriver {
     }
   }
 
-  private static void doAuthorizationV2(SessionState ss, HiveOperation op, Set<ReadEntity> inputs,
-      Set<WriteEntity> outputs, String command, Map<String, List<String>> tab2cols,
+  private static void doAuthorizationV2(SessionState ss, HiveOperation op, List<ReadEntity> inputs,
+      List<WriteEntity> outputs, String command, Map<String, List<String>> tab2cols,
       Map<String, List<String>> updateTab2Cols) throws HiveException {
 
     /* comment for reviewers -> updateTab2Cols needed to be separate from tab2cols because if I
@@ -1189,7 +1195,7 @@ public class Driver implements IDriver {
   }
 
   private static List<HivePrivilegeObject> getHivePrivObjects(
-      Set<? extends Entity> privObjects, Map<String, List<String>> tableName2Cols) {
+      List<? extends Entity> privObjects, Map<String, List<String>> tableName2Cols) {
     List<HivePrivilegeObject> hivePrivobjs = new ArrayList<HivePrivilegeObject>();
     if(privObjects == null){
       return hivePrivobjs;
