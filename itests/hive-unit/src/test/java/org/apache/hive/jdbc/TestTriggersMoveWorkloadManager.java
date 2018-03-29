@@ -97,7 +97,8 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
     List<String> errCaptureExpect = new ArrayList<>();
     errCaptureExpect.add("Workload Manager Events Summary");
-    errCaptureExpect.add("Event: GET Pool: BI Cluster %: 80.00");
+    errCaptureExpect.add("Event: GET Pool: BI");
+    // HIVE-19061 introduces UPDATE event which will capture changes to allocation % after GET
     errCaptureExpect.add("Event: MOVE Pool: ETL Cluster %: 20.00");
     errCaptureExpect.add("Event: KILL Pool: null Cluster %: 0.00");
     errCaptureExpect.add("Event: RETURN Pool: null Cluster %: 0.00");
@@ -132,7 +133,8 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
     List<String> errCaptureExpect = new ArrayList<>();
     errCaptureExpect.add("Workload Manager Events Summary");
-    errCaptureExpect.add("Event: GET Pool: BI Cluster %: 80.00");
+    errCaptureExpect.add("Event: GET Pool: BI");
+    // HIVE-19061 introduces UPDATE event which will capture changes to allocation % after GET
     errCaptureExpect.add("Event: MOVE Pool: ETL Cluster %: 20.00");
     errCaptureExpect.add("Event: RETURN Pool: null Cluster %: 0.00");
     errCaptureExpect.add("\"eventType\" : \"GET\"");
@@ -166,7 +168,8 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
     List<String> errCaptureExpect = new ArrayList<>();
     errCaptureExpect.add("Workload Manager Events Summary");
-    errCaptureExpect.add("Event: GET Pool: BI Cluster %: 80.00");
+    errCaptureExpect.add("Event: GET Pool: BI");
+    // HIVE-19061 introduces UPDATE event which will capture changes to allocation % after GET
     errCaptureExpect.add("Event: MOVE Pool: ETL Cluster %: 20.00");
     errCaptureExpect.add("Event: MOVE Pool: BI Cluster %: 80.00");
     errCaptureExpect.add("Event: KILL Pool: null Cluster %: 0.00");
@@ -243,7 +246,8 @@ public class TestTriggersMoveWorkloadManager extends AbstractJdbcTriggersTest {
     setCmds.add("set hive.exec.failure.hooks=org.apache.hadoop.hive.ql.hooks.PostExecWMEventsSummaryPrinter");
     List<String> errCaptureExpect = new ArrayList<>();
     errCaptureExpect.add("Workload Manager Events Summary");
-    errCaptureExpect.add("Event: GET Pool: BI Cluster %: 80.00");
+    errCaptureExpect.add("Event: GET Pool: BI");
+    // HIVE-19061 introduces UPDATE event which will capture changes to allocation % after GET
     errCaptureExpect.add("Event: KILL Pool: null Cluster %: 0.00");
     errCaptureExpect.add("Event: RETURN Pool: null Cluster %: 0.00");
     errCaptureExpect.add("\"eventType\" : \"GET\"");
