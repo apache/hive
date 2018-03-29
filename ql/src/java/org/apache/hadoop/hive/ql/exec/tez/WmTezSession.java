@@ -38,7 +38,7 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
   @JsonProperty("poolName")
   private String poolName;
   @JsonProperty("clusterFraction")
-  private double clusterFraction;
+  private Double clusterFraction;
   /**
    * The reason to kill an AM. Note that this is for the entire session, not just for a query.
    * Once set, this can never be unset because you can only kill the session once.
@@ -174,7 +174,11 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
 
   void clearWm() {
     this.poolName = null;
-    this.clusterFraction = 0f;
+    this.clusterFraction = null;
+  }
+
+  public boolean hasClusterFraction() {
+    return this.clusterFraction != null;
   }
 
   public double getClusterFraction() {

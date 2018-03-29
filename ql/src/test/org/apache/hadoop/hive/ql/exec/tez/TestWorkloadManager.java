@@ -314,7 +314,7 @@ public class TestWorkloadManager {
     assertNotSame(session, session2);
     wm.addTestEvent().get();
     assertEquals(session2.toString(), 1.0, session2.getClusterFraction(), EPSILON);
-    assertEquals(0.0, session.getClusterFraction(), EPSILON);
+    assertFalse(session.hasClusterFraction());
     qam.assertWasCalledAndReset();
   }
 
@@ -335,14 +335,14 @@ public class TestWorkloadManager {
     assertNotSame(session, session2);
     session.destroy(); // Destroy before returning to the pool.
     assertEquals(1.0, session2.getClusterFraction(), EPSILON);
-    assertEquals(0.0, session.getClusterFraction(), EPSILON);
+    assertFalse(session.hasClusterFraction());
     qam.assertWasCalledAndReset();
 
     // We never lose pool session, so we should still be able to get.
     session = (WmTezSession) wm.getSession(null, mappingInput("user"), conf);
     session.returnToSessionManager();
     assertEquals(1.0, session2.getClusterFraction(), EPSILON);
-    assertEquals(0.0, session.getClusterFraction(), EPSILON);
+    assertFalse(session.hasClusterFraction());
     qam.assertWasCalledAndReset();
   }
 
@@ -1095,7 +1095,7 @@ public class TestWorkloadManager {
     assertEquals(0, allSessionProviders.get("B.x").getSessions().size());
     assertEquals(0, allSessionProviders.get("B.y").getSessions().size());
     assertEquals(0, allSessionProviders.get("C").getSessions().size());
-    assertEquals(0.0f, sessionA1.getClusterFraction(), EPSILON);
+    assertFalse(sessionA1.hasClusterFraction());
     assertFalse(allSessionProviders.get("A").getSessions().contains(sessionA1));
   }
 
@@ -1213,7 +1213,7 @@ public class TestWorkloadManager {
     assertNotNull(theOnlySession);
     theOnlySession.setWaitForAmRegistryFuture(null);
     assertNull(oldSession.getPoolName());
-    assertEquals(0f, oldSession.getClusterFraction(), EPSILON);
+    assertFalse(oldSession.hasClusterFraction());
     pool.returnSession(theOnlySession);
     // Make sure we can actually get a session still - parallelism/etc. should not be affected.
     WmTezSession result = (WmTezSession) wm.getSession(null, mappingInput("A"), conf);
@@ -1225,7 +1225,7 @@ public class TestWorkloadManager {
 
   private void assertKilledByWm(WmTezSession session) {
     assertNull(session.getPoolName());
-    assertEquals(0f, session.getClusterFraction(), EPSILON);
+    assertFalse(session.hasClusterFraction());
     assertTrue(session.isIrrelevantForWm());
   }
 

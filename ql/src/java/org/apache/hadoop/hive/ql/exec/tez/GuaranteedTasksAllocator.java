@@ -129,6 +129,7 @@ public class GuaranteedTasksAllocator implements QueryAllocationManager {
         // we'd produce 2-2-2-2-0 as we round 1.6; whereas adding the last delta to the next query
         // we'd round 1.6-1.2-1.8-1.4-2.0 and thus give out 2-1-2-1-2, as intended.
         // Note that fractions don't have to all be the same like in this example.
+        assert session.hasClusterFraction();
         double fraction = session.getClusterFraction();
         double allocation = fraction * totalCount + lastDelta;
         double roundedAlloc = Math.round(allocation);
