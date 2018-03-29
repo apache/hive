@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new WMNullableResourcePlanTupleSchemeFactory());
   }
 
-  private String name; // required
+  private String name; // optional
   private WMResourcePlanStatus status; // optional
   private int queryParallelism; // optional
   private boolean isSetQueryParallelism; // optional
@@ -140,11 +140,11 @@ import org.slf4j.LoggerFactory;
   private static final int __ISSETQUERYPARALLELISM_ISSET_ID = 1;
   private static final int __ISSETDEFAULTPOOLPATH_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.STATUS,_Fields.QUERY_PARALLELISM,_Fields.IS_SET_QUERY_PARALLELISM,_Fields.DEFAULT_POOL_PATH,_Fields.IS_SET_DEFAULT_POOL_PATH};
+  private static final _Fields optionals[] = {_Fields.NAME,_Fields.STATUS,_Fields.QUERY_PARALLELISM,_Fields.IS_SET_QUERY_PARALLELISM,_Fields.DEFAULT_POOL_PATH,_Fields.IS_SET_DEFAULT_POOL_PATH};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.STATUS, new org.apache.thrift.meta_data.FieldMetaData("status", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, WMResourcePlanStatus.class)));
@@ -161,13 +161,6 @@ import org.slf4j.LoggerFactory;
   }
 
   public WMNullableResourcePlan() {
-  }
-
-  public WMNullableResourcePlan(
-    String name)
-  {
-    this();
-    this.name = name;
   }
 
   /**
@@ -644,13 +637,15 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("WMNullableResourcePlan(");
     boolean first = true;
 
-    sb.append("name:");
-    if (this.name == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.name);
+    if (isSetName()) {
+      sb.append("name:");
+      if (this.name == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.name);
+      }
+      first = false;
     }
-    first = false;
     if (isSetStatus()) {
       if (!first) sb.append(", ");
       sb.append("status:");
@@ -695,10 +690,6 @@ import org.slf4j.LoggerFactory;
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetName()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'name' is unset! Struct:" + toString());
-    }
-
     // check for sub-struct validity
   }
 
@@ -800,9 +791,11 @@ import org.slf4j.LoggerFactory;
 
       oprot.writeStructBegin(STRUCT_DESC);
       if (struct.name != null) {
-        oprot.writeFieldBegin(NAME_FIELD_DESC);
-        oprot.writeString(struct.name);
-        oprot.writeFieldEnd();
+        if (struct.isSetName()) {
+          oprot.writeFieldBegin(NAME_FIELD_DESC);
+          oprot.writeString(struct.name);
+          oprot.writeFieldEnd();
+        }
       }
       if (struct.status != null) {
         if (struct.isSetStatus()) {
@@ -850,24 +843,29 @@ import org.slf4j.LoggerFactory;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, WMNullableResourcePlan struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
-      oprot.writeString(struct.name);
       BitSet optionals = new BitSet();
-      if (struct.isSetStatus()) {
+      if (struct.isSetName()) {
         optionals.set(0);
       }
-      if (struct.isSetQueryParallelism()) {
+      if (struct.isSetStatus()) {
         optionals.set(1);
       }
-      if (struct.isSetIsSetQueryParallelism()) {
+      if (struct.isSetQueryParallelism()) {
         optionals.set(2);
       }
-      if (struct.isSetDefaultPoolPath()) {
+      if (struct.isSetIsSetQueryParallelism()) {
         optionals.set(3);
       }
-      if (struct.isSetIsSetDefaultPoolPath()) {
+      if (struct.isSetDefaultPoolPath()) {
         optionals.set(4);
       }
-      oprot.writeBitSet(optionals, 5);
+      if (struct.isSetIsSetDefaultPoolPath()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
+      if (struct.isSetName()) {
+        oprot.writeString(struct.name);
+      }
       if (struct.isSetStatus()) {
         oprot.writeI32(struct.status.getValue());
       }
@@ -888,26 +886,28 @@ import org.slf4j.LoggerFactory;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, WMNullableResourcePlan struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      struct.name = iprot.readString();
-      struct.setNameIsSet(true);
-      BitSet incoming = iprot.readBitSet(5);
+      BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
+        struct.name = iprot.readString();
+        struct.setNameIsSet(true);
+      }
+      if (incoming.get(1)) {
         struct.status = org.apache.hadoop.hive.metastore.api.WMResourcePlanStatus.findByValue(iprot.readI32());
         struct.setStatusIsSet(true);
       }
-      if (incoming.get(1)) {
+      if (incoming.get(2)) {
         struct.queryParallelism = iprot.readI32();
         struct.setQueryParallelismIsSet(true);
       }
-      if (incoming.get(2)) {
+      if (incoming.get(3)) {
         struct.isSetQueryParallelism = iprot.readBool();
         struct.setIsSetQueryParallelismIsSet(true);
       }
-      if (incoming.get(3)) {
+      if (incoming.get(4)) {
         struct.defaultPoolPath = iprot.readString();
         struct.setDefaultPoolPathIsSet(true);
       }
-      if (incoming.get(4)) {
+      if (incoming.get(5)) {
         struct.isSetDefaultPoolPath = iprot.readBool();
         struct.setIsSetDefaultPoolPathIsSet(true);
       }

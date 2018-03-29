@@ -1255,6 +1255,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       addServiceOutput();
     }
     if (poolChanges != null) {
+      if (!poolChanges.isSetPoolPath()) {
+        poolChanges.setPoolPath(poolPath);
+      }
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
           new CreateOrAlterWMPoolDesc(poolChanges, poolPath, true))));
     }
