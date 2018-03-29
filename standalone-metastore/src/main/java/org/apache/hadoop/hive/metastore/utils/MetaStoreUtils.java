@@ -534,7 +534,11 @@ public class MetaStoreUtils {
       return false;
     }
 
-    return "TRUE".equalsIgnoreCase(params.get("EXTERNAL"));
+    return isExternal(params);
+  }
+
+  public static boolean isExternal(Map<String, String> tableParams){
+    return "TRUE".equalsIgnoreCase(tableParams.get("EXTERNAL"));
   }
 
   // check if stats need to be (re)calculated
