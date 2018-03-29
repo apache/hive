@@ -41,7 +41,6 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
-import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -229,16 +228,11 @@ public class TestAppendPartitions extends MetaStoreClientTest {
     client.appendPartition(table.getDbName(), table.getTableName(), new ArrayList<String>());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAppendPartitionNullPartValues() throws Exception {
 
-    try {
-      Table table = tableWithPartitions;
-      client.appendPartition(table.getDbName(), table.getTableName(), (List<String>) null);
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | NullPointerException e) {
-      // TODO: NPE should not be thrown
-    }
+    Table table = tableWithPartitions;
+    client.appendPartition(table.getDbName(), table.getTableName(), (List<String>) null);
   }
 
   @Test
