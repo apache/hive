@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.DruidStorageHandler;
 import org.apache.hadoop.hive.druid.DruidStorageHandlerUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -486,4 +487,9 @@ public class DruidSerDe extends AbstractSerDe {
     return inspector;
   }
 
+  @Override
+  public boolean shouldStoreFieldsInMetastore(Map<String, String> tableParams) {
+    // If Druid table is not an external table store the schema in metadata store.
+    return !MetaStoreUtils.isExternal(tableParams);
+  }
 }

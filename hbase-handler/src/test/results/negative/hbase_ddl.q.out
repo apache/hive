@@ -26,4 +26,4 @@ key                 	int                 	It is a column key
 value               	string              	It is the column string value
 	 	 
 #### A masked pattern was here ####
-FAILED: SemanticException [Error 10134]: ALTER TABLE can only be used for [ADDPROPS, DROPPROPS] to a non-native table  hbase_table_1
+FAILED: SemanticException [Error 10134]: ALTER TABLE can only be used for [ADDPROPS, DROPPROPS, ADDCOLS] to a non-native table  hbase_table_1

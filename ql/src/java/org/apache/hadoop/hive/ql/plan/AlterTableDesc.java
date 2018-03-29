@@ -73,7 +73,7 @@ public class AlterTableDesc extends DDLDesc implements Serializable {
     public String getName() { return name; }
 
     public static final List<AlterTableTypes> nonNativeTableAllowedTypes = 
-        ImmutableList.of(ADDPROPS, DROPPROPS); 
+        ImmutableList.of(ADDPROPS, DROPPROPS, ADDCOLS);
   }
 
   public static enum ProtectModeType {
