@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.math.DoubleMath;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -64,6 +65,7 @@ import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.ql.exec.tez.AmPluginNode.AmPluginInfo;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionState.HiveResources;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
+import org.apache.hadoop.hive.ql.exec.tez.WmEvent.EventType;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.KillQuery;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -747,14 +749,16 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
 
   private void dumpPoolState(PoolState ps, List<String> set) {
     StringBuilder sb = new StringBuilder();
-    sb.append("POOL ").append(ps.fullName).append(": qp ").append(ps.queryParallelism).append(", %% ")
-      .append(ps.finalFraction).append(", sessions: ").append(ps.sessions.size())
-      .append(", initializing: ").append(ps.initializingSessions.size()).append(", queued: ").append(ps.queue.size());
+    sb.append("POOL ").append(ps.fullName).append(": qp ").append(ps.queryParallelism)
+      .append(", %% ").append(ps.finalFraction).append(", sessions: ").append(ps.sessions.size())
+      .append(", initializing: ").append(ps.initializingSessions.size()).append(", queued: ")
+      .append(ps.queue.size());
     set.add(sb.toString());
     sb.setLength(0);
     for (WmTezSession session : ps.sessions) {
-      sb.append("RUNNING: ").append(session.getClusterFraction()).append(" (")
-        .append(session.getAllocationState()).append(") => ").append(session.getSessionId());
+      double cf = session.hasClusterFraction() ? session.getClusterFraction() : 0;
+      sb.append("RUNNING: ").append(cf).append(" (") .append(session.getAllocationState())
+        .append(") => ").append(session.getSessionId());
       set.add(sb.toString());
       sb.setLength(0);
     }
@@ -1814,7 +1818,7 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         if (totalSessions == 0) return 0;
         double allocation = finalFractionRemaining / totalSessions;
         for (WmTezSession session : sessions) {
-          session.setClusterFraction(allocation);
+          updateSessionAllocationWithEvent(session, allocation);
         }
         // Do not give out the capacity of the initializing sessions to the running ones;
         // we expect init to be fast.
@@ -1823,12 +1827,25 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
         if (sessions.isEmpty()) return 0;
         boolean isFirst = true;
         for (WmTezSession session : sessions) {
-          session.setClusterFraction(isFirst ? finalFractionRemaining : 0);
+          updateSessionAllocationWithEvent(session, isFirst ? finalFractionRemaining : 0);
           isFirst = false;
         }
         return finalFractionRemaining;
       default:
         throw new AssertionError("Unexpected enum value " + schedulingPolicy);
+      }
+    }
+
+    private void updateSessionAllocationWithEvent(WmTezSession session, double allocation) {
+      WmEvent event = null;
+      WmContext ctx = session.getWmContext();
+      if (ctx != null && session.hasClusterFraction()
+          && !DoubleMath.fuzzyEquals(session.getClusterFraction(), allocation, 0.0001f)) {
+        event = new WmEvent(EventType.UPDATE);
+      }
+      session.setClusterFraction(allocation);
+      if (event != null) {
+        event.endEvent(session);
       }
     }
 
