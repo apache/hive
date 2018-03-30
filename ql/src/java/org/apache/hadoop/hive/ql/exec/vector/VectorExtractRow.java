@@ -90,6 +90,9 @@ public class VectorExtractRow {
   TypeInfo[] typeInfos;
   ObjectInspector[] objectInspectors;
 
+  private static final byte[] EMPTY_BYTES = new byte[0];
+  private static final String EMPTY_STRING = "";
+
   /*
    * Allocate the various arrays.
    */
@@ -257,18 +260,15 @@ public class VectorExtractRow {
             final int start = bytesColVector.start[adjustedIndex];
             final int length = bytesColVector.length[adjustedIndex];
 
-            if (bytesColVector.isRepeating) {
-              if (!bytesColVector.isNull[0] && bytes == null) {
-                nullBytesReadError(primitiveCategory, batchIndex);
-              }
-            } else {
-              if ((bytesColVector.noNulls || !bytesColVector.isNull[batchIndex]) && bytes == null) {
-                nullBytesReadError(primitiveCategory, batchIndex);
-              }
-            }
-
             BytesWritable bytesWritable = (BytesWritable) primitiveWritable;
-            bytesWritable.set(bytes, start, length);
+            if (bytes == null || length == 0) {
+              if (length > 0) {
+                nullBytesReadError(primitiveCategory, batchIndex);
+              }
+              bytesWritable.set(EMPTY_BYTES, 0, 0);
+            } else {
+              bytesWritable.set(bytes, start, length);
+            }
             return primitiveWritable;
           }
         case STRING:
@@ -279,18 +279,16 @@ public class VectorExtractRow {
             final int start = bytesColVector.start[adjustedIndex];
             final int length = bytesColVector.length[adjustedIndex];
 
-            if (bytesColVector.isRepeating) {
-              if (!bytesColVector.isNull[0] && bytes == null) {
+            if (bytes == null || length == 0) {
+              if (length > 0) {
                 nullBytesReadError(primitiveCategory, batchIndex);
               }
+              ((Text) primitiveWritable).set(EMPTY_BYTES, 0, 0);
             } else {
-              if ((bytesColVector.noNulls || !bytesColVector.isNull[batchIndex]) && bytes == null) {
-                nullBytesReadError(primitiveCategory, batchIndex);
-              }
-            }
 
-            // Use org.apache.hadoop.io.Text as our helper to go from byte[] to String.
-            ((Text) primitiveWritable).set(bytes, start, length);
+              // Use org.apache.hadoop.io.Text as our helper to go from byte[] to String.
+              ((Text) primitiveWritable).set(bytes, start, length);
+            }
             return primitiveWritable;
           }
         case VARCHAR:
@@ -301,21 +299,23 @@ public class VectorExtractRow {
             final int start = bytesColVector.start[adjustedIndex];
             final int length = bytesColVector.length[adjustedIndex];
 
-            if (bytesColVector.isRepeating) {
-              if (!bytesColVector.isNull[0] && bytes == null) {
+            final HiveVarcharWritable hiveVarcharWritable = (HiveVarcharWritable) primitiveWritable;
+            if (bytes == null || length == 0) {
+              if (length > 0) {
                 nullBytesReadError(primitiveCategory, batchIndex);
               }
+              hiveVarcharWritable.set(EMPTY_STRING, -1);
             } else {
-              if ((bytesColVector.noNulls || !bytesColVector.isNull[batchIndex]) && bytes == null) {
-                nullBytesReadError(primitiveCategory, batchIndex);
+              final int adjustedLength =
+                  StringExpr.truncate(
+                      bytes, start, length, ((VarcharTypeInfo) primitiveTypeInfo).getLength());
+              if (adjustedLength == 0) {
+                hiveVarcharWritable.set(EMPTY_STRING, -1);
+              } else {
+                hiveVarcharWritable.set(
+                    new String(bytes, start, adjustedLength, Charsets.UTF_8), -1);
               }
             }
-
-            final int adjustedLength = StringExpr.truncate(bytes, start, length,
-                ((VarcharTypeInfo) primitiveTypeInfo).getLength());
-
-            final HiveVarcharWritable hiveVarcharWritable = (HiveVarcharWritable) primitiveWritable;
-            hiveVarcharWritable.set(new String(bytes, start, adjustedLength, Charsets.UTF_8), -1);
             return primitiveWritable;
           }
         case CHAR:
@@ -326,22 +326,24 @@ public class VectorExtractRow {
             final int start = bytesColVector.start[adjustedIndex];
             final int length = bytesColVector.length[adjustedIndex];
 
-            if (bytesColVector.isRepeating) {
-              if (!bytesColVector.isNull[0] && bytes == null) {
+            final HiveCharWritable hiveCharWritable = (HiveCharWritable) primitiveWritable;
+            final int maxLength = ((CharTypeInfo) primitiveTypeInfo).getLength();
+            if (bytes == null || length == 0) {
+              if (length > 0) {
                 nullBytesReadError(primitiveCategory, batchIndex);
               }
+              hiveCharWritable.set(EMPTY_STRING, maxLength);
             } else {
-              if ((bytesColVector.noNulls || !bytesColVector.isNull[batchIndex]) && bytes == null) {
-                nullBytesReadError(primitiveCategory, batchIndex);
+              final int adjustedLength = StringExpr.rightTrimAndTruncate(bytes, start, length,
+                  ((CharTypeInfo) primitiveTypeInfo).getLength());
+
+              if (adjustedLength == 0) {
+                hiveCharWritable.set(EMPTY_STRING, maxLength);
+              } else {
+                hiveCharWritable.set(
+                    new String(bytes, start, adjustedLength, Charsets.UTF_8), maxLength);
               }
             }
-
-            final int adjustedLength = StringExpr.rightTrimAndTruncate(bytes, start, length,
-                ((CharTypeInfo) primitiveTypeInfo).getLength());
-
-            final HiveCharWritable hiveCharWritable = (HiveCharWritable) primitiveWritable;
-            hiveCharWritable.set(new String(bytes, start, adjustedLength, Charsets.UTF_8),
-                ((CharTypeInfo) primitiveTypeInfo).getLength());
             return primitiveWritable;
           }
         case DECIMAL:

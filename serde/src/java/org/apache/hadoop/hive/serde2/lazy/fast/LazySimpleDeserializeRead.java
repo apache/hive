@@ -497,6 +497,12 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
 
   private int parseComplexField(int start, int end, int level) {
 
+    if (start == end + 1) {
+
+      // Data prematurely ended. Return start - 1 so we don't move our field position.
+      return start - 1;
+    }
+
     final byte separator = separators[level];
     int fieldByteEnd = start;
 
@@ -996,7 +1002,9 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
         final ListComplexTypeHelper listHelper = (ListComplexTypeHelper) complexTypeHelper;
         final int fieldPosition = listHelper.fieldPosition;
         final int complexFieldEnd = listHelper.complexFieldEnd;
-        Preconditions.checkState(fieldPosition <= complexFieldEnd);
+
+        // When data is prematurely ended the fieldPosition will be 1 more than the end.
+        Preconditions.checkState(fieldPosition <= complexFieldEnd + 1);
 
         final int fieldEnd = parseComplexField(fieldPosition, complexFieldEnd, currentLevel);
         listHelper.fieldPosition = fieldEnd + 1;  // Move past separator.
@@ -1011,7 +1019,9 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
         final MapComplexTypeHelper mapHelper = (MapComplexTypeHelper) complexTypeHelper;
         final int fieldPosition = mapHelper.fieldPosition;
         final int complexFieldEnd = mapHelper.complexFieldEnd;
-        Preconditions.checkState(fieldPosition <= complexFieldEnd);
+
+        // When data is prematurely ended the fieldPosition will be 1 more than the end.
+        Preconditions.checkState(fieldPosition <= complexFieldEnd + 1);
   
         currentFieldStart = fieldPosition;
 
@@ -1057,7 +1067,9 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
         final StructComplexTypeHelper structHelper = (StructComplexTypeHelper) complexTypeHelper;
         final int fieldPosition = structHelper.fieldPosition;
         final int complexFieldEnd = structHelper.complexFieldEnd;
-        Preconditions.checkState(fieldPosition <= complexFieldEnd);
+
+        // When data is prematurely ended the fieldPosition will be 1 more than the end.
+        Preconditions.checkState(fieldPosition <= complexFieldEnd + 1);
 
         currentFieldStart = fieldPosition;
 
@@ -1069,7 +1081,7 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
           // Parse until field separator (currentLevel).
           fieldEnd = parseComplexField(fieldPosition, complexFieldEnd, currentLevel);
 
-          structHelper.fieldPosition = fieldEnd + 1;  // Move past key separator.
+          structHelper.fieldPosition = fieldEnd + 1;  // Move past parent field separator.
 
           currentFieldLength = fieldEnd - fieldPosition;
 
@@ -1101,7 +1113,9 @@ public final class LazySimpleDeserializeRead extends DeserializeRead {
         final UnionComplexTypeHelper unionHelper = (UnionComplexTypeHelper) complexTypeHelper;
         final int fieldPosition = unionHelper.fieldPosition;
         final int complexFieldEnd = unionHelper.complexFieldEnd;
-        Preconditions.checkState(fieldPosition <= complexFieldEnd);
+
+        // When data is prematurely ended the fieldPosition will be 1 more than the end.
+        Preconditions.checkState(fieldPosition <= complexFieldEnd + 1);
 
         currentFieldStart = fieldPosition;
 
