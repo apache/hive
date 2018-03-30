@@ -3218,6 +3218,12 @@ public class VectorizationContext {
         argDescs[i].setVariable(getInputColumnIndex(((ExprNodeColumnDesc) child).getColumn()));
       } else if (child instanceof ExprNodeConstantDesc) {
         // this is a constant (or null)
+        if (child.getTypeInfo().getCategory() != Category.PRIMITIVE) {
+
+          // Complex type constants currently not supported by VectorUDFArgDesc.prepareConstant.
+          throw new HiveException(
+              "Unable to vectorize custom UDF. Complex type constants not supported: " + child);
+        }
         argDescs[i].setConstant((ExprNodeConstantDesc) child);
       } else if (child instanceof ExprNodeDynamicValueDesc) {
         VectorExpression e = getVectorExpression(child, VectorExpressionDescriptor.Mode.PROJECTION);

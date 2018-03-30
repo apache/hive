@@ -1,9 +1,12 @@
-set hive.fetch.task.conversion=more;
-SET hive.vectorized.execution.enabled=false;
+set hive.fetch.task.conversion=none;
+SET hive.vectorized.execution.enabled=true;
+
+-- HIVE-19024: Vectorization: Disable complex type constants for VectorUDFAdaptor
 
 describe function inline;
 
-explain SELECT inline( 
+explain vectorization expression
+SELECT inline( 
   ARRAY(
     STRUCT (1,'dude!'),
     STRUCT (2,'Wheres'),
