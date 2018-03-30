@@ -732,7 +732,6 @@ minillaplocal.query.files=\
   vector_char_varchar_1.q,\
   vector_complex_all.q,\
   vector_complex_join.q,\
-  vector_create_struct_table.q,\
   vector_decimal_2.q,\
   vector_decimal_udf.q,\
   vector_groupby_cube1.q,\

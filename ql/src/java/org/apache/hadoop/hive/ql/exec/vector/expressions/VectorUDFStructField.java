@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
@@ -44,36 +46,96 @@ public class VectorUDFStructField extends VectorExpression {
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
+
+    // return immediately if batch is empty
+    final int n = batch.size;
+    if (n == 0) {
+      return;
+    }
+
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
 
     ColumnVector outV = batch.cols[outputColumnNum];
+    int[] sel = batch.selected;
     StructColumnVector structColumnVector = (StructColumnVector) batch.cols[structColumnNum];
     ColumnVector fieldColumnVector = structColumnVector.fields[fieldIndex];
 
-    outV.noNulls = true;
+    boolean[] inputIsNull = structColumnVector.isNull;
+    boolean[] outputIsNull = outV.isNull;
+
+    // We do not need to do a column reset since we are carefully changing the output.
+    outV.isRepeating = false;
+
     if (structColumnVector.isRepeating) {
-      if (structColumnVector.isNull[0]) {
-        outV.isNull[0] = true;
-        outV.noNulls = false;
-      } else {
+      if (structColumnVector.noNulls || !structColumnVector.isNull[0]) {
+        outputIsNull[0] = false;
         outV.setElement(0, 0, fieldColumnVector);
-        outV.isNull[0] = false;
+      } else {
+        outputIsNull[0] = true;
+        outV.noNulls = false;
       }
       outV.isRepeating = true;
-    } else {
-      for (int i = 0; i < batch.size; i++) {
-        int j = (batch.selectedInUse) ? batch.selected[i] : i;
-        if (structColumnVector.isNull[j]) {
-          outV.isNull[j] = true;
-          outV.noNulls = false;
+      return;
+    }
+    if (structColumnVector.noNulls) {
+      if (batch.selectedInUse) {
+
+        // CONSIDER: For large n, fill n or all of isNull array and use the tighter ELSE loop.
+
+        if (!outV.noNulls) {
+          for(int j = 0; j != n; j++) {
+           final int i = sel[j];
+           outputIsNull[i] = false;
+           outV.setElement(i, i, fieldColumnVector);
+         }
         } else {
-          outV.setElement(j, j, fieldColumnVector);
-          outV.isNull[j] = false;
+          for(int j = 0; j != n; j++) {
+            final int i = sel[j];
+            outV.setElement(i, i, fieldColumnVector);
+          }
+        }
+      } else {
+        if (!outV.noNulls) {
+
+          // Assume it is almost always a performance win to fill all of isNull so we can
+          // safely reset noNulls.
+          Arrays.fill(outputIsNull, false);
+          outV.noNulls = true;
+        }
+        for(int i = 0; i != n; i++) {
+          outV.setElement(i, i, fieldColumnVector);
         }
       }
-      outV.isRepeating = false;
+    } else  /* there are NULLs in the structColumnVector */ {
+
+      /*
+       * Do careful maintenance of the outputColVector.noNulls flag.
+       */
+
+      if (batch.selectedInUse) {
+        for(int j=0; j != n; j++) {
+          int i = sel[j];
+          if (!inputIsNull[i]) {
+            outputIsNull[i] = false;
+            outV.setElement(i, i, fieldColumnVector);
+          } else {
+            outputIsNull[i] = true;
+            outV.noNulls = false;
+          }
+        }
+      } else {
+        for(int i = 0; i != n; i++) {
+          if (!inputIsNull[i]) {
+            outputIsNull[i] = false;
+            outV.setElement(i, i, fieldColumnVector);
+          } else {
+            outputIsNull[i] = true;
+            outV.noNulls = false;
+          }
+        }
+      }
     }
   }
 
