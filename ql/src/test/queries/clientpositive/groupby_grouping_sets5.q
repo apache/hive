@@ -1,4 +1,5 @@
 set hive.mapred.mode=nonstrict;
+SET hive.vectorized.execution.enabled=false;
 set hive.merge.mapfiles = false;
 set hive.merge.mapredfiles = false;
 -- Set merging to false above to make the explain more readable

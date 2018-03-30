@@ -1,4 +1,5 @@
-SET hive.vectorized.execution.enabled=false;
+SET hive.vectorized.execution.enabled=true;
+SET hive.vectorized.execution.reduce.enabled=true;
 set hive.mapred.mode=nonstrict;
 set hive.exec.reducers.max = 10;
 set hive.map.groupby.sorted=true;
@@ -16,7 +17,7 @@ INSERT OVERWRITE TABLE T1 PARTITION (ds='1') select key, val from T1 where ds = 
 -- The plan is not converted to a map-side, since although the sorting columns and grouping
 -- columns match, the user is issueing a distinct.
 -- However, after HIVE-4310, partial aggregation is performed on the mapper
-EXPLAIN
+EXPLAIN VECTORIZATION DETAIL
 select count(distinct key) from T1;
 select count(distinct key) from T1;
 

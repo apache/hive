@@ -2876,13 +2876,13 @@ public class Vectorizer implements PhysicalPlanResolver {
       setExpressionIssue("Aggregation Function", "UDF " + udfName + " not supported");
       return false;
     }
-    /*
+
     // The planner seems to pull this one out.
     if (aggDesc.getDistinct()) {
       setExpressionIssue("Aggregation Function", "DISTINCT not supported");
-      return new Pair<Boolean,Boolean>(false, false);
+      return false;
     }
-    */
+
 
     ArrayList<ExprNodeDesc> parameters = aggDesc.getParameters();
 
