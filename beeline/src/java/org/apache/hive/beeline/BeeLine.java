@@ -357,7 +357,7 @@ public class BeeLine implements Closeable {
 
     // -i <init file>
     options.addOption(OptionBuilder
-        .hasArg()
+        .hasArgs()
         .withArgName("init")
         .withDescription("script file for initialization")
         .create('i'));
@@ -1120,18 +1120,30 @@ public class BeeLine implements Closeable {
   }
 
   int runInit() {
-    String initFiles[] = getOpts().getInitFiles();
+    String[] initFiles = getOpts().getInitFiles();
+
+    //executionResult will be ERRNO_OK only if all initFiles execute successfully
+    int executionResult = ERRNO_OK;
+    boolean exitOnError = !getOpts().getForce();
+
     if (initFiles != null && initFiles.length != 0) {
       for (String initFile : initFiles) {
         info("Running init script " + initFile);
         try {
-          return executeFile(initFile);
+          int currentResult = executeFile(initFile);
+          if (currentResult != ERRNO_OK) {
+            executionResult = currentResult;
+
+            if (exitOnError) {
+              return executionResult;
+            }
+          }
         } finally {
           exit = false;
         }
       }
     }
-    return ERRNO_OK;
+    return executionResult;
   }
 
   private int embeddedConnect() {
