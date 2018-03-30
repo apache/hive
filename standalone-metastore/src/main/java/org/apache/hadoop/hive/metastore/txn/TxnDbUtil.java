@@ -110,9 +110,9 @@ public final class TxnDbUtil {
           " NWI_NEXT bigint NOT NULL)");
 
       stmt.execute("CREATE TABLE MIN_HISTORY_LEVEL (" +
-        " MHL_TXNID bigint NOT NULL," +
-        " MHL_MIN_OPEN_TXNID bigint NOT NULL," +
-        " PRIMARY KEY(MHL_TXNID))");
+          " MHL_TXNID bigint NOT NULL," +
+          " MHL_MIN_OPEN_TXNID bigint NOT NULL," +
+          " PRIMARY KEY(MHL_TXNID))");
 
       stmt.execute("CREATE TABLE HIVE_LOCKS (" +
           " HL_LOCK_EXT_ID bigint NOT NULL," +

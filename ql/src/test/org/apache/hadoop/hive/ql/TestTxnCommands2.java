@@ -2030,14 +2030,14 @@ public class TestTxnCommands2 {
   }
 
   /**
-   * Test cleaner for TXN_TO_WRITE_ID table
+   * Test cleaner for TXN_TO_WRITE_ID table.
    * @throws Exception
    */
   @Test
   public void testCleanerForTxnToWriteId() throws Exception {
-    int[][] tableData1 = {{1,2}};
-    int[][] tableData2 = {{2,3}};
-    int[][] tableData3 = {{3,4}};
+    int[][] tableData1 = {{1, 2}};
+    int[][] tableData2 = {{2, 3}};
+    int[][] tableData3 = {{3, 4}};
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData1));
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData2));
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(tableData3));
@@ -2069,8 +2069,8 @@ public class TestTxnCommands2 {
             0, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID"));
 
     // Following sequence of commit-abort-open-abort-commit.
-    int[][] tableData4 = {{4,5}};
-    int[][] tableData5 = {{5,6}};
+    int[][] tableData4 = {{4, 5}};
+    int[][] tableData5 = {{5, 6}};
     runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p=3) (a,b) " + makeValuesClause(tableData3));
 
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
