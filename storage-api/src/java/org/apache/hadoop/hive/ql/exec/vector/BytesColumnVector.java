@@ -181,7 +181,9 @@ public class BytesColumnVector extends ColumnVector {
     if ((nextFree + length) > buffer.length) {
       increaseBufferSpace(length);
     }
-    System.arraycopy(sourceBuf, start, buffer, nextFree, length);
+    if (length > 0) {
+      System.arraycopy(sourceBuf, start, buffer, nextFree, length);
+    }
     vector[elementNum] = buffer;
     this.start[elementNum] = nextFree;
     this.length[elementNum] = length;
