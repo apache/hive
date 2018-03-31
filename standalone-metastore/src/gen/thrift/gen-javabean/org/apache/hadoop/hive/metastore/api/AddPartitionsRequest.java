@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField PARTS_FIELD_DESC = new org.apache.thrift.protocol.TField("parts", org.apache.thrift.protocol.TType.LIST, (short)3);
   private static final org.apache.thrift.protocol.TField IF_NOT_EXISTS_FIELD_DESC = new org.apache.thrift.protocol.TField("ifNotExists", org.apache.thrift.protocol.TType.BOOL, (short)4);
   private static final org.apache.thrift.protocol.TField NEED_RESULT_FIELD_DESC = new org.apache.thrift.protocol.TField("needResult", org.apache.thrift.protocol.TType.BOOL, (short)5);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -55,6 +56,7 @@ import org.slf4j.LoggerFactory;
   private List<Partition> parts; // required
   private boolean ifNotExists; // required
   private boolean needResult; // optional
+  private String catName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -62,7 +64,8 @@ import org.slf4j.LoggerFactory;
     TBL_NAME((short)2, "tblName"),
     PARTS((short)3, "parts"),
     IF_NOT_EXISTS((short)4, "ifNotExists"),
-    NEED_RESULT((short)5, "needResult");
+    NEED_RESULT((short)5, "needResult"),
+    CAT_NAME((short)6, "catName");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -87,6 +90,8 @@ import org.slf4j.LoggerFactory;
           return IF_NOT_EXISTS;
         case 5: // NEED_RESULT
           return NEED_RESULT;
+        case 6: // CAT_NAME
+          return CAT_NAME;
         default:
           return null;
       }
@@ -130,7 +135,7 @@ import org.slf4j.LoggerFactory;
   private static final int __IFNOTEXISTS_ISSET_ID = 0;
   private static final int __NEEDRESULT_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.NEED_RESULT};
+  private static final _Fields optionals[] = {_Fields.NEED_RESULT,_Fields.CAT_NAME};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -145,6 +150,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.NEED_RESULT, new org.apache.thrift.meta_data.FieldMetaData("needResult", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(AddPartitionsRequest.class, metaDataMap);
   }
@@ -188,6 +195,9 @@ import org.slf4j.LoggerFactory;
     }
     this.ifNotExists = other.ifNotExists;
     this.needResult = other.needResult;
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
   }
 
   public AddPartitionsRequest deepCopy() {
@@ -203,6 +213,7 @@ import org.slf4j.LoggerFactory;
     this.ifNotExists = false;
     this.needResult = true;
 
+    this.catName = null;
   }
 
   public String getDbName() {
@@ -333,6 +344,29 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __NEEDRESULT_ISSET_ID, value);
   }
 
+  public String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case DB_NAME:
@@ -375,6 +409,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((String)value);
+      }
+      break;
+
     }
   }
 
@@ -394,6 +436,9 @@ import org.slf4j.LoggerFactory;
 
     case NEED_RESULT:
       return isNeedResult();
+
+    case CAT_NAME:
+      return getCatName();
 
     }
     throw new IllegalStateException();
@@ -416,6 +461,8 @@ import org.slf4j.LoggerFactory;
       return isSetIfNotExists();
     case NEED_RESULT:
       return isSetNeedResult();
+    case CAT_NAME:
+      return isSetCatName();
     }
     throw new IllegalStateException();
   }
@@ -478,6 +525,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
+
     return true;
   }
 
@@ -509,6 +565,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_needResult);
     if (present_needResult)
       list.add(needResult);
+
+    boolean present_catName = true && (isSetCatName());
+    list.add(present_catName);
+    if (present_catName)
+      list.add(catName);
 
     return list.hashCode();
   }
@@ -571,6 +632,16 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetCatName()).compareTo(other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -622,6 +693,16 @@ import org.slf4j.LoggerFactory;
       if (!first) sb.append(", ");
       sb.append("needResult:");
       sb.append(this.needResult);
+      first = false;
+    }
+    if (isSetCatName()) {
+      if (!first) sb.append(", ");
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
+      }
       first = false;
     }
     sb.append(")");
@@ -704,14 +785,14 @@ import org.slf4j.LoggerFactory;
           case 3: // PARTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list474 = iprot.readListBegin();
-                struct.parts = new ArrayList<Partition>(_list474.size);
-                Partition _elem475;
-                for (int _i476 = 0; _i476 < _list474.size; ++_i476)
+                org.apache.thrift.protocol.TList _list482 = iprot.readListBegin();
+                struct.parts = new ArrayList<Partition>(_list482.size);
+                Partition _elem483;
+                for (int _i484 = 0; _i484 < _list482.size; ++_i484)
                 {
-                  _elem475 = new Partition();
-                  _elem475.read(iprot);
-                  struct.parts.add(_elem475);
+                  _elem483 = new Partition();
+                  _elem483.read(iprot);
+                  struct.parts.add(_elem483);
                 }
                 iprot.readListEnd();
               }
@@ -732,6 +813,14 @@ import org.slf4j.LoggerFactory;
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
               struct.needResult = iprot.readBool();
               struct.setNeedResultIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 6: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -763,9 +852,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PARTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.parts.size()));
-          for (Partition _iter477 : struct.parts)
+          for (Partition _iter485 : struct.parts)
           {
-            _iter477.write(oprot);
+            _iter485.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -778,6 +867,13 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(NEED_RESULT_FIELD_DESC);
         oprot.writeBool(struct.needResult);
         oprot.writeFieldEnd();
+      }
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -800,9 +896,9 @@ import org.slf4j.LoggerFactory;
       oprot.writeString(struct.tblName);
       {
         oprot.writeI32(struct.parts.size());
-        for (Partition _iter478 : struct.parts)
+        for (Partition _iter486 : struct.parts)
         {
-          _iter478.write(oprot);
+          _iter486.write(oprot);
         }
       }
       oprot.writeBool(struct.ifNotExists);
@@ -810,9 +906,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetNeedResult()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetCatName()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
       if (struct.isSetNeedResult()) {
         oprot.writeBool(struct.needResult);
+      }
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
       }
     }
 
@@ -824,23 +926,27 @@ import org.slf4j.LoggerFactory;
       struct.tblName = iprot.readString();
       struct.setTblNameIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list479 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.parts = new ArrayList<Partition>(_list479.size);
-        Partition _elem480;
-        for (int _i481 = 0; _i481 < _list479.size; ++_i481)
+        org.apache.thrift.protocol.TList _list487 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.parts = new ArrayList<Partition>(_list487.size);
+        Partition _elem488;
+        for (int _i489 = 0; _i489 < _list487.size; ++_i489)
         {
-          _elem480 = new Partition();
-          _elem480.read(iprot);
-          struct.parts.add(_elem480);
+          _elem488 = new Partition();
+          _elem488.read(iprot);
+          struct.parts.add(_elem488);
         }
       }
       struct.setPartsIsSet(true);
       struct.ifNotExists = iprot.readBool();
       struct.setIfNotExistsIsSet(true);
-      BitSet incoming = iprot.readBitSet(1);
+      BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         struct.needResult = iprot.readBool();
         struct.setNeedResultIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
       }
     }
   }

@@ -23,8 +23,11 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SchemaVersion;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
 
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
+
 public class SchemaVersionBuilder extends SerdeAndColsBuilder<SchemaVersionBuilder> {
-  private String schemaName, dbName; // required
+  private String schemaName, dbName, catName; // required
   private int version; // required
   private long createdAt; // required
   private SchemaVersionState state; // optional
@@ -34,6 +37,8 @@ public class SchemaVersionBuilder extends SerdeAndColsBuilder<SchemaVersionBuild
   private String name; // optional
 
   public SchemaVersionBuilder() {
+    catName = DEFAULT_CATALOG_NAME;
+    dbName = DEFAULT_DATABASE_NAME;
     createdAt = System.currentTimeMillis() / 1000;
     version = -1;
     super.setChild(this);
@@ -50,6 +55,7 @@ public class SchemaVersionBuilder extends SerdeAndColsBuilder<SchemaVersionBuild
   }
 
   public SchemaVersionBuilder versionOf(ISchema schema) {
+    this.catName = schema.getCatName();
     this.dbName = schema.getDbName();
     this.schemaName = schema.getName();
     return this;
@@ -92,11 +98,11 @@ public class SchemaVersionBuilder extends SerdeAndColsBuilder<SchemaVersionBuild
   }
 
   public SchemaVersion build() throws MetaException {
-    if (schemaName == null || dbName == null || version < 0) {
-      throw new MetaException("You must provide the database name, schema name, and schema version");
+    if (schemaName == null || version < 0) {
+      throw new MetaException("You must provide the schema name, and schema version");
     }
     SchemaVersion schemaVersion =
-        new SchemaVersion(new ISchemaName(dbName, schemaName), version, createdAt, getCols());
+        new SchemaVersion(new ISchemaName(catName, dbName, schemaName), version, createdAt, getCols());
     if (state != null) schemaVersion.setState(state);
     if (description != null) schemaVersion.setDescription(description);
     if (schemaText != null) schemaVersion.setSchemaText(schemaText);

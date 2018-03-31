@@ -18,25 +18,31 @@
 package org.apache.hadoop.hive.metastore.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
+import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
+import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -47,6 +53,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import com.google.common.collect.Lists;
+
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 
 /**
  * Tests for dropping partitions.
@@ -69,7 +77,7 @@ public class TestDropPartitions extends MetaStoreClientTest {
   public static void startMetaStores() {
     Map<MetastoreConf.ConfVars, String> msConf = new HashMap<MetastoreConf.ConfVars, String>();
     // Enable trash, so it can be tested
-    Map<String, String> extraConf = new HashMap<String, String>();
+    Map<String, String> extraConf = new HashMap<>();
     extraConf.put("fs.trash.checkpoint.interval", "30");  // FS_TRASH_CHECKPOINT_INTERVAL_KEY
     extraConf.put("fs.trash.interval", "30");             // FS_TRASH_INTERVAL_KEY (hadoop-2)
     startMetaStores(msConf, extraConf);
@@ -89,8 +97,7 @@ public class TestDropPartitions extends MetaStoreClientTest {
     metaStore.cleanWarehouseDirs();
     Database db = new DatabaseBuilder().
         setName(DB_NAME).
-        build();
-    client.createDatabase(db);
+        create(client, metaStore.getConf());
 
     // Create test tables with 3 partitions
     createTable(TABLE_NAME, getYearAndMonthPartCols(), null);
@@ -489,7 +496,71 @@ public class TestDropPartitions extends MetaStoreClientTest {
     client.dropPartition(DB_NAME, TABLE_NAME, "", true);
   }
 
-    // Helper methods
+  @Test
+  public void otherCatalog() throws TException {
+    String catName = "drop_partition_catalog";
+    Catalog cat = new CatalogBuilder()
+        .setName(catName)
+        .setLocation(MetaStoreTestUtils.getTestWarehouseDir(catName))
+        .build();
+    client.createCatalog(cat);
+
+    String dbName = "drop_partition_database_in_other_catalog";
+    Database db = new DatabaseBuilder()
+        .setName(dbName)
+        .setCatalogName(catName)
+        .create(client, metaStore.getConf());
+
+    String tableName = "table_in_other_catalog";
+    Table table = new TableBuilder()
+        .inDb(db)
+        .setTableName(tableName)
+        .addCol("id", "int")
+        .addCol("name", "string")
+        .addPartCol("partcol", "string")
+        .create(client, metaStore.getConf());
+
+    Partition[] parts = new Partition[2];
+    for (int i = 0; i < parts.length; i++) {
+      parts[i] = new PartitionBuilder()
+          .inTable(table)
+          .addValue("a" + i)
+          .build(metaStore.getConf());
+    }
+    client.add_partitions(Arrays.asList(parts));
+    List<Partition> fetched = client.listPartitions(catName, dbName, tableName, (short)-1);
+    Assert.assertEquals(parts.length, fetched.size());
+
+    Assert.assertTrue(client.dropPartition(catName, dbName, tableName,
+        Collections.singletonList("a0"), PartitionDropOptions.instance().ifExists(false)));
+    try {
+      client.getPartition(catName, dbName, tableName, Collections.singletonList("a0"));
+      Assert.fail();
+    } catch (NoSuchObjectException e) {
+      // NOP
+    }
+
+    Assert.assertTrue(client.dropPartition(catName, dbName, tableName, "partcol=a1", true));
+    try {
+      client.getPartition(catName, dbName, tableName, Collections.singletonList("a1"));
+      Assert.fail();
+    } catch (NoSuchObjectException e) {
+      // NOP
+    }
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void testDropPartitionBogusCatalog() throws Exception {
+    client.dropPartition("nosuch", DB_NAME, TABLE_NAME, Lists.newArrayList("2017"), false);
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void testDropPartitionByNameBogusCatalog() throws Exception {
+    client.dropPartition("nosuch", DB_NAME, TABLE_NAME, "year=2017", false);
+  }
+
+
+  // Helper methods
 
   private Table createTable(String tableName, List<FieldSchema> partCols,
       Map<String, String> tableParams) throws Exception {
@@ -501,36 +572,33 @@ public class TestDropPartitions extends MetaStoreClientTest {
         .setPartCols(partCols)
         .setLocation(metaStore.getWarehouseRoot() + "/" + tableName)
         .setTableParams(tableParams)
-        .build();
-    client.createTable(table);
+        .create(client, metaStore.getConf());
     return table;
   }
 
   private Partition createPartition(List<String> values,
       List<FieldSchema> partCols) throws Exception {
-    Partition partition = new PartitionBuilder()
+    new PartitionBuilder()
         .setDbName(DB_NAME)
         .setTableName(TABLE_NAME)
         .setValues(values)
         .setCols(partCols)
-        .build();
-    client.add_partition(partition);
-    partition = client.getPartition(DB_NAME, TABLE_NAME, values);
+        .addToTable(client, metaStore.getConf());
+    Partition partition = client.getPartition(DB_NAME, TABLE_NAME, values);
     return partition;
   }
 
   private Partition createPartition(String tableName, String location, List<String> values,
       List<FieldSchema> partCols, Map<String, String> partParams) throws Exception {
-    Partition partition = new PartitionBuilder()
+    new PartitionBuilder()
         .setDbName(DB_NAME)
         .setTableName(tableName)
         .setValues(values)
         .setCols(partCols)
         .setLocation(location)
         .setPartParams(partParams)
-        .build();
-    client.add_partition(partition);
-    partition = client.getPartition(DB_NAME, tableName, values);
+        .addToTable(client, metaStore.getConf());
+    Partition partition = client.getPartition(DB_NAME, tableName, values);
     return partition;
   }
 

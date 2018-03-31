@@ -48,8 +48,9 @@ struct SQLPrimaryKey {
   4: i32 key_seq,        // sequence number within primary key
   5: string pk_name,     // primary key name
   6: bool enable_cstr,   // Enable/Disable
-  7: bool validate_cstr,  // Validate/No validate
-  8: bool rely_cstr      // Rely/No Rely
+  7: bool validate_cstr, // Validate/No validate
+  8: bool rely_cstr,     // Rely/No Rely
+  9: optional string catName
 }
 
 struct SQLForeignKey {
@@ -66,50 +67,55 @@ struct SQLForeignKey {
   11: string pk_name,      // primary key name
   12: bool enable_cstr,    // Enable/Disable
   13: bool validate_cstr,  // Validate/No validate
-  14: bool rely_cstr       // Rely/No Rely
+  14: bool rely_cstr,      // Rely/No Rely
+  15: optional string catName
 }
 
 struct SQLUniqueConstraint {
-  1: string table_db,    // table schema
-  2: string table_name,  // table name
-  3: string column_name, // column name
-  4: i32 key_seq,        // sequence number within unique constraint
-  5: string uk_name,     // unique key name
-  6: bool enable_cstr,   // Enable/Disable
-  7: bool validate_cstr, // Validate/No validate
-  8: bool rely_cstr      // Rely/No Rely
+  1: string catName,     // table catalog
+  2: string table_db,    // table schema
+  3: string table_name,  // table name
+  4: string column_name, // column name
+  5: i32 key_seq,        // sequence number within unique constraint
+  6: string uk_name,     // unique key name
+  7: bool enable_cstr,   // Enable/Disable
+  8: bool validate_cstr, // Validate/No validate
+  9: bool rely_cstr,     // Rely/No Rely
 }
 
 struct SQLNotNullConstraint {
-  1: string table_db,    // table schema
-  2: string table_name,  // table name
-  3: string column_name, // column name
-  4: string nn_name,     // not null name
-  5: bool enable_cstr,   // Enable/Disable
-  6: bool validate_cstr, // Validate/No validate
-  7: bool rely_cstr      // Rely/No Rely
+  1: string catName,     // table catalog
+  2: string table_db,    // table schema
+  3: string table_name,  // table name
+  4: string column_name, // column name
+  5: string nn_name,     // not null name
+  6: bool enable_cstr,   // Enable/Disable
+  7: bool validate_cstr, // Validate/No validate
+  8: bool rely_cstr,     // Rely/No Rely
 }
 
 struct SQLDefaultConstraint {
-  1: string table_db,    // table schema
-  2: string table_name,  // table name
-  3: string column_name, // column name
-  4: string default_value,// default value
-  5: string dc_name,     // default name
-  6: bool enable_cstr,   // Enable/Disable
-  7: bool validate_cstr, // Validate/No validate
-  8: bool rely_cstr      // Rely/No Rely
+  1: string catName,     // catalog name
+  2: string table_db,    // table schema
+  3: string table_name,  // table name
+  4: string column_name, // column name
+  5: string default_value,// default value
+  6: string dc_name,     // default name
+  7: bool enable_cstr,   // Enable/Disable
+  8: bool validate_cstr, // Validate/No validate
+  9: bool rely_cstr      // Rely/No Rely
 }
 
 struct SQLCheckConstraint {
-  1: string table_db,    // table schema
-  2: string table_name,  // table name
-  3: string column_name, // column name
-  4: string check_expression,// check expression
-  5: string dc_name,     // default name
-  6: bool enable_cstr,   // Enable/Disable
-  7: bool validate_cstr, // Validate/No validate
-  8: bool rely_cstr      // Rely/No Rely
+  1: string catName,     // catalog name
+  2: string table_db,    // table schema
+  3: string table_name,  // table name
+  4: string column_name, // column name
+  5: string check_expression,// check expression
+  6: string dc_name,     // default name
+  7: bool enable_cstr,   // Enable/Disable
+  8: bool validate_cstr, // Validate/No validate
+  9: bool rely_cstr      // Rely/No Rely
 }
 
 struct Type {
@@ -233,6 +239,7 @@ struct HiveObjectRef{
   3: string objectName,
   4: list<string> partValues,
   5: string columnName,
+  6: optional string catName
 }
 
 struct PrivilegeGrantInfo {
@@ -318,6 +325,34 @@ struct GrantRevokeRoleResponse {
   1: optional bool success;
 }
 
+struct Catalog {
+  1: string name,                    // Name of the catalog
+  2: optional string description,    // description of the catalog
+  3: string locationUri              // default storage location.  When databases are created in
+                                     // this catalog, if they do not specify a location, they will
+                                     // be placed in this location.
+}
+
+struct CreateCatalogRequest {
+  1: Catalog catalog
+}
+
+struct GetCatalogRequest {
+  1: string name
+}
+
+struct GetCatalogResponse {
+  1: Catalog catalog
+}
+
+struct GetCatalogsResponse {
+  1: list<string> names
+}
+
+struct DropCatalogRequest {
+  1: string name
+}
+
 // namespace for tables
 struct Database {
   1: string name,
@@ -326,7 +361,8 @@ struct Database {
   4: map<string, string> parameters, // properties associated with the database
   5: optional PrincipalPrivilegeSet privileges,
   6: optional string ownerName,
-  7: optional PrincipalType ownerType
+  7: optional PrincipalType ownerType,
+  8: optional string catalogName
 }
 
 // This object holds the information needed by SerDes
@@ -386,7 +422,8 @@ struct Table {
   13: optional PrincipalPrivilegeSet privileges,
   14: optional bool temporary=false,
   15: optional bool rewriteEnabled,     // rewrite enabled or not
-  16: optional CreationMetadata creationMetadata   // only for MVs, it stores table names used and txn list at MV creation
+  16: optional CreationMetadata creationMetadata,   // only for MVs, it stores table names used and txn list at MV creation
+  17: optional string catName          // Name of the catalog the table is in
 }
 
 struct Partition {
@@ -397,7 +434,8 @@ struct Partition {
   5: i32          lastAccessTime,
   6: StorageDescriptor   sd,
   7: map<string, string> parameters,
-  8: optional PrincipalPrivilegeSet privileges
+  8: optional PrincipalPrivilegeSet privileges,
+  9: optional string catName
 }
 
 struct PartitionWithoutSD {
@@ -423,7 +461,8 @@ struct PartitionSpec {
   2: string tableName,
   3: string rootPath,
   4: optional PartitionSpecWithSharedSD sharedSDPartitionSpec,
-  5: optional PartitionListComposingSpec partitionList
+  5: optional PartitionListComposingSpec partitionList,
+  6: optional string catName
 }
 
 // column statistics
@@ -512,7 +551,8 @@ struct ColumnStatisticsDesc {
 2: required string dbName,
 3: required string tableName,
 4: optional string partName,
-5: optional i64 lastAnalyzed
+5: optional i64 lastAnalyzed,
+6: optional string catName
 }
 
 struct ColumnStatistics {
@@ -547,7 +587,8 @@ struct EnvironmentContext {
 
 struct PrimaryKeysRequest {
   1: required string db_name,
-  2: required string tbl_name
+  2: required string tbl_name,
+  3: optional string catName
 }
 
 struct PrimaryKeysResponse {
@@ -559,6 +600,7 @@ struct ForeignKeysRequest {
   2: string parent_tbl_name,
   3: string foreign_db_name,
   4: string foreign_tbl_name
+  5: optional string catName          // No cross catalog constraints
 }
 
 struct ForeignKeysResponse {
@@ -566,8 +608,9 @@ struct ForeignKeysResponse {
 }
 
 struct UniqueConstraintsRequest {
-  1: required string db_name,
-  2: required string tbl_name
+  1: required string catName,
+  2: required string db_name,
+  3: required string tbl_name,
 }
 
 struct UniqueConstraintsResponse {
@@ -575,8 +618,9 @@ struct UniqueConstraintsResponse {
 }
 
 struct NotNullConstraintsRequest {
-  1: required string db_name,
-  2: required string tbl_name
+  1: required string catName,
+  2: required string db_name,
+  3: required string tbl_name,
 }
 
 struct NotNullConstraintsResponse {
@@ -584,8 +628,9 @@ struct NotNullConstraintsResponse {
 }
 
 struct DefaultConstraintsRequest {
-  1: required string db_name,
-  2: required string tbl_name
+  1: required string catName,
+  2: required string db_name,
+  3: required string tbl_name
 }
 
 struct DefaultConstraintsResponse {
@@ -593,8 +638,9 @@ struct DefaultConstraintsResponse {
 }
 
 struct CheckConstraintsRequest {
-  1: required string db_name,
-  2: required string tbl_name
+  1: required string catName,
+  2: required string db_name,
+  3: required string tbl_name
 }
 
 struct CheckConstraintsResponse {
@@ -605,7 +651,8 @@ struct CheckConstraintsResponse {
 struct DropConstraintRequest {
   1: required string dbname, 
   2: required string tablename,
-  3: required string constraintname
+  3: required string constraintname,
+  4: optional string catName
 }
 
 struct AddPrimaryKeyRequest {
@@ -645,6 +692,7 @@ struct PartitionsByExprRequest {
   3: required binary expr,
   4: optional string defaultPartitionName,
   5: optional i16 maxParts=-1
+  6: optional string catName
 }
 
 struct TableStatsResult {
@@ -659,13 +707,15 @@ struct TableStatsRequest {
  1: required string dbName,
  2: required string tblName,
  3: required list<string> colNames
+ 4: optional string catName
 }
 
 struct PartitionsStatsRequest {
  1: required string dbName,
  2: required string tblName,
  3: required list<string> colNames,
- 4: required list<string> partNames
+ 4: required list<string> partNames,
+ 5: optional string catName
 }
 
 // Return type for add_partitions_req
@@ -679,7 +729,8 @@ struct AddPartitionsRequest {
   2: required string tblName,
   3: required list<Partition> parts,
   4: required bool ifNotExists,
-  5: optional bool needResult=true
+  5: optional bool needResult=true,
+  6: optional string catName
 }
 
 // Return type for drop_partitions_req
@@ -707,7 +758,8 @@ struct DropPartitionsRequest {
   5: optional bool ifExists=true, // currently verified on client
   6: optional bool ignoreProtection,
   7: optional EnvironmentContext environmentContext,
-  8: optional bool needResult=true
+  8: optional bool needResult=true,
+  9: optional string catName
 }
 
 struct PartitionValuesRequest {
@@ -719,6 +771,7 @@ struct PartitionValuesRequest {
   6: optional list<FieldSchema> partitionOrder;
   7: optional bool ascending = true;
   8: optional i64 maxParts = -1;
+  9: optional string catName
 }
 
 struct PartitionValuesRow {
@@ -754,6 +807,7 @@ struct Function {
   6: i32              createTime,
   7: FunctionType     functionType,
   8: list<ResourceUri> resourceUris,
+  9: optional string  catName
 }
 
 // Structs for transaction and locks
@@ -977,10 +1031,11 @@ struct BasicTxnInfo {
 }
 
 struct CreationMetadata {
-    1: required string dbName,
-    2: required string tblName,
-    3: required set<string> tablesUsed,
-    4: optional string validTxnList
+    1: required string catName
+    2: required string dbName,
+    3: required string tblName,
+    4: required set<string> tablesUsed,
+    5: optional string validTxnList,
 }
 
 struct NotificationEventRequest {
@@ -996,6 +1051,7 @@ struct NotificationEvent {
     5: optional string tableName,
     6: required string message,
     7: optional string messageFormat,
+    8: optional string catName
 }
 
 struct NotificationEventResponse {
@@ -1009,6 +1065,7 @@ struct CurrentNotificationEventId {
 struct NotificationEventsCountRequest {
     1: required i64 fromEventId,
     2: required string dbName,
+    3: optional string catName
 }
 
 struct NotificationEventsCountResponse {
@@ -1034,6 +1091,7 @@ struct FireEventRequest {
     3: optional string dbName,
     4: optional string tableName,
     5: optional list<string> partitionVals,
+    6: optional string catName,
 }
 
 struct FireEventResponse {
@@ -1125,7 +1183,8 @@ struct ClientCapabilities {
 struct GetTableRequest {
   1: required string dbName,
   2: required string tblName,
-  3: optional ClientCapabilities capabilities
+  3: optional ClientCapabilities capabilities,
+  4: optional string catName
 }
 
 struct GetTableResult {
@@ -1135,7 +1194,8 @@ struct GetTableResult {
 struct GetTablesRequest {
   1: required string dbName,
   2: optional list<string> tblNames,
-  3: optional ClientCapabilities capabilities
+  3: optional ClientCapabilities capabilities,
+  4: optional string catName
 }
 
 struct GetTablesResult {
@@ -1157,6 +1217,7 @@ struct TableMeta {
   2: required string tableName;
   3: required string tableType;
   4: optional string comments;
+  5: optional string catName;
 }
 
 struct Materialization {
@@ -1384,17 +1445,19 @@ struct WMCreateOrDropTriggerToPoolMappingResponse {
 struct ISchema {
   1: SchemaType schemaType,
   2: string name,
-  3: string dbName,
-  4: SchemaCompatibility compatibility,
-  5: SchemaValidation validationLevel,
-  6: bool canEvolve,
-  7: optional string schemaGroup,
-  8: optional string description
+  3: string catName,
+  4: string dbName,
+  5: SchemaCompatibility compatibility,
+  6: SchemaValidation validationLevel,
+  7: bool canEvolve,
+  8: optional string schemaGroup,
+  9: optional string description
 }
 
 struct ISchemaName {
-  1: string dbName,
-  2: string schemaName
+  1: string catName,
+  2: string dbName,
+  3: string schemaName
 }
 
 struct AlterISchemaRequest {
@@ -1515,6 +1578,11 @@ service ThriftHiveMetastore extends fb303.FacebookService
   string getMetaConf(1:string key) throws(1:MetaException o1)
   void setMetaConf(1:string key, 2:string value) throws(1:MetaException o1)
 
+  void create_catalog(1: CreateCatalogRequest catalog) throws (1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3: MetaException o3)
+  GetCatalogResponse get_catalog(1: GetCatalogRequest catName) throws (1:NoSuchObjectException o1, 2:MetaException o2)
+  GetCatalogsResponse get_catalogs() throws (1:MetaException o1)
+  void drop_catalog(1: DropCatalogRequest catName) throws (1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
+
   void create_database(1:Database database) throws(1:AlreadyExistsException o1, 2:InvalidObjectException o2, 3:MetaException o3)
   Database get_database(1:string name) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   void drop_database(1:string name, 2:bool deleteData, 3:bool cascade) throws(1:NoSuchObjectException o1, 2:InvalidOperationException o2, 3:MetaException o3)
@@ -1597,7 +1665,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
 				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
   map<string, Materialization> get_materialization_invalidation_info(1:string dbname, 2:list<string> tbl_names)
 				   throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
-  void update_creation_metadata(1:string dbname, 2:string tbl_name, 3:CreationMetadata creation_metadata)
+  void update_creation_metadata(1: string catName, 2:string dbname, 3:string tbl_name, 4:CreationMetadata creation_metadata)
                    throws (1:MetaException o1, 2:InvalidOperationException o2, 3:UnknownDBException o3)
 
   // Get a list of table names that match a filter.

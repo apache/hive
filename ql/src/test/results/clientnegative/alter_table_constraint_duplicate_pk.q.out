@@ -8,4 +8,4 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table1
 PREHOOK: query: alter table table1 add constraint pk4 primary key (b) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message: Primary key already exists for: default.table1)
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. MetaException(message: Primary key already exists for: hive.default.table1)

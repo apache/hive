@@ -48,6 +48,8 @@ import org.apache.hadoop.hive.metastore.model.MPartitionColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+
 /**
  * This class contains conversion logic that creates Thrift stat objects from
  * JDO stat objects and plain arrays from DirectSQL.
@@ -65,6 +67,7 @@ public class StatObjectConverter {
      MTableColumnStatistics mColStats = new MTableColumnStatistics();
      mColStats.setTable(table);
      mColStats.setDbName(statsDesc.getDbName());
+     mColStats.setCatName(statsDesc.isSetCatName() ? statsDesc.getCatName() : DEFAULT_CATALOG_NAME);
      mColStats.setTableName(statsDesc.getTableName());
      mColStats.setLastAnalyzed(statsDesc.getLastAnalyzed());
      mColStats.setColName(statsObj.getColName());
@@ -311,6 +314,7 @@ public class StatObjectConverter {
       MTableColumnStatistics mStatsObj) {
     ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc();
     statsDesc.setIsTblLevel(true);
+    statsDesc.setCatName(mStatsObj.getCatName());
     statsDesc.setDbName(mStatsObj.getDbName());
     statsDesc.setTableName(mStatsObj.getTableName());
     statsDesc.setLastAnalyzed(mStatsObj.getLastAnalyzed());
@@ -326,6 +330,7 @@ public class StatObjectConverter {
 
     MPartitionColumnStatistics mColStats = new MPartitionColumnStatistics();
     mColStats.setPartition(partition);
+    mColStats.setCatName(statsDesc.isSetCatName() ? statsDesc.getCatName() : DEFAULT_CATALOG_NAME);
     mColStats.setDbName(statsDesc.getDbName());
     mColStats.setTableName(statsDesc.getTableName());
     mColStats.setPartitionName(statsDesc.getPartName());
@@ -474,6 +479,7 @@ public class StatObjectConverter {
     MPartitionColumnStatistics mStatsObj) {
     ColumnStatisticsDesc statsDesc = new ColumnStatisticsDesc();
     statsDesc.setIsTblLevel(false);
+    statsDesc.setCatName(mStatsObj.getCatName());
     statsDesc.setDbName(mStatsObj.getDbName());
     statsDesc.setTableName(mStatsObj.getTableName());
     statsDesc.setPartName(mStatsObj.getPartitionName());

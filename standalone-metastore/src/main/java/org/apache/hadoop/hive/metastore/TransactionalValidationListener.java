@@ -423,8 +423,8 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
     try {
       Warehouse wh = hmsHandler.getWh();
       if (table.getSd().getLocation() == null || table.getSd().getLocation().isEmpty()) {
-        tablePath = wh.getDefaultTablePath(hmsHandler.getMS().getDatabase(table.getDbName()),
-          table.getTableName());
+        tablePath = wh.getDefaultTablePath(hmsHandler.getMS().getDatabase(
+            MetaStoreUtils.getDefaultCatalog(getConf()), table.getDbName()), table.getTableName());
       } else {
         tablePath = wh.getDnsPath(new Path(table.getSd().getLocation()));
       }

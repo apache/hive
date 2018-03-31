@@ -62,7 +62,7 @@ public class TestMetaStoreMetrics {
     driver.run("show databases");
 
     //one call by init, one called here.
-    Assert.assertEquals(2, Metrics.getRegistry().getTimers().get("api_get_all_databases").getCount());
+    Assert.assertEquals(2, Metrics.getRegistry().getTimers().get("api_get_databases").getCount());
   }
 
   @Test

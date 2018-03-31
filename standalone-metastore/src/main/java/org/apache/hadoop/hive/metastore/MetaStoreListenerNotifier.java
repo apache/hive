@@ -35,10 +35,12 @@ import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
+import org.apache.hadoop.hive.metastore.events.DropCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.DropISchemaEvent;
@@ -200,6 +202,10 @@ public class MetaStoreListenerNotifier {
               listener.onDropSchemaVersion((DropSchemaVersionEvent) event);
             }
           })
+          .put(EventType.CREATE_CATALOG,
+              (listener, event) -> listener.onCreateCatalog((CreateCatalogEvent)event))
+          .put(EventType.DROP_CATALOG,
+              (listener, event) -> listener.onDropCatalog((DropCatalogEvent)event))
           .build()
   );
 

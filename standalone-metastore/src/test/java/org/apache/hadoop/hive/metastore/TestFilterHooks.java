@@ -75,11 +75,12 @@ public class TestFilterHooks {
     }
 
     @Override
-    public List<String> filterTableNames(String dbName, List<String> tableList) throws MetaException {
+    public List<String> filterTableNames(String catName, String dbName, List<String> tableList)
+        throws MetaException {
       if (blockResults) {
         return new ArrayList<>();
       }
-      return super.filterTableNames(dbName, tableList);
+      return super.filterTableNames(catName, dbName, tableList);
     }
 
     @Override
@@ -124,12 +125,12 @@ public class TestFilterHooks {
     }
 
     @Override
-    public List<String> filterPartitionNames(String dbName, String tblName,
+    public List<String> filterPartitionNames(String catName, String dbName, String tblName,
         List<String> partitionNames) throws MetaException {
       if (blockResults) {
         return new ArrayList<>();
       }
-      return super.filterPartitionNames(dbName, tblName, partitionNames);
+      return super.filterPartitionNames(catName, dbName, tblName, partitionNames);
     }
 
   }
@@ -159,36 +160,32 @@ public class TestFilterHooks {
     msc.dropDatabase(DBNAME2, true, true, true);
     Database db1 = new DatabaseBuilder()
         .setName(DBNAME1)
-        .build();
-    msc.createDatabase(db1);
+        .setCatalogName(Warehouse.DEFAULT_CATALOG_NAME)
+        .create(msc, conf);
     Database db2 = new DatabaseBuilder()
         .setName(DBNAME2)
-        .build();
-    msc.createDatabase(db2);
-    Table tab1 = new TableBuilder()
+        .setCatalogName(Warehouse.DEFAULT_CATALOG_NAME)
+        .create(msc, conf);
+    new TableBuilder()
         .setDbName(DBNAME1)
         .setTableName(TAB1)
         .addCol("id", "int")
         .addCol("name", "string")
-        .build();
-    msc.createTable(tab1);
+        .create(msc, conf);
     Table tab2 = new TableBuilder()
         .setDbName(DBNAME1)
         .setTableName(TAB2)
         .addCol("id", "int")
         .addPartCol("name", "string")
-        .build();
-    msc.createTable(tab2);
-    Partition part1 = new PartitionBuilder()
-        .fromTable(tab2)
+        .create(msc, conf);
+    new PartitionBuilder()
+        .inTable(tab2)
         .addValue("value1")
-        .build();
-    msc.add_partition(part1);
-    Partition part2 = new PartitionBuilder()
-        .fromTable(tab2)
+        .addToTable(msc, conf);
+    new PartitionBuilder()
+        .inTable(tab2)
         .addValue("value2")
-        .build();
-    msc.add_partition(part2);
+        .addToTable(msc, conf);
   }
 
   @AfterClass

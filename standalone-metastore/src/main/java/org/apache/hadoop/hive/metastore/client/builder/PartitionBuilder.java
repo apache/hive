@@ -17,9 +17,14 @@
  */
 package org.apache.hadoop.hive.metastore.client.builder;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.thrift.TException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +36,7 @@ import java.util.Map;
  * reference; 2. partition values; 3. whatever {@link StorageDescriptorBuilder} requires.
  */
 public class PartitionBuilder extends StorageDescriptorBuilder<PartitionBuilder> {
-  private String dbName, tableName;
+  private String catName, dbName, tableName;
   private int createTime, lastAccessTime;
   private Map<String, String> partParams;
   private List<String> values;
@@ -40,6 +45,7 @@ public class PartitionBuilder extends StorageDescriptorBuilder<PartitionBuilder>
     // Set some reasonable defaults
     partParams = new HashMap<>();
     createTime = lastAccessTime = (int)(System.currentTimeMillis() / 1000);
+    dbName = Warehouse.DEFAULT_DATABASE_NAME;
     super.setChild(this);
   }
 
@@ -53,9 +59,10 @@ public class PartitionBuilder extends StorageDescriptorBuilder<PartitionBuilder>
     return this;
   }
 
-  public PartitionBuilder fromTable(Table table) {
+  public PartitionBuilder inTable(Table table) {
     this.dbName = table.getDbName();
     this.tableName = table.getTableName();
+    this.catName = table.getCatName();
     setCols(table.getSd().getCols());
     return this;
   }
@@ -92,12 +99,21 @@ public class PartitionBuilder extends StorageDescriptorBuilder<PartitionBuilder>
     return this;
   }
 
-  public Partition build() throws MetaException {
-    if (dbName == null || tableName == null) {
-      throw new MetaException("database name and table name must be provided");
+  public Partition build(Configuration conf) throws MetaException {
+    if (tableName == null) {
+      throw new MetaException("table name must be provided");
     }
     if (values == null) throw new MetaException("You must provide partition values");
-    return new Partition(values, dbName, tableName, createTime, lastAccessTime, buildSd(),
+    if (catName == null) catName = MetaStoreUtils.getDefaultCatalog(conf);
+    Partition p = new Partition(values, dbName, tableName, createTime, lastAccessTime, buildSd(),
         partParams);
+    p.setCatName(catName);
+    return p;
+  }
+
+  public Partition addToTable(IMetaStoreClient client, Configuration conf) throws TException {
+    Partition p = build(conf);
+    client.add_partition(p);
+    return p;
   }
 }

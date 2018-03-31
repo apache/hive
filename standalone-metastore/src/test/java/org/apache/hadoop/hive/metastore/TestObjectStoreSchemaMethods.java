@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.SchemaVersion;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.ISchemaBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.SchemaVersionBuilder;
@@ -47,16 +48,19 @@ import org.junit.experimental.categories.Category;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 
 @Category(MetastoreCheckinTest.class)
 public class TestObjectStoreSchemaMethods {
   private RawStore objectStore;
+  private Configuration conf;
 
   @Before
   public void setUp() throws Exception {
-    Configuration conf = MetastoreConf.newMetastoreConf();
+    conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.EXPRESSION_PROXY_CLASS,
         DefaultPartitionExpressionProxy.class.getName());
 
@@ -66,8 +70,8 @@ public class TestObjectStoreSchemaMethods {
 
   @Test
   public void iSchema() throws TException {
-    String dbName = createUniqueDatabaseForTest();
-    ISchema schema = objectStore.getISchema(new ISchemaName(dbName, "no.such.schema"));
+    Database db = createUniqueDatabaseForTest();
+    ISchema schema = objectStore.getISchema(new ISchemaName(db.getCatalogName(), db.getName(), "no.such.schema"));
     Assert.assertNull(schema);
 
     String schemaName = "schema1";
@@ -76,7 +80,7 @@ public class TestObjectStoreSchemaMethods {
     schema = new ISchemaBuilder()
         .setSchemaType(SchemaType.AVRO)
         .setName(schemaName)
-        .setDbName(dbName)
+        .inDb(db)
         .setCompatibility(SchemaCompatibility.FORWARD)
         .setValidationLevel(SchemaValidation.LATEST)
         .setCanEvolve(false)
@@ -85,7 +89,7 @@ public class TestObjectStoreSchemaMethods {
         .build();
     objectStore.createISchema(schema);
 
-    schema = objectStore.getISchema(new ISchemaName(dbName, schemaName));
+    schema = objectStore.getISchema(new ISchemaName(db.getCatalogName(), db.getName(), schemaName));
     Assert.assertNotNull(schema);
 
     Assert.assertEquals(SchemaType.AVRO, schema.getSchemaType());
@@ -103,9 +107,9 @@ public class TestObjectStoreSchemaMethods {
     schema.setCanEvolve(true);
     schema.setSchemaGroup(schemaGroup);
     schema.setDescription(description);
-    objectStore.alterISchema(new ISchemaName(dbName, schemaName), schema);
+    objectStore.alterISchema(new ISchemaName(db.getCatalogName(), db.getName(), schemaName), schema);
 
-    schema = objectStore.getISchema(new ISchemaName(dbName, schemaName));
+    schema = objectStore.getISchema(new ISchemaName(db.getCatalogName(), db.getName(), schemaName));
     Assert.assertNotNull(schema);
 
     Assert.assertEquals(SchemaType.AVRO, schema.getSchemaType());
@@ -116,8 +120,8 @@ public class TestObjectStoreSchemaMethods {
     Assert.assertEquals(schemaGroup, schema.getSchemaGroup());
     Assert.assertEquals(description, schema.getDescription());
 
-    objectStore.dropISchema(new ISchemaName(dbName, schemaName));
-    schema = objectStore.getISchema(new ISchemaName(dbName, schemaName));
+    objectStore.dropISchema(new ISchemaName(db.getCatalogName(), db.getName(), schemaName));
+    schema = objectStore.getISchema(new ISchemaName(db.getCatalogName(), db.getName(), schemaName));
     Assert.assertNull(schema);
   }
 
@@ -134,16 +138,16 @@ public class TestObjectStoreSchemaMethods {
 
   @Test(expected = AlreadyExistsException.class)
   public void schemaAlreadyExists() throws TException {
-    String dbName = createUniqueDatabaseForTest();
+    Database db = createUniqueDatabaseForTest();
     String schemaName = "schema2";
     ISchema schema = new ISchemaBuilder()
         .setSchemaType(SchemaType.HIVE)
         .setName(schemaName)
-        .setDbName(dbName)
+        .inDb(db)
         .build();
     objectStore.createISchema(schema);
 
-    schema = objectStore.getISchema(new ISchemaName(dbName, schemaName));
+    schema = objectStore.getISchema(new ISchemaName(db.getCatalogName(), db.getName(), schemaName));
     Assert.assertNotNull(schema);
 
     Assert.assertEquals(SchemaType.HIVE, schema.getSchemaType());
@@ -164,12 +168,12 @@ public class TestObjectStoreSchemaMethods {
         .setName(schemaName)
         .setDescription("a new description")
         .build();
-    objectStore.alterISchema(new ISchemaName(DEFAULT_DATABASE_NAME, schemaName), schema);
+    objectStore.alterISchema(new ISchemaName(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName), schema);
   }
 
   @Test(expected = NoSuchObjectException.class)
   public void dropNonExistentSchema() throws MetaException, NoSuchObjectException {
-    objectStore.dropISchema(new ISchemaName(DEFAULT_DATABASE_NAME, "no_such_schema"));
+    objectStore.dropISchema(new ISchemaName(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, "no_such_schema"));
   }
 
   @Test(expected = NoSuchObjectException.class)
@@ -177,7 +181,6 @@ public class TestObjectStoreSchemaMethods {
       NoSuchObjectException, InvalidObjectException {
     SchemaVersion schemaVersion = new SchemaVersionBuilder()
         .setSchemaName("noSchemaOfThisNameExists")
-        .setDbName(DEFAULT_DATABASE_NAME)
         .setVersion(1)
         .addCol("a", ColumnType.STRING_TYPE_NAME)
         .build();
@@ -186,16 +189,16 @@ public class TestObjectStoreSchemaMethods {
 
   @Test
   public void addSchemaVersion() throws TException {
-    String dbName = createUniqueDatabaseForTest();
+    Database db = createUniqueDatabaseForTest();
     String schemaName = "schema37";
     int version = 1;
-    SchemaVersion schemaVersion = objectStore.getSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(dbName, schemaName), version));
+    SchemaVersion schemaVersion = objectStore.getSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(db.getCatalogName(), db.getName(), schemaName), version));
     Assert.assertNull(schemaVersion);
 
     ISchema schema = new ISchemaBuilder()
         .setSchemaType(SchemaType.AVRO)
         .setName(schemaName)
-        .setDbName(dbName)
+        .inDb(db)
         .build();
     objectStore.createISchema(schema);
 
@@ -226,10 +229,11 @@ public class TestObjectStoreSchemaMethods {
         .build();
     objectStore.addSchemaVersion(schemaVersion);
 
-    schemaVersion = objectStore.getSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(dbName, schemaName), version));
+    schemaVersion = objectStore.getSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(db.getCatalogName(), db.getName(), schemaName), version));
     Assert.assertNotNull(schemaVersion);
     Assert.assertEquals(schemaName, schemaVersion.getSchema().getSchemaName());
-    Assert.assertEquals(dbName, schemaVersion.getSchema().getDbName());
+    Assert.assertEquals(db.getName(), schemaVersion.getSchema().getDbName());
+    Assert.assertEquals(db.getCatalogName(), schemaVersion.getSchema().getCatName());
     Assert.assertEquals(version, schemaVersion.getVersion());
     Assert.assertEquals(creationTime, schemaVersion.getCreatedAt());
     Assert.assertEquals(SchemaVersionState.INITIATED, schemaVersion.getState());
@@ -249,21 +253,21 @@ public class TestObjectStoreSchemaMethods {
     Assert.assertEquals("b", cols.get(1).getName());
     Assert.assertEquals(ColumnType.FLOAT_TYPE_NAME, cols.get(1).getType());
 
-    objectStore.dropSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(dbName, schemaName), version));
-    schemaVersion = objectStore.getSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(dbName, schemaName), version));
+    objectStore.dropSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(db.getCatalogName(), db.getName(), schemaName), version));
+    schemaVersion = objectStore.getSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(db.getCatalogName(), db.getName(), schemaName), version));
     Assert.assertNull(schemaVersion);
   }
 
   // Test that adding multiple versions of the same schema
   @Test
   public void multipleSchemaVersions() throws TException {
-    String dbName = createUniqueDatabaseForTest();
+    Database db = createUniqueDatabaseForTest();
     String schemaName = "schema195";
 
     ISchema schema = new ISchemaBuilder()
         .setSchemaType(SchemaType.AVRO)
         .setName(schemaName)
-        .setDbName(dbName)
+        .inDb(db)
         .build();
     objectStore.createISchema(schema);
     SchemaVersion schemaVersion = new SchemaVersionBuilder()
@@ -290,7 +294,7 @@ public class TestObjectStoreSchemaMethods {
         .build();
     objectStore.addSchemaVersion(schemaVersion);
 
-    schemaVersion = objectStore.getLatestSchemaVersion(new ISchemaName(dbName, schemaName));
+    schemaVersion = objectStore.getLatestSchemaVersion(new ISchemaName(db.getCatalogName(), db.getName(), schemaName));
     Assert.assertEquals(3, schemaVersion.getVersion());
     Assert.assertEquals(3, schemaVersion.getColsSize());
     List<FieldSchema> cols = schemaVersion.getCols();
@@ -302,14 +306,14 @@ public class TestObjectStoreSchemaMethods {
     Assert.assertEquals(ColumnType.DATE_TYPE_NAME, cols.get(1).getType());
     Assert.assertEquals(ColumnType.TIMESTAMP_TYPE_NAME, cols.get(2).getType());
 
-    schemaVersion = objectStore.getLatestSchemaVersion(new ISchemaName(dbName, "no.such.schema.with.this.name"));
+    schemaVersion = objectStore.getLatestSchemaVersion(new ISchemaName(db.getCatalogName(), db.getName(), "no.such.schema.with.this.name"));
     Assert.assertNull(schemaVersion);
 
     List<SchemaVersion> versions =
-        objectStore.getAllSchemaVersion(new ISchemaName(dbName, "there.really.isnt.a.schema.named.this"));
+        objectStore.getAllSchemaVersion(new ISchemaName(db.getCatalogName(), db.getName(), "there.really.isnt.a.schema.named.this"));
     Assert.assertNull(versions);
 
-    versions = objectStore.getAllSchemaVersion(new ISchemaName(dbName, schemaName));
+    versions = objectStore.getAllSchemaVersion(new ISchemaName(db.getCatalogName(), db.getName(), schemaName));
     Assert.assertEquals(3, versions.size());
     versions.sort(Comparator.comparingInt(SchemaVersion::getVersion));
     Assert.assertEquals(1, versions.get(0).getVersion());
@@ -339,16 +343,16 @@ public class TestObjectStoreSchemaMethods {
 
   @Test(expected = AlreadyExistsException.class)
   public void addDuplicateSchemaVersion() throws TException {
-    String dbName = createUniqueDatabaseForTest();
+    Database db = createUniqueDatabaseForTest();
     String schemaName = "schema1234";
     int version = 1;
-    SchemaVersion schemaVersion = objectStore.getSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(dbName, schemaName), version));
+    SchemaVersion schemaVersion = objectStore.getSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(db.getCatalogName(), db.getName(), schemaName), version));
     Assert.assertNull(schemaVersion);
 
     ISchema schema = new ISchemaBuilder()
         .setSchemaType(SchemaType.AVRO)
         .setName(schemaName)
-        .setDbName(dbName)
+        .inDb(db)
         .build();
     objectStore.createISchema(schema);
 
@@ -365,16 +369,16 @@ public class TestObjectStoreSchemaMethods {
 
   @Test
   public void alterSchemaVersion() throws TException {
-    String dbName = createUniqueDatabaseForTest();
+    Database db = createUniqueDatabaseForTest();
     String schemaName = "schema371234";
     int version = 1;
-    SchemaVersion schemaVersion = objectStore.getSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(dbName, schemaName), version));
+    SchemaVersion schemaVersion = objectStore.getSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(db.getCatalogName(), db.getName(), schemaName), version));
     Assert.assertNull(schemaVersion);
 
     ISchema schema = new ISchemaBuilder()
         .setSchemaType(SchemaType.AVRO)
         .setName(schemaName)
-        .setDbName(dbName)
+        .inDb(db)
         .build();
     objectStore.createISchema(schema);
 
@@ -387,10 +391,11 @@ public class TestObjectStoreSchemaMethods {
         .build();
     objectStore.addSchemaVersion(schemaVersion);
 
-    schemaVersion = objectStore.getSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(dbName, schemaName), version));
+    schemaVersion = objectStore.getSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(db.getCatalogName(), db.getName(), schemaName), version));
     Assert.assertNotNull(schemaVersion);
     Assert.assertEquals(schemaName, schemaVersion.getSchema().getSchemaName());
-    Assert.assertEquals(dbName, schemaVersion.getSchema().getDbName());
+    Assert.assertEquals(db.getName(), schemaVersion.getSchema().getDbName());
+    Assert.assertEquals(db.getCatalogName(), schemaVersion.getSchema().getCatName());
     Assert.assertEquals(version, schemaVersion.getVersion());
     Assert.assertEquals(SchemaVersionState.INITIATED, schemaVersion.getState());
 
@@ -402,12 +407,13 @@ public class TestObjectStoreSchemaMethods {
     serde.setSerializerClass(serializer);
     serde.setDeserializerClass(deserializer);
     schemaVersion.setSerDe(serde);
-    objectStore.alterSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(dbName, schemaName), version), schemaVersion);
+    objectStore.alterSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(db.getCatalogName(), db.getName(), schemaName), version), schemaVersion);
 
-    schemaVersion = objectStore.getSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(dbName, schemaName), version));
+    schemaVersion = objectStore.getSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(db.getCatalogName(), db.getName(), schemaName), version));
     Assert.assertNotNull(schemaVersion);
     Assert.assertEquals(schemaName, schemaVersion.getSchema().getSchemaName());
-    Assert.assertEquals(dbName, schemaVersion.getSchema().getDbName());
+    Assert.assertEquals(db.getName(), schemaVersion.getSchema().getDbName());
+    Assert.assertEquals(db.getCatalogName(), schemaVersion.getSchema().getCatName());
     Assert.assertEquals(version, schemaVersion.getVersion());
     Assert.assertEquals(SchemaVersionState.REVIEWED, schemaVersion.getState());
     Assert.assertEquals(serdeName, schemaVersion.getSerDe().getName());
@@ -428,22 +434,22 @@ public class TestObjectStoreSchemaMethods {
         .addCol("b", ColumnType.FLOAT_TYPE_NAME)
         .setState(SchemaVersionState.INITIATED)
         .build();
-    objectStore.alterSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(DEFAULT_DATABASE_NAME, schemaName), version), schemaVersion);
+    objectStore.alterSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName), version), schemaVersion);
   }
 
   @Test(expected = NoSuchObjectException.class)
   public void dropNonExistentSchemaVersion() throws NoSuchObjectException, MetaException {
-    objectStore.dropSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(DEFAULT_DATABASE_NAME, "ther is no schema named this"), 23));
+    objectStore.dropSchemaVersion(new SchemaVersionDescriptor(new ISchemaName(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, "ther is no schema named this"), 23));
   }
 
   @Test
   public void schemaQuery() throws TException {
-    String dbName = createUniqueDatabaseForTest();
+    Database db = createUniqueDatabaseForTest();
     String schemaName1 = "a_schema1";
     ISchema schema1 = new ISchemaBuilder()
         .setSchemaType(SchemaType.AVRO)
         .setName(schemaName1)
-        .setDbName(dbName)
+        .inDb(db)
         .build();
     objectStore.createISchema(schema1);
 
@@ -451,7 +457,7 @@ public class TestObjectStoreSchemaMethods {
     ISchema schema2 = new ISchemaBuilder()
         .setSchemaType(SchemaType.AVRO)
         .setName(schemaName2)
-        .setDbName(dbName)
+        .inDb(db)
         .build();
     objectStore.createISchema(schema2);
 
@@ -497,7 +503,8 @@ public class TestObjectStoreSchemaMethods {
     results = objectStore.getSchemaVersionsByColumns("gamma", null, null);
     Assert.assertEquals(1, results.size());
     Assert.assertEquals(schemaName1, results.get(0).getSchema().getSchemaName());
-    Assert.assertEquals(dbName, results.get(0).getSchema().getDbName());
+    Assert.assertEquals(db.getName(), results.get(0).getSchema().getDbName());
+    Assert.assertEquals(db.getCatalogName(), results.get(0).getSchema().getCatName());
     Assert.assertEquals(2, results.get(0).getVersion());
 
     // fetch 2 in same schema
@@ -505,10 +512,12 @@ public class TestObjectStoreSchemaMethods {
     Assert.assertEquals(2, results.size());
     Collections.sort(results);
     Assert.assertEquals(schemaName1, results.get(0).getSchema().getSchemaName());
-    Assert.assertEquals(dbName, results.get(0).getSchema().getDbName());
+    Assert.assertEquals(db.getName(), results.get(0).getSchema().getDbName());
+    Assert.assertEquals(db.getCatalogName(), results.get(0).getSchema().getCatName());
     Assert.assertEquals(1, results.get(0).getVersion());
     Assert.assertEquals(schemaName1, results.get(1).getSchema().getSchemaName());
-    Assert.assertEquals(dbName, results.get(1).getSchema().getDbName());
+    Assert.assertEquals(db.getName(), results.get(1).getSchema().getDbName());
+    Assert.assertEquals(db.getCatalogName(), results.get(1).getSchema().getCatName());
     Assert.assertEquals(2, results.get(1).getVersion());
 
     // fetch across schemas
@@ -516,16 +525,20 @@ public class TestObjectStoreSchemaMethods {
     Assert.assertEquals(4, results.size());
     Collections.sort(results);
     Assert.assertEquals(schemaName1, results.get(0).getSchema().getSchemaName());
-    Assert.assertEquals(dbName, results.get(0).getSchema().getDbName());
+    Assert.assertEquals(db.getName(), results.get(0).getSchema().getDbName());
+    Assert.assertEquals(db.getCatalogName(), results.get(0).getSchema().getCatName());
     Assert.assertEquals(1, results.get(0).getVersion());
     Assert.assertEquals(schemaName1, results.get(1).getSchema().getSchemaName());
-    Assert.assertEquals(dbName, results.get(1).getSchema().getDbName());
+    Assert.assertEquals(db.getName(), results.get(1).getSchema().getDbName());
+    Assert.assertEquals(db.getCatalogName(), results.get(1).getSchema().getCatName());
     Assert.assertEquals(2, results.get(1).getVersion());
     Assert.assertEquals(schemaName2, results.get(2).getSchema().getSchemaName());
-    Assert.assertEquals(dbName, results.get(2).getSchema().getDbName());
+    Assert.assertEquals(db.getName(), results.get(2).getSchema().getDbName());
+    Assert.assertEquals(db.getCatalogName(), results.get(2).getSchema().getCatName());
     Assert.assertEquals(1, results.get(2).getVersion());
     Assert.assertEquals(schemaName2, results.get(3).getSchema().getSchemaName());
-    Assert.assertEquals(dbName, results.get(3).getSchema().getDbName());
+    Assert.assertEquals(db.getName(), results.get(3).getSchema().getDbName());
+    Assert.assertEquals(db.getCatalogName(), results.get(3).getSchema().getCatName());
     Assert.assertEquals(2, results.get(3).getVersion());
 
     // fetch by namespace
@@ -533,10 +546,12 @@ public class TestObjectStoreSchemaMethods {
     Assert.assertEquals(2, results.size());
     Collections.sort(results);
     Assert.assertEquals(schemaName1, results.get(0).getSchema().getSchemaName());
-    Assert.assertEquals(dbName, results.get(0).getSchema().getDbName());
+    Assert.assertEquals(db.getName(), results.get(0).getSchema().getDbName());
+    Assert.assertEquals(db.getCatalogName(), results.get(0).getSchema().getCatName());
     Assert.assertEquals(2, results.get(0).getVersion());
     Assert.assertEquals(schemaName2, results.get(1).getSchema().getSchemaName());
-    Assert.assertEquals(dbName, results.get(1).getSchema().getDbName());
+    Assert.assertEquals(db.getName(), results.get(1).getSchema().getDbName());
+    Assert.assertEquals(db.getCatalogName(), results.get(1).getSchema().getCatName());
     Assert.assertEquals(2, results.get(1).getVersion());
 
     // fetch by name and type
@@ -544,10 +559,12 @@ public class TestObjectStoreSchemaMethods {
     Assert.assertEquals(2, results.size());
     Collections.sort(results);
     Assert.assertEquals(schemaName2, results.get(0).getSchema().getSchemaName());
-    Assert.assertEquals(dbName, results.get(0).getSchema().getDbName());
+    Assert.assertEquals(db.getName(), results.get(0).getSchema().getDbName());
+    Assert.assertEquals(db.getCatalogName(), results.get(0).getSchema().getCatName());
     Assert.assertEquals(1, results.get(0).getVersion());
     Assert.assertEquals(schemaName2, results.get(1).getSchema().getSchemaName());
-    Assert.assertEquals(dbName, results.get(1).getSchema().getDbName());
+    Assert.assertEquals(db.getName(), results.get(1).getSchema().getDbName());
+    Assert.assertEquals(db.getCatalogName(), results.get(1).getSchema().getCatName());
     Assert.assertEquals(2, results.get(1).getVersion());
 
     // Make sure matching name but wrong type doesn't return
@@ -560,14 +577,26 @@ public class TestObjectStoreSchemaMethods {
   }
 
   private static int dbNum = 1;
-  private String createUniqueDatabaseForTest() throws MetaException, InvalidObjectException {
+  private static Random rand = new Random();
+  private Database createUniqueDatabaseForTest() throws MetaException, InvalidObjectException {
+    String catName;
+    if (rand.nextDouble() < 0.5) {
+      catName = "unique_cat_for_test_" + dbNum++;
+      objectStore.createCatalog(new CatalogBuilder()
+          .setName(catName)
+          .setLocation("there")
+          .build());
+    } else {
+      catName = DEFAULT_CATALOG_NAME;
+    }
     String dbName = "uniquedbfortest" + dbNum++;
     Database db = new DatabaseBuilder()
         .setName(dbName)
+        .setCatalogName(catName)
         .setLocation("somewhere")
         .setDescription("descriptive")
-        .build();
+        .build(conf);
     objectStore.createDatabase(db);
-    return dbName;
+    return db;
   }
 }

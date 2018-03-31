@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
   private static final org.apache.thrift.protocol.TField FROM_EVENT_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("fromEventId", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -49,11 +50,13 @@ import org.slf4j.LoggerFactory;
 
   private long fromEventId; // required
   private String dbName; // required
+  private String catName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     FROM_EVENT_ID((short)1, "fromEventId"),
-    DB_NAME((short)2, "dbName");
+    DB_NAME((short)2, "dbName"),
+    CAT_NAME((short)3, "catName");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -72,6 +75,8 @@ import org.slf4j.LoggerFactory;
           return FROM_EVENT_ID;
         case 2: // DB_NAME
           return DB_NAME;
+        case 3: // CAT_NAME
+          return CAT_NAME;
         default:
           return null;
       }
@@ -114,12 +119,15 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __FROMEVENTID_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.CAT_NAME};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.FROM_EVENT_ID, new org.apache.thrift.meta_data.FieldMetaData("fromEventId", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(NotificationEventsCountRequest.class, metaDataMap);
@@ -147,6 +155,9 @@ import org.slf4j.LoggerFactory;
     if (other.isSetDbName()) {
       this.dbName = other.dbName;
     }
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
   }
 
   public NotificationEventsCountRequest deepCopy() {
@@ -158,6 +169,7 @@ import org.slf4j.LoggerFactory;
     setFromEventIdIsSet(false);
     this.fromEventId = 0;
     this.dbName = null;
+    this.catName = null;
   }
 
   public long getFromEventId() {
@@ -205,6 +217,29 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case FROM_EVENT_ID:
@@ -223,6 +258,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((String)value);
+      }
+      break;
+
     }
   }
 
@@ -233,6 +276,9 @@ import org.slf4j.LoggerFactory;
 
     case DB_NAME:
       return getDbName();
+
+    case CAT_NAME:
+      return getCatName();
 
     }
     throw new IllegalStateException();
@@ -249,6 +295,8 @@ import org.slf4j.LoggerFactory;
       return isSetFromEventId();
     case DB_NAME:
       return isSetDbName();
+    case CAT_NAME:
+      return isSetCatName();
     }
     throw new IllegalStateException();
   }
@@ -284,6 +332,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
+
     return true;
   }
 
@@ -300,6 +357,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_dbName);
     if (present_dbName)
       list.add(dbName);
+
+    boolean present_catName = true && (isSetCatName());
+    list.add(present_catName);
+    if (present_catName)
+      list.add(catName);
 
     return list.hashCode();
   }
@@ -328,6 +390,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetDbName()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.dbName, other.dbName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetCatName()).compareTo(other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -363,6 +435,16 @@ import org.slf4j.LoggerFactory;
       sb.append(this.dbName);
     }
     first = false;
+    if (isSetCatName()) {
+      if (!first) sb.append(", ");
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -432,6 +514,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 3: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -453,6 +543,13 @@ import org.slf4j.LoggerFactory;
         oprot.writeString(struct.dbName);
         oprot.writeFieldEnd();
       }
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -472,6 +569,14 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       oprot.writeI64(struct.fromEventId);
       oprot.writeString(struct.dbName);
+      BitSet optionals = new BitSet();
+      if (struct.isSetCatName()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
+      }
     }
 
     @Override
@@ -481,6 +586,11 @@ import org.slf4j.LoggerFactory;
       struct.setFromEventIdIsSet(true);
       struct.dbName = iprot.readString();
       struct.setDbNameIsSet(true);
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
+      }
     }
   }
 

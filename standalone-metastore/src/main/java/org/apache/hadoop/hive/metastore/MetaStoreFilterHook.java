@@ -22,12 +22,14 @@ import java.util.List;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TableMeta;
 
 /**
  * Metadata filter hook for metastore client. This will be useful for authorization
@@ -39,11 +41,31 @@ import org.apache.hadoop.hive.metastore.api.Table;
 public interface MetaStoreFilterHook {
 
   /**
+   * Filter a catalog object.  Default implementation returns the passed in catalog.
+   * @param catalog catalog to filter
+   * @return filtered catalog
+   * @throws MetaException something bad happened
+   */
+  default Catalog filterCatalog(Catalog catalog) throws MetaException {
+    return catalog;
+  }
+
+  /**
+   * Filter a list of catalog names.  Default implementation returns the passed in list.
+   * @param catalogs list of catalog names.
+   * @return filtered list of catalog names.
+   * @throws MetaException something bad happened.
+   */
+  default List<String> filterCatalogs(List<String> catalogs) throws MetaException {
+    return catalogs;
+  }
+
+  /**
    * Filter given list of databases
    * @param dbList
    * @return List of filtered Db names
    */
-  public List<String> filterDatabases(List<String> dbList) throws MetaException;
+  List<String> filterDatabases(List<String> dbList) throws MetaException;
 
   /**
    * filter to given database object if applicable
@@ -51,15 +73,27 @@ public interface MetaStoreFilterHook {
    * @return the same database if it's not filtered out
    * @throws NoSuchObjectException
    */
-  public Database filterDatabase(Database dataBase) throws MetaException, NoSuchObjectException;
+  Database filterDatabase(Database dataBase) throws MetaException, NoSuchObjectException;
 
   /**
    * Filter given list of tables
-   * @param dbName
-   * @param tableList
+   * @param catName catalog name
+   * @param dbName database name
+   * @param tableList list of table returned by the metastore
    * @return List of filtered table names
    */
-  public List<String> filterTableNames(String dbName, List<String> tableList) throws MetaException;
+  List<String> filterTableNames(String catName, String dbName, List<String> tableList)
+      throws MetaException;
+
+  // Previously this was handled by filterTableNames.  But it can't be anymore because we can no
+  // longer depend on a 1-1 mapping between table name and entry in the list.
+  /**
+   * Filter a list of TableMeta objects.
+   * @param tableMetas list of TableMetas to filter
+   * @return filtered table metas
+   * @throws MetaException something went wrong
+   */
+  List<TableMeta> filterTableMetas(List<TableMeta> tableMetas) throws MetaException;
 
   /**
    * filter to given table object if applicable
@@ -67,28 +101,28 @@ public interface MetaStoreFilterHook {
    * @return the same table if it's not filtered out
    * @throws NoSuchObjectException
    */
-  public Table filterTable(Table table) throws MetaException, NoSuchObjectException;
+  Table filterTable(Table table) throws MetaException, NoSuchObjectException;
 
   /**
    * Filter given list of tables
    * @param tableList
    * @return List of filtered table names
    */
-  public List<Table> filterTables(List<Table> tableList) throws MetaException;
+  List<Table> filterTables(List<Table> tableList) throws MetaException;
 
   /**
    * Filter given list of partitions
    * @param partitionList
    * @return
    */
-  public List<Partition> filterPartitions(List<Partition> partitionList) throws MetaException;
+  List<Partition> filterPartitions(List<Partition> partitionList) throws MetaException;
 
   /**
    * Filter given list of partition specs
    * @param partitionSpecList
    * @return
    */
-  public List<PartitionSpec> filterPartitionSpecs(List<PartitionSpec> partitionSpecList)
+  List<PartitionSpec> filterPartitionSpecs(List<PartitionSpec> partitionSpecList)
       throws MetaException;
 
   /**
@@ -97,18 +131,17 @@ public interface MetaStoreFilterHook {
    * @return the same partition object if it's not filtered out
    * @throws NoSuchObjectException
    */
-  public Partition filterPartition(Partition partition) throws MetaException, NoSuchObjectException;
+  Partition filterPartition(Partition partition) throws MetaException, NoSuchObjectException;
 
   /**
    * Filter given list of partition names
-   * @param dbName
-   * @param tblName
-   * @param partitionNames
-   * @return
+   * @param catName catalog name.
+   * @param dbName database name.
+   * @param tblName table name.
+   * @param partitionNames list of partition names.
+   * @return list of filtered partition names.
    */
-  public List<String> filterPartitionNames(String dbName, String tblName,
+  List<String> filterPartitionNames(String catName, String dbName, String tblName,
       List<String> partitionNames) throws MetaException;
-
-
 }
 

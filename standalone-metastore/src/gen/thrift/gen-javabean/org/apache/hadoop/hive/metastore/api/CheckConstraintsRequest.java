@@ -38,8 +38,9 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class CheckConstraintsRequest implements org.apache.thrift.TBase<CheckConstraintsRequest, CheckConstraintsRequest._Fields>, java.io.Serializable, Cloneable, Comparable<CheckConstraintsRequest> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("CheckConstraintsRequest");
 
-  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("db_name", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField TBL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tbl_name", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("db_name", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField TBL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tbl_name", org.apache.thrift.protocol.TType.STRING, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -47,13 +48,15 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new CheckConstraintsRequestTupleSchemeFactory());
   }
 
+  private String catName; // required
   private String db_name; // required
   private String tbl_name; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    DB_NAME((short)1, "db_name"),
-    TBL_NAME((short)2, "tbl_name");
+    CAT_NAME((short)1, "catName"),
+    DB_NAME((short)2, "db_name"),
+    TBL_NAME((short)3, "tbl_name");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -68,9 +71,11 @@ import org.slf4j.LoggerFactory;
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // DB_NAME
+        case 1: // CAT_NAME
+          return CAT_NAME;
+        case 2: // DB_NAME
           return DB_NAME;
-        case 2: // TBL_NAME
+        case 3: // TBL_NAME
           return TBL_NAME;
         default:
           return null;
@@ -115,6 +120,8 @@ import org.slf4j.LoggerFactory;
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("db_name", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tbl_name", org.apache.thrift.TFieldRequirementType.REQUIRED, 
@@ -127,10 +134,12 @@ import org.slf4j.LoggerFactory;
   }
 
   public CheckConstraintsRequest(
+    String catName,
     String db_name,
     String tbl_name)
   {
     this();
+    this.catName = catName;
     this.db_name = db_name;
     this.tbl_name = tbl_name;
   }
@@ -139,6 +148,9 @@ import org.slf4j.LoggerFactory;
    * Performs a deep copy on <i>other</i>.
    */
   public CheckConstraintsRequest(CheckConstraintsRequest other) {
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
     if (other.isSetDb_name()) {
       this.db_name = other.db_name;
     }
@@ -153,8 +165,32 @@ import org.slf4j.LoggerFactory;
 
   @Override
   public void clear() {
+    this.catName = null;
     this.db_name = null;
     this.tbl_name = null;
+  }
+
+  public String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
   }
 
   public String getDb_name() {
@@ -205,6 +241,14 @@ import org.slf4j.LoggerFactory;
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((String)value);
+      }
+      break;
+
     case DB_NAME:
       if (value == null) {
         unsetDb_name();
@@ -226,6 +270,9 @@ import org.slf4j.LoggerFactory;
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
+    case CAT_NAME:
+      return getCatName();
+
     case DB_NAME:
       return getDb_name();
 
@@ -243,6 +290,8 @@ import org.slf4j.LoggerFactory;
     }
 
     switch (field) {
+    case CAT_NAME:
+      return isSetCatName();
     case DB_NAME:
       return isSetDb_name();
     case TBL_NAME:
@@ -263,6 +312,15 @@ import org.slf4j.LoggerFactory;
   public boolean equals(CheckConstraintsRequest that) {
     if (that == null)
       return false;
+
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
 
     boolean this_present_db_name = true && this.isSetDb_name();
     boolean that_present_db_name = true && that.isSetDb_name();
@@ -289,6 +347,11 @@ import org.slf4j.LoggerFactory;
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
 
+    boolean present_catName = true && (isSetCatName());
+    list.add(present_catName);
+    if (present_catName)
+      list.add(catName);
+
     boolean present_db_name = true && (isSetDb_name());
     list.add(present_db_name);
     if (present_db_name)
@@ -310,6 +373,16 @@ import org.slf4j.LoggerFactory;
 
     int lastComparison = 0;
 
+    lastComparison = Boolean.valueOf(isSetCatName()).compareTo(other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = Boolean.valueOf(isSetDb_name()).compareTo(other.isSetDb_name());
     if (lastComparison != 0) {
       return lastComparison;
@@ -350,6 +423,14 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("CheckConstraintsRequest(");
     boolean first = true;
 
+    sb.append("catName:");
+    if (this.catName == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.catName);
+    }
+    first = false;
+    if (!first) sb.append(", ");
     sb.append("db_name:");
     if (this.db_name == null) {
       sb.append("null");
@@ -371,6 +452,10 @@ import org.slf4j.LoggerFactory;
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
+    if (!isSetCatName()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'catName' is unset! Struct:" + toString());
+    }
+
     if (!isSetDb_name()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'db_name' is unset! Struct:" + toString());
     }
@@ -416,7 +501,15 @@ import org.slf4j.LoggerFactory;
           break;
         }
         switch (schemeField.id) {
-          case 1: // DB_NAME
+          case 1: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 2: // DB_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.db_name = iprot.readString();
               struct.setDb_nameIsSet(true);
@@ -424,7 +517,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // TBL_NAME
+          case 3: // TBL_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.tbl_name = iprot.readString();
               struct.setTbl_nameIsSet(true);
@@ -445,6 +538,11 @@ import org.slf4j.LoggerFactory;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (struct.catName != null) {
+        oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+        oprot.writeString(struct.catName);
+        oprot.writeFieldEnd();
+      }
       if (struct.db_name != null) {
         oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
         oprot.writeString(struct.db_name);
@@ -472,6 +570,7 @@ import org.slf4j.LoggerFactory;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, CheckConstraintsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
+      oprot.writeString(struct.catName);
       oprot.writeString(struct.db_name);
       oprot.writeString(struct.tbl_name);
     }
@@ -479,6 +578,8 @@ import org.slf4j.LoggerFactory;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, CheckConstraintsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
+      struct.catName = iprot.readString();
+      struct.setCatNameIsSet(true);
       struct.db_name = iprot.readString();
       struct.setDb_nameIsSet(true);
       struct.tbl_name = iprot.readString();

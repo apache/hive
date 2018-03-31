@@ -31,6 +31,7 @@ import org.junit.runners.MethodSorters;
 
 import java.util.Map;
 
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -82,7 +83,7 @@ public class TestMetaStoreMaterializationsCacheCleaner {
     when(mv1.getDbName()).thenReturn(DB_NAME);
     when(mv1.getTableName()).thenReturn(MV_NAME_1);
     CreationMetadata mockCM1 = new CreationMetadata(
-        DB_NAME, MV_NAME_1,
+        DEFAULT_CATALOG_NAME, DB_NAME, MV_NAME_1,
         ImmutableSet.of(
             DB_NAME + "." + TBL_NAME_1,
             DB_NAME + "." + TBL_NAME_2));
@@ -115,7 +116,7 @@ public class TestMetaStoreMaterializationsCacheCleaner {
     when(mv2.getDbName()).thenReturn(DB_NAME);
     when(mv2.getTableName()).thenReturn(MV_NAME_2);
     CreationMetadata mockCM2 = new CreationMetadata(
-        DB_NAME, MV_NAME_2,
+        DEFAULT_CATALOG_NAME, DB_NAME, MV_NAME_2,
         ImmutableSet.of(
             DB_NAME + "." + TBL_NAME_1,
             DB_NAME + "." + TBL_NAME_2));
@@ -222,7 +223,7 @@ public class TestMetaStoreMaterializationsCacheCleaner {
     when(mv1.getDbName()).thenReturn(DB_NAME);
     when(mv1.getTableName()).thenReturn(MV_NAME_1);
     CreationMetadata mockCM1 = new CreationMetadata(
-        DB_NAME, MV_NAME_1,
+        DEFAULT_CATALOG_NAME, DB_NAME, MV_NAME_1,
         ImmutableSet.of(
             DB_NAME + "." + TBL_NAME_1,
             DB_NAME + "." + TBL_NAME_2));
@@ -255,7 +256,7 @@ public class TestMetaStoreMaterializationsCacheCleaner {
     when(mv2.getDbName()).thenReturn(DB_NAME);
     when(mv2.getTableName()).thenReturn(MV_NAME_2);
     CreationMetadata mockCM2 = new CreationMetadata(
-        DB_NAME, MV_NAME_2,
+        DEFAULT_CATALOG_NAME, DB_NAME, MV_NAME_2,
         ImmutableSet.of(
             DB_NAME + "." + TBL_NAME_1,
             DB_NAME + "." + TBL_NAME_2));

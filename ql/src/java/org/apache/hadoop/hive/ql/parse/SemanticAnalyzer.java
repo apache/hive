@@ -10957,7 +10957,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (partitions != null) {
           for (Partition partn : partitions) {
             // inputs.add(new ReadEntity(partn)); // is this needed at all?
-            LOG.info("XXX: adding part: "+partn);
             outputs.add(new WriteEntity(partn, WriteEntity.WriteType.DDL_NO_LOCK));
           }
         }
@@ -12723,14 +12722,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
       case HiveParser.TOK_TABCOLLIST:
         cols = getColumns(child, true, ctx.getTokenRewriteStream(), primaryKeys, foreignKeys,
-            uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
+            uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints, conf);
         break;
       case HiveParser.TOK_TABLECOMMENT:
         comment = unescapeSQLString(child.getChild(0).getText());
         break;
       case HiveParser.TOK_TABLEPARTCOLS:
-        partCols = getColumns(child, false, ctx.getTokenRewriteStream(),primaryKeys, foreignKeys,
-            uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints);
+        partCols = getColumns(child, false, ctx.getTokenRewriteStream(), primaryKeys, foreignKeys,
+            uniqueConstraints, notNullConstraints, defaultConstraints, checkConstraints, conf);
         if(hasConstraints(partCols, defaultConstraints, notNullConstraints, checkConstraints)) {
           //TODO: these constraints should be supported for partition columns
           throw new SemanticException(

@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.metastore.client.builder;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.FunctionType;
@@ -26,6 +29,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.thrift.TException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,7 +39,7 @@ import java.util.List;
  * Class for creating Thrift Function objects for tests, and API usage.
  */
 public class FunctionBuilder {
-  private String dbName = "default";
+  private String catName, dbName;
   private String funcName = null;
   private String className = null;
   private String owner = null;
@@ -49,7 +53,13 @@ public class FunctionBuilder {
     ownerType = PrincipalType.USER;
     createTime = (int) (System.currentTimeMillis() / 1000);
     funcType = FunctionType.JAVA;
-    resourceUris = new ArrayList<ResourceUri>();
+    resourceUris = new ArrayList<>();
+    dbName = Warehouse.DEFAULT_DATABASE_NAME;
+  }
+
+  public FunctionBuilder setCatName(String catName) {
+    this.catName = catName;
+    return this;
   }
 
   public FunctionBuilder setDbName(String dbName) {
@@ -57,8 +67,9 @@ public class FunctionBuilder {
     return this;
   }
 
-  public FunctionBuilder setDbName(Database db) {
+  public FunctionBuilder inDb(Database db) {
     this.dbName = db.getName();
+    this.catName = db.getCatalogName();
     return this;
   }
 
@@ -102,7 +113,7 @@ public class FunctionBuilder {
     return this;
   }
 
-  public Function build() throws MetaException {
+  public Function build(Configuration conf) throws MetaException {
     try {
       if (owner != null) {
         owner = SecurityUtils.getUser();
@@ -110,7 +121,23 @@ public class FunctionBuilder {
     } catch (IOException e) {
       throw MetaStoreUtils.newMetaException(e);
     }
-    return new Function(funcName, dbName, className, owner, ownerType, createTime, funcType,
+    if (catName == null) catName = MetaStoreUtils.getDefaultCatalog(conf);
+    Function f = new Function(funcName, dbName, className, owner, ownerType, createTime, funcType,
         resourceUris);
+    f.setCatName(catName);
+    return f;
+  }
+
+  /**
+   * Create the function object in the metastore and return it.
+   * @param client metastore client
+   * @param conf configuration
+   * @return new function object
+   * @throws TException if thrown by build or the client.
+   */
+  public Function create(IMetaStoreClient client, Configuration conf) throws TException {
+    Function f = build(conf);
+    client.createFunction(f);
+    return f;
   }
 }

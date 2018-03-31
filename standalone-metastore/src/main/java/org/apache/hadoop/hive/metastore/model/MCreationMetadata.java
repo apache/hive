@@ -27,6 +27,7 @@ import java.util.Set;
  */
 public class MCreationMetadata {
 
+  private String catalogName;
   private String dbName;
   private String tblName;
   private Set<MTable> tables;
@@ -35,8 +36,9 @@ public class MCreationMetadata {
   public MCreationMetadata() {
   }
 
-  public MCreationMetadata(String dbName, String tblName,
+  public MCreationMetadata(String catName, String dbName, String tblName,
       Set<MTable> tables, String txnList) {
+    this.catalogName = catName;
     this.dbName = dbName;
     this.tblName = tblName;
     this.tables = tables;
@@ -57,6 +59,14 @@ public class MCreationMetadata {
 
   public void setTxnList(String txnList) {
     this.txnList = txnList;
+  }
+
+  public String getCatalogName() {
+    return catalogName;
+  }
+
+  public void setCatalogName(String catName) {
+    this.catalogName = catName;
   }
 
   public String getDbName() {

@@ -38,10 +38,11 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class CreationMetadata implements org.apache.thrift.TBase<CreationMetadata, CreationMetadata._Fields>, java.io.Serializable, Cloneable, Comparable<CreationMetadata> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("CreationMetadata");
 
-  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField TBL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tblName", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField TABLES_USED_FIELD_DESC = new org.apache.thrift.protocol.TField("tablesUsed", org.apache.thrift.protocol.TType.SET, (short)3);
-  private static final org.apache.thrift.protocol.TField VALID_TXN_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validTxnList", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField TBL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tblName", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField TABLES_USED_FIELD_DESC = new org.apache.thrift.protocol.TField("tablesUsed", org.apache.thrift.protocol.TType.SET, (short)4);
+  private static final org.apache.thrift.protocol.TField VALID_TXN_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("validTxnList", org.apache.thrift.protocol.TType.STRING, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -49,6 +50,7 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new CreationMetadataTupleSchemeFactory());
   }
 
+  private String catName; // required
   private String dbName; // required
   private String tblName; // required
   private Set<String> tablesUsed; // required
@@ -56,10 +58,11 @@ import org.slf4j.LoggerFactory;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    DB_NAME((short)1, "dbName"),
-    TBL_NAME((short)2, "tblName"),
-    TABLES_USED((short)3, "tablesUsed"),
-    VALID_TXN_LIST((short)4, "validTxnList");
+    CAT_NAME((short)1, "catName"),
+    DB_NAME((short)2, "dbName"),
+    TBL_NAME((short)3, "tblName"),
+    TABLES_USED((short)4, "tablesUsed"),
+    VALID_TXN_LIST((short)5, "validTxnList");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -74,13 +77,15 @@ import org.slf4j.LoggerFactory;
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // DB_NAME
+        case 1: // CAT_NAME
+          return CAT_NAME;
+        case 2: // DB_NAME
           return DB_NAME;
-        case 2: // TBL_NAME
+        case 3: // TBL_NAME
           return TBL_NAME;
-        case 3: // TABLES_USED
+        case 4: // TABLES_USED
           return TABLES_USED;
-        case 4: // VALID_TXN_LIST
+        case 5: // VALID_TXN_LIST
           return VALID_TXN_LIST;
         default:
           return null;
@@ -126,6 +131,8 @@ import org.slf4j.LoggerFactory;
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("tblName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
@@ -143,11 +150,13 @@ import org.slf4j.LoggerFactory;
   }
 
   public CreationMetadata(
+    String catName,
     String dbName,
     String tblName,
     Set<String> tablesUsed)
   {
     this();
+    this.catName = catName;
     this.dbName = dbName;
     this.tblName = tblName;
     this.tablesUsed = tablesUsed;
@@ -157,6 +166,9 @@ import org.slf4j.LoggerFactory;
    * Performs a deep copy on <i>other</i>.
    */
   public CreationMetadata(CreationMetadata other) {
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
     if (other.isSetDbName()) {
       this.dbName = other.dbName;
     }
@@ -178,10 +190,34 @@ import org.slf4j.LoggerFactory;
 
   @Override
   public void clear() {
+    this.catName = null;
     this.dbName = null;
     this.tblName = null;
     this.tablesUsed = null;
     this.validTxnList = null;
+  }
+
+  public String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
   }
 
   public String getDbName() {
@@ -293,6 +329,14 @@ import org.slf4j.LoggerFactory;
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((String)value);
+      }
+      break;
+
     case DB_NAME:
       if (value == null) {
         unsetDbName();
@@ -330,6 +374,9 @@ import org.slf4j.LoggerFactory;
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
+    case CAT_NAME:
+      return getCatName();
+
     case DB_NAME:
       return getDbName();
 
@@ -353,6 +400,8 @@ import org.slf4j.LoggerFactory;
     }
 
     switch (field) {
+    case CAT_NAME:
+      return isSetCatName();
     case DB_NAME:
       return isSetDbName();
     case TBL_NAME:
@@ -377,6 +426,15 @@ import org.slf4j.LoggerFactory;
   public boolean equals(CreationMetadata that) {
     if (that == null)
       return false;
+
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
 
     boolean this_present_dbName = true && this.isSetDbName();
     boolean that_present_dbName = true && that.isSetDbName();
@@ -421,6 +479,11 @@ import org.slf4j.LoggerFactory;
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
 
+    boolean present_catName = true && (isSetCatName());
+    list.add(present_catName);
+    if (present_catName)
+      list.add(catName);
+
     boolean present_dbName = true && (isSetDbName());
     list.add(present_dbName);
     if (present_dbName)
@@ -452,6 +515,16 @@ import org.slf4j.LoggerFactory;
 
     int lastComparison = 0;
 
+    lastComparison = Boolean.valueOf(isSetCatName()).compareTo(other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = Boolean.valueOf(isSetDbName()).compareTo(other.isSetDbName());
     if (lastComparison != 0) {
       return lastComparison;
@@ -512,6 +585,14 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("CreationMetadata(");
     boolean first = true;
 
+    sb.append("catName:");
+    if (this.catName == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.catName);
+    }
+    first = false;
+    if (!first) sb.append(", ");
     sb.append("dbName:");
     if (this.dbName == null) {
       sb.append("null");
@@ -551,6 +632,10 @@ import org.slf4j.LoggerFactory;
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
+    if (!isSetCatName()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'catName' is unset! Struct:" + toString());
+    }
+
     if (!isSetDbName()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'dbName' is unset! Struct:" + toString());
     }
@@ -600,7 +685,15 @@ import org.slf4j.LoggerFactory;
           break;
         }
         switch (schemeField.id) {
-          case 1: // DB_NAME
+          case 1: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 2: // DB_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.dbName = iprot.readString();
               struct.setDbNameIsSet(true);
@@ -608,7 +701,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // TBL_NAME
+          case 3: // TBL_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.tblName = iprot.readString();
               struct.setTblNameIsSet(true);
@@ -616,16 +709,16 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // TABLES_USED
+          case 4: // TABLES_USED
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-                org.apache.thrift.protocol.TSet _set676 = iprot.readSetBegin();
-                struct.tablesUsed = new HashSet<String>(2*_set676.size);
-                String _elem677;
-                for (int _i678 = 0; _i678 < _set676.size; ++_i678)
+                org.apache.thrift.protocol.TSet _set684 = iprot.readSetBegin();
+                struct.tablesUsed = new HashSet<String>(2*_set684.size);
+                String _elem685;
+                for (int _i686 = 0; _i686 < _set684.size; ++_i686)
                 {
-                  _elem677 = iprot.readString();
-                  struct.tablesUsed.add(_elem677);
+                  _elem685 = iprot.readString();
+                  struct.tablesUsed.add(_elem685);
                 }
                 iprot.readSetEnd();
               }
@@ -634,7 +727,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // VALID_TXN_LIST
+          case 5: // VALID_TXN_LIST
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.validTxnList = iprot.readString();
               struct.setValidTxnListIsSet(true);
@@ -655,6 +748,11 @@ import org.slf4j.LoggerFactory;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (struct.catName != null) {
+        oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+        oprot.writeString(struct.catName);
+        oprot.writeFieldEnd();
+      }
       if (struct.dbName != null) {
         oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
         oprot.writeString(struct.dbName);
@@ -669,9 +767,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(TABLES_USED_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, struct.tablesUsed.size()));
-          for (String _iter679 : struct.tablesUsed)
+          for (String _iter687 : struct.tablesUsed)
           {
-            oprot.writeString(_iter679);
+            oprot.writeString(_iter687);
           }
           oprot.writeSetEnd();
         }
@@ -701,13 +799,14 @@ import org.slf4j.LoggerFactory;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, CreationMetadata struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
+      oprot.writeString(struct.catName);
       oprot.writeString(struct.dbName);
       oprot.writeString(struct.tblName);
       {
         oprot.writeI32(struct.tablesUsed.size());
-        for (String _iter680 : struct.tablesUsed)
+        for (String _iter688 : struct.tablesUsed)
         {
-          oprot.writeString(_iter680);
+          oprot.writeString(_iter688);
         }
       }
       BitSet optionals = new BitSet();
@@ -723,18 +822,20 @@ import org.slf4j.LoggerFactory;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, CreationMetadata struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
+      struct.catName = iprot.readString();
+      struct.setCatNameIsSet(true);
       struct.dbName = iprot.readString();
       struct.setDbNameIsSet(true);
       struct.tblName = iprot.readString();
       struct.setTblNameIsSet(true);
       {
-        org.apache.thrift.protocol.TSet _set681 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.tablesUsed = new HashSet<String>(2*_set681.size);
-        String _elem682;
-        for (int _i683 = 0; _i683 < _set681.size; ++_i683)
+        org.apache.thrift.protocol.TSet _set689 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.tablesUsed = new HashSet<String>(2*_set689.size);
+        String _elem690;
+        for (int _i691 = 0; _i691 < _set689.size; ++_i691)
         {
-          _elem682 = iprot.readString();
-          struct.tablesUsed.add(_elem682);
+          _elem690 = iprot.readString();
+          struct.tablesUsed.add(_elem690);
         }
       }
       struct.setTablesUsedIsSet(true);

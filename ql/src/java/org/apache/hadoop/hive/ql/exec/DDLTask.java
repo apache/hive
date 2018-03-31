@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import static org.apache.commons.lang.StringUtils.join;
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 
 import java.io.BufferedWriter;
@@ -5028,8 +5029,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // We set the signature for the view if it is a materialized view
       if (tbl.isMaterializedView()) {
         CreationMetadata cm =
-            new CreationMetadata(tbl.getDbName(), tbl.getTableName(),
-                ImmutableSet.copyOf(crtView.getTablesUsed()));
+            new CreationMetadata(MetaStoreUtils.getDefaultCatalog(conf), tbl.getDbName(),
+                tbl.getTableName(), ImmutableSet.copyOf(crtView.getTablesUsed()));
         cm.setValidTxnList(conf.get(ValidTxnList.VALID_TXNS_KEY));
         tbl.getTTable().setCreationMetadata(cm);
       }

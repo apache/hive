@@ -46,6 +46,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -85,6 +86,7 @@ public class TestHiveMetaStoreWithEnvironmentContext {
     envContext = new EnvironmentContext(envProperties);
 
     db.setName(dbName);
+    db.setCatalogName(DEFAULT_CATALOG_NAME);
 
     table = new TableBuilder()
         .setDbName(dbName)
@@ -93,13 +95,13 @@ public class TestHiveMetaStoreWithEnvironmentContext {
         .addPartCol("b", "string")
         .addCol("a", "string")
         .addCol("b", "string")
-        .build();
+        .build(conf);
 
 
     partition = new PartitionBuilder()
-        .fromTable(table)
+        .inTable(table)
         .addValue("2011")
-        .build();
+        .build(conf);
 
     DummyListener.notifyList.clear();
   }
@@ -171,7 +173,7 @@ public class TestHiveMetaStoreWithEnvironmentContext {
     assert dropPartByNameEvent.getStatus();
     assertEquals(envContext, dropPartByNameEvent.getEnvironmentContext());
 
-    msc.dropTable(dbName, tblName, true, false, envContext);
+    msc.dropTable(DEFAULT_CATALOG_NAME, dbName, tblName, true, false, envContext);
     listSize++;
     assertEquals(notifyList.size(), listSize);
     DropTableEvent dropTblEvent = (DropTableEvent)notifyList.get(listSize-1);

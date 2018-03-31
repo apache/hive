@@ -26,11 +26,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+
 /**
  * Implementation of PartitionSpecProxy that composes a list of PartitionSpecProxy.
  */
 public class CompositePartitionSpecProxy extends PartitionSpecProxy {
 
+  private String catName;
   private String dbName;
   private String tableName;
   private List<PartitionSpec> partitionSpecs;
@@ -40,10 +43,12 @@ public class CompositePartitionSpecProxy extends PartitionSpecProxy {
   protected CompositePartitionSpecProxy(List<PartitionSpec> partitionSpecs) {
     this.partitionSpecs = partitionSpecs;
     if (partitionSpecs.isEmpty()) {
+      catName = null;
       dbName = null;
       tableName = null;
     }
     else {
+      catName = partitionSpecs.get(0).getCatName();
       dbName = partitionSpecs.get(0).getDbName();
       tableName = partitionSpecs.get(0).getTableName();
       this.partitionSpecProxies = new ArrayList<>(partitionSpecs.size());
@@ -57,7 +62,15 @@ public class CompositePartitionSpecProxy extends PartitionSpecProxy {
     assert isValid() : "Invalid CompositePartitionSpecProxy!";
   }
 
+  @Deprecated
   protected CompositePartitionSpecProxy(String dbName, String tableName, List<PartitionSpec> partitionSpecs) {
+    this(DEFAULT_CATALOG_NAME, dbName, tableName, partitionSpecs);
+
+  }
+
+  protected CompositePartitionSpecProxy(String catName, String dbName, String tableName,
+                                        List<PartitionSpec> partitionSpecs) {
+    this.catName = catName;
     this.dbName = dbName;
     this.tableName = tableName;
     this.partitionSpecs = partitionSpecs;
@@ -146,6 +159,11 @@ public class CompositePartitionSpecProxy extends PartitionSpecProxy {
     }
 
     @Override
+    public String getCatName() {
+      return composite.getCatName();
+    }
+
+    @Override
     public String getDbName() {
       return composite.dbName;
     }
@@ -182,6 +200,15 @@ public class CompositePartitionSpecProxy extends PartitionSpecProxy {
   }
 
   @Override
+  public void setCatName(String catName) {
+    this.catName = catName;
+    for (PartitionSpecProxy partSpecProxy : partitionSpecProxies) {
+      partSpecProxy.setCatName(catName);
+    }
+
+  }
+
+  @Override
   public void setDbName(String dbName) {
     this.dbName = dbName;
     for (PartitionSpecProxy partSpecProxy : partitionSpecProxies) {
@@ -195,6 +222,11 @@ public class CompositePartitionSpecProxy extends PartitionSpecProxy {
     for (PartitionSpecProxy partSpecProxy : partitionSpecProxies) {
       partSpecProxy.setTableName(tableName);
     }
+  }
+
+  @Override
+  public String getCatName() {
+    return catName;
   }
 
   @Override
