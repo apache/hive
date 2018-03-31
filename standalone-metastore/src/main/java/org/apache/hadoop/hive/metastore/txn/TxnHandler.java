@@ -1152,7 +1152,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         if (rs.next()) {
           long maxWriteId = rs.getLong(1);
           if (maxWriteId > 0) {
-            writeIdHwm = Math.min(maxWriteId, writeIdHwm);
+            writeIdHwm = (writeIdHwm > 0) ? Math.min(maxWriteId, writeIdHwm) : maxWriteId;
           }
         }
       }
