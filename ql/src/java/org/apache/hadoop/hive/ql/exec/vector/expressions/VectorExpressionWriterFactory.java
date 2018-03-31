@@ -23,6 +23,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -61,10 +62,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestamp
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.Text;
 import org.apache.hive.common.util.DateUtils;
 
@@ -1431,11 +1434,13 @@ public final class VectorExpressionWriterFactory {
       SettableListObjectInspector fieldObjInspector) throws HiveException {
 
     return new VectorExpressionWriterList() {
+      private Object obj;
       private VectorExtractRow vectorExtractRow;
       private ListTypeInfo listTypeInfo;
 
       public VectorExpressionWriter init(SettableListObjectInspector objInspector) throws HiveException {
         super.init(objInspector);
+        obj = initValue(null);
         vectorExtractRow = new VectorExtractRow();
         listTypeInfo = (ListTypeInfo)
             TypeInfoUtils.getTypeInfoFromTypeString(objInspector.getTypeName());
@@ -1450,24 +1455,43 @@ public final class VectorExpressionWriterFactory {
       @Override
       public Object writeValue(ColumnVector column, int row)
           throws HiveException {
-        return setValue(null, column, row);
-      }
-
-      @Override
-      public Object setValue(Object row, ColumnVector column, int columnRow)
-          throws HiveException {
         final ListColumnVector listColVector = (ListColumnVector) column;
         final SettableListObjectInspector listOI =
             (SettableListObjectInspector) this.objectInspector;
-        final List value = (List)vectorExtractRow.extractRowColumn(listColVector,
-            listTypeInfo, listOI, columnRow);
-        if (null == row) {
-          row = ((SettableListObjectInspector) this.objectInspector).create(value.size());
+        final List value = (List) vectorExtractRow.extractRowColumn(listColVector,
+            listTypeInfo, listOI, row);
+        if (value == null) {
+          return null;
         }
+
+        listOI.resize(obj, value.size());
         for (int i = 0; i < value.size(); i++) {
-          listOI.set(row, i, value.get(i));
+          listOI.set(obj, i, value.get(i));
         }
-        return row;
+        return obj;
+      }
+
+      @Override
+      public Object setValue(Object list, ColumnVector column, int row)
+          throws HiveException {
+        if (list == null) {
+          list = initValue(null);
+        }
+
+        final ListColumnVector listColVector = (ListColumnVector) column;
+        final SettableListObjectInspector listOI =
+            (SettableListObjectInspector) this.objectInspector;
+        final List value = (List) vectorExtractRow.extractRowColumn(listColVector,
+            listTypeInfo, listOI, row);
+        if (value == null) {
+          return null;
+        }
+
+        listOI.resize(list, value.size());
+        for (int i = 0; i < value.size(); i++) {
+          listOI.set(list, i, value.get(i));
+        }
+        return list;
       }
 
     }.init(fieldObjInspector);
@@ -1478,10 +1502,15 @@ public final class VectorExpressionWriterFactory {
 
     return new VectorExpressionWriterMap() {
       private Object obj;
+      private VectorExtractRow vectorExtractRow;
+      private MapTypeInfo mapTypeInfo;
 
       public VectorExpressionWriter init(SettableMapObjectInspector objInspector) throws HiveException {
         super.init(objInspector);
         obj = initValue(null);
+        vectorExtractRow = new VectorExtractRow();
+        mapTypeInfo = (MapTypeInfo)
+            TypeInfoUtils.getTypeInfoFromTypeString(objInspector.getTypeName());
         return this;
       }
 
@@ -1493,13 +1522,45 @@ public final class VectorExpressionWriterFactory {
       @Override
       public Object writeValue(ColumnVector column, int row)
           throws HiveException {
-        throw new HiveException("Not implemented yet");
+        final MapColumnVector mapColVector = (MapColumnVector) column;
+        final SettableMapObjectInspector mapOI =
+            (SettableMapObjectInspector) this.objectInspector;
+        final Map<Object, Object> value =
+            (Map<Object, Object>) vectorExtractRow.extractRowColumn(
+                mapColVector, mapTypeInfo, mapOI, row);
+        if (value == null) {
+          return null;
+        }
+
+        mapOI.clear(obj);
+        for (Map.Entry<Object, Object> entry : value.entrySet()) {
+          mapOI.put(obj, entry.getKey(), entry.getValue());
+        }
+        return obj;
       }
 
       @Override
-      public Object setValue(Object row, ColumnVector column, int columnRow)
+      public Object setValue(Object map, ColumnVector column, int row)
           throws HiveException {
-        throw new HiveException("Not implemented yet");
+        if (map == null) {
+          map = initValue(null);
+        }
+
+        final MapColumnVector mapColVector = (MapColumnVector) column;
+        final SettableMapObjectInspector mapOI =
+            (SettableMapObjectInspector) this.objectInspector;
+        final Map<Object, Object> value =
+            (Map<Object, Object>) vectorExtractRow.extractRowColumn(
+                mapColVector, mapTypeInfo, mapOI, row);
+        if (value == null) {
+          return null;
+        }
+
+        mapOI.clear(map);
+        for (Map.Entry<Object, Object> entry : value.entrySet()) {
+          mapOI.put(map, entry.getKey(), entry.getValue());
+        }
+        return map;
       }
     }.init(fieldObjInspector);
   }
@@ -1546,9 +1607,9 @@ public final class VectorExpressionWriterFactory {
       }
 
       @Override
-      public Object setValue(Object field, ColumnVector column, int row) throws HiveException {
-        if (null == field) {
-          field = initValue(null);
+      public Object setValue(Object struct, ColumnVector column, int row) throws HiveException {
+        if (struct == null) {
+          struct = initValue(null);
         }
 
         final StructColumnVector structColVector = (StructColumnVector) column;
@@ -1562,9 +1623,9 @@ public final class VectorExpressionWriterFactory {
           final StructField structField = fields.get(i);
           final Object value = vectorExtractRow.extractRowColumn(structColVector.fields[i],
               fieldTypeInfos.get(i), structField.getFieldObjectInspector(), row);
-          structOI.setStructFieldData(obj, structField, value);
+          structOI.setStructFieldData(struct, structField, value);
         }
-        return field;
+        return struct;
       }
     }.init(fieldObjInspector);
   }
@@ -1574,10 +1635,15 @@ public final class VectorExpressionWriterFactory {
 
     return new VectorExpressionWriterMap() {
       private Object obj;
+      private VectorExtractRow vectorExtractRow;
+      private UnionTypeInfo unionTypeInfo;
 
       public VectorExpressionWriter init(SettableUnionObjectInspector objInspector) throws HiveException {
         super.init(objInspector);
         obj = initValue(null);
+        vectorExtractRow = new VectorExtractRow();
+        unionTypeInfo = (UnionTypeInfo)
+            TypeInfoUtils.getTypeInfoFromTypeString(objInspector.getTypeName());
         return this;
       }
 
@@ -1589,13 +1655,46 @@ public final class VectorExpressionWriterFactory {
       @Override
       public Object writeValue(ColumnVector column, int row)
           throws HiveException {
-        throw new HiveException("Not implemented yet");
+
+        final UnionColumnVector unionColumnVector = (UnionColumnVector) column;
+        final int tag = unionColumnVector.tags[row];
+        final SettableUnionObjectInspector unionOI =
+            (SettableUnionObjectInspector) this.objectInspector;
+        ObjectInspector fieldOI = unionOI.getObjectInspectors().get(tag);
+        ColumnVector fieldColVector = unionColumnVector.fields[tag];
+        final Object value =
+            vectorExtractRow.extractRowColumn(
+                fieldColVector, unionTypeInfo.getAllUnionObjectTypeInfos().get(tag), fieldOI, row);
+        if (value == null) {
+          return null;
+        }
+
+        unionOI.setFieldAndTag(obj, value, (byte) tag);
+        return obj;
       }
 
       @Override
-      public Object setValue(Object row, ColumnVector column, int columnRow)
+      public Object setValue(Object union, ColumnVector column, int row)
           throws HiveException {
-        throw new HiveException("Not implemented yet");
+        if (union == null) {
+          union = initValue(null);
+        }
+
+        final UnionColumnVector unionColumnVector = (UnionColumnVector) column;
+        final int tag = unionColumnVector.tags[row];
+        final SettableUnionObjectInspector unionOI =
+            (SettableUnionObjectInspector) this.objectInspector;
+        ObjectInspector fieldOI = unionOI.getObjectInspectors().get(tag);
+        ColumnVector fieldColVector = unionColumnVector.fields[tag];
+        final Object value =
+            vectorExtractRow.extractRowColumn(
+                fieldColVector, unionTypeInfo.getAllUnionObjectTypeInfos().get(tag), fieldOI, row);
+        if (value == null) {
+          return null;
+        }
+
+        unionOI.setFieldAndTag(union, value, (byte) tag);
+        return union;
       }
     }.init(fieldObjInspector);
   }
