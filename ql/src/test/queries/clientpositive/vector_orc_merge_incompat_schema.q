@@ -1,4 +1,4 @@
-SET hive.vectorized.execution.enabled=false;
+SET hive.vectorized.execution.enabled=true;
 
 set hive.metastore.disallow.incompatible.col.type.changes=false;
 
@@ -37,9 +37,13 @@ select sum(hash(*)) from orc_create_complex;
 ALTER TABLE orc_create_complex
 CHANGE COLUMN strct strct STRUCT<A:STRING,B:STRING,C:STRING>;
 
+EXPLAIN VECTORIZATION
+INSERT INTO TABLE orc_create_complex SELECT str,mp,lst,NAMED_STRUCT('A',strct.A,'B',strct.B,'C','c'),0 FROM orc_create_staging;
 INSERT INTO TABLE orc_create_complex SELECT str,mp,lst,NAMED_STRUCT('A',strct.A,'B',strct.B,'C','c'),0 FROM orc_create_staging;
 
 dfs -ls ${hiveconf:hive.metastore.warehouse.dir}/orc_create_complex/;
+EXPLAIN VECTORIZATION
+select sum(hash(*)) from orc_create_complex;
 select sum(hash(*)) from orc_create_complex;
 
 -- schema is different for both files, will not be merged
