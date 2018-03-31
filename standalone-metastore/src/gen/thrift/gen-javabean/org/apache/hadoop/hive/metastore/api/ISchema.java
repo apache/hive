@@ -40,12 +40,13 @@ import org.slf4j.LoggerFactory;
 
   private static final org.apache.thrift.protocol.TField SCHEMA_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("schemaType", org.apache.thrift.protocol.TType.I32, (short)1);
   private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)3);
-  private static final org.apache.thrift.protocol.TField COMPATIBILITY_FIELD_DESC = new org.apache.thrift.protocol.TField("compatibility", org.apache.thrift.protocol.TType.I32, (short)4);
-  private static final org.apache.thrift.protocol.TField VALIDATION_LEVEL_FIELD_DESC = new org.apache.thrift.protocol.TField("validationLevel", org.apache.thrift.protocol.TType.I32, (short)5);
-  private static final org.apache.thrift.protocol.TField CAN_EVOLVE_FIELD_DESC = new org.apache.thrift.protocol.TField("canEvolve", org.apache.thrift.protocol.TType.BOOL, (short)6);
-  private static final org.apache.thrift.protocol.TField SCHEMA_GROUP_FIELD_DESC = new org.apache.thrift.protocol.TField("schemaGroup", org.apache.thrift.protocol.TType.STRING, (short)7);
-  private static final org.apache.thrift.protocol.TField DESCRIPTION_FIELD_DESC = new org.apache.thrift.protocol.TField("description", org.apache.thrift.protocol.TType.STRING, (short)8);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField COMPATIBILITY_FIELD_DESC = new org.apache.thrift.protocol.TField("compatibility", org.apache.thrift.protocol.TType.I32, (short)5);
+  private static final org.apache.thrift.protocol.TField VALIDATION_LEVEL_FIELD_DESC = new org.apache.thrift.protocol.TField("validationLevel", org.apache.thrift.protocol.TType.I32, (short)6);
+  private static final org.apache.thrift.protocol.TField CAN_EVOLVE_FIELD_DESC = new org.apache.thrift.protocol.TField("canEvolve", org.apache.thrift.protocol.TType.BOOL, (short)7);
+  private static final org.apache.thrift.protocol.TField SCHEMA_GROUP_FIELD_DESC = new org.apache.thrift.protocol.TField("schemaGroup", org.apache.thrift.protocol.TType.STRING, (short)8);
+  private static final org.apache.thrift.protocol.TField DESCRIPTION_FIELD_DESC = new org.apache.thrift.protocol.TField("description", org.apache.thrift.protocol.TType.STRING, (short)9);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -55,6 +56,7 @@ import org.slf4j.LoggerFactory;
 
   private SchemaType schemaType; // required
   private String name; // required
+  private String catName; // required
   private String dbName; // required
   private SchemaCompatibility compatibility; // required
   private SchemaValidation validationLevel; // required
@@ -70,20 +72,21 @@ import org.slf4j.LoggerFactory;
      */
     SCHEMA_TYPE((short)1, "schemaType"),
     NAME((short)2, "name"),
-    DB_NAME((short)3, "dbName"),
+    CAT_NAME((short)3, "catName"),
+    DB_NAME((short)4, "dbName"),
     /**
      * 
      * @see SchemaCompatibility
      */
-    COMPATIBILITY((short)4, "compatibility"),
+    COMPATIBILITY((short)5, "compatibility"),
     /**
      * 
      * @see SchemaValidation
      */
-    VALIDATION_LEVEL((short)5, "validationLevel"),
-    CAN_EVOLVE((short)6, "canEvolve"),
-    SCHEMA_GROUP((short)7, "schemaGroup"),
-    DESCRIPTION((short)8, "description");
+    VALIDATION_LEVEL((short)6, "validationLevel"),
+    CAN_EVOLVE((short)7, "canEvolve"),
+    SCHEMA_GROUP((short)8, "schemaGroup"),
+    DESCRIPTION((short)9, "description");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -102,17 +105,19 @@ import org.slf4j.LoggerFactory;
           return SCHEMA_TYPE;
         case 2: // NAME
           return NAME;
-        case 3: // DB_NAME
+        case 3: // CAT_NAME
+          return CAT_NAME;
+        case 4: // DB_NAME
           return DB_NAME;
-        case 4: // COMPATIBILITY
+        case 5: // COMPATIBILITY
           return COMPATIBILITY;
-        case 5: // VALIDATION_LEVEL
+        case 6: // VALIDATION_LEVEL
           return VALIDATION_LEVEL;
-        case 6: // CAN_EVOLVE
+        case 7: // CAN_EVOLVE
           return CAN_EVOLVE;
-        case 7: // SCHEMA_GROUP
+        case 8: // SCHEMA_GROUP
           return SCHEMA_GROUP;
-        case 8: // DESCRIPTION
+        case 9: // DESCRIPTION
           return DESCRIPTION;
         default:
           return null;
@@ -164,6 +169,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, SchemaType.class)));
     tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.COMPATIBILITY, new org.apache.thrift.meta_data.FieldMetaData("compatibility", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -186,6 +193,7 @@ import org.slf4j.LoggerFactory;
   public ISchema(
     SchemaType schemaType,
     String name,
+    String catName,
     String dbName,
     SchemaCompatibility compatibility,
     SchemaValidation validationLevel,
@@ -194,6 +202,7 @@ import org.slf4j.LoggerFactory;
     this();
     this.schemaType = schemaType;
     this.name = name;
+    this.catName = catName;
     this.dbName = dbName;
     this.compatibility = compatibility;
     this.validationLevel = validationLevel;
@@ -211,6 +220,9 @@ import org.slf4j.LoggerFactory;
     }
     if (other.isSetName()) {
       this.name = other.name;
+    }
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
     }
     if (other.isSetDbName()) {
       this.dbName = other.dbName;
@@ -238,6 +250,7 @@ import org.slf4j.LoggerFactory;
   public void clear() {
     this.schemaType = null;
     this.name = null;
+    this.catName = null;
     this.dbName = null;
     this.compatibility = null;
     this.validationLevel = null;
@@ -298,6 +311,29 @@ import org.slf4j.LoggerFactory;
   public void setNameIsSet(boolean value) {
     if (!value) {
       this.name = null;
+    }
+  }
+
+  public String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
     }
   }
 
@@ -472,6 +508,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((String)value);
+      }
+      break;
+
     case DB_NAME:
       if (value == null) {
         unsetDbName();
@@ -531,6 +575,9 @@ import org.slf4j.LoggerFactory;
     case NAME:
       return getName();
 
+    case CAT_NAME:
+      return getCatName();
+
     case DB_NAME:
       return getDbName();
 
@@ -564,6 +611,8 @@ import org.slf4j.LoggerFactory;
       return isSetSchemaType();
     case NAME:
       return isSetName();
+    case CAT_NAME:
+      return isSetCatName();
     case DB_NAME:
       return isSetDbName();
     case COMPATIBILITY:
@@ -608,6 +657,15 @@ import org.slf4j.LoggerFactory;
       if (!(this_present_name && that_present_name))
         return false;
       if (!this.name.equals(that.name))
+        return false;
+    }
+
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
         return false;
     }
 
@@ -682,6 +740,11 @@ import org.slf4j.LoggerFactory;
     if (present_name)
       list.add(name);
 
+    boolean present_catName = true && (isSetCatName());
+    list.add(present_catName);
+    if (present_catName)
+      list.add(catName);
+
     boolean present_dbName = true && (isSetDbName());
     list.add(present_dbName);
     if (present_dbName)
@@ -739,6 +802,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetName()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.name, other.name);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetCatName()).compareTo(other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -836,6 +909,14 @@ import org.slf4j.LoggerFactory;
       sb.append("null");
     } else {
       sb.append(this.name);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("catName:");
+    if (this.catName == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.catName);
     }
     first = false;
     if (!first) sb.append(", ");
@@ -947,7 +1028,15 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // DB_NAME
+          case 3: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 4: // DB_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.dbName = iprot.readString();
               struct.setDbNameIsSet(true);
@@ -955,7 +1044,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // COMPATIBILITY
+          case 5: // COMPATIBILITY
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.compatibility = org.apache.hadoop.hive.metastore.api.SchemaCompatibility.findByValue(iprot.readI32());
               struct.setCompatibilityIsSet(true);
@@ -963,7 +1052,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 5: // VALIDATION_LEVEL
+          case 6: // VALIDATION_LEVEL
             if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
               struct.validationLevel = org.apache.hadoop.hive.metastore.api.SchemaValidation.findByValue(iprot.readI32());
               struct.setValidationLevelIsSet(true);
@@ -971,7 +1060,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 6: // CAN_EVOLVE
+          case 7: // CAN_EVOLVE
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
               struct.canEvolve = iprot.readBool();
               struct.setCanEvolveIsSet(true);
@@ -979,7 +1068,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 7: // SCHEMA_GROUP
+          case 8: // SCHEMA_GROUP
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.schemaGroup = iprot.readString();
               struct.setSchemaGroupIsSet(true);
@@ -987,7 +1076,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 8: // DESCRIPTION
+          case 9: // DESCRIPTION
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.description = iprot.readString();
               struct.setDescriptionIsSet(true);
@@ -1016,6 +1105,11 @@ import org.slf4j.LoggerFactory;
       if (struct.name != null) {
         oprot.writeFieldBegin(NAME_FIELD_DESC);
         oprot.writeString(struct.name);
+        oprot.writeFieldEnd();
+      }
+      if (struct.catName != null) {
+        oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+        oprot.writeString(struct.catName);
         oprot.writeFieldEnd();
       }
       if (struct.dbName != null) {
@@ -1074,30 +1168,36 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetName()) {
         optionals.set(1);
       }
-      if (struct.isSetDbName()) {
+      if (struct.isSetCatName()) {
         optionals.set(2);
       }
-      if (struct.isSetCompatibility()) {
+      if (struct.isSetDbName()) {
         optionals.set(3);
       }
-      if (struct.isSetValidationLevel()) {
+      if (struct.isSetCompatibility()) {
         optionals.set(4);
       }
-      if (struct.isSetCanEvolve()) {
+      if (struct.isSetValidationLevel()) {
         optionals.set(5);
       }
-      if (struct.isSetSchemaGroup()) {
+      if (struct.isSetCanEvolve()) {
         optionals.set(6);
       }
-      if (struct.isSetDescription()) {
+      if (struct.isSetSchemaGroup()) {
         optionals.set(7);
       }
-      oprot.writeBitSet(optionals, 8);
+      if (struct.isSetDescription()) {
+        optionals.set(8);
+      }
+      oprot.writeBitSet(optionals, 9);
       if (struct.isSetSchemaType()) {
         oprot.writeI32(struct.schemaType.getValue());
       }
       if (struct.isSetName()) {
         oprot.writeString(struct.name);
+      }
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
       }
       if (struct.isSetDbName()) {
         oprot.writeString(struct.dbName);
@@ -1122,7 +1222,7 @@ import org.slf4j.LoggerFactory;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, ISchema struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(8);
+      BitSet incoming = iprot.readBitSet(9);
       if (incoming.get(0)) {
         struct.schemaType = org.apache.hadoop.hive.metastore.api.SchemaType.findByValue(iprot.readI32());
         struct.setSchemaTypeIsSet(true);
@@ -1132,26 +1232,30 @@ import org.slf4j.LoggerFactory;
         struct.setNameIsSet(true);
       }
       if (incoming.get(2)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
+      }
+      if (incoming.get(3)) {
         struct.dbName = iprot.readString();
         struct.setDbNameIsSet(true);
       }
-      if (incoming.get(3)) {
+      if (incoming.get(4)) {
         struct.compatibility = org.apache.hadoop.hive.metastore.api.SchemaCompatibility.findByValue(iprot.readI32());
         struct.setCompatibilityIsSet(true);
       }
-      if (incoming.get(4)) {
+      if (incoming.get(5)) {
         struct.validationLevel = org.apache.hadoop.hive.metastore.api.SchemaValidation.findByValue(iprot.readI32());
         struct.setValidationLevelIsSet(true);
       }
-      if (incoming.get(5)) {
+      if (incoming.get(6)) {
         struct.canEvolve = iprot.readBool();
         struct.setCanEvolveIsSet(true);
       }
-      if (incoming.get(6)) {
+      if (incoming.get(7)) {
         struct.schemaGroup = iprot.readString();
         struct.setSchemaGroupIsSet(true);
       }
-      if (incoming.get(7)) {
+      if (incoming.get(8)) {
         struct.description = iprot.readString();
         struct.setDescriptionIsSet(true);
       }

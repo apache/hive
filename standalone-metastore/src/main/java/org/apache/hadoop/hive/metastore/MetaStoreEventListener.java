@@ -35,10 +35,12 @@ import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
+import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
 import org.apache.hadoop.hive.metastore.events.CreateISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
+import org.apache.hadoop.hive.metastore.events.DropCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.DropConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
@@ -220,6 +222,12 @@ public abstract class MetaStoreEventListener implements Configurable {
 
   public void onDropSchemaVersion(DropSchemaVersionEvent dropSchemaVersionEvent)
       throws MetaException {
+  }
+
+  public void onCreateCatalog(CreateCatalogEvent createCatalogEvent) throws MetaException {
+  }
+
+  public void onDropCatalog(DropCatalogEvent dropCatalogEvent) throws MetaException {
   }
 
   @Override

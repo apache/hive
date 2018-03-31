@@ -130,10 +130,13 @@ public final class MaterializationsInvalidationCache {
     public void run() {
       try {
         RawStore store = handler.getMS();
-        for (String dbName : store.getAllDatabases()) {
-          for (Table mv : store.getTableObjectsByName(dbName, store.getTables(dbName, null, TableType.MATERIALIZED_VIEW))) {
-            addMaterializedView(mv.getDbName(), mv.getTableName(), ImmutableSet.copyOf(mv.getCreationMetadata().getTablesUsed()),
-                mv.getCreationMetadata().getValidTxnList(), OpType.LOAD);
+        for (String catName : store.getCatalogs()) {
+          for (String dbName : store.getAllDatabases(catName)) {
+            for (Table mv : store.getTableObjectsByName(catName, dbName,
+                store.getTables(catName, dbName, null, TableType.MATERIALIZED_VIEW))) {
+              addMaterializedView(mv.getDbName(), mv.getTableName(), ImmutableSet.copyOf(mv.getCreationMetadata().getTablesUsed()),
+                  mv.getCreationMetadata().getValidTxnList(), OpType.LOAD);
+            }
           }
         }
         LOG.info("Initialized materializations invalidation cache");

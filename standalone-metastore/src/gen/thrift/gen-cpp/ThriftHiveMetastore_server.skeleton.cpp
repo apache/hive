@@ -32,6 +32,26 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("setMetaConf\n");
   }
 
+  void create_catalog(const CreateCatalogRequest& catalog) {
+    // Your implementation goes here
+    printf("create_catalog\n");
+  }
+
+  void get_catalog(GetCatalogResponse& _return, const GetCatalogRequest& catName) {
+    // Your implementation goes here
+    printf("get_catalog\n");
+  }
+
+  void get_catalogs(GetCatalogsResponse& _return) {
+    // Your implementation goes here
+    printf("get_catalogs\n");
+  }
+
+  void drop_catalog(const DropCatalogRequest& catName) {
+    // Your implementation goes here
+    printf("drop_catalog\n");
+  }
+
   void create_database(const Database& database) {
     // Your implementation goes here
     printf("create_database\n");
@@ -217,7 +237,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_materialization_invalidation_info\n");
   }
 
-  void update_creation_metadata(const std::string& dbname, const std::string& tbl_name, const CreationMetadata& creation_metadata) {
+  void update_creation_metadata(const std::string& catName, const std::string& dbname, const std::string& tbl_name, const CreationMetadata& creation_metadata) {
     // Your implementation goes here
     printf("update_creation_metadata\n");
   }

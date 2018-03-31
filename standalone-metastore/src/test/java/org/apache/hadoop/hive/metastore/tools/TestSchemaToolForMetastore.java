@@ -99,7 +99,8 @@ public class TestSchemaToolForMetastore {
     // Test valid case
     String[] scripts = new String[] {
         "insert into SEQUENCE_TABLE values('org.apache.hadoop.hive.metastore.model.MDatabase', 100);",
-        "insert into DBS values(99, 'test db1', 'hdfs:///tmp', 'db1', 'test', 'test');"
+        "insert into CTLGS values(37, 'mycat', 'my description', 'hdfs://tmp');",
+        "insert into DBS values(99, 'test db1', 'hdfs:///tmp', 'db1', 'test', 'test', 'mycat');"
     };
     File scriptFile = generateTestScript(scripts);
     schemaTool.runSqlLine(scriptFile.getPath());
@@ -111,7 +112,7 @@ public class TestSchemaToolForMetastore {
         "delete from SEQUENCE_TABLE;",
         "delete from DBS;",
         "insert into SEQUENCE_TABLE values('org.apache.hadoop.hive.metastore.model.MDatabase', 100);",
-        "insert into DBS values(102, 'test db1', 'hdfs:///tmp', 'db1', 'test', 'test');"
+        "insert into DBS values(102, 'test db1', 'hdfs:///tmp', 'db1', 'test', 'test', 'mycat');"
     };
     scriptFile = generateTestScript(scripts);
     schemaTool.runSqlLine(scriptFile.getPath());
@@ -217,6 +218,7 @@ public class TestSchemaToolForMetastore {
   public void testSchemaInit() throws Exception {
     IMetaStoreSchemaInfo metastoreSchemaInfo = MetaStoreSchemaInfoFactory.get(conf,
         System.getProperty("test.tmp.dir", "target/tmp"), "derby");
+    LOG.info("Starting testSchemaInit");
     schemaTool.doInit(metastoreSchemaInfo.getHiveSchemaVersion());
     schemaTool.verifySchemaVersion();
   }
@@ -296,10 +298,17 @@ public class TestSchemaToolForMetastore {
     System.setOut(outPrintStream);
 
     // Upgrade schema from 0.7.0 to latest
-    schemaTool.doUpgrade("1.2.0");
+    Exception caught = null;
+    try {
+      schemaTool.doUpgrade("1.2.0");
+    } catch (Exception e) {
+      caught = e;
+    }
 
     LOG.info("stdout is " + stdout.toString());
     LOG.info("stderr is " + stderr.toString());
+
+    if (caught != null) Assert.fail(caught.getMessage());
 
     // Verify that the schemaTool ran pre-upgrade scripts and ignored errors
     Assert.assertTrue(stderr.toString().contains(invalidPreUpgradeScript));
@@ -329,8 +338,9 @@ public class TestSchemaToolForMetastore {
 
  // Test valid case
     String[] scripts = new String[] {
-         "insert into DBS values(2, 'my db', 'hdfs://myhost.com:8020/user/hive/warehouse/mydb', 'mydb', 'public', 'role');",
-         "insert into DBS values(7, 'db with bad port', 'hdfs://myhost.com:8020/', 'haDB', 'public', 'role');",
+         "insert into CTLGS values (1, 'mycat', 'mydescription', 'hdfs://myhost.com:8020/user/hive/warehouse');",
+         "insert into DBS values(2, 'my db', 'hdfs://myhost.com:8020/user/hive/warehouse/mydb', 'mydb', 'public', 'role', 'mycat');",
+         "insert into DBS values(7, 'db with bad port', 'hdfs://myhost.com:8020/', 'haDB', 'public', 'role', 'mycat');",
          "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (1,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','hdfs://myhost.com:8020/user/hive/warehouse/mydb',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null);",
          "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (2,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','hdfs://myhost.com:8020/user/admin/2015_11_18',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null);",
          "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (3,null,'org.apache.hadoop.mapred.TextInputFormat','N','N',null,-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null);",
@@ -357,10 +367,10 @@ public class TestSchemaToolForMetastore {
         "delete from TBLS;",
         "delete from SDS;",
         "delete from DBS;",
-        "insert into DBS values(2, 'my db', '/user/hive/warehouse/mydb', 'mydb', 'public', 'role');",
-        "insert into DBS values(4, 'my db2', 'hdfs://myhost.com:8020', '', 'public', 'role');",
-        "insert into DBS values(6, 'db with bad port', 'hdfs://myhost.com:8020:', 'zDB', 'public', 'role');",
-        "insert into DBS values(7, 'db with bad port', 'hdfs://mynameservice.com/', 'haDB', 'public', 'role');",
+        "insert into DBS values(2, 'my db', '/user/hive/warehouse/mydb', 'mydb', 'public', 'role', 'mycat');",
+        "insert into DBS values(4, 'my db2', 'hdfs://myhost.com:8020', '', 'public', 'role', 'mycat');",
+        "insert into DBS values(6, 'db with bad port', 'hdfs://myhost.com:8020:', 'zDB', 'public', 'role', 'mycat');",
+        "insert into DBS values(7, 'db with bad port', 'hdfs://mynameservice.com/', 'haDB', 'public', 'role', 'mycat');",
         "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (1,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','hdfs://yourhost.com:8020/user/hive/warehouse/mydb',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null);",
         "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (2,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','file:///user/admin/2015_11_18',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null);",
         "insert into TBLS(TBL_ID,CREATE_TIME,DB_ID,LAST_ACCESS_TIME,OWNER,RETENTION,SD_ID,TBL_NAME,TBL_TYPE,VIEW_EXPANDED_TEXT,VIEW_ORIGINAL_TEXT,IS_REWRITE_ENABLED) values (2 ,1435255431,2,0 ,'hive',0,1,'mytal','MANAGED_TABLE',NULL,NULL,'n');",
@@ -457,7 +467,8 @@ public class TestSchemaToolForMetastore {
   // Insert the records in DB to simulate a hive table
   private void createTestHiveTableSchemas() throws IOException {
      String[] scripts = new String[] {
-          "insert into DBS values(2, 'my db', 'hdfs://myhost.com:8020/user/hive/warehouse/mydb', 'mydb', 'public', 'role');",
+          "insert into CTLGS values (1, 'mycat', 'my description', 'hdfs://myhost.com:8020/user/hive/warehouse');",
+          "insert into DBS values(2, 'my db', 'hdfs://myhost.com:8020/user/hive/warehouse/mydb', 'mydb', 'public', 'role', 'mycat');",
           "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (1,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','hdfs://myhost.com:8020/user/hive/warehouse/mydb',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null);",
           "insert into SDS(SD_ID,CD_ID,INPUT_FORMAT,IS_COMPRESSED,IS_STOREDASSUBDIRECTORIES,LOCATION,NUM_BUCKETS,OUTPUT_FORMAT,SERDE_ID) values (2,null,'org.apache.hadoop.mapred.TextInputFormat','N','N','hdfs://myhost.com:8020/user/admin/2015_11_18',-1,'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',null);",
           "insert into TBLS(TBL_ID,CREATE_TIME,DB_ID,LAST_ACCESS_TIME,OWNER,RETENTION,SD_ID,TBL_NAME,TBL_TYPE,VIEW_EXPANDED_TEXT,VIEW_ORIGINAL_TEXT,IS_REWRITE_ENABLED) values (2 ,1435255431,2,0 ,'hive',0,1,'mytal','MANAGED_TABLE',NULL,NULL,'n');",

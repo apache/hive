@@ -31,9 +31,15 @@
       <datastore-identity>
         <column name="DB_ID"/>
       </datastore-identity>
+      <index name="UniqueDatabase" unique="true">
+        <column name="NAME"/>
+        <column name="CTLG_NAME"/>
+      </index>
       <field name="name">  
         <column name="NAME" length="128" jdbc-type="VARCHAR"/>
-        <index name="UniqueDatabase" unique="true"/>
+      </field>
+      <field name="catalogName">
+        <column name="CTLG_NAME" length="256" jdbc-type="VARCHAR"/>
       </field>
       <field name="description">
         <column name="DESC" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
@@ -58,6 +64,22 @@
       </field>
        <field name="ownerType">
         <column name="OWNER_TYPE" length="10" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+    </class>
+
+    <class name="MCatalog" identity-type="datastore" table="CTLGS" detachable="true">
+      <datastore-identity>
+        <column name="CTLG_ID"/>
+      </datastore-identity>
+      <field name="name">
+        <column name="NAME" length="256" jdbc-type="VARCHAR"/>
+        <index name="UniqueCatalog" unique="true"/>
+      </field>
+      <field name="description">
+        <column name="DESC" length="4000" jdbc-type="VARCHAR" allows-null="true"/>
+      </field>
+      <field name="locationUri">
+        <column name="LOCATION_URI" length="4000" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
     </class>
 
@@ -191,6 +213,9 @@
       <datastore-identity>
         <column name="MV_CREATION_METADATA_ID"/>
       </datastore-identity>
+      <field name="catalogName">
+        <column name="CAT_NAME" length="256" jdbc-type="VARCHAR"/>
+      </field>
       <field name="dbName">
         <column name="DB_NAME" length="128" jdbc-type="VARCHAR"/>
       </field>
@@ -827,6 +852,9 @@
         <column name="PART_NAME_ID"/>
       </datastore-identity>
       
+      <field name="catalogName">  
+        <column name="CAT_NAME" length="256" jdbc-type="VARCHAR"/>
+      </field>
       <field name="dbName">  
         <column name="DB_NAME" length="128" jdbc-type="VARCHAR"/>
       </field>
@@ -874,6 +902,9 @@
         <column name="CS_ID"/>
       </datastore-identity>
 
+      <field name ="catName">
+        <column name="CAT_NAME" length="256" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
       <field name ="dbName">
         <column name="DB_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
@@ -938,6 +969,9 @@
         <column name="CS_ID"/>
       </datastore-identity>
 
+      <field name ="catName">
+        <column name="CAT_NAME" length="256" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
       <field name ="dbName">
         <column name="DB_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
@@ -1091,6 +1125,9 @@
       </field>
       <field name="eventType">
         <column name="EVENT_TYPE" length="32" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="catalogName">
+        <column name="CAT_NAME" length="256" jdbc-type="VARCHAR" allows-null="true"/>
       </field>
       <field name="dbName">
         <column name="DB_NAME" length="128" jdbc-type="VARCHAR" allows-null="true"/>

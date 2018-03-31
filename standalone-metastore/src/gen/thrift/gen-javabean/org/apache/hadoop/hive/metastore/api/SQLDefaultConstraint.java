@@ -38,14 +38,15 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class SQLDefaultConstraint implements org.apache.thrift.TBase<SQLDefaultConstraint, SQLDefaultConstraint._Fields>, java.io.Serializable, Cloneable, Comparable<SQLDefaultConstraint> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SQLDefaultConstraint");
 
-  private static final org.apache.thrift.protocol.TField TABLE_DB_FIELD_DESC = new org.apache.thrift.protocol.TField("table_db", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("table_name", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField COLUMN_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("column_name", org.apache.thrift.protocol.TType.STRING, (short)3);
-  private static final org.apache.thrift.protocol.TField DEFAULT_VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("default_value", org.apache.thrift.protocol.TType.STRING, (short)4);
-  private static final org.apache.thrift.protocol.TField DC_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dc_name", org.apache.thrift.protocol.TType.STRING, (short)5);
-  private static final org.apache.thrift.protocol.TField ENABLE_CSTR_FIELD_DESC = new org.apache.thrift.protocol.TField("enable_cstr", org.apache.thrift.protocol.TType.BOOL, (short)6);
-  private static final org.apache.thrift.protocol.TField VALIDATE_CSTR_FIELD_DESC = new org.apache.thrift.protocol.TField("validate_cstr", org.apache.thrift.protocol.TType.BOOL, (short)7);
-  private static final org.apache.thrift.protocol.TField RELY_CSTR_FIELD_DESC = new org.apache.thrift.protocol.TField("rely_cstr", org.apache.thrift.protocol.TType.BOOL, (short)8);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField TABLE_DB_FIELD_DESC = new org.apache.thrift.protocol.TField("table_db", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("table_name", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField COLUMN_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("column_name", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField DEFAULT_VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("default_value", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField DC_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dc_name", org.apache.thrift.protocol.TType.STRING, (short)6);
+  private static final org.apache.thrift.protocol.TField ENABLE_CSTR_FIELD_DESC = new org.apache.thrift.protocol.TField("enable_cstr", org.apache.thrift.protocol.TType.BOOL, (short)7);
+  private static final org.apache.thrift.protocol.TField VALIDATE_CSTR_FIELD_DESC = new org.apache.thrift.protocol.TField("validate_cstr", org.apache.thrift.protocol.TType.BOOL, (short)8);
+  private static final org.apache.thrift.protocol.TField RELY_CSTR_FIELD_DESC = new org.apache.thrift.protocol.TField("rely_cstr", org.apache.thrift.protocol.TType.BOOL, (short)9);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -53,6 +54,7 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new SQLDefaultConstraintTupleSchemeFactory());
   }
 
+  private String catName; // required
   private String table_db; // required
   private String table_name; // required
   private String column_name; // required
@@ -64,14 +66,15 @@ import org.slf4j.LoggerFactory;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    TABLE_DB((short)1, "table_db"),
-    TABLE_NAME((short)2, "table_name"),
-    COLUMN_NAME((short)3, "column_name"),
-    DEFAULT_VALUE((short)4, "default_value"),
-    DC_NAME((short)5, "dc_name"),
-    ENABLE_CSTR((short)6, "enable_cstr"),
-    VALIDATE_CSTR((short)7, "validate_cstr"),
-    RELY_CSTR((short)8, "rely_cstr");
+    CAT_NAME((short)1, "catName"),
+    TABLE_DB((short)2, "table_db"),
+    TABLE_NAME((short)3, "table_name"),
+    COLUMN_NAME((short)4, "column_name"),
+    DEFAULT_VALUE((short)5, "default_value"),
+    DC_NAME((short)6, "dc_name"),
+    ENABLE_CSTR((short)7, "enable_cstr"),
+    VALIDATE_CSTR((short)8, "validate_cstr"),
+    RELY_CSTR((short)9, "rely_cstr");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -86,21 +89,23 @@ import org.slf4j.LoggerFactory;
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // TABLE_DB
+        case 1: // CAT_NAME
+          return CAT_NAME;
+        case 2: // TABLE_DB
           return TABLE_DB;
-        case 2: // TABLE_NAME
+        case 3: // TABLE_NAME
           return TABLE_NAME;
-        case 3: // COLUMN_NAME
+        case 4: // COLUMN_NAME
           return COLUMN_NAME;
-        case 4: // DEFAULT_VALUE
+        case 5: // DEFAULT_VALUE
           return DEFAULT_VALUE;
-        case 5: // DC_NAME
+        case 6: // DC_NAME
           return DC_NAME;
-        case 6: // ENABLE_CSTR
+        case 7: // ENABLE_CSTR
           return ENABLE_CSTR;
-        case 7: // VALIDATE_CSTR
+        case 8: // VALIDATE_CSTR
           return VALIDATE_CSTR;
-        case 8: // RELY_CSTR
+        case 9: // RELY_CSTR
           return RELY_CSTR;
         default:
           return null;
@@ -149,6 +154,8 @@ import org.slf4j.LoggerFactory;
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TABLE_DB, new org.apache.thrift.meta_data.FieldMetaData("table_db", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("table_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -173,6 +180,7 @@ import org.slf4j.LoggerFactory;
   }
 
   public SQLDefaultConstraint(
+    String catName,
     String table_db,
     String table_name,
     String column_name,
@@ -183,6 +191,7 @@ import org.slf4j.LoggerFactory;
     boolean rely_cstr)
   {
     this();
+    this.catName = catName;
     this.table_db = table_db;
     this.table_name = table_name;
     this.column_name = column_name;
@@ -201,6 +210,9 @@ import org.slf4j.LoggerFactory;
    */
   public SQLDefaultConstraint(SQLDefaultConstraint other) {
     __isset_bitfield = other.__isset_bitfield;
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
     if (other.isSetTable_db()) {
       this.table_db = other.table_db;
     }
@@ -227,6 +239,7 @@ import org.slf4j.LoggerFactory;
 
   @Override
   public void clear() {
+    this.catName = null;
     this.table_db = null;
     this.table_name = null;
     this.column_name = null;
@@ -238,6 +251,29 @@ import org.slf4j.LoggerFactory;
     this.validate_cstr = false;
     setRely_cstrIsSet(false);
     this.rely_cstr = false;
+  }
+
+  public String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
   }
 
   public String getTable_db() {
@@ -423,6 +459,14 @@ import org.slf4j.LoggerFactory;
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((String)value);
+      }
+      break;
+
     case TABLE_DB:
       if (value == null) {
         unsetTable_db();
@@ -492,6 +536,9 @@ import org.slf4j.LoggerFactory;
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
+    case CAT_NAME:
+      return getCatName();
+
     case TABLE_DB:
       return getTable_db();
 
@@ -527,6 +574,8 @@ import org.slf4j.LoggerFactory;
     }
 
     switch (field) {
+    case CAT_NAME:
+      return isSetCatName();
     case TABLE_DB:
       return isSetTable_db();
     case TABLE_NAME:
@@ -559,6 +608,15 @@ import org.slf4j.LoggerFactory;
   public boolean equals(SQLDefaultConstraint that) {
     if (that == null)
       return false;
+
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
 
     boolean this_present_table_db = true && this.isSetTable_db();
     boolean that_present_table_db = true && that.isSetTable_db();
@@ -639,6 +697,11 @@ import org.slf4j.LoggerFactory;
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
 
+    boolean present_catName = true && (isSetCatName());
+    list.add(present_catName);
+    if (present_catName)
+      list.add(catName);
+
     boolean present_table_db = true && (isSetTable_db());
     list.add(present_table_db);
     if (present_table_db)
@@ -690,6 +753,16 @@ import org.slf4j.LoggerFactory;
 
     int lastComparison = 0;
 
+    lastComparison = Boolean.valueOf(isSetCatName()).compareTo(other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = Boolean.valueOf(isSetTable_db()).compareTo(other.isSetTable_db());
     if (lastComparison != 0) {
       return lastComparison;
@@ -790,6 +863,14 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("SQLDefaultConstraint(");
     boolean first = true;
 
+    sb.append("catName:");
+    if (this.catName == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.catName);
+    }
+    first = false;
+    if (!first) sb.append(", ");
     sb.append("table_db:");
     if (this.table_db == null) {
       sb.append("null");
@@ -886,7 +967,15 @@ import org.slf4j.LoggerFactory;
           break;
         }
         switch (schemeField.id) {
-          case 1: // TABLE_DB
+          case 1: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 2: // TABLE_DB
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.table_db = iprot.readString();
               struct.setTable_dbIsSet(true);
@@ -894,7 +983,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // TABLE_NAME
+          case 3: // TABLE_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.table_name = iprot.readString();
               struct.setTable_nameIsSet(true);
@@ -902,7 +991,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // COLUMN_NAME
+          case 4: // COLUMN_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.column_name = iprot.readString();
               struct.setColumn_nameIsSet(true);
@@ -910,7 +999,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // DEFAULT_VALUE
+          case 5: // DEFAULT_VALUE
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.default_value = iprot.readString();
               struct.setDefault_valueIsSet(true);
@@ -918,7 +1007,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 5: // DC_NAME
+          case 6: // DC_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.dc_name = iprot.readString();
               struct.setDc_nameIsSet(true);
@@ -926,7 +1015,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 6: // ENABLE_CSTR
+          case 7: // ENABLE_CSTR
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
               struct.enable_cstr = iprot.readBool();
               struct.setEnable_cstrIsSet(true);
@@ -934,7 +1023,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 7: // VALIDATE_CSTR
+          case 8: // VALIDATE_CSTR
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
               struct.validate_cstr = iprot.readBool();
               struct.setValidate_cstrIsSet(true);
@@ -942,7 +1031,7 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 8: // RELY_CSTR
+          case 9: // RELY_CSTR
             if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
               struct.rely_cstr = iprot.readBool();
               struct.setRely_cstrIsSet(true);
@@ -963,6 +1052,11 @@ import org.slf4j.LoggerFactory;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (struct.catName != null) {
+        oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+        oprot.writeString(struct.catName);
+        oprot.writeFieldEnd();
+      }
       if (struct.table_db != null) {
         oprot.writeFieldBegin(TABLE_DB_FIELD_DESC);
         oprot.writeString(struct.table_db);
@@ -1015,31 +1109,37 @@ import org.slf4j.LoggerFactory;
     public void write(org.apache.thrift.protocol.TProtocol prot, SQLDefaultConstraint struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
-      if (struct.isSetTable_db()) {
+      if (struct.isSetCatName()) {
         optionals.set(0);
       }
-      if (struct.isSetTable_name()) {
+      if (struct.isSetTable_db()) {
         optionals.set(1);
       }
-      if (struct.isSetColumn_name()) {
+      if (struct.isSetTable_name()) {
         optionals.set(2);
       }
-      if (struct.isSetDefault_value()) {
+      if (struct.isSetColumn_name()) {
         optionals.set(3);
       }
-      if (struct.isSetDc_name()) {
+      if (struct.isSetDefault_value()) {
         optionals.set(4);
       }
-      if (struct.isSetEnable_cstr()) {
+      if (struct.isSetDc_name()) {
         optionals.set(5);
       }
-      if (struct.isSetValidate_cstr()) {
+      if (struct.isSetEnable_cstr()) {
         optionals.set(6);
       }
-      if (struct.isSetRely_cstr()) {
+      if (struct.isSetValidate_cstr()) {
         optionals.set(7);
       }
-      oprot.writeBitSet(optionals, 8);
+      if (struct.isSetRely_cstr()) {
+        optionals.set(8);
+      }
+      oprot.writeBitSet(optionals, 9);
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
+      }
       if (struct.isSetTable_db()) {
         oprot.writeString(struct.table_db);
       }
@@ -1069,36 +1169,40 @@ import org.slf4j.LoggerFactory;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, SQLDefaultConstraint struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(8);
+      BitSet incoming = iprot.readBitSet(9);
       if (incoming.get(0)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
+      }
+      if (incoming.get(1)) {
         struct.table_db = iprot.readString();
         struct.setTable_dbIsSet(true);
       }
-      if (incoming.get(1)) {
+      if (incoming.get(2)) {
         struct.table_name = iprot.readString();
         struct.setTable_nameIsSet(true);
       }
-      if (incoming.get(2)) {
+      if (incoming.get(3)) {
         struct.column_name = iprot.readString();
         struct.setColumn_nameIsSet(true);
       }
-      if (incoming.get(3)) {
+      if (incoming.get(4)) {
         struct.default_value = iprot.readString();
         struct.setDefault_valueIsSet(true);
       }
-      if (incoming.get(4)) {
+      if (incoming.get(5)) {
         struct.dc_name = iprot.readString();
         struct.setDc_nameIsSet(true);
       }
-      if (incoming.get(5)) {
+      if (incoming.get(6)) {
         struct.enable_cstr = iprot.readBool();
         struct.setEnable_cstrIsSet(true);
       }
-      if (incoming.get(6)) {
+      if (incoming.get(7)) {
         struct.validate_cstr = iprot.readBool();
         struct.setValidate_cstrIsSet(true);
       }
-      if (incoming.get(7)) {
+      if (incoming.get(8)) {
         struct.rely_cstr = iprot.readBool();
         struct.setRely_cstrIsSet(true);
       }

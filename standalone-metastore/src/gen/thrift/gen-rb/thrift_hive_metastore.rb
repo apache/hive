@@ -43,6 +43,73 @@ module ThriftHiveMetastore
       return
     end
 
+    def create_catalog(catalog)
+      send_create_catalog(catalog)
+      recv_create_catalog()
+    end
+
+    def send_create_catalog(catalog)
+      send_message('create_catalog', Create_catalog_args, :catalog => catalog)
+    end
+
+    def recv_create_catalog()
+      result = receive_message(Create_catalog_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
+    def get_catalog(catName)
+      send_get_catalog(catName)
+      return recv_get_catalog()
+    end
+
+    def send_get_catalog(catName)
+      send_message('get_catalog', Get_catalog_args, :catName => catName)
+    end
+
+    def recv_get_catalog()
+      result = receive_message(Get_catalog_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_catalog failed: unknown result')
+    end
+
+    def get_catalogs()
+      send_get_catalogs()
+      return recv_get_catalogs()
+    end
+
+    def send_get_catalogs()
+      send_message('get_catalogs', Get_catalogs_args)
+    end
+
+    def recv_get_catalogs()
+      result = receive_message(Get_catalogs_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_catalogs failed: unknown result')
+    end
+
+    def drop_catalog(catName)
+      send_drop_catalog(catName)
+      recv_drop_catalog()
+    end
+
+    def send_drop_catalog(catName)
+      send_message('drop_catalog', Drop_catalog_args, :catName => catName)
+    end
+
+    def recv_drop_catalog()
+      result = receive_message(Drop_catalog_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise result.o3 unless result.o3.nil?
+      return
+    end
+
     def create_database(database)
       send_create_database(database)
       recv_create_database()
@@ -660,13 +727,13 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_materialization_invalidation_info failed: unknown result')
     end
 
-    def update_creation_metadata(dbname, tbl_name, creation_metadata)
-      send_update_creation_metadata(dbname, tbl_name, creation_metadata)
+    def update_creation_metadata(catName, dbname, tbl_name, creation_metadata)
+      send_update_creation_metadata(catName, dbname, tbl_name, creation_metadata)
       recv_update_creation_metadata()
     end
 
-    def send_update_creation_metadata(dbname, tbl_name, creation_metadata)
-      send_message('update_creation_metadata', Update_creation_metadata_args, :dbname => dbname, :tbl_name => tbl_name, :creation_metadata => creation_metadata)
+    def send_update_creation_metadata(catName, dbname, tbl_name, creation_metadata)
+      send_message('update_creation_metadata', Update_creation_metadata_args, :catName => catName, :dbname => dbname, :tbl_name => tbl_name, :creation_metadata => creation_metadata)
     end
 
     def recv_update_creation_metadata()
@@ -3308,6 +3375,60 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'setMetaConf', seqid)
     end
 
+    def process_create_catalog(seqid, iprot, oprot)
+      args = read_args(iprot, Create_catalog_args)
+      result = Create_catalog_result.new()
+      begin
+        @handler.create_catalog(args.catalog)
+      rescue ::AlreadyExistsException => o1
+        result.o1 = o1
+      rescue ::InvalidObjectException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'create_catalog', seqid)
+    end
+
+    def process_get_catalog(seqid, iprot, oprot)
+      args = read_args(iprot, Get_catalog_args)
+      result = Get_catalog_result.new()
+      begin
+        result.success = @handler.get_catalog(args.catName)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_catalog', seqid)
+    end
+
+    def process_get_catalogs(seqid, iprot, oprot)
+      args = read_args(iprot, Get_catalogs_args)
+      result = Get_catalogs_result.new()
+      begin
+        result.success = @handler.get_catalogs()
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_catalogs', seqid)
+    end
+
+    def process_drop_catalog(seqid, iprot, oprot)
+      args = read_args(iprot, Drop_catalog_args)
+      result = Drop_catalog_result.new()
+      begin
+        @handler.drop_catalog(args.catName)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::InvalidOperationException => o2
+        result.o2 = o2
+      rescue ::MetaException => o3
+        result.o3 = o3
+      end
+      write_result(result, oprot, 'drop_catalog', seqid)
+    end
+
     def process_create_database(seqid, iprot, oprot)
       args = read_args(iprot, Create_database_args)
       result = Create_database_result.new()
@@ -3799,7 +3920,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Update_creation_metadata_args)
       result = Update_creation_metadata_result.new()
       begin
-        @handler.update_creation_metadata(args.dbname, args.tbl_name, args.creation_metadata)
+        @handler.update_creation_metadata(args.catName, args.dbname, args.tbl_name, args.creation_metadata)
       rescue ::MetaException => o1
         result.o1 = o1
       rescue ::InvalidOperationException => o2
@@ -5826,6 +5947,147 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
+  class Create_catalog_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    CATALOG = 1
+
+    FIELDS = {
+      CATALOG => {:type => ::Thrift::Types::STRUCT, :name => 'catalog', :class => ::CreateCatalogRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_catalog_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::AlreadyExistsException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidObjectException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_catalog_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    CATNAME = 1
+
+    FIELDS = {
+      CATNAME => {:type => ::Thrift::Types::STRUCT, :name => 'catName', :class => ::GetCatalogRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_catalog_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetCatalogResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_catalogs_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_catalogs_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetCatalogsResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_catalog_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    CATNAME = 1
+
+    FIELDS = {
+      CATNAME => {:type => ::Thrift::Types::STRUCT, :name => 'catName', :class => ::DropCatalogRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_catalog_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+    O3 = 3
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::InvalidOperationException},
+      O3 => {:type => ::Thrift::Types::STRUCT, :name => 'o3', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   class Create_database_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     DATABASE = 1
@@ -7197,11 +7459,13 @@ module ThriftHiveMetastore
 
   class Update_creation_metadata_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    DBNAME = 1
-    TBL_NAME = 2
-    CREATION_METADATA = 3
+    CATNAME = 1
+    DBNAME = 2
+    TBL_NAME = 3
+    CREATION_METADATA = 4
 
     FIELDS = {
+      CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
       DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname'},
       TBL_NAME => {:type => ::Thrift::Types::STRING, :name => 'tbl_name'},
       CREATION_METADATA => {:type => ::Thrift::Types::STRUCT, :name => 'creation_metadata', :class => ::CreationMetadata}

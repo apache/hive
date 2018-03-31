@@ -156,7 +156,7 @@ public class TestPermsGrp extends TestCase {
         fail();
       } catch (Exception e) {
         assertTrue(e instanceof NoSuchObjectException);
-        assertEquals("default.simptbl table not found", e.getMessage());
+        assertEquals("hive.default.simptbl table not found", e.getMessage());
       }
 
       // test for invalid group name
@@ -177,7 +177,7 @@ public class TestPermsGrp extends TestCase {
         fail();
       } catch (Exception e) {
         assertTrue(e instanceof NoSuchObjectException);
-        assertEquals("default.simptbl table not found", e.getMessage());
+        assertEquals("hive.default.simptbl table not found", e.getMessage());
       }
       try {
         // neither dir should get created.

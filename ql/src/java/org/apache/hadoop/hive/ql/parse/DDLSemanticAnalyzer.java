@@ -285,6 +285,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_ALTERTABLE: {
       ast = (ASTNode) input.getChild(1);
       String[] qualified = getQualifiedTableName((ASTNode) input.getChild(0));
+      // TODO CAT - for now always use the default catalog.  Eventually will want to see if
+      // the user specified a catalog
+      String catName = MetaStoreUtils.getDefaultCatalog(conf);
       String tableName = getDotName(qualified);
       HashMap<String, String> partSpec = null;
       ASTNode partSpecNode = (ASTNode)input.getChild(2);
@@ -312,7 +315,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_REPLACECOLS) {
         analyzeAlterTableModifyCols(qualified, ast, partSpec, AlterTableTypes.REPLACECOLS);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_RENAMECOL) {
-        analyzeAlterTableRenameCol(qualified, ast, partSpec);
+        analyzeAlterTableRenameCol(catName, qualified, ast, partSpec);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_ADDPARTS) {
         analyzeAlterTableAddParts(qualified, ast, false);
       } else if (ast.getType() == HiveParser.TOK_ALTERTABLE_DROPPARTS) {
@@ -2152,6 +2155,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     throws SemanticException {
     ASTNode parent = (ASTNode) ast.getParent();
     String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
+    // TODO CAT - for now always use the default catalog.  Eventually will want to see if
+    // the user specified a catalog
+    String catName = MetaStoreUtils.getDefaultCatalog(conf);
     ASTNode child = (ASTNode) ast.getChild(0);
     List<SQLPrimaryKey> primaryKeys = new ArrayList<>();
     List<SQLForeignKey> foreignKeys = new ArrayList<>();
@@ -2159,7 +2165,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     switch (child.getToken().getType()) {
       case HiveParser.TOK_UNIQUE:
-        BaseSemanticAnalyzer.processUniqueConstraints(qualifiedTabName[0], qualifiedTabName[1],
+        BaseSemanticAnalyzer.processUniqueConstraints(catName, qualifiedTabName[0], qualifiedTabName[1],
                 child, uniqueConstraints);
         break;
       case HiveParser.TOK_PRIMARY_KEY:
@@ -3078,7 +3084,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         alterTblDesc)));
   }
 
-  private void analyzeAlterTableRenameCol(String[] qualified, ASTNode ast,
+  private void analyzeAlterTableRenameCol(String catName, String[] qualified, ASTNode ast,
       HashMap<String, String> partSpec) throws SemanticException {
     String newComment = null;
     boolean first = false;
@@ -3122,23 +3128,23 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       switch (constraintChild.getToken().getType()) {
       case HiveParser.TOK_CHECK_CONSTRAINT:
         checkConstraints = new ArrayList<>();
-        processCheckConstraints(qualified[0], qualified[1], constraintChild,
+        processCheckConstraints(catName, qualified[0], qualified[1], constraintChild,
                                   ImmutableList.of(newColName), checkConstraints, (ASTNode)ast.getChild(2),
                                 this.ctx.getTokenRewriteStream());
         break;
       case HiveParser.TOK_DEFAULT_VALUE:
         defaultConstraints = new ArrayList<>();
-        processDefaultConstraints(qualified[0], qualified[1], constraintChild,
+        processDefaultConstraints(catName, qualified[0], qualified[1], constraintChild,
                                   ImmutableList.of(newColName), defaultConstraints, (ASTNode)ast.getChild(2));
         break;
       case HiveParser.TOK_NOT_NULL:
         notNullConstraints = new ArrayList<>();
-        processNotNullConstraints(qualified[0], qualified[1], constraintChild,
+        processNotNullConstraints(catName, qualified[0], qualified[1], constraintChild,
                                   ImmutableList.of(newColName), notNullConstraints);
         break;
       case HiveParser.TOK_UNIQUE:
         uniqueConstraints = new ArrayList<>();
-        processUniqueConstraints(qualified[0], qualified[1], constraintChild,
+        processUniqueConstraints(catName, qualified[0], qualified[1], constraintChild,
                                  ImmutableList.of(newColName), uniqueConstraints);
         break;
       case HiveParser.TOK_PRIMARY_KEY:

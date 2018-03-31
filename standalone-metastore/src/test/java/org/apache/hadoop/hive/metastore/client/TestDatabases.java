@@ -20,8 +20,11 @@ package org.apache.hadoop.hive.metastore.client;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -30,10 +33,13 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.FunctionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
 import org.junit.Assert;
@@ -43,12 +49,20 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
 /**
  * Test class for IMetaStoreClient API. Testing the Database related functions.
  */
+
 @RunWith(Parameterized.class)
 @Category(MetastoreCheckinTest.class)
 public class TestDatabases extends MetaStoreClientTest {
@@ -74,17 +88,16 @@ public class TestDatabases extends MetaStoreClientTest {
     }
 
     testDatabases[0] =
-        new DatabaseBuilder().setName("test_database_1").build();
+        new DatabaseBuilder().setName("test_database_1").create(client, metaStore.getConf());
     testDatabases[1] =
-        new DatabaseBuilder().setName("test_database_to_find_1").build();
+        new DatabaseBuilder().setName("test_database_to_find_1").create(client, metaStore.getConf());
     testDatabases[2] =
-        new DatabaseBuilder().setName("test_database_to_find_2").build();
+        new DatabaseBuilder().setName("test_database_to_find_2").create(client, metaStore.getConf());
     testDatabases[3] =
-        new DatabaseBuilder().setName("test_database_hidden_1").build();
+        new DatabaseBuilder().setName("test_database_hidden_1").create(client, metaStore.getConf());
 
     // Create the databases, and reload them from the MetaStore
-    for(int i=0; i < testDatabases.length; i++) {
-      client.createDatabase(testDatabases[i]);
+    for (int i=0; i < testDatabases.length; i++) {
       testDatabases[i] = client.getDatabase(testDatabases[i].getName());
     }
   }
@@ -102,7 +115,6 @@ public class TestDatabases extends MetaStoreClientTest {
 
   /**
    * This test creates and queries a database and then drops it. Good for testing the happy path.
-   * @throws Exception
    */
   @Test
   public void testCreateGetDeleteDatabase() throws Exception {
@@ -127,10 +139,10 @@ public class TestDatabases extends MetaStoreClientTest {
 
   @Test
   public void testCreateDatabaseDefaultValues() throws Exception {
-    Database database = new Database();
-    database.setName("dummy");
+    Database database = new DatabaseBuilder()
+        .setName("dummy")
+        .create(client, metaStore.getConf());
 
-    client.createDatabase(database);
     Database createdDatabase = client.getDatabase(database.getName());
 
     Assert.assertNull("Comparing description", createdDatabase.getDescription());
@@ -139,7 +151,8 @@ public class TestDatabases extends MetaStoreClientTest {
     Assert.assertEquals("Comparing parameters", new HashMap<String, String>(),
         createdDatabase.getParameters());
     Assert.assertNull("Comparing privileges", createdDatabase.getPrivileges());
-    Assert.assertNull("Comparing owner name", createdDatabase.getOwnerName());
+    Assert.assertEquals("Comparing owner name", SecurityUtils.getUser(),
+        createdDatabase.getOwnerName());
     Assert.assertEquals("Comparing owner type", PrincipalType.USER, createdDatabase.getOwnerType());
   }
 
@@ -280,7 +293,7 @@ public class TestDatabases extends MetaStoreClientTest {
   @Test
   public void testDropDatabaseDeleteData() throws Exception {
     Database database = testDatabases[0];
-    Path dataFile = new Path(database.getLocationUri().toString() + "/dataFile");
+    Path dataFile = new Path(database.getLocationUri() + "/dataFile");
     metaStore.createFile(dataFile, "100");
 
     // Do not delete the data
@@ -318,8 +331,7 @@ public class TestDatabases extends MetaStoreClientTest {
             .setDbName(database.getName())
             .setTableName("test_table")
             .addCol("test_col", "int")
-            .build();
-    client.createTable(testTable);
+            .create(client, metaStore.getConf());
 
     client.dropDatabase(database.getName(), true, true, false);
   }
@@ -332,8 +344,7 @@ public class TestDatabases extends MetaStoreClientTest {
             .setDbName(database.getName())
             .setTableName("test_table")
             .addCol("test_col", "int")
-            .build();
-    client.createTable(testTable);
+            .create(client, metaStore.getConf());
 
     client.dropDatabase(database.getName(), true, true, true);
     Assert.assertFalse("The directory should be removed",
@@ -349,9 +360,8 @@ public class TestDatabases extends MetaStoreClientTest {
             .setDbName(database.getName())
             .setName("test_function")
             .setClass("org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper")
-            .build();
+            .create(client, metaStore.getConf());
 
-    client.createFunction(testFunction);
 
     client.dropDatabase(database.getName(), true, true, false);
   }
@@ -365,15 +375,13 @@ public class TestDatabases extends MetaStoreClientTest {
             .setDbName(database.getName())
             .setName("test_function")
             .setClass("org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper")
-            .build();
+            .create(client, metaStore.getConf());
 
-    client.createFunction(testFunction);
 
     client.dropDatabase(database.getName(), true, true, true);
     Assert.assertFalse("The directory should be removed",
         metaStore.isPathExists(new Path(database.getLocationUri())));
   }
-
 
   @Test
   public void testGetAllDatabases() throws Exception {
@@ -446,7 +454,7 @@ public class TestDatabases extends MetaStoreClientTest {
             .setDescription("dummy description 2")
             .addParam("param_key_1", "param_value_1_2")
             .addParam("param_key_2_3", "param_value_2_3")
-            .build();
+            .build(metaStore.getConf());
 
     client.alterDatabase(originalDatabase.getName(), newDatabase);
     Database alteredDatabase = client.getDatabase(newDatabase.getName());
@@ -460,6 +468,7 @@ public class TestDatabases extends MetaStoreClientTest {
     Database originalDatabase = client.getDatabase(database.getName());
     Database newDatabase = new Database();
     newDatabase.setName("new_name");
+    newDatabase.setCatalogName(DEFAULT_CATALOG_NAME);
 
     client.alterDatabase(originalDatabase.getName(), newDatabase);
     // The name should not be changed, so reload the db with the original name
@@ -480,7 +489,9 @@ public class TestDatabases extends MetaStoreClientTest {
 
   @Test(expected = NoSuchObjectException.class)
   public void testAlterDatabaseNoSuchDatabase() throws Exception {
-    Database newDatabase = new DatabaseBuilder().setName("test_database_altered").build();
+    Database newDatabase = new DatabaseBuilder()
+        .setName("test_database_altered")
+        .build(metaStore.getConf());
 
     client.alterDatabase("no_such_database", newDatabase);
   }
@@ -505,6 +516,131 @@ public class TestDatabases extends MetaStoreClientTest {
     Assert.assertEquals("Comparing databases", newDatabase, alteredDatabase);
   }
 
+  @Test
+  public void databasesInCatalogs() throws TException, URISyntaxException {
+    String catName = "mycatalog";
+    Catalog cat = new CatalogBuilder()
+        .setName(catName)
+        .setLocation(MetaStoreTestUtils.getTestWarehouseDir(catName))
+        .build();
+    client.createCatalog(cat);
+
+    String[] dbNames = {"db1", "db9"};
+    Database[] dbs = new Database[2];
+    // For this one don't specify a location to make sure it gets put in the catalog directory
+    dbs[0] = new DatabaseBuilder()
+        .setName(dbNames[0])
+        .setCatalogName(catName)
+        .create(client, metaStore.getConf());
+
+    // For the second one, explicitly set a location to make sure it ends up in the specified place.
+    String db1Location = MetaStoreTestUtils.getTestWarehouseDir(dbNames[1]);
+    dbs[1] = new DatabaseBuilder()
+        .setName(dbNames[1])
+        .setCatalogName(catName)
+        .setLocation(db1Location)
+        .create(client, metaStore.getConf());
+
+    Database fetched = client.getDatabase(catName, dbNames[0]);
+    String expectedLocation = new File(cat.getLocationUri(), dbNames[0] + ".db").toURI().toString();
+    Assert.assertEquals(expectedLocation, fetched.getLocationUri() + "/");
+    String db0Location = new URI(fetched.getLocationUri()).getPath();
+    File dir = new File(db0Location);
+    Assert.assertTrue(dir.exists() && dir.isDirectory());
+
+    fetched = client.getDatabase(catName, dbNames[1]);
+    Assert.assertEquals(new File(db1Location).toURI().toString(), fetched.getLocationUri() + "/");
+    dir = new File(new URI(fetched.getLocationUri()).getPath());
+    Assert.assertTrue(dir.exists() && dir.isDirectory());
+
+    Set<String> fetchedDbs = new HashSet<>(client.getAllDatabases(catName));
+    Assert.assertEquals(3, fetchedDbs.size());
+    for (String dbName : dbNames) Assert.assertTrue(fetchedDbs.contains(dbName));
+
+    fetchedDbs = new HashSet<>(client.getAllDatabases());
+    Assert.assertEquals(5, fetchedDbs.size());
+    Assert.assertTrue(fetchedDbs.contains(Warehouse.DEFAULT_DATABASE_NAME));
+
+    // Intentionally using the deprecated method to make sure it returns correct results.
+    fetchedDbs = new HashSet<>(client.getAllDatabases());
+    Assert.assertEquals(5, fetchedDbs.size());
+    Assert.assertTrue(fetchedDbs.contains(Warehouse.DEFAULT_DATABASE_NAME));
+
+    fetchedDbs = new HashSet<>(client.getDatabases(catName, "d*"));
+    Assert.assertEquals(3, fetchedDbs.size());
+    for (String dbName : dbNames) Assert.assertTrue(fetchedDbs.contains(dbName));
+
+    fetchedDbs = new HashSet<>(client.getDatabases("d*"));
+    Assert.assertEquals(1, fetchedDbs.size());
+    Assert.assertTrue(fetchedDbs.contains(Warehouse.DEFAULT_DATABASE_NAME));
+
+    // Intentionally using the deprecated method to make sure it returns correct results.
+    fetchedDbs = new HashSet<>(client.getDatabases("d*"));
+    Assert.assertEquals(1, fetchedDbs.size());
+    Assert.assertTrue(fetchedDbs.contains(Warehouse.DEFAULT_DATABASE_NAME));
+
+    fetchedDbs = new HashSet<>(client.getDatabases(catName, "*1"));
+    Assert.assertEquals(1, fetchedDbs.size());
+    Assert.assertTrue(fetchedDbs.contains(dbNames[0]));
+
+    fetchedDbs = new HashSet<>(client.getDatabases("*9"));
+    Assert.assertEquals(0, fetchedDbs.size());
+
+    // Intentionally using the deprecated method to make sure it returns correct results.
+    fetchedDbs = new HashSet<>(client.getDatabases("*9"));
+    Assert.assertEquals(0, fetchedDbs.size());
+
+    fetchedDbs = new HashSet<>(client.getDatabases(catName, "*x"));
+    Assert.assertEquals(0, fetchedDbs.size());
+
+    // Check that dropping database from wrong catalog fails
+    try {
+      client.dropDatabase(dbNames[0], true, false, false);
+      Assert.fail();
+    } catch (NoSuchObjectException e) {
+      // NOP
+    }
+
+    // Check that dropping database from wrong catalog fails
+    try {
+      // Intentionally using deprecated method
+      client.dropDatabase(dbNames[0], true, false, false);
+      Assert.fail();
+    } catch (NoSuchObjectException e) {
+      // NOP
+    }
+
+    // Drop them from the proper catalog
+    client.dropDatabase(catName, dbNames[0], true, false, false);
+    dir = new File(db0Location);
+    Assert.assertFalse(dir.exists());
+
+    client.dropDatabase(catName, dbNames[1], true, false, false);
+    dir = new File(db1Location);
+    Assert.assertFalse(dir.exists());
+
+    fetchedDbs = new HashSet<>(client.getAllDatabases(catName));
+    Assert.assertEquals(1, fetchedDbs.size());
+  }
+
+  @Test(expected = InvalidObjectException.class)
+  public void createDatabaseInNonExistentCatalog() throws TException {
+    Database db = new DatabaseBuilder()
+        .setName("doomed")
+        .setCatalogName("nosuch")
+        .create(client, metaStore.getConf());
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void fetchDatabaseInNonExistentCatalog() throws TException {
+    client.getDatabase("nosuch", Warehouse.DEFAULT_DATABASE_NAME);
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void dropDatabaseInNonExistentCatalog() throws TException {
+    client.dropDatabase("nosuch", Warehouse.DEFAULT_DATABASE_NAME, true, false, false);
+  }
+
   private Database getDatabaseWithAllParametersSet() throws Exception {
     return new DatabaseBuilder()
                .setName("dummy")
@@ -514,6 +650,6 @@ public class TestDatabases extends MetaStoreClientTest {
                .setDescription("dummy description")
                .addParam("param_key_1", "param_value_1")
                .addParam("param_key_2", "param_value_2")
-               .build();
+               .build(metaStore.getConf());
   }
 }

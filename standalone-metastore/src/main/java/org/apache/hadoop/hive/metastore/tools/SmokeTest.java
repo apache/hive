@@ -46,6 +46,8 @@ public class SmokeTest {
   private static final String tableName = "internal_smoke_test_table";
   private static final String partValue = "internal_smoke_test_val1";
 
+  private static Configuration conf;
+
   private SmokeTest() {
 
   }
@@ -63,25 +65,22 @@ public class SmokeTest {
     Database db = new DatabaseBuilder()
         .setName(dbName)
         .setLocation(dbDir.getAbsolutePath())
-        .build();
-    client.createDatabase(db);
+        .create(client, conf);
 
     LOG.info("Going to create table " + tableName);
     Table table = new TableBuilder()
-        .setDbName(db)
+        .inDb(db)
         .setTableName(tableName)
         .addCol("col1", ColumnType.INT_TYPE_NAME)
         .addCol("col2", ColumnType.TIMESTAMP_TYPE_NAME)
         .addPartCol("pcol1", ColumnType.STRING_TYPE_NAME)
-        .build();
-    client.createTable(table);
+        .create(client, conf);
 
     LOG.info("Going to create partition with value " + partValue);
     Partition part = new PartitionBuilder()
-        .fromTable(table)
+        .inTable(table)
         .addValue("val1")
-        .build();
-    client.add_partition(part);
+        .addToTable(client, conf);
 
     LOG.info("Going to list the partitions");
     List<Partition> parts = client.listPartitions(dbName, tableName, (short)-1);
@@ -96,7 +95,7 @@ public class SmokeTest {
 
   public static void main(String[] args) throws Exception {
     SmokeTest test = new SmokeTest();
-    Configuration conf = MetastoreConf.newMetastoreConf();
+    conf = MetastoreConf.newMetastoreConf();
     IMetaStoreClient client = new HiveMetaStoreClient(conf);
     test.runTest(client);
   }

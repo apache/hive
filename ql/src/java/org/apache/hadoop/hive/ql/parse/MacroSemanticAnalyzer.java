@@ -86,7 +86,7 @@ public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     List<FieldSchema> arguments =
-      BaseSemanticAnalyzer.getColumns((ASTNode)ast.getChild(1), true);
+      BaseSemanticAnalyzer.getColumns((ASTNode)ast.getChild(1), true, conf);
     boolean isNoArgumentMacro = arguments.size() == 0;
     RowResolver rowResolver = new RowResolver();
     ArrayList<String> macroColNames = new ArrayList<String>(arguments.size());

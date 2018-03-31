@@ -18,16 +18,22 @@
 
 package org.apache.hadoop.hive.metastore.client;
 
+import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
+import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
+import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
+import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocolException;
 import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
@@ -39,7 +45,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 
 /**
  * Test class for IMetaStoreClient API. Testing the Table related functions for metadata
@@ -78,7 +88,7 @@ public class TestTablesGetExists extends MetaStoreClientTest {
             .setDbName(DEFAULT_DATABASE)
             .setTableName("test_table")
             .addCol("test_col", "int")
-            .build();
+            .create(client, metaStore.getConf());
 
     testTables[1] =
         new TableBuilder()
@@ -86,14 +96,14 @@ public class TestTablesGetExists extends MetaStoreClientTest {
             .setTableName("test_view")
             .addCol("test_col", "int")
             .setType("VIEW")
-            .build();
+            .create(client, metaStore.getConf());
 
     testTables[2] =
         new TableBuilder()
             .setDbName(DEFAULT_DATABASE)
             .setTableName("test_table_to_find_1")
             .addCol("test_col", "int")
-            .build();
+            .create(client, metaStore.getConf());
 
     testTables[3] =
         new TableBuilder()
@@ -101,39 +111,35 @@ public class TestTablesGetExists extends MetaStoreClientTest {
             .setTableName("test_table_to_find_2")
             .addCol("test_col", "int")
             .setType("VIEW")
-            .build();
+            .create(client, metaStore.getConf());
 
     testTables[4] =
         new TableBuilder()
             .setDbName(DEFAULT_DATABASE)
             .setTableName("test_table_hidden_1")
             .addCol("test_col", "int")
-            .build();
+            .create(client, metaStore.getConf());
 
-    client.createDatabase(new DatabaseBuilder().setName(OTHER_DATABASE).build());
+    new DatabaseBuilder().setName(OTHER_DATABASE).create(client, metaStore.getConf());
 
     testTables[5] =
         new TableBuilder()
             .setDbName(OTHER_DATABASE)
             .setTableName("test_table")
             .addCol("test_col", "int")
-            .build();
+            .create(client, metaStore.getConf());
 
     testTables[6] =
         new TableBuilder()
             .setDbName(OTHER_DATABASE)
             .setTableName("test_table_to_find_3")
             .addCol("test_col", "int")
-            .build();
-
-    // Create the tables in the MetaStore
-    for(int i=0; i < testTables.length; i++) {
-      client.createTable(testTables[i]);
-    }
+            .create(client, metaStore.getConf());
 
     // Reload tables from the MetaStore
     for(int i=0; i < testTables.length; i++) {
-      testTables[i] = client.getTable(testTables[i].getDbName(), testTables[i].getTableName());
+      testTables[i] = client.getTable(testTables[i].getCatName(), testTables[i].getDbName(),
+          testTables[i].getTableName());
     }
   }
 
@@ -153,12 +159,12 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     Table table = testTables[0];
 
     // Test in upper case
-    Table resultUpper = client.getTable(table.getDbName().toUpperCase(),
-        table.getTableName().toUpperCase());
+    Table resultUpper = client.getTable(table.getCatName().toUpperCase(),
+        table.getDbName().toUpperCase(), table.getTableName().toUpperCase());
     Assert.assertEquals("Comparing tables", table, resultUpper);
 
     // Test in mixed case
-    Table resultMix = client.getTable("DeFaUlt", "tEsT_TabLE");
+    Table resultMix = client.getTable("hIvE", "DeFaUlt", "tEsT_TabLE");
     Assert.assertEquals("Comparing tables", table, resultMix);
   }
 
@@ -222,7 +228,7 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     }
 
     // Drop one table, see what remains
-    client.dropTable(testTables[1].getDbName(), testTables[1].getTableName());
+    client.dropTable(testTables[1].getCatName(), testTables[1].getDbName(), testTables[1] .getTableName());
     tables = client.getAllTables(DEFAULT_DATABASE);
     Assert.assertEquals("All tables size", 4, tables.size());
     for(Table table : testTables) {
@@ -274,7 +280,7 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     Assert.assertEquals("No such table size", 0, tables.size());
 
     // Look for tables without pattern
-    tables = client.getTables(DEFAULT_DATABASE, null);
+    tables = client.getTables(DEFAULT_DATABASE, (String)null);
     Assert.assertEquals("No such functions size", 5, tables.size());
 
     // Look for tables with empty pattern
@@ -305,8 +311,9 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     // Using the second table, since a table called "test_table" exists in both databases
     Table table = testTables[1];
 
-    Assert.assertTrue("Table exists", client.tableExists(table.getDbName(), table.getTableName()));
-    Assert.assertFalse("Table not exists", client.tableExists(table.getDbName(),
+    Assert.assertTrue("Table exists", client.tableExists(table.getCatName(), table.getDbName(),
+        table.getTableName()));
+    Assert.assertFalse("Table not exists", client.tableExists(table.getCatName(), table.getDbName(),
         "non_existing_table"));
 
     // No such database
@@ -323,11 +330,11 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     Table table = testTables[0];
 
     // Test in upper case
-    Assert.assertTrue("Table exists", client.tableExists(table.getDbName().toUpperCase(),
-        table.getTableName().toUpperCase()));
+    Assert.assertTrue("Table exists", client.tableExists(table.getCatName().toUpperCase(),
+        table.getDbName().toUpperCase(), table.getTableName().toUpperCase()));
 
     // Test in mixed case
-    Assert.assertTrue("Table exists", client.tableExists("DeFaUlt", "tEsT_TabLE"));
+    Assert.assertTrue("Table exists", client.tableExists("hIVe", "DeFaUlt", "tEsT_TabLE"));
   }
 
   @Test
@@ -360,7 +367,7 @@ public class TestTablesGetExists extends MetaStoreClientTest {
 
   @Test
   public void testGetTableObjectsByName() throws Exception {
-    List<String> tableNames = new ArrayList<String>();
+    List<String> tableNames = new ArrayList<>();
     tableNames.add(testTables[0].getTableName());
     tableNames.add(testTables[1].getTableName());
     List<Table> tables = client.getTableObjectsByName(DEFAULT_DATABASE, tableNames);
@@ -374,17 +381,17 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     }
 
     // Test with empty array
-    tables = client.getTableObjectsByName(DEFAULT_DATABASE, new ArrayList<String>());
+    tables = client.getTableObjectsByName(DEFAULT_DATABASE, new ArrayList<>());
     Assert.assertEquals("Found tables", 0, tables.size());
 
     // Test with table name which does not exists
-    tableNames = new ArrayList<String>();
+    tableNames = new ArrayList<>();
     tableNames.add("no_such_table");
-    client.getTableObjectsByName(testTables[0].getDbName(), tableNames);
+    client.getTableObjectsByName(testTables[0].getCatName(), testTables[0].getDbName(), tableNames);
     Assert.assertEquals("Found tables", 0, tables.size());
 
     // Test with table name which does not exists in the given database
-    tableNames = new ArrayList<String>();
+    tableNames = new ArrayList<>();
     tableNames.add(testTables[0].getTableName());
     client.getTableObjectsByName(OTHER_DATABASE, tableNames);
     Assert.assertEquals("Found tables", 0, tables.size());
@@ -396,23 +403,24 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     Table table = testTables[0];
 
     // Test in upper case
-    List<String> tableNames = new ArrayList<String>();
+    List<String> tableNames = new ArrayList<>();
     tableNames.add(testTables[0].getTableName().toUpperCase());
-    List<Table> tables = client.getTableObjectsByName(table.getDbName().toUpperCase(), tableNames);
+    List<Table> tables = client.getTableObjectsByName(table.getCatName().toUpperCase(),
+        table.getDbName().toUpperCase(), tableNames);
     Assert.assertEquals("Found tables", 1, tables.size());
     Assert.assertEquals("Comparing tables", table, tables.get(0));
 
     // Test in mixed case
-    tableNames = new ArrayList<String>();
+    tableNames = new ArrayList<>();
     tableNames.add("tEsT_TabLE");
-    tables = client.getTableObjectsByName("DeFaUlt", tableNames);
+    tables = client.getTableObjectsByName("HiVe", "DeFaUlt", tableNames);
     Assert.assertEquals("Found tables", 1, tables.size());
     Assert.assertEquals("Comparing tables", table, tables.get(0));
   }
 
   @Test(expected = UnknownDBException.class)
   public void testGetTableObjectsByNameNoSuchDatabase() throws Exception {
-    List<String> tableNames = new ArrayList<String>();
+    List<String> tableNames = new ArrayList<>();
     tableNames.add(testTables[0].getTableName());
 
     client.getTableObjectsByName("no_such_database", tableNames);
@@ -421,7 +429,7 @@ public class TestTablesGetExists extends MetaStoreClientTest {
   @Test
   public void testGetTableObjectsByNameNullDatabase() throws Exception {
     try {
-      List<String> tableNames = new ArrayList<String>();
+      List<String> tableNames = new ArrayList<>();
       tableNames.add(OTHER_DATABASE);
 
       client.getTableObjectsByName(null, tableNames);
@@ -447,5 +455,56 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     } catch (TTransportException exception) {
       // Expected exception - Remote MetaStore
     }
+  }
+
+  // Tests for getTable in other catalogs are covered in TestTablesCreateDropAlterTruncate.
+  @Test
+  public void otherCatalog() throws TException {
+    String catName = "get_exists_tables_in_other_catalogs";
+    Catalog cat = new CatalogBuilder()
+        .setName(catName)
+        .setLocation(MetaStoreTestUtils.getTestWarehouseDir(catName))
+        .build();
+    client.createCatalog(cat);
+
+    String dbName = "db_in_other_catalog";
+    // For this one don't specify a location to make sure it gets put in the catalog directory
+    Database db = new DatabaseBuilder()
+        .setName(dbName)
+        .setCatalogName(catName)
+        .create(client, metaStore.getConf());
+
+    String[] tableNames = new String[4];
+    for (int i = 0; i < tableNames.length; i++) {
+      tableNames[i] = "table_in_other_catalog_" + i;
+      new TableBuilder()
+          .inDb(db)
+          .setTableName(tableNames[i])
+          .addCol("col1_" + i, ColumnType.STRING_TYPE_NAME)
+          .addCol("col2_" + i, ColumnType.INT_TYPE_NAME)
+          .create(client, metaStore.getConf());
+    }
+
+    Set<String> tables = new HashSet<>(client.getTables(catName, dbName, "*e_in_other_*"));
+    Assert.assertEquals(4, tables.size());
+    for (String tableName : tableNames) Assert.assertTrue(tables.contains(tableName));
+
+    List<String> fetchedNames = client.getTables(catName, dbName, "*_3");
+    Assert.assertEquals(1, fetchedNames.size());
+    Assert.assertEquals(tableNames[3], fetchedNames.get(0));
+
+    Assert.assertTrue("Table exists", client.tableExists(catName, dbName, tableNames[0]));
+    Assert.assertFalse("Table not exists", client.tableExists(catName, dbName, "non_existing_table"));
+  }
+
+  @Test
+  public void getTablesBogusCatalog() throws TException {
+    Assert.assertEquals(0, client.getTables("nosuch", DEFAULT_DATABASE_NAME, "*_to_find_*").size());
+  }
+
+  @Test
+  public void tableExistsBogusCatalog() throws TException {
+    Assert.assertFalse(client.tableExists("nosuch", testTables[0].getDbName(),
+        testTables[0].getTableName()));
   }
 }

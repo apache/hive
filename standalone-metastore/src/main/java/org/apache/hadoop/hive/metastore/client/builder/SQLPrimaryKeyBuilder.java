@@ -17,8 +17,12 @@
  */
 package org.apache.hadoop.hive.metastore.client.builder;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Builder for {@link SQLPrimaryKey}.  Only requires what {@link ConstraintBuilder} requires.
@@ -34,9 +38,15 @@ public class SQLPrimaryKeyBuilder extends ConstraintBuilder<SQLPrimaryKeyBuilder
     return setConstraintName(name);
   }
 
-  public SQLPrimaryKey build() throws MetaException {
-    checkBuildable("primary_key");
-    return new SQLPrimaryKey(dbName, tableName, columnName, keySeq, constraintName, enable,
-        validate, rely);
+  public List<SQLPrimaryKey> build(Configuration conf) throws MetaException {
+    checkBuildable("primary_key", conf);
+    List<SQLPrimaryKey> pk = new ArrayList<>(columns.size());
+    for (String colName : columns) {
+      SQLPrimaryKey keyCol = new SQLPrimaryKey(dbName, tableName, colName, getNextSeq(),
+          constraintName, enable, validate, rely);
+      keyCol.setCatName(catName);
+      pk.add(keyCol);
+    }
+    return pk;
   }
 }

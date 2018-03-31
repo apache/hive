@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField PARTITION_ORDER_FIELD_DESC = new org.apache.thrift.protocol.TField("partitionOrder", org.apache.thrift.protocol.TType.LIST, (short)6);
   private static final org.apache.thrift.protocol.TField ASCENDING_FIELD_DESC = new org.apache.thrift.protocol.TField("ascending", org.apache.thrift.protocol.TType.BOOL, (short)7);
   private static final org.apache.thrift.protocol.TField MAX_PARTS_FIELD_DESC = new org.apache.thrift.protocol.TField("maxParts", org.apache.thrift.protocol.TType.I64, (short)8);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)9);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -61,6 +62,7 @@ import org.slf4j.LoggerFactory;
   private List<FieldSchema> partitionOrder; // optional
   private boolean ascending; // optional
   private long maxParts; // optional
+  private String catName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -71,7 +73,8 @@ import org.slf4j.LoggerFactory;
     FILTER((short)5, "filter"),
     PARTITION_ORDER((short)6, "partitionOrder"),
     ASCENDING((short)7, "ascending"),
-    MAX_PARTS((short)8, "maxParts");
+    MAX_PARTS((short)8, "maxParts"),
+    CAT_NAME((short)9, "catName");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -102,6 +105,8 @@ import org.slf4j.LoggerFactory;
           return ASCENDING;
         case 8: // MAX_PARTS
           return MAX_PARTS;
+        case 9: // CAT_NAME
+          return CAT_NAME;
         default:
           return null;
       }
@@ -146,7 +151,7 @@ import org.slf4j.LoggerFactory;
   private static final int __ASCENDING_ISSET_ID = 1;
   private static final int __MAXPARTS_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.APPLY_DISTINCT,_Fields.FILTER,_Fields.PARTITION_ORDER,_Fields.ASCENDING,_Fields.MAX_PARTS};
+  private static final _Fields optionals[] = {_Fields.APPLY_DISTINCT,_Fields.FILTER,_Fields.PARTITION_ORDER,_Fields.ASCENDING,_Fields.MAX_PARTS,_Fields.CAT_NAME};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -168,6 +173,8 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.MAX_PARTS, new org.apache.thrift.meta_data.FieldMetaData("maxParts", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(PartitionValuesRequest.class, metaDataMap);
   }
@@ -223,6 +230,9 @@ import org.slf4j.LoggerFactory;
     }
     this.ascending = other.ascending;
     this.maxParts = other.maxParts;
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
   }
 
   public PartitionValuesRequest deepCopy() {
@@ -242,6 +252,7 @@ import org.slf4j.LoggerFactory;
 
     this.maxParts = -1L;
 
+    this.catName = null;
   }
 
   public String getDbName() {
@@ -455,6 +466,29 @@ import org.slf4j.LoggerFactory;
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __MAXPARTS_ISSET_ID, value);
   }
 
+  public String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case DB_NAME:
@@ -521,6 +555,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((String)value);
+      }
+      break;
+
     }
   }
 
@@ -550,6 +592,9 @@ import org.slf4j.LoggerFactory;
     case MAX_PARTS:
       return getMaxParts();
 
+    case CAT_NAME:
+      return getCatName();
+
     }
     throw new IllegalStateException();
   }
@@ -577,6 +622,8 @@ import org.slf4j.LoggerFactory;
       return isSetAscending();
     case MAX_PARTS:
       return isSetMaxParts();
+    case CAT_NAME:
+      return isSetCatName();
     }
     throw new IllegalStateException();
   }
@@ -666,6 +713,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
+
     return true;
   }
 
@@ -712,6 +768,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_maxParts);
     if (present_maxParts)
       list.add(maxParts);
+
+    boolean present_catName = true && (isSetCatName());
+    list.add(present_catName);
+    if (present_catName)
+      list.add(catName);
 
     return list.hashCode();
   }
@@ -804,6 +865,16 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetCatName()).compareTo(other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -885,6 +956,16 @@ import org.slf4j.LoggerFactory;
       sb.append(this.maxParts);
       first = false;
     }
+    if (isSetCatName()) {
+      if (!first) sb.append(", ");
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -961,14 +1042,14 @@ import org.slf4j.LoggerFactory;
           case 3: // PARTITION_KEYS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list506 = iprot.readListBegin();
-                struct.partitionKeys = new ArrayList<FieldSchema>(_list506.size);
-                FieldSchema _elem507;
-                for (int _i508 = 0; _i508 < _list506.size; ++_i508)
+                org.apache.thrift.protocol.TList _list514 = iprot.readListBegin();
+                struct.partitionKeys = new ArrayList<FieldSchema>(_list514.size);
+                FieldSchema _elem515;
+                for (int _i516 = 0; _i516 < _list514.size; ++_i516)
                 {
-                  _elem507 = new FieldSchema();
-                  _elem507.read(iprot);
-                  struct.partitionKeys.add(_elem507);
+                  _elem515 = new FieldSchema();
+                  _elem515.read(iprot);
+                  struct.partitionKeys.add(_elem515);
                 }
                 iprot.readListEnd();
               }
@@ -996,14 +1077,14 @@ import org.slf4j.LoggerFactory;
           case 6: // PARTITION_ORDER
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list509 = iprot.readListBegin();
-                struct.partitionOrder = new ArrayList<FieldSchema>(_list509.size);
-                FieldSchema _elem510;
-                for (int _i511 = 0; _i511 < _list509.size; ++_i511)
+                org.apache.thrift.protocol.TList _list517 = iprot.readListBegin();
+                struct.partitionOrder = new ArrayList<FieldSchema>(_list517.size);
+                FieldSchema _elem518;
+                for (int _i519 = 0; _i519 < _list517.size; ++_i519)
                 {
-                  _elem510 = new FieldSchema();
-                  _elem510.read(iprot);
-                  struct.partitionOrder.add(_elem510);
+                  _elem518 = new FieldSchema();
+                  _elem518.read(iprot);
+                  struct.partitionOrder.add(_elem518);
                 }
                 iprot.readListEnd();
               }
@@ -1024,6 +1105,14 @@ import org.slf4j.LoggerFactory;
             if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
               struct.maxParts = iprot.readI64();
               struct.setMaxPartsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 9: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -1055,9 +1144,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PARTITION_KEYS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitionKeys.size()));
-          for (FieldSchema _iter512 : struct.partitionKeys)
+          for (FieldSchema _iter520 : struct.partitionKeys)
           {
-            _iter512.write(oprot);
+            _iter520.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1080,9 +1169,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(PARTITION_ORDER_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitionOrder.size()));
-            for (FieldSchema _iter513 : struct.partitionOrder)
+            for (FieldSchema _iter521 : struct.partitionOrder)
             {
-              _iter513.write(oprot);
+              _iter521.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -1098,6 +1187,13 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(MAX_PARTS_FIELD_DESC);
         oprot.writeI64(struct.maxParts);
         oprot.writeFieldEnd();
+      }
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -1120,9 +1216,9 @@ import org.slf4j.LoggerFactory;
       oprot.writeString(struct.tblName);
       {
         oprot.writeI32(struct.partitionKeys.size());
-        for (FieldSchema _iter514 : struct.partitionKeys)
+        for (FieldSchema _iter522 : struct.partitionKeys)
         {
-          _iter514.write(oprot);
+          _iter522.write(oprot);
         }
       }
       BitSet optionals = new BitSet();
@@ -1141,7 +1237,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetMaxParts()) {
         optionals.set(4);
       }
-      oprot.writeBitSet(optionals, 5);
+      if (struct.isSetCatName()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
       if (struct.isSetApplyDistinct()) {
         oprot.writeBool(struct.applyDistinct);
       }
@@ -1151,9 +1250,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetPartitionOrder()) {
         {
           oprot.writeI32(struct.partitionOrder.size());
-          for (FieldSchema _iter515 : struct.partitionOrder)
+          for (FieldSchema _iter523 : struct.partitionOrder)
           {
-            _iter515.write(oprot);
+            _iter523.write(oprot);
           }
         }
       }
@@ -1162,6 +1261,9 @@ import org.slf4j.LoggerFactory;
       }
       if (struct.isSetMaxParts()) {
         oprot.writeI64(struct.maxParts);
+      }
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
       }
     }
 
@@ -1173,18 +1275,18 @@ import org.slf4j.LoggerFactory;
       struct.tblName = iprot.readString();
       struct.setTblNameIsSet(true);
       {
-        org.apache.thrift.protocol.TList _list516 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.partitionKeys = new ArrayList<FieldSchema>(_list516.size);
-        FieldSchema _elem517;
-        for (int _i518 = 0; _i518 < _list516.size; ++_i518)
+        org.apache.thrift.protocol.TList _list524 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.partitionKeys = new ArrayList<FieldSchema>(_list524.size);
+        FieldSchema _elem525;
+        for (int _i526 = 0; _i526 < _list524.size; ++_i526)
         {
-          _elem517 = new FieldSchema();
-          _elem517.read(iprot);
-          struct.partitionKeys.add(_elem517);
+          _elem525 = new FieldSchema();
+          _elem525.read(iprot);
+          struct.partitionKeys.add(_elem525);
         }
       }
       struct.setPartitionKeysIsSet(true);
-      BitSet incoming = iprot.readBitSet(5);
+      BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
         struct.applyDistinct = iprot.readBool();
         struct.setApplyDistinctIsSet(true);
@@ -1195,14 +1297,14 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list519 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.partitionOrder = new ArrayList<FieldSchema>(_list519.size);
-          FieldSchema _elem520;
-          for (int _i521 = 0; _i521 < _list519.size; ++_i521)
+          org.apache.thrift.protocol.TList _list527 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.partitionOrder = new ArrayList<FieldSchema>(_list527.size);
+          FieldSchema _elem528;
+          for (int _i529 = 0; _i529 < _list527.size; ++_i529)
           {
-            _elem520 = new FieldSchema();
-            _elem520.read(iprot);
-            struct.partitionOrder.add(_elem520);
+            _elem528 = new FieldSchema();
+            _elem528.read(iprot);
+            struct.partitionOrder.add(_elem528);
           }
         }
         struct.setPartitionOrderIsSet(true);
@@ -1214,6 +1316,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(4)) {
         struct.maxParts = iprot.readI64();
         struct.setMaxPartsIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
       }
     }
   }

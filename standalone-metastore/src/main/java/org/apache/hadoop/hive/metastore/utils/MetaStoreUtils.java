@@ -118,6 +118,28 @@ public class MetaStoreUtils {
   private static final Charset ENCODING = StandardCharsets.UTF_8;
   private static final Logger LOG = LoggerFactory.getLogger(MetaStoreUtils.class);
 
+  // The following two are public for any external users who wish to use them.
+  /**
+   * This character is used to mark a database name as having a catalog name prepended.  This
+   * marker should be placed first in the String to make it easy to determine that this has both
+   * a catalog and a database name.  @ is chosen as it is not used in regular expressions.  This
+   * is only intended for use when making old Thrift calls that do not support catalog names.
+   */
+  public static final char CATALOG_DB_THRIFT_NAME_MARKER = '@';
+
+  /**
+   * This String is used to seaprate the catalog name from the database name.  This should only
+   * be used in Strings that are prepended with {@link #CATALOG_DB_THRIFT_NAME_MARKER}.  # is
+   * chosen because it is not used in regular expressions.  this is only intended for use when
+   * making old Thrift calls that do not support catalog names.
+   */
+  public static final String CATALOG_DB_SEPARATOR = "#";
+
+  /**
+   * Mark a database as being empty (as distinct from null).
+   */
+  public static final String DB_EMPTY_MARKER = "!";
+
   // Right now we only support one special character '/'.
   // More special characters can be added accordingly in the future.
   // NOTE:
@@ -217,7 +239,7 @@ public class MetaStoreUtils {
 
   // Given a list of partStats, this function will give you an aggr stats
   public static List<ColumnStatisticsObj> aggrPartitionStats(List<ColumnStatistics> partStats,
-      String dbName, String tableName, List<String> partNames, List<String> colNames,
+      String catName, String dbName, String tableName, List<String> partNames, List<String> colNames,
       boolean areAllPartsFound, boolean useDensityFunctionForNDVEstimation, double ndvTuner)
       throws MetaException {
     Map<ColumnStatsAggregator, List<ColStatsObjWithSourceInfo>> colStatsMap =
@@ -237,12 +259,12 @@ public class MetaStoreUtils {
               new ArrayList<ColStatsObjWithSourceInfo>());
         }
         colStatsMap.get(aliasToAggregator.get(obj.getColName()))
-            .add(new ColStatsObjWithSourceInfo(obj, dbName, tableName, partName));
+            .add(new ColStatsObjWithSourceInfo(obj, catName, dbName, tableName, partName));
       }
     }
     if (colStatsMap.size() < 1) {
-      LOG.debug("No stats data found for: dbName= {},  tblName= {}, partNames= {}, colNames= {}",
-          dbName, tableName, partNames, colNames);
+      LOG.debug("No stats data found for: tblName= {}, partNames= {}, colNames= {}",
+          Warehouse.getCatalogQualifiedTableName(catName, dbName, tableName), partNames, colNames);
       return new ArrayList<ColumnStatisticsObj>();
     }
     return aggrPartitionStats(colStatsMap, partNames, areAllPartsFound,
@@ -1622,13 +1644,15 @@ public class MetaStoreUtils {
   // ColumnStatisticsObj with info about its db, table, partition (if table is partitioned)
   public static class ColStatsObjWithSourceInfo {
     private final ColumnStatisticsObj colStatsObj;
+    private final String catName;
     private final String dbName;
     private final String tblName;
     private final String partName;
 
-    public ColStatsObjWithSourceInfo(ColumnStatisticsObj colStatsObj, String dbName, String tblName,
+    public ColStatsObjWithSourceInfo(ColumnStatisticsObj colStatsObj, String catName, String dbName, String tblName,
         String partName) {
       this.colStatsObj = colStatsObj;
+      this.catName = catName;
       this.dbName = dbName;
       this.tblName = tblName;
       this.partName = partName;
@@ -1636,6 +1660,10 @@ public class MetaStoreUtils {
 
     public ColumnStatisticsObj getColStatsObj() {
       return colStatsObj;
+    }
+
+    public String getCatName() {
+      return catName;
     }
 
     public String getDbName() {
@@ -1649,5 +1677,110 @@ public class MetaStoreUtils {
     public String getPartName() {
       return partName;
     }
+  }
+
+  private static boolean hasCatalogName(String dbName) {
+    return dbName != null && dbName.length() > 0 &&
+        dbName.charAt(0) == CATALOG_DB_THRIFT_NAME_MARKER;
+  }
+
+  /**
+   * Given a catalog name and database name cram them together into one string.  This method can
+   * be used if you do not know the catalog name, in which case the default catalog will be
+   * retrieved from the conf object.  The resulting string can be parsed apart again via
+   * {@link #parseDbName(String, Configuration)}.
+   * @param catalogName catalog name, can be null if no known.
+   * @param dbName database name, can be null or empty.
+   * @param conf configuration object, used to determine default catalog if catalogName is null
+   * @return one string that contains both.
+   */
+  public static String prependCatalogToDbName(@Nullable String catalogName, @Nullable String dbName,
+                                              Configuration conf) {
+    if (catalogName == null) catalogName = getDefaultCatalog(conf);
+    StringBuilder buf = new StringBuilder()
+        .append(CATALOG_DB_THRIFT_NAME_MARKER)
+        .append(catalogName)
+        .append(CATALOG_DB_SEPARATOR);
+    if (dbName != null) {
+      if (dbName.isEmpty()) buf.append(DB_EMPTY_MARKER);
+      else buf.append(dbName);
+    }
+    return buf.toString();
+  }
+
+  /**
+   * Given a catalog name and database name, cram them together into one string.  These can be
+   * parsed apart again via {@link #parseDbName(String, Configuration)}.
+   * @param catalogName catalog name.  This cannot be null.  If this might be null use
+   *                    {@link #prependCatalogToDbName(String, String, Configuration)} instead.
+   * @param dbName database name.
+   * @return one string that contains both.
+   */
+  public static String prependNotNullCatToDbName(String catalogName, String dbName) {
+    assert catalogName != null;
+    return prependCatalogToDbName(catalogName, dbName, null);
+  }
+
+  /**
+   * Prepend the default 'hive' catalog onto the database name.
+   * @param dbName database name
+   * @param conf configuration object, used to determine default catalog
+   * @return one string with the 'hive' catalog name prepended.
+   */
+  public static String prependCatalogToDbName(String dbName, Configuration conf) {
+    return prependCatalogToDbName(null, dbName, conf);
+  }
+
+  private final static String[] nullCatalogAndDatabase = {null, null};
+
+  /**
+   * Parse the catalog name out of the database name.  If no catalog name is present then the
+   * default catalog (as set in configuration file) will be assumed.
+   * @param dbName name of the database.  This may or may not contain the catalog name.
+   * @param conf configuration object, used to determine the default catalog if it is not present
+   *            in the database name.
+   * @return an array of two elements, the first being the catalog name, the second the database
+   * name.
+   * @throws MetaException if the name is not either just a database name or a catalog plus
+   * database name with the proper delimiters.
+   */
+  public static String[] parseDbName(String dbName, Configuration conf) throws MetaException {
+    if (dbName == null) return nullCatalogAndDatabase;
+    if (hasCatalogName(dbName)) {
+      if (dbName.endsWith(CATALOG_DB_SEPARATOR)) {
+        // This means the DB name is null
+        return new String[] {dbName.substring(1, dbName.length() - 1), null};
+      } else if (dbName.endsWith(DB_EMPTY_MARKER)) {
+        // This means the DB name is empty
+        return new String[] {dbName.substring(1, dbName.length() - DB_EMPTY_MARKER.length() - 1), ""};
+      }
+      String[] names = dbName.substring(1).split(CATALOG_DB_SEPARATOR, 2);
+      if (names.length != 2) {
+        throw new MetaException(dbName + " is prepended with the catalog marker but does not " +
+            "appear to have a catalog name in it");
+      }
+      return names;
+    } else {
+      return new String[] {getDefaultCatalog(conf), dbName};
+    }
+  }
+
+  /**
+   * Position in the array returned by {@link #parseDbName} that has the catalog name.
+   */
+  public static final int CAT_NAME = 0;
+  /**
+   * Position in the array returned by {@link #parseDbName} that has the database name.
+   */
+  public static final int DB_NAME = 1;
+
+  public static String getDefaultCatalog(Configuration conf) {
+    if (conf == null) {
+      LOG.warn("Configuration is null, so going with default catalog.");
+      return Warehouse.DEFAULT_CATALOG_NAME;
+    }
+    String catName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT);
+    if (catName == null || "".equals(catName)) catName = Warehouse.DEFAULT_CATALOG_NAME;
+    return catName;
   }
 }

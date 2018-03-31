@@ -108,6 +108,9 @@ import org.slf4j.LoggerFactory;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+
 /**
  * BaseSemanticAnalyzer.
  *
@@ -646,16 +649,16 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   protected List<FieldSchema> getColumns(ASTNode ast) throws SemanticException {
-    return getColumns(ast, true);
+    return getColumns(ast, true, conf);
   }
 
   /**
    * Get the list of FieldSchema out of the ASTNode.
    */
-  public static List<FieldSchema> getColumns(ASTNode ast, boolean lowerCase) throws SemanticException {
-    return getColumns(ast, lowerCase, null,new ArrayList<SQLPrimaryKey>(), new ArrayList<SQLForeignKey>(),
-            new ArrayList<SQLUniqueConstraint>(), new ArrayList<SQLNotNullConstraint>(),
-        new ArrayList<SQLDefaultConstraint>(), new ArrayList<SQLCheckConstraint>());
+  public static List<FieldSchema> getColumns(ASTNode ast, boolean lowerCase, Configuration conf)
+      throws SemanticException {
+    return getColumns(ast, lowerCase, null, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(),
+            new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), conf);
   }
 
   private static class ConstraintInfo {
@@ -717,79 +720,83 @@ public abstract class BaseSemanticAnalyzer {
   /**
    * Process the unique constraints from the ast node and populate the SQLUniqueConstraint list.
    */
-  protected static void processUniqueConstraints(String databaseName, String tableName,
+  protected static void processUniqueConstraints(String catName, String databaseName, String tableName,
       ASTNode child, List<SQLUniqueConstraint> uniqueConstraints) throws SemanticException {
     List<ConstraintInfo> uniqueInfos = new ArrayList<ConstraintInfo>();
     generateConstraintInfos(child, uniqueInfos);
-    constraintInfosToUniqueConstraints(databaseName, tableName, uniqueInfos, uniqueConstraints);
+    constraintInfosToUniqueConstraints(catName, databaseName, tableName, uniqueInfos, uniqueConstraints);
   }
 
-  protected static void processUniqueConstraints(String databaseName, String tableName,
+  protected static void processUniqueConstraints(String catName, String databaseName, String tableName,
       ASTNode child, List<String> columnNames, List<SQLUniqueConstraint> uniqueConstraints)
           throws SemanticException {
     List<ConstraintInfo> uniqueInfos = new ArrayList<ConstraintInfo>();
     generateConstraintInfos(child, columnNames, uniqueInfos, null, null);
-    constraintInfosToUniqueConstraints(databaseName, tableName, uniqueInfos, uniqueConstraints);
+    constraintInfosToUniqueConstraints(catName, databaseName, tableName, uniqueInfos, uniqueConstraints);
   }
 
-  private static void constraintInfosToUniqueConstraints(String databaseName, String tableName,
+  private static void constraintInfosToUniqueConstraints(String catName, String databaseName, String tableName,
           List<ConstraintInfo> uniqueInfos, List<SQLUniqueConstraint> uniqueConstraints) {
     int i = 1;
     for (ConstraintInfo uniqueInfo : uniqueInfos) {
-      uniqueConstraints.add(new SQLUniqueConstraint(databaseName, tableName, uniqueInfo.colName,
+      uniqueConstraints.add(new SQLUniqueConstraint(catName, databaseName, tableName, uniqueInfo.colName,
               i++, uniqueInfo.constraintName, uniqueInfo.enable, uniqueInfo.validate, uniqueInfo.rely));
     }
   }
 
-  protected static void processCheckConstraints(String databaseName, String tableName,
+  protected static void processCheckConstraints(String catName, String databaseName, String tableName,
                                                   ASTNode child, List<String> columnNames,
                                                 List<SQLCheckConstraint> checkConstraints, final ASTNode typeChild,
                                                 final TokenRewriteStream tokenRewriteStream)
       throws SemanticException {
     List<ConstraintInfo> checkInfos = new ArrayList<ConstraintInfo>();
     generateConstraintInfos(child, columnNames, checkInfos, typeChild, tokenRewriteStream);
-    constraintInfosToCheckConstraints(databaseName, tableName, checkInfos, checkConstraints);
+    constraintInfosToCheckConstraints(catName, databaseName, tableName, checkInfos, checkConstraints);
   }
 
-  private static void constraintInfosToCheckConstraints(String databaseName, String tableName,
+  private static void constraintInfosToCheckConstraints(String catName, String databaseName, String tableName,
                                                           List<ConstraintInfo> checkInfos,
                                                         List<SQLCheckConstraint> checkConstraints) {
     for (ConstraintInfo checkInfo : checkInfos) {
-      checkConstraints.add(new SQLCheckConstraint(databaseName, tableName, checkInfo.colName,
+      checkConstraints.add(new SQLCheckConstraint(catName, databaseName, tableName, checkInfo.colName,
                                                       checkInfo.defaultValue, checkInfo.constraintName, checkInfo.enable,
                                                       checkInfo.validate, checkInfo.rely));
     }
   }
-  protected static void processDefaultConstraints(String databaseName, String tableName,
+
+  protected static void processDefaultConstraints(String catName, String databaseName, String tableName,
       ASTNode child, List<String> columnNames, List<SQLDefaultConstraint> defaultConstraints, final ASTNode typeChild)
       throws SemanticException {
     List<ConstraintInfo> defaultInfos = new ArrayList<ConstraintInfo>();
     generateConstraintInfos(child, columnNames, defaultInfos, typeChild, null);
-    constraintInfosToDefaultConstraints(databaseName, tableName, defaultInfos, defaultConstraints);
+    constraintInfosToDefaultConstraints(catName, databaseName, tableName, defaultInfos, defaultConstraints);
   }
 
-  private static void constraintInfosToDefaultConstraints(String databaseName, String tableName,
+  private static void constraintInfosToDefaultConstraints(
+      String catName, String databaseName, String tableName,
      List<ConstraintInfo> defaultInfos, List<SQLDefaultConstraint> defaultConstraints) {
     for (ConstraintInfo defaultInfo : defaultInfos) {
-      defaultConstraints.add(new SQLDefaultConstraint(databaseName, tableName, defaultInfo.colName,
-          defaultInfo.defaultValue, defaultInfo.constraintName, defaultInfo.enable,
-          defaultInfo.validate, defaultInfo.rely));
+      defaultConstraints.add(new SQLDefaultConstraint(catName, databaseName, tableName,
+          defaultInfo.colName, defaultInfo.defaultValue, defaultInfo.constraintName,
+          defaultInfo.enable, defaultInfo.validate, defaultInfo.rely));
     }
   }
 
-  protected static void processNotNullConstraints(String databaseName, String tableName,
+  protected static void processNotNullConstraints(String catName, String databaseName, String tableName,
       ASTNode child, List<String> columnNames, List<SQLNotNullConstraint> notNullConstraints)
           throws SemanticException {
     List<ConstraintInfo> notNullInfos = new ArrayList<ConstraintInfo>();
     generateConstraintInfos(child, columnNames, notNullInfos, null, null);
-    constraintInfosToNotNullConstraints(databaseName, tableName, notNullInfos, notNullConstraints);
+    constraintInfosToNotNullConstraints(catName, databaseName, tableName, notNullInfos, notNullConstraints);
   }
 
-  private static void constraintInfosToNotNullConstraints(String databaseName, String tableName,
-          List<ConstraintInfo> notNullInfos, List<SQLNotNullConstraint> notNullConstraints) {
+  private static void constraintInfosToNotNullConstraints(
+      String catName, String databaseName, String tableName, List<ConstraintInfo> notNullInfos,
+      List<SQLNotNullConstraint> notNullConstraints) {
     for (ConstraintInfo notNullInfo : notNullInfos) {
-      notNullConstraints.add(new SQLNotNullConstraint(databaseName, tableName, notNullInfo.colName,
-              notNullInfo.constraintName, notNullInfo.enable, notNullInfo.validate, notNullInfo.rely));
+      notNullConstraints.add(new SQLNotNullConstraint(catName, databaseName, tableName,
+          notNullInfo.colName, notNullInfo.constraintName, notNullInfo.enable, notNullInfo.validate,
+          notNullInfo.rely));
     }
   }
 
@@ -1176,13 +1183,12 @@ public abstract class BaseSemanticAnalyzer {
    * Get the list of FieldSchema out of the ASTNode.
    * Additionally, populate the primaryKeys and foreignKeys if any.
    */
-  public static List<FieldSchema> getColumns(ASTNode ast, boolean lowerCase,
-    TokenRewriteStream tokenRewriteStream,
-    List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
-    List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
-                                           List<SQLDefaultConstraint> defaultConstraints,
-                                             List<SQLCheckConstraint> checkConstraints)
-        throws SemanticException {
+  public static List<FieldSchema> getColumns(
+      ASTNode ast, boolean lowerCase, TokenRewriteStream tokenRewriteStream,
+      List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
+      List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
+      List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints,
+      Configuration conf) throws SemanticException {
     List<FieldSchema> colList = new ArrayList<FieldSchema>();
     Tree parent = ast.getParent();
 
@@ -1192,7 +1198,11 @@ public abstract class BaseSemanticAnalyzer {
       switch (child.getToken().getType()) {
         case HiveParser.TOK_UNIQUE: {
             String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
-            processUniqueConstraints(qualifiedTabName[0], qualifiedTabName[1], child, uniqueConstraints);
+            // TODO CAT - for now always use the default catalog.  Eventually will want to see if
+            // the user specified a catalog
+            String catName = MetaStoreUtils.getDefaultCatalog(conf);
+            processUniqueConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], child,
+                uniqueConstraints);
           }
           break;
         case HiveParser.TOK_PRIMARY_KEY: {
@@ -1237,23 +1247,26 @@ public abstract class BaseSemanticAnalyzer {
             }
             if (constraintChild != null) {
               String[] qualifiedTabName = getQualifiedTableName((ASTNode) parent.getChild(0));
+              // TODO CAT - for now always use the default catalog.  Eventually will want to see if
+              // the user specified a catalog
+              String catName = MetaStoreUtils.getDefaultCatalog(conf);
               // Process column constraint
               switch (constraintChild.getToken().getType()) {
               case HiveParser.TOK_CHECK_CONSTRAINT:
-                processCheckConstraints(qualifiedTabName[0], qualifiedTabName[1], constraintChild,
+                processCheckConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], constraintChild,
                                           ImmutableList.of(col.getName()), checkConstraints, typeChild,
                                         tokenRewriteStream);
                 break;
               case HiveParser.TOK_DEFAULT_VALUE:
-                processDefaultConstraints(qualifiedTabName[0], qualifiedTabName[1], constraintChild,
+                processDefaultConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], constraintChild,
                     ImmutableList.of(col.getName()), defaultConstraints, typeChild);
                 break;
                 case HiveParser.TOK_NOT_NULL:
-                  processNotNullConstraints(qualifiedTabName[0], qualifiedTabName[1], constraintChild,
+                  processNotNullConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], constraintChild,
                           ImmutableList.of(col.getName()), notNullConstraints);
                   break;
                 case HiveParser.TOK_UNIQUE:
-                  processUniqueConstraints(qualifiedTabName[0], qualifiedTabName[1], constraintChild,
+                  processUniqueConstraints(catName, qualifiedTabName[0], qualifiedTabName[1], constraintChild,
                           ImmutableList.of(col.getName()), uniqueConstraints);
                   break;
                 case HiveParser.TOK_PRIMARY_KEY:

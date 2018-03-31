@@ -19,11 +19,15 @@
 package org.apache.hadoop.hive.metastore.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
+import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -31,6 +35,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
@@ -41,6 +46,8 @@ import org.apache.thrift.transport.TTransportException;
 import com.google.common.collect.Lists;
 
 import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -48,6 +55,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import static java.util.stream.Collectors.joining;
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -60,7 +68,7 @@ import static org.junit.Assert.fail;
 @RunWith(Parameterized.class)
 @Category(MetastoreCheckinTest.class)
 public class TestAlterPartitions extends MetaStoreClientTest {
-  public static final int NEW_CREATE_TIME = 123456789;
+  private static final int NEW_CREATE_TIME = 123456789;
   private AbstractMetaStoreService metaStore;
   private IMetaStoreClient client;
 
@@ -95,13 +103,12 @@ public class TestAlterPartitions extends MetaStoreClientTest {
   }
 
   private void createDB(String dbName) throws TException {
-    Database db = new DatabaseBuilder().
+    new DatabaseBuilder().
             setName(dbName).
-            build();
-    client.createDatabase(db);
+            create(client, metaStore.getConf());
   }
 
-  private static Table createTestTable(IMetaStoreClient client, String dbName, String tableName,
+  private Table createTestTable(IMetaStoreClient client, String dbName, String tableName,
                                        List<String> partCols, boolean setPartitionLevelPrivilages)
           throws Exception {
     TableBuilder builder = new TableBuilder()
@@ -111,7 +118,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
             .addCol("name", "string");
 
     partCols.forEach(col -> builder.addPartCol(col, "string"));
-    Table table = builder.build();
+    Table table = builder.build(metaStore.getConf());
 
     if (setPartitionLevelPrivilages) {
       table.putToParameters("PARTITION_LEVEL_PRIVILEGE", "true");
@@ -121,14 +128,14 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     return table;
   }
 
-  private static void addPartition(IMetaStoreClient client, Table table, List<String> values)
+  private void addPartition(IMetaStoreClient client, Table table, List<String> values)
           throws TException {
-    PartitionBuilder partitionBuilder = new PartitionBuilder().fromTable(table);
+    PartitionBuilder partitionBuilder = new PartitionBuilder().inTable(table);
     values.forEach(val -> partitionBuilder.addValue(val));
-    client.add_partition(partitionBuilder.build());
+    client.add_partition(partitionBuilder.build(metaStore.getConf()));
   }
 
-  private static List<List<String>> createTable4PartColsParts(IMetaStoreClient client) throws
+  private List<List<String>> createTable4PartColsParts(IMetaStoreClient client) throws
           Exception {
     Table t = createTestTable(client, DB_NAME, TABLE_NAME, PARTCOL_SCHEMA, false);
     List<List<String>> testValues = Lists.newArrayList(
@@ -197,7 +204,6 @@ public class TestAlterPartitions extends MetaStoreClientTest {
   /**
    * Testing alter_partition(String,String,Partition) ->
    *         alter_partition_with_environment_context(String,String,Partition,null).
-   * @throws Exception
    */
   @Test
   public void testAlterPartition() throws Exception {
@@ -217,12 +223,152 @@ public class TestAlterPartitions extends MetaStoreClientTest {
 
   }
 
+  @Test
+  public void otherCatalog() throws TException {
+    String catName = "alter_partition_catalog";
+    Catalog cat = new CatalogBuilder()
+        .setName(catName)
+        .setLocation(MetaStoreTestUtils.getTestWarehouseDir(catName))
+        .build();
+    client.createCatalog(cat);
+
+    String dbName = "alter_partition_database_in_other_catalog";
+    Database db = new DatabaseBuilder()
+        .setName(dbName)
+        .setCatalogName(catName)
+        .create(client, metaStore.getConf());
+
+    String tableName = "table_in_other_catalog";
+    Table table = new TableBuilder()
+        .inDb(db)
+        .setTableName(tableName)
+        .addCol("id", "int")
+        .addCol("name", "string")
+        .addPartCol("partcol", "string")
+        .create(client, metaStore.getConf());
+
+    Partition[] parts = new Partition[5];
+    for (int i = 0; i < 5; i++) {
+      parts[i] = new PartitionBuilder()
+          .inTable(table)
+          .addValue("a" + i)
+          .setLocation(MetaStoreTestUtils.getTestWarehouseDir("b" + i))
+          .build(metaStore.getConf());
+    }
+    client.add_partitions(Arrays.asList(parts));
+
+    Partition newPart =
+        client.getPartition(catName, dbName, tableName, Collections.singletonList("a0"));
+    newPart.getParameters().put("test_key", "test_value");
+    client.alter_partition(catName, dbName, tableName, newPart);
+
+    Partition fetched =
+        client.getPartition(catName, dbName, tableName, Collections.singletonList("a0"));
+    Assert.assertEquals(catName, fetched.getCatName());
+    Assert.assertEquals("test_value", fetched.getParameters().get("test_key"));
+
+    newPart =
+        client.getPartition(catName, dbName, tableName, Collections.singletonList("a1"));
+    newPart.setLastAccessTime(3);
+    Partition newPart1 =
+        client.getPartition(catName, dbName, tableName, Collections.singletonList("a2"));
+    newPart1.getSd().setLocation(MetaStoreTestUtils.getTestWarehouseDir("somewhere"));
+    client.alter_partitions(catName, dbName, tableName, Arrays.asList(newPart, newPart1));
+    fetched =
+        client.getPartition(catName, dbName, tableName, Collections.singletonList("a1"));
+    Assert.assertEquals(catName, fetched.getCatName());
+    Assert.assertEquals(3L, fetched.getLastAccessTime());
+    fetched =
+        client.getPartition(catName, dbName, tableName, Collections.singletonList("a2"));
+    Assert.assertEquals(catName, fetched.getCatName());
+    Assert.assertTrue(fetched.getSd().getLocation().contains("somewhere"));
+
+    newPart =
+        client.getPartition(catName, dbName, tableName, Collections.singletonList("a4"));
+    newPart.getParameters().put("test_key", "test_value");
+    EnvironmentContext ec = new EnvironmentContext();
+    ec.setProperties(Collections.singletonMap("a", "b"));
+    client.alter_partition(catName, dbName, tableName, newPart, ec);
+    fetched =
+        client.getPartition(catName, dbName, tableName, Collections.singletonList("a4"));
+    Assert.assertEquals(catName, fetched.getCatName());
+    Assert.assertEquals("test_value", fetched.getParameters().get("test_key"));
+
+
+    client.dropDatabase(catName, dbName, true, true, true);
+    client.dropCatalog(catName);
+  }
+
+  @SuppressWarnings("deprecation")
+  @Test
+  public void deprecatedCalls() throws TException {
+    String tableName = "deprecated_table";
+    Table table = new TableBuilder()
+        .setTableName(tableName)
+        .addCol("id", "int")
+        .addCol("name", "string")
+        .addPartCol("partcol", "string")
+        .create(client, metaStore.getConf());
+
+    Partition[] parts = new Partition[5];
+    for (int i = 0; i < 5; i++) {
+      parts[i] = new PartitionBuilder()
+          .inTable(table)
+          .addValue("a" + i)
+          .setLocation(MetaStoreTestUtils.getTestWarehouseDir("a" + i))
+          .build(metaStore.getConf());
+    }
+    client.add_partitions(Arrays.asList(parts));
+
+    Partition newPart =
+        client.getPartition(DEFAULT_DATABASE_NAME, tableName, Collections.singletonList("a0"));
+    newPart.getParameters().put("test_key", "test_value");
+    client.alter_partition(DEFAULT_DATABASE_NAME, tableName, newPart);
+
+    Partition fetched =
+        client.getPartition(DEFAULT_DATABASE_NAME, tableName, Collections.singletonList("a0"));
+    Assert.assertEquals("test_value", fetched.getParameters().get("test_key"));
+
+    newPart =
+        client.getPartition(DEFAULT_DATABASE_NAME, tableName, Collections.singletonList("a1"));
+    newPart.setLastAccessTime(3);
+    Partition newPart1 =
+        client.getPartition(DEFAULT_DATABASE_NAME, tableName, Collections.singletonList("a2"));
+    newPart1.getSd().setLocation("somewhere");
+    client.alter_partitions(DEFAULT_DATABASE_NAME, tableName, Arrays.asList(newPart, newPart1));
+    fetched =
+        client.getPartition(DEFAULT_DATABASE_NAME, tableName, Collections.singletonList("a1"));
+    Assert.assertEquals(3L, fetched.getLastAccessTime());
+    fetched =
+        client.getPartition(DEFAULT_DATABASE_NAME, tableName, Collections.singletonList("a2"));
+    Assert.assertTrue(fetched.getSd().getLocation().contains("somewhere"));
+
+    newPart =
+        client.getPartition(DEFAULT_DATABASE_NAME, tableName, Collections.singletonList("a3"));
+    newPart.setValues(Collections.singletonList("b3"));
+    client.renamePartition(DEFAULT_DATABASE_NAME, tableName, Collections.singletonList("a3"), newPart);
+    fetched =
+        client.getPartition(DEFAULT_DATABASE_NAME, tableName, Collections.singletonList("b3"));
+    Assert.assertEquals(1, fetched.getValuesSize());
+    Assert.assertEquals("b3", fetched.getValues().get(0));
+
+    newPart =
+        client.getPartition(DEFAULT_DATABASE_NAME, tableName, Collections.singletonList("a4"));
+    newPart.getParameters().put("test_key", "test_value");
+    EnvironmentContext ec = new EnvironmentContext();
+    ec.setProperties(Collections.singletonMap("a", "b"));
+    client.alter_partition(DEFAULT_DATABASE_NAME, tableName, newPart, ec);
+    fetched =
+        client.getPartition(DEFAULT_DATABASE_NAME, tableName, Collections.singletonList("a4"));
+    Assert.assertEquals("test_value", fetched.getParameters().get("test_key"));
+  }
+
   @Test(expected = InvalidOperationException.class)
   public void testAlterPartitionUnknownPartition() throws Exception {
     createTable4PartColsParts(client);
     Table t = client.getTable(DB_NAME, TABLE_NAME);
     PartitionBuilder builder = new PartitionBuilder();
-    Partition part = builder.fromTable(t).addValue("1111").addValue("11").addValue("11").build();
+    Partition part = builder.inTable(t).addValue("1111").addValue("11").addValue("11").build(metaStore.getConf());
     client.alter_partition(DB_NAME, TABLE_NAME, part);
   }
 
@@ -231,7 +377,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     createTable4PartColsParts(client);
     Table t = client.getTable(DB_NAME, TABLE_NAME);
     PartitionBuilder builder = new PartitionBuilder();
-    Partition part = builder.fromTable(t).addValue("2017").build();
+    Partition part = builder.inTable(t).addValue("2017").build(metaStore.getConf());
     client.alter_partition(DB_NAME, TABLE_NAME, part);
   }
 
@@ -240,8 +386,15 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     createTable4PartColsParts(client);
     Table t = client.getTable(DB_NAME, TABLE_NAME);
     PartitionBuilder builder = new PartitionBuilder();
-    Partition part = builder.fromTable(t).build();
+    Partition part = builder.inTable(t).build(metaStore.getConf());
     client.alter_partition(DB_NAME, TABLE_NAME, part);
+  }
+
+  @Test(expected = InvalidOperationException.class)
+  public void testAlterPartitionBogusCatalogName() throws Exception {
+    createTable4PartColsParts(client);
+    List<Partition> partitions = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
+    client.alter_partition("nosuch", DB_NAME, TABLE_NAME, partitions.get(3));
   }
 
   @Test(expected = InvalidOperationException.class)
@@ -315,7 +468,6 @@ public class TestAlterPartitions extends MetaStoreClientTest {
   /**
    * Testing alter_partition(String,String,Partition,EnvironmentContext) ->
    *         alter_partition_with_environment_context(String,String,Partition,EnvironmentContext).
-   * @throws Exception
    */
   @Test
   public void testAlterPartitionWithEnvironmentCtx() throws Exception {
@@ -349,7 +501,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     createTable4PartColsParts(client);
     Table t = client.getTable(DB_NAME, TABLE_NAME);
     PartitionBuilder builder = new PartitionBuilder();
-    Partition part = builder.fromTable(t).addValue("1111").addValue("11").addValue("11").build();
+    Partition part = builder.inTable(t).addValue("1111").addValue("11").addValue("11").build(metaStore.getConf());
     client.alter_partition(DB_NAME, TABLE_NAME, part, new EnvironmentContext());
   }
 
@@ -358,7 +510,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     createTable4PartColsParts(client);
     Table t = client.getTable(DB_NAME, TABLE_NAME);
     PartitionBuilder builder = new PartitionBuilder();
-    Partition part = builder.fromTable(t).addValue("2017").build();
+    Partition part = builder.inTable(t).addValue("2017").build(metaStore.getConf());
     client.alter_partition(DB_NAME, TABLE_NAME, part, new EnvironmentContext());
   }
 
@@ -367,7 +519,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     createTable4PartColsParts(client);
     Table t = client.getTable(DB_NAME, TABLE_NAME);
     PartitionBuilder builder = new PartitionBuilder();
-    Partition part = builder.fromTable(t).build();
+    Partition part = builder.inTable(t).build(metaStore.getConf());
     client.alter_partition(DB_NAME, TABLE_NAME, part, new EnvironmentContext());
   }
 
@@ -444,7 +596,6 @@ public class TestAlterPartitions extends MetaStoreClientTest {
    * Testing
    *    alter_partitions(String,String,List(Partition)) ->
    *    alter_partitions_with_environment_context(String,String,List(Partition),null).
-   * @throws Exception
    */
   @Test
   public void testAlterPartitions() throws Exception {
@@ -478,7 +629,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
       createTable4PartColsParts(client);
       Table t = client.getTable(DB_NAME, TABLE_NAME);
       PartitionBuilder builder = new PartitionBuilder();
-      Partition part = builder.fromTable(t).addValue("1111").addValue("11").addValue("11").build();
+      Partition part = builder.inTable(t).addValue("1111").addValue("11").addValue("11").build(metaStore.getConf());
       part1 = client.listPartitions(DB_NAME, TABLE_NAME, (short) -1).get(0);
       makeTestChangesOnPartition(part1);
       client.alter_partitions(DB_NAME, TABLE_NAME, Lists.newArrayList(part, part1));
@@ -494,7 +645,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     createTable4PartColsParts(client);
     Table t = client.getTable(DB_NAME, TABLE_NAME);
     PartitionBuilder builder = new PartitionBuilder();
-    Partition part = builder.fromTable(t).addValue("2017").build();
+    Partition part = builder.inTable(t).addValue("2017").build(metaStore.getConf());
     Partition part1 = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
     client.alter_partitions(DB_NAME, TABLE_NAME, Lists.newArrayList(part, part1));
   }
@@ -504,9 +655,16 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     createTable4PartColsParts(client);
     Table t = client.getTable(DB_NAME, TABLE_NAME);
     PartitionBuilder builder = new PartitionBuilder();
-    Partition part = builder.fromTable(t).build();
+    Partition part = builder.inTable(t).build(metaStore.getConf());
     Partition part1 = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
     client.alter_partitions(DB_NAME, TABLE_NAME, Lists.newArrayList(part, part1));
+  }
+
+  @Test(expected = InvalidOperationException.class)
+  public void testAlterPartitionsBogusCatalogName() throws Exception {
+    createTable4PartColsParts(client);
+    Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
+    client.alter_partitions("nosuch", DB_NAME, TABLE_NAME, Lists.newArrayList(part));
   }
 
   @Test(expected = InvalidOperationException.class)
@@ -596,7 +754,6 @@ public class TestAlterPartitions extends MetaStoreClientTest {
    * Testing
    *    alter_partitions(String,String,List(Partition),EnvironmentContext) ->
    *    alter_partitions_with_environment_context(String,String,List(Partition),EnvironmentContext).
-   * @throws Exception
    */
   @Test
   public void testAlterPartitionsWithEnvironmentCtx() throws Exception {
@@ -642,7 +799,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     createTable4PartColsParts(client);
     Table t = client.getTable(DB_NAME, TABLE_NAME);
     PartitionBuilder builder = new PartitionBuilder();
-    Partition part = builder.fromTable(t).addValue("1111").addValue("11").addValue("11").build();
+    Partition part = builder.inTable(t).addValue("1111").addValue("11").addValue("11").build(metaStore.getConf());
     Partition part1 = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
     client.alter_partitions(DB_NAME, TABLE_NAME, Lists.newArrayList(part, part1),
             new EnvironmentContext());
@@ -653,7 +810,7 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     createTable4PartColsParts(client);
     Table t = client.getTable(DB_NAME, TABLE_NAME);
     PartitionBuilder builder = new PartitionBuilder();
-    Partition part = builder.fromTable(t).addValue("2017").build();
+    Partition part = builder.inTable(t).addValue("2017").build(metaStore.getConf());
     Partition part1 = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
     client.alter_partitions(DB_NAME, TABLE_NAME, Lists.newArrayList(part, part1),
             new EnvironmentContext());
@@ -664,10 +821,17 @@ public class TestAlterPartitions extends MetaStoreClientTest {
     createTable4PartColsParts(client);
     Table t = client.getTable(DB_NAME, TABLE_NAME);
     PartitionBuilder builder = new PartitionBuilder();
-    Partition part = builder.fromTable(t).build();
+    Partition part = builder.inTable(t).build(metaStore.getConf());
     Partition part1 = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
     client.alter_partitions(DB_NAME, TABLE_NAME, Lists.newArrayList(part, part1),
             new EnvironmentContext());
+  }
+
+  @Test(expected = InvalidOperationException.class)
+  public void testAlterPartitionsWithEnvironmentCtxBogusCatalogName() throws Exception {
+    createTable4PartColsParts(client);
+    Partition part = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1).get(0);
+    client.alter_partitions("nosuch", DB_NAME, TABLE_NAME, Lists.newArrayList(part), new EnvironmentContext());
   }
 
   @Test(expected = InvalidOperationException.class)
@@ -757,7 +921,6 @@ public class TestAlterPartitions extends MetaStoreClientTest {
    * Testing
    *    renamePartition(String,String,List(String),Partition) ->
    *    renamePartition(String,String,List(String),Partition).
-   * @throws Exception
    */
   @Test
   public void testRenamePartition() throws Exception {
@@ -867,6 +1030,16 @@ public class TestAlterPartitions extends MetaStoreClientTest {
       client.renamePartition(DB_NAME, TABLE_NAME, oldValues.get(3), null);
     } catch (NullPointerException | TTransportException e) {
     }
+  }
+
+  @Test(expected = InvalidOperationException.class)
+  public void testRenamePartitionBogusCatalogName() throws Exception {
+    List<List<String>> oldValues = createTable4PartColsParts(client);
+    List<Partition> oldParts = client.listPartitions(DB_NAME, TABLE_NAME, (short)-1);
+
+    Partition partToRename = oldParts.get(3);
+    partToRename.setValues(Lists.newArrayList("2018", "01", "16"));
+    client.renamePartition("nosuch", DB_NAME, TABLE_NAME, oldValues.get(3), partToRename);
   }
 
   @Test(expected = InvalidOperationException.class)

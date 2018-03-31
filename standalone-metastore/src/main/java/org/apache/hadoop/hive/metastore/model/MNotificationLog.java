@@ -22,6 +22,7 @@ public class MNotificationLog {
   private long eventId; // This is not the datanucleus id, but the id assigned by the sequence
   private int eventTime;
   private String eventType;
+  private String catalogName;
   private String dbName;
   private String tableName;
   private String message;
@@ -30,10 +31,11 @@ public class MNotificationLog {
   public MNotificationLog() {
   }
 
-  public MNotificationLog(int eventId, String eventType, String dbName, String tableName,
+  public MNotificationLog(int eventId, String eventType, String catName, String dbName, String tableName,
                           String message) {
     this.eventId = eventId;
     this.eventType = eventType;
+    this.catalogName = catName;
     this.dbName = dbName;
     this.tableName = tableName;
     this.message = message;
@@ -70,6 +72,14 @@ public class MNotificationLog {
 
   public void setDbName(String dbName) {
     this.dbName = dbName;
+  }
+
+  public String getCatalogName() {
+    return catalogName;
+  }
+
+  public void setCatalogName(String catName) {
+    this.catalogName = catName;
   }
 
   public String getTableName() {

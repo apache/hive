@@ -19,8 +19,11 @@
 package org.apache.hadoop.hive.metastore.client;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.metastore.api.GetAllFunctionsResponse;
@@ -30,10 +33,12 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
+import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.FunctionBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.thrift.TApplicationException;
+import org.apache.thrift.TException;
 import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
 import org.junit.Assert;
@@ -43,7 +48,11 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 
 /**
  * Test class for IMetaStoreClient API. Testing the Function related functions.
@@ -82,27 +91,27 @@ public class TestFunctions extends MetaStoreClientTest {
             .addResourceUri(new ResourceUri(ResourceType.JAR, "hdfs:///tmp/jar1.jar"))
             .addResourceUri(new ResourceUri(ResourceType.FILE, "hdfs:///tmp/file1.txt"))
             .addResourceUri(new ResourceUri(ResourceType.ARCHIVE, "hdfs:///tmp/archive1.tgz"))
-            .build();
+            .build(metaStore.getConf());
     testFunctions[1] =
         new FunctionBuilder()
             .setDbName(DEFAULT_DATABASE)
             .setName("test_function_to_find_2")
             .setClass(TEST_FUNCTION_CLASS)
-            .build();
+            .build(metaStore.getConf());
     testFunctions[2] =
         new FunctionBuilder()
             .setDbName(DEFAULT_DATABASE)
             .setName("test_function_hidden_1")
             .setClass(TEST_FUNCTION_CLASS)
-            .build();
+            .build(metaStore.getConf());
 
-    client.createDatabase(new DatabaseBuilder().setName(OTHER_DATABASE).build());
+    new DatabaseBuilder().setName(OTHER_DATABASE).create(client, metaStore.getConf());
     testFunctions[3] =
         new FunctionBuilder()
             .setDbName(OTHER_DATABASE)
             .setName("test_function_to_find_1")
             .setClass(TEST_FUNCTION_CLASS)
-            .build();
+            .build(metaStore.getConf());
 
     // Create the functions, and reload them from the MetaStore
     for(int i=0; i < testFunctions.length; i++) {
@@ -125,7 +134,6 @@ public class TestFunctions extends MetaStoreClientTest {
 
   /**
    * This test creates and queries a function and then drops it. Good for testing the happy path.
-   * @throws Exception
    */
   @Test
   public void testCreateGetDeleteFunction() throws Exception {
@@ -141,9 +149,7 @@ public class TestFunctions extends MetaStoreClientTest {
             .addResourceUri(new ResourceUri(ResourceType.JAR, "hdfs:///tmp/jar1.jar"))
             .addResourceUri(new ResourceUri(ResourceType.FILE, "hdfs:///tmp/file1.txt"))
             .addResourceUri(new ResourceUri(ResourceType.ARCHIVE, "hdfs:///tmp/archive1.tgz"))
-            .build();
-
-    client.createFunction(function);
+            .create(client, metaStore.getConf());
 
     Function createdFunction = client.getFunction(function.getDbName(),
         function.getFunctionName());
@@ -516,7 +522,7 @@ public class TestFunctions extends MetaStoreClientTest {
             .setOwnerType(PrincipalType.GROUP)
             .setClass("org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper2")
             .setFunctionType(FunctionType.JAVA)
-            .build();
+            .build(metaStore.getConf());
 
     client.alterFunction(testFunctions[0].getDbName(), testFunctions[0].getFunctionName(),
         newFunction);
@@ -565,7 +571,7 @@ public class TestFunctions extends MetaStoreClientTest {
     return new FunctionBuilder()
             .setName("test_function_2")
             .setClass(TEST_FUNCTION_CLASS)
-            .build();
+            .build(metaStore.getConf());
   }
 
   @Test(expected = MetaException.class)
@@ -797,7 +803,7 @@ public class TestFunctions extends MetaStoreClientTest {
             .setDbName(OTHER_DATABASE)
             .setName("test_function_2")
             .setClass(TEST_FUNCTION_CLASS)
-            .build();
+            .build(metaStore.getConf());
     Function originalFunction = testFunctions[1];
 
     // Test in upper case
@@ -832,4 +838,100 @@ public class TestFunctions extends MetaStoreClientTest {
       // Expected exception
     }
   }
+
+  @Test
+  public void otherCatalog() throws TException {
+    String catName = "functions_catalog";
+    Catalog cat = new CatalogBuilder()
+        .setName(catName)
+        .setLocation(MetaStoreTestUtils.getTestWarehouseDir(catName))
+        .build();
+    client.createCatalog(cat);
+
+    String dbName = "functions_other_catalog_db";
+    Database db = new DatabaseBuilder()
+        .setCatalogName(catName)
+        .setName(dbName)
+        .create(client, metaStore.getConf());
+
+    String functionName = "test_function";
+    Function function =
+        new FunctionBuilder()
+            .inDb(db)
+            .setName(functionName)
+            .setClass(TEST_FUNCTION_CLASS)
+            .setFunctionType(FunctionType.JAVA)
+            .setOwnerType(PrincipalType.ROLE)
+            .setOwner("owner")
+            .setCreateTime(100)
+            .addResourceUri(new ResourceUri(ResourceType.JAR, "hdfs:///tmp/jar1.jar"))
+            .addResourceUri(new ResourceUri(ResourceType.FILE, "hdfs:///tmp/file1.txt"))
+            .addResourceUri(new ResourceUri(ResourceType.ARCHIVE, "hdfs:///tmp/archive1.tgz"))
+            .create(client, metaStore.getConf());
+
+    Function createdFunction = client.getFunction(catName, dbName, functionName);
+    // The createTime will be set on the server side, so the comparison should skip it
+    function.setCreateTime(createdFunction.getCreateTime());
+    Assert.assertEquals("Comparing functions", function, createdFunction);
+
+    String f2Name = "testy_function2";
+    Function f2 = new FunctionBuilder()
+        .inDb(db)
+        .setName(f2Name)
+        .setClass(TEST_FUNCTION_CLASS)
+        .create(client, metaStore.getConf());
+
+    Set<String> functions = new HashSet<>(client.getFunctions(catName, dbName, "test*"));
+    Assert.assertEquals(2, functions.size());
+    Assert.assertTrue(functions.contains(functionName));
+    Assert.assertTrue(functions.contains(f2Name));
+
+    functions = new HashSet<>(client.getFunctions(catName, dbName, "test_*"));
+    Assert.assertEquals(1, functions.size());
+    Assert.assertTrue(functions.contains(functionName));
+    Assert.assertFalse(functions.contains(f2Name));
+
+    client.dropFunction(function.getCatName(), function.getDbName(), function.getFunctionName());
+    try {
+      client.getFunction(function.getCatName(), function.getDbName(), function.getFunctionName());
+      Assert.fail("Expected a NoSuchObjectException to be thrown");
+    } catch (NoSuchObjectException exception) {
+      // Expected exception
+    }
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void addNoSuchCatalog() throws TException {
+    String functionName = "test_function";
+    new FunctionBuilder()
+            .setName(functionName)
+            .setCatName("nosuch")
+            .setDbName(DEFAULT_DATABASE_NAME)
+            .setClass(TEST_FUNCTION_CLASS)
+            .setFunctionType(FunctionType.JAVA)
+            .setOwnerType(PrincipalType.ROLE)
+            .setOwner("owner")
+            .setCreateTime(100)
+            .addResourceUri(new ResourceUri(ResourceType.JAR, "hdfs:///tmp/jar1.jar"))
+            .addResourceUri(new ResourceUri(ResourceType.FILE, "hdfs:///tmp/file1.txt"))
+            .addResourceUri(new ResourceUri(ResourceType.ARCHIVE, "hdfs:///tmp/archive1.tgz"))
+            .create(client, metaStore.getConf());
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void getNoSuchCatalog() throws TException {
+    client.getFunction("nosuch", DEFAULT_DATABASE_NAME, testFunctions[0].getFunctionName());
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void dropNoSuchCatalog() throws TException {
+    client.dropFunction("nosuch", DEFAULT_DATABASE_NAME, testFunctions[0].getFunctionName());
+  }
+
+  @Test
+  public void getFunctionsNoSuchCatalog() throws TException {
+    List<String> functionNames = client.getFunctions("nosuch", DEFAULT_DATABASE_NAME, "*");
+    Assert.assertEquals(0, functionNames.size());
+  }
+
 }

@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField CREATE_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("createTime", org.apache.thrift.protocol.TType.I32, (short)6);
   private static final org.apache.thrift.protocol.TField FUNCTION_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("functionType", org.apache.thrift.protocol.TType.I32, (short)7);
   private static final org.apache.thrift.protocol.TField RESOURCE_URIS_FIELD_DESC = new org.apache.thrift.protocol.TField("resourceUris", org.apache.thrift.protocol.TType.LIST, (short)8);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)9);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -61,6 +62,7 @@ import org.slf4j.LoggerFactory;
   private int createTime; // required
   private FunctionType functionType; // required
   private List<ResourceUri> resourceUris; // required
+  private String catName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -79,7 +81,8 @@ import org.slf4j.LoggerFactory;
      * @see FunctionType
      */
     FUNCTION_TYPE((short)7, "functionType"),
-    RESOURCE_URIS((short)8, "resourceUris");
+    RESOURCE_URIS((short)8, "resourceUris"),
+    CAT_NAME((short)9, "catName");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -110,6 +113,8 @@ import org.slf4j.LoggerFactory;
           return FUNCTION_TYPE;
         case 8: // RESOURCE_URIS
           return RESOURCE_URIS;
+        case 9: // CAT_NAME
+          return CAT_NAME;
         default:
           return null;
       }
@@ -152,6 +157,7 @@ import org.slf4j.LoggerFactory;
   // isset id assignments
   private static final int __CREATETIME_ISSET_ID = 0;
   private byte __isset_bitfield = 0;
+  private static final _Fields optionals[] = {_Fields.CAT_NAME};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -172,6 +178,8 @@ import org.slf4j.LoggerFactory;
     tmpMap.put(_Fields.RESOURCE_URIS, new org.apache.thrift.meta_data.FieldMetaData("resourceUris", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ResourceUri.class))));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Function.class, metaDataMap);
   }
@@ -232,6 +240,9 @@ import org.slf4j.LoggerFactory;
       }
       this.resourceUris = __this__resourceUris;
     }
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
   }
 
   public Function deepCopy() {
@@ -249,6 +260,7 @@ import org.slf4j.LoggerFactory;
     this.createTime = 0;
     this.functionType = null;
     this.resourceUris = null;
+    this.catName = null;
   }
 
   public String getFunctionName() {
@@ -465,6 +477,29 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case FUNCTION_NAME:
@@ -531,6 +566,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((String)value);
+      }
+      break;
+
     }
   }
 
@@ -560,6 +603,9 @@ import org.slf4j.LoggerFactory;
     case RESOURCE_URIS:
       return getResourceUris();
 
+    case CAT_NAME:
+      return getCatName();
+
     }
     throw new IllegalStateException();
   }
@@ -587,6 +633,8 @@ import org.slf4j.LoggerFactory;
       return isSetFunctionType();
     case RESOURCE_URIS:
       return isSetResourceUris();
+    case CAT_NAME:
+      return isSetCatName();
     }
     throw new IllegalStateException();
   }
@@ -676,6 +724,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
+
     return true;
   }
 
@@ -722,6 +779,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_resourceUris);
     if (present_resourceUris)
       list.add(resourceUris);
+
+    boolean present_catName = true && (isSetCatName());
+    list.add(present_catName);
+    if (present_catName)
+      list.add(catName);
 
     return list.hashCode();
   }
@@ -814,6 +876,16 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetCatName()).compareTo(other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -893,6 +965,16 @@ import org.slf4j.LoggerFactory;
       sb.append(this.resourceUris);
     }
     first = false;
+    if (isSetCatName()) {
+      if (!first) sb.append(", ");
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -997,18 +1079,26 @@ import org.slf4j.LoggerFactory;
           case 8: // RESOURCE_URIS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list538 = iprot.readListBegin();
-                struct.resourceUris = new ArrayList<ResourceUri>(_list538.size);
-                ResourceUri _elem539;
-                for (int _i540 = 0; _i540 < _list538.size; ++_i540)
+                org.apache.thrift.protocol.TList _list546 = iprot.readListBegin();
+                struct.resourceUris = new ArrayList<ResourceUri>(_list546.size);
+                ResourceUri _elem547;
+                for (int _i548 = 0; _i548 < _list546.size; ++_i548)
                 {
-                  _elem539 = new ResourceUri();
-                  _elem539.read(iprot);
-                  struct.resourceUris.add(_elem539);
+                  _elem547 = new ResourceUri();
+                  _elem547.read(iprot);
+                  struct.resourceUris.add(_elem547);
                 }
                 iprot.readListEnd();
               }
               struct.setResourceUrisIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 9: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -1063,13 +1153,20 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(RESOURCE_URIS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.resourceUris.size()));
-          for (ResourceUri _iter541 : struct.resourceUris)
+          for (ResourceUri _iter549 : struct.resourceUris)
           {
-            _iter541.write(oprot);
+            _iter549.write(oprot);
           }
           oprot.writeListEnd();
         }
         oprot.writeFieldEnd();
+      }
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -1113,7 +1210,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetResourceUris()) {
         optionals.set(7);
       }
-      oprot.writeBitSet(optionals, 8);
+      if (struct.isSetCatName()) {
+        optionals.set(8);
+      }
+      oprot.writeBitSet(optionals, 9);
       if (struct.isSetFunctionName()) {
         oprot.writeString(struct.functionName);
       }
@@ -1138,18 +1238,21 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetResourceUris()) {
         {
           oprot.writeI32(struct.resourceUris.size());
-          for (ResourceUri _iter542 : struct.resourceUris)
+          for (ResourceUri _iter550 : struct.resourceUris)
           {
-            _iter542.write(oprot);
+            _iter550.write(oprot);
           }
         }
+      }
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
       }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, Function struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(8);
+      BitSet incoming = iprot.readBitSet(9);
       if (incoming.get(0)) {
         struct.functionName = iprot.readString();
         struct.setFunctionNameIsSet(true);
@@ -1180,17 +1283,21 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(7)) {
         {
-          org.apache.thrift.protocol.TList _list543 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.resourceUris = new ArrayList<ResourceUri>(_list543.size);
-          ResourceUri _elem544;
-          for (int _i545 = 0; _i545 < _list543.size; ++_i545)
+          org.apache.thrift.protocol.TList _list551 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.resourceUris = new ArrayList<ResourceUri>(_list551.size);
+          ResourceUri _elem552;
+          for (int _i553 = 0; _i553 < _list551.size; ++_i553)
           {
-            _elem544 = new ResourceUri();
-            _elem544.read(iprot);
-            struct.resourceUris.add(_elem544);
+            _elem552 = new ResourceUri();
+            _elem552.read(iprot);
+            struct.resourceUris.add(_elem552);
           }
         }
         struct.setResourceUrisIsSet(true);
+      }
+      if (incoming.get(8)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
       }
     }
   }

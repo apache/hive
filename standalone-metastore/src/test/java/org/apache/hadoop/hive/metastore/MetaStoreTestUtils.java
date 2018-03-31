@@ -17,11 +17,13 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
@@ -30,8 +32,11 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
 public class MetaStoreTestUtils {
   private static final Logger LOG = LoggerFactory.getLogger(MetaStoreTestUtils.class);
@@ -218,6 +223,30 @@ public class MetaStoreTestUtils {
         ConfVars.EXPRESSION_PROXY_CLASS.getDefaultVal())) {
       MetastoreConf.setClass(conf, ConfVars.EXPRESSION_PROXY_CLASS,
           DefaultPartitionExpressionProxy.class, PartitionExpressionProxy.class);
+    }
+  }
+
+
+  public static String getTestWarehouseDir(String name) {
+    File dir = new File(System.getProperty("java.io.tmpdir"), name);
+    dir.deleteOnExit();
+    return dir.getAbsolutePath();
+  }
+
+  /**
+   * There is no cascade option for dropping a catalog for security reasons.  But this in
+   * inconvenient in tests, so this method does it.
+   * @param client metastore client
+   * @param catName catalog to drop, cannot be the default catalog
+   * @throws TException from underlying client calls
+   */
+  public static void dropCatalogCascade(IMetaStoreClient client, String catName) throws TException {
+    if (catName != null && !catName.equals(DEFAULT_CATALOG_NAME)) {
+      List<String> databases = client.getAllDatabases(catName);
+      for (String db : databases) {
+        client.dropDatabase(catName, db, true, false, true);
+      }
+      client.dropCatalog(catName);
     }
   }
 }

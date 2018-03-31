@@ -152,16 +152,16 @@ public class AggregateStatsCache {
    * Return aggregate stats for a column from the cache or null.
    * While reading from the nodelist for a key, we wait maxReaderWaitTime to acquire the lock,
    * failing which we return a cache miss (i.e. null)
-   *
-   * @param dbName
-   * @param tblName
-   * @param colName
-   * @param partNames
-   * @return
+   * @param catName catalog name
+   * @param dbName database name
+   * @param tblName table name
+   * @param colName column name
+   * @param partNames list of partition names
+   * @return aggregated col stats
    */
-  public AggrColStats get(String dbName, String tblName, String colName, List<String> partNames) {
+  public AggrColStats get(String catName, String dbName, String tblName, String colName, List<String> partNames) {
     // Cache key
-    Key key = new Key(dbName, tblName, colName);
+    Key key = new Key(catName, dbName, tblName, colName);
     AggrColStatsList candidateList = cacheStore.get(key);
     // No key, or no nodes in candidate list
     if ((candidateList == null) || (candidateList.nodes.size() == 0)) {
@@ -267,23 +267,23 @@ public class AggregateStatsCache {
    * Add a new node to the cache; may trigger the cleaner thread if the cache is near full capacity.
    * We'll however add the node even if we temporaily exceed maxCacheNodes, because the cleaner
    * will eventually create space from expired nodes or by removing LRU nodes.
-   *
-   * @param dbName
-   * @param tblName
-   * @param colName
+   * @param catName catalog name
+   * @param dbName database name
+   * @param tblName table name
+   * @param colName column name
    * @param numPartsCached
    * @param colStats
    * @param bloomFilter
    */
   // TODO: make add asynchronous: add shouldn't block the higher level calls
-  public void add(String dbName, String tblName, String colName, long numPartsCached,
+  public void add(String catName, String dbName, String tblName, String colName, long numPartsCached,
       ColumnStatisticsObj colStats, BloomFilter bloomFilter) {
     // If we have no space in the cache, run cleaner thread
     if (getCurrentNodes() / maxCacheNodes > maxFull) {
       spawnCleaner();
     }
     // Cache key
-    Key key = new Key(dbName, tblName, colName);
+    Key key = new Key(catName, dbName, tblName, colName);
     // Add new node to the cache
     AggrColStats node = new AggrColStats(numPartsCached, bloomFilter, colStats);
     AggrColStatsList nodeList;
@@ -463,15 +463,17 @@ public class AggregateStatsCache {
    * Key object for the stats cache hashtable
    */
   static class Key {
+    private final String catName;
     private final String dbName;
     private final String tblName;
     private final String colName;
 
-    Key(String db, String table, String col) {
+    Key(String cat, String db, String table, String col) {
       // Don't construct an illegal cache key
-      if ((db == null) || (table == null) || (col == null)) {
-        throw new IllegalArgumentException("dbName, tblName, colName can't be null");
+      if (cat == null || (db == null) || (table == null) || (col == null)) {
+        throw new IllegalArgumentException("catName, dbName, tblName, colName can't be null");
       }
+      catName = cat;
       dbName = db;
       tblName = table;
       colName = col;
@@ -483,18 +485,20 @@ public class AggregateStatsCache {
         return false;
       }
       Key that = (Key) other;
-      return dbName.equals(that.dbName) && tblName.equals(that.tblName)
-          && colName.equals(that.colName);
+      return catName.equals(that.catName) && dbName.equals(that.dbName) &&
+          tblName.equals(that.tblName) && colName.equals(that.colName);
     }
 
     @Override
     public int hashCode() {
-      return dbName.hashCode() * 31 + tblName.hashCode() * 31 + colName.hashCode();
+      return catName.hashCode() * 31 + dbName.hashCode() * 31 + tblName.hashCode() * 31 +
+          colName.hashCode();
     }
 
     @Override
     public String toString() {
-      return "database:" + dbName + ", table:" + tblName + ", column:" + colName;
+      return "catalog: " + catName + ", database:" + dbName + ", table:" + tblName + ", column:" +
+          colName;
     }
 
   }

@@ -28,16 +28,22 @@ import java.util.Map;
 @InterfaceStability.Stable
 public class PreLoadPartitionDoneEvent extends PreEventContext {
 
+  private final String catName;
   private final String dbName;
   private final String tableName;
   private final Map<String,String> partSpec;
 
-  public PreLoadPartitionDoneEvent(String dbName, String tableName,
+  public PreLoadPartitionDoneEvent(String catName, String dbName, String tableName,
       Map<String, String> partSpec, IHMSHandler handler) {
     super(PreEventType.LOAD_PARTITION_DONE, handler);
+    this.catName = catName;
     this.dbName = dbName;
     this.tableName = tableName;
     this.partSpec = partSpec;
+  }
+
+  public String getCatName() {
+    return catName;
   }
 
   public String getDbName() {
