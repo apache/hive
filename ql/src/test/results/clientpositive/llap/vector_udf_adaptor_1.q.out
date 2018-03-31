@@ -148,7 +148,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: SELECT operator: Unexpected primitive type category VOID
+                notVectorizedReason: SELECT operator: Unexpected hive type name void
                 vectorized: false
 
   Stage: Stage-2
@@ -656,7 +656,7 @@ STAGE PLANS:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: SELECT operator: Unexpected primitive type category VOID
+                notVectorizedReason: SELECT operator: Unexpected hive type name void
                 vectorized: false
 
   Stage: Stage-2

@@ -47,7 +47,8 @@ public abstract class ColumnVector {
     STRUCT,
     LIST,
     MAP,
-    UNION
+    UNION,
+    VOID
   }
 
   public final Type type;
