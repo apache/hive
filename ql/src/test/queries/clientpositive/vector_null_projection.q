@@ -9,8 +9,8 @@ create table b(s string) stored as orc;
 insert into table a values('aaa');
 insert into table b values('aaa');
 
--- We expect no vectorization due to NULL (void) projection type.
-explain vectorization expression
+-- We expect some vectorization due to NULL (void) projection type.
+explain vectorization detail
 select NULL from a;
 
 select NULL from a;

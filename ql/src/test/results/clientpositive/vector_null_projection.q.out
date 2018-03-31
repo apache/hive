@@ -32,10 +32,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@b
 POSTHOOK: Lineage: b.s SCRIPT []
-PREHOOK: query: explain vectorization expression
+PREHOOK: query: explain vectorization detail
 select NULL from a
 PREHOOK: type: QUERY
-POSTHOOK: query: explain vectorization expression
+POSTHOOK: query: explain vectorization detail
 select NULL from a
 POSTHOOK: type: QUERY
 PLAN VECTORIZATION:
@@ -53,23 +53,44 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
+            TableScan Vectorization:
+                native: true
+                vectorizationSchemaColumns: [0:s:string, 1:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: null (type: void)
               outputColumnNames: _col0
+              Select Vectorization:
+                  className: VectorSelectOperator
+                  native: true
+                  projectedOutputColumnNums: [2]
+                  selectExpressions: ConstantVectorExpression(val null) -> 2:void
               Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
               File Output Operator
                 compressed: false
+                File Sink Vectorization:
+                    className: VectorFileSinkOperator
+                    native: false
                 Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+      Execution mode: vectorized
       Map Vectorization:
           enabled: true
           enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          inputFormatFeatureSupport: []
+          featureSupportInUse: []
           inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-          notVectorizedReason: Select expression for SELECT operator: Vectorizing data type void not supported when mode = PROJECTION
-          vectorized: false
+          allNative: false
+          usesVectorUDFAdaptor: false
+          vectorized: true
+          rowBatchContext:
+              dataColumnCount: 1
+              includeColumns: []
+              dataColumns: s:string
+              partitionColumnCount: 0
+              scratchColumnTypeNames: [void]
 
   Stage: Stage-0
     Fetch Operator

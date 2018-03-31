@@ -155,14 +155,18 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
                           serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                           name: default.orc_create_complex
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: no inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
+                inputFormatFeatureSupport: [DECIMAL_64]
+                vectorizationSupportRemovedReasons: [DECIMAL_64 disabled because LLAP is enabled]
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
-                notVectorizedReason: SELECT operator: Unable to vectorize custom UDF. Encountered unsupported expr desc : Column[strct].a
-                vectorized: false
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
 
   Stage: Stage-2
     Dependency Collection

@@ -154,8 +154,6 @@ public abstract class VectorReduceSinkCommonOperator extends TerminalOperator<Re
       VectorizationContext vContext, VectorDesc vectorDesc) throws HiveException {
     this(ctx);
 
-    LOG.info("VectorReduceSinkCommonOperator constructor");
-
     ReduceSinkDesc desc = (ReduceSinkDesc) conf;
     this.conf = desc;
     this.vContext = vContext;
