@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.client.builder;
 
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ISchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SchemaCompatibility;
@@ -27,7 +28,7 @@ import org.apache.hadoop.hive.metastore.api.SchemaValidation;
 public class ISchemaBuilder {
   private SchemaType schemaType; // required
   private String name; // required
-  private String dbName; // required
+  private String dbName, catName; // required
   private SchemaCompatibility compatibility; // required
   private SchemaValidation validationLevel; // required
   private boolean canEvolve; // required
@@ -39,6 +40,7 @@ public class ISchemaBuilder {
     validationLevel = SchemaValidation.ALL;
     canEvolve = true;
     dbName = Warehouse.DEFAULT_DATABASE_NAME;
+    catName = Warehouse.DEFAULT_CATALOG_NAME;
   }
 
   public ISchemaBuilder setSchemaType(SchemaType schemaType) {
@@ -53,6 +55,12 @@ public class ISchemaBuilder {
 
   public ISchemaBuilder setDbName(String dbName) {
     this.dbName = dbName;
+    return this;
+  }
+
+  public ISchemaBuilder inDb(Database db) {
+    this.catName = db.getCatalogName();
+    this.dbName = db.getName();
     return this;
   }
 
@@ -86,7 +94,7 @@ public class ISchemaBuilder {
       throw new MetaException("You must provide a schemaType and name");
     }
     ISchema iSchema =
-        new ISchema(schemaType, name, dbName, compatibility, validationLevel, canEvolve);
+        new ISchema(schemaType, name, catName, dbName, compatibility, validationLevel, canEvolve);
     if (schemaGroup != null) iSchema.setSchemaGroup(schemaGroup);
     if (description != null) iSchema.setDescription(description);
     return iSchema;

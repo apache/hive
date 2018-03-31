@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField PARENT_TBL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("parent_tbl_name", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField FOREIGN_DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("foreign_db_name", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField FOREIGN_TBL_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("foreign_tbl_name", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -53,13 +54,15 @@ import org.slf4j.LoggerFactory;
   private String parent_tbl_name; // required
   private String foreign_db_name; // required
   private String foreign_tbl_name; // required
+  private String catName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     PARENT_DB_NAME((short)1, "parent_db_name"),
     PARENT_TBL_NAME((short)2, "parent_tbl_name"),
     FOREIGN_DB_NAME((short)3, "foreign_db_name"),
-    FOREIGN_TBL_NAME((short)4, "foreign_tbl_name");
+    FOREIGN_TBL_NAME((short)4, "foreign_tbl_name"),
+    CAT_NAME((short)5, "catName");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -82,6 +85,8 @@ import org.slf4j.LoggerFactory;
           return FOREIGN_DB_NAME;
         case 4: // FOREIGN_TBL_NAME
           return FOREIGN_TBL_NAME;
+        case 5: // CAT_NAME
+          return CAT_NAME;
         default:
           return null;
       }
@@ -122,6 +127,7 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
+  private static final _Fields optionals[] = {_Fields.CAT_NAME};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -132,6 +138,8 @@ import org.slf4j.LoggerFactory;
     tmpMap.put(_Fields.FOREIGN_DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("foreign_db_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.FOREIGN_TBL_NAME, new org.apache.thrift.meta_data.FieldMetaData("foreign_tbl_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ForeignKeysRequest.class, metaDataMap);
@@ -169,6 +177,9 @@ import org.slf4j.LoggerFactory;
     if (other.isSetForeign_tbl_name()) {
       this.foreign_tbl_name = other.foreign_tbl_name;
     }
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
+    }
   }
 
   public ForeignKeysRequest deepCopy() {
@@ -181,6 +192,7 @@ import org.slf4j.LoggerFactory;
     this.parent_tbl_name = null;
     this.foreign_db_name = null;
     this.foreign_tbl_name = null;
+    this.catName = null;
   }
 
   public String getParent_db_name() {
@@ -275,6 +287,29 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case PARENT_DB_NAME:
@@ -309,6 +344,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((String)value);
+      }
+      break;
+
     }
   }
 
@@ -325,6 +368,9 @@ import org.slf4j.LoggerFactory;
 
     case FOREIGN_TBL_NAME:
       return getForeign_tbl_name();
+
+    case CAT_NAME:
+      return getCatName();
 
     }
     throw new IllegalStateException();
@@ -345,6 +391,8 @@ import org.slf4j.LoggerFactory;
       return isSetForeign_db_name();
     case FOREIGN_TBL_NAME:
       return isSetForeign_tbl_name();
+    case CAT_NAME:
+      return isSetCatName();
     }
     throw new IllegalStateException();
   }
@@ -398,6 +446,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
+        return false;
+    }
+
     return true;
   }
 
@@ -424,6 +481,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_foreign_tbl_name);
     if (present_foreign_tbl_name)
       list.add(foreign_tbl_name);
+
+    boolean present_catName = true && (isSetCatName());
+    list.add(present_catName);
+    if (present_catName)
+      list.add(catName);
 
     return list.hashCode();
   }
@@ -472,6 +534,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetForeign_tbl_name()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.foreign_tbl_name, other.foreign_tbl_name);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetCatName()).compareTo(other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -527,6 +599,16 @@ import org.slf4j.LoggerFactory;
       sb.append(this.foreign_tbl_name);
     }
     first = false;
+    if (isSetCatName()) {
+      if (!first) sb.append(", ");
+      sb.append("catName:");
+      if (this.catName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.catName);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -602,6 +684,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 5: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -635,6 +725,13 @@ import org.slf4j.LoggerFactory;
         oprot.writeString(struct.foreign_tbl_name);
         oprot.writeFieldEnd();
       }
+      if (struct.catName != null) {
+        if (struct.isSetCatName()) {
+          oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+          oprot.writeString(struct.catName);
+          oprot.writeFieldEnd();
+        }
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -665,7 +762,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetForeign_tbl_name()) {
         optionals.set(3);
       }
-      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetCatName()) {
+        optionals.set(4);
+      }
+      oprot.writeBitSet(optionals, 5);
       if (struct.isSetParent_db_name()) {
         oprot.writeString(struct.parent_db_name);
       }
@@ -678,12 +778,15 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetForeign_tbl_name()) {
         oprot.writeString(struct.foreign_tbl_name);
       }
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, ForeignKeysRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(4);
+      BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {
         struct.parent_db_name = iprot.readString();
         struct.setParent_db_nameIsSet(true);
@@ -699,6 +802,10 @@ import org.slf4j.LoggerFactory;
       if (incoming.get(3)) {
         struct.foreign_tbl_name = iprot.readString();
         struct.setForeign_tbl_nameIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
       }
     }
   }

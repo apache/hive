@@ -306,6 +306,12 @@ public class MetastoreConf {
     CAPABILITY_CHECK("metastore.client.capability.check",
         "hive.metastore.client.capability.check", true,
         "Whether to check client capabilities for potentially breaking API usage."),
+    CATALOG_DEFAULT("metastore.catalog.default", "metastore.catalog.default", "hive",
+        "The default catalog to use when a catalog is not specified.  Default is 'hive' (the " +
+            "default catalog)."),
+    CATALOGS_TO_CACHE("metastore.cached.rawstore.catalogs", "metastore.cached.rawstore.catalogs",
+        "hive", "Comma separated list of catalogs to cache in the CachedStore. Default is 'hive' " +
+        "(the default catalog).  Empty string means all catalogs will be cached."),
     CLIENT_CONNECT_RETRY_DELAY("metastore.client.connect.retry.delay",
         "hive.metastore.client.connect.retry.delay", 1, TimeUnit.SECONDS,
         "Number of seconds for the client to wait between consecutive connection attempts"),

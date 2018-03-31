@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.metastore.model;
 
 public class MPartitionEvent {
 
+  private String catalogName;
+
   private String dbName;
 
   private String tblName;
@@ -31,8 +33,9 @@ public class MPartitionEvent {
 
   private int eventType;
 
-  public MPartitionEvent(String dbName, String tblName, String partitionName, int eventType) {
+  public MPartitionEvent(String catName, String dbName, String tblName, String partitionName, int eventType) {
     super();
+    this.catalogName = catName;
     this.dbName = dbName;
     this.tblName = tblName;
     this.partName = partitionName;
@@ -41,6 +44,10 @@ public class MPartitionEvent {
   }
 
   public MPartitionEvent() {}
+
+  public void setCatalogName(String catName) {
+    this.catalogName = catName;
+  }
 
   /**
    * @param dbName the dbName to set

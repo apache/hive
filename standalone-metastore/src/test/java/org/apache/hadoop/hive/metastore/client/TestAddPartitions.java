@@ -19,12 +19,16 @@
 package org.apache.hadoop.hive.metastore.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -34,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
@@ -81,10 +86,9 @@ public class TestAddPartitions extends MetaStoreClientTest {
     // Clean up the database
     client.dropDatabase(DB_NAME, true, true, true);
     metaStore.cleanWarehouseDirs();
-    Database db = new DatabaseBuilder().
+    new DatabaseBuilder().
         setName(DB_NAME).
-        build();
-    client.createDatabase(db);
+        create(client, metaStore.getConf());
   }
 
   @After
@@ -123,6 +127,72 @@ public class TestAddPartitions extends MetaStoreClientTest {
   }
 
   @Test
+  public void addPartitionOtherCatalog() throws TException {
+    String catName = "add_partition_catalog";
+    Catalog cat = new CatalogBuilder()
+        .setName(catName)
+        .setLocation(MetaStoreTestUtils.getTestWarehouseDir(catName))
+        .build();
+    client.createCatalog(cat);
+
+    String dbName = "add_partition_database_in_other_catalog";
+    Database db = new DatabaseBuilder()
+        .setName(dbName)
+        .setCatalogName(catName)
+        .create(client, metaStore.getConf());
+
+    String tableName = "table_in_other_catalog";
+    Table table = new TableBuilder()
+        .inDb(db)
+        .setTableName(tableName)
+        .addCol("id", "int")
+        .addCol("name", "string")
+        .addPartCol("partcol", "string")
+        .create(client, metaStore.getConf());
+
+    Partition[] parts = new Partition[5];
+    for (int i = 0; i < parts.length; i++) {
+      parts[i] = new PartitionBuilder()
+          .inTable(table)
+          .addValue("a" + i)
+          .build(metaStore.getConf());
+    }
+    client.add_partition(parts[0]);
+    Assert.assertEquals(2, client.add_partitions(Arrays.asList(parts[1], parts[2])));
+    client.add_partitions(Arrays.asList(parts), true, false);
+
+    for (int i = 0; i < parts.length; i++) {
+      Partition fetched = client.getPartition(catName, dbName, tableName,
+          Collections.singletonList("a" + i));
+      Assert.assertEquals(catName, fetched.getCatName());
+      Assert.assertEquals(dbName, fetched.getDbName());
+      Assert.assertEquals(tableName, fetched.getTableName());
+    }
+
+    client.dropDatabase(catName, dbName, true, true, true);
+    client.dropCatalog(catName);
+  }
+
+  @Test(expected = InvalidObjectException.class)
+  public void noSuchCatalog() throws TException {
+    String tableName = "table_for_no_such_catalog";
+    Table table = new TableBuilder()
+        .setTableName(tableName)
+        .addCol("id", "int")
+        .addCol("name", "string")
+        .addPartCol("partcol", "string")
+        .create(client, metaStore.getConf());
+
+    Partition part = new PartitionBuilder()
+        .inTable(table)
+        .addValue("a")
+        .build(metaStore.getConf());
+    // Explicitly mis-set the catalog name
+    part.setCatName("nosuch");
+    client.add_partition(part);
+  }
+
+  @Test
   public void testAddPartitionWithDefaultAttributes() throws Exception {
 
     Table table = createTable();
@@ -134,7 +204,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
         .setCols(getYearPartCol())
         .addCol("test_id", "int", "test col id")
         .addCol("test_value", "string", "test col value")
-        .build();
+        .build(metaStore.getConf());
 
     client.add_partition(partition);
 
@@ -270,7 +340,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
 
     createTable();
     Partition partition = buildPartition(DB_NAME, TABLE_NAME, DEFAULT_YEAR_VALUE);
-    partition.getSd().setCols(new ArrayList<FieldSchema>());
+    partition.getSd().setCols(new ArrayList<>());
     client.add_partition(partition);
 
     // TODO: Not sure that this is the correct behavior. It doesn't make sense to create the
@@ -372,8 +442,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
         .addCol("test_value", DEFAULT_COL_TYPE, "test col value")
         .addPartCol(YEAR_COL_NAME, DEFAULT_COL_TYPE)
         .setLocation(null)
-        .build();
-    client.createTable(table);
+        .create(client, metaStore.getConf());
     Partition partition = buildPartition(DB_NAME, TABLE_NAME, DEFAULT_YEAR_VALUE);
     client.add_partition(partition);
   }
@@ -427,8 +496,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
         .setTableName(TABLE_NAME)
         .addCol("test_id", "int", "test col id")
         .addCol("test_value", "string", "test col value")
-        .build();
-    client.createTable(origTable);
+        .create(client, metaStore.getConf());
     Partition partition = buildPartition(DB_NAME, TABLE_NAME, DEFAULT_YEAR_VALUE);
     client.add_partition(partition);
   }
@@ -442,7 +510,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
         .setTableName(TABLE_NAME)
         .addValue(DEFAULT_YEAR_VALUE)
         .setLocation(metaStore.getWarehouseRoot() + "/addparttest")
-        .build();
+        .build(metaStore.getConf());
     client.add_partition(partition);
   }
 
@@ -455,7 +523,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
         .setTableName(TABLE_NAME)
         .addValue("1000")
         .addCol("time", "int")
-        .build();
+        .build(metaStore.getConf());
 
     client.add_partition(partition);
     Partition part = client.getPartition(DB_NAME, TABLE_NAME, "year=1000");
@@ -474,7 +542,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
         .setTableName(TABLE_NAME)
         .addCol(YEAR_COL_NAME, DEFAULT_COL_TYPE)
         .setLocation(metaStore.getWarehouseRoot() + "/addparttest")
-        .build();
+        .build(metaStore.getConf());
     client.add_partition(partition);
   }
 
@@ -588,7 +656,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
         .setCols(getYearPartCol())
         .addCol("test_id", "int", "test col id")
         .addCol("test_value", "string", "test col value")
-        .build();
+        .build(metaStore.getConf());
 
     client.add_partitions(Lists.newArrayList(partition));
 
@@ -622,7 +690,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
   @Test
   public void testAddPartitionsEmptyList() throws Exception {
 
-    client.add_partitions(new ArrayList<Partition>());
+    client.add_partitions(new ArrayList<>());
   }
 
   @Test(expected = MetaException.class)
@@ -873,7 +941,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
 
     createTable();
     Partition partition = buildPartition(DB_NAME, TABLE_NAME, DEFAULT_YEAR_VALUE);
-    partition.getSd().setCols(new ArrayList<FieldSchema>());
+    partition.getSd().setCols(new ArrayList<>());
     client.add_partitions(Lists.newArrayList(partition));
 
     // TODO: Not sure that this is the correct behavior. It doesn't make sense to create the
@@ -976,8 +1044,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
         .addCol("test_value", "string", "test col value")
         .addPartCol(YEAR_COL_NAME, DEFAULT_COL_TYPE)
         .setLocation(null)
-        .build();
-    client.createTable(table);
+        .create(client, metaStore.getConf());
     Partition partition = buildPartition(DB_NAME, TABLE_NAME, DEFAULT_YEAR_VALUE);
     List<Partition> partitions = Lists.newArrayList(partition);
     client.add_partitions(partitions);
@@ -1044,7 +1111,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
         .setTableName(TABLE_NAME)
         .addCol(YEAR_COL_NAME, DEFAULT_COL_TYPE)
         .setLocation(metaStore.getWarehouseRoot() + "/addparttest")
-        .build();
+        .build(metaStore.getConf());
     List<Partition> partitions = new ArrayList<>();
     partitions.add(partition);
     client.add_partitions(partitions);
@@ -1160,7 +1227,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
   public void testAddPartsEmptyList() throws Exception {
 
     List<Partition> addedPartitions =
-        client.add_partitions(new ArrayList<Partition>(), false, true);
+        client.add_partitions(new ArrayList<>(), false, true);
     Assert.assertNotNull(addedPartitions);
     Assert.assertTrue(addedPartitions.isEmpty());
   }
@@ -1276,8 +1343,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
 
   // Helper methods
   private void createDB(String dbName) throws TException {
-    Database db = new DatabaseBuilder().setName(dbName).build();
-    client.createDatabase(db);
+    new DatabaseBuilder().setName(dbName).create(client, metaStore.getConf());
   }
 
   private Table createTable() throws Exception {
@@ -1302,13 +1368,12 @@ public class TestAddPartitions extends MetaStoreClientTest {
         .setStoredAsSubDirectories(false)
         .addSerdeParam("partTestSerdeParamKey", "partTestSerdeParamValue")
         .setLocation(location)
-        .build();
-    client.createTable(table);
+        .create(client, metaStore.getConf());
     return client.getTable(dbName, tableName);
   }
 
   private void createExternalTable(String tableName, String location) throws Exception {
-    Table table = new TableBuilder()
+    new TableBuilder()
         .setDbName(DB_NAME)
         .setTableName(tableName)
         .addCol("test_id", "int", "test col id")
@@ -1316,8 +1381,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
         .addPartCol(YEAR_COL_NAME, DEFAULT_COL_TYPE)
         .addTableParam("EXTERNAL", "TRUE")
         .setLocation(location)
-        .build();
-    client.createTable(table);
+        .create(client, metaStore.getConf());
   }
 
   private Partition buildPartition(String dbName, String tableName, String value)
@@ -1337,7 +1401,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
         .addCol("test_value", "string", "test col value")
         .addPartParam(DEFAULT_PARAM_KEY, DEFAULT_PARAM_VALUE)
         .setLocation(location)
-        .build();
+        .build(metaStore.getConf());
     return partition;
   }
 
@@ -1357,7 +1421,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
         .setLastAccessTime(123456)
         .addCol("test_id", "int", "test col id")
         .addCol("test_value", "string", "test col value")
-        .build();
+        .build(metaStore.getConf());
     return partition;
   }
 

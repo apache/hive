@@ -63,8 +63,7 @@ public class TestMarkPartition {
     msc.dropDatabase(dbName, true, true, true);
     Database db = new DatabaseBuilder()
         .setName(dbName)
-        .build();
-    msc.createDatabase(db);
+        .create(msc, conf);
 
     final String tableName = "tmptbl";
     msc.dropTable(dbName, tableName, true, true);
@@ -73,13 +72,12 @@ public class TestMarkPartition {
         .setTableName(tableName)
         .addCol("a", "string")
         .addPartCol("b", "string")
-        .build();
-    msc.createTable(table);
+        .create(msc, conf);
 
     Partition part = new PartitionBuilder()
-        .fromTable(table)
+        .inTable(table)
         .addValue("2011")
-        .build();
+        .build(conf);
     msc.add_partition(part);
     Map<String,String> kvs = new HashMap<>();
     kvs.put("b", "'2011'");

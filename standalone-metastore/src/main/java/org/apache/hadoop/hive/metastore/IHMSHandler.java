@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 
 /**
  * An interface wrapper for HMSHandler.  This interface contains methods that need to be
@@ -66,25 +67,43 @@ public interface IHMSHandler extends ThriftHiveMetastore.Iface, Configurable {
   /**
    * Equivalent to get_database, but does not write to audit logs, or fire pre-event listeners.
    * Meant to be used for internal hive classes that don't use the thrift interface.
+   * @param catName catalog name
    * @param name database name
    * @return database object
    * @throws NoSuchObjectException If the database does not exist.
    * @throws MetaException If another error occurs.
    */
-  Database get_database_core(final String name) throws NoSuchObjectException, MetaException;
+  Database get_database_core(final String catName, final String name)
+      throws NoSuchObjectException, MetaException;
 
   /**
    * Equivalent of get_table, but does not log audits and fire pre-event listener.
    * Meant to be used for calls made by other hive classes, that are not using the
    * thrift interface.
+   * @param catName catalog name
    * @param dbname database name
    * @param name table name
    * @return Table object
    * @throws NoSuchObjectException If the table does not exist.
    * @throws MetaException  If another error occurs.
    */
-  Table get_table_core(final String dbname, final String name) throws MetaException,
-      NoSuchObjectException;
+  Table get_table_core(final String catName, final String dbname, final String name)
+      throws MetaException, NoSuchObjectException;
+
+  /**
+   * Equivalent of get_table, but does not log audits and fire pre-event listener.
+   * Meant to be used for calls made by other hive classes, that are not using the
+   * thrift interface.  Uses the configured catalog.
+   * @param dbName database name
+   * @param name table name
+   * @return Table object
+   * @throws NoSuchObjectException If the table does not exist.
+   * @throws MetaException  If another error occurs.
+   */
+  default Table get_table_core(final String dbName, final String name)
+      throws MetaException, NoSuchObjectException {
+    return get_table_core(MetaStoreUtils.getDefaultCatalog(getConf()), dbName, name);
+  }
 
   /**
    * Get a list of all transactional listeners.

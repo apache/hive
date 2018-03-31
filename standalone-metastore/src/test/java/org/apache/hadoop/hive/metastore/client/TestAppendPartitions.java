@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.client;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,9 +28,11 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
@@ -37,10 +40,13 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
+import org.apache.thrift.TException;
+import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -78,10 +84,9 @@ public class TestAppendPartitions extends MetaStoreClientTest {
     // Clean up the database
     client.dropDatabase(DB_NAME, true, true, true);
     metaStore.cleanWarehouseDirs();
-    Database db = new DatabaseBuilder()
+    new DatabaseBuilder()
         .setName(DB_NAME)
-        .build();
-    client.createDatabase(db);
+        .create(client, metaStore.getConf());
 
     tableWithPartitions = createTableWithPartitions();
     externalTable = createExternalTable();
@@ -221,18 +226,22 @@ public class TestAppendPartitions extends MetaStoreClientTest {
     client.appendPartition(tableWithPartitions.getDbName(), null, partitionValues);
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = InvalidObjectException.class)
   public void testAppendPartitionEmptyPartValues() throws Exception {
 
     Table table = tableWithPartitions;
-    client.appendPartition(table.getDbName(), table.getTableName(), new ArrayList<String>());
+    client.appendPartition(table.getDbName(), table.getTableName(), new ArrayList<>());
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testAppendPartitionNullPartValues() throws Exception {
-
-    Table table = tableWithPartitions;
-    client.appendPartition(table.getDbName(), table.getTableName(), (List<String>) null);
+    try {
+      Table table = tableWithPartitions;
+      client.appendPartition(table.getDbName(), table.getTableName(), (List<String>) null);
+      Assert.fail("Exception should have been thrown.");
+    } catch (TTransportException | InvalidObjectException e) {
+      // TODO: NPE should not be thrown
+    }
   }
 
   @Test
@@ -436,6 +445,57 @@ public class TestAppendPartitions extends MetaStoreClientTest {
     client.appendPartition(table.getDbName(), table.getTableName(), partitionName);
   }
 
+  @Test
+  public void otherCatalog() throws TException {
+    String catName = "append_partition_catalog";
+    Catalog cat = new CatalogBuilder()
+        .setName(catName)
+        .setLocation(MetaStoreTestUtils.getTestWarehouseDir(catName))
+        .build();
+    client.createCatalog(cat);
+
+    String dbName = "append_partition_database_in_other_catalog";
+    Database db = new DatabaseBuilder()
+        .setName(dbName)
+        .setCatalogName(catName)
+        .create(client, metaStore.getConf());
+
+    String tableName = "table_in_other_catalog";
+    new TableBuilder()
+        .inDb(db)
+        .setTableName(tableName)
+        .addCol("id", "int")
+        .addCol("name", "string")
+        .addPartCol("partcol", "string")
+        .create(client, metaStore.getConf());
+
+    Partition created =
+        client.appendPartition(catName, dbName, tableName, Collections.singletonList("a1"));
+    Assert.assertEquals(1, created.getValuesSize());
+    Assert.assertEquals("a1", created.getValues().get(0));
+    Partition fetched =
+        client.getPartition(catName, dbName, tableName, Collections.singletonList("a1"));
+    Assert.assertEquals(created, fetched);
+
+    created = client.appendPartition(catName, dbName, tableName, "partcol=a2");
+    Assert.assertEquals(1, created.getValuesSize());
+    Assert.assertEquals("a2", created.getValues().get(0));
+    fetched = client.getPartition(catName, dbName, tableName, Collections.singletonList("a2"));
+    Assert.assertEquals(created, fetched);
+  }
+
+  @Test(expected = InvalidObjectException.class)
+  public void testAppendPartitionBogusCatalog() throws Exception {
+    client.appendPartition("nosuch", DB_NAME, tableWithPartitions.getTableName(),
+        Lists.newArrayList("2017", "may"));
+  }
+
+  @Test(expected = InvalidObjectException.class)
+  public void testAppendPartitionByNameBogusCatalog() throws Exception {
+    client.appendPartition("nosuch", DB_NAME, tableWithPartitions.getTableName(),
+        "year=2017/month=april");
+  }
+
   // Helper methods
 
   private Table createTableWithPartitions() throws Exception {
@@ -471,7 +531,7 @@ public class TestAppendPartitions extends MetaStoreClientTest {
 
   private Table createTable(String tableName, List<FieldSchema> partCols, Map<String,
       String> tableParams, String tableType, String location) throws Exception {
-    Table table = new TableBuilder()
+    new TableBuilder()
         .setDbName(DB_NAME)
         .setTableName(tableName)
         .addCol("test_id", "int", "test col id")
@@ -480,17 +540,15 @@ public class TestAppendPartitions extends MetaStoreClientTest {
         .setTableParams(tableParams)
         .setType(tableType)
         .setLocation(location)
-        .build();
-    client.createTable(table);
+        .create(client, metaStore.getConf());
     return client.getTable(DB_NAME, tableName);
   }
 
   private void createPartition(Table table, List<String> values) throws Exception {
-    Partition partition = new PartitionBuilder()
-        .fromTable(table)
+    new PartitionBuilder()
+        .inTable(table)
         .setValues(values)
-        .build();
-    client.add_partition(partition);
+        .addToTable(client, metaStore.getConf());
   }
 
   private static List<FieldSchema> getYearAndMonthPartCols() {

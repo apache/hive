@@ -287,6 +287,18 @@ class GrantRevokeRoleRequest;
 
 class GrantRevokeRoleResponse;
 
+class Catalog;
+
+class CreateCatalogRequest;
+
+class GetCatalogRequest;
+
+class GetCatalogResponse;
+
+class GetCatalogsResponse;
+
+class DropCatalogRequest;
+
 class Database;
 
 class SerDeInfo;
@@ -788,7 +800,7 @@ inline std::ostream& operator<<(std::ostream& out, const FieldSchema& obj)
 }
 
 typedef struct _SQLPrimaryKey__isset {
-  _SQLPrimaryKey__isset() : table_db(false), table_name(false), column_name(false), key_seq(false), pk_name(false), enable_cstr(false), validate_cstr(false), rely_cstr(false) {}
+  _SQLPrimaryKey__isset() : table_db(false), table_name(false), column_name(false), key_seq(false), pk_name(false), enable_cstr(false), validate_cstr(false), rely_cstr(false), catName(false) {}
   bool table_db :1;
   bool table_name :1;
   bool column_name :1;
@@ -797,6 +809,7 @@ typedef struct _SQLPrimaryKey__isset {
   bool enable_cstr :1;
   bool validate_cstr :1;
   bool rely_cstr :1;
+  bool catName :1;
 } _SQLPrimaryKey__isset;
 
 class SQLPrimaryKey {
@@ -804,7 +817,7 @@ class SQLPrimaryKey {
 
   SQLPrimaryKey(const SQLPrimaryKey&);
   SQLPrimaryKey& operator=(const SQLPrimaryKey&);
-  SQLPrimaryKey() : table_db(), table_name(), column_name(), key_seq(0), pk_name(), enable_cstr(0), validate_cstr(0), rely_cstr(0) {
+  SQLPrimaryKey() : table_db(), table_name(), column_name(), key_seq(0), pk_name(), enable_cstr(0), validate_cstr(0), rely_cstr(0), catName() {
   }
 
   virtual ~SQLPrimaryKey() throw();
@@ -816,6 +829,7 @@ class SQLPrimaryKey {
   bool enable_cstr;
   bool validate_cstr;
   bool rely_cstr;
+  std::string catName;
 
   _SQLPrimaryKey__isset __isset;
 
@@ -835,6 +849,8 @@ class SQLPrimaryKey {
 
   void __set_rely_cstr(const bool val);
 
+  void __set_catName(const std::string& val);
+
   bool operator == (const SQLPrimaryKey & rhs) const
   {
     if (!(table_db == rhs.table_db))
@@ -852,6 +868,10 @@ class SQLPrimaryKey {
     if (!(validate_cstr == rhs.validate_cstr))
       return false;
     if (!(rely_cstr == rhs.rely_cstr))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -876,7 +896,7 @@ inline std::ostream& operator<<(std::ostream& out, const SQLPrimaryKey& obj)
 }
 
 typedef struct _SQLForeignKey__isset {
-  _SQLForeignKey__isset() : pktable_db(false), pktable_name(false), pkcolumn_name(false), fktable_db(false), fktable_name(false), fkcolumn_name(false), key_seq(false), update_rule(false), delete_rule(false), fk_name(false), pk_name(false), enable_cstr(false), validate_cstr(false), rely_cstr(false) {}
+  _SQLForeignKey__isset() : pktable_db(false), pktable_name(false), pkcolumn_name(false), fktable_db(false), fktable_name(false), fkcolumn_name(false), key_seq(false), update_rule(false), delete_rule(false), fk_name(false), pk_name(false), enable_cstr(false), validate_cstr(false), rely_cstr(false), catName(false) {}
   bool pktable_db :1;
   bool pktable_name :1;
   bool pkcolumn_name :1;
@@ -891,6 +911,7 @@ typedef struct _SQLForeignKey__isset {
   bool enable_cstr :1;
   bool validate_cstr :1;
   bool rely_cstr :1;
+  bool catName :1;
 } _SQLForeignKey__isset;
 
 class SQLForeignKey {
@@ -898,7 +919,7 @@ class SQLForeignKey {
 
   SQLForeignKey(const SQLForeignKey&);
   SQLForeignKey& operator=(const SQLForeignKey&);
-  SQLForeignKey() : pktable_db(), pktable_name(), pkcolumn_name(), fktable_db(), fktable_name(), fkcolumn_name(), key_seq(0), update_rule(0), delete_rule(0), fk_name(), pk_name(), enable_cstr(0), validate_cstr(0), rely_cstr(0) {
+  SQLForeignKey() : pktable_db(), pktable_name(), pkcolumn_name(), fktable_db(), fktable_name(), fkcolumn_name(), key_seq(0), update_rule(0), delete_rule(0), fk_name(), pk_name(), enable_cstr(0), validate_cstr(0), rely_cstr(0), catName() {
   }
 
   virtual ~SQLForeignKey() throw();
@@ -916,6 +937,7 @@ class SQLForeignKey {
   bool enable_cstr;
   bool validate_cstr;
   bool rely_cstr;
+  std::string catName;
 
   _SQLForeignKey__isset __isset;
 
@@ -947,6 +969,8 @@ class SQLForeignKey {
 
   void __set_rely_cstr(const bool val);
 
+  void __set_catName(const std::string& val);
+
   bool operator == (const SQLForeignKey & rhs) const
   {
     if (!(pktable_db == rhs.pktable_db))
@@ -977,6 +1001,10 @@ class SQLForeignKey {
       return false;
     if (!(rely_cstr == rhs.rely_cstr))
       return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
+      return false;
     return true;
   }
   bool operator != (const SQLForeignKey &rhs) const {
@@ -1000,7 +1028,8 @@ inline std::ostream& operator<<(std::ostream& out, const SQLForeignKey& obj)
 }
 
 typedef struct _SQLUniqueConstraint__isset {
-  _SQLUniqueConstraint__isset() : table_db(false), table_name(false), column_name(false), key_seq(false), uk_name(false), enable_cstr(false), validate_cstr(false), rely_cstr(false) {}
+  _SQLUniqueConstraint__isset() : catName(false), table_db(false), table_name(false), column_name(false), key_seq(false), uk_name(false), enable_cstr(false), validate_cstr(false), rely_cstr(false) {}
+  bool catName :1;
   bool table_db :1;
   bool table_name :1;
   bool column_name :1;
@@ -1016,10 +1045,11 @@ class SQLUniqueConstraint {
 
   SQLUniqueConstraint(const SQLUniqueConstraint&);
   SQLUniqueConstraint& operator=(const SQLUniqueConstraint&);
-  SQLUniqueConstraint() : table_db(), table_name(), column_name(), key_seq(0), uk_name(), enable_cstr(0), validate_cstr(0), rely_cstr(0) {
+  SQLUniqueConstraint() : catName(), table_db(), table_name(), column_name(), key_seq(0), uk_name(), enable_cstr(0), validate_cstr(0), rely_cstr(0) {
   }
 
   virtual ~SQLUniqueConstraint() throw();
+  std::string catName;
   std::string table_db;
   std::string table_name;
   std::string column_name;
@@ -1030,6 +1060,8 @@ class SQLUniqueConstraint {
   bool rely_cstr;
 
   _SQLUniqueConstraint__isset __isset;
+
+  void __set_catName(const std::string& val);
 
   void __set_table_db(const std::string& val);
 
@@ -1049,6 +1081,8 @@ class SQLUniqueConstraint {
 
   bool operator == (const SQLUniqueConstraint & rhs) const
   {
+    if (!(catName == rhs.catName))
+      return false;
     if (!(table_db == rhs.table_db))
       return false;
     if (!(table_name == rhs.table_name))
@@ -1088,7 +1122,8 @@ inline std::ostream& operator<<(std::ostream& out, const SQLUniqueConstraint& ob
 }
 
 typedef struct _SQLNotNullConstraint__isset {
-  _SQLNotNullConstraint__isset() : table_db(false), table_name(false), column_name(false), nn_name(false), enable_cstr(false), validate_cstr(false), rely_cstr(false) {}
+  _SQLNotNullConstraint__isset() : catName(false), table_db(false), table_name(false), column_name(false), nn_name(false), enable_cstr(false), validate_cstr(false), rely_cstr(false) {}
+  bool catName :1;
   bool table_db :1;
   bool table_name :1;
   bool column_name :1;
@@ -1103,10 +1138,11 @@ class SQLNotNullConstraint {
 
   SQLNotNullConstraint(const SQLNotNullConstraint&);
   SQLNotNullConstraint& operator=(const SQLNotNullConstraint&);
-  SQLNotNullConstraint() : table_db(), table_name(), column_name(), nn_name(), enable_cstr(0), validate_cstr(0), rely_cstr(0) {
+  SQLNotNullConstraint() : catName(), table_db(), table_name(), column_name(), nn_name(), enable_cstr(0), validate_cstr(0), rely_cstr(0) {
   }
 
   virtual ~SQLNotNullConstraint() throw();
+  std::string catName;
   std::string table_db;
   std::string table_name;
   std::string column_name;
@@ -1116,6 +1152,8 @@ class SQLNotNullConstraint {
   bool rely_cstr;
 
   _SQLNotNullConstraint__isset __isset;
+
+  void __set_catName(const std::string& val);
 
   void __set_table_db(const std::string& val);
 
@@ -1133,6 +1171,8 @@ class SQLNotNullConstraint {
 
   bool operator == (const SQLNotNullConstraint & rhs) const
   {
+    if (!(catName == rhs.catName))
+      return false;
     if (!(table_db == rhs.table_db))
       return false;
     if (!(table_name == rhs.table_name))
@@ -1170,7 +1210,8 @@ inline std::ostream& operator<<(std::ostream& out, const SQLNotNullConstraint& o
 }
 
 typedef struct _SQLDefaultConstraint__isset {
-  _SQLDefaultConstraint__isset() : table_db(false), table_name(false), column_name(false), default_value(false), dc_name(false), enable_cstr(false), validate_cstr(false), rely_cstr(false) {}
+  _SQLDefaultConstraint__isset() : catName(false), table_db(false), table_name(false), column_name(false), default_value(false), dc_name(false), enable_cstr(false), validate_cstr(false), rely_cstr(false) {}
+  bool catName :1;
   bool table_db :1;
   bool table_name :1;
   bool column_name :1;
@@ -1186,10 +1227,11 @@ class SQLDefaultConstraint {
 
   SQLDefaultConstraint(const SQLDefaultConstraint&);
   SQLDefaultConstraint& operator=(const SQLDefaultConstraint&);
-  SQLDefaultConstraint() : table_db(), table_name(), column_name(), default_value(), dc_name(), enable_cstr(0), validate_cstr(0), rely_cstr(0) {
+  SQLDefaultConstraint() : catName(), table_db(), table_name(), column_name(), default_value(), dc_name(), enable_cstr(0), validate_cstr(0), rely_cstr(0) {
   }
 
   virtual ~SQLDefaultConstraint() throw();
+  std::string catName;
   std::string table_db;
   std::string table_name;
   std::string column_name;
@@ -1200,6 +1242,8 @@ class SQLDefaultConstraint {
   bool rely_cstr;
 
   _SQLDefaultConstraint__isset __isset;
+
+  void __set_catName(const std::string& val);
 
   void __set_table_db(const std::string& val);
 
@@ -1219,6 +1263,8 @@ class SQLDefaultConstraint {
 
   bool operator == (const SQLDefaultConstraint & rhs) const
   {
+    if (!(catName == rhs.catName))
+      return false;
     if (!(table_db == rhs.table_db))
       return false;
     if (!(table_name == rhs.table_name))
@@ -1258,7 +1304,8 @@ inline std::ostream& operator<<(std::ostream& out, const SQLDefaultConstraint& o
 }
 
 typedef struct _SQLCheckConstraint__isset {
-  _SQLCheckConstraint__isset() : table_db(false), table_name(false), column_name(false), check_expression(false), dc_name(false), enable_cstr(false), validate_cstr(false), rely_cstr(false) {}
+  _SQLCheckConstraint__isset() : catName(false), table_db(false), table_name(false), column_name(false), check_expression(false), dc_name(false), enable_cstr(false), validate_cstr(false), rely_cstr(false) {}
+  bool catName :1;
   bool table_db :1;
   bool table_name :1;
   bool column_name :1;
@@ -1274,10 +1321,11 @@ class SQLCheckConstraint {
 
   SQLCheckConstraint(const SQLCheckConstraint&);
   SQLCheckConstraint& operator=(const SQLCheckConstraint&);
-  SQLCheckConstraint() : table_db(), table_name(), column_name(), check_expression(), dc_name(), enable_cstr(0), validate_cstr(0), rely_cstr(0) {
+  SQLCheckConstraint() : catName(), table_db(), table_name(), column_name(), check_expression(), dc_name(), enable_cstr(0), validate_cstr(0), rely_cstr(0) {
   }
 
   virtual ~SQLCheckConstraint() throw();
+  std::string catName;
   std::string table_db;
   std::string table_name;
   std::string column_name;
@@ -1288,6 +1336,8 @@ class SQLCheckConstraint {
   bool rely_cstr;
 
   _SQLCheckConstraint__isset __isset;
+
+  void __set_catName(const std::string& val);
 
   void __set_table_db(const std::string& val);
 
@@ -1307,6 +1357,8 @@ class SQLCheckConstraint {
 
   bool operator == (const SQLCheckConstraint & rhs) const
   {
+    if (!(catName == rhs.catName))
+      return false;
     if (!(table_db == rhs.table_db))
       return false;
     if (!(table_name == rhs.table_name))
@@ -1416,12 +1468,13 @@ inline std::ostream& operator<<(std::ostream& out, const Type& obj)
 }
 
 typedef struct _HiveObjectRef__isset {
-  _HiveObjectRef__isset() : objectType(false), dbName(false), objectName(false), partValues(false), columnName(false) {}
+  _HiveObjectRef__isset() : objectType(false), dbName(false), objectName(false), partValues(false), columnName(false), catName(false) {}
   bool objectType :1;
   bool dbName :1;
   bool objectName :1;
   bool partValues :1;
   bool columnName :1;
+  bool catName :1;
 } _HiveObjectRef__isset;
 
 class HiveObjectRef {
@@ -1429,7 +1482,7 @@ class HiveObjectRef {
 
   HiveObjectRef(const HiveObjectRef&);
   HiveObjectRef& operator=(const HiveObjectRef&);
-  HiveObjectRef() : objectType((HiveObjectType::type)0), dbName(), objectName(), columnName() {
+  HiveObjectRef() : objectType((HiveObjectType::type)0), dbName(), objectName(), columnName(), catName() {
   }
 
   virtual ~HiveObjectRef() throw();
@@ -1438,6 +1491,7 @@ class HiveObjectRef {
   std::string objectName;
   std::vector<std::string>  partValues;
   std::string columnName;
+  std::string catName;
 
   _HiveObjectRef__isset __isset;
 
@@ -1451,6 +1505,8 @@ class HiveObjectRef {
 
   void __set_columnName(const std::string& val);
 
+  void __set_catName(const std::string& val);
+
   bool operator == (const HiveObjectRef & rhs) const
   {
     if (!(objectType == rhs.objectType))
@@ -1462,6 +1518,10 @@ class HiveObjectRef {
     if (!(partValues == rhs.partValues))
       return false;
     if (!(columnName == rhs.columnName))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -2272,8 +2332,298 @@ inline std::ostream& operator<<(std::ostream& out, const GrantRevokeRoleResponse
   return out;
 }
 
+typedef struct _Catalog__isset {
+  _Catalog__isset() : name(false), description(false), locationUri(false) {}
+  bool name :1;
+  bool description :1;
+  bool locationUri :1;
+} _Catalog__isset;
+
+class Catalog {
+ public:
+
+  Catalog(const Catalog&);
+  Catalog& operator=(const Catalog&);
+  Catalog() : name(), description(), locationUri() {
+  }
+
+  virtual ~Catalog() throw();
+  std::string name;
+  std::string description;
+  std::string locationUri;
+
+  _Catalog__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_description(const std::string& val);
+
+  void __set_locationUri(const std::string& val);
+
+  bool operator == (const Catalog & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (__isset.description != rhs.__isset.description)
+      return false;
+    else if (__isset.description && !(description == rhs.description))
+      return false;
+    if (!(locationUri == rhs.locationUri))
+      return false;
+    return true;
+  }
+  bool operator != (const Catalog &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const Catalog & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(Catalog &a, Catalog &b);
+
+inline std::ostream& operator<<(std::ostream& out, const Catalog& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _CreateCatalogRequest__isset {
+  _CreateCatalogRequest__isset() : catalog(false) {}
+  bool catalog :1;
+} _CreateCatalogRequest__isset;
+
+class CreateCatalogRequest {
+ public:
+
+  CreateCatalogRequest(const CreateCatalogRequest&);
+  CreateCatalogRequest& operator=(const CreateCatalogRequest&);
+  CreateCatalogRequest() {
+  }
+
+  virtual ~CreateCatalogRequest() throw();
+  Catalog catalog;
+
+  _CreateCatalogRequest__isset __isset;
+
+  void __set_catalog(const Catalog& val);
+
+  bool operator == (const CreateCatalogRequest & rhs) const
+  {
+    if (!(catalog == rhs.catalog))
+      return false;
+    return true;
+  }
+  bool operator != (const CreateCatalogRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const CreateCatalogRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(CreateCatalogRequest &a, CreateCatalogRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const CreateCatalogRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _GetCatalogRequest__isset {
+  _GetCatalogRequest__isset() : name(false) {}
+  bool name :1;
+} _GetCatalogRequest__isset;
+
+class GetCatalogRequest {
+ public:
+
+  GetCatalogRequest(const GetCatalogRequest&);
+  GetCatalogRequest& operator=(const GetCatalogRequest&);
+  GetCatalogRequest() : name() {
+  }
+
+  virtual ~GetCatalogRequest() throw();
+  std::string name;
+
+  _GetCatalogRequest__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  bool operator == (const GetCatalogRequest & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    return true;
+  }
+  bool operator != (const GetCatalogRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetCatalogRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetCatalogRequest &a, GetCatalogRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetCatalogRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _GetCatalogResponse__isset {
+  _GetCatalogResponse__isset() : catalog(false) {}
+  bool catalog :1;
+} _GetCatalogResponse__isset;
+
+class GetCatalogResponse {
+ public:
+
+  GetCatalogResponse(const GetCatalogResponse&);
+  GetCatalogResponse& operator=(const GetCatalogResponse&);
+  GetCatalogResponse() {
+  }
+
+  virtual ~GetCatalogResponse() throw();
+  Catalog catalog;
+
+  _GetCatalogResponse__isset __isset;
+
+  void __set_catalog(const Catalog& val);
+
+  bool operator == (const GetCatalogResponse & rhs) const
+  {
+    if (!(catalog == rhs.catalog))
+      return false;
+    return true;
+  }
+  bool operator != (const GetCatalogResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetCatalogResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetCatalogResponse &a, GetCatalogResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetCatalogResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _GetCatalogsResponse__isset {
+  _GetCatalogsResponse__isset() : names(false) {}
+  bool names :1;
+} _GetCatalogsResponse__isset;
+
+class GetCatalogsResponse {
+ public:
+
+  GetCatalogsResponse(const GetCatalogsResponse&);
+  GetCatalogsResponse& operator=(const GetCatalogsResponse&);
+  GetCatalogsResponse() {
+  }
+
+  virtual ~GetCatalogsResponse() throw();
+  std::vector<std::string>  names;
+
+  _GetCatalogsResponse__isset __isset;
+
+  void __set_names(const std::vector<std::string> & val);
+
+  bool operator == (const GetCatalogsResponse & rhs) const
+  {
+    if (!(names == rhs.names))
+      return false;
+    return true;
+  }
+  bool operator != (const GetCatalogsResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetCatalogsResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetCatalogsResponse &a, GetCatalogsResponse &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetCatalogsResponse& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+typedef struct _DropCatalogRequest__isset {
+  _DropCatalogRequest__isset() : name(false) {}
+  bool name :1;
+} _DropCatalogRequest__isset;
+
+class DropCatalogRequest {
+ public:
+
+  DropCatalogRequest(const DropCatalogRequest&);
+  DropCatalogRequest& operator=(const DropCatalogRequest&);
+  DropCatalogRequest() : name() {
+  }
+
+  virtual ~DropCatalogRequest() throw();
+  std::string name;
+
+  _DropCatalogRequest__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  bool operator == (const DropCatalogRequest & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    return true;
+  }
+  bool operator != (const DropCatalogRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const DropCatalogRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(DropCatalogRequest &a, DropCatalogRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const DropCatalogRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
 typedef struct _Database__isset {
-  _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false) {}
+  _Database__isset() : name(false), description(false), locationUri(false), parameters(false), privileges(false), ownerName(false), ownerType(false), catalogName(false) {}
   bool name :1;
   bool description :1;
   bool locationUri :1;
@@ -2281,6 +2631,7 @@ typedef struct _Database__isset {
   bool privileges :1;
   bool ownerName :1;
   bool ownerType :1;
+  bool catalogName :1;
 } _Database__isset;
 
 class Database {
@@ -2288,7 +2639,7 @@ class Database {
 
   Database(const Database&);
   Database& operator=(const Database&);
-  Database() : name(), description(), locationUri(), ownerName(), ownerType((PrincipalType::type)0) {
+  Database() : name(), description(), locationUri(), ownerName(), ownerType((PrincipalType::type)0), catalogName() {
   }
 
   virtual ~Database() throw();
@@ -2299,6 +2650,7 @@ class Database {
   PrincipalPrivilegeSet privileges;
   std::string ownerName;
   PrincipalType::type ownerType;
+  std::string catalogName;
 
   _Database__isset __isset;
 
@@ -2315,6 +2667,8 @@ class Database {
   void __set_ownerName(const std::string& val);
 
   void __set_ownerType(const PrincipalType::type val);
+
+  void __set_catalogName(const std::string& val);
 
   bool operator == (const Database & rhs) const
   {
@@ -2337,6 +2691,10 @@ class Database {
     if (__isset.ownerType != rhs.__isset.ownerType)
       return false;
     else if (__isset.ownerType && !(ownerType == rhs.ownerType))
+      return false;
+    if (__isset.catalogName != rhs.__isset.catalogName)
+      return false;
+    else if (__isset.catalogName && !(catalogName == rhs.catalogName))
       return false;
     return true;
   }
@@ -2677,7 +3035,7 @@ inline std::ostream& operator<<(std::ostream& out, const StorageDescriptor& obj)
 }
 
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false) {}
   bool tableName :1;
   bool dbName :1;
   bool owner :1;
@@ -2694,6 +3052,7 @@ typedef struct _Table__isset {
   bool temporary :1;
   bool rewriteEnabled :1;
   bool creationMetadata :1;
+  bool catName :1;
 } _Table__isset;
 
 class Table {
@@ -2701,7 +3060,7 @@ class Table {
 
   Table(const Table&);
   Table& operator=(const Table&);
-  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0) {
+  Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType(), temporary(false), rewriteEnabled(0), catName() {
   }
 
   virtual ~Table() throw();
@@ -2721,6 +3080,7 @@ class Table {
   bool temporary;
   bool rewriteEnabled;
   CreationMetadata creationMetadata;
+  std::string catName;
 
   _Table__isset __isset;
 
@@ -2755,6 +3115,8 @@ class Table {
   void __set_rewriteEnabled(const bool val);
 
   void __set_creationMetadata(const CreationMetadata& val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const Table & rhs) const
   {
@@ -2798,6 +3160,10 @@ class Table {
       return false;
     else if (__isset.creationMetadata && !(creationMetadata == rhs.creationMetadata))
       return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
+      return false;
     return true;
   }
   bool operator != (const Table &rhs) const {
@@ -2821,7 +3187,7 @@ inline std::ostream& operator<<(std::ostream& out, const Table& obj)
 }
 
 typedef struct _Partition__isset {
-  _Partition__isset() : values(false), dbName(false), tableName(false), createTime(false), lastAccessTime(false), sd(false), parameters(false), privileges(false) {}
+  _Partition__isset() : values(false), dbName(false), tableName(false), createTime(false), lastAccessTime(false), sd(false), parameters(false), privileges(false), catName(false) {}
   bool values :1;
   bool dbName :1;
   bool tableName :1;
@@ -2830,6 +3196,7 @@ typedef struct _Partition__isset {
   bool sd :1;
   bool parameters :1;
   bool privileges :1;
+  bool catName :1;
 } _Partition__isset;
 
 class Partition {
@@ -2837,7 +3204,7 @@ class Partition {
 
   Partition(const Partition&);
   Partition& operator=(const Partition&);
-  Partition() : dbName(), tableName(), createTime(0), lastAccessTime(0) {
+  Partition() : dbName(), tableName(), createTime(0), lastAccessTime(0), catName() {
   }
 
   virtual ~Partition() throw();
@@ -2849,6 +3216,7 @@ class Partition {
   StorageDescriptor sd;
   std::map<std::string, std::string>  parameters;
   PrincipalPrivilegeSet privileges;
+  std::string catName;
 
   _Partition__isset __isset;
 
@@ -2867,6 +3235,8 @@ class Partition {
   void __set_parameters(const std::map<std::string, std::string> & val);
 
   void __set_privileges(const PrincipalPrivilegeSet& val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const Partition & rhs) const
   {
@@ -2887,6 +3257,10 @@ class Partition {
     if (__isset.privileges != rhs.__isset.privileges)
       return false;
     else if (__isset.privileges && !(privileges == rhs.privileges))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -3087,12 +3461,13 @@ inline std::ostream& operator<<(std::ostream& out, const PartitionListComposingS
 }
 
 typedef struct _PartitionSpec__isset {
-  _PartitionSpec__isset() : dbName(false), tableName(false), rootPath(false), sharedSDPartitionSpec(false), partitionList(false) {}
+  _PartitionSpec__isset() : dbName(false), tableName(false), rootPath(false), sharedSDPartitionSpec(false), partitionList(false), catName(false) {}
   bool dbName :1;
   bool tableName :1;
   bool rootPath :1;
   bool sharedSDPartitionSpec :1;
   bool partitionList :1;
+  bool catName :1;
 } _PartitionSpec__isset;
 
 class PartitionSpec {
@@ -3100,7 +3475,7 @@ class PartitionSpec {
 
   PartitionSpec(const PartitionSpec&);
   PartitionSpec& operator=(const PartitionSpec&);
-  PartitionSpec() : dbName(), tableName(), rootPath() {
+  PartitionSpec() : dbName(), tableName(), rootPath(), catName() {
   }
 
   virtual ~PartitionSpec() throw();
@@ -3109,6 +3484,7 @@ class PartitionSpec {
   std::string rootPath;
   PartitionSpecWithSharedSD sharedSDPartitionSpec;
   PartitionListComposingSpec partitionList;
+  std::string catName;
 
   _PartitionSpec__isset __isset;
 
@@ -3121,6 +3497,8 @@ class PartitionSpec {
   void __set_sharedSDPartitionSpec(const PartitionSpecWithSharedSD& val);
 
   void __set_partitionList(const PartitionListComposingSpec& val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const PartitionSpec & rhs) const
   {
@@ -3137,6 +3515,10 @@ class PartitionSpec {
     if (__isset.partitionList != rhs.__isset.partitionList)
       return false;
     else if (__isset.partitionList && !(partitionList == rhs.partitionList))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -3868,9 +4250,10 @@ inline std::ostream& operator<<(std::ostream& out, const ColumnStatisticsObj& ob
 }
 
 typedef struct _ColumnStatisticsDesc__isset {
-  _ColumnStatisticsDesc__isset() : partName(false), lastAnalyzed(false) {}
+  _ColumnStatisticsDesc__isset() : partName(false), lastAnalyzed(false), catName(false) {}
   bool partName :1;
   bool lastAnalyzed :1;
+  bool catName :1;
 } _ColumnStatisticsDesc__isset;
 
 class ColumnStatisticsDesc {
@@ -3878,7 +4261,7 @@ class ColumnStatisticsDesc {
 
   ColumnStatisticsDesc(const ColumnStatisticsDesc&);
   ColumnStatisticsDesc& operator=(const ColumnStatisticsDesc&);
-  ColumnStatisticsDesc() : isTblLevel(0), dbName(), tableName(), partName(), lastAnalyzed(0) {
+  ColumnStatisticsDesc() : isTblLevel(0), dbName(), tableName(), partName(), lastAnalyzed(0), catName() {
   }
 
   virtual ~ColumnStatisticsDesc() throw();
@@ -3887,6 +4270,7 @@ class ColumnStatisticsDesc {
   std::string tableName;
   std::string partName;
   int64_t lastAnalyzed;
+  std::string catName;
 
   _ColumnStatisticsDesc__isset __isset;
 
@@ -3899,6 +4283,8 @@ class ColumnStatisticsDesc {
   void __set_partName(const std::string& val);
 
   void __set_lastAnalyzed(const int64_t val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const ColumnStatisticsDesc & rhs) const
   {
@@ -3915,6 +4301,10 @@ class ColumnStatisticsDesc {
     if (__isset.lastAnalyzed != rhs.__isset.lastAnalyzed)
       return false;
     else if (__isset.lastAnalyzed && !(lastAnalyzed == rhs.lastAnalyzed))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -4179,28 +4569,41 @@ inline std::ostream& operator<<(std::ostream& out, const EnvironmentContext& obj
   return out;
 }
 
+typedef struct _PrimaryKeysRequest__isset {
+  _PrimaryKeysRequest__isset() : catName(false) {}
+  bool catName :1;
+} _PrimaryKeysRequest__isset;
 
 class PrimaryKeysRequest {
  public:
 
   PrimaryKeysRequest(const PrimaryKeysRequest&);
   PrimaryKeysRequest& operator=(const PrimaryKeysRequest&);
-  PrimaryKeysRequest() : db_name(), tbl_name() {
+  PrimaryKeysRequest() : db_name(), tbl_name(), catName() {
   }
 
   virtual ~PrimaryKeysRequest() throw();
   std::string db_name;
   std::string tbl_name;
+  std::string catName;
+
+  _PrimaryKeysRequest__isset __isset;
 
   void __set_db_name(const std::string& val);
 
   void __set_tbl_name(const std::string& val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const PrimaryKeysRequest & rhs) const
   {
     if (!(db_name == rhs.db_name))
       return false;
     if (!(tbl_name == rhs.tbl_name))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -4265,11 +4668,12 @@ inline std::ostream& operator<<(std::ostream& out, const PrimaryKeysResponse& ob
 }
 
 typedef struct _ForeignKeysRequest__isset {
-  _ForeignKeysRequest__isset() : parent_db_name(false), parent_tbl_name(false), foreign_db_name(false), foreign_tbl_name(false) {}
+  _ForeignKeysRequest__isset() : parent_db_name(false), parent_tbl_name(false), foreign_db_name(false), foreign_tbl_name(false), catName(false) {}
   bool parent_db_name :1;
   bool parent_tbl_name :1;
   bool foreign_db_name :1;
   bool foreign_tbl_name :1;
+  bool catName :1;
 } _ForeignKeysRequest__isset;
 
 class ForeignKeysRequest {
@@ -4277,7 +4681,7 @@ class ForeignKeysRequest {
 
   ForeignKeysRequest(const ForeignKeysRequest&);
   ForeignKeysRequest& operator=(const ForeignKeysRequest&);
-  ForeignKeysRequest() : parent_db_name(), parent_tbl_name(), foreign_db_name(), foreign_tbl_name() {
+  ForeignKeysRequest() : parent_db_name(), parent_tbl_name(), foreign_db_name(), foreign_tbl_name(), catName() {
   }
 
   virtual ~ForeignKeysRequest() throw();
@@ -4285,6 +4689,7 @@ class ForeignKeysRequest {
   std::string parent_tbl_name;
   std::string foreign_db_name;
   std::string foreign_tbl_name;
+  std::string catName;
 
   _ForeignKeysRequest__isset __isset;
 
@@ -4296,6 +4701,8 @@ class ForeignKeysRequest {
 
   void __set_foreign_tbl_name(const std::string& val);
 
+  void __set_catName(const std::string& val);
+
   bool operator == (const ForeignKeysRequest & rhs) const
   {
     if (!(parent_db_name == rhs.parent_db_name))
@@ -4305,6 +4712,10 @@ class ForeignKeysRequest {
     if (!(foreign_db_name == rhs.foreign_db_name))
       return false;
     if (!(foreign_tbl_name == rhs.foreign_tbl_name))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -4374,12 +4785,15 @@ class UniqueConstraintsRequest {
 
   UniqueConstraintsRequest(const UniqueConstraintsRequest&);
   UniqueConstraintsRequest& operator=(const UniqueConstraintsRequest&);
-  UniqueConstraintsRequest() : db_name(), tbl_name() {
+  UniqueConstraintsRequest() : catName(), db_name(), tbl_name() {
   }
 
   virtual ~UniqueConstraintsRequest() throw();
+  std::string catName;
   std::string db_name;
   std::string tbl_name;
+
+  void __set_catName(const std::string& val);
 
   void __set_db_name(const std::string& val);
 
@@ -4387,6 +4801,8 @@ class UniqueConstraintsRequest {
 
   bool operator == (const UniqueConstraintsRequest & rhs) const
   {
+    if (!(catName == rhs.catName))
+      return false;
     if (!(db_name == rhs.db_name))
       return false;
     if (!(tbl_name == rhs.tbl_name))
@@ -4459,12 +4875,15 @@ class NotNullConstraintsRequest {
 
   NotNullConstraintsRequest(const NotNullConstraintsRequest&);
   NotNullConstraintsRequest& operator=(const NotNullConstraintsRequest&);
-  NotNullConstraintsRequest() : db_name(), tbl_name() {
+  NotNullConstraintsRequest() : catName(), db_name(), tbl_name() {
   }
 
   virtual ~NotNullConstraintsRequest() throw();
+  std::string catName;
   std::string db_name;
   std::string tbl_name;
+
+  void __set_catName(const std::string& val);
 
   void __set_db_name(const std::string& val);
 
@@ -4472,6 +4891,8 @@ class NotNullConstraintsRequest {
 
   bool operator == (const NotNullConstraintsRequest & rhs) const
   {
+    if (!(catName == rhs.catName))
+      return false;
     if (!(db_name == rhs.db_name))
       return false;
     if (!(tbl_name == rhs.tbl_name))
@@ -4544,12 +4965,15 @@ class DefaultConstraintsRequest {
 
   DefaultConstraintsRequest(const DefaultConstraintsRequest&);
   DefaultConstraintsRequest& operator=(const DefaultConstraintsRequest&);
-  DefaultConstraintsRequest() : db_name(), tbl_name() {
+  DefaultConstraintsRequest() : catName(), db_name(), tbl_name() {
   }
 
   virtual ~DefaultConstraintsRequest() throw();
+  std::string catName;
   std::string db_name;
   std::string tbl_name;
+
+  void __set_catName(const std::string& val);
 
   void __set_db_name(const std::string& val);
 
@@ -4557,6 +4981,8 @@ class DefaultConstraintsRequest {
 
   bool operator == (const DefaultConstraintsRequest & rhs) const
   {
+    if (!(catName == rhs.catName))
+      return false;
     if (!(db_name == rhs.db_name))
       return false;
     if (!(tbl_name == rhs.tbl_name))
@@ -4629,12 +5055,15 @@ class CheckConstraintsRequest {
 
   CheckConstraintsRequest(const CheckConstraintsRequest&);
   CheckConstraintsRequest& operator=(const CheckConstraintsRequest&);
-  CheckConstraintsRequest() : db_name(), tbl_name() {
+  CheckConstraintsRequest() : catName(), db_name(), tbl_name() {
   }
 
   virtual ~CheckConstraintsRequest() throw();
+  std::string catName;
   std::string db_name;
   std::string tbl_name;
+
+  void __set_catName(const std::string& val);
 
   void __set_db_name(const std::string& val);
 
@@ -4642,6 +5071,8 @@ class CheckConstraintsRequest {
 
   bool operator == (const CheckConstraintsRequest & rhs) const
   {
+    if (!(catName == rhs.catName))
+      return false;
     if (!(db_name == rhs.db_name))
       return false;
     if (!(tbl_name == rhs.tbl_name))
@@ -4708,25 +5139,34 @@ inline std::ostream& operator<<(std::ostream& out, const CheckConstraintsRespons
   return out;
 }
 
+typedef struct _DropConstraintRequest__isset {
+  _DropConstraintRequest__isset() : catName(false) {}
+  bool catName :1;
+} _DropConstraintRequest__isset;
 
 class DropConstraintRequest {
  public:
 
   DropConstraintRequest(const DropConstraintRequest&);
   DropConstraintRequest& operator=(const DropConstraintRequest&);
-  DropConstraintRequest() : dbname(), tablename(), constraintname() {
+  DropConstraintRequest() : dbname(), tablename(), constraintname(), catName() {
   }
 
   virtual ~DropConstraintRequest() throw();
   std::string dbname;
   std::string tablename;
   std::string constraintname;
+  std::string catName;
+
+  _DropConstraintRequest__isset __isset;
 
   void __set_dbname(const std::string& val);
 
   void __set_tablename(const std::string& val);
 
   void __set_constraintname(const std::string& val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const DropConstraintRequest & rhs) const
   {
@@ -4735,6 +5175,10 @@ class DropConstraintRequest {
     if (!(tablename == rhs.tablename))
       return false;
     if (!(constraintname == rhs.constraintname))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -5044,9 +5488,10 @@ inline std::ostream& operator<<(std::ostream& out, const PartitionsByExprResult&
 }
 
 typedef struct _PartitionsByExprRequest__isset {
-  _PartitionsByExprRequest__isset() : defaultPartitionName(false), maxParts(true) {}
+  _PartitionsByExprRequest__isset() : defaultPartitionName(false), maxParts(true), catName(false) {}
   bool defaultPartitionName :1;
   bool maxParts :1;
+  bool catName :1;
 } _PartitionsByExprRequest__isset;
 
 class PartitionsByExprRequest {
@@ -5054,7 +5499,7 @@ class PartitionsByExprRequest {
 
   PartitionsByExprRequest(const PartitionsByExprRequest&);
   PartitionsByExprRequest& operator=(const PartitionsByExprRequest&);
-  PartitionsByExprRequest() : dbName(), tblName(), expr(), defaultPartitionName(), maxParts(-1) {
+  PartitionsByExprRequest() : dbName(), tblName(), expr(), defaultPartitionName(), maxParts(-1), catName() {
   }
 
   virtual ~PartitionsByExprRequest() throw();
@@ -5063,6 +5508,7 @@ class PartitionsByExprRequest {
   std::string expr;
   std::string defaultPartitionName;
   int16_t maxParts;
+  std::string catName;
 
   _PartitionsByExprRequest__isset __isset;
 
@@ -5075,6 +5521,8 @@ class PartitionsByExprRequest {
   void __set_defaultPartitionName(const std::string& val);
 
   void __set_maxParts(const int16_t val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const PartitionsByExprRequest & rhs) const
   {
@@ -5091,6 +5539,10 @@ class PartitionsByExprRequest {
     if (__isset.maxParts != rhs.__isset.maxParts)
       return false;
     else if (__isset.maxParts && !(maxParts == rhs.maxParts))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -5194,25 +5646,34 @@ inline std::ostream& operator<<(std::ostream& out, const PartitionsStatsResult& 
   return out;
 }
 
+typedef struct _TableStatsRequest__isset {
+  _TableStatsRequest__isset() : catName(false) {}
+  bool catName :1;
+} _TableStatsRequest__isset;
 
 class TableStatsRequest {
  public:
 
   TableStatsRequest(const TableStatsRequest&);
   TableStatsRequest& operator=(const TableStatsRequest&);
-  TableStatsRequest() : dbName(), tblName() {
+  TableStatsRequest() : dbName(), tblName(), catName() {
   }
 
   virtual ~TableStatsRequest() throw();
   std::string dbName;
   std::string tblName;
   std::vector<std::string>  colNames;
+  std::string catName;
+
+  _TableStatsRequest__isset __isset;
 
   void __set_dbName(const std::string& val);
 
   void __set_tblName(const std::string& val);
 
   void __set_colNames(const std::vector<std::string> & val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const TableStatsRequest & rhs) const
   {
@@ -5221,6 +5682,10 @@ class TableStatsRequest {
     if (!(tblName == rhs.tblName))
       return false;
     if (!(colNames == rhs.colNames))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -5244,13 +5709,17 @@ inline std::ostream& operator<<(std::ostream& out, const TableStatsRequest& obj)
   return out;
 }
 
+typedef struct _PartitionsStatsRequest__isset {
+  _PartitionsStatsRequest__isset() : catName(false) {}
+  bool catName :1;
+} _PartitionsStatsRequest__isset;
 
 class PartitionsStatsRequest {
  public:
 
   PartitionsStatsRequest(const PartitionsStatsRequest&);
   PartitionsStatsRequest& operator=(const PartitionsStatsRequest&);
-  PartitionsStatsRequest() : dbName(), tblName() {
+  PartitionsStatsRequest() : dbName(), tblName(), catName() {
   }
 
   virtual ~PartitionsStatsRequest() throw();
@@ -5258,6 +5727,9 @@ class PartitionsStatsRequest {
   std::string tblName;
   std::vector<std::string>  colNames;
   std::vector<std::string>  partNames;
+  std::string catName;
+
+  _PartitionsStatsRequest__isset __isset;
 
   void __set_dbName(const std::string& val);
 
@@ -5266,6 +5738,8 @@ class PartitionsStatsRequest {
   void __set_colNames(const std::vector<std::string> & val);
 
   void __set_partNames(const std::vector<std::string> & val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const PartitionsStatsRequest & rhs) const
   {
@@ -5276,6 +5750,10 @@ class PartitionsStatsRequest {
     if (!(colNames == rhs.colNames))
       return false;
     if (!(partNames == rhs.partNames))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -5348,8 +5826,9 @@ inline std::ostream& operator<<(std::ostream& out, const AddPartitionsResult& ob
 }
 
 typedef struct _AddPartitionsRequest__isset {
-  _AddPartitionsRequest__isset() : needResult(true) {}
+  _AddPartitionsRequest__isset() : needResult(true), catName(false) {}
   bool needResult :1;
+  bool catName :1;
 } _AddPartitionsRequest__isset;
 
 class AddPartitionsRequest {
@@ -5357,7 +5836,7 @@ class AddPartitionsRequest {
 
   AddPartitionsRequest(const AddPartitionsRequest&);
   AddPartitionsRequest& operator=(const AddPartitionsRequest&);
-  AddPartitionsRequest() : dbName(), tblName(), ifNotExists(0), needResult(true) {
+  AddPartitionsRequest() : dbName(), tblName(), ifNotExists(0), needResult(true), catName() {
   }
 
   virtual ~AddPartitionsRequest() throw();
@@ -5366,6 +5845,7 @@ class AddPartitionsRequest {
   std::vector<Partition>  parts;
   bool ifNotExists;
   bool needResult;
+  std::string catName;
 
   _AddPartitionsRequest__isset __isset;
 
@@ -5378,6 +5858,8 @@ class AddPartitionsRequest {
   void __set_ifNotExists(const bool val);
 
   void __set_needResult(const bool val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const AddPartitionsRequest & rhs) const
   {
@@ -5392,6 +5874,10 @@ class AddPartitionsRequest {
     if (__isset.needResult != rhs.__isset.needResult)
       return false;
     else if (__isset.needResult && !(needResult == rhs.needResult))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -5569,12 +6055,13 @@ inline std::ostream& operator<<(std::ostream& out, const RequestPartsSpec& obj)
 }
 
 typedef struct _DropPartitionsRequest__isset {
-  _DropPartitionsRequest__isset() : deleteData(false), ifExists(true), ignoreProtection(false), environmentContext(false), needResult(true) {}
+  _DropPartitionsRequest__isset() : deleteData(false), ifExists(true), ignoreProtection(false), environmentContext(false), needResult(true), catName(false) {}
   bool deleteData :1;
   bool ifExists :1;
   bool ignoreProtection :1;
   bool environmentContext :1;
   bool needResult :1;
+  bool catName :1;
 } _DropPartitionsRequest__isset;
 
 class DropPartitionsRequest {
@@ -5582,7 +6069,7 @@ class DropPartitionsRequest {
 
   DropPartitionsRequest(const DropPartitionsRequest&);
   DropPartitionsRequest& operator=(const DropPartitionsRequest&);
-  DropPartitionsRequest() : dbName(), tblName(), deleteData(0), ifExists(true), ignoreProtection(0), needResult(true) {
+  DropPartitionsRequest() : dbName(), tblName(), deleteData(0), ifExists(true), ignoreProtection(0), needResult(true), catName() {
   }
 
   virtual ~DropPartitionsRequest() throw();
@@ -5594,6 +6081,7 @@ class DropPartitionsRequest {
   bool ignoreProtection;
   EnvironmentContext environmentContext;
   bool needResult;
+  std::string catName;
 
   _DropPartitionsRequest__isset __isset;
 
@@ -5612,6 +6100,8 @@ class DropPartitionsRequest {
   void __set_environmentContext(const EnvironmentContext& val);
 
   void __set_needResult(const bool val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const DropPartitionsRequest & rhs) const
   {
@@ -5641,6 +6131,10 @@ class DropPartitionsRequest {
       return false;
     else if (__isset.needResult && !(needResult == rhs.needResult))
       return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
+      return false;
     return true;
   }
   bool operator != (const DropPartitionsRequest &rhs) const {
@@ -5664,12 +6158,13 @@ inline std::ostream& operator<<(std::ostream& out, const DropPartitionsRequest& 
 }
 
 typedef struct _PartitionValuesRequest__isset {
-  _PartitionValuesRequest__isset() : applyDistinct(true), filter(false), partitionOrder(false), ascending(true), maxParts(true) {}
+  _PartitionValuesRequest__isset() : applyDistinct(true), filter(false), partitionOrder(false), ascending(true), maxParts(true), catName(false) {}
   bool applyDistinct :1;
   bool filter :1;
   bool partitionOrder :1;
   bool ascending :1;
   bool maxParts :1;
+  bool catName :1;
 } _PartitionValuesRequest__isset;
 
 class PartitionValuesRequest {
@@ -5677,7 +6172,7 @@ class PartitionValuesRequest {
 
   PartitionValuesRequest(const PartitionValuesRequest&);
   PartitionValuesRequest& operator=(const PartitionValuesRequest&);
-  PartitionValuesRequest() : dbName(), tblName(), applyDistinct(true), filter(), ascending(true), maxParts(-1LL) {
+  PartitionValuesRequest() : dbName(), tblName(), applyDistinct(true), filter(), ascending(true), maxParts(-1LL), catName() {
   }
 
   virtual ~PartitionValuesRequest() throw();
@@ -5689,6 +6184,7 @@ class PartitionValuesRequest {
   std::vector<FieldSchema>  partitionOrder;
   bool ascending;
   int64_t maxParts;
+  std::string catName;
 
   _PartitionValuesRequest__isset __isset;
 
@@ -5707,6 +6203,8 @@ class PartitionValuesRequest {
   void __set_ascending(const bool val);
 
   void __set_maxParts(const int64_t val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const PartitionValuesRequest & rhs) const
   {
@@ -5735,6 +6233,10 @@ class PartitionValuesRequest {
     if (__isset.maxParts != rhs.__isset.maxParts)
       return false;
     else if (__isset.maxParts && !(maxParts == rhs.maxParts))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -5891,7 +6393,7 @@ inline std::ostream& operator<<(std::ostream& out, const ResourceUri& obj)
 }
 
 typedef struct _Function__isset {
-  _Function__isset() : functionName(false), dbName(false), className(false), ownerName(false), ownerType(false), createTime(false), functionType(false), resourceUris(false) {}
+  _Function__isset() : functionName(false), dbName(false), className(false), ownerName(false), ownerType(false), createTime(false), functionType(false), resourceUris(false), catName(false) {}
   bool functionName :1;
   bool dbName :1;
   bool className :1;
@@ -5900,6 +6402,7 @@ typedef struct _Function__isset {
   bool createTime :1;
   bool functionType :1;
   bool resourceUris :1;
+  bool catName :1;
 } _Function__isset;
 
 class Function {
@@ -5907,7 +6410,7 @@ class Function {
 
   Function(const Function&);
   Function& operator=(const Function&);
-  Function() : functionName(), dbName(), className(), ownerName(), ownerType((PrincipalType::type)0), createTime(0), functionType((FunctionType::type)0) {
+  Function() : functionName(), dbName(), className(), ownerName(), ownerType((PrincipalType::type)0), createTime(0), functionType((FunctionType::type)0), catName() {
   }
 
   virtual ~Function() throw();
@@ -5919,6 +6422,7 @@ class Function {
   int32_t createTime;
   FunctionType::type functionType;
   std::vector<ResourceUri>  resourceUris;
+  std::string catName;
 
   _Function__isset __isset;
 
@@ -5938,6 +6442,8 @@ class Function {
 
   void __set_resourceUris(const std::vector<ResourceUri> & val);
 
+  void __set_catName(const std::string& val);
+
   bool operator == (const Function & rhs) const
   {
     if (!(functionName == rhs.functionName))
@@ -5955,6 +6461,10 @@ class Function {
     if (!(functionType == rhs.functionType))
       return false;
     if (!(resourceUris == rhs.resourceUris))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -7928,16 +8438,19 @@ class CreationMetadata {
 
   CreationMetadata(const CreationMetadata&);
   CreationMetadata& operator=(const CreationMetadata&);
-  CreationMetadata() : dbName(), tblName(), validTxnList() {
+  CreationMetadata() : catName(), dbName(), tblName(), validTxnList() {
   }
 
   virtual ~CreationMetadata() throw();
+  std::string catName;
   std::string dbName;
   std::string tblName;
   std::set<std::string>  tablesUsed;
   std::string validTxnList;
 
   _CreationMetadata__isset __isset;
+
+  void __set_catName(const std::string& val);
 
   void __set_dbName(const std::string& val);
 
@@ -7949,6 +8462,8 @@ class CreationMetadata {
 
   bool operator == (const CreationMetadata & rhs) const
   {
+    if (!(catName == rhs.catName))
+      return false;
     if (!(dbName == rhs.dbName))
       return false;
     if (!(tblName == rhs.tblName))
@@ -8035,10 +8550,11 @@ inline std::ostream& operator<<(std::ostream& out, const NotificationEventReques
 }
 
 typedef struct _NotificationEvent__isset {
-  _NotificationEvent__isset() : dbName(false), tableName(false), messageFormat(false) {}
+  _NotificationEvent__isset() : dbName(false), tableName(false), messageFormat(false), catName(false) {}
   bool dbName :1;
   bool tableName :1;
   bool messageFormat :1;
+  bool catName :1;
 } _NotificationEvent__isset;
 
 class NotificationEvent {
@@ -8046,7 +8562,7 @@ class NotificationEvent {
 
   NotificationEvent(const NotificationEvent&);
   NotificationEvent& operator=(const NotificationEvent&);
-  NotificationEvent() : eventId(0), eventTime(0), eventType(), dbName(), tableName(), message(), messageFormat() {
+  NotificationEvent() : eventId(0), eventTime(0), eventType(), dbName(), tableName(), message(), messageFormat(), catName() {
   }
 
   virtual ~NotificationEvent() throw();
@@ -8057,6 +8573,7 @@ class NotificationEvent {
   std::string tableName;
   std::string message;
   std::string messageFormat;
+  std::string catName;
 
   _NotificationEvent__isset __isset;
 
@@ -8073,6 +8590,8 @@ class NotificationEvent {
   void __set_message(const std::string& val);
 
   void __set_messageFormat(const std::string& val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const NotificationEvent & rhs) const
   {
@@ -8095,6 +8614,10 @@ class NotificationEvent {
     if (__isset.messageFormat != rhs.__isset.messageFormat)
       return false;
     else if (__isset.messageFormat && !(messageFormat == rhs.messageFormat))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -8198,28 +8721,41 @@ inline std::ostream& operator<<(std::ostream& out, const CurrentNotificationEven
   return out;
 }
 
+typedef struct _NotificationEventsCountRequest__isset {
+  _NotificationEventsCountRequest__isset() : catName(false) {}
+  bool catName :1;
+} _NotificationEventsCountRequest__isset;
 
 class NotificationEventsCountRequest {
  public:
 
   NotificationEventsCountRequest(const NotificationEventsCountRequest&);
   NotificationEventsCountRequest& operator=(const NotificationEventsCountRequest&);
-  NotificationEventsCountRequest() : fromEventId(0), dbName() {
+  NotificationEventsCountRequest() : fromEventId(0), dbName(), catName() {
   }
 
   virtual ~NotificationEventsCountRequest() throw();
   int64_t fromEventId;
   std::string dbName;
+  std::string catName;
+
+  _NotificationEventsCountRequest__isset __isset;
 
   void __set_fromEventId(const int64_t val);
 
   void __set_dbName(const std::string& val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const NotificationEventsCountRequest & rhs) const
   {
     if (!(fromEventId == rhs.fromEventId))
       return false;
     if (!(dbName == rhs.dbName))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -8391,10 +8927,11 @@ inline std::ostream& operator<<(std::ostream& out, const FireEventRequestData& o
 }
 
 typedef struct _FireEventRequest__isset {
-  _FireEventRequest__isset() : dbName(false), tableName(false), partitionVals(false) {}
+  _FireEventRequest__isset() : dbName(false), tableName(false), partitionVals(false), catName(false) {}
   bool dbName :1;
   bool tableName :1;
   bool partitionVals :1;
+  bool catName :1;
 } _FireEventRequest__isset;
 
 class FireEventRequest {
@@ -8402,7 +8939,7 @@ class FireEventRequest {
 
   FireEventRequest(const FireEventRequest&);
   FireEventRequest& operator=(const FireEventRequest&);
-  FireEventRequest() : successful(0), dbName(), tableName() {
+  FireEventRequest() : successful(0), dbName(), tableName(), catName() {
   }
 
   virtual ~FireEventRequest() throw();
@@ -8411,6 +8948,7 @@ class FireEventRequest {
   std::string dbName;
   std::string tableName;
   std::vector<std::string>  partitionVals;
+  std::string catName;
 
   _FireEventRequest__isset __isset;
 
@@ -8423,6 +8961,8 @@ class FireEventRequest {
   void __set_tableName(const std::string& val);
 
   void __set_partitionVals(const std::vector<std::string> & val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const FireEventRequest & rhs) const
   {
@@ -8441,6 +8981,10 @@ class FireEventRequest {
     if (__isset.partitionVals != rhs.__isset.partitionVals)
       return false;
     else if (__isset.partitionVals && !(partitionVals == rhs.partitionVals))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -9114,8 +9658,9 @@ inline std::ostream& operator<<(std::ostream& out, const ClientCapabilities& obj
 }
 
 typedef struct _GetTableRequest__isset {
-  _GetTableRequest__isset() : capabilities(false) {}
+  _GetTableRequest__isset() : capabilities(false), catName(false) {}
   bool capabilities :1;
+  bool catName :1;
 } _GetTableRequest__isset;
 
 class GetTableRequest {
@@ -9123,13 +9668,14 @@ class GetTableRequest {
 
   GetTableRequest(const GetTableRequest&);
   GetTableRequest& operator=(const GetTableRequest&);
-  GetTableRequest() : dbName(), tblName() {
+  GetTableRequest() : dbName(), tblName(), catName() {
   }
 
   virtual ~GetTableRequest() throw();
   std::string dbName;
   std::string tblName;
   ClientCapabilities capabilities;
+  std::string catName;
 
   _GetTableRequest__isset __isset;
 
@@ -9138,6 +9684,8 @@ class GetTableRequest {
   void __set_tblName(const std::string& val);
 
   void __set_capabilities(const ClientCapabilities& val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const GetTableRequest & rhs) const
   {
@@ -9148,6 +9696,10 @@ class GetTableRequest {
     if (__isset.capabilities != rhs.__isset.capabilities)
       return false;
     else if (__isset.capabilities && !(capabilities == rhs.capabilities))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -9212,9 +9764,10 @@ inline std::ostream& operator<<(std::ostream& out, const GetTableResult& obj)
 }
 
 typedef struct _GetTablesRequest__isset {
-  _GetTablesRequest__isset() : tblNames(false), capabilities(false) {}
+  _GetTablesRequest__isset() : tblNames(false), capabilities(false), catName(false) {}
   bool tblNames :1;
   bool capabilities :1;
+  bool catName :1;
 } _GetTablesRequest__isset;
 
 class GetTablesRequest {
@@ -9222,13 +9775,14 @@ class GetTablesRequest {
 
   GetTablesRequest(const GetTablesRequest&);
   GetTablesRequest& operator=(const GetTablesRequest&);
-  GetTablesRequest() : dbName() {
+  GetTablesRequest() : dbName(), catName() {
   }
 
   virtual ~GetTablesRequest() throw();
   std::string dbName;
   std::vector<std::string>  tblNames;
   ClientCapabilities capabilities;
+  std::string catName;
 
   _GetTablesRequest__isset __isset;
 
@@ -9237,6 +9791,8 @@ class GetTablesRequest {
   void __set_tblNames(const std::vector<std::string> & val);
 
   void __set_capabilities(const ClientCapabilities& val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const GetTablesRequest & rhs) const
   {
@@ -9249,6 +9805,10 @@ class GetTablesRequest {
     if (__isset.capabilities != rhs.__isset.capabilities)
       return false;
     else if (__isset.capabilities && !(capabilities == rhs.capabilities))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -9393,8 +9953,9 @@ inline std::ostream& operator<<(std::ostream& out, const CmRecycleResponse& obj)
 }
 
 typedef struct _TableMeta__isset {
-  _TableMeta__isset() : comments(false) {}
+  _TableMeta__isset() : comments(false), catName(false) {}
   bool comments :1;
+  bool catName :1;
 } _TableMeta__isset;
 
 class TableMeta {
@@ -9402,7 +9963,7 @@ class TableMeta {
 
   TableMeta(const TableMeta&);
   TableMeta& operator=(const TableMeta&);
-  TableMeta() : dbName(), tableName(), tableType(), comments() {
+  TableMeta() : dbName(), tableName(), tableType(), comments(), catName() {
   }
 
   virtual ~TableMeta() throw();
@@ -9410,6 +9971,7 @@ class TableMeta {
   std::string tableName;
   std::string tableType;
   std::string comments;
+  std::string catName;
 
   _TableMeta__isset __isset;
 
@@ -9420,6 +9982,8 @@ class TableMeta {
   void __set_tableType(const std::string& val);
 
   void __set_comments(const std::string& val);
+
+  void __set_catName(const std::string& val);
 
   bool operator == (const TableMeta & rhs) const
   {
@@ -9432,6 +9996,10 @@ class TableMeta {
     if (__isset.comments != rhs.__isset.comments)
       return false;
     else if (__isset.comments && !(comments == rhs.comments))
+      return false;
+    if (__isset.catName != rhs.__isset.catName)
+      return false;
+    else if (__isset.catName && !(catName == rhs.catName))
       return false;
     return true;
   }
@@ -11658,9 +12226,10 @@ inline std::ostream& operator<<(std::ostream& out, const WMCreateOrDropTriggerTo
 }
 
 typedef struct _ISchema__isset {
-  _ISchema__isset() : schemaType(false), name(false), dbName(false), compatibility(false), validationLevel(false), canEvolve(false), schemaGroup(false), description(false) {}
+  _ISchema__isset() : schemaType(false), name(false), catName(false), dbName(false), compatibility(false), validationLevel(false), canEvolve(false), schemaGroup(false), description(false) {}
   bool schemaType :1;
   bool name :1;
+  bool catName :1;
   bool dbName :1;
   bool compatibility :1;
   bool validationLevel :1;
@@ -11674,12 +12243,13 @@ class ISchema {
 
   ISchema(const ISchema&);
   ISchema& operator=(const ISchema&);
-  ISchema() : schemaType((SchemaType::type)0), name(), dbName(), compatibility((SchemaCompatibility::type)0), validationLevel((SchemaValidation::type)0), canEvolve(0), schemaGroup(), description() {
+  ISchema() : schemaType((SchemaType::type)0), name(), catName(), dbName(), compatibility((SchemaCompatibility::type)0), validationLevel((SchemaValidation::type)0), canEvolve(0), schemaGroup(), description() {
   }
 
   virtual ~ISchema() throw();
   SchemaType::type schemaType;
   std::string name;
+  std::string catName;
   std::string dbName;
   SchemaCompatibility::type compatibility;
   SchemaValidation::type validationLevel;
@@ -11692,6 +12262,8 @@ class ISchema {
   void __set_schemaType(const SchemaType::type val);
 
   void __set_name(const std::string& val);
+
+  void __set_catName(const std::string& val);
 
   void __set_dbName(const std::string& val);
 
@@ -11710,6 +12282,8 @@ class ISchema {
     if (!(schemaType == rhs.schemaType))
       return false;
     if (!(name == rhs.name))
+      return false;
+    if (!(catName == rhs.catName))
       return false;
     if (!(dbName == rhs.dbName))
       return false;
@@ -11750,7 +12324,8 @@ inline std::ostream& operator<<(std::ostream& out, const ISchema& obj)
 }
 
 typedef struct _ISchemaName__isset {
-  _ISchemaName__isset() : dbName(false), schemaName(false) {}
+  _ISchemaName__isset() : catName(false), dbName(false), schemaName(false) {}
+  bool catName :1;
   bool dbName :1;
   bool schemaName :1;
 } _ISchemaName__isset;
@@ -11760,14 +12335,17 @@ class ISchemaName {
 
   ISchemaName(const ISchemaName&);
   ISchemaName& operator=(const ISchemaName&);
-  ISchemaName() : dbName(), schemaName() {
+  ISchemaName() : catName(), dbName(), schemaName() {
   }
 
   virtual ~ISchemaName() throw();
+  std::string catName;
   std::string dbName;
   std::string schemaName;
 
   _ISchemaName__isset __isset;
+
+  void __set_catName(const std::string& val);
 
   void __set_dbName(const std::string& val);
 
@@ -11775,6 +12353,8 @@ class ISchemaName {
 
   bool operator == (const ISchemaName & rhs) const
   {
+    if (!(catName == rhs.catName))
+      return false;
     if (!(dbName == rhs.dbName))
       return false;
     if (!(schemaName == rhs.schemaName))

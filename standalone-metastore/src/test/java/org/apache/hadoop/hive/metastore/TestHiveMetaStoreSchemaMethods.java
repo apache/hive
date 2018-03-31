@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FindSchemasByColsResp;
@@ -36,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionState;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SerdeType;
+import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.ISchemaBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.SchemaVersionBuilder;
@@ -64,6 +66,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 
 // This does the testing using a remote metastore, as that finds more issues in thrift
@@ -74,11 +77,12 @@ public class TestHiveMetaStoreSchemaMethods {
   private static Map<PreEventContext.PreEventType, Integer> preEvents;
 
   private static IMetaStoreClient client;
+  private static Configuration conf;
 
 
   @BeforeClass
   public static void startMetastore() throws Exception {
-    Configuration conf = MetastoreConf.newMetastoreConf();
+    conf = MetastoreConf.newMetastoreConf();
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     MetastoreConf.setClass(conf, ConfVars.EVENT_LISTENERS, SchemaEventListener.class,
         MetaStoreEventListener.class);
@@ -101,7 +105,7 @@ public class TestHiveMetaStoreSchemaMethods {
 
   @Test(expected = NoSuchObjectException.class)
   public void getNonExistentSchema() throws TException {
-    client.getISchema(DEFAULT_DATABASE_NAME, "no.such.schema");
+    client.getISchema(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, "no.such.schema");
   }
 
   @Test
@@ -124,11 +128,13 @@ public class TestHiveMetaStoreSchemaMethods {
     Assert.assertEquals(1, (int)events.get(EventMessage.EventType.CREATE_ISCHEMA));
     Assert.assertEquals(1, (int)transactionalEvents.get(EventMessage.EventType.CREATE_ISCHEMA));
 
-    schema = client.getISchema(DEFAULT_DATABASE_NAME, schemaName);
+    schema = client.getISchema(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName);
     Assert.assertEquals(1, (int)preEvents.get(PreEventContext.PreEventType.READ_ISCHEMA));
 
     Assert.assertEquals(SchemaType.AVRO, schema.getSchemaType());
     Assert.assertEquals(schemaName, schema.getName());
+    Assert.assertEquals(DEFAULT_CATALOG_NAME, schema.getCatName());
+    Assert.assertEquals(DEFAULT_DATABASE_NAME, schema.getDbName());
     Assert.assertEquals(SchemaCompatibility.FORWARD, schema.getCompatibility());
     Assert.assertEquals(SchemaValidation.LATEST, schema.getValidationLevel());
     Assert.assertFalse(schema.isCanEvolve());
@@ -142,12 +148,12 @@ public class TestHiveMetaStoreSchemaMethods {
     schema.setCanEvolve(true);
     schema.setSchemaGroup(schemaGroup);
     schema.setDescription(description);
-    client.alterISchema(DEFAULT_DATABASE_NAME, schemaName, schema);
+    client.alterISchema(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName, schema);
     Assert.assertEquals(1, (int)preEvents.get(PreEventContext.PreEventType.ALTER_ISCHEMA));
     Assert.assertEquals(1, (int)events.get(EventMessage.EventType.ALTER_ISCHEMA));
     Assert.assertEquals(1, (int)transactionalEvents.get(EventMessage.EventType.ALTER_ISCHEMA));
 
-    schema = client.getISchema(DEFAULT_DATABASE_NAME, schemaName);
+    schema = client.getISchema(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName);
     Assert.assertEquals(2, (int)preEvents.get(PreEventContext.PreEventType.READ_ISCHEMA));
 
     Assert.assertEquals(SchemaType.AVRO, schema.getSchemaType());
@@ -158,12 +164,12 @@ public class TestHiveMetaStoreSchemaMethods {
     Assert.assertEquals(schemaGroup, schema.getSchemaGroup());
     Assert.assertEquals(description, schema.getDescription());
 
-    client.dropISchema(DEFAULT_DATABASE_NAME, schemaName);
+    client.dropISchema(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName);
     Assert.assertEquals(1, (int)preEvents.get(PreEventContext.PreEventType.DROP_ISCHEMA));
     Assert.assertEquals(1, (int)events.get(EventMessage.EventType.DROP_ISCHEMA));
     Assert.assertEquals(1, (int)transactionalEvents.get(EventMessage.EventType.DROP_ISCHEMA));
     try {
-      client.getISchema(DEFAULT_DATABASE_NAME, schemaName);
+      client.getISchema(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName);
       Assert.fail();
     } catch (NoSuchObjectException e) {
       // all good
@@ -172,11 +178,18 @@ public class TestHiveMetaStoreSchemaMethods {
 
   @Test
   public void iSchemaOtherDatabase() throws TException {
+    String catName = "other_cat";
+    Catalog cat = new CatalogBuilder()
+        .setName(catName)
+        .setLocation(MetaStoreTestUtils.getTestWarehouseDir(catName))
+        .build();
+    client.createCatalog(cat);
+
     String dbName = "other_db";
     Database db = new DatabaseBuilder()
         .setName(dbName)
-        .build();
-    client.createDatabase(db);
+        .setCatalogName(catName)
+        .create(client, conf);
 
     String schemaName = uniqueSchemaName();
     String schemaGroup = "group1";
@@ -184,7 +197,7 @@ public class TestHiveMetaStoreSchemaMethods {
     ISchema schema = new ISchemaBuilder()
         .setSchemaType(SchemaType.AVRO)
         .setName(schemaName)
-        .setDbName(dbName)
+        .inDb(db)
         .setCompatibility(SchemaCompatibility.FORWARD)
         .setValidationLevel(SchemaValidation.LATEST)
         .setCanEvolve(false)
@@ -193,10 +206,11 @@ public class TestHiveMetaStoreSchemaMethods {
         .build();
     client.createISchema(schema);
 
-    schema = client.getISchema(dbName, schemaName);
+    schema = client.getISchema(catName, dbName, schemaName);
 
     Assert.assertEquals(SchemaType.AVRO, schema.getSchemaType());
     Assert.assertEquals(schemaName, schema.getName());
+    Assert.assertEquals(catName, schema.getCatName());
     Assert.assertEquals(dbName, schema.getDbName());
     Assert.assertEquals(SchemaCompatibility.FORWARD, schema.getCompatibility());
     Assert.assertEquals(SchemaValidation.LATEST, schema.getValidationLevel());
@@ -211,12 +225,13 @@ public class TestHiveMetaStoreSchemaMethods {
     schema.setCanEvolve(true);
     schema.setSchemaGroup(schemaGroup);
     schema.setDescription(description);
-    client.alterISchema(dbName, schemaName, schema);
+    client.alterISchema(catName, dbName, schemaName, schema);
 
-    schema = client.getISchema(dbName, schemaName);
+    schema = client.getISchema(catName, dbName, schemaName);
 
     Assert.assertEquals(SchemaType.AVRO, schema.getSchemaType());
     Assert.assertEquals(schemaName, schema.getName());
+    Assert.assertEquals(catName, schema.getCatName());
     Assert.assertEquals(dbName, schema.getDbName());
     Assert.assertEquals(SchemaCompatibility.BOTH, schema.getCompatibility());
     Assert.assertEquals(SchemaValidation.ALL, schema.getValidationLevel());
@@ -224,9 +239,9 @@ public class TestHiveMetaStoreSchemaMethods {
     Assert.assertEquals(schemaGroup, schema.getSchemaGroup());
     Assert.assertEquals(description, schema.getDescription());
 
-    client.dropISchema(dbName, schemaName);
+    client.dropISchema(catName, dbName, schemaName);
     try {
-      client.getISchema(dbName, schemaName);
+      client.getISchema(catName, dbName, schemaName);
       Assert.fail();
     } catch (NoSuchObjectException e) {
       // all good
@@ -252,7 +267,6 @@ public class TestHiveMetaStoreSchemaMethods {
         .build();
     client.createISchema(schema);
 
-    schema = client.getISchema(DEFAULT_DATABASE_NAME, schemaName);
     Assert.assertNotNull(schema);
 
     Assert.assertEquals(SchemaType.HIVE, schema.getSchemaType());
@@ -273,19 +287,18 @@ public class TestHiveMetaStoreSchemaMethods {
         .setName(schemaName)
         .setDescription("a new description")
         .build();
-    client.alterISchema(DEFAULT_DATABASE_NAME, schemaName, schema);
+    client.alterISchema(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName, schema);
   }
 
   @Test(expected = NoSuchObjectException.class)
   public void dropNonExistentSchema() throws TException {
-    client.dropISchema(DEFAULT_DATABASE_NAME, "no_such_schema");
+    client.dropISchema(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, "no_such_schema");
   }
 
   @Test(expected = NoSuchObjectException.class)
   public void createVersionOfNonExistentSchema() throws TException {
     SchemaVersion schemaVersion = new SchemaVersionBuilder()
         .setSchemaName("noSchemaOfThisNameExists")
-        .setDbName(DEFAULT_DATABASE_NAME)
         .setVersion(1)
         .addCol("a", ColumnType.STRING_TYPE_NAME)
         .build();
@@ -333,10 +346,11 @@ public class TestHiveMetaStoreSchemaMethods {
     Assert.assertEquals(1, (int)events.get(EventMessage.EventType.ADD_SCHEMA_VERSION));
     Assert.assertEquals(1, (int)transactionalEvents.get(EventMessage.EventType.ADD_SCHEMA_VERSION));
 
-    schemaVersion = client.getSchemaVersion(DEFAULT_DATABASE_NAME, schemaName, version);
+    schemaVersion = client.getSchemaVersion(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName, version);
     Assert.assertNotNull(schemaVersion);
     Assert.assertEquals(schemaName, schemaVersion.getSchema().getSchemaName());
     Assert.assertEquals(DEFAULT_DATABASE_NAME, schemaVersion.getSchema().getDbName());
+    Assert.assertEquals(DEFAULT_CATALOG_NAME, schemaVersion.getSchema().getCatName());
     Assert.assertEquals(version, schemaVersion.getVersion());
     Assert.assertEquals(creationTime, schemaVersion.getCreatedAt());
     Assert.assertEquals(SchemaVersionState.INITIATED, schemaVersion.getState());
@@ -357,12 +371,12 @@ public class TestHiveMetaStoreSchemaMethods {
     Assert.assertEquals(ColumnType.FLOAT_TYPE_NAME, cols.get(1).getType());
     Assert.assertEquals(1, (int)preEvents.get(PreEventContext.PreEventType.READ_SCHEMA_VERSION));
 
-    client.dropSchemaVersion(DEFAULT_DATABASE_NAME, schemaName, version);
+    client.dropSchemaVersion(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName, version);
     Assert.assertEquals(1, (int)preEvents.get(PreEventContext.PreEventType.DROP_SCHEMA_VERSION));
     Assert.assertEquals(1, (int)events.get(EventMessage.EventType.DROP_SCHEMA_VERSION));
     Assert.assertEquals(1, (int)transactionalEvents.get(EventMessage.EventType.DROP_SCHEMA_VERSION));
     try {
-      client.getSchemaVersion(DEFAULT_DATABASE_NAME, schemaName, version);
+      client.getSchemaVersion(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName, version);
       Assert.fail();
     } catch (NoSuchObjectException e) {
       // all good
@@ -371,17 +385,24 @@ public class TestHiveMetaStoreSchemaMethods {
 
   @Test
   public void addSchemaVersionOtherDb() throws TException {
+    String catName = "other_cat_for_schema_version";
+    Catalog cat = new CatalogBuilder()
+        .setName(catName)
+        .setLocation(MetaStoreTestUtils.getTestWarehouseDir(catName))
+        .build();
+    client.createCatalog(cat);
+
     String dbName = "other_db_for_schema_version";
     Database db = new DatabaseBuilder()
         .setName(dbName)
-        .build();
-    client.createDatabase(db);
+        .setCatalogName(catName)
+        .create(client, conf);
 
     String schemaName = uniqueSchemaName();
     int version = 1;
 
     ISchema schema = new ISchemaBuilder()
-        .setDbName(dbName)
+        .inDb(db)
         .setSchemaType(SchemaType.AVRO)
         .setName(schemaName)
         .build();
@@ -414,10 +435,11 @@ public class TestHiveMetaStoreSchemaMethods {
         .build();
     client.addSchemaVersion(schemaVersion);
 
-    schemaVersion = client.getSchemaVersion(dbName, schemaName, version);
+    schemaVersion = client.getSchemaVersion(catName, dbName, schemaName, version);
     Assert.assertNotNull(schemaVersion);
     Assert.assertEquals(schemaName, schemaVersion.getSchema().getSchemaName());
     Assert.assertEquals(dbName, schemaVersion.getSchema().getDbName());
+    Assert.assertEquals(catName, schemaVersion.getSchema().getCatName());
     Assert.assertEquals(version, schemaVersion.getVersion());
     Assert.assertEquals(creationTime, schemaVersion.getCreatedAt());
     Assert.assertEquals(SchemaVersionState.INITIATED, schemaVersion.getState());
@@ -438,9 +460,9 @@ public class TestHiveMetaStoreSchemaMethods {
     Assert.assertEquals(ColumnType.FLOAT_TYPE_NAME, cols.get(1).getType());
     Assert.assertEquals(1, (int)preEvents.get(PreEventContext.PreEventType.READ_SCHEMA_VERSION));
 
-    client.dropSchemaVersion(dbName, schemaName, version);
+    client.dropSchemaVersion(catName, dbName, schemaName, version);
     try {
-      client.getSchemaVersion(dbName, schemaName, version);
+      client.getSchemaVersion(catName, dbName, schemaName, version);
       Assert.fail();
     } catch (NoSuchObjectException e) {
       // all good
@@ -484,7 +506,7 @@ public class TestHiveMetaStoreSchemaMethods {
     Assert.assertEquals(3, (int)events.get(EventMessage.EventType.ADD_SCHEMA_VERSION));
     Assert.assertEquals(3, (int)transactionalEvents.get(EventMessage.EventType.ADD_SCHEMA_VERSION));
 
-    schemaVersion = client.getSchemaLatestVersion(DEFAULT_DATABASE_NAME, schemaName);
+    schemaVersion = client.getSchemaLatestVersion(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName);
     Assert.assertEquals(3, schemaVersion.getVersion());
     Assert.assertEquals(3, schemaVersion.getColsSize());
     List<FieldSchema> cols = schemaVersion.getCols();
@@ -497,7 +519,7 @@ public class TestHiveMetaStoreSchemaMethods {
     Assert.assertEquals(ColumnType.TIMESTAMP_TYPE_NAME, cols.get(2).getType());
     Assert.assertEquals(1, (int)preEvents.get(PreEventContext.PreEventType.READ_SCHEMA_VERSION));
 
-    List<SchemaVersion> versions = client.getSchemaAllVersions(DEFAULT_DATABASE_NAME, schemaName);
+    List<SchemaVersion> versions = client.getSchemaAllVersions(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName);
     Assert.assertEquals(2, (int)preEvents.get(PreEventContext.PreEventType.READ_SCHEMA_VERSION));
     Assert.assertEquals(3, versions.size());
     versions.sort(Comparator.comparingInt(SchemaVersion::getVersion));
@@ -534,7 +556,7 @@ public class TestHiveMetaStoreSchemaMethods {
         .setName(schemaName)
         .build();
     client.createISchema(schema);
-    client.getSchemaVersion(DEFAULT_DATABASE_NAME, schemaName, 1);
+    client.getSchemaVersion(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName, 1);
   }
 
   @Test(expected = NoSuchObjectException.class)
@@ -545,7 +567,18 @@ public class TestHiveMetaStoreSchemaMethods {
         .setName(schemaName)
         .build();
     client.createISchema(schema);
-    client.getSchemaVersion("bogus", schemaName, 1);
+    client.getSchemaVersion(DEFAULT_CATALOG_NAME, "bogus", schemaName, 1);
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void schemaVersionBogusCatalog() throws TException {
+    String schemaName = uniqueSchemaName();
+    ISchema schema = new ISchemaBuilder()
+        .setSchemaType(SchemaType.AVRO)
+        .setName(schemaName)
+        .build();
+    client.createISchema(schema);
+    client.getSchemaVersion("bogus", DEFAULT_DATABASE_NAME, schemaName, 1);
   }
 
   @Test(expected = NoSuchObjectException.class)
@@ -566,7 +599,7 @@ public class TestHiveMetaStoreSchemaMethods {
         .build();
     client.addSchemaVersion(schemaVersion);
 
-    client.getSchemaVersion(DEFAULT_DATABASE_NAME, schemaName, 2);
+    client.getSchemaVersion(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName, 2);
   }
 
   @Test(expected = NoSuchObjectException.class)
@@ -577,12 +610,12 @@ public class TestHiveMetaStoreSchemaMethods {
         .setName(schemaName)
         .build();
     client.createISchema(schema);
-    client.getSchemaLatestVersion(DEFAULT_DATABASE_NAME, schemaName);
+    client.getSchemaLatestVersion(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName);
   }
 
   @Test(expected = NoSuchObjectException.class)
   public void getLatestSchemaNoSuchSchema() throws TException {
-    client.getSchemaLatestVersion(DEFAULT_DATABASE_NAME, "no.such.schema.with.this.name");
+    client.getSchemaLatestVersion(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, "no.such.schema.with.this.name");
   }
 
   @Test(expected = NoSuchObjectException.class)
@@ -593,7 +626,18 @@ public class TestHiveMetaStoreSchemaMethods {
         .setName(schemaName)
         .build();
     client.createISchema(schema);
-    client.getSchemaLatestVersion("bogus", schemaName);
+    client.getSchemaLatestVersion(DEFAULT_CATALOG_NAME, "bogus", schemaName);
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void latestSchemaVersionBogusCatalog() throws TException {
+    String schemaName = uniqueSchemaName();
+    ISchema schema = new ISchemaBuilder()
+        .setSchemaType(SchemaType.AVRO)
+        .setName(schemaName)
+        .build();
+    client.createISchema(schema);
+    client.getSchemaLatestVersion("bogus", DEFAULT_DATABASE_NAME, schemaName);
   }
 
   @Test(expected = NoSuchObjectException.class)
@@ -604,12 +648,12 @@ public class TestHiveMetaStoreSchemaMethods {
         .setName(schemaName)
         .build();
     client.createISchema(schema);
-    client.getSchemaAllVersions(DEFAULT_DATABASE_NAME, schemaName);
+    client.getSchemaAllVersions(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName);
   }
 
   @Test(expected = NoSuchObjectException.class)
   public void getAllSchemaNoSuchSchema() throws TException {
-    client.getSchemaAllVersions(DEFAULT_DATABASE_NAME, "no.such.schema.with.this.name");
+    client.getSchemaAllVersions(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, "no.such.schema.with.this.name");
   }
 
   @Test(expected = NoSuchObjectException.class)
@@ -620,7 +664,18 @@ public class TestHiveMetaStoreSchemaMethods {
         .setName(schemaName)
         .build();
     client.createISchema(schema);
-    client.getSchemaAllVersions("bogus", schemaName);
+    client.getSchemaAllVersions(DEFAULT_CATALOG_NAME, "bogus", schemaName);
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  public void allSchemaVersionBogusCatalog() throws TException {
+    String schemaName = uniqueSchemaName();
+    ISchema schema = new ISchemaBuilder()
+        .setSchemaType(SchemaType.AVRO)
+        .setName(schemaName)
+        .build();
+    client.createISchema(schema);
+    client.getSchemaAllVersions("bogus", DEFAULT_DATABASE_NAME, schemaName);
   }
 
   @Test(expected = AlreadyExistsException.class)
@@ -648,7 +703,7 @@ public class TestHiveMetaStoreSchemaMethods {
   @Test(expected = NoSuchObjectException.class)
   public void mapSerDeNoSuchSchema() throws TException {
     SerDeInfo serDeInfo = new SerDeInfo(uniqueSerdeName(), "lib", Collections.emptyMap());
-    client.mapSchemaVersionToSerde(DEFAULT_DATABASE_NAME, uniqueSchemaName(), 1, serDeInfo.getName());
+    client.mapSchemaVersionToSerde(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, uniqueSchemaName(), 1, serDeInfo.getName());
   }
 
   @Test(expected = NoSuchObjectException.class)
@@ -659,7 +714,7 @@ public class TestHiveMetaStoreSchemaMethods {
         .setName(uniqueSchemaName())
         .build();
     client.createISchema(schema);
-    client.mapSchemaVersionToSerde(DEFAULT_DATABASE_NAME, schema.getName(), 3, serDeInfo.getName());
+    client.mapSchemaVersionToSerde(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schema.getName(), 3, serDeInfo.getName());
   }
 
   @Test(expected = NoSuchObjectException.class)
@@ -676,7 +731,7 @@ public class TestHiveMetaStoreSchemaMethods {
         .addCol("x", ColumnType.BOOLEAN_TYPE_NAME)
         .build();
     client.addSchemaVersion(schemaVersion);
-    client.mapSchemaVersionToSerde(DEFAULT_DATABASE_NAME, schema.getName(), schemaVersion.getVersion(), uniqueSerdeName());
+    client.mapSchemaVersionToSerde(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schema.getName(), schemaVersion.getVersion(), uniqueSerdeName());
   }
 
   @Test
@@ -698,8 +753,8 @@ public class TestHiveMetaStoreSchemaMethods {
     SerDeInfo serDeInfo = new SerDeInfo(uniqueSerdeName(), "lib", Collections.emptyMap());
     client.addSerDe(serDeInfo);
 
-    client.mapSchemaVersionToSerde(DEFAULT_DATABASE_NAME, schema.getName(), schemaVersion.getVersion(), serDeInfo.getName());
-    schemaVersion = client.getSchemaVersion(DEFAULT_DATABASE_NAME, schema.getName(), schemaVersion.getVersion());
+    client.mapSchemaVersionToSerde(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schema.getName(), schemaVersion.getVersion(), serDeInfo.getName());
+    schemaVersion = client.getSchemaVersion(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schema.getName(), schemaVersion.getVersion());
     Assert.assertEquals(serDeInfo.getName(), schemaVersion.getSerDe().getName());
 
     // Create schema with a serde, then remap it
@@ -713,27 +768,34 @@ public class TestHiveMetaStoreSchemaMethods {
         .build();
     client.addSchemaVersion(schemaVersion);
 
-    schemaVersion = client.getSchemaVersion(DEFAULT_DATABASE_NAME, schema.getName(), 2);
+    schemaVersion = client.getSchemaVersion(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schema.getName(), 2);
     Assert.assertEquals(serDeName, schemaVersion.getSerDe().getName());
 
     serDeInfo = new SerDeInfo(uniqueSerdeName(), "y", Collections.emptyMap());
     client.addSerDe(serDeInfo);
-    client.mapSchemaVersionToSerde(DEFAULT_DATABASE_NAME, schema.getName(), 2, serDeInfo.getName());
-    schemaVersion = client.getSchemaVersion(DEFAULT_DATABASE_NAME, schema.getName(), 2);
+    client.mapSchemaVersionToSerde(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schema.getName(), 2, serDeInfo.getName());
+    schemaVersion = client.getSchemaVersion(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schema.getName(), 2);
     Assert.assertEquals(serDeInfo.getName(), schemaVersion.getSerDe().getName());
   }
 
   @Test
   public void mapSerdeToSchemaVersionOtherDb() throws TException {
+    String catName = "other_cat_for_map_to";
+    Catalog cat = new CatalogBuilder()
+        .setName(catName)
+        .setLocation(MetaStoreTestUtils.getTestWarehouseDir(catName))
+        .build();
+    client.createCatalog(cat);
+
     String dbName = "map_other_db";
     Database db = new DatabaseBuilder()
         .setName(dbName)
-        .build();
-    client.createDatabase(db);
+        .setCatalogName(catName)
+        .create(client, conf);
 
     ISchema schema = new ISchemaBuilder()
         .setSchemaType(SchemaType.AVRO)
-        .setDbName(dbName)
+        .inDb(db)
         .setName(uniqueSchemaName())
         .build();
     client.createISchema(schema);
@@ -749,8 +811,8 @@ public class TestHiveMetaStoreSchemaMethods {
     SerDeInfo serDeInfo = new SerDeInfo(uniqueSerdeName(), "lib", Collections.emptyMap());
     client.addSerDe(serDeInfo);
 
-    client.mapSchemaVersionToSerde(dbName, schema.getName(), schemaVersion.getVersion(), serDeInfo.getName());
-    schemaVersion = client.getSchemaVersion(dbName, schema.getName(), schemaVersion.getVersion());
+    client.mapSchemaVersionToSerde(catName, dbName, schema.getName(), schemaVersion.getVersion(), serDeInfo.getName());
+    schemaVersion = client.getSchemaVersion(catName, dbName, schema.getName(), schemaVersion.getVersion());
     Assert.assertEquals(serDeInfo.getName(), schemaVersion.getSerDe().getName());
 
     // Create schema with a serde, then remap it
@@ -764,13 +826,13 @@ public class TestHiveMetaStoreSchemaMethods {
         .build();
     client.addSchemaVersion(schemaVersion);
 
-    schemaVersion = client.getSchemaVersion(dbName, schema.getName(), 2);
+    schemaVersion = client.getSchemaVersion(catName, dbName, schema.getName(), 2);
     Assert.assertEquals(serDeName, schemaVersion.getSerDe().getName());
 
     serDeInfo = new SerDeInfo(uniqueSerdeName(), "y", Collections.emptyMap());
     client.addSerDe(serDeInfo);
-    client.mapSchemaVersionToSerde(dbName, schema.getName(), 2, serDeInfo.getName());
-    schemaVersion = client.getSchemaVersion(dbName, schema.getName(), 2);
+    client.mapSchemaVersionToSerde(catName, dbName, schema.getName(), 2, serDeInfo.getName());
+    schemaVersion = client.getSchemaVersion(catName, dbName, schema.getName(), 2);
     Assert.assertEquals(serDeInfo.getName(), schemaVersion.getSerDe().getName());
 
   }
@@ -811,7 +873,7 @@ public class TestHiveMetaStoreSchemaMethods {
 
   @Test(expected = NoSuchObjectException.class)
   public void setVersionStateNoSuchSchema() throws TException {
-    client.setSchemaVersionState(DEFAULT_DATABASE_NAME, "no.such.schema", 1, SchemaVersionState.INITIATED);
+    client.setSchemaVersionState(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, "no.such.schema", 1, SchemaVersionState.INITIATED);
   }
 
   @Test(expected = NoSuchObjectException.class)
@@ -822,7 +884,7 @@ public class TestHiveMetaStoreSchemaMethods {
         .setName(schemaName)
         .build();
     client.createISchema(schema);
-    client.setSchemaVersionState(DEFAULT_DATABASE_NAME, schemaName, 1, SchemaVersionState.INITIATED);
+    client.setSchemaVersionState(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName, 1, SchemaVersionState.INITIATED);
   }
 
   @Test
@@ -841,37 +903,44 @@ public class TestHiveMetaStoreSchemaMethods {
         .build();
     client.addSchemaVersion(schemaVersion);
 
-    schemaVersion = client.getSchemaVersion(DEFAULT_DATABASE_NAME, schemaName, 1);
+    schemaVersion = client.getSchemaVersion(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName, 1);
     Assert.assertNull(schemaVersion.getState());
 
-    client.setSchemaVersionState(DEFAULT_DATABASE_NAME, schemaName, 1, SchemaVersionState.INITIATED);
+    client.setSchemaVersionState(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName, 1, SchemaVersionState.INITIATED);
     Assert.assertEquals(1, (int)preEvents.get(PreEventContext.PreEventType.ALTER_SCHEMA_VERSION));
     Assert.assertEquals(1, (int)events.get(EventMessage.EventType.ALTER_SCHEMA_VERSION));
     Assert.assertEquals(1, (int)transactionalEvents.get(EventMessage.EventType.ALTER_SCHEMA_VERSION));
-    schemaVersion = client.getSchemaVersion(DEFAULT_DATABASE_NAME, schemaName, 1);
+    schemaVersion = client.getSchemaVersion(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName, 1);
     Assert.assertEquals(SchemaVersionState.INITIATED, schemaVersion.getState());
 
-    client.setSchemaVersionState(DEFAULT_DATABASE_NAME, schemaName, 1, SchemaVersionState.REVIEWED);
+    client.setSchemaVersionState(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName, 1, SchemaVersionState.REVIEWED);
     Assert.assertEquals(2, (int)preEvents.get(PreEventContext.PreEventType.ALTER_SCHEMA_VERSION));
     Assert.assertEquals(2, (int)events.get(EventMessage.EventType.ALTER_SCHEMA_VERSION));
     Assert.assertEquals(2, (int)transactionalEvents.get(EventMessage.EventType.ALTER_SCHEMA_VERSION));
-    schemaVersion = client.getSchemaVersion(DEFAULT_DATABASE_NAME, schemaName, 1);
+    schemaVersion = client.getSchemaVersion(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, schemaName, 1);
     Assert.assertEquals(SchemaVersionState.REVIEWED, schemaVersion.getState());
   }
 
   @Test
   public void setVersionStateOtherDb() throws TException {
+    String catName = "other_cat_for_set_version";
+    Catalog cat = new CatalogBuilder()
+        .setName(catName)
+        .setLocation(MetaStoreTestUtils.getTestWarehouseDir(catName))
+        .build();
+    client.createCatalog(cat);
+
     String dbName = "other_db_set_state";
     Database db = new DatabaseBuilder()
         .setName(dbName)
-        .build();
-    client.createDatabase(db);
+        .setCatalogName(catName)
+        .create(client, conf);
 
     String schemaName = uniqueSchemaName();
     ISchema schema = new ISchemaBuilder()
         .setSchemaType(SchemaType.AVRO)
         .setName(schemaName)
-        .setDbName(dbName)
+        .inDb(db)
         .build();
     client.createISchema(schema);
 
@@ -882,27 +951,27 @@ public class TestHiveMetaStoreSchemaMethods {
         .build();
     client.addSchemaVersion(schemaVersion);
 
-    schemaVersion = client.getSchemaVersion(dbName, schemaName, 1);
+    schemaVersion = client.getSchemaVersion(catName, dbName, schemaName, 1);
     Assert.assertNull(schemaVersion.getState());
 
-    client.setSchemaVersionState(dbName, schemaName, 1, SchemaVersionState.INITIATED);
+    client.setSchemaVersionState(catName, dbName, schemaName, 1, SchemaVersionState.INITIATED);
     Assert.assertEquals(1, (int)preEvents.get(PreEventContext.PreEventType.ALTER_SCHEMA_VERSION));
     Assert.assertEquals(1, (int)events.get(EventMessage.EventType.ALTER_SCHEMA_VERSION));
     Assert.assertEquals(1, (int)transactionalEvents.get(EventMessage.EventType.ALTER_SCHEMA_VERSION));
-    schemaVersion = client.getSchemaVersion(dbName, schemaName, 1);
+    schemaVersion = client.getSchemaVersion(catName, dbName, schemaName, 1);
     Assert.assertEquals(SchemaVersionState.INITIATED, schemaVersion.getState());
 
-    client.setSchemaVersionState(dbName, schemaName, 1, SchemaVersionState.REVIEWED);
+    client.setSchemaVersionState(catName, dbName, schemaName, 1, SchemaVersionState.REVIEWED);
     Assert.assertEquals(2, (int)preEvents.get(PreEventContext.PreEventType.ALTER_SCHEMA_VERSION));
     Assert.assertEquals(2, (int)events.get(EventMessage.EventType.ALTER_SCHEMA_VERSION));
     Assert.assertEquals(2, (int)transactionalEvents.get(EventMessage.EventType.ALTER_SCHEMA_VERSION));
-    schemaVersion = client.getSchemaVersion(dbName, schemaName, 1);
+    schemaVersion = client.getSchemaVersion(catName, dbName, schemaName, 1);
     Assert.assertEquals(SchemaVersionState.REVIEWED, schemaVersion.getState());
   }
 
   @Test(expected = NoSuchObjectException.class)
   public void dropNonExistentSchemaVersion() throws TException {
-    client.dropSchemaVersion(DEFAULT_DATABASE_NAME, "ther is no schema named this", 23);
+    client.dropSchemaVersion(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME, "ther is no schema named this", 23);
   }
 
   @Test
@@ -910,8 +979,7 @@ public class TestHiveMetaStoreSchemaMethods {
     String dbName = "schema_query_db";
     Database db = new DatabaseBuilder()
         .setName(dbName)
-        .build();
-    client.createDatabase(db);
+        .create(client, conf);
 
     String schemaName1 = uniqueSchemaName();
     ISchema schema1 = new ISchemaBuilder()

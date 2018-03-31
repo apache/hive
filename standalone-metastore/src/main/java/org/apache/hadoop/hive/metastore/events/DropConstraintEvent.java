@@ -26,15 +26,21 @@ import org.apache.hadoop.hive.metastore.IHMSHandler;
 @InterfaceStability.Stable
 public class DropConstraintEvent extends ListenerEvent {
 
+  private final String catName;
   private final String dbName;
   private final String tableName;
   private final String constraintName;
-  public DropConstraintEvent(String dbName, String tableName, String constraintName,
+  public DropConstraintEvent(String catName, String dbName, String tableName, String constraintName,
       boolean status, IHMSHandler handler) {
     super(status, handler);
+    this.catName = catName;
     this.dbName = dbName;
     this.tableName = tableName;
     this.constraintName = constraintName;
+  }
+
+  public String getCatName() {
+    return catName;
   }
 
   public String getDbName() {

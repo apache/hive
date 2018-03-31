@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.partition.spec.CompositePartitionSpecProxy;
@@ -121,11 +122,9 @@ public class TestHiveMetaStorePartitionSpecs {
                       true    // Cascade.
                       );
 
-    hmsc.createDatabase(new Database(dbName,
-                                     "",    // Description.
-                                     null,  // Location.
-                                     null   // Parameters.
-                       ));
+    new DatabaseBuilder()
+        .setName(dbName)
+        .create(hmsc, conf);
   }
 
   // Get partition-path. For grid='XYZ', place the partition outside the table-path.

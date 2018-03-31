@@ -18,16 +18,23 @@
 
 package org.apache.hadoop.hive.metastore;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
 import java.util.Arrays;
 
+import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+
 @Category(MetastoreUnitTest.class)
 public class TestHiveAlterHandler {
+
+  private Configuration conf = MetastoreConf.newMetastoreConf();
 
   @Test
   public void testAlterTableAddColNotUpdateStats() throws MetaException, InvalidObjectException, NoSuchObjectException {
@@ -50,8 +57,9 @@ public class TestHiveAlterHandler {
 
     RawStore msdb = Mockito.mock(RawStore.class);
     Mockito.doThrow(new RuntimeException("shouldn't be called")).when(msdb).getTableColumnStatistics(
-        oldTable.getDbName(), oldTable.getTableName(), Arrays.asList("col1", "col2", "col3"));
+        getDefaultCatalog(conf), oldTable.getDbName(), oldTable.getTableName(), Arrays.asList("col1", "col2", "col3"));
     HiveAlterHandler handler = new HiveAlterHandler();
+    handler.setConf(conf);
     handler.alterTableUpdateTableColumnStats(msdb, oldTable, newTable);
   }
 
@@ -76,9 +84,10 @@ public class TestHiveAlterHandler {
 
     RawStore msdb = Mockito.mock(RawStore.class);
     HiveAlterHandler handler = new HiveAlterHandler();
+    handler.setConf(conf);
     handler.alterTableUpdateTableColumnStats(msdb, oldTable, newTable);
     Mockito.verify(msdb, Mockito.times(1)).getTableColumnStatistics(
-        oldTable.getDbName(), oldTable.getTableName(), Arrays.asList("col1", "col2", "col3", "col4")
+        getDefaultCatalog(conf), oldTable.getDbName(), oldTable.getTableName(), Arrays.asList("col1", "col2", "col3", "col4")
     );
   }
 
@@ -103,8 +112,9 @@ public class TestHiveAlterHandler {
 
     RawStore msdb = Mockito.mock(RawStore.class);
     Mockito.doThrow(new RuntimeException("shouldn't be called")).when(msdb).getTableColumnStatistics(
-        oldTable.getDbName(), oldTable.getTableName(), Arrays.asList("col1", "col2", "col3", "col4"));
+        getDefaultCatalog(conf), oldTable.getDbName(), oldTable.getTableName(), Arrays.asList("col1", "col2", "col3", "col4"));
     HiveAlterHandler handler = new HiveAlterHandler();
+    handler.setConf(conf);
     handler.alterTableUpdateTableColumnStats(msdb, oldTable, newTable);
   }
 
