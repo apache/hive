@@ -202,6 +202,13 @@ public class ConstantVectorExpression extends VectorExpression {
     }
   }
 
+  private void evaluateVoid(VectorizedRowBatch vrg) {
+    VoidColumnVector voidColVector = (VoidColumnVector) vrg.cols[outputColumnNum];
+    voidColVector.isRepeating = true;
+    voidColVector.isNull[0] = true;
+    voidColVector.noNulls = false;
+  }
+
   @Override
   public void evaluate(VectorizedRowBatch vrg) {
     switch (type) {
@@ -223,6 +230,11 @@ public class ConstantVectorExpression extends VectorExpression {
     case INTERVAL_DAY_TIME:
       evaluateIntervalDayTime(vrg);
       break;
+    case VOID:
+      evaluateVoid(vrg);
+      break;
+    default:
+      throw new RuntimeException("Unexpected column vector type " + type);
     }
   }
 

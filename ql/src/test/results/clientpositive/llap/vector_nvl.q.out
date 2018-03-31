@@ -314,28 +314,44 @@ STAGE PLANS:
                 TableScan
                   alias: alltypesorc
                   Statistics: Num rows: 12288 Data size: 2641964 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
                   Select Operator
                     expressions: null (type: void)
                     outputColumnNames: _col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [13]
+                        selectExpressions: ConstantVectorExpression(val null) -> 13:void
                     Statistics: Num rows: 12288 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Limit
                       Number of rows: 10
+                      Limit Vectorization:
+                          className: VectorLimitOperator
+                          native: true
                       Statistics: Num rows: 10 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
+                        File Sink Vectorization:
+                            className: VectorFileSinkOperator
+                            native: false
                         Statistics: Num rows: 10 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                         table:
                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
-                notVectorizedReason: Select expression for SELECT operator: Vectorizing data type void not supported when mode = PROJECTION
-                vectorized: false
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
 
   Stage: Stage-0
     Fetch Operator

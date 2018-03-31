@@ -143,38 +143,40 @@ public class VectorizedBatchUtil {
       {
         PrimitiveTypeInfo primitiveTypeInfo = (PrimitiveTypeInfo) typeInfo;
         switch(primitiveTypeInfo.getPrimitiveCategory()) {
-          case BOOLEAN:
-          case BYTE:
-          case SHORT:
-          case INT:
-          case LONG:
-          case DATE:
-          case INTERVAL_YEAR_MONTH:
-            return new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
-          case TIMESTAMP:
-            return new TimestampColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
-          case INTERVAL_DAY_TIME:
-            return new IntervalDayTimeColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
-          case FLOAT:
-          case DOUBLE:
-            return new DoubleColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
-          case BINARY:
-          case STRING:
-          case CHAR:
-          case VARCHAR:
-            return new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
-          case DECIMAL:
-            DecimalTypeInfo tInfo = (DecimalTypeInfo) primitiveTypeInfo;
-            if (dataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64) {
-              return new Decimal64ColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
-                  tInfo.precision(), tInfo.scale());
-            } else {
-              return new DecimalColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
-                  tInfo.precision(), tInfo.scale());
-            }
-          default:
-            throw new RuntimeException("Vectorizaton is not supported for datatype:"
-                + primitiveTypeInfo.getPrimitiveCategory());
+        case BOOLEAN:
+        case BYTE:
+        case SHORT:
+        case INT:
+        case LONG:
+        case DATE:
+        case INTERVAL_YEAR_MONTH:
+          return new LongColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+        case TIMESTAMP:
+          return new TimestampColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+        case INTERVAL_DAY_TIME:
+          return new IntervalDayTimeColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+        case FLOAT:
+        case DOUBLE:
+          return new DoubleColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+        case BINARY:
+        case STRING:
+        case CHAR:
+        case VARCHAR:
+          return new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+        case DECIMAL:
+          DecimalTypeInfo tInfo = (DecimalTypeInfo) primitiveTypeInfo;
+          if (dataTypePhysicalVariation == DataTypePhysicalVariation.DECIMAL_64) {
+            return new Decimal64ColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+                tInfo.precision(), tInfo.scale());
+          } else {
+            return new DecimalColumnVector(VectorizedRowBatch.DEFAULT_SIZE,
+                tInfo.precision(), tInfo.scale());
+          }
+        case VOID:
+          return new VoidColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+        default:
+          throw new RuntimeException("Vectorizaton is not supported for datatype:"
+              + primitiveTypeInfo.getPrimitiveCategory());
         }
       }
     case STRUCT:
@@ -791,7 +793,9 @@ public class VectorizedBatchUtil {
     case LIST:
     case MAP:
     case UNION:
-      // No complex type support for now.
+      throw new RuntimeException("No complex type support: " + sourceColVector.type);
+    case VOID:
+      break;
     default:
       throw new RuntimeException("Unexpected column vector type " + sourceColVector.type);
     }

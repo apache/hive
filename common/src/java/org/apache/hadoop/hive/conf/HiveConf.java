@@ -3013,6 +3013,11 @@ public class HiveConf extends Configuration {
             "internal use only, used to suppress \"Execution mode: vectorized\" EXPLAIN display.\n" +
             "The default is false, of course",
             true),
+    HIVE_TEST_VECTORIZER_SUPPRESS_FATAL_EXCEPTIONS(
+        "hive.test.vectorizer.suppress.fatal.exceptions", true,
+        "internal use only. When false, don't suppress fatal exceptions like\n" +
+        "NullPointerException, etc so the query will fail and assure it will be noticed",
+        true),
 
     HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true, "This property has been extended to control "
         + "whether to check, convert, and normalize partition value to conform to its column type in "

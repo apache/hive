@@ -80,6 +80,7 @@ public class VectorExpressionDescriptor {
     DECIMAL_64              (0x1000),
     LIST                    (0x2000),
     MAP                     (0x4000),
+    VOID                    (0x8000),
     INT_DECIMAL_64_FAMILY   (INT_FAMILY.value | DECIMAL_64.value),
     DATETIME_FAMILY         (DATE.value | TIMESTAMP.value),
     INTERVAL_FAMILY         (INTERVAL_YEAR_MONTH.value | INTERVAL_DAY_TIME.value),
@@ -134,8 +135,7 @@ public class VectorExpressionDescriptor {
       } else if (VectorizationContext.mapTypePattern.matcher(lower).matches()) {
         return MAP;
       } else if (lower.equals("void")) {
-        // The old code let void through...
-        return INT_FAMILY;
+        return VOID;
       } else {
         return NONE;
       }
