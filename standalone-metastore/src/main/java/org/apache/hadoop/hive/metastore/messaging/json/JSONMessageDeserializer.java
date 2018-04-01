@@ -37,6 +37,9 @@ import org.apache.hadoop.hive.metastore.messaging.DropPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.DropTableMessage;
 import org.apache.hadoop.hive.metastore.messaging.InsertMessage;
 import org.apache.hadoop.hive.metastore.messaging.MessageDeserializer;
+import org.apache.hadoop.hive.metastore.messaging.OpenTxnMessage;
+import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
+import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
@@ -218,6 +221,33 @@ public class JSONMessageDeserializer extends MessageDeserializer {
       return mapper.readValue(messageBody, JSONDropConstraintMessage.class);
     } catch (Exception e) {
       throw new IllegalArgumentException("Could not construct DropConstraintMessage", e);
+    }
+  }
+
+  @Override
+  public OpenTxnMessage getOpenTxnMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONOpenTxnMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct OpenTxnMessage", e);
+    }
+  }
+
+  @Override
+  public CommitTxnMessage getCommitTxnMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONCommitTxnMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct CommitTxnMessage", e);
+    }
+  }
+
+  @Override
+  public AbortTxnMessage getAbortTxnMessage(String messageBody) {
+    try {
+      return mapper.readValue(messageBody, JSONAbortTxnMessage.class);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Could not construct AbortTxnMessage", e);
     }
   }
 }

@@ -320,6 +320,7 @@ CREATE TABLE "SEQUENCE_TABLE" (
     "NEXT_VAL" bigint NOT NULL
 );
 
+INSERT INTO "SEQUENCE_TABLE" ("SEQUENCE_NAME", "NEXT_VAL") VALUES ('org.apache.hadoop.hive.metastore.model.MNotificationLog', 1);
 
 --
 -- Name: SERDES; Type: TABLE; Schema: public; Owner: hiveuser; Tablespace:
@@ -1793,6 +1794,13 @@ CREATE TABLE "SCHEMA_VERSION" (
   "SCHEMA_VERSION_NAME" varchar(256),
   "SERDE_ID" bigint references "SERDES" ("SERDE_ID"), 
   unique ("SCHEMA_ID", "VERSION")
+);
+
+CREATE TABLE REPL_TXN_MAP (
+  RTM_REPL_POLICY varchar(256) NOT NULL,
+  RTM_SRC_TXN_ID bigint NOT NULL,
+  RTM_TARGET_TXN_ID bigint NOT NULL,
+  PRIMARY KEY (RTM_REPL_POLICY, RTM_SRC_TXN_ID)
 );
 
 -- -----------------------------------------------------------------

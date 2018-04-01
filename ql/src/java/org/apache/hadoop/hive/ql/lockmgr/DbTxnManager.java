@@ -203,6 +203,15 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
+  public List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user)  throws LockException {
+    try {
+      return getMS().replOpenTxn(replPolicy, srcTxnIds, user);
+    } catch (TException e) {
+      throw new LockException(e, ErrorMsg.METASTORE_COMMUNICATION_FAILED);
+    }
+  }
+
+  @Override
   public long openTxn(Context ctx, String user) throws LockException {
     return openTxn(ctx, user, 0);
   }
@@ -591,6 +600,22 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
+  public void replCommitTxn(String replPolicy, long srcTxnId) throws LockException {
+    try {
+      getMS().replCommitTxn(srcTxnId, replPolicy);
+    } catch (NoSuchTxnException e) {
+      LOG.error("Metastore could not find " + JavaUtils.txnIdToString(srcTxnId));
+      throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(srcTxnId));
+    } catch (TxnAbortedException e) {
+      LockException le = new LockException(e, ErrorMsg.TXN_ABORTED, JavaUtils.txnIdToString(srcTxnId), e.getMessage());
+      LOG.error(le.getMessage());
+      throw le;
+    } catch (TException e) {
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+    }
+  }
+
+  @Override
   public void commitTxn() throws LockException {
     if (!isTxnOpen()) {
       throw new RuntimeException("Attempt to commit before opening a transaction");
@@ -615,6 +640,21 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       stmtId = -1;
       numStatements = 0;
       tableWriteIds.clear();
+    }
+  }
+  @Override
+  public void replRollbackTxn(String replPolicy, long srcTxnId) throws LockException {
+    try {
+      getMS().replRollbackTxn(srcTxnId, replPolicy);
+    } catch (NoSuchTxnException e) {
+      LOG.error("Metastore could not find " + JavaUtils.txnIdToString(srcTxnId));
+      throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(srcTxnId));
+    } catch (TxnAbortedException e) {
+      LockException le = new LockException(e, ErrorMsg.TXN_ABORTED, JavaUtils.txnIdToString(srcTxnId), e.getMessage());
+      LOG.error(le.getMessage());
+      throw le;
+    } catch (TException e) {
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }
   }
 

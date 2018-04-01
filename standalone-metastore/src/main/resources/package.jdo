@@ -1114,6 +1114,8 @@
     </class>
 
     <class name="MNotificationLog" table="NOTIFICATION_LOG" identity-type="datastore" detachable="true">
+      <datastore-identity strategy="increment"/>
+      <datastore-identity key-cache-size="1"/>
       <datastore-identity>
         <column name="NL_ID"/>
       </datastore-identity>

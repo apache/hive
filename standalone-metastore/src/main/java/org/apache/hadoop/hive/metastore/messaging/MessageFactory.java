@@ -68,7 +68,9 @@ public abstract class MessageFactory {
   public static final String DROP_SCHEMA_VERSION_EVENT = "DROP_SCHEMA_VERSION";
   public static final String CREATE_CATALOG_EVENT = "CREATE_CATALOG";
   public static final String DROP_CATALOG_EVENT = "DROP_CATALOG";
-
+  public static final String OPEN_TXN_EVENT = "OPEN_TXN";
+  public static final String COMMIT_TXN_EVENT = "COMMIT_TXN";
+  public static final String ABORT_TXN_EVENT = "ABORT_TXN";
 
   private static MessageFactory instance = null;
 
@@ -237,6 +239,31 @@ public abstract class MessageFactory {
    */
   public abstract InsertMessage buildInsertMessage(Table tableObj, Partition ptnObj,
                                                    boolean replace, Iterator<String> files);
+
+  /**
+   * Factory method for building open txn message using start and end transaction range
+   *
+   * @param fromTxnId start transaction id (inclusive)
+   * @param toTxnId end transaction id (inclusive)
+   * @return instance of OpenTxnMessage
+   */
+  public abstract OpenTxnMessage buildOpenTxnMessage(Long fromTxnId, Long toTxnId);
+
+  /**
+   * Factory method for building commit txn message
+   *
+   * @param txnId Id of the transaction to be committed
+   * @return instance of CommitTxnMessage
+   */
+  public abstract CommitTxnMessage buildCommitTxnMessage(Long txnId);
+
+  /**
+   * Factory method for building abort txn message
+   *
+   * @param txnId Id of the transaction to be aborted
+   * @return instance of AbortTxnMessage
+   */
+  public abstract AbortTxnMessage buildAbortTxnMessage(Long txnId);
 
   /***
    * Factory method for building add primary key message

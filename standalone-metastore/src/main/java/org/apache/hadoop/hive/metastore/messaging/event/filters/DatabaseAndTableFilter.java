@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.messaging.event.filters;
 
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.messaging.MessageFactory;
 
 import java.util.regex.Pattern;
 
@@ -39,10 +40,17 @@ public class DatabaseAndTableFilter extends BasicFilter {
     this.tableName = tableName;
   }
 
+  private boolean isTxnRelatedEvent(final NotificationEvent event) {
+    return ((event.getEventType().equals(MessageFactory.OPEN_TXN_EVENT)) ||
+            (event.getEventType().equals(MessageFactory.COMMIT_TXN_EVENT)) ||
+            (event.getEventType().equals(MessageFactory.ABORT_TXN_EVENT))
+          );
+  }
+
   @Override
   boolean shouldAccept(final NotificationEvent event) {
-    if (dbPattern == null) {
-      return true; // if our dbName is null, we're interested in all wh events
+    if ((dbPattern == null) || isTxnRelatedEvent(event)) {
+      return true;
     }
     if (dbPattern.matcher(event.getDbName()).matches()) {
       if ((tableName == null)
