@@ -4511,7 +4511,7 @@ plan_1	ENABLED	NULL	default
 plan_2	DISABLED	NULL	default
 plan_4	ACTIVE	NULL	default
 plan_4a	DISABLED	NULL	default
-plan_4a-old-0	DISABLED	NULL	default
+plan_4a_old_0	DISABLED	NULL	default
 table	DISABLED	1	NULL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
@@ -4527,10 +4527,23 @@ plan_4	default	1.0	4	NULL
 plan_4a	default	1.0	4	NULL
 plan_4a	pool1	0.0	2	fair
 plan_4a	pool2	0.0	3	fair
-plan_4a-old-0	default	1.0	4	NULL
-plan_4a-old-0	pool1	0.0	2	fair
+plan_4a_old_0	default	1.0	4	NULL
+plan_4a_old_0	pool1	0.0	2	fair
 table	table	0.0	1	fifo
 table	table.pool	0.9	3	fair
+PREHOOK: query: SHOW RESOURCE PLAN plan_4a_old_0
+PREHOOK: type: SHOW RESOURCEPLAN
+PREHOOK: Output: dummyHostnameForTest
+POSTHOOK: query: SHOW RESOURCE PLAN plan_4a_old_0
+POSTHOOK: type: SHOW RESOURCEPLAN
+plan_4a_old_0[status=DISABLED,parallelism=null,defaultPool=default]
+ +  default[allocFraction=1.0,schedulingPolicy=null,parallelism=4]
+     |  mapped for default
+ +  pool1[allocFraction=0.0,schedulingPolicy=fair,parallelism=2]
+     |  trigger trigger_2: if (BYTES_READ > 11GB) { KILL }
+     |  mapped for users: user1
+ +  <unused triggers>
+     |  trigger trigger_1: if (BYTES_READ > 10GB) { KILL }
 PREHOOK: query: REPLACE ACTIVE RESOURCE PLAN WITH plan_4a
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -4547,8 +4560,8 @@ POSTHOOK: Input: sys@wm_resourceplans
 plan_1	ENABLED	NULL	default
 plan_2	DISABLED	NULL	default
 plan_4	ACTIVE	NULL	default
-plan_4-old-0	DISABLED	NULL	default
-plan_4a-old-0	DISABLED	NULL	default
+plan_4_old_0	DISABLED	NULL	default
+plan_4a_old_0	DISABLED	NULL	default
 table	DISABLED	1	NULL
 PREHOOK: query: CREATE RESOURCE PLAN plan_4a LIKE plan_4
 PREHOOK: type: CREATE RESOURCEPLAN
@@ -4576,9 +4589,9 @@ POSTHOOK: Input: sys@wm_resourceplans
 plan_1	ENABLED	NULL	default
 plan_2	DISABLED	NULL	default
 plan_4	ACTIVE	NULL	default
-plan_4-old-0	DISABLED	NULL	default
-plan_4-old-1	DISABLED	NULL	default
-plan_4a-old-0	DISABLED	NULL	default
+plan_4_old_0	DISABLED	NULL	default
+plan_4_old_1	DISABLED	NULL	default
+plan_4a_old_0	DISABLED	NULL	default
 table	DISABLED	1	NULL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
@@ -4594,11 +4607,11 @@ plan_4	default	1.0	4	NULL
 plan_4	pool1	0.0	2	fair
 plan_4	pool2	0.0	3	fair
 plan_4	pool3	0.0	3	fair
-plan_4-old-0	default	1.0	4	NULL
-plan_4-old-1	default	1.0	4	NULL
-plan_4-old-1	pool1	0.0	2	fair
-plan_4-old-1	pool2	0.0	3	fair
-plan_4a-old-0	default	1.0	4	NULL
-plan_4a-old-0	pool1	0.0	2	fair
+plan_4_old_0	default	1.0	4	NULL
+plan_4_old_1	default	1.0	4	NULL
+plan_4_old_1	pool1	0.0	2	fair
+plan_4_old_1	pool2	0.0	3	fair
+plan_4a_old_0	default	1.0	4	NULL
+plan_4a_old_0	pool1	0.0	2	fair
 table	table	0.0	1	fifo
 table	table.pool	0.9	3	fair
