@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.ReplLoadWork;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
@@ -243,6 +244,60 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  private boolean shouldReplayEvent(FileStatus dir, DumpType dumpType) throws SemanticException {
+    // This functions filters out all the events which are already replayed. This can be done only
+    // for transaction related events as for other kind of events we can not gurantee that the last
+    // repl id stored in the database/table is valid.
+    if ((dumpType != DumpType.EVENT_ABORT_TXN) &&
+            (dumpType != DumpType.EVENT_OPEN_TXN) &&
+            (dumpType != DumpType.EVENT_COMMIT_TXN)) {
+      return true;
+    }
+
+    // if database itself is null then we can not filter out anything.
+    if (dbNameOrPattern == null || dbNameOrPattern.isEmpty()) {
+      return true;
+    } else if ((tblNameOrPattern == null) || (tblNameOrPattern.isEmpty())) {
+      Database database;
+      try {
+        database = Hive.get().getDatabase(dbNameOrPattern);
+      } catch (HiveException e) {
+        LOG.error("failed to get the database " + dbNameOrPattern);
+        throw new SemanticException(e);
+      }
+      String replLastId;
+      Map<String, String> params = database.getParameters();
+      if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
+        replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+        if (Long.parseLong(replLastId) >= Long.parseLong(dir.getPath().getName())) {
+          LOG.debug("Event " + dumpType + " with replId " + Long.parseLong(dir.getPath().getName())
+                  + " is already replayed. LastReplId - " +  Long.parseLong(replLastId));
+          return false;
+        }
+      }
+    } else {
+      Table tbl;
+      try {
+        tbl = Hive.get().getTable(dbNameOrPattern, tblNameOrPattern);
+      } catch (HiveException e) {
+        LOG.error("failed to get the table " + dbNameOrPattern + "." + tblNameOrPattern);
+        throw new SemanticException(e);
+      }
+      if (tbl != null) {
+        Map<String, String> params = tbl.getParameters();
+        if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
+          String replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+          if (Long.parseLong(replLastId) >= Long.parseLong(dir.getPath().getName())) {
+            LOG.debug("Event " + dumpType + " with replId " + Long.parseLong(dir.getPath().getName())
+                    + " is already replayed. LastReplId - " +  Long.parseLong(replLastId));
+            return false;
+          }
+        }
+      }
+    }
+    return true;
+  }
+
   /*
    * Example dump dirs we need to be able to handle :
    *
@@ -380,6 +435,13 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
                 loadPath.toString(), dirsInLoadPath.length);
 
         for (FileStatus dir : dirsInLoadPath){
+          String locn = dir.getPath().toUri().toString();
+          DumpMetaData eventDmd = new DumpMetaData(new Path(locn), conf);
+
+          if (!shouldReplayEvent(dir, eventDmd.getDumpType())) {
+            continue;
+          }
+
           LOG.debug("Loading event from {} to {}.{}", dir.getPath().toUri(), dbNameOrPattern, tblNameOrPattern);
 
           // event loads will behave similar to table loads, with one crucial difference
@@ -401,8 +463,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
           // Once this entire chain is generated, we add evTaskRoot to rootTasks, so as to execute the
           // entire chain
 
-          String locn = dir.getPath().toUri().toString();
-          DumpMetaData eventDmd = new DumpMetaData(new Path(locn), conf);
           MessageHandler.Context context = new MessageHandler.Context(dbNameOrPattern,
                                                           tblNameOrPattern, locn, taskChainTail,
                                                           eventDmd, conf, db, ctx, LOG);

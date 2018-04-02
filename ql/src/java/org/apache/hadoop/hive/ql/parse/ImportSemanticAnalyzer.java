@@ -409,10 +409,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     Task<?> copyTask = null;
     if (replicationSpec.isInReplicationScope()) {
-      if (isSourceMm || isAcid(writeId)) {
-        // Note: this is replication gap, not MM gap... Repl V2 is not ready yet.
-        throw new RuntimeException("Replicating MM and ACID tables is not supported");
-      }
       copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, destPath, x.getConf());
     } else {
       CopyWork cw = new CopyWork(dataPath, destPath, false);
@@ -502,10 +498,6 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       Task<?> copyTask = null;
       if (replicationSpec.isInReplicationScope()) {
-        if (isSourceMm || isAcid(writeId)) {
-          // Note: this is replication gap, not MM gap... Repl V2 is not ready yet.
-          throw new RuntimeException("Replicating MM and ACID tables is not supported");
-        }
         copyTask = ReplCopyTask.getLoadCopyTask(
             replicationSpec, new Path(srcLocation), destPath, x.getConf());
       } else {

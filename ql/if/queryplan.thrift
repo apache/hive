@@ -102,7 +102,8 @@ enum StageType {
   COLUMNSTATS,
   REPL_DUMP,
   REPL_BOOTSTRAP_LOAD,
-  REPL_STATE_LOG
+  REPL_STATE_LOG,
+  REPL_TXN
 }
 
 struct Stage {

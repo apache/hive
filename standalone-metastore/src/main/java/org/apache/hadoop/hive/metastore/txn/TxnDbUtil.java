@@ -180,6 +180,65 @@ public final class TxnDbUtil {
         " WS_COMMIT_ID bigint NOT NULL," +
         " WS_OPERATION_TYPE char(1) NOT NULL)"
       );
+
+      stmt.execute("CREATE TABLE REPL_TXN_MAP (" +
+          " RTM_REPL_POLICY varchar(256) NOT NULL, " +
+          " RTM_SRC_TXN_ID bigint NOT NULL, " +
+          " RTM_TARGET_TXN_ID bigint NOT NULL, " +
+          " PRIMARY KEY (RTM_REPL_POLICY, RTM_SRC_TXN_ID))"
+      );
+
+      try {
+        stmt.execute("CREATE TABLE \"APP\".\"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\" VARCHAR(256) NOT " +
+
+                "NULL, \"NEXT_VAL\" BIGINT NOT NULL)"
+        );
+      } catch (SQLException e) {
+        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
+          LOG.info("SEQUENCE_TABLE table already exist, ignoring");
+        } else {
+          throw e;
+        }
+      }
+
+      try {
+        stmt.execute("CREATE TABLE \"APP\".\"NOTIFICATION_SEQUENCE\" (\"NNI_ID\" BIGINT NOT NULL, " +
+
+                "\"NEXT_EVENT_ID\" BIGINT NOT NULL)"
+        );
+      } catch (SQLException e) {
+        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
+          LOG.info("NOTIFICATION_SEQUENCE table already exist, ignoring");
+        } else {
+          throw e;
+        }
+      }
+
+      try {
+        stmt.execute("CREATE TABLE \"APP\".\"NOTIFICATION_LOG\" (\"NL_ID\" BIGINT NOT NULL, " +
+                "\"DB_NAME\" VARCHAR(128), \"EVENT_ID\" BIGINT NOT NULL, \"EVENT_TIME\" INTEGER NOT" +
+
+                " NULL, \"EVENT_TYPE\" VARCHAR(32) NOT NULL, \"MESSAGE\" CLOB, \"TBL_NAME\" " +
+                "VARCHAR" +
+                "(256), \"MESSAGE_FORMAT\" VARCHAR(16))"
+        );
+      } catch (SQLException e) {
+        if (e.getMessage() != null && e.getMessage().contains("already exists")) {
+          LOG.info("NOTIFICATION_LOG table already exist, ignoring");
+        } else {
+          throw e;
+        }
+      }
+
+      stmt.execute("INSERT INTO \"APP\".\"SEQUENCE_TABLE\" (\"SEQUENCE_NAME\", \"NEXT_VAL\") " +
+              "SELECT * FROM (VALUES ('org.apache.hadoop.hive.metastore.model.MNotificationLog', " +
+              "1)) tmp_table WHERE NOT EXISTS ( SELECT \"NEXT_VAL\" FROM \"APP\"" +
+              ".\"SEQUENCE_TABLE\" WHERE \"SEQUENCE_NAME\" = 'org.apache.hadoop.hive.metastore" +
+              ".model.MNotificationLog')");
+
+      stmt.execute("INSERT INTO \"APP\".\"NOTIFICATION_SEQUENCE\" (\"NNI_ID\", \"NEXT_EVENT_ID\")" +
+              " SELECT * FROM (VALUES (1,1)) tmp_table WHERE NOT EXISTS ( SELECT " +
+              "\"NEXT_EVENT_ID\" FROM \"APP\".\"NOTIFICATION_SEQUENCE\")");
     } catch (SQLException e) {
       try {
         conn.rollback();
@@ -241,6 +300,13 @@ public final class TxnDbUtil {
         success &= dropTable(stmt, "COMPLETED_COMPACTIONS", retryCount);
         success &= dropTable(stmt, "AUX_TABLE", retryCount);
         success &= dropTable(stmt, "WRITE_SET", retryCount);
+        success &= dropTable(stmt, "REPL_TXN_MAP", retryCount);
+        /*
+         * Don't drop NOTIFICATION_LOG, SEQUENCE_TABLE and NOTIFICATION_SEQUENCE as its used by other
+         * table which are not txn related to generate primary key. So if these tables are dropped
+         *  and other tables are not dropped, then it will create key duplicate error while inserting
+         *  to other table.
+         */
       } finally {
         closeResources(conn, stmt, null);
       }
