@@ -67,6 +67,8 @@ import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.MaterializationsInvalidationCache;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
+import org.apache.hadoop.hive.metastore.TransactionalMetaStoreEventListener;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
@@ -119,15 +121,19 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.BoneCPDataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.HikariCPDataSourceProvider;
+import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
+import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
+import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
+import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import com.google.common.annotations.VisibleForTesting;
 
 /**
@@ -219,6 +225,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   static private DataSource connPool;
   private static DataSource connPoolMutex;
   static private boolean doRetryOnConnPool = false;
+
+  private List<TransactionalMetaStoreEventListener> transactionalListeners;
   
   private enum OpertaionType {
     SELECT('s'), INSERT('i'), UPDATE('u'), DELETE('d');
@@ -354,6 +362,16 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     retryLimit = MetastoreConf.getIntVar(conf, ConfVars.HMSHANDLERATTEMPTS);
     deadlockRetryInterval = retryInterval / 10;
     maxOpenTxns = MetastoreConf.getIntVar(conf, ConfVars.MAX_OPEN_TXNS);
+
+    try {
+      transactionalListeners = MetaStoreUtils.getMetaStoreListeners(
+              TransactionalMetaStoreEventListener.class,
+                      conf, MetastoreConf.getVar(conf, ConfVars.TRANSACTIONAL_EVENT_LISTENERS));
+    } catch(MetaException e) {
+      String msg = "Unable to get transaction listeners, " + e.getMessage();
+      LOG.error(msg);
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -558,6 +576,29 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         if (numTxns > maxTxns) numTxns = maxTxns;
 
         stmt = dbConn.createStatement();
+
+        if (rqst.isSetReplPolicy()) {
+          List<String> inQueries = new ArrayList<>();
+          StringBuilder prefix = new StringBuilder();
+          StringBuilder suffix = new StringBuilder();
+
+          prefix.append("select RTM_TARGET_TXN_ID from REPL_TXN_MAP where ");
+          suffix.append(" and RTM_REPL_POLICY = " + quoteString(rqst.getReplPolicy()));
+
+          TxnUtils.buildQueryWithINClause(conf, inQueries, prefix, suffix, rqst.getReplSrcTxnIds(),
+                  "RTM_SRC_TXN_ID", false, false);
+
+          for (String query : inQueries) {
+            LOG.debug("Going to execute select <" + query + ">");
+            rs = stmt.executeQuery(query);
+            if (rs.next()) {
+              LOG.info("Transactions " + rqst.getReplSrcTxnIds().toString() +
+                      " are already present for repl policy " + rqst.getReplPolicy());
+              return new OpenTxnsResponse(new ArrayList<>());
+            }
+          }
+        }
+
         String s = sqlGenerator.addForUpdateClause("select ntxn_next from NEXT_TXN_ID");
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
@@ -584,6 +625,29 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           LOG.debug("Going to execute update <" + q + ">");
           stmt.execute(q);
         }
+
+        if (rqst.isSetReplPolicy()) {
+          List<String> rowsRepl = new ArrayList<>();
+
+          for (int i = 0; i < numTxns; i++) {
+            rowsRepl.add(
+                quoteString(rqst.getReplPolicy()) + "," + rqst.getReplSrcTxnIds().get(i) + "," + txnIds.get(i));
+          }
+
+          List<String> queriesRepl = sqlGenerator.createInsertValuesStmt(
+              "REPL_TXN_MAP (RTM_REPL_POLICY, RTM_SRC_TXN_ID, RTM_TARGET_TXN_ID)", rowsRepl);
+
+          for (String query : queriesRepl) {
+            LOG.info("Going to execute insert <" + query + ">");
+            stmt.execute(query);
+          }
+        }
+
+        if (transactionalListeners != null) {
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventMessage.EventType.OPEN_TXN, new OpenTxnEvent(txnIds, dbConn, sqlGenerator));
+        }
+
         LOG.debug("Going to commit");
         dbConn.commit();
         return new OpenTxnsResponse(txnIds);
@@ -601,25 +665,79 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       return openTxns(rqst);
     }
   }
+
+  private Long getTargetTxnId(String replPolicy, long sourceTxnId, Statement stmt) throws SQLException {
+    ResultSet rs = null;
+    try {
+      String s = "select RTM_TARGET_TXN_ID from REPL_TXN_MAP where RTM_SRC_TXN_ID = " + sourceTxnId +
+
+              " and RTM_REPL_POLICY = " + quoteString(replPolicy);
+      LOG.debug("Going to execute query <" + s + ">");
+      rs = stmt.executeQuery(s);
+      if (!rs.next()) {
+        LOG.info("Target txn is missing for the input source txn for ReplPolicy: " +
+                quoteString(replPolicy) + " , srcTxnId: " + sourceTxnId);
+        return -1L;
+      }
+      LOG.debug("targetTxnid for srcTxnId " + sourceTxnId + " is " + rs.getLong(1));
+      return rs.getLong(1);
+    }  catch (SQLException e) {
+      LOG.warn("failed to get target txn ids " + e.getMessage());
+      throw e;
+    } finally {
+      close(rs);
+    }
+  }
+
   @Override
   @RetrySemantics.Idempotent
   public void abortTxn(AbortTxnRequest rqst) throws NoSuchTxnException, MetaException, TxnAbortedException {
     long txnid = rqst.getTxnid();
+    long sourceTxnId = -1;
     try {
       Connection dbConn = null;
       Statement stmt = null;
       try {
         lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+
+        if (rqst.isSetReplPolicy()) {
+          sourceTxnId = rqst.getTxnid();
+          txnid = getTargetTxnId(rqst.getReplPolicy(), sourceTxnId, stmt);
+          if (txnid == -1) {
+            return;
+          }
+        }
+
         if (abortTxns(dbConn, Collections.singletonList(txnid), true) != 1) {
-          stmt = dbConn.createStatement();
           TxnStatus status = findTxnState(txnid,stmt);
           if(status == TxnStatus.ABORTED) {
+            if (rqst.isSetReplPolicy()) {
+              // in case of replication, idempotent is taken care by getTargetTxnId
+              LOG.warn("Invalid state ABORTED for transactions started using replication replay task");
+              String s = "delete from REPL_TXN_MAP where RTM_SRC_TXN_ID = " + sourceTxnId +
+                      " and RTM_REPL_POLICY = " + quoteString(rqst.getReplPolicy());
+              LOG.info("Going to execute  <" + s + ">");
+              stmt.executeUpdate(s);
+            }
             LOG.info("abortTxn(" + JavaUtils.txnIdToString(txnid) +
               ") requested by it is already " + TxnStatus.ABORTED);
             return;
           }
           raiseTxnUnexpectedState(status, txnid);
+        }
+
+        if (rqst.isSetReplPolicy()) {
+          String s = "delete from REPL_TXN_MAP where RTM_SRC_TXN_ID = " + sourceTxnId +
+              " and RTM_REPL_POLICY = " + quoteString(rqst.getReplPolicy());
+          LOG.info("Going to execute  <" + s + ">");
+          stmt.executeUpdate(s);
+        }
+
+        if (transactionalListeners != null) {
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnid, dbConn, sqlGenerator));
         }
 
         LOG.debug("Going to commit");
@@ -638,6 +756,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       abortTxn(rqst);
     }
   }
+
   @Override
   @RetrySemantics.Idempotent
   public void abortTxns(AbortTxnsRequest rqst) throws NoSuchTxnException, MetaException {
@@ -652,6 +771,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               txnids.size() + " transactions. It's possible that the other " +
               (txnids.size() - numAborted) +
               " transactions have been aborted or committed, or the transaction ids are invalid.");
+        }
+
+        for (Long txnId : txnids) {
+          if (transactionalListeners != null) {
+            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                    EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnId, dbConn, sqlGenerator));
+          }
         }
         LOG.debug("Going to commit");
         dbConn.commit();
@@ -699,6 +825,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   public void commitTxn(CommitTxnRequest rqst)
     throws NoSuchTxnException, TxnAbortedException,  MetaException {
     long txnid = rqst.getTxnid();
+    long sourceTxnId = -1;
     try {
       Connection dbConn = null;
       Statement stmt = null;
@@ -708,6 +835,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
+
+        if (rqst.isSetReplPolicy()) {
+          sourceTxnId = rqst.getTxnid();
+          txnid = getTargetTxnId(rqst.getReplPolicy(), sourceTxnId, stmt);
+          if (txnid == -1) {
+            return;
+          }
+        }
+
         /**
          * Runs at READ_COMMITTED with S4U on TXNS row for "txnid".  S4U ensures that no other
          * operation can change this txn (such acquiring locks). While lock() and commitTxn()
@@ -719,6 +855,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           //if here, txn was not found (in expected state)
           TxnStatus actualTxnStatus = findTxnState(txnid, stmt);
           if(actualTxnStatus == TxnStatus.COMMITTED) {
+            if (rqst.isSetReplPolicy()) {
+              // in case of replication, idempotent is taken care by getTargetTxnId
+              LOG.warn("Invalid state COMMITTED for transactions started using replication replay task");
+            }
             /**
              * This makes the operation idempotent
              * (assume that this is most likely due to retry logic)
@@ -857,6 +997,19 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               rs.getString(1), rs.getString(2), txnid,
               rs.getTimestamp(3, Calendar.getInstance(TimeZone.getTimeZone("UTC"))).getTime());
         }
+
+        if (rqst.isSetReplPolicy()) {
+          s = "delete from REPL_TXN_MAP where RTM_SRC_TXN_ID = " + sourceTxnId +
+                  " and RTM_REPL_POLICY = " + quoteString(rqst.getReplPolicy());
+          LOG.info("Repl going to execute  <" + s + ">");
+          stmt.executeUpdate(s);
+        }
+
+        if (transactionalListeners != null) {
+          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+                  EventMessage.EventType.COMMIT_TXN, new CommitTxnEvent(txnid, dbConn, sqlGenerator));
+        }
+
         close(rs);
         dbConn.commit();
       } catch (SQLException e) {

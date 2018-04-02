@@ -213,6 +213,27 @@ ALTER TABLE COMPLETED_TXN_COMPONENTS ADD CTC_WRITEID bigint;
 
 ALTER TABLE HIVE_LOCKS ALTER COLUMN HL_TXNID bigint NOT NULL;
 
+CREATE TABLE REPL_TXN_MAP (
+  RTM_REPL_POLICY nvarchar(256) NOT NULL,
+  RTM_SRC_TXN_ID bigint NOT NULL,
+  RTM_TARGET_TXN_ID bigint NOT NULL
+);
+
+ALTER TABLE REPL_TXN_MAP ADD CONSTRAINT REPL_TXN_MAP_PK PRIMARY KEY (RTM_REPL_POLICY, RTM_SRC_TXN_ID);
+
+-- Table SEQUENCE_TABLE is an internal table required by DataNucleus.
+-- NOTE: Some versions of SchemaTool do not automatically generate this table.
+-- See http://www.datanucleus.org/servlet/jira/browse/NUCRDBMS-416
+CREATE TABLE SEQUENCE_TABLE
+(
+   SEQUENCE_NAME nvarchar(256) NOT NULL,
+   NEXT_VAL bigint NOT NULL
+);
+
+CREATE UNIQUE INDEX PART_TABLE_PK ON SEQUENCE_TABLE (SEQUENCE_NAME);
+
+INSERT INTO SEQUENCE_TABLE (SEQUENCE_NAME, NEXT_VAL) VALUES ('org.apache.hadoop.hive.metastore.model.MNotificationLog', 1);
+
 -- HIVE-18755, add catalogs
 -- new catalog table
 CREATE TABLE CTLGS (
@@ -274,3 +295,4 @@ ALTER TABLE NOTIFICATION_LOG ADD CAT_NAME nvarchar(256);
 -- These lines need to be last.  Insert any changes above.
 UPDATE VERSION SET SCHEMA_VERSION='3.0.0', VERSION_COMMENT='Hive release version 3.0.0' where VER_ID=1;
 SELECT 'Finished upgrading MetaStore schema from 2.3.0 to 3.0.0' AS MESSAGE;
+

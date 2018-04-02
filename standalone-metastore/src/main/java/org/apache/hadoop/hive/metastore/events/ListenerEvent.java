@@ -23,8 +23,9 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
-
+import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import javax.annotation.concurrent.NotThreadSafe;
+import java.sql.Connection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -159,6 +160,20 @@ public abstract class ListenerEvent {
 
       updateUnmodifiableParameters();
     }
+  }
+
+  /**
+   * Used by ACID/transaction related events for generating direct SQL in DBNotificationListener.
+   */
+  public Connection getConnection() {
+    return null;
+  }
+
+  /**
+   * Used by ACID/transaction related events for generating direct SQL in DBNotificationListener.
+   */
+  public SQLGenerator getSqlGenerator() {
+    return null;
   }
 
   /**
