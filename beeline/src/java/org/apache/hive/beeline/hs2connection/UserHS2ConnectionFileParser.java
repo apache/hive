@@ -86,9 +86,6 @@ public class UserHS2ConnectionFileParser implements HS2ConnectionFileParser {
         if (key.startsWith(BEELINE_CONNECTION_PROPERTY_PREFIX)) {
           props.setProperty(key.substring(BEELINE_CONNECTION_PROPERTY_PREFIX.length()),
               kv.getValue());
-        } else {
-          log.warn("Ignoring " + key + " since it does not start with "
-              + BEELINE_CONNECTION_PROPERTY_PREFIX);
         }
       }
     } catch (Exception ex) {
