@@ -320,7 +320,7 @@ public class StatsOptimizer extends Transform {
         }
         Operator<?> last = (Operator<?>) stack.get(5);
         SelectOperator cselOp = null;
-        Map<Integer,Object> posToConstant = new HashMap<>();
+        Map<Integer,Object> posToConstant = new LinkedHashMap<>();
         if (last instanceof SelectOperator) {
           cselOp = (SelectOperator) last;
           if (!cselOp.isIdentitySelect()) {
@@ -338,6 +338,17 @@ public class StatsOptimizer extends Transform {
             }
           }
           last = (Operator<?>) stack.get(6);
+        } else {
+          // Add constants if there is no SELECT on top
+          GroupByDesc gbyDesc = cgbyOp.getConf();
+          int numCols = gbyDesc.getOutputColumnNames().size();
+          int aggCols = gbyDesc.getAggregators().size();
+          List<String> dpCols = cgbyOp.getSchema().getColumnNames().subList(0, numCols - aggCols);
+          for(int i = 0; i < dpCols.size(); i++) {
+            ExprNodeDesc end = ExprNodeDescUtils.findConstantExprOrigin(dpCols.get(i), cgbyOp);
+            assert end instanceof ExprNodeConstantDesc;
+            posToConstant.put(i, ((ExprNodeConstantDesc)end).getValue());
+          }
         }
         FileSinkOperator fsOp = (FileSinkOperator)last;
         if (fsOp.getNumChild() > 0) {
@@ -707,7 +718,10 @@ public class StatsOptimizer extends Transform {
         List<String> colNames = new ArrayList<String>();
         List<ObjectInspector> ois = new ArrayList<ObjectInspector>();
         if (cselOp == null) {
-          allRows.add(oneRow);
+          List<Object> oneRowWithConstant = new ArrayList<>();
+          oneRowWithConstant.addAll(posToConstant.values());
+          oneRowWithConstant.addAll(oneRow);
+          allRows.add(oneRowWithConstant);
           for (ColumnInfo colInfo : cgbyOp.getSchema().getSignature()) {
             colNames.add(colInfo.getInternalName());
             ois.add(TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo(colInfo.getType()));
