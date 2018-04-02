@@ -110,7 +110,7 @@ public interface HiveMetaHook {
    * @param table new table definition
    */
   public default void preAlterTable(Table table, EnvironmentContext context) throws MetaException {
-    String alterOpType = context.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
+    String alterOpType = context == null ? null : context.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
     // By default allow only ADDPROPS and DROPPROPS.
     // alterOpType is null in case of stats update.
     if (alterOpType != null && !allowedAlterTypes.contains(alterOpType)){
