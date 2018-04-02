@@ -72,8 +72,8 @@ public class SparkSessionImpl implements SparkSession {
   private Path scratchDir;
   private final Object dirLock = new Object();
 
-  public SparkSessionImpl() {
-    sessionId = makeSessionId();
+  SparkSessionImpl(String sessionId) {
+    this.sessionId = sessionId;
     initErrorPatterns();
   }
 
@@ -83,7 +83,8 @@ public class SparkSessionImpl implements SparkSession {
     this.conf = conf;
     isOpen = true;
     try {
-      hiveSparkClient = HiveSparkClientFactory.createHiveSparkClient(conf, sessionId);
+      hiveSparkClient = HiveSparkClientFactory.createHiveSparkClient(conf, sessionId,
+              SessionState.get().getSessionId());
     } catch (Throwable e) {
       // It's possible that user session is closed while creating Spark client.
       HiveException he;
@@ -258,10 +259,6 @@ public class SparkSessionImpl implements SparkSession {
       }
     }
     return scratchDir;
-  }
-
-  public static String makeSessionId() {
-    return UUID.randomUUID().toString();
   }
 
   @VisibleForTesting

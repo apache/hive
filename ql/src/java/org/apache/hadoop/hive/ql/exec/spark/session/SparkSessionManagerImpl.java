@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -110,7 +111,7 @@ public class SparkSessionManagerImpl implements SparkSessionManager {
       return existingSession;
     }
 
-    SparkSession sparkSession = new SparkSessionImpl();
+    SparkSession sparkSession = new SparkSessionImpl(SessionState.get().getNewSparkSessionId());
     if (doOpen) {
       sparkSession.open(conf);
     }
