@@ -1,9 +1,12 @@
 PREHOOK: query: explain vectorization expression
-select cint / 0, ctinyint / 0, cbigint / 0, cdouble / 0.0 from alltypesorc limit 100
+select cint, cint / 0 as cint_div, ctinyint, ctinyint / 0 as ctinyint_div, cbigint, cbigint / 0 as cbigint_div, cdouble, cdouble / 0.0 as cdouble_div
+from alltypesorc order by cint, ctinyint, cbigint, cdouble limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-select cint / 0, ctinyint / 0, cbigint / 0, cdouble / 0.0 from alltypesorc limit 100
+select cint, cint / 0 as cint_div, ctinyint, ctinyint / 0 as ctinyint_div, cbigint, cbigint / 0 as cbigint_div, cdouble, cdouble / 0.0 as cdouble_div
+from alltypesorc order by cint, ctinyint, cbigint, cdouble limit 100
 POSTHOOK: type: QUERY
+Explain
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -16,6 +19,9 @@ STAGE PLANS:
   Stage: Stage-1
     Tez
 #### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
@@ -25,40 +31,68 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: (UDFToDouble(cint) / 0.0D) (type: double), (UDFToDouble(ctinyint) / 0.0D) (type: double), (UDFToDouble(cbigint) / 0.0D) (type: double), (cdouble / 0.0D) (type: double)
-                    outputColumnNames: _col0, _col1, _col2, _col3
+                    expressions: cint (type: int), (UDFToDouble(cint) / 0.0D) (type: double), ctinyint (type: tinyint), (UDFToDouble(ctinyint) / 0.0D) (type: double), cbigint (type: bigint), (UDFToDouble(cbigint) / 0.0D) (type: double), cdouble (type: double), (cdouble / 0.0D) (type: double)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [14, 15, 16, 13]
+                        projectedOutputColumnNums: [2, 14, 0, 15, 3, 16, 5, 13]
                         selectExpressions: DoubleColDivideDoubleScalar(col 13:double, val 0.0)(children: CastLongToDouble(col 2:int) -> 13:double) -> 14:double, DoubleColDivideDoubleScalar(col 13:double, val 0.0)(children: CastLongToDouble(col 0:tinyint) -> 13:double) -> 15:double, DoubleColDivideDoubleScalar(col 13:double, val 0.0)(children: CastLongToDouble(col 3:bigint) -> 13:double) -> 16:double, DoubleColDivideDoubleScalar(col 5:double, val 0.0) -> 13:double
-                    Statistics: Num rows: 12288 Data size: 393216 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 100
-                      Limit Vectorization:
-                          className: VectorLimitOperator
+                    Statistics: Num rows: 12288 Data size: 613400 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      key expressions: _col0 (type: int), _col2 (type: tinyint), _col4 (type: bigint), _col6 (type: double)
+                      sort order: ++++
+                      Reduce Sink Vectorization:
+                          className: VectorReduceSinkObjectHashOperator
                           native: true
-                      Statistics: Num rows: 100 Data size: 3200 Basic stats: COMPLETE Column stats: COMPLETE
-                      File Output Operator
-                        compressed: false
-                        File Sink Vectorization:
-                            className: VectorFileSinkOperator
-                            native: false
-                        Statistics: Num rows: 100 Data size: 3200 Basic stats: COMPLETE Column stats: COMPLETE
-                        table:
-                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-            Execution mode: vectorized
+                          nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                      Statistics: Num rows: 12288 Data size: 613400 Basic stats: COMPLETE Column stats: COMPLETE
+                      TopN Hash Memory Usage: 0.1
+                      value expressions: _col1 (type: double), _col3 (type: double), _col5 (type: double), _col7 (type: double)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
                 inputFormatFeatureSupport: []
                 featureSupportInUse: []
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
                 allNative: false
                 usesVectorUDFAdaptor: false
                 vectorized: true
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: double), KEY.reducesinkkey1 (type: tinyint), VALUE._col1 (type: double), KEY.reducesinkkey2 (type: bigint), VALUE._col2 (type: double), KEY.reducesinkkey3 (type: double), VALUE._col3 (type: double)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 4, 1, 5, 2, 6, 3, 7]
+                Statistics: Num rows: 12288 Data size: 613400 Basic stats: COMPLETE Column stats: COMPLETE
+                Limit
+                  Number of rows: 100
+                  Limit Vectorization:
+                      className: VectorLimitOperator
+                      native: true
+                  Statistics: Num rows: 100 Data size: 5024 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+                    Statistics: Num rows: 100 Data size: 5024 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -66,122 +100,126 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select cint / 0, ctinyint / 0, cbigint / 0, cdouble / 0.0 from alltypesorc limit 100
+PREHOOK: query: select cint, cint / 0 as cint_div, ctinyint, ctinyint / 0 as ctinyint_div, cbigint, cbigint / 0 as cbigint_div, cdouble, cdouble / 0.0 as cdouble_div
+from alltypesorc order by cint, ctinyint, cbigint, cdouble limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select cint / 0, ctinyint / 0, cbigint / 0, cdouble / 0.0 from alltypesorc limit 100
+#### A masked pattern was here ####
+POSTHOOK: query: select cint, cint / 0 as cint_div, ctinyint, ctinyint / 0 as ctinyint_div, cbigint, cbigint / 0 as cbigint_div, cdouble, cdouble / 0.0 as cdouble_div
+from alltypesorc order by cint, ctinyint, cbigint, cdouble limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL
+#### A masked pattern was here ####
+cint	cint_div	ctinyint	ctinyint_div	cbigint	cbigint_div	cdouble	cdouble_div
+NULL	NULL	-60	NULL	-1016256928	NULL	15601.0	NULL
+NULL	NULL	-60	NULL	-1062217466	NULL	-200.0	NULL
+NULL	NULL	-60	NULL	-1183915345	NULL	-7196.0	NULL
+NULL	NULL	-60	NULL	-126921733	NULL	-200.0	NULL
+NULL	NULL	-60	NULL	-1445021496	NULL	-200.0	NULL
+NULL	NULL	-60	NULL	-1690528981	NULL	-200.0	NULL
+NULL	NULL	-60	NULL	-1743144280	NULL	15601.0	NULL
+NULL	NULL	-60	NULL	-1802243330	NULL	-7196.0	NULL
+NULL	NULL	-60	NULL	-1860186661	NULL	-200.0	NULL
+NULL	NULL	-60	NULL	-2041965187	NULL	15601.0	NULL
+NULL	NULL	-60	NULL	-483910982	NULL	-200.0	NULL
+NULL	NULL	-60	NULL	-508015343	NULL	-200.0	NULL
+NULL	NULL	-60	NULL	-519753851	NULL	15601.0	NULL
+NULL	NULL	-60	NULL	-5953872	NULL	15601.0	NULL
+NULL	NULL	-60	NULL	-68838726	NULL	-7196.0	NULL
+NULL	NULL	-60	NULL	-903925845	NULL	15601.0	NULL
+NULL	NULL	-60	NULL	1122241452	NULL	15601.0	NULL
+NULL	NULL	-60	NULL	1172431520	NULL	-200.0	NULL
+NULL	NULL	-60	NULL	927847540	NULL	-200.0	NULL
+NULL	NULL	-60	NULL	NULL	NULL	-200.0	NULL
+NULL	NULL	-61	NULL	-1022679553	NULL	15601.0	NULL
+NULL	NULL	-61	NULL	-1062521098	NULL	-7196.0	NULL
+NULL	NULL	-61	NULL	-1313743110	NULL	-200.0	NULL
+NULL	NULL	-61	NULL	-1513172815	NULL	-7196.0	NULL
+NULL	NULL	-61	NULL	-1728754595	NULL	-7196.0	NULL
+NULL	NULL	-61	NULL	-1769786673	NULL	-200.0	NULL
+NULL	NULL	-61	NULL	-2114172148	NULL	-7196.0	NULL
+NULL	NULL	-61	NULL	-2175533	NULL	-7196.0	NULL
+NULL	NULL	-61	NULL	-836697023	NULL	-200.0	NULL
+NULL	NULL	-61	NULL	-854893578	NULL	15601.0	NULL
+NULL	NULL	-61	NULL	-982179838	NULL	15601.0	NULL
+NULL	NULL	-61	NULL	1114673625	NULL	15601.0	NULL
+NULL	NULL	-61	NULL	1139675920	NULL	15601.0	NULL
+NULL	NULL	-61	NULL	1237548317	NULL	-7196.0	NULL
+NULL	NULL	-61	NULL	127734700	NULL	-7196.0	NULL
+NULL	NULL	-61	NULL	1399483216	NULL	-200.0	NULL
+NULL	NULL	-61	NULL	1415466231	NULL	-7196.0	NULL
+NULL	NULL	-61	NULL	184425274	NULL	-200.0	NULL
+NULL	NULL	-61	NULL	1977536065	NULL	15601.0	NULL
+NULL	NULL	-61	NULL	484546535	NULL	15601.0	NULL
+NULL	NULL	-61	NULL	623787602	NULL	-200.0	NULL
+NULL	NULL	-61	NULL	919939154	NULL	15601.0	NULL
+NULL	NULL	-61	NULL	943547371	NULL	-7196.0	NULL
+NULL	NULL	-61	NULL	NULL	NULL	-7196.0	NULL
+NULL	NULL	-61	NULL	NULL	NULL	-7196.0	NULL
+NULL	NULL	-62	NULL	-1113073921	NULL	-200.0	NULL
+NULL	NULL	-62	NULL	-1367753794	NULL	-7196.0	NULL
+NULL	NULL	-62	NULL	-1592016120	NULL	15601.0	NULL
+NULL	NULL	-62	NULL	-167812632	NULL	-200.0	NULL
+NULL	NULL	-62	NULL	-1726415169	NULL	15601.0	NULL
+NULL	NULL	-62	NULL	-1761785534	NULL	-7196.0	NULL
+NULL	NULL	-62	NULL	-2080605724	NULL	-200.0	NULL
+NULL	NULL	-62	NULL	-642836823	NULL	-7196.0	NULL
+NULL	NULL	-62	NULL	-840223244	NULL	-7196.0	NULL
+NULL	NULL	-62	NULL	1221804187	NULL	-200.0	NULL
+NULL	NULL	-62	NULL	1380844570	NULL	-7196.0	NULL
+NULL	NULL	-62	NULL	1443417260	NULL	-200.0	NULL
+NULL	NULL	-62	NULL	1607712873	NULL	-200.0	NULL
+NULL	NULL	-62	NULL	1670449519	NULL	-7196.0	NULL
+NULL	NULL	-62	NULL	2071666427	NULL	-200.0	NULL
+NULL	NULL	-62	NULL	281485844	NULL	15601.0	NULL
+NULL	NULL	-62	NULL	325025905	NULL	-200.0	NULL
+NULL	NULL	-62	NULL	667693308	NULL	15601.0	NULL
+NULL	NULL	-62	NULL	68899019	NULL	15601.0	NULL
+NULL	NULL	-62	NULL	726070601	NULL	-200.0	NULL
+NULL	NULL	-62	NULL	73960976	NULL	15601.0	NULL
+NULL	NULL	-62	NULL	756424745	NULL	-7196.0	NULL
+NULL	NULL	-62	NULL	986221936	NULL	-7196.0	NULL
+NULL	NULL	-62	NULL	NULL	NULL	-7196.0	NULL
+NULL	NULL	-62	NULL	NULL	NULL	-7196.0	NULL
+NULL	NULL	-63	NULL	-1167054574	NULL	15601.0	NULL
+NULL	NULL	-63	NULL	-1224023895	NULL	-7196.0	NULL
+NULL	NULL	-63	NULL	-1574729892	NULL	15601.0	NULL
+NULL	NULL	-63	NULL	-1711796768	NULL	-7196.0	NULL
+NULL	NULL	-63	NULL	-1996001975	NULL	15601.0	NULL
+NULL	NULL	-63	NULL	-1999307539	NULL	-200.0	NULL
+NULL	NULL	-63	NULL	-200542601	NULL	15601.0	NULL
+NULL	NULL	-63	NULL	-2070832461	NULL	-200.0	NULL
+NULL	NULL	-63	NULL	-721244708	NULL	15601.0	NULL
+NULL	NULL	-63	NULL	-994504916	NULL	-7196.0	NULL
+NULL	NULL	-63	NULL	-997946077	NULL	-200.0	NULL
+NULL	NULL	-63	NULL	1089367203	NULL	-200.0	NULL
+NULL	NULL	-63	NULL	1927856372	NULL	-200.0	NULL
+NULL	NULL	-63	NULL	2059199534	NULL	15601.0	NULL
+NULL	NULL	-63	NULL	483904240	NULL	15601.0	NULL
+NULL	NULL	-63	NULL	507317726	NULL	-200.0	NULL
+NULL	NULL	-63	NULL	956380949	NULL	-200.0	NULL
+NULL	NULL	-64	NULL	-1615920595	NULL	-7196.0	NULL
+NULL	NULL	-64	NULL	-1639157869	NULL	-7196.0	NULL
+NULL	NULL	-64	NULL	-1809291815	NULL	15601.0	NULL
+NULL	NULL	-64	NULL	-1809444706	NULL	-200.0	NULL
+NULL	NULL	-64	NULL	-527203677	NULL	-7196.0	NULL
+NULL	NULL	-64	NULL	1090418478	NULL	-7196.0	NULL
+NULL	NULL	-64	NULL	1421812187	NULL	15601.0	NULL
+NULL	NULL	-64	NULL	1805860756	NULL	-7196.0	NULL
+NULL	NULL	-64	NULL	1960950366	NULL	15601.0	NULL
+NULL	NULL	-64	NULL	2118653994	NULL	-200.0	NULL
+NULL	NULL	-64	NULL	406535485	NULL	-7196.0	NULL
+NULL	NULL	-64	NULL	658026952	NULL	-7196.0	NULL
+NULL	NULL	-64	NULL	927647669	NULL	-200.0	NULL
 PREHOOK: query: explain vectorization expression
-select (cbigint - 988888L) as s1, cdouble / (cbigint - 988888L) as s2, 1.2 / (cbigint - 988888L) 
-from alltypesorc where cbigint > 0 and cbigint < 100000000 order by s1, s2 limit 100
+select (cbigint - 988888L) as s1, cdouble / (cbigint - 988888L) as s2, 1.2 / (cbigint - 988888L) as s3 
+from alltypesorc where cbigint > 0 and cbigint < 100000000 order by s1, s2, s3 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-select (cbigint - 988888L) as s1, cdouble / (cbigint - 988888L) as s2, 1.2 / (cbigint - 988888L) 
-from alltypesorc where cbigint > 0 and cbigint < 100000000 order by s1, s2 limit 100
+select (cbigint - 988888L) as s1, cdouble / (cbigint - 988888L) as s2, 1.2 / (cbigint - 988888L) as s3 
+from alltypesorc where cbigint > 0 and cbigint < 100000000 order by s1, s2, s3 limit 100
 POSTHOOK: type: QUERY
+Explain
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -222,16 +260,16 @@ STAGE PLANS:
                           selectExpressions: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 13:bigint, DoubleColDivideDoubleColumn(col 5:double, col 15:double)(children: CastLongToDouble(col 14:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 14:bigint) -> 15:double) -> 16:double, DecimalScalarDivideDecimalColumn(val 1.2, col 17:decimal(19,0))(children: CastLongToDecimal(col 14:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 988888) -> 14:bigint) -> 17:decimal(19,0)) -> 18:decimal(22,21)
                       Statistics: Num rows: 1365 Data size: 174720 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col0 (type: bigint), _col1 (type: double)
-                        sort order: ++
+                        key expressions: _col0 (type: bigint), _col1 (type: double), _col2 (type: decimal(22,21))
+                        sort order: +++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1365 Data size: 174720 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
-                        value expressions: _col2 (type: decimal(22,21))
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
@@ -242,7 +280,7 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
@@ -251,7 +289,7 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: bigint), KEY.reducesinkkey1 (type: double), VALUE._col0 (type: decimal(22,21))
+                expressions: KEY.reducesinkkey0 (type: bigint), KEY.reducesinkkey1 (type: double), KEY.reducesinkkey2 (type: decimal(22,21))
                 outputColumnNames: _col0, _col1, _col2
                 Select Vectorization:
                     className: VectorSelectOperator
@@ -281,16 +319,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select (cbigint - 988888L) as s1, cdouble / (cbigint - 988888L) as s2, 1.2 / (cbigint - 988888L) 
-from alltypesorc where cbigint > 0 and cbigint < 100000000 order by s1, s2 limit 100
+PREHOOK: query: select (cbigint - 988888L) as s1, cdouble / (cbigint - 988888L) as s2, 1.2 / (cbigint - 988888L) as s3 
+from alltypesorc where cbigint > 0 and cbigint < 100000000 order by s1, s2, s3 limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select (cbigint - 988888L) as s1, cdouble / (cbigint - 988888L) as s2, 1.2 / (cbigint - 988888L) 
-from alltypesorc where cbigint > 0 and cbigint < 100000000 order by s1, s2 limit 100
+#### A masked pattern was here ####
+POSTHOOK: query: select (cbigint - 988888L) as s1, cdouble / (cbigint - 988888L) as s2, 1.2 / (cbigint - 988888L) as s3 
+from alltypesorc where cbigint > 0 and cbigint < 100000000 order by s1, s2, s3 limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
+s1	s2	s3
 -63925	0.11256941728588189	-0.000018771998435666797
 -985319	2.0297994862577501E-4	-0.000001217879691754650
 -985319	NULL	-0.000001217879691754650
@@ -392,13 +431,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 9247593	NULL	0.000000129763496295739
 9821695	-7.326637611939691E-4	0.000000122178503812224
 PREHOOK: query: explain vectorization expression
-select (cdouble + 200.0) as s1, cbigint / (cdouble + 200.0) as s2, (cdouble + 200.0) / (cdouble + 200.0), cbigint / (cdouble + 200.0), 3 / (cdouble + 200.0), 1.2 / (cdouble + 200.0) 
-from alltypesorc where cdouble >= -500 and cdouble < -199 order by s1, s2 limit 100
+select (cdouble + 200.0) as s1, cbigint / (cdouble + 200.0) as s2, (cdouble + 200.0) / (cdouble + 200.0) as s3, cbigint / (cdouble + 200.0) as s4, 3 / (cdouble + 200.0) as s5, 1.2 / (cdouble + 200.0) as s6
+from alltypesorc where cdouble >= -500 and cdouble < -199 order by s1, s2, s3, s4, s5, s6 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-select (cdouble + 200.0) as s1, cbigint / (cdouble + 200.0) as s2, (cdouble + 200.0) / (cdouble + 200.0), cbigint / (cdouble + 200.0), 3 / (cdouble + 200.0), 1.2 / (cdouble + 200.0) 
-from alltypesorc where cdouble >= -500 and cdouble < -199 order by s1, s2 limit 100
+select (cdouble + 200.0) as s1, cbigint / (cdouble + 200.0) as s2, (cdouble + 200.0) / (cdouble + 200.0) as s3, cbigint / (cdouble + 200.0) as s4, 3 / (cdouble + 200.0) as s5, 1.2 / (cdouble + 200.0) as s6
+from alltypesorc where cdouble >= -500 and cdouble < -199 order by s1, s2, s3, s4, s5, s6 limit 100
 POSTHOOK: type: QUERY
+Explain
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -430,25 +470,25 @@ STAGE PLANS:
                     predicate: ((cdouble < -199.0D) and (cdouble >= -500.0D)) (type: boolean)
                     Statistics: Num rows: 1365 Data size: 16320 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: (cdouble + 200.0D) (type: double), (UDFToDouble(cbigint) / (cdouble + 200.0D)) (type: double), ((cdouble + 200.0D) / (cdouble + 200.0D)) (type: double), (3.0D / (cdouble + 200.0D)) (type: double), (1.2D / (cdouble + 200.0D)) (type: double)
-                      outputColumnNames: _col0, _col1, _col2, _col4, _col5
+                      expressions: (cdouble + 200.0D) (type: double), (UDFToDouble(cbigint) / (cdouble + 200.0D)) (type: double), ((cdouble + 200.0D) / (cdouble + 200.0D)) (type: double), (UDFToDouble(cbigint) / (cdouble + 200.0D)) (type: double), (3.0D / (cdouble + 200.0D)) (type: double), (1.2D / (cdouble + 200.0D)) (type: double)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [13, 16, 17, 15, 18]
-                          selectExpressions: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 13:double, DoubleColDivideDoubleColumn(col 14:double, col 15:double)(children: CastLongToDouble(col 3:bigint) -> 14:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 15:double) -> 16:double, DoubleColDivideDoubleColumn(col 14:double, col 15:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 14:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 15:double) -> 17:double, DoubleScalarDivideDoubleColumn(val 3.0, col 14:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 14:double) -> 15:double, DoubleScalarDivideDoubleColumn(val 1.2, col 14:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 14:double) -> 18:double
+                          projectedOutputColumnNums: [13, 16, 17, 18, 15, 19]
+                          selectExpressions: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 13:double, DoubleColDivideDoubleColumn(col 14:double, col 15:double)(children: CastLongToDouble(col 3:bigint) -> 14:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 15:double) -> 16:double, DoubleColDivideDoubleColumn(col 14:double, col 15:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 14:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 15:double) -> 17:double, DoubleColDivideDoubleColumn(col 14:double, col 15:double)(children: CastLongToDouble(col 3:bigint) -> 14:double, DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 15:double) -> 18:double, DoubleScalarDivideDoubleColumn(val 3.0, col 14:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 14:double) -> 15:double, DoubleScalarDivideDoubleColumn(val 1.2, col 14:double)(children: DoubleColAddDoubleScalar(col 5:double, val 200.0) -> 14:double) -> 19:double
                       Statistics: Num rows: 1365 Data size: 65520 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col0 (type: double), _col1 (type: double)
-                        sort order: ++
+                        key expressions: _col0 (type: double), _col1 (type: double), _col2 (type: double), _col3 (type: double), _col4 (type: double), _col5 (type: double)
+                        sort order: ++++++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1365 Data size: 65520 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
-                        value expressions: _col2 (type: double), _col4 (type: double), _col5 (type: double)
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
@@ -459,7 +499,7 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
@@ -468,12 +508,12 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Select Operator
-                expressions: KEY.reducesinkkey0 (type: double), KEY.reducesinkkey1 (type: double), VALUE._col0 (type: double), KEY.reducesinkkey1 (type: double), VALUE._col1 (type: double), VALUE._col2 (type: double)
+                expressions: KEY.reducesinkkey0 (type: double), KEY.reducesinkkey1 (type: double), KEY.reducesinkkey2 (type: double), KEY.reducesinkkey1 (type: double), KEY.reducesinkkey4 (type: double), KEY.reducesinkkey5 (type: double)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [0, 1, 2, 1, 3, 4]
+                    projectedOutputColumnNums: [0, 1, 2, 1, 4, 5]
                 Statistics: Num rows: 1365 Data size: 65520 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 100
@@ -498,16 +538,17 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select (cdouble + 200.0) as s1, cbigint / (cdouble + 200.0) as s2, (cdouble + 200.0) / (cdouble + 200.0), cbigint / (cdouble + 200.0), 3 / (cdouble + 200.0), 1.2 / (cdouble + 200.0) 
-from alltypesorc where cdouble >= -500 and cdouble < -199 order by s1, s2 limit 100
+PREHOOK: query: select (cdouble + 200.0) as s1, cbigint / (cdouble + 200.0) as s2, (cdouble + 200.0) / (cdouble + 200.0) as s3, cbigint / (cdouble + 200.0) as s4, 3 / (cdouble + 200.0) as s5, 1.2 / (cdouble + 200.0) as s6
+from alltypesorc where cdouble >= -500 and cdouble < -199 order by s1, s2, s3, s4, s5, s6 limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select (cdouble + 200.0) as s1, cbigint / (cdouble + 200.0) as s2, (cdouble + 200.0) / (cdouble + 200.0), cbigint / (cdouble + 200.0), 3 / (cdouble + 200.0), 1.2 / (cdouble + 200.0) 
-from alltypesorc where cdouble >= -500 and cdouble < -199 order by s1, s2 limit 100
+#### A masked pattern was here ####
+POSTHOOK: query: select (cdouble + 200.0) as s1, cbigint / (cdouble + 200.0) as s2, (cdouble + 200.0) / (cdouble + 200.0) as s3, cbigint / (cdouble + 200.0) as s4, 3 / (cdouble + 200.0) as s5, 1.2 / (cdouble + 200.0) as s6
+from alltypesorc where cdouble >= -500 and cdouble < -199 order by s1, s2, s3, s4, s5, s6 limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
+s1	s2	s3	s4	s5	s6
 -113.0	-1.6495816690265486E7	1.0	-1.6495816690265486E7	-0.02654867256637168	-0.010619469026548672
 -113.0	NULL	1.0	NULL	-0.02654867256637168	-0.010619469026548672
 -116.0	NULL	1.0	NULL	-0.02586206896551724	-0.010344827586206896
@@ -609,13 +650,14 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 0.0	NULL	NULL	NULL	NULL	NULL
 0.0	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: explain vectorization expression
-select cint, cbigint, ctinyint, (cint / (cint - 528534767)) as c1, (cbigint / (cbigint - 1018195815)) as c2, (ctinyint / ctinyint) as c3, (cint % (cint - 528534767)) as c4, (cbigint % (cbigint - 1018195815)), (ctinyint % ctinyint) as c3
-from alltypesorc where cint > 500000000 or cdouble > 1000000000 or ctinyint = 0 order by c1, c2 limit 100
+select cint, cbigint, ctinyint, (cint / (cint - 528534767)) as c1, (cbigint / (cbigint - 1018195815)) as c2, (ctinyint / ctinyint) as c3, (cint % (cint - 528534767)) as c4, (cbigint % (cbigint - 1018195815)) as c5, (ctinyint % ctinyint) as c6
+from alltypesorc where cint > 500000000 or cdouble > 1000000000 or ctinyint = 0 order by cint, cbigint, ctinyint, c1, c2, c3, c4, c5, c6 limit 100
 PREHOOK: type: QUERY
 POSTHOOK: query: explain vectorization expression
-select cint, cbigint, ctinyint, (cint / (cint - 528534767)) as c1, (cbigint / (cbigint - 1018195815)) as c2, (ctinyint / ctinyint) as c3, (cint % (cint - 528534767)) as c4, (cbigint % (cbigint - 1018195815)), (ctinyint % ctinyint) as c3
-from alltypesorc where cint > 500000000 or cdouble > 1000000000 or ctinyint = 0 order by c1, c2 limit 100
+select cint, cbigint, ctinyint, (cint / (cint - 528534767)) as c1, (cbigint / (cbigint - 1018195815)) as c2, (ctinyint / ctinyint) as c3, (cint % (cint - 528534767)) as c4, (cbigint % (cbigint - 1018195815)) as c5, (ctinyint % ctinyint) as c6
+from alltypesorc where cint > 500000000 or cdouble > 1000000000 or ctinyint = 0 order by cint, cbigint, ctinyint, c1, c2, c3, c4, c5, c6 limit 100
 POSTHOOK: type: QUERY
+Explain
 PLAN VECTORIZATION:
   enabled: true
   enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
@@ -647,25 +689,25 @@ STAGE PLANS:
                     predicate: ((cdouble > 1.0E9D) or (cint > 500000000) or (ctinyint = 0Y)) (type: boolean)
                     Statistics: Num rows: 4193 Data size: 75144 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: cint (type: int), cbigint (type: bigint), ctinyint (type: tinyint), (cint / (cint - 528534767)) (type: double), (cbigint / (cbigint - 1018195815)) (type: double), (ctinyint / ctinyint) (type: double), (cint % (cint - 528534767)) (type: int), (cbigint % (cbigint - 1018195815)) (type: bigint), (ctinyint % ctinyint) (type: tinyint)
+                      expressions: cint (type: int), cbigint (type: bigint), ctinyint (type: tinyint), (UDFToDouble(cint) / UDFToDouble((cint - 528534767))) (type: double), (UDFToDouble(cbigint) / UDFToDouble((cbigint - 1018195815L))) (type: double), (UDFToDouble(ctinyint) / UDFToDouble(ctinyint)) (type: double), (cint % (cint - 528534767)) (type: int), (cbigint % (cbigint - 1018195815L)) (type: bigint), (ctinyint % ctinyint) (type: tinyint)
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
-                          projectedOutputColumnNums: [2, 3, 0, 14, 15, 16, 17, 18, 13]
-                          selectExpressions: LongColDivideLongColumn(col 2:int, col 13:int)(children: LongColSubtractLongScalar(col 2:int, val 528534767) -> 13:int) -> 14:double, LongColDivideLongColumn(col 3:bigint, col 13:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 1018195815) -> 13:bigint) -> 15:double, LongColDivideLongColumn(col 0:tinyint, col 0:tinyint) -> 16:double, LongColModuloLongColumn(col 2:int, col 13:int)(children: LongColSubtractLongScalar(col 2:int, val 528534767) -> 13:int) -> 17:int, LongColModuloLongColumn(col 3:bigint, col 13:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 1018195815) -> 13:bigint) -> 18:bigint, LongColModuloLongColumn(col 0:tinyint, col 0:tinyint) -> 13:tinyint
+                          projectedOutputColumnNums: [2, 3, 0, 16, 17, 18, 19, 20, 14]
+                          selectExpressions: DoubleColDivideDoubleColumn(col 13:double, col 15:double)(children: CastLongToDouble(col 2:int) -> 13:double, CastLongToDouble(col 14:int)(children: LongColSubtractLongScalar(col 2:int, val 528534767) -> 14:int) -> 15:double) -> 16:double, DoubleColDivideDoubleColumn(col 13:double, col 15:double)(children: CastLongToDouble(col 3:bigint) -> 13:double, CastLongToDouble(col 14:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 1018195815) -> 14:bigint) -> 15:double) -> 17:double, DoubleColDivideDoubleColumn(col 13:double, col 15:double)(children: CastLongToDouble(col 0:tinyint) -> 13:double, CastLongToDouble(col 0:tinyint) -> 15:double) -> 18:double, LongColModuloLongColumn(col 2:int, col 14:int)(children: LongColSubtractLongScalar(col 2:int, val 528534767) -> 14:int) -> 19:int, LongColModuloLongColumn(col 3:bigint, col 14:bigint)(children: LongColSubtractLongScalar(col 3:bigint, val 1018195815) -> 14:bigint) -> 20:bigint, LongColModuloLongColumn(col 0:tinyint, col 0:tinyint) -> 14:tinyint
                       Statistics: Num rows: 4193 Data size: 217816 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col3 (type: double), _col4 (type: double)
-                        sort order: ++
+                        key expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: tinyint), _col3 (type: double), _col4 (type: double), _col5 (type: double), _col6 (type: int), _col7 (type: bigint), _col8 (type: tinyint)
+                        sort order: +++++++++
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 4193 Data size: 217816 Basic stats: COMPLETE Column stats: COMPLETE
                         TopN Hash Memory Usage: 0.1
-                        value expressions: _col0 (type: int), _col1 (type: bigint), _col2 (type: tinyint), _col5 (type: double), _col6 (type: int), _col7 (type: bigint), _col8 (type: tinyint)
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
@@ -676,7 +718,7 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
         Reducer 2 
-            Execution mode: vectorized
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
@@ -685,12 +727,12 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Select Operator
-                expressions: VALUE._col0 (type: int), VALUE._col1 (type: bigint), VALUE._col2 (type: tinyint), KEY.reducesinkkey0 (type: double), KEY.reducesinkkey1 (type: double), VALUE._col3 (type: double), VALUE._col4 (type: int), VALUE._col5 (type: bigint), VALUE._col6 (type: tinyint)
+                expressions: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: bigint), KEY.reducesinkkey2 (type: tinyint), KEY.reducesinkkey3 (type: double), KEY.reducesinkkey4 (type: double), KEY.reducesinkkey5 (type: double), KEY.reducesinkkey6 (type: int), KEY.reducesinkkey7 (type: bigint), KEY.reducesinkkey8 (type: tinyint)
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Select Vectorization:
                     className: VectorSelectOperator
                     native: true
-                    projectedOutputColumnNums: [2, 3, 4, 0, 1, 5, 6, 7, 8]
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8]
                 Statistics: Num rows: 4193 Data size: 217816 Basic stats: COMPLETE Column stats: COMPLETE
                 Limit
                   Number of rows: 100
@@ -715,113 +757,114 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select cint, cbigint, ctinyint, (cint / (cint - 528534767)) as c1, (cbigint / (cbigint - 1018195815)) as c2, (ctinyint / ctinyint) as c3, (cint % (cint - 528534767)) as c4, (cbigint % (cbigint - 1018195815)), (ctinyint % ctinyint) as c3
-from alltypesorc where cint > 500000000 or cdouble > 1000000000 or ctinyint = 0 order by c1, c2 limit 100
+PREHOOK: query: select cint, cbigint, ctinyint, (cint / (cint - 528534767)) as c1, (cbigint / (cbigint - 1018195815)) as c2, (ctinyint / ctinyint) as c3, (cint % (cint - 528534767)) as c4, (cbigint % (cbigint - 1018195815)) as c5, (ctinyint % ctinyint) as c6
+from alltypesorc where cint > 500000000 or cdouble > 1000000000 or ctinyint = 0 order by cint, cbigint, ctinyint, c1, c2, c3, c4, c5, c6 limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
-PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select cint, cbigint, ctinyint, (cint / (cint - 528534767)) as c1, (cbigint / (cbigint - 1018195815)) as c2, (ctinyint / ctinyint) as c3, (cint % (cint - 528534767)) as c4, (cbigint % (cbigint - 1018195815)), (ctinyint % ctinyint) as c3
-from alltypesorc where cint > 500000000 or cdouble > 1000000000 or ctinyint = 0 order by c1, c2 limit 100
+#### A masked pattern was here ####
+POSTHOOK: query: select cint, cbigint, ctinyint, (cint / (cint - 528534767)) as c1, (cbigint / (cbigint - 1018195815)) as c2, (ctinyint / ctinyint) as c3, (cint % (cint - 528534767)) as c4, (cbigint % (cbigint - 1018195815)) as c5, (ctinyint % ctinyint) as c6
+from alltypesorc where cint > 500000000 or cdouble > 1000000000 or ctinyint = 0 order by cint, cbigint, ctinyint, c1, c2, c3, c4, c5, c6 limit 100
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
-POSTHOOK: Output: hdfs://### HDFS PATH ###
-528534767	NULL	-1	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-11	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-11	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-11	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-12	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-13	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-16	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-16	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-19	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-21	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-21	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-22	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-22	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-22	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-23	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-23	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-23	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-24	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-28	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-28	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-30	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-32	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-33	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-33	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-34	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-34	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-36	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-37	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-4	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-4	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-40	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-43	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-44	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-45	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-45	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-47	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-48	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-48	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-5	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-5	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-5	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-50	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-51	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-53	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-54	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-55	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-55	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-56	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-56	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-57	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-59	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-62	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	-7	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	0	NULL	NULL	NULL	NULL	NULL	NULL
-528534767	NULL	0	NULL	NULL	NULL	NULL	NULL	NULL
-528534767	NULL	10	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	13	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	16	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	18	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	19	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	2	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	21	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	24	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	24	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	26	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	27	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	28	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	29	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	29	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	30	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	31	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	31	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	33	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	34	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	34	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	36	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	36	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	38	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	38	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	38	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	39	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	4	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	40	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	40	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	41	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	43	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	46	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	5	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	51	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	51	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	53	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	53	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	61	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	61	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	61	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	62	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	9	NULL	NULL	1.0	NULL	NULL	0
-528534767	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-528534767	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+#### A masked pattern was here ####
+cint	cbigint	ctinyint	c1	c2	c3	c4	c5	c6
+253665376	NULL	0	-0.9228578528774781	NULL	NULL	253665376	NULL	NULL
+253665376	NULL	0	-0.9228578528774781	NULL	NULL	253665376	NULL	NULL
+253665376	NULL	0	-0.9228578528774781	NULL	NULL	253665376	NULL	NULL
+253665376	NULL	0	-0.9228578528774781	NULL	NULL	253665376	NULL	NULL
+253665376	NULL	0	-0.9228578528774781	NULL	NULL	253665376	NULL	NULL
+253665376	NULL	0	-0.9228578528774781	NULL	NULL	253665376	NULL	NULL
+253665376	NULL	0	-0.9228578528774781	NULL	NULL	253665376	NULL	NULL
+253665376	NULL	0	-0.9228578528774781	NULL	NULL	253665376	NULL	NULL
+500063547	-1645852809	NULL	-17.56382575105668	0.6178013397250965	NULL	16052807	-1645852809	NULL
+500274721	-1887561756	NULL	-17.70254446861127	0.6495936807799166	NULL	19853939	-1887561756	NULL
+500276420	-1625318563	11	-17.70366893718164	0.6148325034757953	1.0	19884521	-1625318563	0
+500670123	-1887561756	NULL	-17.967935387941793	0.6495936807799166	NULL	26971175	-1887561756	NULL
+500778550	-1101568669	11	-18.042031808585442	0.5196655936613004	1.0	1166644	-1101568669	0
+500904649	-1645852809	NULL	-18.1289362933593	0.6178013397250965	NULL	3562525	-1645852809	NULL
+500997302	1025147239	8	-18.193297821713074	147.47298380878507	1.0	5322932	3287911	0
+501304330	591451136	11	-18.409705654007684	-1.3859601890900202	1.0	11156464	164706457	0
+501557797	-1645852809	NULL	-18.592073053422975	0.6178013397250965	NULL	15972337	-1645852809	NULL
+501641421	-1401137514	8	-18.65299397851052	0.5791419880860906	1.0	17561193	-1401137514	0
+501782731	1864027286	NULL	-18.756805313808638	2.2037809539011586	NULL	20246083	172364344	NULL
+501860407	-1887561756	NULL	-18.8143373261814	0.6495936807799166	NULL	21721927	-1887561756	NULL
+502884543	1864027286	NULL	-19.605463991269627	2.2037809539011586	NULL	15530287	172364344	NULL
+502950658	1588596137	8	-19.65871307067993	2.785054768955758	1.0	16852587	447795493	0
+503152400	-1645852809	NULL	-19.82291092079789	0.6178013397250965	NULL	20887427	-1645852809	NULL
+504321494	-1874900970	-51	-20.82830743286957	0.6480602307260869	1.0	20056034	-1874900970	0
+504331720	-1116957074	8	-20.83753008453853	0.5231274442942245	1.0	20270780	-1116957074	0
+504544803	-521081462	8	-21.031494795073474	0.3385234549915337	1.0	755559	-521081462	0
+504652599	1864027286	NULL	-21.13093748440259	2.2037809539011586	NULL	3127071	172364344	NULL
+504721711	-1887561756	NULL	-21.19516751650859	0.6495936807799166	NULL	4647535	-1887561756	NULL
+504864574	-2125392655	11	-21.329127903604334	0.6761039733041139	1.0	7790521	-2125392655	0
+505754402	-1752259889	8	-22.201330048925907	0.6324807454853283	1.0	4586372	-1752259889	0
+506168952	-1645852809	NULL	-22.631366306123876	0.6178013397250965	NULL	14121022	-1645852809	NULL
+506277934	-965620543	11	-22.74707879598144	0.4867489569314258	1.0	16627608	-965620543	0
+506412347	-1645852809	NULL	-22.891363015438635	0.6178013397250965	NULL	19719107	-1645852809	NULL
+506866472	-1887561756	NULL	-23.392079164512023	0.6495936807799166	NULL	8495687	-1887561756	NULL
+507172707	-744509685	8	-23.74175088919327	0.42236759628877313	1.0	15845327	-744509685	0
+507314980	1864027286	NULL	-23.907637715684892	2.2037809539011586	NULL	19259879	172364344	NULL
+507716839	-1645852809	NULL	-24.388442452101863	0.6178013397250965	NULL	8086567	-1645852809	NULL
+508118381	1864027286	NULL	-24.887773036814647	2.2037809539011586	NULL	18125117	172364344	NULL
+508811234	-1645852809	NULL	-25.797164939972976	0.6178013397250965	NULL	15722909	-1645852809	NULL
+508932874	-1645852809	NULL	-25.963455366275085	0.6178013397250965	NULL	18885549	-1645852809	NULL
+509113732	231180051	-51	-26.21455200508109	-0.29374259268331504	1.0	4166822	231180051	0
+510227766	-392065584	8	-27.8706362664207	0.2780091579320041	1.0	15938739	-392065584	0
+510438184	-1934421505	11	-28.206329559563812	0.6551548322557426	1.0	3733860	-1934421505	0
+510615289	-1887561756	NULL	-28.494986795932338	0.6495936807799166	NULL	8869905	-1887561756	NULL
+510621074	1899510896	-51	-28.50451182790729	2.1553141855290683	1.0	9037670	136880734	0
+510824788	-1887561756	NULL	-28.843895749396427	0.6495936807799166	NULL	14945376	-1887561756	NULL
+511012894	1864027286	NULL	-29.164284777089755	2.2037809539011586	NULL	2878577	172364344	NULL
+511193256	539703514	11	-29.478011229817287	-1.1279251784659332	1.0	8289437	61211213	0
+511270713	1323416266	11	-29.614754043285547	4.335935752876533	1.0	10613147	102534462	0
+513054293	-1645852809	NULL	-33.14202736944618	0.6178013397250965	NULL	2198651	-1645852809	NULL
+513112567	1081141978	11	-33.27103571474887	17.175661334591595	1.0	4179967	11057207	0
+513621126	1507857719	11	-34.43968686117629	3.079385401809817	1.0	6557332	38872007	0
+514017068	-1645852809	NULL	-35.40623538206709	0.6178013397250965	NULL	5897603	-1645852809	NULL
+514430128	252972426	-51	-36.47240656070673	-0.3305863746932597	1.0	6663124	252972426	0
+515263287	-1887561756	NULL	-38.824855027472445	0.6495936807799166	NULL	10947047	-1887561756	NULL
+515486221	-459077368	-51	-39.50526142912781	0.31075996862524785	1.0	6592927	-459077368	0
+515526733	-1645852809	NULL	-39.631410326879525	0.6178013397250965	NULL	8213407	-1645852809	NULL
+515696675	773138718	8	-40.1692615226624	-3.1549329828223667	1.0	2172995	37967427	0
+516113449	-1887561756	NULL	-41.55061878296651	0.6495936807799166	NULL	6839411	-1887561756	NULL
+516141808	-1887561756	NULL	-41.64798802287654	0.6495936807799166	NULL	8030489	-1887561756	NULL
+516656920	-1750908332	8	-43.497522741284676	0.6323013650089341	1.0	5909499	-1750908332	0
+517204863	725306795	-51	-45.6495362184887	-2.476387796988771	1.0	7359183	139528755	0
+517821258	-1161186365	8	-48.33348793565208	0.5328052948473682	1.0	3572826	-1161186365	0
+518020906	-1887561756	NULL	-49.27028291509656	0.6495936807799166	NULL	2841717	-1887561756	NULL
+518170426	-2122540529	-51	-49.99550149884107	0.6758098409167198	1.0	10317717	-2122540529	0
+518203655	-1089866594	8	-50.15952348595195	0.5169992071140812	1.0	1648055	-1089866594	0
+518213127	-1645852809	NULL	-50.20647174286257	0.6178013397250965	NULL	2131127	-1645852809	NULL
+518304665	1758550605	11	-50.66466248332617	2.3752809176800223	1.0	6799565	277841025	0
+519195191	301311742	8	-55.590873825535546	-0.42030748533591705	1.0	5518511	301311742	0
+519627078	-1887561756	NULL	-58.334667723581276	0.6495936807799166	NULL	2981116	-1887561756	NULL
+NULL	-1111841132	0	NULL	0.5219820874778469	NULL	NULL	-1111841132	NULL
+NULL	-1300968933	0	NULL	0.5609644308891505	NULL	NULL	-1300968933	NULL
+NULL	-1355080830	0	NULL	0.5709746619109379	NULL	NULL	-1355080830	NULL
+NULL	-1379420228	0	NULL	0.5753299124049946	NULL	NULL	-1379420228	NULL
+NULL	-1418871864	0	NULL	0.5822045387685764	NULL	NULL	-1418871864	NULL
+NULL	-203039588	0	NULL	0.1662575351985599	NULL	NULL	-203039588	NULL
+NULL	-229832118	0	NULL	0.18415622913786178	NULL	NULL	-229832118	NULL
+NULL	-277546656	0	NULL	0.21419893397937406	NULL	NULL	-277546656	NULL
+NULL	-39854776	0	NULL	0.03766811940658894	NULL	NULL	-39854776	NULL
+NULL	-438779645	0	NULL	0.3011578829200047	NULL	NULL	-438779645	NULL
+NULL	-495480552	0	NULL	0.32733585778445334	NULL	NULL	-495480552	NULL
+NULL	-741129356	0	NULL	0.42125774599060745	NULL	NULL	-741129356	NULL
+NULL	-901264012	0	NULL	0.46954044013967267	NULL	NULL	-901264012	NULL
 NULL	1018195815	0	NULL	NULL	NULL	NULL	NULL	NULL
+NULL	1049949527	0	NULL	33.065410651831826	NULL	NULL	2077031	NULL
+NULL	10989626	0	NULL	-0.010910999277030852	NULL	NULL	10989626	NULL
+NULL	1561097160	0	NULL	2.87547115949768	NULL	NULL	475294470	NULL
+NULL	1580847931	0	NULL	2.8096365161452623	NULL	NULL	455543699	NULL
+NULL	1585496199	0	NULL	2.794808964909849	NULL	NULL	450895431	NULL
+NULL	1638241933	0	NULL	2.6421291665920887	NULL	NULL	398149697	NULL
+NULL	1738765387	0	NULL	2.413043035072816	NULL	NULL	297626243	NULL
+NULL	1907356119	0	NULL	2.145120638449015	NULL	NULL	129035511	NULL
+NULL	2136716416	0	NULL	1.9103058218951838	NULL	NULL	1018195815	NULL
+NULL	2144209609	0	NULL	1.904248083305452	NULL	NULL	1018195815	NULL
+NULL	406548885	0	NULL	-0.6646790248746937	NULL	NULL	406548885	NULL
+NULL	473839931	0	NULL	-0.8704598313848666	NULL	NULL	473839931	NULL
+NULL	53950949	0	NULL	-0.05595150246825374	NULL	NULL	53950949	NULL
+NULL	618557893	0	NULL	-1.5477957895096852	NULL	NULL	218919971	NULL
+NULL	738226024	0	NULL	-2.636805997401341	NULL	NULL	178286442	NULL
+NULL	98841361	0	NULL	-0.10751170081349277	NULL	NULL	98841361	NULL
