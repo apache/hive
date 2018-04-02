@@ -10853,10 +10853,10 @@ public class ObjectStore implements RawStore, Configurable {
   private String generateOldPlanName(String newName, int i) {
     if (MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)) {
       // Do not use datetime in tests to avoid result changes.
-      return newName + "-old-" + i;
+      return newName + "_old_" + i;
     } else {
-      return newName + "-old-"
-          + LocalDateTime.now().format(YMDHMS_FORMAT) + (i == 0 ? "" : ("-" + i));
+      return newName + "_old_"
+          + LocalDateTime.now().format(YMDHMS_FORMAT) + (i == 0 ? "" : ("_" + i));
     }
   }
 
