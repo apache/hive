@@ -43,6 +43,7 @@ import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.StringUtils;
@@ -314,6 +315,8 @@ public class SessionState {
   private String atsDomainId;
 
   private List<Closeable> cleanupItems = new LinkedList<Closeable>();
+
+  private final AtomicLong sparkSessionId = new AtomicLong();
 
   public HiveConf getConf() {
     return sessionConf;
@@ -2059,6 +2062,9 @@ public class SessionState {
     return currentFunctionsInUse;
   }
 
+  public String getNewSparkSessionId() {
+    return Long.toString(this.sparkSessionId.getAndIncrement());
+  }
 }
 
 class ResourceMaps {

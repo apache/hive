@@ -62,8 +62,9 @@ public class HiveSparkClientFactory {
   @VisibleForTesting
   public static final String SPARK_CLONE_CONFIGURATION = "spark.hadoop.cloneConf";
 
-  public static HiveSparkClient createHiveSparkClient(HiveConf hiveconf, String sessionId) throws Exception {
-    Map<String, String> sparkConf = initiateSparkConf(hiveconf, sessionId);
+  public static HiveSparkClient createHiveSparkClient(HiveConf hiveconf, String sparkSessionId,
+                                                      String hiveSessionId) throws Exception {
+    Map<String, String> sparkConf = initiateSparkConf(hiveconf, hiveSessionId);
 
     // Submit spark job through local spark context while spark master is local mode, otherwise submit
     // spark job through remote spark context.
@@ -72,11 +73,11 @@ public class HiveSparkClientFactory {
       // With local spark context, all user sessions share the same spark context.
       return LocalHiveSparkClient.getInstance(generateSparkConf(sparkConf), hiveconf);
     } else {
-      return new RemoteHiveSparkClient(hiveconf, sparkConf, sessionId);
+      return new RemoteHiveSparkClient(hiveconf, sparkConf, hiveSessionId + "_" + sparkSessionId);
     }
   }
 
-  public static Map<String, String> initiateSparkConf(HiveConf hiveConf, String sessionId) {
+  public static Map<String, String> initiateSparkConf(HiveConf hiveConf, String hiveSessionId) {
     Map<String, String> sparkConf = new HashMap<String, String>();
     HBaseConfiguration.addHbaseResources(hiveConf);
 
@@ -84,9 +85,9 @@ public class HiveSparkClientFactory {
     sparkConf.put("spark.master", SPARK_DEFAULT_MASTER);
     final String appNameKey = "spark.app.name";
     String appName = hiveConf.get(appNameKey);
-    final String sessionIdString = " (sessionId = " + sessionId + ")";
+    final String sessionIdString = " (hiveSessionId = " + hiveSessionId + ")";
     if (appName == null) {
-      if (sessionId == null) {
+      if (hiveSessionId == null) {
         appName = SPARK_DEFAULT_APP_NAME;
       } else {
         appName = SPARK_DEFAULT_APP_NAME + sessionIdString;
