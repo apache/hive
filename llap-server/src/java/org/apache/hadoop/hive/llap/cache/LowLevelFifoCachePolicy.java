@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.io.api.impl.LlapIoImpl;
 
@@ -67,6 +68,13 @@ public class LowLevelFifoCachePolicy implements LowLevelCachePolicy {
   @Override
   public void setParentDebugDumper(LlapOomDebugDump dumper) {
     this.parentDebugDump = dumper;
+  }
+
+  @Override
+  public long purge() {
+    long evicted = evictSomeBlocks(Long.MAX_VALUE);
+    LlapIoImpl.LOG.info("PURGE: evicted {} from FIFO policy", LlapUtil.humanReadableByteCount(evicted));
+    return evicted;
   }
 
   @Override
