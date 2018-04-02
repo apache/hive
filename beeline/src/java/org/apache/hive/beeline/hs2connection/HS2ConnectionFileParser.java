@@ -79,7 +79,7 @@ public interface HS2ConnectionFileParser {
    * object if the connection configuration is not found
    * @throws BeelineHS2ConnectionFileParseException if there is invalid key with appropriate message
    */
-  Properties getConnectionProperties() throws BeelineHS2ConnectionFileParseException;
+  Properties getConnectionProperties() throws BeelineConfFileParseException;
   /**
    *
    * @return returns true if the configuration exists else returns false

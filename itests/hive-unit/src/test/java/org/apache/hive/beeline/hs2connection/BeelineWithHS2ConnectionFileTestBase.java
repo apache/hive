@@ -89,7 +89,7 @@ public abstract class BeelineWithHS2ConnectionFileTestBase {
     }
 
     @Override
-    public HS2ConnectionFileParser getUserHS2ConnFileParser() {
+    public UserHS2ConnectionFileParser getUserHS2ConnFileParser() {
       return testHs2ConfigFileManager;
     }
 

@@ -17,14 +17,14 @@
  */
 package org.apache.hive.beeline.hs2connection;
 
-public class BeelineHS2ConnectionFileParseException extends BeelineConfFileParseException {
-  private static final long serialVersionUID = -748635913718300617L;
+@SuppressWarnings("serial")
+public class BeelineConfFileParseException extends Exception {
 
-  BeelineHS2ConnectionFileParseException(String msg, Exception e) {
+  BeelineConfFileParseException(String msg, Exception e) {
     super(msg, e);
   }
 
-  public BeelineHS2ConnectionFileParseException(String msg) {
+  public BeelineConfFileParseException(String msg) {
     super(msg);
   }
 }

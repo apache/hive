@@ -177,9 +177,7 @@ public class TestUserHS2ConnectionFileParser {
     testLocations.add(path);
     UserHS2ConnectionFileParser testHS2ConfigManager =
         new UserHS2ConnectionFileParser(testLocations);
-
-    String url = HS2ConnectionFileUtils.getUrl(testHS2ConfigManager.getConnectionProperties());
-    return url;
+    return HS2ConnectionFileUtils.getUrl(testHS2ConfigManager.getConnectionProperties());
   }
 
   private void createNewFile(final String path) throws Exception {
