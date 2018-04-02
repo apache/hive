@@ -172,7 +172,7 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
     RowSet rowSet = RowSetFactory.create(resultSchema, getProtocolVersion(), false);
 
     for (String row : rows) {
-      rowSet.addRow(row.split("\\t"));
+      rowSet.addRow(new String[] { row });
     }
     return rowSet;
   }
