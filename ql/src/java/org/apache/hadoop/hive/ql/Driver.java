@@ -2033,7 +2033,13 @@ public class Driver implements IDriver {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
 
     boolean noName = StringUtils.isEmpty(conf.get(MRJobConfig.JOB_NAME));
-    int maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
+
+    int maxlen;
+    if ("spark".equals(conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE))) {
+      maxlen = conf.getIntVar(HiveConf.ConfVars.HIVESPARKJOBNAMELENGTH);
+    } else {
+      maxlen = conf.getIntVar(HiveConf.ConfVars.HIVEJOBNAMELENGTH);
+    }
     Metrics metrics = MetricsFactory.getInstance();
 
     String queryId = queryState.getQueryId();
