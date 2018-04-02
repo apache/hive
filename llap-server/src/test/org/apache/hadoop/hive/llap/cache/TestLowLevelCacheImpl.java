@@ -120,6 +120,11 @@ public class TestLowLevelCacheImpl {
     }
 
     @Override
+    public long purge() {
+      return 0;
+    }
+
+    @Override
     public void debugDumpShort(StringBuilder sb) {
     }
   }

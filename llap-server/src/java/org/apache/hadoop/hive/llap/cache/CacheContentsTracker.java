@@ -183,6 +183,11 @@ public class CacheContentsTracker implements LowLevelCachePolicy, EvictionListen
     realPolicy.setParentDebugDumper(dumper);
   }
 
+  @Override
+  public long purge() {
+    return realPolicy.purge();
+  }
+
 
   @Override
   public long evictSomeBlocks(long memoryToReserve) {

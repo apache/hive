@@ -63,6 +63,11 @@ public class TestOrcMetadataCache {
     public void setParentDebugDumper(LlapOomDebugDump dumper) {
     }
 
+    @Override
+    public long purge() {
+      return 0;
+    }
+
     public void verifyEquals(int i) {
       assertEquals(i, lockCount);
       assertEquals(i, unlockCount);

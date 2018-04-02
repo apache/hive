@@ -129,6 +129,7 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
         // ignore partitions
         continue;
       case COMMAND_PARAMS:
+      case SERVICE_NAME:
       case FUNCTION:
         // operations that have objects of type COMMAND_PARAMS, FUNCTION are authorized
         // solely on the type
