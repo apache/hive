@@ -19,8 +19,6 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.ipc.ProtocolInfo;
 import org.apache.hadoop.security.KerberosInfo;
 
-import com.google.protobuf.ServiceException;
-
 @ProtocolInfo(protocolName = "org.apache.hadoop.hive.llap.protocol.LlapManagementProtocolPB", protocolVersion = 1)
 @KerberosInfo(serverPrincipal = HiveConf.HIVE_LLAP_DAEMON_SERVICE_PRINCIPAL_NAME)
 @InterfaceAudience.Private
