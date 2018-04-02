@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.txn;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
+import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
@@ -78,6 +79,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -1539,6 +1542,24 @@ public class TestTxnHandler {
     conf.setVar(HiveConf.ConfVars.HIVE_TXN_RETRYABLE_SQLEX_REGEX, ".*comma.*");
     result = TxnHandler.isRetryable(conf, sqlException);
     Assert.assertTrue("regex should be retryable", result);
+  }
+
+  @Test
+  public void testReplOpenTxn() throws Exception {
+    int numTxn = 50000;
+    conf.setIntVar(HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH, numTxn);
+    OpenTxnRequest rqst = new OpenTxnRequest(numTxn, "me", "localhost");
+    rqst.setReplPolicy("default.*");
+    rqst.setReplSrcTxnIds(LongStream.rangeClosed(1, numTxn)
+            .boxed().collect(Collectors.toList()));
+    OpenTxnsResponse openedTxns = txnHandler.openTxns(rqst);
+    List<Long> txnList = openedTxns.getTxn_ids();
+    assertEquals(txnList.size(), numTxn);
+    for (long i = 0; i < numTxn; i++) {
+      long txnId = txnList.get((int) i);
+      assertEquals(i+1, txnId);
+    }
+    txnHandler.abortTxns(new AbortTxnsRequest(txnList));
   }
 
   private void updateTxns(Connection conn) throws SQLException {

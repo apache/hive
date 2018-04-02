@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
-
 import java.util.List;
 
 /**
@@ -46,6 +45,32 @@ public interface HiveTxnManager {
    * @throws LockException if a transaction is already open.
    */
   long openTxn(Context ctx, String user) throws LockException;
+
+  /**
+   * Open a new transaction in target cluster.
+   * @param replPolicy Replication policy to uniquely identify the source cluster.
+   * @param srcTxnIds The ids of the transaction at the source cluster
+   * @param user The user who has fired the repl load command
+   * @return The new transaction id.
+   * @throws LockException in case of failure to start the transaction.
+   */
+  List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user)  throws LockException;
+
+  /**
+   * Commit the transaction in target cluster.
+   * @param replPolicy Replication policy to uniquely identify the source cluster.
+   * @param srcTxnId The id of the transaction at the source cluster
+   * @throws LockException in case of failure to commit the transaction.
+   */
+  void replCommitTxn(String replPolicy, long srcTxnId)  throws LockException;
+
+ /**
+   * Abort the transaction in target cluster.
+   * @param replPolicy Replication policy to uniquely identify the source cluster.
+   * @param srcTxnId The id of the transaction at the source cluster
+   * @throws LockException in case of failure to abort the transaction.
+   */
+  void replRollbackTxn(String replPolicy, long srcTxnId)  throws LockException;
 
   /**
    * Get the lock manager.  This must be used rather than instantiating an

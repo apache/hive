@@ -56,6 +56,11 @@ class DummyTxnManager extends HiveTxnManagerImpl {
     return 0L;
   }
   @Override
+  public List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user)  throws LockException {
+    return null;
+  }
+
+  @Override
   public boolean isTxnOpen() {
     return false;
   }
@@ -209,7 +214,17 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
+  public void replCommitTxn(String replPolicy, long srcTxnId) throws LockException {
+    // No-op
+  }
+
+  @Override
   public void rollbackTxn() throws LockException {
+    // No-op
+  }
+
+  @Override
+  public void replRollbackTxn(String replPolicy, long srcTxnId) throws LockException {
     // No-op
   }
 

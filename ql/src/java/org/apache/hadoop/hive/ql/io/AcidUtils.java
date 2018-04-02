@@ -1794,4 +1794,14 @@ public class AcidUtils {
     }
     return fileList;
   }
+
+  public static boolean isAcidEnabled(HiveConf hiveConf) {
+    String txnMgr = hiveConf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER);
+    boolean concurrency =  hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
+    String dbTxnMgr = "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager";
+    if (txnMgr.equals(dbTxnMgr) && concurrency) {
+      return true;
+    }
+    return false;
+  }
 }

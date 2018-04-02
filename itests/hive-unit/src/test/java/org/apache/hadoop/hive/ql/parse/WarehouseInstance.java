@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
+import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.exec.repl.ReplDumpWork;
@@ -122,7 +123,6 @@ public class WarehouseInstance implements Closeable {
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
-    hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
 
@@ -135,6 +135,10 @@ public class WarehouseInstance implements Closeable {
     driver = DriverFactory.newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
     client = new HiveMetaStoreClient(hiveConf);
+
+    TxnDbUtil.cleanDb(hiveConf);
+    TxnDbUtil.prepDb(hiveConf);
+
     // change the value for the next instance.
     ++uniqueIdentifier;
   }
@@ -172,6 +176,14 @@ public class WarehouseInstance implements Closeable {
     CommandProcessorResponse ret = driver.run(command);
     if (ret.getException() != null) {
       throw ret.getException();
+    }
+    return this;
+  }
+
+  WarehouseInstance runFailure(String command) throws Throwable {
+    CommandProcessorResponse ret = driver.run(command);
+    if (ret.getException() == null) {
+      throw new RuntimeException("command execution passed for a invalid command" + command);
     }
     return this;
   }
@@ -222,6 +234,13 @@ public class WarehouseInstance implements Closeable {
       replStatusCmd += " WITH (" + StringUtils.join(withClauseOptions, ",") + ")";
     }
     return run(replStatusCmd);
+  }
+
+  WarehouseInstance loadFailure(String replicatedDbName, String dumpLocation) throws Throwable {
+    runFailure("EXPLAIN REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
+    printOutput();
+    runFailure("REPL LOAD " + replicatedDbName + " FROM '" + dumpLocation + "'");
+    return this;
   }
 
   WarehouseInstance verifyResult(String data) throws IOException {

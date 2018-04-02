@@ -60,6 +60,7 @@ public class TestCleanerWithReplication extends CompactorTest {
     TxnDbUtil.cleanDb(conf);
     conf.set("fs.defaultFS", fs.getUri().toString());
     conf.setBoolVar(HiveConf.ConfVars.REPLCMENABLED, true);
+    TxnDbUtil.prepDb(conf);
     ms = new HiveMetaStoreClient(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
     cmRootDirectory = new Path(conf.get(HiveConf.ConfVars.REPLCMDIR.varname));

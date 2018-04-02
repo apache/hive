@@ -794,13 +794,13 @@ import org.slf4j.LoggerFactory;
           case 5: // PARTITION_VALS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list716 = iprot.readListBegin();
-                struct.partitionVals = new ArrayList<String>(_list716.size);
-                String _elem717;
-                for (int _i718 = 0; _i718 < _list716.size; ++_i718)
+                org.apache.thrift.protocol.TList _list724 = iprot.readListBegin();
+                struct.partitionVals = new ArrayList<String>(_list724.size);
+                String _elem725;
+                for (int _i726 = 0; _i726 < _list724.size; ++_i726)
                 {
-                  _elem717 = iprot.readString();
-                  struct.partitionVals.add(_elem717);
+                  _elem725 = iprot.readString();
+                  struct.partitionVals.add(_elem725);
                 }
                 iprot.readListEnd();
               }
@@ -857,9 +857,9 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(PARTITION_VALS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.partitionVals.size()));
-            for (String _iter719 : struct.partitionVals)
+            for (String _iter727 : struct.partitionVals)
             {
-              oprot.writeString(_iter719);
+              oprot.writeString(_iter727);
             }
             oprot.writeListEnd();
           }
@@ -915,9 +915,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetPartitionVals()) {
         {
           oprot.writeI32(struct.partitionVals.size());
-          for (String _iter720 : struct.partitionVals)
+          for (String _iter728 : struct.partitionVals)
           {
-            oprot.writeString(_iter720);
+            oprot.writeString(_iter728);
           }
         }
       }
@@ -945,13 +945,13 @@ import org.slf4j.LoggerFactory;
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TList _list721 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.partitionVals = new ArrayList<String>(_list721.size);
-          String _elem722;
-          for (int _i723 = 0; _i723 < _list721.size; ++_i723)
+          org.apache.thrift.protocol.TList _list729 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.partitionVals = new ArrayList<String>(_list729.size);
+          String _elem730;
+          for (int _i731 = 0; _i731 < _list729.size; ++_i731)
           {
-            _elem722 = iprot.readString();
-            struct.partitionVals.add(_elem722);
+            _elem730 = iprot.readString();
+            struct.partitionVals.add(_elem730);
           }
         }
         struct.setPartitionValsIsSet(true);

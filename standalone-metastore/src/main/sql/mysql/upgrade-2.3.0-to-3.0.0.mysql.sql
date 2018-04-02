@@ -203,6 +203,13 @@ ALTER TABLE `KEY_CONSTRAINTS` ADD COLUMN `DEFAULT_VALUE` VARCHAR(400);
 
 ALTER TABLE `HIVE_LOCKS` CHANGE COLUMN `HL_TXNID` `HL_TXNID` bigint NOT NULL;
 
+CREATE TABLE REPL_TXN_MAP (
+  RTM_REPL_POLICY varchar(256) NOT NULL,
+  RTM_SRC_TXN_ID bigint NOT NULL,
+  RTM_TARGET_TXN_ID bigint NOT NULL,
+  PRIMARY KEY (RTM_REPL_POLICY, RTM_SRC_TXN_ID)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 -- HIVE-18755, add catalogs
 -- new catalogs table
 CREATE TABLE `CTLGS` (
@@ -259,6 +266,9 @@ ALTER TABLE `PARTITION_EVENTS` ADD COLUMN `CAT_NAME` varchar(256);
 -- Add column to notification log
 ALTER TABLE `NOTIFICATION_LOG` ADD COLUMN `CAT_NAME` varchar(256);
 
+INSERT INTO `SEQUENCE_TABLE` (`SEQUENCE_NAME`, `NEXT_VAL`) SELECT * from (select 'org.apache.hadoop.hive.metastore.model.MNotificationLog' as `SEQUENCE_NAME`, 1 as `NEXT_VAL`) a WHERE (SELECT COUNT(*) FROM `SEQUENCE_TABLE` where SEQUENCE_NAME = 'org.apache.hadoop.hive.metastore.model.MNotificationLog') = 0;
+
 -- These lines need to be last.  Insert any changes above.
 UPDATE VERSION SET SCHEMA_VERSION='3.0.0', VERSION_COMMENT='Hive release version 3.0.0' where VER_ID=1;
 SELECT 'Finished upgrading MetaStore schema from 2.3.0 to 3.0.0' AS ' ';
+
