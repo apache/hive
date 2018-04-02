@@ -147,6 +147,8 @@ public enum HiveOperationType {
   CREATE_MAPPING,
   ALTER_MAPPING,
   DROP_MAPPING,
+  LLAP_CLUSTER,
+  LLAP_CACHE,
 
   // ==== Hive command operation types starts here ==== //
   SET,

@@ -59,7 +59,7 @@ public class LlapIoMemoryServlet extends HttpServlet {
         return;
       }
       PrintWriter writer = null;
- 
+
       try {
         response.setContentType("text/plain; charset=utf8");
         response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, "GET");
