@@ -680,8 +680,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         if (transactionalListeners != null) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventMessage.EventType.OPEN_TXN, new OpenTxnEvent(txnIds, dbConn, sqlGenerator));
+          MetaStoreListenerNotifier.notifyTxnEvent(transactionalListeners,
+                  EventMessage.EventType.OPEN_TXN, new OpenTxnEvent(txnIds, null), dbConn, sqlGenerator);
         }
 
         LOG.debug("Going to commit");
@@ -772,8 +772,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         if (transactionalListeners != null) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnid, dbConn, sqlGenerator));
+          MetaStoreListenerNotifier.notifyTxnEvent(transactionalListeners,
+                  EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnid, null), dbConn, sqlGenerator);
         }
 
         LOG.debug("Going to commit");
@@ -811,8 +811,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         for (Long txnId : txnids) {
           if (transactionalListeners != null) {
-            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                    EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnId, dbConn, sqlGenerator));
+            MetaStoreListenerNotifier.notifyTxnEvent(transactionalListeners,
+                    EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnId, null), dbConn, sqlGenerator);
           }
         }
         LOG.debug("Going to commit");
@@ -1055,8 +1055,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         if (transactionalListeners != null) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventMessage.EventType.COMMIT_TXN, new CommitTxnEvent(txnid, dbConn, sqlGenerator));
+          MetaStoreListenerNotifier.notifyTxnEvent(transactionalListeners,
+                  EventMessage.EventType.COMMIT_TXN, new CommitTxnEvent(txnid, null), dbConn, sqlGenerator);
         }
 
         MaterializationsInvalidationCache materializationsInvalidationCache =
@@ -1341,8 +1341,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         //TODO : change it to notify with sql generator and conn
         if (transactionalListeners != null) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
-                  EventMessage.EventType.ALLOC_WRITE_ID, new AllocWriteIdEvent(txnIds, rqst.getTableName(), null));
+          MetaStoreListenerNotifier.notifyTxnEvent(transactionalListeners,
+                  EventMessage.EventType.ALLOC_WRITE_ID, new AllocWriteIdEvent(txnIds, rqst.getTableName(), null),
+                  dbConn, sqlGenerator);
         }
 
         LOG.debug("Going to commit");
