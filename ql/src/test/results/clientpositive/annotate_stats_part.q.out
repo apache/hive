@@ -241,7 +241,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: loc_orc_n4
-          filterExpr: ((year = '2001') or (year = '__HIVE_DEFAULT_PARTITION__')) (type: boolean)
+          filterExpr: (year) IN ('2001', '__HIVE_DEFAULT_PARTITION__') (type: boolean)
           Statistics: Num rows: 8 Data size: 3814 Basic stats: COMPLETE Column stats: PARTIAL
           Select Operator
             expressions: state (type: string), locid (type: int), zip (type: bigint), year (type: string)

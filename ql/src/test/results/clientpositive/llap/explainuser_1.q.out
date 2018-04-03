@@ -1648,7 +1648,7 @@ Stage-0
     Select Operator [SEL_2]
       Output:["_col0"]
       Filter Operator [FIL_4]
-        predicate:((c_int = -6) or (c_int = 6))
+        predicate:(c_int) IN (-6, 6)
         TableScan [TS_0]
           Output:["key","c_int"]
 

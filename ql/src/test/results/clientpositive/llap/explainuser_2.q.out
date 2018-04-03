@@ -1015,7 +1015,7 @@ Stage-0
                       <-Map 2 [BROADCAST_EDGE] vectorized, llap
                         BROADCAST [RS_209]
                           PartitionCols:_col1, _col3
-                          Map Join Operator [MAPJOIN_208] (rows=275 width=10)
+                          Map Join Operator [MAPJOIN_208] (rows=550 width=10)
                             Conds:RS_205._col0=SEL_207._col0(Inner),Output:["_col1","_col2","_col3"]
                           <-Map 1 [BROADCAST_EDGE] vectorized, llap
                             BROADCAST [RS_205]
@@ -1026,9 +1026,9 @@ Stage-0
                                   predicate:(k1 is not null and v2 is not null and v3 is not null)
                                   TableScan [TS_0] (rows=170 width=34)
                                     default@cs,cs,Tbl:COMPLETE,Col:NONE,Output:["k1","v2","k3","v3"]
-                          <-Select Operator [SEL_207] (rows=250 width=10)
+                          <-Select Operator [SEL_207] (rows=500 width=10)
                               Output:["_col0"]
-                              Filter Operator [FIL_206] (rows=250 width=10)
+                              Filter Operator [FIL_206] (rows=500 width=10)
                                 predicate:((value) IN ('2000Q1', '2000Q2', '2000Q3') and key is not null)
                                 TableScan [TS_3] (rows=500 width=10)
                                   default@src,d3,Tbl:COMPLETE,Col:NONE,Output:["key","value"]
@@ -1039,7 +1039,7 @@ Stage-0
                           <-Map 10 [BROADCAST_EDGE] vectorized, llap
                             BROADCAST [RS_219]
                               PartitionCols:_col4, _col2
-                              Map Join Operator [MAPJOIN_218] (rows=275 width=10)
+                              Map Join Operator [MAPJOIN_218] (rows=550 width=10)
                                 Conds:RS_215._col0=SEL_217._col0(Inner),Output:["_col2","_col3","_col4","_col5"]
                               <-Map 9 [BROADCAST_EDGE] vectorized, llap
                                 BROADCAST [RS_215]
@@ -1050,9 +1050,9 @@ Stage-0
                                       predicate:((v1 = 'srv1') and k1 is not null and k2 is not null and k3 is not null and v2 is not null and v3 is not null)
                                       TableScan [TS_18] (rows=85 width=34)
                                         default@sr,sr,Tbl:COMPLETE,Col:NONE,Output:["k1","v1","k2","v2","k3","v3"]
-                              <-Select Operator [SEL_217] (rows=250 width=10)
+                              <-Select Operator [SEL_217] (rows=500 width=10)
                                   Output:["_col0"]
-                                  Filter Operator [FIL_216] (rows=250 width=10)
+                                  Filter Operator [FIL_216] (rows=500 width=10)
                                     predicate:((value) IN ('2000Q1', '2000Q2', '2000Q3') and key is not null)
                                     TableScan [TS_21] (rows=500 width=10)
                                       default@src,d2,Tbl:COMPLETE,Col:NONE,Output:["key","value"]

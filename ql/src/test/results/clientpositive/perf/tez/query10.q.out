@@ -195,9 +195,9 @@ Stage-0
                                     <-Map 8 [SIMPLE_EDGE] vectorized
                                       SHUFFLE [RS_179]
                                         PartitionCols:_col0
-                                        Select Operator [SEL_178] (rows=20000000 width=1014)
+                                        Select Operator [SEL_178] (rows=40000000 width=1014)
                                           Output:["_col0"]
-                                          Filter Operator [FIL_177] (rows=20000000 width=1014)
+                                          Filter Operator [FIL_177] (rows=40000000 width=1014)
                                             predicate:((ca_county) IN ('Walker County', 'Richland County', 'Gaines County', 'Douglas County', 'Dona Ana County') and ca_address_sk is not null)
                                             TableScan [TS_3] (rows=40000000 width=1014)
                                               default@customer_address,ca,Tbl:COMPLETE,Col:NONE,Output:["ca_address_sk","ca_county"]

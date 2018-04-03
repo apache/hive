@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.math.BigDecimal;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -72,6 +71,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeSubQueryDesc;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFNvl;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
@@ -88,6 +88,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -357,7 +358,9 @@ public class TypeCheckProcFactory {
       //       not be desirable for the literals; however, this used to be the default behavior
       //       for explicit decimal literals (e.g. 1.0BD), so we keep this behavior for now.
       HiveDecimal hd = HiveDecimal.create(strVal);
-      if (notNull && hd == null) return null;
+      if (notNull && hd == null) {
+        return null;
+      }
       int prec = 1;
       int scale = 0;
       if (hd != null) {
@@ -752,7 +755,7 @@ public class TypeCheckProcFactory {
     constantExpr.setFoldedFromCol(colInfo.getInternalName());
     return constantExpr;
   }
-  
+
   private static ExprNodeConstantDesc toListConstDesc(ColumnInfo colInfo, ObjectInspector inspector,
       ObjectInspector listElementOI) {
     PrimitiveObjectInspector poi = (PrimitiveObjectInspector)listElementOI;
@@ -761,12 +764,12 @@ public class TypeCheckProcFactory {
     for (Object o : values) {
       constant.add(poi.getPrimitiveJavaObject(o));
     }
-    
+
     ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
     constantExpr.setFoldedFromCol(colInfo.getInternalName());
     return constantExpr;
   }
-  
+
   private static ExprNodeConstantDesc toMapConstDesc(ColumnInfo colInfo, ObjectInspector inspector,
       ObjectInspector keyOI, ObjectInspector valueOI) {
     PrimitiveObjectInspector keyPoi = (PrimitiveObjectInspector)keyOI;
@@ -776,7 +779,7 @@ public class TypeCheckProcFactory {
     for (Map.Entry<?, ?> e : values.entrySet()) {
       constant.put(keyPoi.getPrimitiveJavaObject(e.getKey()), valuePoi.getPrimitiveJavaObject(e.getValue()));
     }
-    
+
     ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
     constantExpr.setFoldedFromCol(colInfo.getInternalName());
     return constantExpr;
@@ -791,7 +794,7 @@ public class TypeCheckProcFactory {
       PrimitiveObjectInspector fieldPoi = (PrimitiveObjectInspector) fields.get(i).getFieldObjectInspector();
       constant.add(fieldPoi.getPrimitiveJavaObject(value));
     }
-    
+
     ExprNodeConstantDesc constantExpr = new ExprNodeConstantDesc(colInfo.getType(), constant);
     constantExpr.setFoldedFromCol(colInfo.getInternalName());
     return constantExpr;
@@ -1030,8 +1033,9 @@ public class TypeCheckProcFactory {
         desc = new ExprNodeFieldDesc(t, children.get(0), fieldNameString, isList);
       } else if (funcText.equals("[")) {
         // "[]" : LSQUARE/INDEX Expression
-        if (!ctx.getallowIndexExpr())
+        if (!ctx.getallowIndexExpr()) {
           throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(expr));
+        }
 
         assert (children.size() == 2);
 
@@ -1134,46 +1138,43 @@ public class TypeCheckProcFactory {
                 && children.get(1) instanceof ExprNodeColumnDesc)
                 || (children.get(0) instanceof ExprNodeColumnDesc
                     && children.get(1) instanceof ExprNodeConstantDesc))) {
-          int constIdx =
-              children.get(0) instanceof ExprNodeConstantDesc ? 0 : 1;
 
-          String constType = children.get(constIdx).getTypeString().toLowerCase();
-          String columnType = children.get(1 - constIdx).getTypeString().toLowerCase();
-          final PrimitiveTypeInfo colTypeInfo = TypeInfoFactory.getPrimitiveTypeInfo(columnType);
-          // Try to narrow type of constant
-          Object constVal = ((ExprNodeConstantDesc) children.get(constIdx)).getValue();
-          try {
-            if (PrimitiveObjectInspectorUtils.intTypeEntry.equals(colTypeInfo.getPrimitiveTypeEntry()) && (constVal instanceof Number || constVal instanceof String)) {
-              children.set(constIdx, new ExprNodeConstantDesc(new Integer(constVal.toString())));
-            } else if (PrimitiveObjectInspectorUtils.longTypeEntry.equals(colTypeInfo.getPrimitiveTypeEntry()) && (constVal instanceof Number || constVal instanceof String)) {
-              children.set(constIdx, new ExprNodeConstantDesc(new Long(constVal.toString())));
-            }else if (PrimitiveObjectInspectorUtils.doubleTypeEntry.equals(colTypeInfo.getPrimitiveTypeEntry()) && (constVal instanceof Number || constVal instanceof String)) {
-              children.set(constIdx, new ExprNodeConstantDesc(new Double(constVal.toString())));
-            } else if (PrimitiveObjectInspectorUtils.floatTypeEntry.equals(colTypeInfo.getPrimitiveTypeEntry()) && (constVal instanceof Number || constVal instanceof String)) {
-              children.set(constIdx, new ExprNodeConstantDesc(new Float(constVal.toString())));
-            } else if (PrimitiveObjectInspectorUtils.byteTypeEntry.equals(colTypeInfo.getPrimitiveTypeEntry()) && (constVal instanceof Number || constVal instanceof String)) {
-              children.set(constIdx, new ExprNodeConstantDesc(new Byte(constVal.toString())));
-            } else if (PrimitiveObjectInspectorUtils.shortTypeEntry.equals(colTypeInfo.getPrimitiveTypeEntry()) && (constVal instanceof Number || constVal instanceof String)) {
-              children.set(constIdx, new ExprNodeConstantDesc(new Short(constVal.toString())));
-            } else if (PrimitiveObjectInspectorUtils.decimalTypeEntry.equals(colTypeInfo.getPrimitiveTypeEntry()) && (constVal instanceof Number || constVal instanceof String)) {
-              children.set(constIdx, NumExprProcessor.createDecimal(constVal.toString(),false));
-            }
-          } catch (NumberFormatException nfe) {
-            LOG.trace("Failed to narrow type of constant", nfe);
-            if ((genericUDF instanceof GenericUDFOPEqual && !NumberUtils.isNumber(constVal.toString()))) {
-              return new ExprNodeConstantDesc(false);
-            }
-          }
+          int constIdx = children.get(0) instanceof ExprNodeConstantDesc ? 0 : 1;
 
-          // if column type is char and constant type is string, then convert the constant to char
-          // type with padded spaces.
-          if (constType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME) &&
-              colTypeInfo instanceof CharTypeInfo) {
-            final Object originalValue = ((ExprNodeConstantDesc) children.get(constIdx)).getValue();
-            final String constValue = originalValue.toString();
-            final int length = TypeInfoUtils.getCharacterLengthForType(colTypeInfo);
-            final HiveChar newValue = new HiveChar(constValue, length);
-            children.set(constIdx, new ExprNodeConstantDesc(colTypeInfo, newValue));
+          ExprNodeDesc constChild = children.get(constIdx);
+          ExprNodeDesc columnChild = children.get(1 - constIdx);
+
+            final PrimitiveTypeInfo colTypeInfo =
+                TypeInfoFactory.getPrimitiveTypeInfo(columnChild.getTypeString().toLowerCase());
+            ExprNodeDesc newChild = interpretNodeAs(colTypeInfo, constChild);
+            if (newChild == null) {
+              // non-interpretabe as that type...
+              if (genericUDF instanceof GenericUDFOPEqual) {
+                return new ExprNodeConstantDesc(false);
+              }
+            } else {
+              children.set(constIdx, newChild);
+            }
+        }
+        if (genericUDF instanceof GenericUDFIn && children.get(0) instanceof ExprNodeColumnDesc) {
+          ExprNodeColumnDesc columnDesc = (ExprNodeColumnDesc) children.get(0);
+          final PrimitiveTypeInfo colTypeInfo =
+              TypeInfoFactory.getPrimitiveTypeInfo(columnDesc.getTypeString().toLowerCase());
+          List<ExprNodeDesc> outputOpList = children.subList(1, children.size());
+          ArrayList<ExprNodeDesc> inOperands = new ArrayList<>(outputOpList);
+          outputOpList.clear();
+
+          for (ExprNodeDesc oldChild : inOperands) {
+            if(oldChild !=null && oldChild instanceof ExprNodeConstantDesc) {
+              ExprNodeDesc newChild = interpretNodeAs(colTypeInfo, oldChild);
+              if(newChild == null) {
+                // non interpretable as target type; skip
+                continue;
+              }
+              outputOpList.add(newChild);
+            }else{
+              outputOpList.add(oldChild);
+            }
           }
         }
         if (genericUDF instanceof GenericUDFOPOr) {
@@ -1236,6 +1237,50 @@ public class TypeCheckProcFactory {
       }
       assert (desc != null);
       return desc;
+    }
+
+    private ExprNodeDesc interpretNodeAs(PrimitiveTypeInfo colTypeInfo, ExprNodeDesc constChild) {
+      if (constChild instanceof ExprNodeConstantDesc) {
+        // Try to narrow type of constant
+        Object constVal = ((ExprNodeConstantDesc) constChild).getValue();
+        String constType = constChild.getTypeString().toLowerCase();
+        if (constVal instanceof Number || constVal instanceof String) {
+          try {
+            PrimitiveTypeEntry primitiveTypeEntry = colTypeInfo.getPrimitiveTypeEntry();
+            if (PrimitiveObjectInspectorUtils.intTypeEntry.equals(primitiveTypeEntry)) {
+              return new ExprNodeConstantDesc(new Integer(constVal.toString()));
+            } else if (PrimitiveObjectInspectorUtils.longTypeEntry.equals(primitiveTypeEntry)) {
+              return new ExprNodeConstantDesc(new Long(constVal.toString()));
+            } else if (PrimitiveObjectInspectorUtils.doubleTypeEntry.equals(primitiveTypeEntry)) {
+              return new ExprNodeConstantDesc(new Double(constVal.toString()));
+            } else if (PrimitiveObjectInspectorUtils.floatTypeEntry.equals(primitiveTypeEntry)) {
+              return new ExprNodeConstantDesc(new Float(constVal.toString()));
+            } else if (PrimitiveObjectInspectorUtils.byteTypeEntry.equals(primitiveTypeEntry)) {
+              return new ExprNodeConstantDesc(new Byte(constVal.toString()));
+            } else if (PrimitiveObjectInspectorUtils.shortTypeEntry.equals(primitiveTypeEntry)) {
+              return new ExprNodeConstantDesc(new Short(constVal.toString()));
+            } else if (PrimitiveObjectInspectorUtils.decimalTypeEntry.equals(primitiveTypeEntry)) {
+              return NumExprProcessor.createDecimal(constVal.toString(), false);
+            }
+          } catch (NumberFormatException nfe) {
+            LOG.trace("Failed to narrow type of constant", nfe);
+            if (!NumberUtils.isNumber(constVal.toString())) {
+              return null;
+            }
+          }
+        }
+
+        // if column type is char and constant type is string, then convert the constant to char
+        // type with padded spaces.
+        if (constType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME) && colTypeInfo instanceof CharTypeInfo) {
+          final Object originalValue = ((ExprNodeConstantDesc) constChild).getValue();
+          final String constValue = originalValue.toString();
+          final int length = TypeInfoUtils.getCharacterLengthForType(colTypeInfo);
+          final HiveChar newValue = new HiveChar(constValue, length);
+          return new ExprNodeConstantDesc(colTypeInfo, newValue);
+        }
+      }
+      return constChild;
     }
 
     private boolean canConvertIntoNvl(GenericUDF genericUDF, ArrayList<ExprNodeDesc> children) {
@@ -1351,9 +1396,10 @@ public class TypeCheckProcFactory {
        * return null;
        */
       if (windowingTokens.contains(expr.getType())) {
-        if (!ctx.getallowWindowing())
+        if (!ctx.getallowWindowing()) {
           throw new SemanticException(SemanticAnalyzer.generateErrorMessage(expr,
               ErrorMsg.INVALID_FUNCTION.getMsg("Windowing is not supported in the context")));
+        }
 
         return null;
       }
@@ -1367,10 +1413,11 @@ public class TypeCheckProcFactory {
       }
 
       if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
-        if (!ctx.getallowAllColRef())
+        if (!ctx.getallowAllColRef()) {
           throw new SemanticException(SemanticAnalyzer.generateErrorMessage(expr,
               ErrorMsg.INVALID_COLUMN
                   .getMsg("All column reference is not supported in the context")));
+        }
 
         RowResolver input = ctx.getInputRR();
         ExprNodeColumnListDesc columnList = new ExprNodeColumnListDesc();
@@ -1439,10 +1486,11 @@ public class TypeCheckProcFactory {
       }
 
       if (expr.getType() == HiveParser.TOK_FUNCTIONSTAR) {
-        if (!ctx.getallowFunctionStar())
-        throw new SemanticException(SemanticAnalyzer.generateErrorMessage(expr,
-            ErrorMsg.INVALID_COLUMN
-                .getMsg(".* reference is not supported in the context")));
+        if (!ctx.getallowFunctionStar()) {
+          throw new SemanticException(SemanticAnalyzer.generateErrorMessage(expr,
+              ErrorMsg.INVALID_COLUMN
+                  .getMsg(".* reference is not supported in the context")));
+        }
 
         RowResolver input = ctx.getInputRR();
         for (ColumnInfo colInfo : input.getColumnInfos()) {
@@ -1509,10 +1557,11 @@ public class TypeCheckProcFactory {
       ASTNode expr = (ASTNode) nd;
       ASTNode sqNode = (ASTNode) expr.getParent().getChild(1);
 
-      if (!ctx.getallowSubQueryExpr())
+      if (!ctx.getallowSubQueryExpr()) {
         throw new CalciteSubquerySemanticException(SemanticAnalyzer.generateErrorMessage(sqNode,
             ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg("Currently SubQuery expressions are only allowed as " +
                     "Where and Having Clause predicates")));
+      }
 
       ExprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
       if (desc != null) {

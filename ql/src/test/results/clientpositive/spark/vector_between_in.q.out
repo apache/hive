@@ -57,7 +57,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterLongColumnInList(col 3:date, values [-67, -171])
                     predicate: (cdate) IN (DATE'1969-10-26', DATE'1969-07-14') (type: boolean)
-                    Statistics: Num rows: 6145 Data size: 1233908 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdate (type: date)
                       outputColumnNames: _col0
@@ -65,7 +65,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [3]
-                      Statistics: Num rows: 6145 Data size: 1233908 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: date)
                         sort order: +
@@ -73,7 +73,7 @@ STAGE PLANS:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 6145 Data size: 1233908 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -100,13 +100,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 6145 Data size: 1233908 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 6145 Data size: 1233908 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -141,7 +141,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  filterExpr: (not (cdate) IN (DATE'1969-10-26', DATE'1969-07-14', DATE'1970-01-21')) (type: boolean)
+                  filterExpr: ((cdate <> DATE'1969-10-26') and (cdate <> DATE'1969-07-14') and (cdate <> DATE'1970-01-21')) (type: boolean)
                   Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -149,15 +149,15 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsFalse(col 5:boolean)(children: LongColumnInList(col 3, values [-67, -171, 20]) -> 5:boolean)
-                    predicate: (not (cdate) IN (DATE'1969-10-26', DATE'1969-07-14', DATE'1970-01-21')) (type: boolean)
-                    Statistics: Num rows: 6144 Data size: 1233707 Basic stats: COMPLETE Column stats: NONE
+                        predicateExpression: FilterExprAndExpr(children: FilterDateColNotEqualDateScalar(col 3:date, val -67), FilterDateColNotEqualDateScalar(col 3:date, val -171), FilterDateColNotEqualDateScalar(col 3:date, val 20))
+                    predicate: ((cdate <> DATE'1969-07-14') and (cdate <> DATE'1969-10-26') and (cdate <> DATE'1970-01-21')) (type: boolean)
+                    Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: []
-                      Statistics: Num rows: 6144 Data size: 1233707 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
@@ -259,7 +259,7 @@ STAGE PLANS:
                         native: true
                         predicateExpression: FilterDecimalColumnInList(col 1:decimal(20,10), values [2365.8945945946, 881.0135135135, -3367.6517567568])
                     predicate: (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568) (type: boolean)
-                    Statistics: Num rows: 6145 Data size: 1233908 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cdecimal1 (type: decimal(20,10))
                       outputColumnNames: _col0
@@ -267,7 +267,7 @@ STAGE PLANS:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: [1]
-                      Statistics: Num rows: 6145 Data size: 1233908 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: decimal(20,10))
                         sort order: +
@@ -275,7 +275,7 @@ STAGE PLANS:
                             className: VectorReduceSinkObjectHashOperator
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
-                        Statistics: Num rows: 6145 Data size: 1233908 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
             Map Vectorization:
                 enabled: true
@@ -302,13 +302,13 @@ STAGE PLANS:
                     className: VectorSelectOperator
                     native: true
                     projectedOutputColumnNums: [0]
-                Statistics: Num rows: 6145 Data size: 1233908 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator
                   compressed: false
                   File Sink Vectorization:
                       className: VectorFileSinkOperator
                       native: false
-                  Statistics: Num rows: 6145 Data size: 1233908 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -343,7 +343,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: decimal_date_test
-                  filterExpr: (not (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568)) (type: boolean)
+                  filterExpr: ((cdecimal1 <> 2365.8945945946) and (cdecimal1 <> 881.0135135135) and (cdecimal1 <> -3367.6517567568)) (type: boolean)
                   Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -351,15 +351,15 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: SelectColumnIsFalse(col 5:boolean)(children: DecimalColumnInList(col 1:decimal(20,10), values [2365.8945945946, 881.0135135135, -3367.6517567568]) -> 5:boolean)
-                    predicate: (not (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568)) (type: boolean)
-                    Statistics: Num rows: 6144 Data size: 1233707 Basic stats: COMPLETE Column stats: NONE
+                        predicateExpression: FilterExprAndExpr(children: FilterDecimalColNotEqualDecimalScalar(col 1:decimal(20,10), val 2365.8945945946), FilterDecimalColNotEqualDecimalScalar(col 1:decimal(20,10), val 881.0135135135), FilterDecimalColNotEqualDecimalScalar(col 1:decimal(20,10), val -3367.6517567568))
+                    predicate: ((cdecimal1 <> -3367.6517567568) and (cdecimal1 <> 2365.8945945946) and (cdecimal1 <> 881.0135135135)) (type: boolean)
+                    Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Select Vectorization:
                           className: VectorSelectOperator
                           native: true
                           projectedOutputColumnNums: []
-                      Statistics: Num rows: 6144 Data size: 1233707 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         aggregations: count()
                         Group By Vectorization:
@@ -1091,13 +1091,13 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: (cdate) IN (DATE'1969-10-26', DATE'1969-07-14') (type: boolean)
+                    expressions: ((cdate = DATE'1969-10-26') or (cdate = DATE'1969-07-14')) (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: LongColumnInList(col 3, values [-67, -171]) -> 5:boolean
+                        projectedOutputColumnNums: [7]
+                        selectExpressions: ColOrCol(col 5:boolean, col 6:boolean)(children: DateColEqualDateScalar(col 3:date, date 1969-10-26) -> 5:boolean, DateColEqualDateScalar(col 3:date, date 1969-07-14) -> 6:boolean) -> 7:boolean
                     Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -1105,7 +1105,7 @@ STAGE PLANS:
                           aggregators: VectorUDAFCountStar(*) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 5:boolean
+                          keyExpressions: col 7:boolean
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
@@ -1227,13 +1227,13 @@ STAGE PLANS:
                   TableScan Vectorization:
                       native: true
                   Select Operator
-                    expressions: (cdecimal1) IN (2365.8945945946, 881.0135135135, -3367.6517567568) (type: boolean)
+                    expressions: ((cdecimal1 = 2365.8945945946) or (cdecimal1 = 881.0135135135) or (cdecimal1 = -3367.6517567568)) (type: boolean)
                     outputColumnNames: _col0
                     Select Vectorization:
                         className: VectorSelectOperator
                         native: true
-                        projectedOutputColumnNums: [5]
-                        selectExpressions: DecimalColumnInList(col 1:decimal(20,10), values [2365.8945945946, 881.0135135135, -3367.6517567568]) -> 5:boolean
+                        projectedOutputColumnNums: [8]
+                        selectExpressions: VectorUDFAdaptor(((cdecimal1 = 2365.8945945946) or (cdecimal1 = 881.0135135135) or (cdecimal1 = -3367.6517567568)))(children: DecimalColEqualDecimalScalar(col 1:decimal(20,10), val 2365.8945945946) -> 5:boolean, DecimalColEqualDecimalScalar(col 1:decimal(20,10), val 881.0135135135) -> 6:boolean, DecimalColEqualDecimalScalar(col 1:decimal(20,10), val -3367.6517567568) -> 7:boolean) -> 8:boolean
                     Statistics: Num rows: 12289 Data size: 2467616 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()
@@ -1241,7 +1241,7 @@ STAGE PLANS:
                           aggregators: VectorUDAFCountStar(*) -> bigint
                           className: VectorGroupByOperator
                           groupByMode: HASH
-                          keyExpressions: col 5:boolean
+                          keyExpressions: col 8:boolean
                           native: false
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
@@ -1267,7 +1267,7 @@ STAGE PLANS:
                 featureSupportInUse: [DECIMAL_64]
                 inputFileFormats: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                 allNative: false
-                usesVectorUDFAdaptor: false
+                usesVectorUDFAdaptor: true
                 vectorized: true
         Reducer 2 
             Execution mode: vectorized

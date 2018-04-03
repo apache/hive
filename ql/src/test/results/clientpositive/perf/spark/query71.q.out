@@ -193,10 +193,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: time_dim
-                  filterExpr: (((t_meal_time = 'breakfast') or (t_meal_time = 'dinner')) and t_time_sk is not null) (type: boolean)
+                  filterExpr: ((t_meal_time) IN ('breakfast', 'dinner') and t_time_sk is not null) (type: boolean)
                   Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((t_meal_time = 'breakfast') or (t_meal_time = 'dinner')) and t_time_sk is not null) (type: boolean)
+                    predicate: ((t_meal_time) IN ('breakfast', 'dinner') and t_time_sk is not null) (type: boolean)
                     Statistics: Num rows: 86400 Data size: 40694400 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: t_time_sk (type: int), t_hour (type: int), t_minute (type: int)

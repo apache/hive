@@ -44,10 +44,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: datetime_
-                  filterExpr: ((id = 1) or (id = 2) or (id = 3) or (id = 4) or (id = 5) or (id = 6)) (type: boolean)
+                  filterExpr: (id) IN (1, 2, 3, 4, 5, 6) (type: boolean)
                   Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((id = 1) or (id = 2) or (id = 3) or (id = 4) or (id = 5) or (id = 6)) (type: boolean)
+                    predicate: (id) IN (1, 2, 3, 4, 5, 6) (type: boolean)
                     Statistics: Num rows: 1 Data size: 372 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: if(((id = 1) or (id = 2)), if((id = 1), date_, date_), if((id = 3), CASE WHEN ((date_ is null or to_date(datetime) is null)) THEN (null) WHEN ((CAST( date_ AS DATE) > to_date(datetime))) THEN (date_) ELSE (to_date(datetime)) END, null)) (type: string), id (type: int), CASE WHEN ((id = 6)) THEN (CASE WHEN ((concat(date_, ' 00:00:00') is null or datetime is null)) THEN (null) WHEN ((concat(date_, ' 00:00:00') > datetime)) THEN (concat(date_, ' 00:00:00')) ELSE (datetime) END) WHEN ((id = 5)) THEN (CASE WHEN ((date_ is null or datetime is null)) THEN (null) WHEN ((date_ > datetime)) THEN (date_) ELSE (datetime) END) WHEN ((id = 3)) THEN (concat(date_, ' 00:00:00')) WHEN ((id = 4)) THEN (concat(date_, ' 00:00:00')) WHEN ((id = 1)) THEN (date_) WHEN ((id = 2)) THEN (date_) ELSE (null) END (type: string)

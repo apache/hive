@@ -60,11 +60,11 @@ STAGE PLANS:
                   Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((s_state) IN ('SD', 'FL', 'MI', 'LA', 'MO', 'SC') and s_store_sk is not null) (type: boolean)
-                    Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: s_store_sk (type: int), s_state (type: string)
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 852 Data size: 1628138 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1704 Data size: 3256276 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col3 (type: int)

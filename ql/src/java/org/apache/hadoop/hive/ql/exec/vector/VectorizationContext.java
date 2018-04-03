@@ -3669,6 +3669,10 @@ public class VectorizationContext {
       return (Short) o;
     } else if (o instanceof Integer) {
       return (Integer) o;
+    } else if (o instanceof Short) {
+      return (Short) o;
+    } else if (o instanceof Byte) {
+      return (Byte) o;
     } else if (o instanceof Long) {
       return (Long) o;
     }

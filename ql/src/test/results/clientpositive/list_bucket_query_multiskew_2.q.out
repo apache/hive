@@ -379,9 +379,6 @@ PREHOOK: query: explain extended SELECT key, value FROM fact_daily_n2 WHERE ds='
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended SELECT key, value FROM fact_daily_n2 WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT `key`, `value`
-FROM `default`.`fact_daily_n2`
-WHERE `ds` = '1' AND `hr` = '4' AND (`key` = '484' AND `value` = 'val_484' OR `key` = '238' AND `value` = 'val_238')
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -392,12 +389,12 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: fact_daily_n2
-            filterExpr: ((ds = '1') and (hr = '4') and (((key = '484') and (value = 'val_484')) or ((key = '238') and (value = 'val_238')))) (type: boolean)
+            filterExpr: ((struct(key,value)) IN (const struct('484','val_484'), const struct('238','val_238')) and (ds = '1') and (hr = '4')) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (((key = '238') and (value = 'val_238')) or ((key = '484') and (value = 'val_484'))) (type: boolean)
+              predicate: (struct(key,value)) IN (const struct('484','val_484'), const struct('238','val_238')) (type: boolean)
               Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)
@@ -429,6 +426,55 @@ STAGE PLANS:
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME
+            input format: org.apache.hadoop.mapred.TextInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            partition values:
+              ds 1
+              hr 4
+            properties:
+              COLUMN_STATS_ACCURATE {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
+              bucket_count -1
+              column.name.delimiter ,
+              columns key,value
+              columns.comments 
+              columns.types string:string
+#### A masked pattern was here ####
+              name default.fact_daily_n2
+              numFiles 3
+              numRows 500
+              partition_columns ds/hr
+              partition_columns.types string:string
+              rawDataSize 5312
+              serialization.ddl struct fact_daily_n2 { string key, string value}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 5812
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+          
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              properties:
+                bucket_count -1
+                bucketing_version 2
+                column.name.delimiter ,
+                columns key,value
+                columns.comments 
+                columns.types string:string
+#### A masked pattern was here ####
+                name default.fact_daily_n2
+                partition_columns ds/hr
+                partition_columns.types string:string
+                serialization.ddl struct fact_daily_n2 { string key, string value}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.fact_daily_n2
+            name: default.fact_daily_n2
 #### A masked pattern was here ####
           Partition
             base file name: value=val_238
@@ -528,6 +574,7 @@ STAGE PLANS:
               name: default.fact_daily_n2
             name: default.fact_daily_n2
       Truncated Path -> Alias:
+        /fact_daily_n2/ds=1/hr=4/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [fact_daily_n2]
         /fact_daily_n2/ds=1/hr=4/key=238/value=val_238 [fact_daily_n2]
         /fact_daily_n2/ds=1/hr=4/key=484/value=val_484 [fact_daily_n2]
 

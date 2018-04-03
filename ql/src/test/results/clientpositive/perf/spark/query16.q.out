@@ -77,11 +77,11 @@ STAGE PLANS:
                   Statistics: Num rows: 60 Data size: 122700 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((cc_county) IN ('Ziebach County', 'Levy County', 'Huron County', 'Franklin Parish', 'Daviess County') and cc_call_center_sk is not null) (type: boolean)
-                    Statistics: Num rows: 30 Data size: 61350 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 60 Data size: 122700 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cc_call_center_sk (type: int)
                       outputColumnNames: _col0
-                      Statistics: Num rows: 30 Data size: 61350 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 60 Data size: 122700 Basic stats: COMPLETE Column stats: NONE
                       Spark HashTable Sink Operator
                         keys:
                           0 _col2 (type: int)
