@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.reexec;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -29,7 +30,8 @@ import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.plan.mapper.SimpleRuntimeStatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +49,8 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
 
   private OperatorStatsReaderHook statsReaderHook;
 
+  private boolean alwaysCollectStats;
+
   class LocalHook implements ExecuteWithHookContext {
 
     @Override
@@ -62,10 +66,10 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
               if (message.contains("Vertex failed,") && isOOM) {
                 retryPossible = true;
               }
-              System.out.println(exception);
             }
           }
         }
+        LOG.info("ReOptimization: retryPossible: {}", retryPossible);
       }
     }
   }
@@ -77,9 +81,25 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
     statsReaderHook = new OperatorStatsReaderHook();
     coreDriver.getHookRunner().addOnFailureHook(statsReaderHook);
     coreDriver.getHookRunner().addPostHook(statsReaderHook);
-    //    statsReaderHook.setCollectOnSuccess(true);
-    statsReaderHook.setCollectOnSuccess(
-        driver.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS));
+    alwaysCollectStats = driver.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS);
+    statsReaderHook.setCollectOnSuccess(alwaysCollectStats);
+
+    coreDriver.setStatsSource(getStatsSource(driver.getConf()));
+  }
+
+  static enum StatsSourceMode {
+    query, hiveserver;
+  }
+
+  private StatsSource getStatsSource(HiveConf conf) {
+    StatsSourceMode mode = StatsSourceMode.valueOf(conf.getVar(ConfVars.HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE));
+    switch (mode) {
+    case query:
+      return new StatsSources.MapBackedStatsSource();
+    case hiveserver:
+      return StatsSources.globalStatsSource(conf);
+    }
+    throw new RuntimeException("Unknown StatsSource setting: " + mode);
   }
 
   @Override
@@ -90,17 +110,19 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
   @Override
   public void prepareToReExecute() {
     statsReaderHook.setCollectOnSuccess(true);
-    PlanMapper pm = coreDriver.getContext().getPlanMapper();
-    coreDriver.setStatsSource(new SimpleRuntimeStatsSource(pm));
     retryPossible = false;
+    coreDriver.setStatsSource(
+        StatsSources.getStatsSourceContaining(coreDriver.getStatsSource(), coreDriver.getPlanMapper()));
   }
 
   @Override
   public boolean shouldReExecute(int executionNum, PlanMapper oldPlanMapper, PlanMapper newPlanMapper) {
-    return planDidChange(oldPlanMapper, newPlanMapper);
+    boolean planDidChange = !planEquals(oldPlanMapper, newPlanMapper);
+    LOG.info("planDidChange: {}", planDidChange);
+    return planDidChange;
   }
 
-  private boolean planDidChange(PlanMapper pmL, PlanMapper pmR) {
+  private boolean planEquals(PlanMapper pmL, PlanMapper pmR) {
     List<Operator> opsL = getRootOps(pmL);
     List<Operator> opsR = getRootOps(pmR);
     for (Iterator<Operator> itL = opsL.iterator(); itL.hasNext();) {
@@ -132,6 +154,14 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
   public void beforeExecute(int executionIndex, boolean explainReOptimization) {
     if (explainReOptimization) {
       statsReaderHook.setCollectOnSuccess(true);
+    }
+  }
+
+  @Override
+  public void afterExecute(PlanMapper planMapper, boolean success) {
+    if (alwaysCollectStats) {
+      coreDriver.setStatsSource(
+          StatsSources.getStatsSourceContaining(coreDriver.getStatsSource(), planMapper));
     }
   }
 
