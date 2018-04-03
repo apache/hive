@@ -77,10 +77,14 @@ public class TestOperatorSignature {
     Operator<TableScanDesc> ts = getTsOp(i);
     Operator<? extends OperatorDesc> fil = getFilterOp(j);
 
-    ts.getChildOperators().add(fil);
-    fil.getParentOperators().add(ts);
+    connectOperators(ts, fil);
 
     return fil;
+  }
+
+  private void connectOperators(Operator<?> parent, Operator<?> child) {
+    parent.getChildOperators().add(child);
+    child.getParentOperators().add(parent);
   }
 
   @Test
@@ -155,6 +159,7 @@ public class TestOperatorSignature {
     Operator<TableScanDesc> ts = OperatorFactory.get(cCtx, desc);
     return ts;
   }
+
 
 
 }

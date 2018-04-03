@@ -98,6 +98,7 @@ import org.apache.hadoop.hive.ql.parse.ParseDriver;
 import org.apache.hadoop.hive.ql.parse.ParseException;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
@@ -208,7 +209,7 @@ public class QTestUtil {
     getSrcTables().add(table);
     storeSrcTables();
   }
-  
+
   public static Set<String> initSrcTables() {
     if (srcTables == null){
       initSrcTablesFromSystemProperty();
@@ -1066,13 +1067,14 @@ public class QTestUtil {
     clearTablesCreatedDuringTests();
     clearUDFsCreatedDuringTests();
     clearKeysCreatedInTests();
+    StatsSources.clearAllStats();
   }
-  
+
   protected void clearSettingsCreatedInTests() throws IOException {
     getCliDriver().processLine(String.format("set hive.security.authorization.enabled=false;"));
     getCliDriver().processLine(String.format("set user.name=%s;",
         System.getProperty(TEST_HIVE_USER_PROPERTY, "hive_test_user")));
-    
+
     getCliDriver().processLine("set hive.metastore.partition.name.whitelist.pattern=;");
     getCliDriver().processLine("set hive.test.mode=false;");
     getCliDriver().processLine("set hive.mapred.mode=nonstrict;");
@@ -1098,7 +1100,7 @@ public class QTestUtil {
     clearTablesCreatedDuringTests();
     clearUDFsCreatedDuringTests();
     clearKeysCreatedInTests();
-    
+
     cleanupFromFile();
 
     // delete any contents in the warehouse dir
