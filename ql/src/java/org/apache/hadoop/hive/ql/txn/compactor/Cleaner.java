@@ -263,15 +263,15 @@ public class Cleaner extends CompactorThread {
        * Between that check and removeFiles() a query starts (it will be reading D3) and another compaction
        * completes which creates D4.
        * Now removeFiles() (more specifically AcidUtils.getAcidState()) will declare D3 to be obsolete
-       * unless ValidTxnList is "capped" at highestWriteId.
+       * unless ValidWriteIdList is "capped" at highestWriteId.
        */
-      final ValidWriteIdList txnList = (ci.highestWriteId > 0)
+      final ValidWriteIdList validWriteIdList = (ci.highestWriteId > 0)
           ? new ValidReaderWriteIdList(ci.getFullTableName(), new long[0], new BitSet(),
           ci.highestWriteId)
           : new ValidReaderWriteIdList();
 
       if (runJobAsSelf(ci.runAs)) {
-        removeFiles(location, txnList);
+        removeFiles(location, validWriteIdList);
       } else {
         LOG.info("Cleaning as user " + ci.runAs + " for " + ci.getFullPartitionName());
         UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
@@ -279,7 +279,7 @@ public class Cleaner extends CompactorThread {
         ugi.doAs(new PrivilegedExceptionAction<Object>() {
           @Override
           public Object run() throws Exception {
-            removeFiles(location, txnList);
+            removeFiles(location, validWriteIdList);
             return null;
           }
         });
