@@ -514,7 +514,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
           break;
         case INSERT:
           assert t != null;
-          if(AcidUtils.isFullAcidTable(t)) {
+          if(AcidUtils.isTransactionalTable(t)) {
             compBuilder.setShared();
           }
           else {
