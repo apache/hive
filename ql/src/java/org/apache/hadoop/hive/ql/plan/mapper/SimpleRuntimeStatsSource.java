@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.plan.mapper;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -54,6 +55,11 @@ public class SimpleRuntimeStatsSource implements StatsSource {
       return true;
     }
     return false;
+  }
+
+  @Override
+  public void putAll(Map<OpTreeSignature, OperatorStats> map) {
+    throw new RuntimeException();
   }
 
 }

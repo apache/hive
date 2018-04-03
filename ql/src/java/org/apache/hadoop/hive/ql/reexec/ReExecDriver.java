@@ -156,6 +156,9 @@ public class ReExecDriver implements IDriver {
       LOG.info("Execution #{} of query", executionIndex);
       CommandProcessorResponse cpr = coreDriver.run();
 
+      PlanMapper oldPlanMapper = coreDriver.getPlanMapper();
+      afterExecute(oldPlanMapper, cpr.getResponseCode() == 0);
+
       boolean shouldReExecute = explainReOptimization && executionIndex==1;
       shouldReExecute |= cpr.getResponseCode() != 0 && shouldReExecute();
 
@@ -164,25 +167,34 @@ public class ReExecDriver implements IDriver {
       }
       LOG.info("Preparing to re-execute query");
       prepareToReExecute();
-      PlanMapper oldPlanMapper = coreDriver.getPlanMapper();
       CommandProcessorResponse compile_resp = coreDriver.compileAndRespond(currentQuery);
       if (compile_resp.failed()) {
+        LOG.error("Recompilation of the query failed; this is unexpected.");
         // FIXME: somehow place pointers that re-execution compilation have failed; the query have been successfully compiled before?
         return compile_resp;
       }
 
       PlanMapper newPlanMapper = coreDriver.getPlanMapper();
       if (!explainReOptimization && !shouldReExecuteAfterCompile(oldPlanMapper, newPlanMapper)) {
+        LOG.info("re-running the query would probably not yield better results; returning with last error");
         // FIXME: retain old error; or create a new one?
         return cpr;
       }
     }
   }
 
+  private void afterExecute(PlanMapper planMapper, boolean success) {
+    for (IReExecutionPlugin p : plugins) {
+      p.afterExecute(planMapper, success);
+    }
+  }
+
   private boolean shouldReExecuteAfterCompile(PlanMapper oldPlanMapper, PlanMapper newPlanMapper) {
     boolean ret = false;
     for (IReExecutionPlugin p : plugins) {
-      ret |= p.shouldReExecute(executionIndex, oldPlanMapper, newPlanMapper);
+      boolean shouldReExecute = p.shouldReExecute(executionIndex, oldPlanMapper, newPlanMapper);
+      LOG.debug("{}.shouldReExecuteAfterCompile = {}", p, shouldReExecute);
+      ret |= shouldReExecute;
     }
     return ret;
   }
@@ -190,7 +202,9 @@ public class ReExecDriver implements IDriver {
   private boolean shouldReExecute() {
     boolean ret = false;
     for (IReExecutionPlugin p : plugins) {
-      ret |= p.shouldReExecute(executionIndex);
+      boolean shouldReExecute = p.shouldReExecute(executionIndex);
+      LOG.debug("{}.shouldReExecute = {}", p, shouldReExecute);
+      ret |= shouldReExecute;
     }
     return ret;
   }
