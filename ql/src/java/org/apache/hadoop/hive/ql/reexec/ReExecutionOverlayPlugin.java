@@ -80,4 +80,8 @@ public class ReExecutionOverlayPlugin implements IReExecutionPlugin {
   public void beforeExecute(int executionIndex, boolean explainReOptimization) {
   }
 
+  @Override
+  public void afterExecute(PlanMapper planMapper, boolean success) {
+  }
+
 }

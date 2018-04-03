@@ -556,10 +556,10 @@ public class JoinDesc extends AbstractOperatorDesc {
   }
 
   protected Map<Integer, String> toCompactString(int[][] filterMap) {
+    filterMap = compactFilter(filterMap);
     if (filterMap == null) {
       return null;
     }
-    filterMap = compactFilter(filterMap);
     Map<Integer, String> result = new LinkedHashMap<Integer, String>();
     for (int i = 0 ; i < filterMap.length; i++) {
       if (filterMap[i] == null) {
