@@ -381,6 +381,12 @@
       <version>${curator.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>commons-dbcp</groupId>
+      <artifactId>commons-dbcp</artifactId>
+      <version>${commons-dbcp.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <profiles>
