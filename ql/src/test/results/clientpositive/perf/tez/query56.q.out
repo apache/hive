@@ -210,16 +210,16 @@ Stage-0
                                 <-Reducer 16 [ONE_TO_ONE_EDGE] vectorized
                                   FORWARD [RS_325]
                                     PartitionCols:_col0
-                                    Group By Operator [GBY_324] (rows=115500 width=1436)
+                                    Group By Operator [GBY_324] (rows=231000 width=1436)
                                       Output:["_col0"],keys:KEY._col0
                                     <-Map 15 [SIMPLE_EDGE] vectorized
                                       SHUFFLE [RS_323]
                                         PartitionCols:_col0
-                                        Group By Operator [GBY_322] (rows=231000 width=1436)
+                                        Group By Operator [GBY_322] (rows=462000 width=1436)
                                           Output:["_col0"],keys:i_item_id
-                                          Select Operator [SEL_321] (rows=231000 width=1436)
+                                          Select Operator [SEL_321] (rows=462000 width=1436)
                                             Output:["i_item_id"]
-                                            Filter Operator [FIL_320] (rows=231000 width=1436)
+                                            Filter Operator [FIL_320] (rows=462000 width=1436)
                                               predicate:((i_color) IN ('orchid', 'chiffon', 'lace') and i_item_id is not null)
                                               TableScan [TS_3] (rows=462000 width=1436)
                                                 default@item,item,Tbl:COMPLETE,Col:NONE,Output:["i_item_id","i_color"]

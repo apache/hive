@@ -1506,10 +1506,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
-                  filterExpr: ((UDFToInteger(d_year) >= 1992) and (UDFToInteger(d_year) <= 1997) and ((c_city = 'UNITED KI1') or (c_city = 'UNITED KI5')) and ((s_city = 'UNITED KI1') or (s_city = 'UNITED KI5'))) (type: boolean)
+                  filterExpr: ((c_city) IN ('UNITED KI1', 'UNITED KI5') and (s_city) IN ('UNITED KI1', 'UNITED KI5') and (UDFToInteger(d_year) >= 1992) and (UDFToInteger(d_year) <= 1997)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((c_city = 'UNITED KI1') or (c_city = 'UNITED KI5')) and ((s_city = 'UNITED KI1') or (s_city = 'UNITED KI5')) and (UDFToInteger(d_year) <= 1997) and (UDFToInteger(d_year) >= 1992)) (type: boolean)
+                    predicate: ((UDFToInteger(d_year) <= 1997) and (UDFToInteger(d_year) >= 1992) and (c_city) IN ('UNITED KI1', 'UNITED KI5') and (s_city) IN ('UNITED KI1', 'UNITED KI5')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: c_city (type: string), s_city (type: string), UDFToInteger(d_year) (type: int), lo_revenue (type: double)
@@ -1619,10 +1619,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
-                  filterExpr: ((d_yearmonth = 'Dec1997') and ((c_city = 'UNITED KI1') or (c_city = 'UNITED KI5')) and ((s_city = 'UNITED KI1') or (s_city = 'UNITED KI5'))) (type: boolean)
+                  filterExpr: ((c_city) IN ('UNITED KI1', 'UNITED KI5') and (s_city) IN ('UNITED KI1', 'UNITED KI5') and (d_yearmonth = 'Dec1997')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((c_city = 'UNITED KI1') or (c_city = 'UNITED KI5')) and ((s_city = 'UNITED KI1') or (s_city = 'UNITED KI5')) and (d_yearmonth = 'Dec1997')) (type: boolean)
+                    predicate: ((c_city) IN ('UNITED KI1', 'UNITED KI5') and (d_yearmonth = 'Dec1997') and (s_city) IN ('UNITED KI1', 'UNITED KI5')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 744 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: c_city (type: string), s_city (type: string), UDFToInteger(d_year) (type: int), lo_revenue (type: double)
@@ -1736,10 +1736,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
-                  filterExpr: ((c_region = 'AMERICA') and (s_region = 'AMERICA') and ((p_mfgr = 'MFGR#1') or (p_mfgr = 'MFGR#2'))) (type: boolean)
+                  filterExpr: ((p_mfgr) IN ('MFGR#1', 'MFGR#2') and (c_region = 'AMERICA') and (s_region = 'AMERICA')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((p_mfgr = 'MFGR#1') or (p_mfgr = 'MFGR#2')) and (c_region = 'AMERICA') and (s_region = 'AMERICA')) (type: boolean)
+                    predicate: ((c_region = 'AMERICA') and (p_mfgr) IN ('MFGR#1', 'MFGR#2') and (s_region = 'AMERICA')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 928 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: UDFToInteger(d_year) (type: int), c_nation (type: string), net_revenue (type: double)
@@ -1851,10 +1851,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
-                  filterExpr: ((c_region = 'AMERICA') and (s_region = 'AMERICA') and ((UDFToInteger(d_year) = 1997) or (UDFToInteger(d_year) = 1998)) and ((p_mfgr = 'MFGR#1') or (p_mfgr = 'MFGR#2'))) (type: boolean)
+                  filterExpr: ((UDFToInteger(d_year)) IN (1997, 1998) and (p_mfgr) IN ('MFGR#1', 'MFGR#2') and (c_region = 'AMERICA') and (s_region = 'AMERICA')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((UDFToInteger(d_year) = 1997) or (UDFToInteger(d_year) = 1998)) and ((p_mfgr = 'MFGR#1') or (p_mfgr = 'MFGR#2')) and (c_region = 'AMERICA') and (s_region = 'AMERICA')) (type: boolean)
+                    predicate: ((UDFToInteger(d_year)) IN (1997, 1998) and (c_region = 'AMERICA') and (p_mfgr) IN ('MFGR#1', 'MFGR#2') and (s_region = 'AMERICA')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: UDFToInteger(d_year) (type: int), s_nation (type: string), p_category (type: string), net_revenue (type: double)
@@ -1966,10 +1966,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: default.ssb_mv
-                  filterExpr: ((c_region = 'AMERICA') and (p_category = 'MFGR#14') and (s_nation = 'UNITED STATES') and ((UDFToInteger(d_year) = 1997) or (UDFToInteger(d_year) = 1998))) (type: boolean)
+                  filterExpr: ((UDFToInteger(d_year)) IN (1997, 1998) and (c_region = 'AMERICA') and (p_category = 'MFGR#14') and (s_nation = 'UNITED STATES')) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((UDFToInteger(d_year) = 1997) or (UDFToInteger(d_year) = 1998)) and (c_region = 'AMERICA') and (p_category = 'MFGR#14') and (s_nation = 'UNITED STATES')) (type: boolean)
+                    predicate: ((UDFToInteger(d_year)) IN (1997, 1998) and (c_region = 'AMERICA') and (p_category = 'MFGR#14') and (s_nation = 'UNITED STATES')) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1112 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: UDFToInteger(d_year) (type: int), s_city (type: string), p_brand1 (type: string), net_revenue (type: double)

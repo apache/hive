@@ -142,17 +142,17 @@ STAGE PLANS:
       Edges:
         Reducer 10 <- Map 12 (PARTITION-LEVEL SORT, 398), Map 9 (PARTITION-LEVEL SORT, 398)
         Reducer 11 <- Map 13 (PARTITION-LEVEL SORT, 596), Reducer 10 (PARTITION-LEVEL SORT, 596)
-        Reducer 15 <- Map 1 (PARTITION-LEVEL SORT, 7), Reducer 19 (PARTITION-LEVEL SORT, 7)
+        Reducer 15 <- Map 1 (PARTITION-LEVEL SORT, 8), Reducer 19 (PARTITION-LEVEL SORT, 8)
         Reducer 16 <- Reducer 15 (PARTITION-LEVEL SORT, 375), Reducer 22 (PARTITION-LEVEL SORT, 375)
         Reducer 17 <- Reducer 16 (GROUP, 406)
-        Reducer 19 <- Map 18 (GROUP, 3)
+        Reducer 19 <- Map 18 (GROUP, 6)
         Reducer 21 <- Map 12 (PARTITION-LEVEL SORT, 305), Map 20 (PARTITION-LEVEL SORT, 305)
         Reducer 22 <- Map 13 (PARTITION-LEVEL SORT, 494), Reducer 21 (PARTITION-LEVEL SORT, 494)
-        Reducer 26 <- Map 25 (PARTITION-LEVEL SORT, 7), Reducer 30 (PARTITION-LEVEL SORT, 7)
+        Reducer 26 <- Map 25 (PARTITION-LEVEL SORT, 8), Reducer 30 (PARTITION-LEVEL SORT, 8)
         Reducer 27 <- Reducer 26 (PARTITION-LEVEL SORT, 191), Reducer 33 (PARTITION-LEVEL SORT, 191)
         Reducer 28 <- Reducer 27 (GROUP, 204)
         Reducer 3 <- Reducer 11 (PARTITION-LEVEL SORT, 487), Reducer 15 (PARTITION-LEVEL SORT, 487)
-        Reducer 30 <- Map 18 (GROUP, 3)
+        Reducer 30 <- Map 18 (GROUP, 6)
         Reducer 32 <- Map 31 (PARTITION-LEVEL SORT, 154), Map 34 (PARTITION-LEVEL SORT, 154)
         Reducer 33 <- Map 35 (PARTITION-LEVEL SORT, 327), Reducer 32 (PARTITION-LEVEL SORT, 327)
         Reducer 4 <- Reducer 3 (GROUP, 529)
@@ -226,21 +226,21 @@ STAGE PLANS:
                   Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: ((i_color) IN ('orchid', 'chiffon', 'lace') and i_item_id is not null) (type: boolean)
-                    Statistics: Num rows: 231000 Data size: 331780228 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: i_item_id (type: string)
                       outputColumnNames: i_item_id
-                      Statistics: Num rows: 231000 Data size: 331780228 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                       Group By Operator
                         keys: i_item_id (type: string)
                         mode: hash
                         outputColumnNames: _col0
-                        Statistics: Num rows: 231000 Data size: 331780228 Basic stats: COMPLETE Column stats: NONE
+                        Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
                         Reduce Output Operator
                           key expressions: _col0 (type: string)
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
-                          Statistics: Num rows: 231000 Data size: 331780228 Basic stats: COMPLETE Column stats: NONE
+                          Statistics: Num rows: 462000 Data size: 663560457 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized
         Map 20 
             Map Operator Tree:
@@ -462,12 +462,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 115500 Data size: 165890114 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 231000 Data size: 331780228 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 115500 Data size: 165890114 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 231000 Data size: 331780228 Basic stats: COMPLETE Column stats: NONE
         Reducer 21 
             Reduce Operator Tree:
               Join Operator
@@ -592,12 +592,12 @@ STAGE PLANS:
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
-                Statistics: Num rows: 115500 Data size: 165890114 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 231000 Data size: 331780228 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: string)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
-                  Statistics: Num rows: 115500 Data size: 165890114 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 231000 Data size: 331780228 Basic stats: COMPLETE Column stats: NONE
         Reducer 32 
             Reduce Operator Tree:
               Join Operator

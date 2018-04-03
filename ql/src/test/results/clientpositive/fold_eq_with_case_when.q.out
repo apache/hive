@@ -139,10 +139,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: src
-            filterExpr: ((key = '238') or (key = '94')) (type: boolean)
+            filterExpr: (key) IN ('238', '94') (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key = '238') or (key = '94')) (type: boolean)
+              predicate: (key) IN ('238', '94') (type: boolean)
               Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)

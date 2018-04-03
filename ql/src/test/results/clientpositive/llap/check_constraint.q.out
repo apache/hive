@@ -1931,10 +1931,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_uami_n0
-                  filterExpr: (((de = 103) or (de = 119)) and enforce_constraint((893.14 >= CAST( i AS decimal(5,2))) is not false)) (type: boolean)
+                  filterExpr: ((de) IN (103, 119) and enforce_constraint((893.14 >= CAST( i AS decimal(5,2))) is not false)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (((de = 103) or (de = 119)) and enforce_constraint((893.14 >= CAST( i AS decimal(5,2))) is not false)) (type: boolean)
+                    predicate: ((de) IN (103, 119) and enforce_constraint((893.14 >= CAST( i AS decimal(5,2))) is not false)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 328 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), i (type: int), vc (type: varchar(128))

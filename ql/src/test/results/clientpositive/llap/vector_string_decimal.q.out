@@ -63,7 +63,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orc_decimal
-                  filterExpr: (UDFToDouble(id)) IN (1.0E8D, 2.0E8D) (type: boolean)
+                  filterExpr: (id) IN (100000000, 200000000) (type: boolean)
                   Statistics: Num rows: 4 Data size: 448 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -71,8 +71,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDoubleColumnInList(col 3:double, values [1.0E8, 2.0E8])(children: CastDecimalToDouble(col 2:decimal(18,0))(children: ConvertDecimal64ToDecimal(col 0:decimal(18,0)/DECIMAL_64) -> 2:decimal(18,0)) -> 3:double)
-                    predicate: (UDFToDouble(id)) IN (1.0E8D, 2.0E8D) (type: boolean)
+                        predicateExpression: FilterDecimal64ColumnInList(col 0:decimal(18,0)/DECIMAL_64, values [, decimal64Val 100000000, decimalVal 100000000, decimal64Val 200000000, decimalVal 200000000])
+                    predicate: (id) IN (100000000, 200000000) (type: boolean)
                     Statistics: Num rows: 2 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: id (type: decimal(18,0))

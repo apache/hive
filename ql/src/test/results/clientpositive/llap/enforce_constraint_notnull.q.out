@@ -3233,10 +3233,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_uami_n1
-                  filterExpr: (((de = 109.23) or (de = 119.23)) and enforce_constraint(vc is not null)) (type: boolean)
+                  filterExpr: ((de) IN (109.23, 119.23) and enforce_constraint(vc is not null)) (type: boolean)
                   Statistics: Num rows: 1002 Data size: 225450 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (((de = 109.23) or (de = 119.23)) and enforce_constraint(vc is not null)) (type: boolean)
+                    predicate: ((de) IN (109.23, 119.23) and enforce_constraint(vc is not null)) (type: boolean)
                     Statistics: Num rows: 3 Data size: 675 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), i (type: int), vc (type: varchar(128))

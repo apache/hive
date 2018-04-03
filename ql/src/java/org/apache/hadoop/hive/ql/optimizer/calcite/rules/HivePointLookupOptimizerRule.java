@@ -201,7 +201,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
             node = transformIntoInClauseCondition(rexBuilder,
                     nodeOp.getRowType(), call, minNumORClauses);
             if (node == null) {
-              return call;
+              return super.visitCall(call);
             }
           } catch (SemanticException e) {
             LOG.error("Exception in HivePointLookupOptimizerRule", e);

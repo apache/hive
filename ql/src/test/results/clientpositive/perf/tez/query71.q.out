@@ -120,7 +120,7 @@ Stage-0
                         Select Operator [SEL_172] (rows=86400 width=471)
                           Output:["_col0","_col1","_col2"]
                           Filter Operator [FIL_171] (rows=86400 width=471)
-                            predicate:(((t_meal_time = 'breakfast') or (t_meal_time = 'dinner')) and t_time_sk is not null)
+                            predicate:((t_meal_time) IN ('breakfast', 'dinner') and t_time_sk is not null)
                             TableScan [TS_35] (rows=86400 width=471)
                               default@time_dim,time_dim,Tbl:COMPLETE,Col:NONE,Output:["t_time_sk","t_hour","t_minute","t_meal_time"]
                     <-Reducer 4 [SIMPLE_EDGE]
