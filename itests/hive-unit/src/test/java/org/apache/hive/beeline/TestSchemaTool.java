@@ -27,10 +27,13 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URI;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.util.Random;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.dbcp.DelegatingConnection;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -153,7 +156,24 @@ public class TestSchemaTool extends TestCase {
     schemaTool.runBeeLine(scriptFile.getPath());
     isValid = schemaTool.validateSchemaTables(conn);
     assertTrue(isValid);
-   }
+
+    // Check that an exception from getMetaData() is reported correctly
+    try {
+      // Make a Connection object that will throw an exception
+      BadMetaDataConnection bad = new BadMetaDataConnection(conn);
+      schemaTool.validateSchemaTables(bad);
+      fail("did not get expected exception");
+    } catch (HiveMetaException hme) {
+      String message = hme.getMessage();
+      assertTrue("Bad HiveMetaException message :" + message,
+          message.contains("Failed to retrieve schema tables from Hive Metastore DB"));
+      Throwable cause = hme.getCause();
+      assertNotNull("HiveMetaException did not contain a cause", cause);
+      String causeMessage = cause.getMessage();
+      assertTrue("Bad SQLException message: " + causeMessage, causeMessage.contains(
+          BadMetaDataConnection.FAILURE_TEXT));
+    }
+  }
 
   /*
    * Test the validation of incorrect NULL values in the tables
@@ -758,5 +778,21 @@ public class TestSchemaTool extends TestCase {
         };
      File scriptFile = generateTestScript(scripts);
      schemaTool.runBeeLine(scriptFile.getPath());
+  }
+
+  /**
+   * A mock Connection class that throws an exception out of getMetaData().
+   */
+  class BadMetaDataConnection extends DelegatingConnection {
+    static final String FAILURE_TEXT = "fault injected";
+
+    BadMetaDataConnection(Connection connection) {
+      super(connection);
+    }
+
+    @Override
+    public DatabaseMetaData getMetaData() throws SQLException {
+      throw new SQLException(FAILURE_TEXT);
+    }
   }
 }
