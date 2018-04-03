@@ -168,9 +168,9 @@ Stage-0
                                     <-Map 10 [BROADCAST_EDGE] vectorized
                                       BROADCAST [RS_101]
                                         PartitionCols:_col0
-                                        Select Operator [SEL_100] (rows=852 width=1910)
+                                        Select Operator [SEL_100] (rows=1704 width=1910)
                                           Output:["_col0"]
-                                          Filter Operator [FIL_99] (rows=852 width=1910)
+                                          Filter Operator [FIL_99] (rows=1704 width=1910)
                                             predicate:((s_city) IN ('Cedar Grove', 'Wildwood') and s_store_sk is not null)
                                             TableScan [TS_12] (rows=1704 width=1910)
                                               default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_city"]
@@ -179,9 +179,9 @@ Stage-0
                                       <-Map 9 [BROADCAST_EDGE] vectorized
                                         BROADCAST [RS_98]
                                           PartitionCols:_col0
-                                          Select Operator [SEL_97] (rows=4058 width=1119)
+                                          Select Operator [SEL_97] (rows=8116 width=1119)
                                             Output:["_col0"]
-                                            Filter Operator [FIL_96] (rows=4058 width=1119)
+                                            Filter Operator [FIL_96] (rows=8116 width=1119)
                                               predicate:((d_year) IN (1998, 1999, 2000) and d_date_sk is not null and d_dom BETWEEN 1 AND 2)
                                               TableScan [TS_9] (rows=73049 width=1119)
                                                 default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_dom"]

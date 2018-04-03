@@ -102,9 +102,9 @@ Stage-0
                             <-Map 8 [BROADCAST_EDGE] vectorized
                               BROADCAST [RS_75]
                                 PartitionCols:_col0
-                                Select Operator [SEL_74] (rows=852 width=1910)
+                                Select Operator [SEL_74] (rows=1704 width=1910)
                                   Output:["_col0"]
-                                  Filter Operator [FIL_73] (rows=852 width=1910)
+                                  Filter Operator [FIL_73] (rows=1704 width=1910)
                                     predicate:((s_county) IN ('Mobile County', 'Maverick County', 'Huron County', 'Kittitas County') and s_store_sk is not null)
                                     TableScan [TS_12] (rows=1704 width=1910)
                                       default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_county"]
@@ -116,7 +116,7 @@ Stage-0
                                   Select Operator [SEL_71] (rows=1200 width=107)
                                     Output:["_col0"]
                                     Filter Operator [FIL_70] (rows=1200 width=107)
-                                      predicate:(((hd_buy_potential = '>10000') or (hd_buy_potential = 'unknown')) and (hd_vehicle_count > 0) and CASE WHEN ((hd_vehicle_count > 0)) THEN (((UDFToDouble(hd_dep_count) / UDFToDouble(hd_vehicle_count)) > 1.0D)) ELSE (null) END and hd_demo_sk is not null)
+                                      predicate:((hd_buy_potential) IN ('>10000', 'unknown') and (hd_vehicle_count > 0) and CASE WHEN ((hd_vehicle_count > 0)) THEN (((UDFToDouble(hd_dep_count) / UDFToDouble(hd_vehicle_count)) > 1.0D)) ELSE (null) END and hd_demo_sk is not null)
                                       TableScan [TS_9] (rows=7200 width=107)
                                         default@household_demographics,household_demographics,Tbl:COMPLETE,Col:NONE,Output:["hd_demo_sk","hd_buy_potential","hd_dep_count","hd_vehicle_count"]
                               <-Map Join Operator [MAPJOIN_78] (rows=633595212 width=88)
@@ -124,9 +124,9 @@ Stage-0
                                 <-Map 6 [BROADCAST_EDGE] vectorized
                                   BROADCAST [RS_69]
                                     PartitionCols:_col0
-                                    Select Operator [SEL_68] (rows=4058 width=1119)
+                                    Select Operator [SEL_68] (rows=8116 width=1119)
                                       Output:["_col0"]
-                                      Filter Operator [FIL_67] (rows=4058 width=1119)
+                                      Filter Operator [FIL_67] (rows=8116 width=1119)
                                         predicate:((d_year) IN (2000, 2001, 2002) and d_date_sk is not null and d_dom BETWEEN 1 AND 2)
                                         TableScan [TS_6] (rows=73049 width=1119)
                                           default@date_dim,date_dim,Tbl:COMPLETE,Col:NONE,Output:["d_date_sk","d_year","d_dom"]

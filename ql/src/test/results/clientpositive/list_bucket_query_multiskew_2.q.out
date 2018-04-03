@@ -259,9 +259,6 @@ PREHOOK: query: explain extended SELECT key, value FROM fact_daily_n2 WHERE ds='
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended SELECT key, value FROM fact_daily_n2 WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
 POSTHOOK: type: QUERY
-OPTIMIZED SQL: SELECT `key`, `value`
-FROM `default`.`fact_daily_n2`
-WHERE `ds` = '1' AND `hr` = '4' AND (`key` = '484' AND `value` = 'val_484' OR `key` = '238' AND `value` = 'val_238')
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -324,7 +321,7 @@ STAGE PLANS:
           GatherStats: false
           Filter Operator
             isSamplingPred: false
-            predicate: (((key = '238') and (value = 'val_238')) or ((key = '484') and (value = 'val_484'))) (type: boolean)
+            predicate: (struct(key,value)) IN (const struct('484','val_484'), const struct('238','val_238')) (type: boolean)
             Statistics: Num rows: 250 Data size: 2656 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string)

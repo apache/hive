@@ -146,9 +146,9 @@ Stage-0
                                           <-Map 12 [SIMPLE_EDGE] vectorized
                                             SHUFFLE [RS_95]
                                               PartitionCols:_col0
-                                              Select Operator [SEL_94] (rows=30 width=2045)
+                                              Select Operator [SEL_94] (rows=60 width=2045)
                                                 Output:["_col0"]
-                                                Filter Operator [FIL_93] (rows=30 width=2045)
+                                                Filter Operator [FIL_93] (rows=60 width=2045)
                                                   predicate:((cc_county) IN ('Ziebach County', 'Levy County', 'Huron County', 'Franklin Parish', 'Daviess County') and cc_call_center_sk is not null)
                                                   TableScan [TS_9] (rows=60 width=2045)
                                                     default@call_center,call_center,Tbl:COMPLETE,Col:NONE,Output:["cc_call_center_sk","cc_county"]

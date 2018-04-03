@@ -149,7 +149,7 @@ STAGE PLANS:
             alias: t3
             Statistics: Num rows: 1000/1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: ((a = 1) or (a = 2)) (type: boolean)
+              predicate: (a) IN (1, 2) (type: boolean)
               Statistics: Num rows: 200/200 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: sum(a)
@@ -477,7 +477,7 @@ STAGE PLANS:
             alias: t3
             Statistics: Num rows: 1000/1000 Data size: 8000 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((a = 1) and (b = 2)) or ((a = 2) and (b = 3)) or ((a = 3) and (b = 4))) (type: boolean)
+              predicate: (struct(a,b)) IN (const struct(1,2), const struct(2,3), const struct(3,4)) (type: boolean)
               Statistics: Num rows: 30/30 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
               Group By Operator
                 aggregations: sum(a)

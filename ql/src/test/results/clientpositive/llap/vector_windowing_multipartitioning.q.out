@@ -10246,8 +10246,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7:string, val tom allen), FilterStringGroupColEqualStringScalar(col 7:string, val bob steinbeck))
-                    predicate: ((s = 'bob steinbeck') or (s = 'tom allen')) (type: boolean)
+                        predicateExpression: FilterStringColumnInList(col 7, values tom allen, bob steinbeck)
+                    predicate: (s) IN ('tom allen', 'bob steinbeck') (type: boolean)
                     Statistics: Num rows: 1 Data size: 344 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: s (type: string), dec (type: decimal(4,2))
@@ -10523,8 +10523,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7:string, val tom allen), FilterStringGroupColEqualStringScalar(col 7:string, val bob steinbeck))
-                    predicate: ((s = 'bob steinbeck') or (s = 'tom allen')) (type: boolean)
+                        predicateExpression: FilterStringColumnInList(col 7, values tom allen, bob steinbeck)
+                    predicate: (s) IN ('tom allen', 'bob steinbeck') (type: boolean)
                     Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: s (type: string)
@@ -10789,8 +10789,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7:string, val tom allen), FilterStringGroupColEqualStringScalar(col 7:string, val bob steinbeck))
-                    predicate: ((s = 'bob steinbeck') or (s = 'tom allen')) (type: boolean)
+                        predicateExpression: FilterStringColumnInList(col 7, values tom allen, bob steinbeck)
+                    predicate: (s) IN ('tom allen', 'bob steinbeck') (type: boolean)
                     Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: s (type: string), bo (type: boolean)
@@ -11061,8 +11061,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7:string, val tom allen), FilterStringGroupColEqualStringScalar(col 7:string, val bob steinbeck))
-                    predicate: ((s = 'bob steinbeck') or (s = 'tom allen')) (type: boolean)
+                        predicateExpression: FilterStringColumnInList(col 7, values tom allen, bob steinbeck)
+                    predicate: (s) IN ('tom allen', 'bob steinbeck') (type: boolean)
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: i (type: int)
@@ -11340,8 +11340,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterStringGroupColEqualStringScalar(col 7:string, val tom allen), FilterStringGroupColEqualStringScalar(col 7:string, val bob steinbeck))
-                    predicate: ((s = 'bob steinbeck') or (s = 'tom allen')) (type: boolean)
+                        predicateExpression: FilterStringColumnInList(col 7, values tom allen, bob steinbeck)
+                    predicate: (s) IN ('tom allen', 'bob steinbeck') (type: boolean)
                     Statistics: Num rows: 1 Data size: 304 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: s (type: string), dec (type: decimal(4,2))

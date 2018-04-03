@@ -861,12 +861,12 @@ STAGE PLANS:
           alias: cbo_t2
           Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
-            predicate: (c_int) IN (c_int, (2 * c_int)) (type: boolean)
-            Statistics: Num rows: 10 Data size: 3660 Basic stats: COMPLETE Column stats: COMPLETE
+            predicate: ((c_int = (2 * c_int)) or (c_int = c_int)) (type: boolean)
+            Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string), value (type: string), c_int (type: int), c_float (type: float), c_boolean (type: boolean), dt (type: string)
               outputColumnNames: key, value, c_int, c_float, c_boolean, dt
-              Statistics: Num rows: 10 Data size: 3660 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: -- no rewrite
@@ -887,12 +887,12 @@ STAGE PLANS:
           alias: cbo_t2
           Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
           Filter Operator
-            predicate: (c_int) IN (c_int, 0) (type: boolean)
-            Statistics: Num rows: 10 Data size: 3660 Basic stats: COMPLETE Column stats: COMPLETE
+            predicate: ((c_int = 0) or (c_int = c_int)) (type: boolean)
+            Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
             Select Operator
               expressions: key (type: string), value (type: string), c_int (type: int), c_float (type: float), c_boolean (type: boolean), dt (type: string)
               outputColumnNames: key, value, c_int, c_float, c_boolean, dt
-              Statistics: Num rows: 10 Data size: 3660 Basic stats: COMPLETE Column stats: COMPLETE
+              Statistics: Num rows: 20 Data size: 7138 Basic stats: COMPLETE Column stats: COMPLETE
               ListSink
 
 PREHOOK: query: -- no rewrite

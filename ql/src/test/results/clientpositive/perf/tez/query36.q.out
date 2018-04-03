@@ -117,9 +117,9 @@ Stage-0
                                     <-Map 9 [SIMPLE_EDGE] vectorized
                                       SHUFFLE [RS_61]
                                         PartitionCols:_col0
-                                        Select Operator [SEL_60] (rows=852 width=1910)
+                                        Select Operator [SEL_60] (rows=1704 width=1910)
                                           Output:["_col0"]
-                                          Filter Operator [FIL_59] (rows=852 width=1910)
+                                          Filter Operator [FIL_59] (rows=1704 width=1910)
                                             predicate:((s_state) IN ('SD', 'FL', 'MI', 'LA', 'MO', 'SC', 'AL', 'GA') and s_store_sk is not null)
                                             TableScan [TS_6] (rows=1704 width=1910)
                                               default@store,store,Tbl:COMPLETE,Col:NONE,Output:["s_store_sk","s_state"]

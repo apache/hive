@@ -1,3 +1,4 @@
+set hive.optimize.point.lookup.min=31;
 set hive.mapred.mode=nonstrict;
 drop table pcr_t1_n1;
 

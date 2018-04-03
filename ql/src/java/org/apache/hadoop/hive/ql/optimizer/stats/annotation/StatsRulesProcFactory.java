@@ -450,7 +450,10 @@ public class StatsRulesProcFactory {
             return numRows / 2;
           }
           columns.add(columnChild);
-          aspCtx.addAffectedColumn((ExprNodeColumnDesc) columnChild);
+
+          // not adding column as affected; since that would rescale ndv based on the other columns
+          // selectivity as well...which leads to underestimation
+          // aspCtx.addAffectedColumn((ExprNodeColumnDesc) columnChild);
           final String columnName = ((ExprNodeColumnDesc) columnChild).getColumn();
           // if column name is not contained in needed column list then it
           // is a partition column. We do not need to evaluate partition columns
@@ -520,13 +523,24 @@ public class StatsRulesProcFactory {
 
       // 3. Calculate IN selectivity
       double factor = 1d;
+      if (multiColumn) {
+        // distinct value array doesn not help that much here; think (1,1),(1,2),(2,1),(2,2) as values
+        // but that will look like (1,2) as column values...
+        factor *= children.size() - 1;
+      }
       for (int i = 0; i < columnStats.size(); i++) {
         long dvs = columnStats.get(i) == null ? 0 : columnStats.get(i).getCountDistint();
         // (num of distinct vals for col in IN clause  / num of distinct vals for col )
-        double columnFactor = dvs == 0 ? 0.5d : ((double) values.get(i).size() / dvs);
+        double columnFactor = dvs == 0 ? 0.5d : (1.0d / dvs);
+        if (!multiColumn) {
+          columnFactor *=values.get(0).size();
+        }
         // max can be 1, even when ndv is larger in IN clause than in column stats
         factor *= columnFactor > 1d ? 1d : columnFactor;
       }
+
+      // Clamp at 1 to be sure that we don't get out of range.
+      factor = Double.min(factor, 1.0d);
       if (!allColsFilteredByStats) {
         factor = Double.max(factor, HiveConf.getFloatVar(aspCtx.getConf(), HiveConf.ConfVars.HIVE_STATS_IN_MIN_RATIO));
       }

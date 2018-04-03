@@ -126,10 +126,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orc_llap_n0
-                  filterExpr: ((cdecimal1 = 3.35) or (cdecimal1 = 4.46)) (type: boolean)
+                  filterExpr: (cdecimal1) IN (3.35, 4.46) (type: boolean)
                   Statistics: Num rows: 24576 Data size: 5505024 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((cdecimal1 = 3.35) or (cdecimal1 = 4.46)) (type: boolean)
+                    predicate: (cdecimal1) IN (3.35, 4.46) (type: boolean)
                     Statistics: Num rows: 24576 Data size: 5505024 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: cdecimal1 (type: decimal(10,2)), cdecimal2 (type: decimal(38,5))
@@ -222,10 +222,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: orc_llap_n0
-                  filterExpr: ((cdecimal1 = 3.35) or (cdecimal1 = 4.46)) (type: boolean)
+                  filterExpr: (cdecimal1) IN (3.35, 4.46) (type: boolean)
                   Statistics: Num rows: 24576 Data size: 5505024 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((cdecimal1 = 3.35) or (cdecimal1 = 4.46)) (type: boolean)
+                    predicate: (cdecimal1) IN (3.35, 4.46) (type: boolean)
                     Statistics: Num rows: 24576 Data size: 5505024 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: cdecimal1 (type: decimal(10,2)), cdecimal2 (type: decimal(38,5))
