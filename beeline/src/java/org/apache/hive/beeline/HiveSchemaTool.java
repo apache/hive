@@ -750,7 +750,7 @@ public class HiveSchemaTool {
         LOG.debug("Found table " + table + " in HMS dbstore");
       }
     } catch (SQLException e) {
-      throw new HiveMetaException("Failed to retrieve schema tables from Hive Metastore DB," + e.getMessage());
+      throw new HiveMetaException("Failed to retrieve schema tables from Hive Metastore DB", e);
     } finally {
       if (rs != null) {
         try {
