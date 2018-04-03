@@ -45,7 +45,9 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -2417,5 +2419,35 @@ public class TestDbTxnManager2 {
 
     cpr = driver.run("drop database if exists temp cascade");
     checkCmdOnDriver(cpr);
+  }
+  @Rule
+  public TemporaryFolder exportFolder = new TemporaryFolder();
+  /**
+   * see also {@link org.apache.hadoop.hive.ql.TestTxnAddPartition}
+   */
+  @Test
+  public void testAddPartitionLocks() throws Exception {
+    dropTable(new String[] {"T", "Tstage"});
+    CommandProcessorResponse cpr = driver.run("create table T (a int, b int) partitioned by (p int) " +
+        "stored as orc tblproperties('transactional'='true')");
+    checkCmdOnDriver(cpr);
+    //bucketed just so that we get 2 files
+    cpr = driver.run("create table Tstage (a int, b int)  clustered by (a) into 2 " +
+        "buckets stored as orc tblproperties('transactional'='false')");
+    checkCmdOnDriver(cpr);
+    cpr = driver.run("insert into Tstage values(0,2),(1,4)");
+    checkCmdOnDriver(cpr);
+    String exportLoc = exportFolder.newFolder("1").toString();
+    cpr = driver.run("export table Tstage to '" + exportLoc + "'");
+    checkCmdOnDriver(cpr);
+
+    cpr = driver.compileAndRespond("ALTER TABLE T ADD if not exists PARTITION (p=0)" +
+        " location '" + exportLoc + "/data'", true);
+    checkCmdOnDriver(cpr);
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "Fifer");//gets X lock on T
+
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "T", null, locks);
   }
 }
