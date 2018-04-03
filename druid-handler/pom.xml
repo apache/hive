@@ -104,6 +104,7 @@
           <artifactId>jackson-databind</artifactId>
         </exclusion>
       </exclusions>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>joda-time</groupId>
@@ -132,6 +133,7 @@
           <artifactId>druid-aws-common</artifactId>
         </exclusion>
       </exclusions>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.druid</groupId>
@@ -144,6 +146,7 @@
           <artifactId>annotations</artifactId>
         </exclusion>
       </exclusions>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>io.druid.extensions</groupId>
@@ -358,6 +361,7 @@
                       <include>org.apache.commons:*</include>
                       <include>org.roaringbitmap:*</include>
                       <include>org.apache.derby:*</include>
+                      <include>org.asynchttpclient:*</include>
                     </includes>
                   </artifactSet>
                   <filters>
