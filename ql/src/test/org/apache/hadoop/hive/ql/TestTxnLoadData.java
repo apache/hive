@@ -448,17 +448,9 @@ public class TestTxnLoadData extends TxnCommandsBaseForTests {
     };
     checkResult(expected, testQuery, isVectorized, "load data inpath");
   }
-  /**
-   * We have to use a different query to check results for Vectorized tests because to get the
-   * file name info we need to use {@link org.apache.hadoop.hive.ql.metadata.VirtualColumn#FILENAME}
-   * which will currently make the query non-vectorizable.  This means we can't check the file name
-   * for vectorized version of the test.
-   */
   private void checkResult(String[][] expectedResult, String query, boolean isVectorized,
       String msg) throws Exception{
-    List<String> rs = runStatementOnDriver(query);
-    checkExpected(rs, expectedResult, msg + (isVectorized ? " vect" : ""), LOG, !isVectorized);
-    assertVectorized(isVectorized, query);
+    checkResult(expectedResult, query, isVectorized, msg, LOG);
   }
   @Test
   public void testLoadAcidFile() throws Exception {

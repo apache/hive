@@ -206,9 +206,7 @@ public abstract class TxnCommandsBaseForTests {
   }
   void checkExpected(List<String> rs, String[][] expected, String msg, Logger LOG, boolean checkFileName) {
     LOG.warn(testName.getMethodName() + ": read data(" + msg + "): ");
-    for(String s : rs) {
-      LOG.warn(s);
-    }
+    logResult(LOG, rs);
     Assert.assertEquals( testName.getMethodName() + ": " + msg, expected.length, rs.size());
     //verify data and layout
     for(int i = 0; i < expected.length; i++) {
@@ -217,5 +215,23 @@ public abstract class TxnCommandsBaseForTests {
         Assert.assertTrue("Actual line(file) " + i + " file: " + rs.get(i), rs.get(i).endsWith(expected[i][1]));
       }
     }
+  }
+  void logResult(Logger LOG, List<String> rs) {
+    StringBuilder sb = new StringBuilder();
+    for(String s : rs) {
+      sb.append(s).append('\n');
+    }
+    LOG.info(sb.toString());
+  }
+  /**
+   * We have to use a different query to check results for Vectorized tests because to get the
+   * file name info we need to use {@link org.apache.hadoop.hive.ql.metadata.VirtualColumn#FILENAME}
+   * which will currently make the query non-vectorizable.  This means we can't check the file name
+   * for vectorized version of the test.
+   */
+  void checkResult(String[][] expectedResult, String query, boolean isVectorized, String msg, Logger LOG) throws Exception{
+    List<String> rs = runStatementOnDriver(query);
+    checkExpected(rs, expectedResult, msg + (isVectorized ? " vect" : ""), LOG, !isVectorized);
+    assertVectorized(isVectorized, query);
   }
 }
