@@ -302,6 +302,15 @@ CREATE TABLE REPL_TXN_MAP (
 
 INSERT INTO "SEQUENCE_TABLE" ("SEQUENCE_NAME", "NEXT_VAL") SELECT 'org.apache.hadoop.hive.metastore.model.MNotificationLog',1 WHERE NOT EXISTS ( SELECT "NEXT_VAL" FROM "SEQUENCE_TABLE" WHERE "SEQUENCE_NAME" = 'org.apache.hadoop.hive.metastore.model.MNotificationLog');
 
+-- HIVE_18747
+CREATE TABLE MIN_HISTORY_LEVEL (
+  MHL_TXNID bigint NOT NULL,
+  MHL_MIN_OPEN_TXNID bigint NOT NULL,
+  PRIMARY KEY(MHL_TXNID)
+);
+
+CREATE INDEX MIN_HISTORY_LEVEL_IDX ON MIN_HISTORY_LEVEL (MHL_MIN_OPEN_TXNID);
+
 -- These lines need to be last.  Insert any changes above.
 UPDATE "VERSION" SET "SCHEMA_VERSION"='3.0.0', "VERSION_COMMENT"='Hive release version 3.0.0' where "VER_ID"=1;
 SELECT 'Finished upgrading MetaStore schema from 2.3.0 to 3.0.0';

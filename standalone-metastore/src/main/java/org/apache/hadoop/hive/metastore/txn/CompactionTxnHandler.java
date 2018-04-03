@@ -481,7 +481,85 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   /**
-   * Clean up aborted transactions from txns that have no components in txn_components.  The reason such
+   * Clean up entries from TXN_TO_WRITE_ID table less than min_uncommited_txnid as found by
+   * min(NEXT_TXN_ID.ntxn_next, min(MIN_HISTORY_LEVEL.mhl_min_open_txnid), min(Aborted TXNS.txn_id)).
+   */
+  @Override
+  @RetrySemantics.SafeToRetry
+  public void cleanTxnToWriteIdTable() throws MetaException {
+    try {
+      Connection dbConn = null;
+      Statement stmt = null;
+      ResultSet rs = null;
+
+      try {
+        // We query for minimum values in all the queries and they can only increase by any concurrent
+        // operations. So, READ COMMITTED is sufficient.
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+
+        // First need to find the min_uncommitted_txnid which is currently seen by any open transactions.
+        // If there are no txns which are currently open or aborted in the system, then current value of
+        // NEXT_TXN_ID.ntxn_next could be min_uncommitted_txnid.
+        String s = "select ntxn_next from NEXT_TXN_ID";
+        LOG.debug("Going to execute query <" + s + ">");
+        rs = stmt.executeQuery(s);
+        if (!rs.next()) {
+          throw new MetaException("Transaction tables not properly " +
+                  "initialized, no record found in next_txn_id");
+        }
+        long minUncommittedTxnId = rs.getLong(1);
+
+        // If there are any open txns, then the minimum of min_open_txnid from MIN_HISTORY_LEVEL table
+        // could be the min_uncommitted_txnid if lesser than NEXT_TXN_ID.ntxn_next.
+        s = "select min(mhl_min_open_txnid) from MIN_HISTORY_LEVEL";
+        LOG.debug("Going to execute query <" + s + ">");
+        rs = stmt.executeQuery(s);
+        if (rs.next()) {
+          long minOpenTxnId = rs.getLong(1);
+          if (minOpenTxnId > 0) {
+            minUncommittedTxnId = Math.min(minOpenTxnId, minUncommittedTxnId);
+          }
+        }
+
+        // If there are aborted txns, then the minimum aborted txnid could be the min_uncommitted_txnid
+        // if lesser than both NEXT_TXN_ID.ntxn_next and min(MIN_HISTORY_LEVEL .mhl_min_open_txnid).
+        s = "select min(txn_id) from TXNS where txn_state = " + quoteChar(TXN_ABORTED);
+        LOG.debug("Going to execute query <" + s + ">");
+        rs = stmt.executeQuery(s);
+        if (rs.next()) {
+          long minAbortedTxnId = rs.getLong(1);
+          if (minAbortedTxnId > 0) {
+            minUncommittedTxnId = Math.min(minAbortedTxnId, minUncommittedTxnId);
+          }
+        }
+
+        // As all txns below min_uncommitted_txnid are either committed or empty_aborted, we are allowed
+        // to cleanup the entries less than min_uncommitted_txnid from the TXN_TO_WRITE_ID table.
+        s = "delete from TXN_TO_WRITE_ID where t2w_txnid < " + minUncommittedTxnId;
+        LOG.debug("Going to execute delete <" + s + ">");
+        int rc = stmt.executeUpdate(s);
+        LOG.info("Removed " + rc + " rows from TXN_TO_WRITE_ID with Txn Low-Water-Mark: " + minUncommittedTxnId);
+
+        LOG.debug("Going to commit");
+        dbConn.commit();
+      } catch (SQLException e) {
+        LOG.error("Unable to delete from txns table " + e.getMessage());
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "cleanTxnToWriteIdTable");
+        throw new MetaException("Unable to connect to transaction database " +
+                StringUtils.stringifyException(e));
+      } finally {
+        close(rs, stmt, dbConn);
+      }
+    } catch (RetryException e) {
+      cleanTxnToWriteIdTable();
+    }
+  }
+
+  /**
+   * Clean up aborted transactions from txns that have no components in txn_components. The reason such
    * txns exist can be that now work was done in this txn (e.g. Streaming opened TransactionBatch and
    * abandoned it w/o doing any work) or due to {@link #markCleaned(CompactionInfo)} being called.
    */
@@ -524,7 +602,6 @@ class CompactionTxnHandler extends TxnHandler {
           LOG.info("Removed " + rc + "  empty Aborted transactions from TXNS");
         }
         LOG.info("Aborted transactions removed from TXNS: " + txnids);
-
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {

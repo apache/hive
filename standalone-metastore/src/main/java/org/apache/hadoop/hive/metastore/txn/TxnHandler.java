@@ -547,6 +547,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
 
     int numTxns = rqst.getNum_txns();
+    if (numTxns <= 0) {
+      throw new MetaException("Invalid input for number of txns: " + numTxns);
+    }
+
     try {
       Connection dbConn = null;
       Statement stmt = null;
@@ -626,16 +630,43 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           stmt.execute(q);
         }
 
+        // Need to register minimum open txnid for current transactions into MIN_HISTORY table.
+        s = "select min(txn_id) from TXNS where txn_state = " + quoteChar(TXN_OPEN);
+        LOG.debug("Going to execute query <" + s + ">");
+        rs = stmt.executeQuery(s);
+        if (!rs.next()) {
+          throw new IllegalStateException("Scalar query returned no rows?!?!!");
+        }
+
+        // TXNS table should have atleast one entry because we just inserted the newly opened txns.
+        // So, min(txn_id) would be a non-zero txnid.
+        long minOpenTxnId = rs.getLong(1);
+        assert(minOpenTxnId > 0);
+        rows.clear();
+        for (long txnId = first; txnId < first + numTxns; txnId++) {
+          rows.add(txnId + ", " + minOpenTxnId);
+        }
+
+        // Insert transaction entries into MIN_HISTORY_LEVEL.
+        List<String> inserts = sqlGenerator.createInsertValuesStmt(
+                "MIN_HISTORY_LEVEL (mhl_txnid, mhl_min_open_txnid)", rows);
+        for (String insert : inserts) {
+          LOG.debug("Going to execute insert <" + insert + ">");
+          stmt.execute(insert);
+        }
+        LOG.info("Added entries to MIN_HISTORY_LEVEL for current txns: (" + txnIds
+                + ") with min_open_txn: " + minOpenTxnId);
+
         if (rqst.isSetReplPolicy()) {
           List<String> rowsRepl = new ArrayList<>();
 
           for (int i = 0; i < numTxns; i++) {
             rowsRepl.add(
-                quoteString(rqst.getReplPolicy()) + "," + rqst.getReplSrcTxnIds().get(i) + "," + txnIds.get(i));
+                    quoteString(rqst.getReplPolicy()) + "," + rqst.getReplSrcTxnIds().get(i) + "," + txnIds.get(i));
           }
 
           List<String> queriesRepl = sqlGenerator.createInsertValuesStmt(
-              "REPL_TXN_MAP (RTM_REPL_POLICY, RTM_SRC_TXN_ID, RTM_TARGET_TXN_ID)", rowsRepl);
+                  "REPL_TXN_MAP (RTM_REPL_POLICY, RTM_SRC_TXN_ID, RTM_TARGET_TXN_ID)", rowsRepl);
 
           for (String query : queriesRepl) {
             LOG.info("Going to execute insert <" + query + ">");
@@ -985,8 +1016,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         s = "delete from TXNS where txn_id = " + txnid;
         LOG.debug("Going to execute update <" + s + ">");
         modCount = stmt.executeUpdate(s);
-        LOG.debug("Going to commit");
-        dbConn.commit();
+        s = "delete from MIN_HISTORY_LEVEL where mhl_txnid = " + txnid;
+        LOG.debug("Going to execute update <" + s + ">");
+        modCount = stmt.executeUpdate(s);
+        LOG.info("Removed committed transaction: (" + txnid + ") from MIN_HISTORY_LEVEL");
 
         // Update registry with modifications
         s = "select ctc_database, ctc_table, ctc_timestamp from COMPLETED_TXN_COMPONENTS where ctc_txnid = " + txnid;
@@ -1011,6 +1044,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         close(rs);
+
+        LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
         LOG.debug("Going to rollback");
@@ -1096,6 +1131,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
       // Find the writeId high water mark based upon txnId high water mark. If found, then, need to
       // traverse through all write Ids less than writeId HWM to make exceptions list.
+      // The writeHWM = min(NEXT_WRITE_ID.nwi_next-1, max(TXN_TO_WRITE_ID.t2w_writeid under txnHwm))
       String s = "select max(t2w_writeid) from TXN_TO_WRITE_ID where t2w_txnid <= " + txnHwm
               + " and t2w_database = " + quoteString(names[0])
               + " and t2w_table = " + quoteString(names[1]);
@@ -1103,36 +1139,51 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       rs = stmt.executeQuery(s);
       if (rs.next()) {
         writeIdHwm = rs.getLong(1);
+      }
 
-        // As writeIdHwm is known, query all writeIds under the writeId HWM.
-        // If any writeId under HWM is allocated by txn > txnId HWM, then will be added to invalid list.
-        // The output of this query includes all the txns which are under the high water mark. It includes
-        // the committed transactions as well. The results should be sorted in ascending order based
-        // on write id. The sorting is needed as exceptions list in ValidWriteIdList would be looked-up
-        // using binary search.
-        s = "select t2w_txnid, t2w_writeid from TXN_TO_WRITE_ID where t2w_writeid <= " + writeIdHwm
-                + " and t2w_database = " + quoteString(names[0])
-                + " and t2w_table = " + quoteString(names[1])
-                + " order by t2w_writeid asc";
-
+      // If no writeIds allocated by txns under txnHwm, then find writeHwm from NEXT_WRITE_ID.
+      if (writeIdHwm <= 0) {
+        // Need to subtract 1 as nwi_next would be the next write id to be allocated but we need highest
+        // allocated write id.
+        s = "select nwi_next-1 from NEXT_WRITE_ID where nwi_database = " + quoteString(names[0])
+                + " and nwi_table = " + quoteString(names[1]);
         LOG.debug("Going to execute query<" + s + ">");
         rs = stmt.executeQuery(s);
-        while (rs.next()) {
-          long txnId = rs.getLong(1);
-          long writeId = rs.getLong(2);
-          if (validTxnList.isTxnValid(txnId)) {
-            // Skip if the transaction under evaluation is already committed.
-            continue;
+        if (rs.next()) {
+          long maxWriteId = rs.getLong(1);
+          if (maxWriteId > 0) {
+            writeIdHwm = (writeIdHwm > 0) ? Math.min(maxWriteId, writeIdHwm) : maxWriteId;
           }
+        }
+      }
 
-          // The current txn is either in open or aborted state.
-          // Mark the write ids state as per the txn state.
-          invalidWriteIdList.add(writeId);
-          if (validTxnList.isTxnAborted(txnId)) {
-            abortedBits.set(invalidWriteIdList.size() - 1);
-          } else {
-            minOpenWriteId = Math.min(minOpenWriteId, writeId);
-          }
+      // As writeIdHwm is known, query all writeIds under the writeId HWM.
+      // If any writeId under HWM is allocated by txn > txnId HWM or belongs to open/aborted txns,
+      // then will be added to invalid list. The results should be sorted in ascending order based
+      // on write id. The sorting is needed as exceptions list in ValidWriteIdList would be looked-up
+      // using binary search.
+      s = "select t2w_txnid, t2w_writeid from TXN_TO_WRITE_ID where t2w_writeid <= " + writeIdHwm
+              + " and t2w_database = " + quoteString(names[0])
+              + " and t2w_table = " + quoteString(names[1])
+              + " order by t2w_writeid asc";
+
+      LOG.debug("Going to execute query<" + s + ">");
+      rs = stmt.executeQuery(s);
+      while (rs.next()) {
+        long txnId = rs.getLong(1);
+        long writeId = rs.getLong(2);
+        if (validTxnList.isTxnValid(txnId)) {
+          // Skip if the transaction under evaluation is already committed.
+          continue;
+        }
+
+        // The current txn is either in open or aborted state.
+        // Mark the write ids state as per the txn state.
+        invalidWriteIdList.add(writeId);
+        if (validTxnList.isTxnAborted(txnId)) {
+          abortedBits.set(invalidWriteIdList.size() - 1);
+        } else {
+          minOpenWriteId = Math.min(minOpenWriteId, writeId);
         }
       }
 
@@ -2979,6 +3030,26 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Going to execute update <" + query + ">");
         updateCnt += stmt.executeUpdate(query);
       }
+
+      // As current txn is aborted, this won't read any data from other txns. So, it is safe to unregister
+      // the min_open_txnid from MIN_HISTORY_LEVEL for the aborted txns. Even if the txns in the list are
+      // partially aborted, it is safe to delete from MIN_HISTORY_LEVEL as the remaining txns are either
+      // already committed or aborted.
+      queries.clear();
+      prefix.setLength(0);
+      suffix.setLength(0);
+
+      prefix.append("delete from MIN_HISTORY_LEVEL where ");
+      suffix.append("");
+
+      TxnUtils.buildQueryWithINClause(conf, queries, prefix, suffix, txnids, "mhl_txnid", false, false);
+
+      for (String query : queries) {
+        LOG.debug("Going to execute update <" + query + ">");
+        int rc = stmt.executeUpdate(query);
+        LOG.debug("Deleted " + rc + " records from MIN_HISTORY_LEVEL");
+      }
+      LOG.info("Removed aborted transactions: (" + txnids + ") from MIN_HISTORY_LEVEL");
 
       if (updateCnt < txnids.size() && isStrict) {
         /**
