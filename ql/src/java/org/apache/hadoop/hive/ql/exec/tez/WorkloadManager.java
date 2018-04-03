@@ -189,6 +189,8 @@ public class WorkloadManager extends TezSessionPoolSession.AbstractTriggerValida
     throws ExecutionException, InterruptedException {
     assert INSTANCE == null;
     // We could derive the expected number of AMs to pass in.
+    // Note: we pass a null token here; the tokens to talk to plugin endpoints will only be
+    //       known once the AMs register, and they are different for every AM (unlike LLAP token).
     LlapPluginEndpointClientImpl amComm = new LlapPluginEndpointClientImpl(conf, null, -1);
     QueryAllocationManager qam = new GuaranteedTasksAllocator(conf, amComm);
     return (INSTANCE = new WorkloadManager(amComm, yarnQueue, conf, qam, plan, recoverAms));

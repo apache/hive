@@ -14,6 +14,7 @@
 
 package org.apache.hadoop.hive.llap;
 
+import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -433,13 +434,20 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
     }
   }
 
-  private ProtocolType createProxy(final LlapNodeId nodeId, Token<TokenType> nodeToken) {
+  private ProtocolType createProxy(
+      final LlapNodeId nodeId, Token<TokenType> nodeToken) throws IOException {
     if (nodeToken == null && token == null) {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Creating a client without a token for " + nodeId);
       }
       return createProtocolImpl(getConfig(), nodeId.getHostname(),
           nodeId.getPort(), null, retryPolicy, socketFactory);
+    }
+    // Either the token should be passed in here, or in ctor.
+    String tokenUser = this.tokenUser == null ? getTokenUser(nodeToken) : this.tokenUser;
+    if (tokenUser == null) {
+      tokenUser = UserGroupInformation.getCurrentUser().getShortUserName();
+      LOG.warn("Cannot determine token user for UGI; using {}", tokenUser);
     }
     final UserGroupInformation ugi = UserGroupInformation.createRemoteUser(tokenUser);
     // Clone the token as we'd need to set the service to the one we are talking to.
