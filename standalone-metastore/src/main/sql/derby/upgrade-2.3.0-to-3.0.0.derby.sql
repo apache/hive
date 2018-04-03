@@ -227,6 +227,15 @@ CREATE TABLE REPL_TXN_MAP (
 
 INSERT INTO "APP"."SEQUENCE_TABLE" ("SEQUENCE_NAME", "NEXT_VAL") SELECT * FROM (VALUES ('org.apache.hadoop.hive.metastore.model.MNotificationLog', 1)) tmp_table WHERE NOT EXISTS ( SELECT "NEXT_VAL" FROM "APP"."SEQUENCE_TABLE" WHERE "SEQUENCE_NAME" = 'org.apache.hadoop.hive.metastore.model.MNotificationLog');
 
+-- HIVE-18747
+CREATE TABLE MIN_HISTORY_LEVEL (
+  MHL_TXNID bigint NOT NULL,
+  MHL_MIN_OPEN_TXNID bigint NOT NULL,
+  PRIMARY KEY(MHL_TXNID)
+);
+
+CREATE INDEX MIN_HISTORY_LEVEL_IDX ON MIN_HISTORY_LEVEL (MHL_MIN_OPEN_TXNID);
+
 -- This needs to be the last thing done.  Insert any changes above this line.
 UPDATE "APP".VERSION SET SCHEMA_VERSION='3.0.0', VERSION_COMMENT='Hive release version 3.0.0' where VER_ID=1;
 
