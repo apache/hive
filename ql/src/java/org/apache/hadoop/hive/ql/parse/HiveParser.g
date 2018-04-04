@@ -187,6 +187,7 @@ TOK_ALTERTABLE_CLUSTER_SORT;
 TOK_ALTERTABLE_COMPACT;
 TOK_ALTERTABLE_DROPCONSTRAINT;
 TOK_ALTERTABLE_ADDCONSTRAINT;
+TOK_ALTERTABLE_UPDATECOLUMNS;
 TOK_MSCK;
 TOK_SHOWDATABASES;
 TOK_SHOWTABLES;
@@ -1151,6 +1152,7 @@ alterTblPartitionStatementSuffix
   | alterStatementSuffixUpdateStats
   | alterStatementSuffixRenameCol
   | alterStatementSuffixAddCol
+  | alterStatementSuffixUpdateColumns
   ;
 
 alterStatementPartitionKeyType
@@ -1229,6 +1231,13 @@ alterStatementSuffixAddConstraint
    -> {fk != null}? ^(TOK_ALTERTABLE_ADDCONSTRAINT alterForeignKeyWithName)
    ->               ^(TOK_ALTERTABLE_ADDCONSTRAINT alterConstraintWithName)
    ;
+
+alterStatementSuffixUpdateColumns
+@init { pushMsg("update columns statement", state); }
+@after { popMsg(state); }
+    : KW_UPDATE KW_COLUMNS restrictOrCascade?
+    -> ^(TOK_ALTERTABLE_UPDATECOLUMNS restrictOrCascade?)
+    ;
 
 alterStatementSuffixDropConstraint
 @init { pushMsg("drop constraint statement", state); }

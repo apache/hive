@@ -234,6 +234,8 @@ public class Operation2Privilege {
 (OWNER_PRIV_AR, INS_SEL_DEL_NOGRANT_AR));
     op2Priv.put(HiveOperationType.ALTERTABLE_COMPACT, PrivRequirement.newIOPrivRequirement
 (OWNER_PRIV_AR,  OWNER_PRIV_AR));
+    op2Priv.put(HiveOperationType.ALTERTABLE_UPDATECOLUMNS, PrivRequirement.newIOPrivRequirement
+(OWNER_PRIV_AR,  OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.TRUNCATETABLE, PrivRequirement.newIOPrivRequirement
 (OWNER_PRIV_AR, OWNER_PRIV_AR));
     op2Priv.put(HiveOperationType.ALTERTABLE_DROPCONSTRAINT, PrivRequirement.newIOPrivRequirement
