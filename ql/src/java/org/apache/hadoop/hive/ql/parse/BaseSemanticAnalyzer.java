@@ -1574,6 +1574,23 @@ public abstract class BaseSemanticAnalyzer {
           }
           specType = SpecType.STATIC_PARTITION;
         }
+      } else if(ast.getToken().getType() != HiveParser.TOK_CREATETABLE &&
+          ast.getToken().getType() != HiveParser.TOK_CREATE_MATERIALIZED_VIEW &&
+          ast.getToken().getType() != HiveParser.TOK_ALTER_MATERIALIZED_VIEW &&
+          tableHandle.getPartitionKeys().size() > 0 && allowDynamicPartitionsSpec
+          && (ast.getParent() != null && (ast.getParent().getType() == HiveParser.TOK_INSERT_INTO
+          || ast.getParent().getType() == HiveParser.TOK_INSERT)
+          || ast.getParent().getType() == HiveParser.TOK_DESTINATION))  {
+        // if user hasn't specify partition spec generate it from table's partition spec
+        // do this only if it is INSERT/INSERT INTO/INSERT OVERWRITE
+        List<FieldSchema> parts = tableHandle.getPartitionKeys();
+        partSpec = new LinkedHashMap<String, String>(parts.size());
+        for (FieldSchema fs : parts) {
+          String partKey = fs.getName();
+          partSpec.put(partKey, null);
+        }
+        partHandle = null;
+        specType = SpecType.DYNAMIC_PARTITION;
       } else {
         specType = SpecType.TABLE_ONLY;
       }
