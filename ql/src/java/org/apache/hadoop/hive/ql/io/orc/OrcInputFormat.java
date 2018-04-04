@@ -445,6 +445,30 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     return result;
   }
 
+  private static boolean[] setIncludeForNestedColumns(String[] columnPath,int postion,TypeDescription readerSchema,boolean[] include )
+  {
+    if(postion == (columnPath.length) && readerSchema.getChildren() != null)
+    {
+      for(int col = readerSchema.getId(); col <= readerSchema.getMaximumId(); ++col) {
+        include[col] = true;
+      }
+    }
+    else if(postion == (columnPath.length) && readerSchema.getChildren() == null)
+    {
+      include[readerSchema.getId()] = true;
+    }
+    else {
+      String columnName = columnPath[postion];
+      int columnID = readerSchema.getFieldNames().indexOf(columnName);
+      TypeDescription childSchema = readerSchema.getChildren().get(columnID);
+      include = setIncludeForNestedColumns(columnPath,++postion,childSchema,include);
+      include[childSchema.getId()] = true;
+    }
+    return include;
+  }
+
+
+
   private static String[] getSargColumnNames(String[] originalColumnNames,
       List<OrcProto.Type> types, boolean[] includedColumns, boolean isOriginal) {
     int rootColumn = getRootColumn(isOriginal);
