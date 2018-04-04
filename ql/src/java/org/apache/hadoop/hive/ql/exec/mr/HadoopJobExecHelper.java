@@ -450,7 +450,7 @@ public class HadoopJobExecHelper {
       }
       console.printInfo(getJobStartMsg(rj.getID()) + ", Tracking URL = "
           + rj.getTrackingURL());
-      console.printInfo("Kill Command = " + HiveConf.getVar(job, HiveConf.ConfVars.HADOOPBIN)
+      console.printInfo("Kill Command = " + HiveConf.getVar(job, ConfVars.MAPREDBIN)
           + " job  -kill " + rj.getID());
     }
   }

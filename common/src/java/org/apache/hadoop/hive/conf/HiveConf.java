@@ -616,6 +616,7 @@ public class HiveConf extends Configuration {
     // values will override any values set in the underlying Hadoop configuration.
     HADOOPBIN("hadoop.bin.path", findHadoopBinary(), "", true),
     YARNBIN("yarn.bin.path", findYarnBinary(), "", true),
+    MAPREDBIN("mapred.bin.path", findMapRedBinary(), "", true),
     HIVE_FS_HAR_IMPL("fs.har.impl", "org.apache.hadoop.hive.shims.HiveHarFileSystem",
         "The implementation for accessing Hadoop Archives. Note that this won't be applicable to Hadoop versions less than 0.20"),
     MAPREDMAXSPLITSIZE(FileInputFormat.SPLIT_MAXSIZE, 256000000L, "", true),
@@ -3954,6 +3955,11 @@ public class HiveConf extends Configuration {
     private static String findYarnBinary() {
       String val = findHadoopHome();
       val = (val == null ? "yarn" : val + File.separator + "bin" + File.separator + "yarn");
+      return val;
+    }
+    private static String findMapRedBinary() {
+      String val = findHadoopHome();
+      val = (val == null ? "mapred" : val + File.separator + "bin" + File.separator + "mapred");
       return val;
     }
 
