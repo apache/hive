@@ -23,7 +23,7 @@ fixacidkeyindex () {
 }
 
 fixacidkeyindex_help () {
-  echo "usage ./hive fixacidkeyindex [-h] --check-only|--recover [--backup-path <new-path>] <path_to_orc_file_or_directory>"
+  echo "usage ./hive --service fixacidkeyindex [-h] --check-only|--recover [--backup-path <new-path>] <path_to_orc_file_or_directory>"
   echo ""
   echo "  --check-only                Check acid orc file for valid acid key index and exit without fixing"
   echo "  --recover                   Fix the acid key index for acid orc file if it requires fixing"
