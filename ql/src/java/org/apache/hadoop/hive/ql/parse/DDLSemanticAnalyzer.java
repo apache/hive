@@ -3526,29 +3526,33 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     if(!AcidUtils.isTransactionalTable(tab)) {
       return;
     }
-    Long writeId;
-    int stmtId;
-    try {
-      writeId = SessionState.get().getTxnMgr().getTableWriteId(tab.getDbName(),
-          tab.getTableName());
-    } catch (LockException ex) {
-      throw new SemanticException("Failed to allocate the write id", ex);
-    }
-    stmtId = SessionState.get().getTxnMgr().getStmtIdAndIncrement();
+    Long writeId = null;
+    int stmtId = 0;
 
     for (int index = 0; index < addPartitionDesc.getPartitionCount(); index++) {
       OnePartitionDesc desc = addPartitionDesc.getPartition(index);
       if (desc.getLocation() != null) {
         if(addPartitionDesc.isIfNotExists()) {
-          //Don't add
+          //Don't add partition data if it already exists
           Partition oldPart = getPartition(tab, desc.getPartSpec(), false);
           if(oldPart != null) {
             continue;
           }
         }
+        if(writeId == null) {
+          //so that we only allocate a writeId only if actually adding data
+          // (vs. adding a partition w/o data)
+          try {
+            writeId = SessionState.get().getTxnMgr().getTableWriteId(tab.getDbName(),
+                tab.getTableName());
+          } catch (LockException ex) {
+            throw new SemanticException("Failed to allocate the write id", ex);
+          }
+          stmtId = SessionState.get().getTxnMgr().getStmtIdAndIncrement();
+        }
         LoadTableDesc loadTableWork = new LoadTableDesc(new Path(desc.getLocation()),
             Utilities.getTableDesc(tab), desc.getPartSpec(),
-            LoadTableDesc.LoadFileType.KEEP_EXISTING,//not relevant - creating new partition
+            LoadTableDesc.LoadFileType.KEEP_EXISTING, //not relevant - creating new partition
             writeId);
         loadTableWork.setStmtId(stmtId);
         loadTableWork.setInheritTableSpecs(true);
@@ -3557,7 +3561,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
               Warehouse.makePartPath(desc.getPartSpec())).toString());
         }
         catch (MetaException ex) {
-          throw new SemanticException("Could not determine partition path due to: " + ex.getMessage(), ex);
+          throw new SemanticException("Could not determine partition path due to: "
+              + ex.getMessage(), ex);
         }
         Task<MoveWork> moveTask = TaskFactory.get(
             new MoveWork(getInputs(), getOutputs(), loadTableWork, null,
