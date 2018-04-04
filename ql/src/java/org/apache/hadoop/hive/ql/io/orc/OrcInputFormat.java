@@ -414,14 +414,14 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
                                              Configuration conf) {
      if (!ColumnProjectionUtils.isReadAllColumns(conf)) {
       List<Integer> included = ColumnProjectionUtils.getReadColumnIDs(conf);
-       return genIncludedColumns(readerSchema, included, conf);
+       return genIncludedColumns(conf,readerSchema,included);
     } else {
       return null;
     }
   }
 
-  public static boolean[] genIncludedColumns(TypeDescription readerSchema,
-                                             List<Integer> included, Configuration conf) {
+  public static boolean[] genIncludedColumns(Configuration conf, TypeDescription readerSchema,
+                                             List<Integer> included) {
 
     boolean[] result = new boolean[readerSchema.getMaximumId() + 1];
     if (included == null) {
