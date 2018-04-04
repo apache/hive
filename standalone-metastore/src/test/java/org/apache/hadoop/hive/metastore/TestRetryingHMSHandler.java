@@ -49,9 +49,9 @@ public class TestRetryingHMSHandler {
         AlternateFailurePreListener.class.getName());
     conf = MetastoreConf.newMetastoreConf();
     MetastoreConf.setLongVar(conf, ConfVars.THRIFT_CONNECTION_RETRIES, 3);
-    MetastoreConf.setLongVar(conf, ConfVars.HMSHANDLERATTEMPTS, 2);
-    MetastoreConf.setTimeVar(conf, ConfVars.HMSHANDLERINTERVAL, 0, TimeUnit.MILLISECONDS);
-    MetastoreConf.setBoolVar(conf, ConfVars.HMSHANDLERFORCERELOADCONF, false);
+    MetastoreConf.setLongVar(conf, ConfVars.HMS_HANDLER_ATTEMPTS, 2);
+    MetastoreConf.setTimeVar(conf, ConfVars.HMS_HANDLER_INTERVAL, 0, TimeUnit.MILLISECONDS);
+    MetastoreConf.setBoolVar(conf, ConfVars.HMS_HANDLER_FORCE_RELOAD_CONF, false);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), conf);
     msc = new HiveMetaStoreClient(conf);

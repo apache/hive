@@ -36,8 +36,8 @@ public class TestMetaStoreConnectionUrlHook {
   @Test
   public void testUrlHook() throws Exception {
     Configuration conf = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setVar(conf, ConfVars.CONNECTURLHOOK, DummyJdoConnectionUrlHook.class.getName());
-    MetastoreConf.setVar(conf, ConfVars.CONNECTURLKEY, DummyJdoConnectionUrlHook.initialUrl);
+    MetastoreConf.setVar(conf, ConfVars.CONNECT_URL_HOOK, DummyJdoConnectionUrlHook.class.getName());
+    MetastoreConf.setVar(conf, ConfVars.CONNECT_URL_KEY, DummyJdoConnectionUrlHook.initialUrl);
     MetastoreConf.setVar(conf, ConfVars.RAW_STORE_IMPL, DummyRawStoreForJdoConnection.class.getName());
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 

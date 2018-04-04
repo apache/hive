@@ -357,9 +357,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
     timeout = MetastoreConf.getTimeVar(conf, ConfVars.TXN_TIMEOUT, TimeUnit.MILLISECONDS);
     buildJumpTable();
-    retryInterval = MetastoreConf.getTimeVar(conf, ConfVars.HMSHANDLERINTERVAL,
+    retryInterval = MetastoreConf.getTimeVar(conf, ConfVars.HMS_HANDLER_INTERVAL,
         TimeUnit.MILLISECONDS);
-    retryLimit = MetastoreConf.getIntVar(conf, ConfVars.HMSHANDLERATTEMPTS);
+    retryLimit = MetastoreConf.getIntVar(conf, ConfVars.HMS_HANDLER_ATTEMPTS);
     deadlockRetryInterval = retryInterval / 10;
     maxOpenTxns = MetastoreConf.getIntVar(conf, ConfVars.MAX_OPEN_TXNS);
 
@@ -4346,7 +4346,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           throw new RuntimeException("Unable to find driver " + driverName + ", " + e.getMessage(),
               e);
         }
-        connString = MetastoreConf.getVar(conf, ConfVars.CONNECTURLKEY);
+        connString = MetastoreConf.getVar(conf, ConfVars.CONNECT_URL_KEY);
       }
 
       try {
