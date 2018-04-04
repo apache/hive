@@ -66,6 +66,7 @@ public final class SemanticAnalyzerFactory {
         HiveOperation.ALTERTABLE_EXCHANGEPARTITION);
     commandType.put(HiveParser.TOK_ALTERTABLE_DROPCONSTRAINT, HiveOperation.ALTERTABLE_DROPCONSTRAINT);
     commandType.put(HiveParser.TOK_ALTERTABLE_ADDCONSTRAINT, HiveOperation.ALTERTABLE_ADDCONSTRAINT);
+    commandType.put(HiveParser.TOK_ALTERTABLE_UPDATECOLUMNS, HiveOperation.ALTERTABLE_UPDATECOLUMNS);
     commandType.put(HiveParser.TOK_SHOWDATABASES, HiveOperation.SHOWDATABASES);
     commandType.put(HiveParser.TOK_SHOWTABLES, HiveOperation.SHOWTABLES);
     commandType.put(HiveParser.TOK_SHOWCOLUMNS, HiveOperation.SHOWCOLUMNS);
@@ -242,6 +243,7 @@ public final class SemanticAnalyzerFactory {
           case HiveParser.TOK_ALTERTABLE_SKEWED:
           case HiveParser.TOK_ALTERTABLE_DROPCONSTRAINT:
           case HiveParser.TOK_ALTERTABLE_ADDCONSTRAINT:
+          case HiveParser.TOK_ALTERTABLE_UPDATECOLUMNS:
           queryState.setCommandType(commandType.get(child.getType()));
           return new DDLSemanticAnalyzer(queryState);
         }

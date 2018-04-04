@@ -359,6 +359,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
         analyzeAlterTableDropConstraint(ast, tableName);
       } else if(ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_ADDCONSTRAINT) {
           analyzeAlterTableAddConstraint(ast, tableName);
+      } else if(ast.getToken().getType() == HiveParser.TOK_ALTERTABLE_UPDATECOLUMNS) {
+        analyzeAlterTableUpdateColumns(ast, tableName, partSpec);
       }
       break;
     }
@@ -2186,6 +2188,23 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         alterTblDesc)));
+  }
+
+  private void analyzeAlterTableUpdateColumns(ASTNode ast, String tableName,
+      HashMap<String, String> partSpec) throws SemanticException {
+
+    boolean isCascade = false;
+    if (null != ast.getFirstChildWithType(HiveParser.TOK_CASCADE)) {
+      isCascade = true;
+    }
+
+    AlterTableDesc alterTblDesc = new AlterTableDesc(AlterTableTypes.UPDATECOLUMNS);
+    alterTblDesc.setOldName(tableName);
+    alterTblDesc.setIsCascade(isCascade);
+    alterTblDesc.setPartSpec(partSpec);
+
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+            alterTblDesc), conf));
   }
 
   static HashMap<String, String> getProps(ASTNode prop) {
