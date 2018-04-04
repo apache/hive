@@ -2101,7 +2101,7 @@ public class TestStreaming {
 
   ///////// -------- UTILS ------- /////////
   // returns Path of the partition created (if any) else Path of table
-  public static Path createDbAndTable(IDriver driver, String databaseName,
+  private static Path createDbAndTable(IDriver driver, String databaseName,
                                       String tableName, List<String> partVals,
                                       String[] colNames, String[] colTypes,
                                       String[] bucketCols,
@@ -2147,7 +2147,7 @@ public class TestStreaming {
   private static String getTableColumnsStr(String[] colNames, String[] colTypes) {
     StringBuilder sb = new StringBuilder();
     for (int i=0; i < colNames.length; ++i) {
-      sb.append(colNames[i] + " " + colTypes[i]);
+      sb.append(colNames[i]).append(" ").append(colTypes[i]);
       if (i<colNames.length-1) {
         sb.append(",");
       }
@@ -2162,7 +2162,7 @@ public class TestStreaming {
     }
     StringBuilder sb = new StringBuilder();
     for (int i=0; i < partNames.length; ++i) {
-      sb.append(partNames[i] + " string");
+      sb.append(partNames[i]).append(" string");
       if (i < partNames.length-1) {
         sb.append(",");
       }
@@ -2174,7 +2174,7 @@ public class TestStreaming {
   private static String getPartsSpec(String[] partNames, List<String> partVals) {
     StringBuilder sb = new StringBuilder();
     for (int i=0; i < partVals.size(); ++i) {
-      sb.append(partNames[i] + " = '" + partVals.get(i) + "'");
+      sb.append(partNames[i]).append(" = '").append(partVals.get(i)).append("'");
       if(i < partVals.size()-1) {
         sb.append(",");
       }
@@ -2217,7 +2217,7 @@ public class TestStreaming {
   }
 
 
-  public static ArrayList<String> queryTable(IDriver driver, String query) throws IOException {
+  private static ArrayList<String> queryTable(IDriver driver, String query) throws IOException {
     CommandProcessorResponse cpr = driver.run(query);
     if(cpr.getResponseCode() != 0) {
       throw new RuntimeException(query + " failed: " + cpr);
