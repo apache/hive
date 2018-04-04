@@ -33,6 +33,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -57,6 +58,7 @@ import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
@@ -66,6 +68,9 @@ import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DagUtils;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo;
+import org.apache.hadoop.hive.ql.exec.FunctionUtils;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionType;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -75,6 +80,7 @@ import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.hooks.Entity;
+import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookUtils;
 import org.apache.hadoop.hive.ql.hooks.PrivateHookContext;
@@ -599,7 +605,9 @@ public class Driver implements IDriver {
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARSE);
 
       hookRunner.runBeforeCompileHook(command);
-
+      // clear CurrentFunctionsInUse set, to capture new set of functions
+      // that SemanticAnalyzer finds are in use
+      SessionState.get().getCurrentFunctionsInUse().clear();
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
 
       // Flush the metastore cache.  This assures that we don't pick up objects from a previous
@@ -932,12 +940,22 @@ public class Driver implements IDriver {
       // get mapping of tables to columns used
       ColumnAccessInfo colAccessInfo = sem.getColumnAccessInfo();
       // colAccessInfo is set only in case of SemanticAnalyzer
-      Map<String, List<String>> selectTab2Cols = colAccessInfo != null ? colAccessInfo
-          .getTableToColumnAccessMap() : null;
-      Map<String, List<String>> updateTab2Cols = sem.getUpdateColumnAccessInfo() != null ?
-          sem.getUpdateColumnAccessInfo().getTableToColumnAccessMap() : null;
-      doAuthorizationV2(ss, op, inputs, outputs, command, selectTab2Cols, updateTab2Cols);
-     return;
+      Map<String, List<String>> selectTab2Cols = colAccessInfo != null
+          ? colAccessInfo.getTableToColumnAccessMap() : null;
+      Map<String, List<String>> updateTab2Cols = sem.getUpdateColumnAccessInfo() != null
+          ? sem.getUpdateColumnAccessInfo().getTableToColumnAccessMap() : null;
+
+      // convert to List as above Set was created using Sets.union (for reasons
+      // explained there)
+      // but that Set is immutable
+      List<ReadEntity> inputList = new ArrayList<ReadEntity>(inputs);
+      List<WriteEntity> outputList = new ArrayList<WriteEntity>(outputs);
+
+      // add permanent UDFs being used
+      inputList.addAll(getPermanentFunctionEntities(ss));
+
+      doAuthorizationV2(ss, op, inputList, outputList, command, selectTab2Cols, updateTab2Cols);
+      return;
     }
     if (op == null) {
       throw new HiveException("Operation should not be null");
@@ -1077,6 +1095,29 @@ public class Driver implements IDriver {
     }
   }
 
+  private static List<ReadEntity> getPermanentFunctionEntities(SessionState ss) throws HiveException {
+    List<ReadEntity> functionEntities = new ArrayList<>();
+    for (Entry<String, FunctionInfo> permFunction : ss.getCurrentFunctionsInUse().entrySet()) {
+      if (permFunction.getValue().getFunctionType() != FunctionType.PERSISTENT) {
+        // Only permanent functions need to be authorized.
+        // Built-in function access is allowed to all users.
+        // If user can create a temp function, they should be able to use it
+        // without additional authorization.
+        continue;
+      }
+      functionEntities.add(createReadEntity(permFunction.getKey(), permFunction.getValue()));
+    }
+    return functionEntities;
+  }
+
+  private static ReadEntity createReadEntity(String functionName, FunctionInfo functionInfo)
+      throws HiveException {
+    String[] qualFunctionName = FunctionUtils.getQualifiedFunctionNameParts(functionName);
+    // this is only for the purpose of authorization, only the name matters.
+    Database db = new Database(qualFunctionName[0], "", "", null);
+    return new ReadEntity(db, qualFunctionName[1], functionInfo.getClassName(), Type.FUNCTION);
+  }
+
   private static void getTablePartitionUsedColumns(HiveOperation op, BaseSemanticAnalyzer sem,
       Map<Table, List<String>> tab2Cols, Map<Partition, List<String>> part2Cols,
       Map<String, Boolean> tableUsePartLevelAuth) throws HiveException {
@@ -1131,8 +1172,8 @@ public class Driver implements IDriver {
     }
   }
 
-  private static void doAuthorizationV2(SessionState ss, HiveOperation op, Set<ReadEntity> inputs,
-      Set<WriteEntity> outputs, String command, Map<String, List<String>> tab2cols,
+  private static void doAuthorizationV2(SessionState ss, HiveOperation op, List<ReadEntity> inputs,
+      List<WriteEntity> outputs, String command, Map<String, List<String>> tab2cols,
       Map<String, List<String>> updateTab2Cols) throws HiveException {
 
     /* comment for reviewers -> updateTab2Cols needed to be separate from tab2cols because if I
@@ -1153,7 +1194,7 @@ public class Driver implements IDriver {
   }
 
   private static List<HivePrivilegeObject> getHivePrivObjects(
-      Set<? extends Entity> privObjects, Map<String, List<String>> tableName2Cols) {
+      List<? extends Entity> privObjects, Map<String, List<String>> tableName2Cols) {
     List<HivePrivilegeObject> hivePrivobjs = new ArrayList<HivePrivilegeObject>();
     if(privObjects == null){
       return hivePrivobjs;

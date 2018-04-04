@@ -327,6 +327,8 @@ public class Operation2Privilege {
     adminPrivOps.add(HiveOperationType.CREATE_MAPPING);
     adminPrivOps.add(HiveOperationType.ALTER_MAPPING);
     adminPrivOps.add(HiveOperationType.DROP_MAPPING);
+    adminPrivOps.add(HiveOperationType.CREATEFUNCTION);
+    adminPrivOps.add(HiveOperationType.DROPFUNCTION);
 
     // operations require select priv
     op2Priv.put(HiveOperationType.SHOWCOLUMNS, PrivRequirement.newIOPrivRequirement

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -106,6 +105,19 @@ public class ReadEntity extends Entity implements Serializable {
   public ReadEntity(Table t, ReadEntity parent, boolean isDirect) {
     this(t, parent);
     this.isDirect = isDirect;
+  }
+
+  /**
+   * Constructor for objects represented as String. Currently applicable only
+   * for function names.
+   *
+   * @param db
+   * @param objName
+   * @param className
+   * @param type
+   */
+  public ReadEntity(Database db, String objName, String className, Type type) {
+    super(db, objName, className, type);
   }
 
   /**
