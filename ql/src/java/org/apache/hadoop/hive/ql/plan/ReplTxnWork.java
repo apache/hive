@@ -15,13 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.exec;
+package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
-import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import java.util.Collections;
 import java.util.List;
@@ -33,9 +32,11 @@ import java.util.List;
 @Explain(displayName = "Replication Transaction", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class ReplTxnWork implements Serializable {
   private static final long serialVersionUID = 1L;
+  private String replPolicy;
   private String dbName;
   private String tableName;
-  private String replPolicy;
+  private List<String> partNames;
+  private String validWriteIdList;
   private List<Long> txnIds;
   private List<TxnToWriteId> txnToWriteIdList;
   private ReplicationSpec replicationSpec;
@@ -45,7 +46,7 @@ public class ReplTxnWork implements Serializable {
    * Different kind of events supported for replaying.
    */
   public enum OperationType {
-    REPL_OPEN_TXN, REPL_ABORT_TXN, REPL_COMMIT_TXN, REPL_ALLOC_WRITE_ID
+    REPL_OPEN_TXN, REPL_ABORT_TXN, REPL_COMMIT_TXN, REPL_ALLOC_WRITE_ID, REPL_WRITEID_STATE
   }
 
   OperationType operation;
@@ -76,6 +77,15 @@ public class ReplTxnWork implements Serializable {
     this(replPolicy, dbName, tableName, null, type, txnToWriteIdList, replicationSpec);
   }
 
+  public ReplTxnWork(String dbName, String tableName, List<String> partNames,
+                     String validWriteIdList, OperationType type) {
+    this.dbName = dbName;
+    this.tableName = tableName;
+    this.partNames = partNames;
+    this.validWriteIdList = validWriteIdList;
+    this.operation = type;
+  }
+
   public List<Long> getTxnIds() {
     return txnIds;
   }
@@ -85,11 +95,19 @@ public class ReplTxnWork implements Serializable {
   }
 
   public String getTableName()  {
-    return tableName;
+    return ((tableName == null) || tableName.isEmpty()) ? null : tableName;
   }
 
-  public String getReplPolicy()  {
+  public String getReplPolicy() {
     return replPolicy;
+  }
+
+  public List<String> getPartNames() {
+    return partNames;
+  }
+
+  public String getValidWriteIdList() {
+    return validWriteIdList;
   }
 
   public OperationType getOperationType() {

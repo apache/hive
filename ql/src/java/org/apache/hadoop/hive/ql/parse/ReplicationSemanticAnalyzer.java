@@ -186,7 +186,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
               eventTo,
               ErrorMsg.INVALID_PATH.getMsg(ast),
               maxEventLimit,
-              ctx.getResFile().toUri().toString()
+              ctx.getResFile().toUri().toString(),
+              txnManager
       ), conf);
       rootTasks.add(replDumpWorkTask);
       if (dbNameOrPattern != null) {

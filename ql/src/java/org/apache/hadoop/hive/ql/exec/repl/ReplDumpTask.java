@@ -21,6 +21,8 @@ import com.google.common.primitives.Ints;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -39,6 +41,8 @@ import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFil
 import org.apache.hadoop.hive.metastore.messaging.event.filters.MessageFormatFilter;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
@@ -66,6 +70,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -204,6 +209,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // bootstrap case
     Hive hiveDb = getHive();
     Long bootDumpBeginReplId = hiveDb.getMSC().getCurrentNotificationEventId().getEventId();
+    String validTxnList = getValidTxnsList();
     for (String dbName : Utils.matchesDb(hiveDb, work.dbNameOrPattern)) {
       LOG.debug("ReplicationSemanticAnalyzer: analyzeReplDump dumping db: " + dbName);
       replLogger = new BootstrapDumpLogger(dbName, dumpRoot.toString(),
@@ -217,7 +223,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.tableNameOrPattern)) {
         LOG.debug(
             "analyzeReplDump dumping table: " + tblName + " to db root " + dbRoot.toUri());
-        dumpTable(dbName, tblName, dbRoot);
+        dumpTable(dbName, tblName, validTxnList, dbRoot);
         dumpConstraintMetadata(dbName, tblName, dbRoot);
       }
       Utils.resetDbBootstrapDumpState(hiveDb, dbName, uniqueKey);
@@ -267,7 +273,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return dbRoot;
   }
 
-  private void dumpTable(String dbName, String tblName, Path dbRoot) throws Exception {
+  private void dumpTable(String dbName, String tblName, String validTxnList, Path dbRoot) throws Exception {
     try {
       Hive db = getHive();
       HiveWrapper.Tuple<Table> tuple = new HiveWrapper(db, dbName).table(tblName);
@@ -276,6 +282,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           new TableExport.Paths(work.astRepresentationForErrorMsg, dbRoot, tblName, conf, true);
       String distCpDoAsUser = conf.getVar(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER);
       tuple.replicationSpec.setIsReplace(true);  // by default for all other objects this is false
+      if (AcidUtils.isTransactionalTable(tableSpec.tableHandle)) {
+        tuple.replicationSpec.setValidWriteIdList(getValidWriteIdList(dbName, tblName, validTxnList));
+      }
       new TableExport(exportPaths, tableSpec, tuple.replicationSpec, db, distCpDoAsUser, conf).write();
 
       replLogger.tableLog(tblName, tableSpec.tableHandle.getTableType());
@@ -284,6 +293,26 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       // Just log a debug message and skip it.
       LOG.debug(te.getMessage());
     }
+  }
+
+  private String getValidTxnsList() throws LockException {
+    String validTxnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
+    if ((validTxnString == null) || validTxnString.isEmpty()) {
+      ValidTxnList txnList = work.getTxnManager().getValidTxns();
+      validTxnString = txnList.toString();
+    }
+    return validTxnString;
+  }
+
+  private String getValidWriteIdList(String dbName, String tblName, String validTxnString) throws LockException {
+    if ((validTxnString == null) || validTxnString.isEmpty()) {
+      return null;
+    }
+    String fullTableName = AcidUtils.getFullTableName(dbName, tblName);
+    ValidWriteIdList validWriteIds = work.getTxnManager()
+            .getValidWriteIds(Collections.singletonList(fullTableName), validTxnString)
+            .getTableValidWriteIdList(fullTableName);
+    return ((validWriteIds != null) ? validWriteIds.toString() : null);
   }
 
   private ReplicationSpec getNewReplicationSpec(String evState, String objState,

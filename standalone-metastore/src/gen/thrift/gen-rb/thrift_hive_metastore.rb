@@ -2437,6 +2437,20 @@ module ThriftHiveMetastore
       return
     end
 
+    def repl_tbl_writeid_state(rqst)
+      send_repl_tbl_writeid_state(rqst)
+      recv_repl_tbl_writeid_state()
+    end
+
+    def send_repl_tbl_writeid_state(rqst)
+      send_message('repl_tbl_writeid_state', Repl_tbl_writeid_state_args, :rqst => rqst)
+    end
+
+    def recv_repl_tbl_writeid_state()
+      result = receive_message(Repl_tbl_writeid_state_result)
+      return
+    end
+
     def get_valid_write_ids(rqst)
       send_get_valid_write_ids(rqst)
       return recv_get_valid_write_ids()
@@ -5271,6 +5285,13 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'commit_txn', seqid)
+    end
+
+    def process_repl_tbl_writeid_state(seqid, iprot, oprot)
+      args = read_args(iprot, Repl_tbl_writeid_state_args)
+      result = Repl_tbl_writeid_state_result.new()
+      @handler.repl_tbl_writeid_state(args.rqst)
+      write_result(result, oprot, 'repl_tbl_writeid_state', seqid)
     end
 
     def process_get_valid_write_ids(seqid, iprot, oprot)
@@ -11457,6 +11478,37 @@ module ThriftHiveMetastore
     FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::TxnAbortedException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Repl_tbl_writeid_state_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::ReplTblWriteIdStateRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Repl_tbl_writeid_state_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+
+    FIELDS = {
+
     }
 
     def struct_fields; FIELDS; end

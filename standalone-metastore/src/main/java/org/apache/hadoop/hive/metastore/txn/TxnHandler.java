@@ -62,6 +62,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
@@ -104,6 +105,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.ReplTblWriteIdStateRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
@@ -1094,6 +1096,79 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
     } catch (RetryException e) {
       commitTxn(rqst);
+    }
+  }
+
+  /**
+   * Replicate Table Write Ids state to mark aborted write ids and writeid high water mark.
+   * TODO: Right now, we take care of allocating latest write-id (hwm) as assumed that all writeids
+   * in the snapshot are committed. Will be fixed soon.
+   * @param rqst info on table/partitions and writeid snapshot to replicate.
+   * @throws MetaException
+   */
+  @Override
+  @RetrySemantics.Idempotent("No-op if already replicated the writeid state")
+  public void replTableWriteIdState(ReplTblWriteIdStateRequest rqst) throws MetaException {
+    String dbName = rqst.getDbName().toLowerCase();
+    String tblName = rqst.getTableName().toLowerCase();
+    ValidWriteIdList validWriteIdList = new ValidReaderWriteIdList(rqst.getValidWriteIdlist());
+    try {
+      Connection dbConn = null;
+      Statement stmt = null;
+      ResultSet rs = null;
+      TxnStore.MutexAPI.LockHandle handle = null;
+      try {
+        lockInternal();
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+
+        handle = getMutexAPI().acquireLock(MUTEX_KEY.WriteIdAllocator.name());
+
+        // There are some txns in the list which has no write id allocated and hence go ahead and do it.
+        // Get the next write id for the given table and update it with new next write id.
+        // This is select for update query which takes a lock if the table entry is already there in NEXT_WRITE_ID
+        String s = sqlGenerator.addForUpdateClause(
+                "select nwi_next from NEXT_WRITE_ID where nwi_database = " + quoteString(dbName)
+                        + " and nwi_table = " + quoteString(tblName));
+        LOG.debug("Going to execute query <" + s + ">");
+
+        long nextWriteId = validWriteIdList.getHighWatermark() + 1;
+        rs = stmt.executeQuery(s);
+        if (!rs.next()) {
+          // First allocation of write id should add the table to the next_write_id meta table
+          // The initial value for write id should be 1 and hence we add 1 with number of write ids allocated here
+          s = "insert into NEXT_WRITE_ID (nwi_database, nwi_table, nwi_next) values ("
+                  + quoteString(dbName) + "," + quoteString(tblName) + ","
+                  + String.valueOf(nextWriteId) + ")";
+          LOG.debug("Going to execute insert <" + s + ">");
+          stmt.execute(s);
+        } else {
+          // Update the NEXT_WRITE_ID for the given table after incrementing by number of write ids allocated
+          s = "update NEXT_WRITE_ID set nwi_next = " + (nextWriteId)
+                  + " where nwi_database = " + quoteString(dbName)
+                  + " and nwi_table = " + quoteString(tblName);
+          LOG.debug("Going to execute update <" + s + ">");
+          stmt.executeUpdate(s);
+        }
+
+        LOG.debug("Going to commit");
+        dbConn.commit();
+        return;
+      } catch (SQLException e) {
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "replTableWriteIdState(" + rqst + ")");
+        throw new MetaException("Unable to update transaction database "
+                + StringUtils.stringifyException(e));
+      } finally {
+        close(rs, stmt, dbConn);
+        if(handle != null) {
+          handle.releaseLocks();
+        }
+        unlockInternal();
+      }
+    } catch (RetryException e) {
+      replTableWriteIdState(rqst);
     }
   }
 

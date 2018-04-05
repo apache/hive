@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl;
 
 import com.google.common.primitives.Ints;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,7 @@ public class ReplDumpWork implements Serializable {
   final Long eventFrom;
   Long eventTo;
   private Integer maxEventLimit;
+  final HiveTxnManager txnManager;
   static String testInjectDumpDir = null;
 
   public static void injectNextDumpDirForTest(String dumpDir) {
@@ -39,8 +41,8 @@ public class ReplDumpWork implements Serializable {
   }
 
   public ReplDumpWork(String dbNameOrPattern, String tableNameOrPattern,
-      Long eventFrom, Long eventTo, String astRepresentationForErrorMsg, Integer maxEventLimit,
-      String resultTempPath) {
+                      Long eventFrom, Long eventTo, String astRepresentationForErrorMsg, Integer maxEventLimit,
+                      String resultTempPath, HiveTxnManager txnManager) {
     this.dbNameOrPattern = dbNameOrPattern;
     this.tableNameOrPattern = tableNameOrPattern;
     this.eventFrom = eventFrom;
@@ -48,10 +50,15 @@ public class ReplDumpWork implements Serializable {
     this.astRepresentationForErrorMsg = astRepresentationForErrorMsg;
     this.maxEventLimit = maxEventLimit;
     this.resultTempPath = resultTempPath;
+    this.txnManager = txnManager;
   }
 
   boolean isBootStrapDump() {
     return eventFrom == null;
+  }
+
+  HiveTxnManager getTxnManager() {
+    return txnManager;
   }
 
   int maxEventLimit() throws Exception {

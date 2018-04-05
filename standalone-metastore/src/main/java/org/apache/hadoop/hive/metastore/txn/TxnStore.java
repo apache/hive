@@ -117,13 +117,21 @@ public interface TxnStore extends Configurable {
     throws NoSuchTxnException, TxnAbortedException,  MetaException;
 
   /**
+   * Replicate Table Write Ids state to mark aborted write ids and writeid high water mark.
+   * @param rqst info on table/partitions and writeid snapshot to replicate.
+   * @throws MetaException in case of failure
+   */
+  @RetrySemantics.Idempotent
+  void replTableWriteIdState(ReplTblWriteIdStateRequest rqst) throws MetaException;
+
+  /**
    * Get the first transaction corresponding to given database and table after transactions
    * referenced in the transaction snapshot.
    * @return
    * @throws MetaException
    */
   @RetrySemantics.Idempotent
-  public BasicTxnInfo getFirstCompletedTransactionForTableAfterCommit(
+  BasicTxnInfo getFirstCompletedTransactionForTableAfterCommit(
       String inputDbName, String inputTableName, ValidWriteIdList txnList)
           throws MetaException;
   /**

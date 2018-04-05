@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse.repl.dump;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
@@ -28,6 +29,9 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -100,11 +104,11 @@ class PartitionExport {
         String partitionName = partition.getName();
         String threadName = Thread.currentThread().getName();
         LOG.debug("Thread: {}, start partition dump {}", threadName, partitionName);
-        Path fromPath = partition.getDataLocation();
         try {
           // this the data copy
+          List<Path> dataPathList = getDataPathList(partition, forReplicationSpec);
           Path rootDataDumpDir = paths.partitionExportDir(partitionName);
-          new FileOperations(fromPath, rootDataDumpDir, distCpDoAsUser, hiveConf)
+          new FileOperations(dataPathList, rootDataDumpDir, distCpDoAsUser, hiveConf)
                   .export(forReplicationSpec);
           LOG.debug("Thread: {}, finish partition dump {}", threadName, partitionName);
         } catch (Exception e) {
@@ -115,5 +119,14 @@ class PartitionExport {
     consumer.shutdown();
     // may be drive this via configuration as well.
     consumer.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
+  }
+
+  private List<Path> getDataPathList(Partition partition, ReplicationSpec replicationSpec) throws IOException {
+    Path fromPath = partition.getDataLocation();
+    if (replicationSpec.isTransactionalTableDump()) {
+      return AcidUtils.getAcidPathsForReplDump(fromPath, hiveConf, replicationSpec.getValidWriteIdList());
+    } else {
+      return Collections.singletonList(fromPath);
+    }
   }
 }

@@ -7022,6 +7022,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public void repl_tbl_writeid_state(ReplTblWriteIdStateRequest rqst) throws TException {
+      getTxnHandler().replTableWriteIdState(rqst);
+    }
+
+    @Override
     public GetValidWriteIdsResponse get_valid_write_ids(GetValidWriteIdsRequest rqst) throws TException {
       return getTxnHandler().getValidWriteIds(rqst);
     }

@@ -59,6 +59,8 @@ public class TestReplicationScenariosAcidTables {
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
         put("hive.support.concurrency", "true");
         put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+        put("hive.repl.dump.include.acid.tables", "true");
+        put("hive.metastore.client.capability.check", "false");
     }};
     primary = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
     replica = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
@@ -66,6 +68,8 @@ public class TestReplicationScenariosAcidTables {
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
         put("hive.support.concurrency", "false");
         put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
+        put("hive.repl.dump.include.acid.tables", "true");
+        put("hive.metastore.client.capability.check", "false");
     }};
     replicaNonAcid = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
   }
@@ -89,6 +93,44 @@ public class TestReplicationScenariosAcidTables {
     primary.run("drop database if exists " + primaryDbName + " cascade");
     replica.run("drop database if exists " + replicatedDbName + " cascade");
     replicaNonAcid.run("drop database if exists " + replicatedDbName + " cascade");
+  }
+
+  @Test
+  public void testAcidTablesBootstrap() throws Throwable {
+    WarehouseInstance.Tuple bootstrapDump = primary
+            .run("use " + primaryDbName)
+            .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc tblproperties (\"transactional\"=\"true\")")
+            .run("insert into t1 values(1)")
+            .run("insert into t1 values(2)")
+            .run("create table t2 (place string) partitioned by (country string) clustered by(place) " +
+                    "into 3 buckets stored as orc tblproperties (\"transactional\"=\"true\")")
+            .run("insert into t2 partition(country='india') values ('bangalore')")
+            .run("insert into t2 partition(country='us') values ('austin')")
+            .run("insert into t2 partition(country='france') values ('paris')")
+            .run("create table t3 (rank int) tblproperties(\"transactional\"=\"true\", " +
+                    "\"transactional_properties\"=\"insert_only\")")
+            .run("insert into t3 values(11)")
+            .run("insert into t3 values(22)")
+            .run("create table t4 (id int)")
+            .run("insert into t4 values(111)")
+            .run("insert into t4 values(222)")
+            .dump(primaryDbName, null);
+
+    replica.load(replicatedDbName, bootstrapDump.dumpLocation)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] { "t1", "t2", "t3", "t4" })
+            .run("repl status " + replicatedDbName)
+            .verifyResult(bootstrapDump.lastReplicationId)
+            .run("select id from t1 order by id")
+            .verifyResults(new String[]{ "1", "2" })
+            .run("select country from t2 order by country")
+            .verifyResults(new String[] { "france", "india", "us" })
+            .run("select rank from t3 order by rank")
+            .verifyResults(new String[] { "11", "22" })
+            .run("select id from t4 order by id")
+            .verifyResults(new String[] { "111", "222" });
+
   }
 
   @Test

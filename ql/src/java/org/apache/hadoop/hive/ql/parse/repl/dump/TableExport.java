@@ -45,6 +45,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -149,9 +150,9 @@ public class TableExport {
         }
         new PartitionExport(paths, partitions, distCpDoAsUser, conf).write(replicationSpec);
       } else {
-        Path fromPath = tableSpec.tableHandle.getDataLocation();
+        List<Path> dataPathList = getDataPathList();
         // this is the data copy
-        new FileOperations(fromPath, paths.dataExportDir(), distCpDoAsUser, conf)
+        new FileOperations(dataPathList, paths.dataExportDir(), distCpDoAsUser, conf)
             .export(replicationSpec);
       }
     } catch (Exception e) {
@@ -159,13 +160,16 @@ public class TableExport {
     }
   }
 
-  private boolean shouldExport() {
-    // Note: this is a temporary setting that is needed because replication does not support
-    //       ACID or MM tables at the moment. It will eventually be removed.
-    if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_INCLUDE_ACID_TABLES)
-        && AcidUtils.isTransactionalTable(tableSpec.tableHandle)) {
-      return true;
+  private List<Path> getDataPathList() throws IOException {
+    Path fromPath = tableSpec.tableHandle.getDataLocation();
+    if (replicationSpec.isTransactionalTableDump()) {
+      return AcidUtils.getAcidPathsForReplDump(fromPath, conf, replicationSpec.getValidWriteIdList());
+    } else {
+      return Collections.singletonList(fromPath);
     }
+  }
+
+  private boolean shouldExport() {
     return Utils.shouldReplicate(replicationSpec, tableSpec.tableHandle, conf);
   }
 

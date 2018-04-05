@@ -2572,6 +2572,31 @@ class CommitTxnRequest
   ::Thrift::Struct.generate_accessors self
 end
 
+class ReplTblWriteIdStateRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  VALIDWRITEIDLIST = 1
+  DBNAME = 2
+  TABLENAME = 3
+  PARTNAMES = 4
+
+  FIELDS = {
+    VALIDWRITEIDLIST => {:type => ::Thrift::Types::STRING, :name => 'validWriteIdlist'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
+    PARTNAMES => {:type => ::Thrift::Types::LIST, :name => 'partNames', :element => {:type => ::Thrift::Types::STRING}, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field validWriteIdlist is unset!') unless @validWriteIdlist
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class GetValidWriteIdsRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   FULLTABLENAMES = 1
