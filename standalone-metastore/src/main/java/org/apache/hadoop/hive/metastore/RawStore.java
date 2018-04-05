@@ -1156,8 +1156,6 @@ public interface RawStore extends Configurable {
     List<String> partNames, List<String> colNames) throws MetaException, NoSuchObjectException;
 
   /**
-<<<<<<< HEAD
-=======
    * Get column stats for all partitions of all tables in the database
    * @param catName catalog name
    * @param dbName database name
@@ -1169,7 +1167,6 @@ public interface RawStore extends Configurable {
       throws MetaException, NoSuchObjectException;
 
   /**
->>>>>>> e6d9605492... HIVE-18755 Modifications to the metastore for catalogs
    * Get the next notification event.
    * @param rqst Request containing information on the last processed notification.
    * @return list of notifications, sorted by eventId

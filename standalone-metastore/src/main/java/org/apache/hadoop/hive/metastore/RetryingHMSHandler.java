@@ -120,10 +120,10 @@ public class RetryingHMSHandler implements InvocationHandler {
   public Result invokeInternal(final Object proxy, final Method method, final Object[] args) throws Throwable {
 
     boolean gotNewConnectUrl = false;
-    boolean reloadConf = MetastoreConf.getBoolVar(origConf, ConfVars.HMSHANDLERFORCERELOADCONF);
+    boolean reloadConf = MetastoreConf.getBoolVar(origConf, ConfVars.HMS_HANDLER_FORCE_RELOAD_CONF);
     long retryInterval = MetastoreConf.getTimeVar(origConf,
-        ConfVars.HMSHANDLERINTERVAL, TimeUnit.MILLISECONDS);
-    int retryLimit = MetastoreConf.getIntVar(origConf, ConfVars.HMSHANDLERATTEMPTS);
+        ConfVars.HMS_HANDLER_INTERVAL, TimeUnit.MILLISECONDS);
+    int retryLimit = MetastoreConf.getIntVar(origConf, ConfVars.HMS_HANDLER_ATTEMPTS);
     long timeout = MetastoreConf.getTimeVar(origConf,
         ConfVars.CLIENT_SOCKET_TIMEOUT, TimeUnit.MILLISECONDS);
 

@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.conf.HiveConfUtil;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.cache.CachedStore;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.Registry;
@@ -1746,14 +1747,16 @@ public class SessionState {
 
   private void unCacheDataNucleusClassLoaders() {
     try {
-      boolean isLocalMetastore =
-          HiveConfUtil.isEmbeddedMetaStore(sessionConf.getVar(HiveConf.ConfVars.METASTOREURIS));
+      boolean isLocalMetastore = HiveConfUtil.isEmbeddedMetaStore(
+          MetastoreConf.getVar(sessionConf, MetastoreConf.ConfVars.THRIFT_URIS));
       if (isLocalMetastore) {
 
-        String rawStoreImpl = sessionConf.getVar(ConfVars.METASTORE_RAW_STORE_IMPL);
+        String rawStoreImpl =
+            MetastoreConf.getVar(sessionConf, MetastoreConf.ConfVars.RAW_STORE_IMPL);
         String realStoreImpl;
         if (rawStoreImpl.equals(CachedStore.class.getName())) {
-          realStoreImpl = sessionConf.getVar(ConfVars.METASTORE_CACHED_RAW_STORE_IMPL);
+          realStoreImpl =
+              MetastoreConf.getVar(sessionConf, MetastoreConf.ConfVars.CACHED_RAW_STORE_IMPL);
         } else {
           realStoreImpl = rawStoreImpl;
         }

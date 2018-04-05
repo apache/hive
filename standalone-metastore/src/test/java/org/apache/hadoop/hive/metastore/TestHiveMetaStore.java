@@ -81,7 +81,6 @@ import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
@@ -2655,7 +2654,7 @@ public abstract class TestHiveMetaStore {
    * so this simulation is required.
    */
   private void updateTableNameInDB(String oldTableName, String newTableName) throws SQLException {
-    String connectionStr = MetastoreConf.getVar(conf, ConfVars.CONNECTURLKEY);
+    String connectionStr = MetastoreConf.getVar(conf, ConfVars.CONNECT_URL_KEY);
 
     Connection conn = DriverManager.getConnection(connectionStr);
     PreparedStatement stmt = conn.prepareStatement("UPDATE TBLS SET tbl_name = '" +

@@ -61,7 +61,7 @@ public class TestSchemaToolForMetastore {
   public void setUp() throws HiveMetaException, IOException {
     testMetastoreDB = System.getProperty("java.io.tmpdir") +
         File.separator + "test_metastore-" + new Random().nextInt();
-    System.setProperty(ConfVars.CONNECTURLKEY.toString(),
+    System.setProperty(ConfVars.CONNECT_URL_KEY.toString(),
         "jdbc:derby:" + testMetastoreDB + ";create=true");
     conf = MetastoreConf.newMetastoreConf();
     schemaTool = new MetastoreSchemaTool(

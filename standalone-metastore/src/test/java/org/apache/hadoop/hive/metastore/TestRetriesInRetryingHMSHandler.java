@@ -43,9 +43,9 @@ public class TestRetriesInRetryingHMSHandler {
   @BeforeClass
   public static void setup() throws IOException {
     conf = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setLongVar(conf, ConfVars.HMSHANDLERATTEMPTS, RETRY_ATTEMPTS);
-    MetastoreConf.setTimeVar(conf, ConfVars.HMSHANDLERINTERVAL, 10, TimeUnit.MILLISECONDS);
-    MetastoreConf.setBoolVar(conf, ConfVars.HMSHANDLERFORCERELOADCONF, false);
+    MetastoreConf.setLongVar(conf, ConfVars.HMS_HANDLER_ATTEMPTS, RETRY_ATTEMPTS);
+    MetastoreConf.setTimeVar(conf, ConfVars.HMS_HANDLER_INTERVAL, 10, TimeUnit.MILLISECONDS);
+    MetastoreConf.setBoolVar(conf, ConfVars.HMS_HANDLER_FORCE_RELOAD_CONF, false);
   }
 
   /*
