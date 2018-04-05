@@ -67,4 +67,20 @@ public class MetricsConstant {
   public static final String HS2_EXECUTING_QUERIES = "hs2_executing_queries";
   public static final String HS2_FAILED_QUERIES = "hs2_failed_queries";
   public static final String HS2_SUCCEEDED_QUERIES = "hs2_succeeded_queries";
+
+  public static final String QC_MAX_SIZE = "qc_max_size";
+  public static final String QC_CURRENT_SIZE = "qc_current_size";
+  public static final String QC_VALID_ENTRIES = "qc_valid_entries";
+  public static final String QC_LOOKUPS = "qc_lookups";
+  public static final String QC_VALID_HITS = "qc_valid_hits";
+  public static final String QC_PENDING_HITS = "qc_pending_hits";
+  public static final String QC_PENDING_FAILS = "qc_pending_fails";
+  public static final String QC_PENDING_FAILS_WAIT_TIME = "qc_pending_fails_wait_time";
+  public static final String QC_PENDING_SUCCESS_WAIT_TIME = "qc_pending_success_wait_time";
+  // Queries rejected from being cached due to non-deterministic functions, temp tables, or other conditions.
+  public static final String QC_INVALID_FOR_CACHING = "qc_invalid_for_caching";
+  // Queries rejected from being cached because they exceeded the max cache entry size.
+  public static final String QC_REJECTED_TOO_LARGE = "qc_rejected_too_large";
+  public static final String QC_TOTAL_ENTRIES_ADDED = "qc_total_entries_added";
+
 }
