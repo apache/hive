@@ -48,6 +48,10 @@ import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.metrics.common.Metrics;
+import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
+import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
+import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -213,11 +217,13 @@ public final class QueryResultsCache {
           invalidationFuture.cancel(false);
         }
         cleanupIfNeeded();
+        decrementMetric(MetricsConstant.QC_VALID_ENTRIES);
       } else if (prevStatus == CacheEntryStatus.PENDING) {
         // Need to notify any queries waiting on the change from pending status.
         synchronized (this) {
           this.notifyAll();
         }
+        decrementMetric(MetricsConstant.QC_PENDING_FAILS);
       }
     }
 
@@ -267,12 +273,21 @@ public final class QueryResultsCache {
       LOG.info("Waiting on pending cacheEntry");
       long timeout = 1000;
 
+      long startTime = System.nanoTime();
+      long endTime;
+
       while (true) {
         try {
           switch (status) {
           case VALID:
+            endTime = System.nanoTime();
+            incrementMetric(MetricsConstant.QC_PENDING_SUCCESS_WAIT_TIME,
+                TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS));
             return true;
           case INVALID:
+            endTime = System.nanoTime();
+            incrementMetric(MetricsConstant.QC_PENDING_FAILS_WAIT_TIME,
+                TimeUnit.MILLISECONDS.convert(endTime - startTime, TimeUnit.NANOSECONDS));
             return false;
           case PENDING:
             // Status has not changed, continue waiting.
@@ -344,6 +359,11 @@ public final class QueryResultsCache {
     if (!inited.getAndSet(true)) {
       try {
         instance = new QueryResultsCache(conf);
+
+        Metrics metrics = MetricsFactory.getInstance();
+        if (metrics != null) {
+          registerMetrics(metrics, instance);
+        }
       } catch (IOException err) {
         inited.set(false);
         throw err;
@@ -369,6 +389,7 @@ public final class QueryResultsCache {
 
     LOG.debug("QueryResultsCache lookup for query: {}", request.queryText);
 
+	boolean foundPending = false;
     Lock readLock = rwLock.readLock();
     try {
       readLock.lock();
@@ -390,6 +411,7 @@ public final class QueryResultsCache {
         // Try to find valid entry, but settle for pending entry if that is all we have.
         if (result == null && pendingResult != null) {
           result = pendingResult;
+          foundPending = true;
         }
 
         if (result != null) {
@@ -401,6 +423,14 @@ public final class QueryResultsCache {
     }
 
     LOG.debug("QueryResultsCache lookup result: {}", result);
+    incrementMetric(MetricsConstant.QC_LOOKUPS);
+    if (result != null) {
+      if (foundPending) {
+        incrementMetric(MetricsConstant.QC_PENDING_HITS);
+      } else {
+        incrementMetric(MetricsConstant.QC_VALID_HITS);
+      }
+    }
 
     return result;
   }
@@ -500,6 +530,9 @@ public final class QueryResultsCache {
       synchronized (cacheEntry) {
         cacheEntry.notifyAll();
       }
+
+      incrementMetric(MetricsConstant.QC_VALID_ENTRIES);
+      incrementMetric(MetricsConstant.QC_TOTAL_ENTRIES_ADDED);
     } catch (Exception err) {
       LOG.error("Failed to create cache entry for query results for query: " + queryText, err);
 
@@ -614,6 +647,7 @@ public final class QueryResultsCache {
     // Assumes the cache lock has already been taken.
     if (maxEntrySize >= 0 && size > maxEntrySize) {
       LOG.debug("Cache entry size {} larger than max entry size ({})", size, maxEntrySize);
+      incrementMetric(MetricsConstant.QC_REJECTED_TOO_LARGE);
       return false;
     }
 
@@ -725,5 +759,46 @@ public final class QueryResultsCache {
         }
       });
     }
+  }
+
+  public static void incrementMetric(String name, long count) {
+    Metrics metrics = MetricsFactory.getInstance();
+    if (metrics != null) {
+      metrics.incrementCounter(name, count);
+    }
+  }
+
+  public static void decrementMetric(String name, long count) {
+    Metrics metrics = MetricsFactory.getInstance();
+    if (metrics != null) {
+      metrics.decrementCounter(name, count);
+    }
+  }
+
+  public static void incrementMetric(String name) {
+    incrementMetric(name, 1);
+  }
+
+  public static void decrementMetric(String name) {
+    decrementMetric(name, 1);
+  }
+
+  private static void registerMetrics(Metrics metrics, final QueryResultsCache cache) {
+    MetricsVariable<Long> maxCacheSize = new MetricsVariable<Long>() {
+      @Override
+      public Long getValue() {
+        return cache.maxCacheSize;
+      }
+    };
+
+    MetricsVariable<Long> curCacheSize = new MetricsVariable<Long>() {
+      @Override
+      public Long getValue() {
+        return cache.cacheSize;
+      }
+    };
+
+    metrics.addGauge(MetricsConstant.QC_MAX_SIZE, maxCacheSize);
+    metrics.addGauge(MetricsConstant.QC_CURRENT_SIZE, curCacheSize);
   }
 }
