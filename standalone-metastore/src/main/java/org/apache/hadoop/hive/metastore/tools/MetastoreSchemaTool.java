@@ -1071,7 +1071,7 @@ public class MetastoreSchemaTool {
     private String[] argsWith(String password) throws IOException {
       return new String[]
         {
-          "-u", url == null ? MetastoreConf.getVar(conf, ConfVars.CONNECTURLKEY) : url,
+          "-u", url == null ? MetastoreConf.getVar(conf, ConfVars.CONNECT_URL_KEY) : url,
           "-d", driver == null ? MetastoreConf.getVar(conf, ConfVars.CONNECTION_DRIVER) : driver,
           "-n", userName,
           "-p", password,

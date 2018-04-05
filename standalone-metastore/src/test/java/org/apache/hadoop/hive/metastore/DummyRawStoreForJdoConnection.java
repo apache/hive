@@ -82,7 +82,7 @@ import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.ColStatsObjWithSourceInfo;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 
@@ -107,7 +107,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public void setConf(Configuration arg0) {
     String expected = DummyJdoConnectionUrlHook.newUrl;
-    String actual = MetastoreConf.getVar(arg0, MetastoreConf.ConfVars.CONNECTURLKEY);
+    String actual = MetastoreConf.getVar(arg0, MetastoreConf.ConfVars.CONNECT_URL_KEY);
 
     Assert.assertEquals("The expected URL used by JDO to connect to the metastore: " + expected +
         " did not match the actual value when the Raw Store was initialized: " + actual,
@@ -1074,7 +1074,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String catName, String dbName)
+  public List<MetaStoreUtils.ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String catName, String dbName)
       throws MetaException, NoSuchObjectException {
     // TODO Auto-generated method stub
     return null;
