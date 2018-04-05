@@ -60,7 +60,7 @@ public class HiveSchemaHelper {
   public static Connection getConnectionToMetastore(String userName, String password, String url,
       String driver, boolean printInfo, Configuration conf, String schema) throws HiveMetaException {
     try {
-      url = url == null ? getValidConfVar(MetastoreConf.ConfVars.CONNECTURLKEY, conf) : url;
+      url = url == null ? getValidConfVar(MetastoreConf.ConfVars.CONNECT_URL_KEY, conf) : url;
       driver = driver == null ? getValidConfVar(MetastoreConf.ConfVars.CONNECTION_DRIVER, conf) : driver;
       if (printInfo) {
         logAndPrintToStdout("Metastore connection URL:\t " + url);

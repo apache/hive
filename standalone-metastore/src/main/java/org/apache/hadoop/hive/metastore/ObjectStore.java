@@ -405,9 +405,9 @@ public class ObjectStore implements RawStore, Configurable {
 
   @SuppressWarnings("nls")
   private void initialize(Properties dsProps) {
-    int retryLimit = MetastoreConf.getIntVar(conf, ConfVars.HMSHANDLERATTEMPTS);
+    int retryLimit = MetastoreConf.getIntVar(conf, ConfVars.HMS_HANDLER_ATTEMPTS);
     long retryInterval = MetastoreConf.getTimeVar(conf,
-        ConfVars.HMSHANDLERINTERVAL, TimeUnit.MILLISECONDS);
+        ConfVars.HMS_HANDLER_INTERVAL, TimeUnit.MILLISECONDS);
     int numTries = retryLimit;
 
     while (numTries > 0){

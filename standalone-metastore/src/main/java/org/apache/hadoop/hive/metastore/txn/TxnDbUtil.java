@@ -433,7 +433,7 @@ public final class TxnDbUtil {
     String jdbcDriver = MetastoreConf.getVar(conf, ConfVars.CONNECTION_DRIVER);
     Driver driver = (Driver) Class.forName(jdbcDriver).newInstance();
     Properties prop = new Properties();
-    String driverUrl = MetastoreConf.getVar(conf, ConfVars.CONNECTURLKEY);
+    String driverUrl = MetastoreConf.getVar(conf, ConfVars.CONNECT_URL_KEY);
     String user = MetastoreConf.getVar(conf, ConfVars.CONNECTION_USER_NAME);
     String passwd = MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.PWD);
     prop.setProperty("user", user);

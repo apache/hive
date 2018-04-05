@@ -3492,13 +3492,13 @@ public class TestReplicationScenarios {
     }
     assertNotNull(ex);
     // Disable auth so the call should succeed
-    hconf.setBoolVar(HiveConf.ConfVars.METASTORE_EVENT_DB_NOTIFICATION_API_AUTH, false);
+    MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, false);
     try {
       rsp = metaStoreClient.getNextNotification(firstEventId, 0, null);
       assertEquals(1, rsp.getEventsSize());
     } finally {
       // Restore the settings
-      hconf.setBoolVar(HiveConf.ConfVars.METASTORE_EVENT_DB_NOTIFICATION_API_AUTH, true);
+      MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.EVENT_DB_NOTIFICATION_API_AUTH, true);
       hconf.set(proxySettingName, "*");
       ProxyUsers.refreshSuperUserGroupsConfiguration(hconf);
     }

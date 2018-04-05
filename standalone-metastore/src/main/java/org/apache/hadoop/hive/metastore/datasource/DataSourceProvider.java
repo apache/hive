@@ -73,7 +73,7 @@ public interface DataSourceProvider {
   }
 
   static String getMetastoreJdbcDriverUrl(Configuration conf) throws SQLException {
-    return MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECTURLKEY);
+    return MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY);
   }
 
 }

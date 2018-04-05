@@ -94,13 +94,13 @@ public class TestObjectStoreInitRetry {
   public void testObjStoreRetry() throws Exception {
     conf = MetastoreConf.newMetastoreConf();
 
-    MetastoreConf.setLongVar(conf, ConfVars.HMSHANDLERATTEMPTS, 4);
-    MetastoreConf.setTimeVar(conf, ConfVars.HMSHANDLERINTERVAL, 1, TimeUnit.SECONDS);
+    MetastoreConf.setLongVar(conf, ConfVars.HMS_HANDLER_ATTEMPTS, 4);
+    MetastoreConf.setTimeVar(conf, ConfVars.HMS_HANDLER_INTERVAL, 1, TimeUnit.SECONDS);
     MetastoreConf.setVar(conf, ConfVars.CONNECTION_DRIVER,FakeDerby.class.getName());
     MetastoreConf.setBoolVar(conf, ConfVars.TRY_DIRECT_SQL,true);
-    String jdbcUrl = MetastoreConf.getVar(conf, ConfVars.CONNECTURLKEY);
+    String jdbcUrl = MetastoreConf.getVar(conf, ConfVars.CONNECT_URL_KEY);
     jdbcUrl = jdbcUrl.replace("derby","fderby");
-    MetastoreConf.setVar(conf, ConfVars.CONNECTURLKEY,jdbcUrl);
+    MetastoreConf.setVar(conf, ConfVars.CONNECT_URL_KEY,jdbcUrl);
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
     FakeDerby fd = new FakeDerby();

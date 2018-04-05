@@ -40,7 +40,7 @@ public class TestTxnHandlerNegative {
   @Test
   public void testBadConnection() throws Exception {
     Configuration conf = MetastoreConf.newMetastoreConf();
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECTURLKEY, "blah");
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CONNECT_URL_KEY, "blah");
     RuntimeException e = null;
     try {
       TxnUtils.getTxnStore(conf);
