@@ -31,11 +31,14 @@ final class SparkMetricsUtils {
   static Map<String, Long> collectMetrics(Metrics allMetrics) {
     Map<String, Long> results = new LinkedHashMap<String, Long>();
     results.put(SparkStatisticsNames.EXECUTOR_DESERIALIZE_TIME, allMetrics.executorDeserializeTime);
+    results.put(SparkStatisticsNames.EXECUTOR_DESERIALIZE_CPU_TIME,
+            allMetrics.executorDeserializeCpuTime);
     results.put(SparkStatisticsNames.EXECUTOR_RUN_TIME, allMetrics.executorRunTime);
+    results.put(SparkStatisticsNames.EXECUTOR_CPU_TIME, allMetrics.executorCpuTime);
     results.put(SparkStatisticsNames.RESULT_SIZE, allMetrics.resultSize);
     results.put(SparkStatisticsNames.JVM_GC_TIME, allMetrics.jvmGCTime);
     results.put(SparkStatisticsNames.RESULT_SERIALIZATION_TIME, allMetrics.resultSerializationTime);
-    results.put(SparkStatisticsNames.MEMORY_BYTES_SPLIED, allMetrics.memoryBytesSpilled);
+    results.put(SparkStatisticsNames.MEMORY_BYTES_SPILLED, allMetrics.memoryBytesSpilled);
     results.put(SparkStatisticsNames.DISK_BYTES_SPILLED, allMetrics.diskBytesSpilled);
     results.put(SparkStatisticsNames.TASK_DURATION_TIME, allMetrics.taskDurationTime);
     if (allMetrics.inputMetrics != null) {
