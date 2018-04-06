@@ -333,7 +333,7 @@ public class Hive {
       boolean doRegisterAllFns) throws HiveException {
     Hive db = hiveDB.get();
     if (db == null || !db.isCurrentUserOwner() || needsRefresh
-        || (c != null && db.metaStoreClient != null && !isCompatible(db, c, isFastCheck))) {
+        || (c != null && !isCompatible(db, c, isFastCheck))) {
       db = create(c, false, db, doRegisterAllFns);
     }
     if (c != null) {
@@ -366,10 +366,14 @@ public class Hive {
   }
 
   private static boolean isCompatible(Hive db, HiveConf c, boolean isFastCheck) {
-    return isFastCheck
-        ? db.metaStoreClient.isSameConfObj(c) : db.metaStoreClient.isCompatibleWith(c);
+    if (isFastCheck) {
+      return (db.metaStoreClient == null || db.metaStoreClient.isSameConfObj(c))
+          && (db.syncMetaStoreClient == null || db.syncMetaStoreClient.isSameConfObj(c));
+    } else {
+      return (db.metaStoreClient == null || db.metaStoreClient.isCompatibleWith(c))
+          && (db.syncMetaStoreClient == null || db.syncMetaStoreClient.isCompatibleWith(c));
+    }
   }
-
 
   public static Hive get() throws HiveException {
     return get(true);
