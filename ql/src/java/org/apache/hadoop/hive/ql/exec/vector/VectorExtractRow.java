@@ -19,7 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -397,7 +397,7 @@ public class VectorExtractRow {
         final int offset = (int) mapColumnVector.offsets[adjustedIndex];
         final int size = (int) mapColumnVector.lengths[adjustedIndex];
 
-        final Map map = new HashMap();
+        final Map<Object, Object> map = new LinkedHashMap<Object, Object>();
         for (int i = 0; i < size; i++) {
           final Object key = extractRowColumn(
               mapColumnVector.keys,
