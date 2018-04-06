@@ -23,11 +23,13 @@ package org.apache.hadoop.hive.ql.exec.spark.Statistic;
 public class SparkStatisticsNames {
 
   public static final String EXECUTOR_DESERIALIZE_TIME = "ExecutorDeserializeTime";
+  public static final String EXECUTOR_DESERIALIZE_CPU_TIME = "ExecutorDeserializeCpuTime";
   public static final String EXECUTOR_RUN_TIME = "ExecutorRunTime";
+  public static final String EXECUTOR_CPU_TIME = "ExecutorCpuTime";
   public static final String RESULT_SIZE = "ResultSize";
   public static final String JVM_GC_TIME = "JvmGCTime";
   public static final String RESULT_SERIALIZATION_TIME = "ResultSerializationTime";
-  public static final String MEMORY_BYTES_SPLIED = "MemoryBytesSpilled";
+  public static final String MEMORY_BYTES_SPILLED = "MemoryBytesSpilled";
   public static final String DISK_BYTES_SPILLED = "DiskBytesSpilled";
   public static final String BYTES_READ = "BytesRead";
   public static final String REMOTE_BLOCKS_FETCHED = "RemoteBlocksFetched";
