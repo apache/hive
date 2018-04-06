@@ -680,6 +680,9 @@
         <version>0.10</version>
         <configuration>
           <excludes>
+	    <exclude>binary-package-licenses/**</exclude>
+            <exclude>DEV-README</exclude>
+	    <exclude>**/src/main/sql/**</exclude>
             <exclude>**/README.md</exclude>
             <exclude>**/*.iml</exclude>
             <exclude>**/*.txt</exclude>
