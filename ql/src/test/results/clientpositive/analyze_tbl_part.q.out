@@ -180,3 +180,21 @@ POSTHOOK: Input: default@src_stat_string_part@partitionname=p%221
 POSTHOOK: Output: default@src_stat_string_part
 POSTHOOK: Output: default@src_stat_string_part@partitionname=p%221
 #### A masked pattern was here ####
+PREHOOK: query: ANALYZE TABLE src_stat_string_part COMPUTE STATISTICS for columns key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_stat_string_part
+PREHOOK: Input: default@src_stat_string_part@partitionname=p%221
+PREHOOK: Input: default@src_stat_string_part@partitionname=p%271
+PREHOOK: Output: default@src_stat_string_part
+PREHOOK: Output: default@src_stat_string_part@partitionname=p%221
+PREHOOK: Output: default@src_stat_string_part@partitionname=p%271
+#### A masked pattern was here ####
+POSTHOOK: query: ANALYZE TABLE src_stat_string_part COMPUTE STATISTICS for columns key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_stat_string_part
+POSTHOOK: Input: default@src_stat_string_part@partitionname=p%221
+POSTHOOK: Input: default@src_stat_string_part@partitionname=p%271
+POSTHOOK: Output: default@src_stat_string_part
+POSTHOOK: Output: default@src_stat_string_part@partitionname=p%221
+POSTHOOK: Output: default@src_stat_string_part@partitionname=p%271
+#### A masked pattern was here ####
