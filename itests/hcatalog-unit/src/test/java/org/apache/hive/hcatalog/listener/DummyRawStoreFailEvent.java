@@ -836,6 +836,10 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
 
   @Override
   public void cleanNotificationEvents(int olderThan) {
+    if (!shouldEventSucceed) {
+      //throw exception to simulate an issue with cleaner thread
+      throw new RuntimeException("Dummy exception while cleaning notifications");
+    }
     objectStore.cleanNotificationEvents(olderThan);
   }
 
