@@ -104,7 +104,8 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   private Configuration conf;
   private MessageFactory msgFactory;
 
-  private synchronized void init(Configuration conf) throws MetaException {
+  //cleaner is a static object, use static synchronized to make sure its thread-safe
+  private static synchronized void init(Configuration conf) throws MetaException {
     if (cleaner == null) {
       cleaner =
           new CleanerThread(conf, RawStoreProxy.getProxy(conf, conf,
@@ -116,7 +117,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   public DbNotificationListener(Configuration config) throws MetaException {
     super(config);
     conf = config;
-    init(conf);
+    DbNotificationListener.init(conf);
     msgFactory = MessageFactory.getInstance();
   }
 
@@ -724,7 +725,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     static private long sleepTime = 60000;
 
     CleanerThread(Configuration conf, RawStore rs) {
-      super("CleanerThread");
+      super("DB-Notification-Cleaner");
       this.rs = rs;
       setTimeToLive(MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_TTL,
           TimeUnit.SECONDS));
@@ -734,7 +735,17 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     @Override
     public void run() {
       while (true) {
-        rs.cleanNotificationEvents(ttl);
+        try {
+          rs.cleanNotificationEvents(ttl);
+        } catch (Exception ex) {
+          //catching exceptions here makes sure that the thread doesn't die in case of unexpected
+          //exceptions
+          LOG.warn(
+              "Exception received while cleaning notifications. More details can be found in debug mode"
+                  + ex.getMessage());
+          LOG.debug(ex.getMessage(), ex);
+        }
+
         LOG.debug("Cleaner thread done");
         try {
           Thread.sleep(sleepTime);
