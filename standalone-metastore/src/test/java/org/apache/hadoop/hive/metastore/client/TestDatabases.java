@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.thrift.TException;
-import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -227,18 +226,10 @@ public class TestDatabases extends MetaStoreClientTest {
     client.getDatabase("no_such_database");
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testGetDatabaseNullName() throws Exception {
     // Missing database name in the query
-    try {
-      client.getDatabase(null);
-      // TODO: Should have a check on the server side.
-      Assert.fail("Expected a NullPointerException or TTransportException to be thrown");
-    } catch (NullPointerException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
-      // Expected exception - Remote MetaStore
-    }
+    client.getDatabase(null);
   }
 
   @Test(expected = NoSuchObjectException.class)
@@ -246,32 +237,16 @@ public class TestDatabases extends MetaStoreClientTest {
     client.dropDatabase("no_such_database");
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testDropDatabaseNullName() throws Exception {
     // Missing database in the query
-    try {
-      client.dropDatabase(null);
-      // TODO: Should be checked on server side
-      Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
-    } catch (NullPointerException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
-      // Expected exception - Remote MetaStore
-    }
+    client.dropDatabase(null);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testDropDatabaseDefaultDatabase() throws Exception {
     // Check if it is possible to drop default database
-    try {
-      client.dropDatabase(DEFAULT_DATABASE);
-      // TODO: Should be checked on server side
-      Assert.fail("Expected an MetaException or TTransportException to be thrown");
-    } catch (MetaException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
-      // Expected exception - Remote MetaStore
-    }
+    client.dropDatabase(DEFAULT_DATABASE);
   }
 
   @Test
