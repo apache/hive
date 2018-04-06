@@ -42,7 +42,7 @@ insert into over1korc values (NULL, NULL,NULL, NULL,NULL, NULL,NULL, NULL,NULL, 
 
 SET hive.vectorized.execution.enabled=false;
 
-EXPLAIN VECTORIZATION EXPRESSION SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20;
+EXPLAIN SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20;
 
 SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20;
 

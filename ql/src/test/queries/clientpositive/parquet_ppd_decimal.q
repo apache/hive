@@ -1,3 +1,7 @@
+-- Suppress vectorization due to known bug.  See HIVE-19108.
+set hive.vectorized.execution.enabled=false;
+set hive.test.vectorized.execution.enabled.override=disable;
+
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 SET mapred.min.split.size=1000;
 SET mapred.max.split.size=5000;
