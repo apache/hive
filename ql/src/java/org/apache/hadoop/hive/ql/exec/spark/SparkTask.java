@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
@@ -158,8 +159,7 @@ public class SparkTask extends Task<SparkWork> {
         sparkStatistics = sparkJobStatus.getSparkStatistics();
         printExcessiveGCWarning();
         if (LOG.isInfoEnabled() && sparkStatistics != null) {
-          LOG.info(String.format("=====Spark Job[%s] statistics=====", sparkJobID));
-          logSparkStatistic(sparkStatistics);
+          LOG.info(sparkStatisticsToString(sparkStatistics, sparkJobID));
         }
         LOG.info("Successfully completed Spark job[" + sparkJobID + "] with application ID " +
                 jobID + " and task ID " + getId());
@@ -250,17 +250,25 @@ public class SparkTask extends Task<SparkWork> {
     }
   }
 
-  private void logSparkStatistic(SparkStatistics sparkStatistic) {
+  @VisibleForTesting
+  static String sparkStatisticsToString(SparkStatistics sparkStatistic, int sparkJobID) {
+    StringBuilder sparkStatsString = new StringBuilder();
+    sparkStatsString.append("\n\n");
+    sparkStatsString.append(String.format("=====Spark Job[%d] Statistics=====", sparkJobID));
+    sparkStatsString.append("\n\n");
+
     Iterator<SparkStatisticGroup> groupIterator = sparkStatistic.getStatisticGroups();
     while (groupIterator.hasNext()) {
       SparkStatisticGroup group = groupIterator.next();
-      LOG.info(group.getGroupName());
+      sparkStatsString.append(group.getGroupName()).append("\n");
       Iterator<SparkStatistic> statisticIterator = group.getStatistics();
       while (statisticIterator.hasNext()) {
         SparkStatistic statistic = statisticIterator.next();
-        LOG.info("\t" + statistic.getName() + ": " + statistic.getValue());
+        sparkStatsString.append("\t").append(statistic.getName()).append(": ").append(
+                statistic.getValue()).append("\n");
       }
     }
+    return sparkStatsString.toString();
   }
 
   /**

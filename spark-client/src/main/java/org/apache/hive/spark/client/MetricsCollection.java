@@ -141,7 +141,9 @@ public class MetricsCollection {
     try {
       // Task metrics.
       long executorDeserializeTime = 0L;
+      long executorDeserializeCpuTime = 0L;
       long executorRunTime = 0L;
+      long executorCpuTime = 0L;
       long resultSize = 0L;
       long jvmGCTime = 0L;
       long resultSerializationTime = 0L;
@@ -167,7 +169,9 @@ public class MetricsCollection {
       for (TaskInfo info : Collections2.filter(taskMetrics, filter)) {
         Metrics m = info.metrics;
         executorDeserializeTime += m.executorDeserializeTime;
+        executorDeserializeCpuTime += m.executorDeserializeCpuTime;
         executorRunTime += m.executorRunTime;
+        executorCpuTime += m.executorCpuTime;
         resultSize += m.resultSize;
         jvmGCTime += m.jvmGCTime;
         resultSerializationTime += m.resultSerializationTime;
@@ -217,7 +221,9 @@ public class MetricsCollection {
 
       return new Metrics(
         executorDeserializeTime,
+        executorDeserializeCpuTime,
         executorRunTime,
+        executorCpuTime,
         resultSize,
         jvmGCTime,
         resultSerializationTime,

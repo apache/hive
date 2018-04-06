@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsBuilder;
 import org.apache.hadoop.hive.ql.exec.spark.status.RemoteSparkJobMonitor;
 import org.apache.hadoop.hive.ql.exec.spark.status.impl.RemoteSparkJobStatus;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
@@ -96,6 +97,19 @@ public class TestSparkTask {
     Assert.assertEquals(remoteSparkJobMonitor.startMonitor(), 3);
   }
 
+  @Test
+  public void testSparkStatisticsToString() {
+    SparkStatisticsBuilder statsBuilder = new SparkStatisticsBuilder();
+    statsBuilder.add("TEST", "stat1", "1");
+    statsBuilder.add("TEST", "stat2", "1");
+    String statsString = SparkTask.sparkStatisticsToString(statsBuilder.build(), 10);
+
+    Assert.assertTrue(statsString.contains("10"));
+    Assert.assertTrue(statsString.contains("TEST"));
+    Assert.assertTrue(statsString.contains("stat1"));
+    Assert.assertTrue(statsString.contains("stat2"));
+    Assert.assertTrue(statsString.contains("1"));
+  }
 
   private boolean isEmptySparkWork(SparkWork sparkWork) {
     List<BaseWork> allWorks = sparkWork.getAllWork();
