@@ -428,6 +428,9 @@ public class FastHiveDecimal {
   }
 
   protected void fastAbs() {
+    if (fastSignum == 0) {
+      return;
+    }
     fastSignum = 1;
   }
 
