@@ -36,7 +36,8 @@ the database.
 
 To run one of the tests you will need to explicitly turn on integration testing,
 in the Oracle case specify the location of the JDBC driver, and optionally
-specify which test you want to run.  To run all of the tests do:
+specify which test you want to run.  You'll need to download and start docker.
+Make sure docker's memory is set to more than 3.5GB.  To run all of the tests do:
 
 mvn verify -Ditest.jdbc.jars=_oracle_jar_path -DskipITests=false -Dtest=nosuch
 
@@ -46,6 +47,9 @@ mvn verify -DskipITests=false -Dit.test=ITestMysql -Dtest=nosuch
 
 You can download the Oracle driver at 
 http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html
+You should download Oracle 11g Release 1, ojdbc6.jar
+
+Logs for tests are located under standalone-metastore/target/failsafe-reports
 
 If you wish to use one of these containers to run your own tests against a
 non-Derby version of the metastore, you can do that as well.  You must specify
