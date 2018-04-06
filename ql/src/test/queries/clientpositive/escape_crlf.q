@@ -1,3 +1,7 @@
+-- Suppress vectorization due to known bug.  See HIVE-19118.
+set hive.vectorized.execution.enabled=false;
+set hive.test.vectorized.execution.enabled.override=disable;
+
 DROP TABLE IF EXISTS base_tab;
 CREATE TABLE base_tab(a STRING, b STRING)
 ROW FORMAT DELIMITED
