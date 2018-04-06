@@ -114,14 +114,10 @@ POSTHOOK: Lineage: over1korc.s EXPRESSION []
 POSTHOOK: Lineage: over1korc.si EXPRESSION []
 POSTHOOK: Lineage: over1korc.t EXPRESSION []
 POSTHOOK: Lineage: over1korc.ts EXPRESSION []
-PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+PREHOOK: query: EXPLAIN SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20
 PREHOOK: type: QUERY
-POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20
+POSTHOOK: query: EXPLAIN SELECT t, si, i, b, f, d, bo, s, ts, `dec`, bin FROM over1korc ORDER BY t, si, i LIMIT 20
 POSTHOOK: type: QUERY
-PLAN VECTORIZATION:
-  enabled: false
-  enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
-
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
