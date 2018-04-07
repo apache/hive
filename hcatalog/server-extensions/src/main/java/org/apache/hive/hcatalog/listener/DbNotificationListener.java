@@ -106,7 +106,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
   private MessageFactory msgFactory;
 
   //cleaner is a static object, use static synchronized to make sure its thread-safe
-  private static synchronized void init(Configuration conf) throws MetaException {
+  private static synchronized void init(HiveConf conf) throws MetaException {
     if (cleaner == null) {
       cleaner =
           new CleanerThread(conf, RawStoreProxy.getProxy(conf, conf,
@@ -121,7 +121,7 @@ public class DbNotificationListener extends MetaStoreEventListener {
     // with a Configuration parameter, so we have to declare config as Configuration.  But it
     // actually passes a HiveConf, which we need.  So we'll do this ugly down cast.
     hiveConf = (HiveConf)config;
-    DbNotificationListener.init(conf);
+    DbNotificationListener.init(hiveConf);
     msgFactory = MessageFactory.getInstance();
   }
 
