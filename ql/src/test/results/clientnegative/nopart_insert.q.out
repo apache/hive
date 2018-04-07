@@ -6,4 +6,4 @@ POSTHOOK: query: CREATE TABLE nopart_insert(a STRING, b STRING) PARTITIONED BY (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@nopart_insert
-FAILED: SemanticException 3:23 Need to specify partition columns because the destination table is partitioned. Error encountered near token 'nopart_insert'
+FAILED: SemanticException [Error 10044]: Line 3:23 Cannot insert into target table because column number/types are different 'nopart_insert': Table insclause-0 has 3 columns, but query has 2 columns.
