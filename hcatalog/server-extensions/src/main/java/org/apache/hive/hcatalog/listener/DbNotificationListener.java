@@ -600,10 +600,12 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   @Override
   public void onAllocWriteId(AllocWriteIdEvent allocWriteIdEvent, Connection dbConn, SQLGenerator sqlGenerator) throws MetaException {
     String tableName = allocWriteIdEvent.getTableName();
+    String dbName = allocWriteIdEvent.getDbName();
     NotificationEvent event =
             new NotificationEvent(0, now(), EventType.ALLOC_WRITE_ID.toString(), msgFactory
-                    .buildAllocWriteIdMessage(allocWriteIdEvent.getTxnIds(), tableName).toString());
+                    .buildAllocWriteIdMessage(allocWriteIdEvent.getTxnToWriteIdList(), dbName, tableName).toString());
     event.setTableName(tableName);
+    event.setDbName(dbName);
     try {
       addNotificationLog(event, allocWriteIdEvent, dbConn, sqlGenerator);
     } catch (SQLException e) {

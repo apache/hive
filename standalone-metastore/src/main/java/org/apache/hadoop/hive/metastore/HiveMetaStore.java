@@ -62,7 +62,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import javax.jdo.JDOException;
@@ -178,7 +177,6 @@ import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
-import org.iq80.leveldb.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7064,8 +7062,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       OpenTxnsResponse response = getTxnHandler().openTxns(rqst);
       List<Long> txnIds = response.getTxn_ids();
       if (txnIds != null && listeners != null && !listeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyTxnEvent(listeners, EventType.OPEN_TXN,
-            new OpenTxnEvent(txnIds, this), null, null);
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.OPEN_TXN,
+            new OpenTxnEvent(txnIds, this));
       }
       return response;
     }
@@ -7074,8 +7072,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public void abort_txn(AbortTxnRequest rqst) throws TException {
       getTxnHandler().abortTxn(rqst);
       if (listeners != null && !listeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyTxnEvent(listeners, EventType.ABORT_TXN,
-                new AbortTxnEvent(rqst.getTxnid(), this), null, null);
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ABORT_TXN,
+                new AbortTxnEvent(rqst.getTxnid(), this));
       }
     }
 
@@ -7084,8 +7082,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       getTxnHandler().abortTxns(rqst);
       if (listeners != null && !listeners.isEmpty()) {
         for (Long txnId : rqst.getTxn_ids()) {
-          MetaStoreListenerNotifier.notifyTxnEvent(listeners, EventType.ABORT_TXN,
-                  new AbortTxnEvent(txnId, this), null, null);
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ABORT_TXN,
+                  new AbortTxnEvent(txnId, this));
         }
       }
     }
@@ -7094,8 +7092,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public void commit_txn(CommitTxnRequest rqst) throws TException {
       getTxnHandler().commitTxn(rqst);
       if (listeners != null && !listeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyTxnEvent(listeners, EventType.COMMIT_TXN,
-                new CommitTxnEvent(rqst.getTxnid(), this), null, null);
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.COMMIT_TXN,
+                new CommitTxnEvent(rqst.getTxnid(), this));
       }
     }
 
@@ -7109,15 +7107,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             AllocateTableWriteIdsRequest rqst) throws TException {
       AllocateTableWriteIdsResponse response = getTxnHandler().allocateTableWriteIds(rqst);
       if (listeners != null && !listeners.isEmpty()) {
-        MetaStoreListenerNotifier.notifyTxnEvent(listeners, EventType.ALLOC_WRITE_ID,
-                new AllocWriteIdEvent(rqst.getTxnIds(), rqst.getTableName(), this), null, null);
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ALLOC_WRITE_ID,
+                new AllocWriteIdEvent(response.getTxnToWriteIds(), rqst.getDbName(),
+                        rqst.getTableName(), this));
       }
       return response;
-    }
-
-    @Override
-    public GetTargetTxnIdsResponse repl_get_target_txn_ids(GetTargetTxnIdsRequest rqst) throws TException {
-      return getTxnHandler().replGetTargetTxnIds(rqst);
     }
 
     @Override

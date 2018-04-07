@@ -210,6 +210,14 @@ public class MetaStoreListenerNotifier {
               (listener, event) -> listener.onCreateCatalog((CreateCatalogEvent)event))
           .put(EventType.DROP_CATALOG,
               (listener, event) -> listener.onDropCatalog((DropCatalogEvent)event))
+          .put(EventType.OPEN_TXN,
+              (listener, event) -> listener.onOpenTxn((OpenTxnEvent) event, null, null))
+          .put(EventType.COMMIT_TXN,
+              (listener, event) -> listener.onCommitTxn((CommitTxnEvent) event, null, null))
+          .put(EventType.ABORT_TXN,
+              (listener, event) -> listener.onAbortTxn((AbortTxnEvent) event, null, null))
+          .put(EventType.ALLOC_WRITE_ID,
+              (listener, event) -> listener.onAllocWriteId((AllocWriteIdEvent) event, null, null))
           .build()
   );
 
@@ -222,17 +230,14 @@ public class MetaStoreListenerNotifier {
   private static Map<EventType, TxnEventNotifier> txnNotificationEvents = Maps.newHashMap(
     ImmutableMap.<EventType, TxnEventNotifier>builder()
       .put(EventType.OPEN_TXN,
-        (listener, event, dbConn, sqlGenerator) -> listener.onOpenTxn((OpenTxnEvent) event, dbConn, sqlGenerator)
-      )
+        (listener, event, dbConn, sqlGenerator) -> listener.onOpenTxn((OpenTxnEvent) event, dbConn, sqlGenerator))
       .put(EventType.COMMIT_TXN,
-        (listener, event, dbConn, sqlGenerator) -> listener.onCommitTxn((CommitTxnEvent) event, dbConn, sqlGenerator)
-      )
+        (listener, event, dbConn, sqlGenerator) -> listener.onCommitTxn((CommitTxnEvent) event, dbConn, sqlGenerator))
       .put(EventType.ABORT_TXN,
-        (listener, event, dbConn, sqlGenerator) -> listener.onAbortTxn((AbortTxnEvent) event, dbConn, sqlGenerator)
-      )
+        (listener, event, dbConn, sqlGenerator) -> listener.onAbortTxn((AbortTxnEvent) event, dbConn, sqlGenerator))
       .put(EventType.ALLOC_WRITE_ID,
-        (listener, event, dbConn, sqlGenerator) -> listener.onAllocWriteId((AllocWriteIdEvent) event, dbConn, sqlGenerator)
-      )
+        (listener, event, dbConn, sqlGenerator) ->
+                listener.onAllocWriteId((AllocWriteIdEvent) event, dbConn, sqlGenerator))
       .build()
   );
 
@@ -266,7 +271,7 @@ public class MetaStoreListenerNotifier {
   }
 
   /**
-   * Notify a list of listeners about a specific metastore event related to txn. Each listener notified might update
+   * Notify a list of listeners about a specific metastore event to be executed within a txn. Each listener notified might update
    * the (ListenerEvent) event by setting a parameter key/value pair. These updated parameters will
    * be returned to the caller.
    *
@@ -279,10 +284,10 @@ public class MetaStoreListenerNotifier {
    *         map if no parameters were updated or if no listeners were notified.
    * @throws MetaException If an error occurred while calling the listeners.
    */
-  public static Map<String, String> notifyTxnEvent(List<? extends MetaStoreEventListener> listeners,
-                                                EventType eventType,
-                                                ListenerEvent event,
-                                                Connection dbConn, SQLGenerator sqlGenerator) throws MetaException {
+  public static Map<String, String> notifyEventWithDirectSql(List<? extends MetaStoreEventListener> listeners,
+                                                             EventType eventType,
+                                                             ListenerEvent event,
+                                                             Connection dbConn, SQLGenerator sqlGenerator) throws MetaException {
 
     Preconditions.checkNotNull(listeners, "Listeners must not be null.");
     Preconditions.checkNotNull(event, "The event must not be null.");

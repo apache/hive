@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import org.apache.hadoop.hive.metastore.api.GetTargetTxnIdsRequest;
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -48,8 +48,7 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
     try {
       HiveTxnManager txnManager = driverContext.getCtx().getHiveTxnManager();
       String user = UserGroupInformation.getCurrentUser().getUserName();
-      LOG.debug("Replaying " + work.getOperationType().toString() + " Event for policy " +
-              replPolicy + " with srcTxn " + work.getTxnIds().toString());
+      LOG.debug("Replaying " + work.getOperationType().toString() + " Event for policy " + replPolicy);
       switch(work.getOperationType()) {
       case REPL_OPEN_TXN:
         List<Long> txnIds = txnManager.replOpenTxn(replPolicy, work.getTxnIds(), user);
@@ -70,10 +69,13 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
         }
         return 0;
       case REPL_ALLOC_WRITE_ID:
-        List<Long> targetTxnIds = txnManager.replGetTargetTxnIds(replPolicy, work.getTxnIds());
-        txnManager.allocateTableWriteIdsBatch(targetTxnIds, work.getDbName(), work.getTableName());
-        LOG.info("Replayed alloc write Id Event for repl policy: " + replPolicy + " with srcTxn: " + work.getTxnIds()
-                .toString() + " target txn ids: " + targetTxnIds.toString() + " table name: " + work.getTableName());
+        assert work.getTxnToWriteIdList() != null;
+        String dbName = work.getDbName();
+        String tblName = work.getTableName();
+        List <TxnToWriteId> txnToWriteIdList = work.getTxnToWriteIdList();
+        txnManager.replAllocateTableWriteIdsBatch(dbName, tblName, replPolicy, txnToWriteIdList);
+        LOG.info("Replayed alloc write Id Event for repl policy: " + replPolicy + " db Name : " + dbName +
+                " txnToWriteIdList: " +txnToWriteIdList.toString() + " table name: " + tblName);
         return 0;
       default:
         LOG.error("Operation Type " + work.getOperationType() + " is not supported ");

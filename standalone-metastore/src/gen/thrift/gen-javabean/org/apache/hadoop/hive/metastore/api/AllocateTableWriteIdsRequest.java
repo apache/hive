@@ -41,6 +41,8 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField TXN_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("txnIds", org.apache.thrift.protocol.TType.LIST, (short)1);
   private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("tableName", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField REPL_POLICY_FIELD_DESC = new org.apache.thrift.protocol.TField("replPolicy", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField TXN_TO_WRITE_ID_LIST_FIELD_DESC = new org.apache.thrift.protocol.TField("txnToWriteIdList", org.apache.thrift.protocol.TType.LIST, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -48,15 +50,19 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new AllocateTableWriteIdsRequestTupleSchemeFactory());
   }
 
-  private List<Long> txnIds; // required
+  private List<Long> txnIds; // optional
   private String dbName; // required
   private String tableName; // required
+  private String replPolicy; // optional
+  private List<TxnToWriteId> txnToWriteIdList; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     TXN_IDS((short)1, "txnIds"),
     DB_NAME((short)2, "dbName"),
-    TABLE_NAME((short)3, "tableName");
+    TABLE_NAME((short)3, "tableName"),
+    REPL_POLICY((short)4, "replPolicy"),
+    TXN_TO_WRITE_ID_LIST((short)5, "txnToWriteIdList");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -77,6 +83,10 @@ import org.slf4j.LoggerFactory;
           return DB_NAME;
         case 3: // TABLE_NAME
           return TABLE_NAME;
+        case 4: // REPL_POLICY
+          return REPL_POLICY;
+        case 5: // TXN_TO_WRITE_ID_LIST
+          return TXN_TO_WRITE_ID_LIST;
         default:
           return null;
       }
@@ -117,16 +127,22 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
+  private static final _Fields optionals[] = {_Fields.TXN_IDS,_Fields.REPL_POLICY,_Fields.TXN_TO_WRITE_ID_LIST};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.TXN_IDS, new org.apache.thrift.meta_data.FieldMetaData("txnIds", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.TXN_IDS, new org.apache.thrift.meta_data.FieldMetaData("txnIds", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
     tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.TABLE_NAME, new org.apache.thrift.meta_data.FieldMetaData("tableName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.REPL_POLICY, new org.apache.thrift.meta_data.FieldMetaData("replPolicy", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.TXN_TO_WRITE_ID_LIST, new org.apache.thrift.meta_data.FieldMetaData("txnToWriteIdList", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT            , "TxnToWriteId"))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(AllocateTableWriteIdsRequest.class, metaDataMap);
   }
@@ -135,12 +151,10 @@ import org.slf4j.LoggerFactory;
   }
 
   public AllocateTableWriteIdsRequest(
-    List<Long> txnIds,
     String dbName,
     String tableName)
   {
     this();
-    this.txnIds = txnIds;
     this.dbName = dbName;
     this.tableName = tableName;
   }
@@ -159,6 +173,16 @@ import org.slf4j.LoggerFactory;
     if (other.isSetTableName()) {
       this.tableName = other.tableName;
     }
+    if (other.isSetReplPolicy()) {
+      this.replPolicy = other.replPolicy;
+    }
+    if (other.isSetTxnToWriteIdList()) {
+      List<TxnToWriteId> __this__txnToWriteIdList = new ArrayList<TxnToWriteId>(other.txnToWriteIdList.size());
+      for (TxnToWriteId other_element : other.txnToWriteIdList) {
+        __this__txnToWriteIdList.add(other_element);
+      }
+      this.txnToWriteIdList = __this__txnToWriteIdList;
+    }
   }
 
   public AllocateTableWriteIdsRequest deepCopy() {
@@ -170,6 +194,8 @@ import org.slf4j.LoggerFactory;
     this.txnIds = null;
     this.dbName = null;
     this.tableName = null;
+    this.replPolicy = null;
+    this.txnToWriteIdList = null;
   }
 
   public int getTxnIdsSize() {
@@ -256,6 +282,67 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public String getReplPolicy() {
+    return this.replPolicy;
+  }
+
+  public void setReplPolicy(String replPolicy) {
+    this.replPolicy = replPolicy;
+  }
+
+  public void unsetReplPolicy() {
+    this.replPolicy = null;
+  }
+
+  /** Returns true if field replPolicy is set (has been assigned a value) and false otherwise */
+  public boolean isSetReplPolicy() {
+    return this.replPolicy != null;
+  }
+
+  public void setReplPolicyIsSet(boolean value) {
+    if (!value) {
+      this.replPolicy = null;
+    }
+  }
+
+  public int getTxnToWriteIdListSize() {
+    return (this.txnToWriteIdList == null) ? 0 : this.txnToWriteIdList.size();
+  }
+
+  public java.util.Iterator<TxnToWriteId> getTxnToWriteIdListIterator() {
+    return (this.txnToWriteIdList == null) ? null : this.txnToWriteIdList.iterator();
+  }
+
+  public void addToTxnToWriteIdList(TxnToWriteId elem) {
+    if (this.txnToWriteIdList == null) {
+      this.txnToWriteIdList = new ArrayList<TxnToWriteId>();
+    }
+    this.txnToWriteIdList.add(elem);
+  }
+
+  public List<TxnToWriteId> getTxnToWriteIdList() {
+    return this.txnToWriteIdList;
+  }
+
+  public void setTxnToWriteIdList(List<TxnToWriteId> txnToWriteIdList) {
+    this.txnToWriteIdList = txnToWriteIdList;
+  }
+
+  public void unsetTxnToWriteIdList() {
+    this.txnToWriteIdList = null;
+  }
+
+  /** Returns true if field txnToWriteIdList is set (has been assigned a value) and false otherwise */
+  public boolean isSetTxnToWriteIdList() {
+    return this.txnToWriteIdList != null;
+  }
+
+  public void setTxnToWriteIdListIsSet(boolean value) {
+    if (!value) {
+      this.txnToWriteIdList = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TXN_IDS:
@@ -282,6 +369,22 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case REPL_POLICY:
+      if (value == null) {
+        unsetReplPolicy();
+      } else {
+        setReplPolicy((String)value);
+      }
+      break;
+
+    case TXN_TO_WRITE_ID_LIST:
+      if (value == null) {
+        unsetTxnToWriteIdList();
+      } else {
+        setTxnToWriteIdList((List<TxnToWriteId>)value);
+      }
+      break;
+
     }
   }
 
@@ -295,6 +398,12 @@ import org.slf4j.LoggerFactory;
 
     case TABLE_NAME:
       return getTableName();
+
+    case REPL_POLICY:
+      return getReplPolicy();
+
+    case TXN_TO_WRITE_ID_LIST:
+      return getTxnToWriteIdList();
 
     }
     throw new IllegalStateException();
@@ -313,6 +422,10 @@ import org.slf4j.LoggerFactory;
       return isSetDbName();
     case TABLE_NAME:
       return isSetTableName();
+    case REPL_POLICY:
+      return isSetReplPolicy();
+    case TXN_TO_WRITE_ID_LIST:
+      return isSetTxnToWriteIdList();
     }
     throw new IllegalStateException();
   }
@@ -357,6 +470,24 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_replPolicy = true && this.isSetReplPolicy();
+    boolean that_present_replPolicy = true && that.isSetReplPolicy();
+    if (this_present_replPolicy || that_present_replPolicy) {
+      if (!(this_present_replPolicy && that_present_replPolicy))
+        return false;
+      if (!this.replPolicy.equals(that.replPolicy))
+        return false;
+    }
+
+    boolean this_present_txnToWriteIdList = true && this.isSetTxnToWriteIdList();
+    boolean that_present_txnToWriteIdList = true && that.isSetTxnToWriteIdList();
+    if (this_present_txnToWriteIdList || that_present_txnToWriteIdList) {
+      if (!(this_present_txnToWriteIdList && that_present_txnToWriteIdList))
+        return false;
+      if (!this.txnToWriteIdList.equals(that.txnToWriteIdList))
+        return false;
+    }
+
     return true;
   }
 
@@ -378,6 +509,16 @@ import org.slf4j.LoggerFactory;
     list.add(present_tableName);
     if (present_tableName)
       list.add(tableName);
+
+    boolean present_replPolicy = true && (isSetReplPolicy());
+    list.add(present_replPolicy);
+    if (present_replPolicy)
+      list.add(replPolicy);
+
+    boolean present_txnToWriteIdList = true && (isSetTxnToWriteIdList());
+    list.add(present_txnToWriteIdList);
+    if (present_txnToWriteIdList)
+      list.add(txnToWriteIdList);
 
     return list.hashCode();
   }
@@ -420,6 +561,26 @@ import org.slf4j.LoggerFactory;
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetReplPolicy()).compareTo(other.isSetReplPolicy());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetReplPolicy()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.replPolicy, other.replPolicy);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetTxnToWriteIdList()).compareTo(other.isSetTxnToWriteIdList());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTxnToWriteIdList()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.txnToWriteIdList, other.txnToWriteIdList);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -440,13 +601,15 @@ import org.slf4j.LoggerFactory;
     StringBuilder sb = new StringBuilder("AllocateTableWriteIdsRequest(");
     boolean first = true;
 
-    sb.append("txnIds:");
-    if (this.txnIds == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.txnIds);
+    if (isSetTxnIds()) {
+      sb.append("txnIds:");
+      if (this.txnIds == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.txnIds);
+      }
+      first = false;
     }
-    first = false;
     if (!first) sb.append(", ");
     sb.append("dbName:");
     if (this.dbName == null) {
@@ -463,16 +626,32 @@ import org.slf4j.LoggerFactory;
       sb.append(this.tableName);
     }
     first = false;
+    if (isSetReplPolicy()) {
+      if (!first) sb.append(", ");
+      sb.append("replPolicy:");
+      if (this.replPolicy == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.replPolicy);
+      }
+      first = false;
+    }
+    if (isSetTxnToWriteIdList()) {
+      if (!first) sb.append(", ");
+      sb.append("txnToWriteIdList:");
+      if (this.txnToWriteIdList == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.txnToWriteIdList);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetTxnIds()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'txnIds' is unset! Struct:" + toString());
-    }
-
     if (!isSetDbName()) {
       throw new org.apache.thrift.protocol.TProtocolException("Required field 'dbName' is unset! Struct:" + toString());
     }
@@ -521,13 +700,13 @@ import org.slf4j.LoggerFactory;
           case 1: // TXN_IDS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list634 = iprot.readListBegin();
-                struct.txnIds = new ArrayList<Long>(_list634.size);
-                long _elem635;
-                for (int _i636 = 0; _i636 < _list634.size; ++_i636)
+                org.apache.thrift.protocol.TList _list618 = iprot.readListBegin();
+                struct.txnIds = new ArrayList<Long>(_list618.size);
+                long _elem619;
+                for (int _i620 = 0; _i620 < _list618.size; ++_i620)
                 {
-                  _elem635 = iprot.readI64();
-                  struct.txnIds.add(_elem635);
+                  _elem619 = iprot.readI64();
+                  struct.txnIds.add(_elem619);
                 }
                 iprot.readListEnd();
               }
@@ -552,6 +731,33 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // REPL_POLICY
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.replPolicy = iprot.readString();
+              struct.setReplPolicyIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 5: // TXN_TO_WRITE_ID_LIST
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list621 = iprot.readListBegin();
+                struct.txnToWriteIdList = new ArrayList<TxnToWriteId>(_list621.size);
+                TxnToWriteId _elem622;
+                for (int _i623 = 0; _i623 < _list621.size; ++_i623)
+                {
+                  _elem622 = new TxnToWriteId();
+                  _elem622.read(iprot);
+                  struct.txnToWriteIdList.add(_elem622);
+                }
+                iprot.readListEnd();
+              }
+              struct.setTxnToWriteIdListIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -566,16 +772,18 @@ import org.slf4j.LoggerFactory;
 
       oprot.writeStructBegin(STRUCT_DESC);
       if (struct.txnIds != null) {
-        oprot.writeFieldBegin(TXN_IDS_FIELD_DESC);
-        {
-          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.txnIds.size()));
-          for (long _iter637 : struct.txnIds)
+        if (struct.isSetTxnIds()) {
+          oprot.writeFieldBegin(TXN_IDS_FIELD_DESC);
           {
-            oprot.writeI64(_iter637);
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, struct.txnIds.size()));
+            for (long _iter624 : struct.txnIds)
+            {
+              oprot.writeI64(_iter624);
+            }
+            oprot.writeListEnd();
           }
-          oprot.writeListEnd();
+          oprot.writeFieldEnd();
         }
-        oprot.writeFieldEnd();
       }
       if (struct.dbName != null) {
         oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
@@ -586,6 +794,27 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(TABLE_NAME_FIELD_DESC);
         oprot.writeString(struct.tableName);
         oprot.writeFieldEnd();
+      }
+      if (struct.replPolicy != null) {
+        if (struct.isSetReplPolicy()) {
+          oprot.writeFieldBegin(REPL_POLICY_FIELD_DESC);
+          oprot.writeString(struct.replPolicy);
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.txnToWriteIdList != null) {
+        if (struct.isSetTxnToWriteIdList()) {
+          oprot.writeFieldBegin(TXN_TO_WRITE_ID_LIST_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.txnToWriteIdList.size()));
+            for (TxnToWriteId _iter625 : struct.txnToWriteIdList)
+            {
+              _iter625.write(oprot);
+            }
+            oprot.writeListEnd();
+          }
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -604,35 +833,81 @@ import org.slf4j.LoggerFactory;
     @Override
     public void write(org.apache.thrift.protocol.TProtocol prot, AllocateTableWriteIdsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
-      {
-        oprot.writeI32(struct.txnIds.size());
-        for (long _iter638 : struct.txnIds)
-        {
-          oprot.writeI64(_iter638);
-        }
-      }
       oprot.writeString(struct.dbName);
       oprot.writeString(struct.tableName);
+      BitSet optionals = new BitSet();
+      if (struct.isSetTxnIds()) {
+        optionals.set(0);
+      }
+      if (struct.isSetReplPolicy()) {
+        optionals.set(1);
+      }
+      if (struct.isSetTxnToWriteIdList()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
+      if (struct.isSetTxnIds()) {
+        {
+          oprot.writeI32(struct.txnIds.size());
+          for (long _iter626 : struct.txnIds)
+          {
+            oprot.writeI64(_iter626);
+          }
+        }
+      }
+      if (struct.isSetReplPolicy()) {
+        oprot.writeString(struct.replPolicy);
+      }
+      if (struct.isSetTxnToWriteIdList()) {
+        {
+          oprot.writeI32(struct.txnToWriteIdList.size());
+          for (TxnToWriteId _iter627 : struct.txnToWriteIdList)
+          {
+            _iter627.write(oprot);
+          }
+        }
+      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, AllocateTableWriteIdsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      {
-        org.apache.thrift.protocol.TList _list639 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.txnIds = new ArrayList<Long>(_list639.size);
-        long _elem640;
-        for (int _i641 = 0; _i641 < _list639.size; ++_i641)
-        {
-          _elem640 = iprot.readI64();
-          struct.txnIds.add(_elem640);
-        }
-      }
-      struct.setTxnIdsIsSet(true);
       struct.dbName = iprot.readString();
       struct.setDbNameIsSet(true);
       struct.tableName = iprot.readString();
       struct.setTableNameIsSet(true);
+      BitSet incoming = iprot.readBitSet(3);
+      if (incoming.get(0)) {
+        {
+          org.apache.thrift.protocol.TList _list628 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+          struct.txnIds = new ArrayList<Long>(_list628.size);
+          long _elem629;
+          for (int _i630 = 0; _i630 < _list628.size; ++_i630)
+          {
+            _elem629 = iprot.readI64();
+            struct.txnIds.add(_elem629);
+          }
+        }
+        struct.setTxnIdsIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.replPolicy = iprot.readString();
+        struct.setReplPolicyIsSet(true);
+      }
+      if (incoming.get(2)) {
+        {
+          org.apache.thrift.protocol.TList _list631 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.txnToWriteIdList = new ArrayList<TxnToWriteId>(_list631.size);
+          TxnToWriteId _elem632;
+          for (int _i633 = 0; _i633 < _list631.size; ++_i633)
+          {
+            _elem632 = new TxnToWriteId();
+            _elem632.read(iprot);
+            struct.txnToWriteIdList.add(_elem632);
+          }
+        }
+        struct.setTxnToWriteIdListIsSet(true);
+      }
     }
   }
 

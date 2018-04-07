@@ -21,26 +21,33 @@ package org.apache.hadoop.hive.metastore.events;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import java.util.List;
 
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public class AllocWriteIdEvent extends ListenerEvent {
 
-  private final List<Long> txnIds;
+  private final List<TxnToWriteId> txnToWriteIdList;
   private final String tableName;
+  private final String dbName;
 
-  public AllocWriteIdEvent(List<Long> txnIds, String tableName, IHMSHandler handler) {
+  public AllocWriteIdEvent(List<TxnToWriteId> txnToWriteIdList, String dbName, String tableName, IHMSHandler handler) {
     super(true, handler);
-    this.txnIds = txnIds;
+    this.txnToWriteIdList = txnToWriteIdList;
     this.tableName = tableName;
+    this.dbName = dbName;
   }
 
-  public List<Long> getTxnIds() {
-    return txnIds;
+  public List<TxnToWriteId> getTxnToWriteIdList() {
+    return txnToWriteIdList;
   }
 
   public String getTableName() {
     return tableName;
+  }
+
+  public String getDbName() {
+    return dbName;
   }
 }

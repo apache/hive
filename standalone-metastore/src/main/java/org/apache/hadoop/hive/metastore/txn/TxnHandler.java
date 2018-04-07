@@ -118,8 +118,6 @@ import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
-import org.apache.hadoop.hive.metastore.api.GetTargetTxnIdsRequest;
-import org.apache.hadoop.hive.metastore.api.GetTargetTxnIdsResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.datasource.BoneCPDataSourceProvider;
@@ -680,7 +678,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         if (transactionalListeners != null) {
-          MetaStoreListenerNotifier.notifyTxnEvent(transactionalListeners,
+          MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
                   EventMessage.EventType.OPEN_TXN, new OpenTxnEvent(txnIds, null), dbConn, sqlGenerator);
         }
 
@@ -772,7 +770,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         if (transactionalListeners != null) {
-          MetaStoreListenerNotifier.notifyTxnEvent(transactionalListeners,
+          MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
                   EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnid, null), dbConn, sqlGenerator);
         }
 
@@ -811,7 +809,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         for (Long txnId : txnids) {
           if (transactionalListeners != null) {
-            MetaStoreListenerNotifier.notifyTxnEvent(transactionalListeners,
+            MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
                     EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnId, null), dbConn, sqlGenerator);
           }
         }
@@ -1055,7 +1053,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         if (transactionalListeners != null) {
-          MetaStoreListenerNotifier.notifyTxnEvent(transactionalListeners,
+          MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
                   EventMessage.EventType.COMMIT_TXN, new CommitTxnEvent(txnid, null), dbConn, sqlGenerator);
         }
 
@@ -1227,10 +1225,62 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
+  private List<Long> getValidTxnIds(AllocateTableWriteIdsRequest rqst, Statement stmt, ResultSet rs)
+          throws MetaException, SQLException {
+    List<Long> txnIds = new ArrayList<>();
+    String dbName = rqst.getDbName().toLowerCase();
+    String tblName = rqst.getTableName().toLowerCase();
+    Long validWriteId;
+    Long largestWriteId, smallestWriteId;
+    List<TxnToWriteId> txnToWriteIds = rqst.getTxnToWriteIdList();
+    assert (txnToWriteIds != null);
+
+    // Get the next write id for the table and check if its in consistent with the input txntowriteids.
+    String s = sqlGenerator.addForUpdateClause(
+            "select nwi_next from NEXT_WRITE_ID where nwi_database = " + quoteString(dbName)
+                    + " and nwi_table = " + quoteString(tblName));
+    LOG.debug("Going to execute query <" + s + ">");
+    rs = stmt.executeQuery(s);
+    if (rs.next()) {
+      validWriteId = rs.getLong(1);
+    } else {
+      // All input write ids should be greater than this
+      validWriteId = 0L;
+    }
+
+    int size = txnToWriteIds.size();
+    for (TxnToWriteId txnToWriteId :  txnToWriteIds) {
+      Long targetTxnId = getTargetTxnId(rqst.getReplPolicy(), txnToWriteId.getTxnId(), stmt);
+      if (targetTxnId == -1) {
+        LOG.info("Transaction " + txnToWriteId.getTxnId() +
+                " is invalid, may be already committed/aborted. Ignoring the whole operation");
+        return new ArrayList<>();
+      }
+
+      Long writeId = txnToWriteId.getWriteId();
+      if (writeId <= validWriteId) {
+        //looks like a retry, so do a noop
+        LOG.info("Write Id " + writeId + " is less than valid write id : " + validWriteId + "Looks like retry.");
+        return new ArrayList<>();
+      }
+
+      if (writeId > (validWriteId + size)) {
+        //this should never happen in case of replication
+        LOG.info("Write Id " + writeId + " is out of range. Valid write id : " + validWriteId + " Size : " + size);
+        throw new MetaException("Write Id " + writeId + " is out of range. Valid write id : " +
+                validWriteId + " Size : " + size);
+      }
+      txnIds.add(targetTxnId);
+    }
+
+    return txnIds;
+  }
+
   @Override
+  @RetrySemantics.Idempotent
   public AllocateTableWriteIdsResponse allocateTableWriteIds(AllocateTableWriteIdsRequest rqst)
           throws NoSuchTxnException, TxnAbortedException, MetaException {
-    List<Long> txnIds = rqst.getTxnIds();
+    List<Long> txnIds;
     String dbName = rqst.getDbName().toLowerCase();
     String tblName = rqst.getTableName().toLowerCase();
     try {
@@ -1238,10 +1288,22 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       Statement stmt = null;
       ResultSet rs = null;
       TxnStore.MutexAPI.LockHandle handle = null;
+      List<TxnToWriteId> txnToWriteIds = new ArrayList<>();
       try {
         lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
+
+        if (rqst.isSetReplPolicy()) {
+          txnIds = getValidTxnIds(rqst, stmt, rs);
+        } else {
+          txnIds = rqst.getTxnIds();
+        }
+
+        if (txnIds.size() == 0) {
+          // Idempotent case for replication flow, return the same txn2writeId list as in request message.
+          return new AllocateTableWriteIdsResponse(rqst.getTxnToWriteIdList());
+        }
 
         Collections.sort(txnIds); //easier to read logs
 
@@ -1251,7 +1313,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           throw new RuntimeException("This should never happen for txnIds: " + txnIds);
         }
 
-        List<TxnToWriteId> txnToWriteIds = new ArrayList<>();
         List<Long> allocatedTxns = new ArrayList<>();
         long txnId;
         long writeId;
@@ -1339,10 +1400,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           stmt.execute(insert);
         }
 
-        //TODO : change it to notify with sql generator and conn
         if (transactionalListeners != null) {
-          MetaStoreListenerNotifier.notifyTxnEvent(transactionalListeners,
-                  EventMessage.EventType.ALLOC_WRITE_ID, new AllocWriteIdEvent(txnIds, rqst.getTableName(), null),
+          MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
+                  EventMessage.EventType.ALLOC_WRITE_ID,
+                  new AllocWriteIdEvent(txnToWriteIds, rqst.getDbName(), rqst.getTableName(), null),
                   dbConn, sqlGenerator);
         }
 
@@ -1364,54 +1425,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
     } catch (RetryException e) {
       return allocateTableWriteIds(rqst);
-    }
-  }
-
-  @Override
-  public GetTargetTxnIdsResponse replGetTargetTxnIds(GetTargetTxnIdsRequest rqst) throws MetaException {
-    List<Long> targteTxnIds = new ArrayList<>();
-    ResultSet rs = null;
-    Connection dbConn = null;
-    Statement stmt = null;
-    try {
-      try {
-        lockInternal();
-        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        stmt = dbConn.createStatement();
-
-        List<String> inQueries = new ArrayList<>();
-        StringBuilder prefix = new StringBuilder();
-        StringBuilder suffix = new StringBuilder();
-
-        prefix.append("select RTM_TARGET_TXN_ID from REPL_TXN_MAP where ");
-        suffix.append(" and RTM_REPL_POLICY = " + quoteString(rqst.getReplPolicy()));
-
-        TxnUtils.buildQueryWithINClause(conf, inQueries, prefix, suffix, rqst.getSrcTxnIds(),
-                "RTM_SRC_TXN_ID", false, false);
-
-        for (String query : inQueries) {
-          LOG.debug("Going to execute select <" + query + ">");
-          rs = stmt.executeQuery(query);
-          while (rs.next()) {
-            targteTxnIds.add(rs.getLong(1));
-          }
-        }
-
-        LOG.debug("Going to commit");
-        dbConn.commit();
-        return new GetTargetTxnIdsResponse(targteTxnIds);
-      } catch (SQLException e) {
-        LOG.debug("Going to rollback");
-        rollbackDBConn(dbConn);
-        checkRetryable(dbConn, e, "replGetTargetTxnIds(" + rqst + ")");
-        throw new MetaException("Unable to get target transaction ids "
-                + StringUtils.stringifyException(e));
-      } finally{
-        close(rs, stmt, dbConn);
-        unlockInternal();
-      }
-    } catch (RetryException e) {
-      return replGetTargetTxnIds(rqst);
     }
   }
 

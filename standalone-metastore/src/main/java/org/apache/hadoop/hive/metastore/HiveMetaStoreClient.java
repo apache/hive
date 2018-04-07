@@ -72,7 +72,6 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TApplicationException;
-import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
@@ -2393,12 +2392,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public GetTargetTxnIdsResponse replGetTargetTxnIds(String replPolicy, List<Long> srcTxnIds)
-          throws NoSuchTxnException, TException {
-    return client.repl_get_target_txn_ids(new GetTargetTxnIdsRequest(srcTxnIds, replPolicy));
-  }
-
-  @Override
   public void rollbackTxn(long txnid) throws NoSuchTxnException, TException {
     client.abort_txn(new AbortTxnRequest(txnid));
   }
@@ -2442,9 +2435,29 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName)
           throws TException {
-    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(txnIds, dbName, tableName);
-    AllocateTableWriteIdsResponse writeIds = client.allocate_table_write_ids(rqst);
-    return writeIds.getTxnToWriteIds();
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tableName);
+    rqst.setTxnIds(txnIds);
+    return replAllocateTableWriteIdsBatchIntr(rqst);
+  }
+
+  @Override
+  public List<TxnToWriteId> replAllocateTableWriteIdsBatch(String dbName, String tableName,
+                                           String replPolicy, List<TxnToWriteId> txnToWriteIdList) throws TException {
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tableName);
+    rqst.setReplPolicy(replPolicy);
+    rqst.setTxnToWriteIdList(txnToWriteIdList);
+    return replAllocateTableWriteIdsBatchIntr(rqst);
+  }
+
+  private List<TxnToWriteId> replAllocateTableWriteIdsBatchIntr(AllocateTableWriteIdsRequest rqst) throws TException {
+    if (rqst.isSetReplPolicy()) {
+      assert (rqst.isSetTxnToWriteIdList());
+      assert (!rqst.isSetTxnIds());
+    } else {
+      assert (!rqst.isSetTxnToWriteIdList());
+      assert (rqst.isSetTxnIds());
+    }
+    return client.allocate_table_write_ids(rqst).getTxnToWriteIds();
   }
 
   @Override

@@ -147,14 +147,6 @@ public interface TxnStore extends Configurable {
     throws NoSuchTxnException, TxnAbortedException, MetaException;
 
   /**
-   * Gets the list of mapping target transaction id.
-   * @param rqst info on transaction and table to get txn ids
-   * @throws TxnAbortedException
-   * @throws MetaException
-   */
-  GetTargetTxnIdsResponse replGetTargetTxnIds(GetTargetTxnIdsRequest rqst)
-          throws TxnAbortedException, MetaException;
-  /**
    * Obtain a lock.
    * @param rqst information on the lock to obtain.  If the requester is part of a transaction
    *             the txn information must be included in the lock request.

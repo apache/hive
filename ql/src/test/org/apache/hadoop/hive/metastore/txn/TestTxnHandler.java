@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
 import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -156,8 +157,9 @@ public class TestTxnHandler {
     List<String> parts = new ArrayList<String>();
     parts.add("p=1");
 
-    AllocateTableWriteIdsResponse writeIds
-            = txnHandler.allocateTableWriteIds(new AllocateTableWriteIdsRequest(Collections.singletonList(3L), "default", "T"));
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest("default", "T");
+    rqst.setTxnIds(Collections.singletonList(3L));
+    AllocateTableWriteIdsResponse writeIds = txnHandler.allocateTableWriteIds(rqst);
     long writeId = writeIds.getTxnToWriteIds().get(0).getWriteId();
     assertEquals(3, writeIds.getTxnToWriteIds().get(0).getTxnId());
     assertEquals(1, writeId);
@@ -1544,21 +1546,69 @@ public class TestTxnHandler {
     Assert.assertTrue("regex should be retryable", result);
   }
 
-  @Test
-  public void testReplOpenTxn() throws Exception {
-    int numTxn = 50000;
+  private List<Long> openTxnForTest(int startId, int numTxn, String replPolicy)
+          throws MetaException, NoSuchTxnException {
     conf.setIntVar(HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH, numTxn);
+    int lastId = startId + numTxn;
     OpenTxnRequest rqst = new OpenTxnRequest(numTxn, "me", "localhost");
-    rqst.setReplPolicy("default.*");
-    rqst.setReplSrcTxnIds(LongStream.rangeClosed(1, numTxn)
+    rqst.setReplPolicy(replPolicy);
+    rqst.setReplSrcTxnIds(LongStream.rangeClosed(startId, lastId)
             .boxed().collect(Collectors.toList()));
     OpenTxnsResponse openedTxns = txnHandler.openTxns(rqst);
     List<Long> txnList = openedTxns.getTxn_ids();
     assertEquals(txnList.size(), numTxn);
     for (long i = 0; i < numTxn; i++) {
       long txnId = txnList.get((int) i);
-      assertEquals(i+1, txnId);
+      assertEquals(i + startId, txnId);
     }
+    return txnList;
+  }
+
+  @Test
+  public void testReplOpenTxn() throws Exception {
+    int numTxn = 50000;
+    List<Long> txnList = openTxnForTest(1, numTxn, "default.*");
+    assert(txnList.size() == numTxn);
+    txnHandler.abortTxns(new AbortTxnsRequest(txnList));
+  }
+
+  @Test
+  public void testReplAllocWriteId() throws Exception {
+    int numTxn = 1000;
+    List<Long> txnList = openTxnForTest(1, numTxn, "default.*");
+    assert(txnList.size() == numTxn);
+
+    List<TxnToWriteId> txnToWriteId;
+    AllocateTableWriteIdsRequest allocMsg = new AllocateTableWriteIdsRequest("default", "tbl");
+    allocMsg.setTxnIds(txnList);
+    txnToWriteId = txnHandler.allocateTableWriteIds(allocMsg).getTxnToWriteIds();
+    assert txnToWriteId.size() == numTxn;
+
+    // idempotent case for default db
+    allocMsg = new AllocateTableWriteIdsRequest("default", "tbl");
+    allocMsg.setReplPolicy("default.*");
+    allocMsg.setTxnToWriteIdList(txnToWriteId);
+    List<TxnToWriteId> txnToWriteId1 = txnHandler.allocateTableWriteIds(allocMsg).getTxnToWriteIds();
+    assert (txnToWriteId.equals(txnToWriteId1));
+
+    txnHandler.abortTxns(new AbortTxnsRequest(txnList));
+    txnList = openTxnForTest(numTxn+1, numTxn, "default1.*");
+    assert(txnList.size() == numTxn);
+    txnToWriteId = new ArrayList<>();
+
+    for (int idx = 0; idx < txnList.size(); idx++) {
+      txnToWriteId.add(new TxnToWriteId(txnList.get(idx), idx+1));
+    }
+    allocMsg = new AllocateTableWriteIdsRequest("default1", "tbl1");
+    allocMsg.setReplPolicy("default1.*");
+    allocMsg.setTxnToWriteIdList(txnToWriteId);
+    txnToWriteId1 = txnHandler.allocateTableWriteIds(allocMsg).getTxnToWriteIds();
+    assert (txnToWriteId.equals(txnToWriteId1));
+
+    // idempotent case for default1 db
+    txnToWriteId1 = txnHandler.allocateTableWriteIds(allocMsg).getTxnToWriteIds();
+    assert (txnToWriteId.equals(txnToWriteId1));
+
     txnHandler.abortTxns(new AbortTxnsRequest(txnList));
   }
 

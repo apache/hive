@@ -19,8 +19,10 @@
 
 package org.apache.hadoop.hive.metastore.messaging.json;
 
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.messaging.AllocWriteIdMessage;
 import org.codehaus.jackson.annotate.JsonProperty;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,13 +31,15 @@ import java.util.List;
 public class JSONAllocWriteIdMessage extends AllocWriteIdMessage {
 
   @JsonProperty
-  private String server, servicePrincipal, tableName;
+  private String server, servicePrincipal, dbName, tableName;
 
   @JsonProperty
-  private List<Long> txnIds;
+  private List<Long> txnIdList, writeIdList;
 
   @JsonProperty
   private Long timestamp;
+
+  private List<TxnToWriteId> txnToWriteIdList;
 
   /**
    * Default constructor, needed for Jackson.
@@ -43,12 +47,20 @@ public class JSONAllocWriteIdMessage extends AllocWriteIdMessage {
   public JSONAllocWriteIdMessage() {
   }
 
-  public JSONAllocWriteIdMessage(String server, String servicePrincipal, List<Long> txnIds, String tableName, Long timestamp) {
+  public JSONAllocWriteIdMessage(String server, String servicePrincipal,
+                                 List<TxnToWriteId> txnToWriteIdList, String dbName, String tableName, Long timestamp) {
     this.server = server;
     this.servicePrincipal = servicePrincipal;
     this.timestamp = timestamp;
-    this.txnIds = txnIds;
+    this.txnIdList = new ArrayList<>();
+    this.writeIdList = new ArrayList<>();
+    for (TxnToWriteId txnToWriteId : txnToWriteIdList) {
+      this.txnIdList.add(txnToWriteId.getTxnId());
+      this.writeIdList.add(txnToWriteId.getWriteId());
+    }
     this.tableName = tableName;
+    this.dbName = dbName;
+    this.txnToWriteIdList = txnToWriteIdList;
   }
 
   @Override
@@ -63,12 +75,7 @@ public class JSONAllocWriteIdMessage extends AllocWriteIdMessage {
 
   @Override
   public String getDB() {
-    return null;
-  }
-
-  @Override
-  public List<Long> getTxnIds() {
-    return txnIds;
+    return dbName;
   }
 
   @Override
@@ -79,6 +86,23 @@ public class JSONAllocWriteIdMessage extends AllocWriteIdMessage {
   @Override
   public String getTableName() {
     return tableName;
+  }
+
+  @Override
+  public String getDbName() {
+    return dbName;
+  }
+
+  @Override
+  public List<TxnToWriteId> getTxnToWriteIdList() {
+    // after deserialization, need to recreate the txnToWriteIdList as its not under JsonProperty.
+    if (txnToWriteIdList == null) {
+      txnToWriteIdList = new ArrayList<>();
+      for (int idx = 0; idx < txnIdList.size(); idx++) {
+        txnToWriteIdList.add(new TxnToWriteId(txnIdList.get(idx), writeIdList.get(idx)));
+      }
+    }
+    return txnToWriteIdList;
   }
 
   @Override

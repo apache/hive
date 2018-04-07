@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
@@ -269,11 +270,13 @@ public abstract class MessageFactory {
   /**
    * Factory method for building alloc write id message
    *
-   * @param txnIds List of Ids of the transaction to allocate the write id
+   * @param txnToWriteIdList List of Txn Ids and write id map
+   * @param dbName db for which write ids to be allocated
    * @param tableName table for which write ids to be allocated
    * @return instance of AllocWriteIdMessage
    */
-  public abstract AllocWriteIdMessage buildAllocWriteIdMessage(List<Long> txnIds, String tableName);
+  public abstract AllocWriteIdMessage buildAllocWriteIdMessage(List<TxnToWriteId> txnToWriteIdList, String dbName,
+                                                               String tableName);
 
   /***
    * Factory method for building add primary key message

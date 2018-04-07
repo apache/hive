@@ -27,7 +27,6 @@ import java.util.Map.Entry;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
-import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
@@ -36,7 +35,6 @@ import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.annotation.NoReconnect;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
-import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
 import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.CmRecycleRequest;
@@ -127,10 +125,8 @@ import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.ObjectPair;
 import org.apache.thrift.TException;
-import org.apache.hadoop.hive.metastore.api.GetTargetTxnIdsResponse;
 
 /**
  * Wrapper around hive metastore thrift api
@@ -2832,15 +2828,6 @@ public interface IMetaStoreClient {
   void replRollbackTxn(long txnid, String replPolicy) throws NoSuchTxnException, TException;
 
   /**
-   * replGetTargetTxnIds - Get the set of target txn ids from txn map table
-   * @param replPolicy Replication policy to uniquely identify the source cluster.
-   * @param srcTxnIds The ids of the transaction at the source cluster
-   * @return The list of mapping target txn ids.
-   * @throws TException if not able to get the txn ids from metastore.
-   */
-  GetTargetTxnIdsResponse replGetTargetTxnIds(String replPolicy, List<Long> srcTxnIds) throws TException;
-
-  /**
    * Commit a transaction.  This will also unlock any locks associated with
    * this transaction.
    * @param txnid id of transaction to be committed.
@@ -2893,6 +2880,16 @@ public interface IMetaStoreClient {
    */
   List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName) throws TException;
 
+  /**
+   * Allocate a per table write ID and associate it with the given transaction. Used by replication load task.
+   * @param dbName name of DB in which the table belongs.
+   * @param tableName table to which the write ID to be allocated
+   * @param replPolicy Used by replication task to identify the source cluster.
+   * @param txnToWriteIdList List of txn to write id map.
+   * @throws TException
+   */
+  List<TxnToWriteId> replAllocateTableWriteIdsBatch(String dbName, String tableName,
+                                              String replPolicy, List<TxnToWriteId> txnToWriteIdList) throws TException;
   /**
    * Show the list of currently open transactions.  This is for use by "show transactions" in the
    * grammar, not for applications that want to find a list of current transactions to work with.

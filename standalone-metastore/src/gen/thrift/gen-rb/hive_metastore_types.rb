@@ -2572,43 +2572,6 @@ class CommitTxnRequest
   ::Thrift::Struct.generate_accessors self
 end
 
-class GetTargetTxnIdsRequest
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  SRCTXNIDS = 1
-  REPLPOLICY = 2
-
-  FIELDS = {
-    SRCTXNIDS => {:type => ::Thrift::Types::LIST, :name => 'srcTxnIds', :element => {:type => ::Thrift::Types::I64}},
-    REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy'}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field srcTxnIds is unset!') unless @srcTxnIds
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field replPolicy is unset!') unless @replPolicy
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class GetTargetTxnIdsResponse
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  TARGETTXNIDS = 1
-
-  FIELDS = {
-    TARGETTXNIDS => {:type => ::Thrift::Types::LIST, :name => 'targetTxnIds', :element => {:type => ::Thrift::Types::I64}}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field targetTxnIds is unset!') unless @targetTxnIds
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
 class GetValidWriteIdsRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   FULLTABLENAMES = 1
@@ -2679,17 +2642,20 @@ class AllocateTableWriteIdsRequest
   TXNIDS = 1
   DBNAME = 2
   TABLENAME = 3
+  REPLPOLICY = 4
+  TXNTOWRITEIDLIST = 5
 
   FIELDS = {
-    TXNIDS => {:type => ::Thrift::Types::LIST, :name => 'txnIds', :element => {:type => ::Thrift::Types::I64}},
+    TXNIDS => {:type => ::Thrift::Types::LIST, :name => 'txnIds', :element => {:type => ::Thrift::Types::I64}, :optional => true},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
-    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'}
+    TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
+    REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true},
+    TXNTOWRITEIDLIST => {:type => ::Thrift::Types::LIST, :name => 'txnToWriteIdList', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TxnToWriteId}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
 
   def validate
-    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txnIds is unset!') unless @txnIds
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tableName is unset!') unless @tableName
   end

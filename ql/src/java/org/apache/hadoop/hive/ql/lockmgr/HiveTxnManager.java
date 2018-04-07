@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -72,15 +73,6 @@ public interface HiveTxnManager {
    * @throws LockException in case of failure to abort the transaction.
    */
   void replRollbackTxn(String replPolicy, long srcTxnId)  throws LockException;
-
-  /**
-  * Get the list of mapping target txn ids.
-  * @param replPolicy Replication policy to uniquely identify the source cluster.
-  * @param srcTxnIds The ids of the transaction at the source cluster
-  * @return The list of mapping target txn ids.
-  * @throws LockException in case of failure to get the target txn ids
-  */
-  List<Long> replGetTargetTxnIds(String replPolicy, List<Long> srcTxnIds) throws LockException;
 
   /**
    * Get the lock manager.  This must be used rather than instantiating an
@@ -275,12 +267,14 @@ public interface HiveTxnManager {
 
   /**
    * Allocates write id for each transaction in the list.
-   * @param txnIds  List of transactions for which write ids to be allocted
    * @param dbName database name
    * @param tableName the name of the table to allocate the write id
+   * @param replPolicy used by replication task to identify the source cluster
+   * @param txnToWriteIdList List of txn id to write id Map
    * @throws LockException
    */
-  void allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName) throws LockException;
+  void replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
+                                      List<TxnToWriteId> txnToWriteIdList) throws LockException;
 
   /**
    * Should be though of more as a unique write operation ID in a given txn (at QueryPlan level).

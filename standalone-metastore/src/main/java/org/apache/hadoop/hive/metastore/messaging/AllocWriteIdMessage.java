@@ -18,14 +18,21 @@
  */
 package org.apache.hadoop.hive.metastore.messaging;
 
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+
 import java.util.List;
 
+/**
+ * HCat message sent when an alloc write id is done.
+ */
 public abstract class AllocWriteIdMessage extends EventMessage {
   protected AllocWriteIdMessage() {
     super(EventType.ALLOC_WRITE_ID);
   }
 
-  public abstract List<Long> getTxnIds();
-
   public abstract String getTableName();
+
+  public abstract String getDbName();
+
+  public abstract List<TxnToWriteId> getTxnToWriteIdList();
 }

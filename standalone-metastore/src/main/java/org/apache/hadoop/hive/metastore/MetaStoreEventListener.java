@@ -263,7 +263,8 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @param sqlGenerator helper class to generate db specific sql string.
    * @throws MetaException
    */
-  public void onAbortTxn(AbortTxnEvent abortTxnEvent, Connection dbConn, SQLGenerator sqlGenerator) throws MetaException {
+  public void onAbortTxn(AbortTxnEvent abortTxnEvent, Connection dbConn, SQLGenerator sqlGenerator)
+          throws MetaException {
   }
 
   /**
@@ -273,7 +274,8 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @param sqlGenerator helper class to generate db specific sql string.
    * @throws MetaException
    */
-  public void onAllocWriteId(AllocWriteIdEvent allocWriteIdEvent, Connection dbConn, SQLGenerator sqlGenerator) throws MetaException {
+  public void onAllocWriteId(AllocWriteIdEvent allocWriteIdEvent, Connection dbConn, SQLGenerator sqlGenerator)
+          throws MetaException {
   }
 
   @Override

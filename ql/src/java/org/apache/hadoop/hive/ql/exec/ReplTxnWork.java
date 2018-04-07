@@ -20,8 +20,11 @@ package org.apache.hadoop.hive.ql.exec;
 import java.io.Serializable;
 
 import com.google.common.collect.Lists;
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+
 import java.util.List;
 
 /**
@@ -35,6 +38,7 @@ public class ReplTxnWork implements Serializable {
   private String tableName;
   private String replPolicy;
   private List<Long> txnIds;
+  private List<TxnToWriteId> txnToWriteIdList;
 
   /**
    * OperationType.
@@ -46,20 +50,26 @@ public class ReplTxnWork implements Serializable {
 
   OperationType operation;
 
-  public ReplTxnWork(String dbName, String tableName, List<Long> txnIds, OperationType type) {
+  public ReplTxnWork(String dbName, String tableName, List<Long> txnIds, OperationType type,
+                     List<TxnToWriteId> txnToWriteIdList) {
     this.txnIds = txnIds;
     this.dbName = dbName;
     this.tableName = tableName;
     this.operation = type;
-    this.replPolicy = setReplPolicy();
+    this.replPolicy = HiveUtils.getReplPolicy(dbName, tableName);
+    this.txnToWriteIdList = txnToWriteIdList;
+  }
+
+  public ReplTxnWork(String dbName, String tableName, List<Long> txnIds, OperationType type) {
+    this(dbName, tableName, txnIds, type, null);
   }
 
   public ReplTxnWork(String dbName, String tableName, Long txnId, OperationType type) {
-    this.txnIds = Lists.newArrayList(txnId);
-    this.dbName = dbName;
-    this.tableName = tableName;
-    this.operation = type;
-    this.replPolicy = setReplPolicy();
+    this(dbName, tableName, Lists.newArrayList(txnId), type, null);
+  }
+
+  public ReplTxnWork(String dbName, String tableName, OperationType type, List<TxnToWriteId> txnToWriteIdList) {
+    this(dbName, tableName, null, type, txnToWriteIdList);
   }
 
   public List<Long> getTxnIds() {
@@ -86,17 +96,15 @@ public class ReplTxnWork implements Serializable {
     return replPolicy;
   }
 
-  public String setReplPolicy() {
-    if ((dbName == null) || (dbName.isEmpty())) {
-      return null;
-    } else if ((tableName == null) || (tableName.isEmpty())) {
-      return dbName.toLowerCase() + ".*";
-    } else {
-      return dbName.toLowerCase() + "." + tableName.toLowerCase();
-    }
-  }
-
   public OperationType getOperationType() {
     return operation;
+  }
+
+  public List<TxnToWriteId> getTxnToWriteIdList() {
+    return txnToWriteIdList;
+  }
+
+  public void setTxnToWriteIdList(List<TxnToWriteId> txnToWriteIdList) {
+    this.txnToWriteIdList = txnToWriteIdList;
   }
 }

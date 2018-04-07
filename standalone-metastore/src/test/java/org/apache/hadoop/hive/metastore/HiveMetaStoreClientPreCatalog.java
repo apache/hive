@@ -2231,14 +2231,29 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   @Override
   public List<TxnToWriteId> allocateTableWriteIdsBatch(List<Long> txnIds, String dbName, String tableName)
           throws TException {
-    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(txnIds, dbName, tableName);
-    AllocateTableWriteIdsResponse writeIds = client.allocate_table_write_ids(rqst);
-    return writeIds.getTxnToWriteIds();
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tableName);
+    rqst.setTxnIds(txnIds);
+    return replAllocateTableWriteIdsBatchIntr(rqst);
   }
 
   @Override
-  public GetTargetTxnIdsResponse replGetTargetTxnIds(String replPolicy, List<Long> srcTxnIds) throws TException {
-    return client.repl_get_target_txn_ids(new GetTargetTxnIdsRequest(srcTxnIds, replPolicy));
+  public List<TxnToWriteId> replAllocateTableWriteIdsBatch(String dbName, String tableName,
+                                           String replPolicy, List<TxnToWriteId> txnToWriteIdList) throws TException {
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tableName);
+    rqst.setReplPolicy(replPolicy);
+    rqst.setTxnToWriteIdList(txnToWriteIdList);
+    return replAllocateTableWriteIdsBatchIntr(rqst);
+  }
+
+  private List<TxnToWriteId> replAllocateTableWriteIdsBatchIntr(AllocateTableWriteIdsRequest rqst) throws TException {
+    if (rqst.isSetReplPolicy()) {
+      assert (rqst.isSetTxnToWriteIdList());
+      assert (!rqst.isSetTxnIds());
+    } else {
+      assert (!rqst.isSetTxnToWriteIdList());
+      assert (rqst.isSetTxnIds());
+    }
+    return client.allocate_table_write_ids(rqst).getTxnToWriteIds();
   }
 
   @Override

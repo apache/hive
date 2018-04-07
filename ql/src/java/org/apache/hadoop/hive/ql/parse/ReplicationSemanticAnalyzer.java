@@ -245,16 +245,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private boolean shouldReplayEvent(FileStatus dir, DumpType dumpType) throws SemanticException {
-    // This functions filters out all the events which are already replayed. This can be done only
-    // for transaction related events as for other kind of events we can not gurantee that the last
-    // repl id stored in the database/table is valid.
-    if ((dumpType != DumpType.EVENT_ABORT_TXN) &&
-            (dumpType != DumpType.EVENT_OPEN_TXN) &&
-            (dumpType != DumpType.EVENT_COMMIT_TXN) &&
-            (dumpType != DumpType.EVENT_ALLOC_WRITE_ID)) {
-      return true;
-    }
-
     // if database itself is null then we can not filter out anything.
     if (dbNameOrPattern == null || dbNameOrPattern.isEmpty()) {
       return true;
