@@ -61,6 +61,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -739,9 +740,16 @@ public class HiveSchemaTool {
 
     LOG.debug("Validating tables in the schema for version " + version);
     try {
+      String schema = null;
+      try {
+        schema = hmsConn.getSchema();
+      } catch (SQLFeatureNotSupportedException e) {
+        LOG.debug("schema is not supported");
+      }
+      
       metadata       = conn.getMetaData();
       String[] types = {"TABLE"};
-      rs             = metadata.getTables(null, hmsConn.getSchema(), "%", types);
+      rs             = metadata.getTables(null, schema, "%", types);
       String table   = null;
 
       while (rs.next()) {
