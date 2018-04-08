@@ -488,6 +488,8 @@ public class Operation2Privilege {
 
     // Handled via adminPrivOps (see above).
     op2Priv.put(HiveOperationType.KILL_QUERY, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.LLAP_CLUSTER, PrivRequirement.newIOPrivRequirement(null, null));
+    op2Priv.put(HiveOperationType.LLAP_CACHE, PrivRequirement.newIOPrivRequirement(ADMIN_PRIV_AR, ADMIN_PRIV_AR));
     op2Priv.put(HiveOperationType.CREATE_RESOURCEPLAN, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.ALTER_RESOURCEPLAN, PrivRequirement.newIOPrivRequirement(null, null));
     op2Priv.put(HiveOperationType.DROP_RESOURCEPLAN, PrivRequirement.newIOPrivRequirement(null, null));

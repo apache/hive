@@ -567,4 +567,24 @@ public class TestActivePassiveHA {
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_PAM, false);
     hiveConf.setBoolVar(ConfVars.HIVE_IN_TEST, false);
   }
+
+  // This is test for llap command AuthZ added in HIVE-19033 which require ZK access for it to pass
+  @Test(timeout = 60000)
+  public void testNoAuthZLlapClusterInfo() throws Exception {
+    String instanceId1 = UUID.randomUUID().toString();
+    miniHS2_1.start(getConfOverlay(instanceId1));
+    Connection hs2Conn = getConnection(miniHS2_1.getJdbcURL(), "user1");
+    boolean caughtException = false;
+    Statement stmt = hs2Conn.createStatement();
+    try {
+      stmt.execute("set hive.llap.daemon.service.hosts=@localhost");
+      stmt.execute("llap cluster -info");
+    } catch (SQLException e) {
+      caughtException = true;
+    } finally {
+      stmt.close();
+      hs2Conn.close();
+    }
+    assertEquals(false, caughtException);
+  }
 }

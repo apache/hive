@@ -86,7 +86,6 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   public static final Logger ORC_LOGGER = LoggerFactory.getLogger("LlapIoOrc");
   public static final Logger CACHE_LOGGER = LoggerFactory.getLogger("LlapIoCache");
   public static final Logger LOCKING_LOGGER = LoggerFactory.getLogger("LlapIoLocking");
-
   private static final String MODE_CACHE = "cache";
 
   // TODO: later, we may have a map
@@ -101,6 +100,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
   private final LowLevelCache dataCache;
   private final BufferUsageManager bufferManager;
   private final Configuration daemonConf;
+  private LowLevelCachePolicy cachePolicy;
 
   private LlapIoImpl(Configuration conf) throws IOException {
     this.daemonConf = conf;
@@ -139,11 +139,13 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
       boolean useLrfu = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_USE_LRFU);
       long totalMemorySize = HiveConf.getSizeVar(conf, ConfVars.LLAP_IO_MEMORY_MAX_SIZE);
       int minAllocSize = (int)HiveConf.getSizeVar(conf, ConfVars.LLAP_ALLOCATOR_MIN_ALLOC);
-      LowLevelCachePolicy cachePolicy = useLrfu ? new LowLevelLrfuCachePolicy(
+      LowLevelCachePolicy cp = useLrfu ? new LowLevelLrfuCachePolicy(
           minAllocSize, totalMemorySize, conf) : new LowLevelFifoCachePolicy();
       boolean trackUsage = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_TRACK_CACHE_USAGE);
       if (trackUsage) {
-        cachePolicy = new CacheContentsTracker(cachePolicy);
+        this.cachePolicy = new CacheContentsTracker(cp);
+      } else {
+        this.cachePolicy = cp;
       }
       // Allocator uses memory manager to request memory, so create the manager next.
       LowLevelCacheMemoryManager memManager = new LowLevelCacheMemoryManager(
@@ -209,6 +211,14 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch> {
     StringBuilder sb = new StringBuilder();
     memoryDump.debugDumpShort(sb);
     return sb.toString();
+  }
+
+  @Override
+  public long purge() {
+    if (cachePolicy != null) {
+      return cachePolicy.purge();
+    }
+    return 0;
   }
 
   @Override

@@ -196,6 +196,13 @@ message LlapOutputSocketInitMessage {
   optional bytes token = 2;
 }
 
+message PurgeCacheRequestProto {
+}
+
+message PurgeCacheResponseProto {
+  optional int64 purged_memory_bytes = 1;
+}
+
 service LlapDaemonProtocol {
   rpc submitWork(SubmitWorkRequestProto) returns (SubmitWorkResponseProto);
   rpc sourceStateUpdated(SourceStateUpdatedRequestProto) returns (SourceStateUpdatedResponseProto);
@@ -206,4 +213,5 @@ service LlapDaemonProtocol {
 
 service LlapManagementProtocol {
   rpc getDelegationToken(GetTokenRequestProto) returns (GetTokenResponseProto);
+  rpc purgeCache(PurgeCacheRequestProto) returns (PurgeCacheResponseProto);
 }
