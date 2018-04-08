@@ -129,7 +129,8 @@ public class SQLStdHiveAuthorizationValidator implements HiveAuthorizationValida
         // ignore partitions
         continue;
       case COMMAND_PARAMS:
-        // operations that have objects of type COMMAND_PARAMS are authorized
+      case SERVICE_NAME:
+        // operations that have objects of type COMMAND_PARAMS, FUNCTION are authorized
         // solely on the type
         if (privController.isUserAdmin()) {
           availPrivs.addPrivilege(SQLPrivTypeGrant.ADMIN_PRIV);

@@ -171,8 +171,16 @@ public class HiveCommandOperation extends ExecuteStatementOperation {
     List<String> rows = readResults((int) maxRows);
     RowSet rowSet = RowSetFactory.create(resultSchema, getProtocolVersion(), false);
 
-    for (String row : rows) {
-      rowSet.addRow(new String[] { row });
+    // cannot do delimited split for some commands like "dfs -cat" that prints the contents of file which may have
+    // different delimiter. so we will split only when the resultSchema has more than 1 column
+    if (resultSchema != null && resultSchema.getSize() > 1) {
+      for (String row : rows) {
+        rowSet.addRow(row.split("\\t"));
+      }
+    } else {
+      for (String row : rows) {
+        rowSet.addRow(new String[]{row});
+      }
     }
     return rowSet;
   }
