@@ -48,12 +48,15 @@ public class FileOperations {
 
   public FileOperations(List<Path> dataPathList, Path exportRootDataDir,
                         String distCpDoAsUser, HiveConf hiveConf) throws IOException {
-    assert (dataPathList != null) && !dataPathList.isEmpty();
     this.dataPathList = dataPathList;
     this.exportRootDataDir = exportRootDataDir;
     this.distCpDoAsUser = distCpDoAsUser;
     this.hiveConf = hiveConf;
-    dataFileSystem = dataPathList.get(0).getFileSystem(hiveConf);
+    if ((dataPathList != null) && !dataPathList.isEmpty()) {
+      dataFileSystem = dataPathList.get(0).getFileSystem(hiveConf);
+    } else {
+      dataFileSystem = null;
+    }
     exportFileSystem = exportRootDataDir.getFileSystem(hiveConf);
   }
 
@@ -109,9 +112,9 @@ public class FileOperations {
 
   private FileStatus[] listFilesInDir(Path path) throws IOException {
     return dataFileSystem.listStatus(path, p -> {
-            String name = p.getName();
-            return !name.startsWith("_") && !name.startsWith(".");
-        });
+      String name = p.getName();
+      return !name.startsWith("_") && !name.startsWith(".");
+    });
   }
 
   private String getAcidSubDir(Path dataPath) {

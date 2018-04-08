@@ -1101,14 +1101,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   /**
    * Replicate Table Write Ids state to mark aborted write ids and writeid high water mark.
-   * TODO: Right now, we take care of allocating latest write-id (hwm) as assumed that all writeids
-   * in the snapshot are committed. Will be fixed soon.
    * @param rqst info on table/partitions and writeid snapshot to replicate.
    * @throws MetaException
    */
   @Override
   @RetrySemantics.Idempotent("No-op if already replicated the writeid state")
   public void replTableWriteIdState(ReplTblWriteIdStateRequest rqst) throws MetaException {
+    // TODO: Right now, just allocating latest write-id (hwm) assuming that all writeids
+    // in the snapshot are committed.
     String dbName = rqst.getDbName().toLowerCase();
     String tblName = rqst.getTableName().toLowerCase();
     ValidWriteIdList validWriteIdList = new ValidReaderWriteIdList(rqst.getValidWriteIdlist());

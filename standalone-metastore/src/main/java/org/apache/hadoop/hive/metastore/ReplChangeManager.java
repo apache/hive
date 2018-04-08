@@ -64,12 +64,12 @@ public class ReplChangeManager {
   }
 
   public static class FileInfo {
-    FileSystem srcFs;
-    Path sourcePath;
-    Path cmPath;
-    String checkSum;
-    boolean useSourcePath;
-    String subDir;
+    private FileSystem srcFs;
+    private Path sourcePath;
+    private Path cmPath;
+    private String checkSum;
+    private boolean useSourcePath;
+    private String subDir;
 
     public FileInfo(FileSystem srcFs, Path sourcePath, String subDir) {
       this.srcFs = srcFs;
@@ -79,7 +79,8 @@ public class ReplChangeManager {
       this.useSourcePath = true;
       this.subDir = subDir;
     }
-    public FileInfo(FileSystem srcFs, Path sourcePath, Path cmPath, String checkSum, boolean useSourcePath, String subDir) {
+    public FileInfo(FileSystem srcFs, Path sourcePath, Path cmPath,
+                    String checkSum, boolean useSourcePath, String subDir) {
       this.srcFs = srcFs;
       this.sourcePath = sourcePath;
       this.cmPath = cmPath;
@@ -350,7 +351,7 @@ public class ReplChangeManager {
    */
   // TODO: this needs to be enhanced once change management based filesystem is implemented
   // Currently using fileuri#checksum#subdirs as the format
-  static public String encodeFileUri(String fileUriStr, String fileChecksum, String encodedSubDir) {
+  public static String encodeFileUri(String fileUriStr, String fileChecksum, String encodedSubDir) {
     String encodedUri = fileUriStr;
     if (fileChecksum != null) {
       encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + fileChecksum;

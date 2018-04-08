@@ -221,7 +221,7 @@ public class CopyUtils {
     for (Map.Entry<FileSystem, List<Path>> entry : map.entrySet()) {
       final FileSystem sourceFs = entry.getKey();
       List<ReplChangeManager.FileInfo> fileList = Lists.transform(entry.getValue(),
-                                path -> { return new ReplChangeManager.FileInfo(sourceFs, path, null);});
+              path -> new ReplChangeManager.FileInfo(sourceFs, path, null));
       doCopyOnce(sourceFs, entry.getValue(),
                  destinationFs, destination,
                  regularCopy(destinationFs, sourceFs, fileList));

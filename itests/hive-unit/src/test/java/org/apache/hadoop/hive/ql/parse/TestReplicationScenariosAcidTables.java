@@ -99,7 +99,8 @@ public class TestReplicationScenariosAcidTables {
   public void testAcidTablesBootstrap() throws Throwable {
     WarehouseInstance.Tuple bootstrapDump = primary
             .run("use " + primaryDbName)
-            .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc tblproperties (\"transactional\"=\"true\")")
+            .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+                    "tblproperties (\"transactional\"=\"true\")")
             .run("insert into t1 values(1)")
             .run("insert into t1 values(2)")
             .run("create table t2 (place string) partitioned by (country string) clustered by(place) " +
@@ -107,6 +108,7 @@ public class TestReplicationScenariosAcidTables {
             .run("insert into t2 partition(country='india') values ('bangalore')")
             .run("insert into t2 partition(country='us') values ('austin')")
             .run("insert into t2 partition(country='france') values ('paris')")
+            .run("alter table t2 add partition(country='italy')")
             .run("create table t3 (rank int) tblproperties(\"transactional\"=\"true\", " +
                     "\"transactional_properties\"=\"insert_only\")")
             .run("insert into t3 values(11)")
@@ -114,23 +116,29 @@ public class TestReplicationScenariosAcidTables {
             .run("create table t4 (id int)")
             .run("insert into t4 values(111)")
             .run("insert into t4 values(222)")
+            .run("create table t5 (id int) stored as orc ")
+            .run("insert into t5 values(1111)")
+            .run("insert into t5 values(2222)")
+            .run("alter table t5 set tblproperties (\"transactional\"=\"true\")")
+            .run("insert into t5 values(3333)")
             .dump(primaryDbName, null);
 
     replica.load(replicatedDbName, bootstrapDump.dumpLocation)
             .run("use " + replicatedDbName)
             .run("show tables")
-            .verifyResults(new String[] { "t1", "t2", "t3", "t4" })
+            .verifyResults(new String[] {"t1", "t2", "t3", "t4", "t5"})
             .run("repl status " + replicatedDbName)
             .verifyResult(bootstrapDump.lastReplicationId)
             .run("select id from t1 order by id")
-            .verifyResults(new String[]{ "1", "2" })
+            .verifyResults(new String[]{"1", "2"})
             .run("select country from t2 order by country")
-            .verifyResults(new String[] { "france", "india", "us" })
+            .verifyResults(new String[] {"france", "india", "us"})
             .run("select rank from t3 order by rank")
-            .verifyResults(new String[] { "11", "22" })
+            .verifyResults(new String[] {"11", "22"})
             .run("select id from t4 order by id")
-            .verifyResults(new String[] { "111", "222" });
-
+            .verifyResults(new String[] {"111", "222"})
+            .run("select id from t5 order by id")
+            .verifyResults(new String[] {"1111", "2222", "3333"});
   }
 
   @Test

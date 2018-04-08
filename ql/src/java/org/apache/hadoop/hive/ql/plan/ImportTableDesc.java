@@ -355,7 +355,8 @@ public class ImportTableDesc {
         return createTblDesc.toTable(conf);
       case VIEW:
         return createViewDesc.toTable(conf);
+      default:
+        return null;
     }
-    return null;
   }
 }
