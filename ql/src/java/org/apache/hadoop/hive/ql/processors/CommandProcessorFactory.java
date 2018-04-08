@@ -83,6 +83,10 @@ public final class CommandProcessorFactory {
         return new AddResourceProcessor();
       case LIST:
         return new ListResourceProcessor();
+      case LLAP_CLUSTER:
+        return new LlapClusterResourceProcessor();
+      case LLAP_CACHE:
+        return new LlapCacheResourceProcessor();
       case DELETE:
         return new DeleteResourceProcessor();
       case COMPILE:

@@ -27,4 +27,5 @@ public interface LowLevelCachePolicy extends LlapOomDebugDump {
   long evictSomeBlocks(long memoryToReserve);
   void setEvictionListener(EvictionListener listener);
   void setParentDebugDumper(LlapOomDebugDump dumper);
+  long purge();
 }
