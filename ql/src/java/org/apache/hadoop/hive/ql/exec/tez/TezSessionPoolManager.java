@@ -26,21 +26,23 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
 import org.apache.hadoop.hive.ql.exec.tez.TezSessionPoolSession.Manager;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.wm.ExecutionTrigger;
 import org.apache.hadoop.hive.ql.wm.SessionTriggerProvider;
 import org.apache.hadoop.hive.ql.wm.Trigger;
 import org.apache.hadoop.hive.ql.wm.TriggerActionHandler;
 import org.apache.hadoop.hive.shims.Utils;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import com.google.common.annotations.VisibleForTesting;
 
 /**
@@ -82,8 +84,9 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
   /** This is used to close non-default sessions, and also all sessions when stopping. */
   private final List<TezSessionState> openSessions = new LinkedList<>();
   private SessionTriggerProvider sessionTriggerProvider;
-  private TriggerActionHandler triggerActionHandler;
+  private TriggerActionHandler<?> triggerActionHandler;
   private TriggerValidatorRunnable triggerValidatorRunnable;
+  private YarnQueueHelper yarnQueueChecker;
 
   /** Note: this is not thread-safe. */
   public static TezSessionPoolManager getInstance() {
@@ -99,6 +102,9 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
   }
 
   public void startPool(HiveConf conf, final WMFullResourcePlan resourcePlan) throws Exception {
+    if (restrictedConfig == null) { // Sanity check; restrictedConfig is always set in setup.
+      throw new AssertionError("setupPool or setupNonPool needs to be called first");
+    }
     if (defaultSessionPool != null) {
       defaultSessionPool.start();
     }
@@ -108,7 +114,8 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     initTriggers(conf);
     if (resourcePlan != null) {
       updateTriggers(resourcePlan);
-      LOG.info("Updated tez session pool manager with active resource plan: {}", resourcePlan.getPlan().getName());
+      LOG.info("Updated tez session pool manager with active resource plan: {}",
+          resourcePlan.getPlan().getName());
     }
   }
 
@@ -159,10 +166,21 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
       });
     }
 
+    setupNonPool(conf);
+
+    // Only creates the expiration tracker if expiration is configured.
+    expirationTracker = SessionExpirationTracker.create(conf, this);
+
+    // From this point on, session creation will wait for the default pool (if # of sessions > 0).
+    this.hasInitialSessions = numSessionsTotal > 0;
+  }
+
+  public void setupNonPool(HiveConf conf) {
+    this.initConf = conf;
     numConcurrentLlapQueries = conf.getIntVar(ConfVars.HIVE_SERVER2_LLAP_CONCURRENT_QUERIES);
     llapQueue = new Semaphore(numConcurrentLlapQueries, true);
 
-    String queueAllowedStr = HiveConf.getVar(initConf,
+    String queueAllowedStr = HiveConf.getVar(conf,
         ConfVars.HIVE_SERVER2_TEZ_SESSION_CUSTOM_QUEUE_ALLOWED);
     try {
       this.customQueueAllowed = CustomQueueAllowed.valueOf(queueAllowedStr.toUpperCase());
@@ -170,16 +188,12 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
       throw new RuntimeException("Invalid value '" + queueAllowedStr + "' for " +
           ConfVars.HIVE_SERVER2_TEZ_SESSION_CUSTOM_QUEUE_ALLOWED.varname);
     }
+    if (customQueueAllowed == CustomQueueAllowed.TRUE
+        && HiveConf.getBoolVar(conf, ConfVars.HIVE_SERVER2_TEZ_QUEUE_ACCESS_CHECK)) {
+      this.yarnQueueChecker = new YarnQueueHelper(conf);
+    }
 
     restrictedConfig = new RestrictedConfigChecker(conf);
-    // Only creates the expiration tracker if expiration is configured.
-    expirationTracker = SessionExpirationTracker.create(conf, this);
-
-    // From this point on, session creation will wait for the default pool (if # of sessions > 0).
-    this.hasInitialSessions = numSessionsTotal > 0;
-    if (!hasInitialSessions) {
-      return;
-    }
   }
 
   public void initTriggers(final HiveConf conf) {
@@ -219,7 +233,8 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     boolean hasQueue = (queueName != null) && !queueName.isEmpty();
     if (hasQueue) {
       switch (customQueueAllowed) {
-      case FALSE: throw new HiveException("Specifying " + TezConfiguration.TEZ_QUEUE_NAME + " is not allowed");
+      case FALSE: throw new HiveException("Specifying "
+          + TezConfiguration.TEZ_QUEUE_NAME + " is not allowed");
       case IGNORE: {
         LOG.warn("User has specified " + queueName + " queue; ignoring the setting");
         queueName = null;
@@ -227,6 +242,20 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
         conf.unset(TezConfiguration.TEZ_QUEUE_NAME);
       }
       default: // All good.
+      }
+
+      if (yarnQueueChecker != null) {
+        SessionState ss = SessionState.get();
+        String userName = null;
+        if (ss != null) {
+          userName = ss.getAuthenticator() != null
+              ? ss.getAuthenticator().getUserName() : ss.getUserName();
+        }
+        if (userName == null) {
+          userName = Utils.getUGI().getShortUserName();
+          LOG.info("No session user set; using the UGI user " + userName);
+        }
+        yarnQueueChecker.checkQueueAccess(queueName, userName);
       }
     }
 
@@ -389,8 +418,9 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
     }
 
     try {
-      UserGroupInformation ugi = Utils.getUGI();
-      String userName = ugi.getShortUserName();
+      // Note: this is not the calling user, but rather the user under which this session will
+      //       actually run (which is a different under doAs=false). This seems to be intended.
+      String userName = Utils.getUGI().getShortUserName();
       // TODO Will these checks work if some other user logs in. Isn't a doAs check required somewhere here as well.
       // Should a doAs check happen here instead of after the user test.
       // With HiveServer2 - who is the incoming user in terms of UGI (the hive user itself, or the user who actually submitted the query)

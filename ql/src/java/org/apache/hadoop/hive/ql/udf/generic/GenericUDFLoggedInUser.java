@@ -45,6 +45,7 @@ public class GenericUDFLoggedInUser extends GenericUDF {
     }
 
     if (loggedInUser == null) {
+      // TODO: getUserFromAuthenticator?
       String loggedInUserName = SessionState.get().getUserName();
       if (loggedInUserName != null) {
         loggedInUser = new Text(loggedInUserName);
