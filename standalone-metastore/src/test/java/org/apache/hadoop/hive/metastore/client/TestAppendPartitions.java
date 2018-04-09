@@ -226,22 +226,18 @@ public class TestAppendPartitions extends MetaStoreClientTest {
     client.appendPartition(tableWithPartitions.getDbName(), null, partitionValues);
   }
 
-  @Test(expected = InvalidObjectException.class)
+  @Test(expected = MetaException.class)
   public void testAppendPartitionEmptyPartValues() throws Exception {
 
     Table table = tableWithPartitions;
     client.appendPartition(table.getDbName(), table.getTableName(), new ArrayList<>());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAppendPartitionNullPartValues() throws Exception {
-    try {
-      Table table = tableWithPartitions;
-      client.appendPartition(table.getDbName(), table.getTableName(), (List<String>) null);
-      Assert.fail("Exception should have been thrown.");
-    } catch (TTransportException | InvalidObjectException e) {
-      // TODO: NPE should not be thrown
-    }
+
+    Table table = tableWithPartitions;
+    client.appendPartition(table.getDbName(), table.getTableName(), (List<String>) null);
   }
 
   @Test
