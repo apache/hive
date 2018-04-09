@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -122,15 +123,24 @@ public class HiveAlterHandler implements AlterHandler {
 
     boolean success = false;
     boolean dataWasMoved = false;
-    Table oldt;
+    boolean isPartitionedTable = false;
+
+    Table oldt = null;
+
     List<TransactionalMetaStoreEventListener> transactionalListeners = null;
+    List<MetaStoreEventListener> listeners = null;
+    Map<String, String> txnAlterTableEventResponses = Collections.emptyMap();
+    Map<String, String> txnDropTableEventResponses = Collections.emptyMap();
+    Map<String, String> txnCreateTableEventResponses = Collections.emptyMap();
+    Map<String, String> txnAddPartitionEventResponses = Collections.emptyMap();
+
     if (handler != null) {
       transactionalListeners = handler.getTransactionalListeners();
+      listeners = handler.getListeners();
     }
 
     try {
       boolean rename = false;
-      boolean isPartitionedTable = false;
       List<Partition> parts;
 
       // Switching tables between catalogs is not allowed.
@@ -337,23 +347,23 @@ public class HiveAlterHandler implements AlterHandler {
 
       if (transactionalListeners != null && !transactionalListeners.isEmpty()) {
         if (oldt.getDbName().equalsIgnoreCase(newt.getDbName())) {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+          txnAlterTableEventResponses = MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                   EventMessage.EventType.ALTER_TABLE,
                   new AlterTableEvent(oldt, newt, false, true, handler),
                   environmentContext);
         } else {
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+          txnDropTableEventResponses = MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                   EventMessage.EventType.DROP_TABLE,
                   new DropTableEvent(oldt, true, false, handler),
                   environmentContext);
-          MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+          txnCreateTableEventResponses = MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                   EventMessage.EventType.CREATE_TABLE,
                   new CreateTableEvent(newt, true, handler),
                   environmentContext);
           if (isPartitionedTable) {
             String cName = newt.isSetCatName() ? newt.getCatName() : DEFAULT_CATALOG_NAME;
             parts = msdb.getPartitions(cName, newt.getDbName(), newt.getTableName(), -1);
-            MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
+            txnAddPartitionEventResponses = MetaStoreListenerNotifier.notifyEvent(transactionalListeners,
                     EventMessage.EventType.ADD_PARTITION,
                     new AddPartitionEvent(newt, parts, true, handler),
                     environmentContext);
@@ -393,6 +403,43 @@ public class HiveAlterHandler implements AlterHandler {
           } catch (IOException e) {
             LOG.error("Failed to restore data from " + destPath + " to " + srcPath
                 +  " in alter table failure. Manual restore is needed.");
+          }
+        }
+      }
+    }
+
+    if (!listeners.isEmpty()) {
+      // An ALTER_TABLE event will be created for any alter table operation happening inside the same
+      // database, otherwise a rename between databases is considered a DROP_TABLE from the old database
+      // and a CREATE_TABLE in the new database plus ADD_PARTITION operations if needed.
+      if (!success || dbname.equalsIgnoreCase(newDbName)) {
+        // I don't think event notifications in case of failures are necessary, but other HMS operations
+        // make this call whether the event failed or succeeded. To make this behavior consistent, then
+        // this call will be made also for failed events even for renaming the table between databases
+        // to avoid a large list of ADD_PARTITION unnecessary failed events.
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.ALTER_TABLE,
+            new AlterTableEvent(oldt, newt, false, success, handler),
+            environmentContext, txnAlterTableEventResponses, msdb);
+      } else {
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.DROP_TABLE,
+            new DropTableEvent(oldt, true, false, handler),
+            environmentContext, txnDropTableEventResponses, msdb);
+
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.CREATE_TABLE,
+            new CreateTableEvent(newt, true, handler),
+            environmentContext, txnCreateTableEventResponses, msdb);
+
+        if (isPartitionedTable) {
+          try {
+            List<Partition> parts = msdb.getPartitions(catName, newDbName, newTblName, -1);
+            MetaStoreListenerNotifier.notifyEvent(listeners, EventMessage.EventType.ADD_PARTITION,
+                new AddPartitionEvent(newt, parts, true, handler),
+                environmentContext, txnAddPartitionEventResponses, msdb);
+          } catch (NoSuchObjectException e) {
+            // Just log the error but not throw an exception as this post-commit event should
+            // not cause the HMS operation to fail.
+            LOG.error("ADD_PARTITION events for ALTER_TABLE rename operation cannot continue because the following " +
+                "table was not found on the metastore: " + newDbName + "." + newTblName, e);
           }
         }
       }

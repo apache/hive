@@ -110,4 +110,10 @@ public interface IHMSHandler extends ThriftHiveMetastore.Iface, Configurable {
    * @return list of listeners.
    */
   List<TransactionalMetaStoreEventListener> getTransactionalListeners();
+
+  /**
+   * Get a list of all non-transactional listeners.
+   * @return list of non-transactional listeners.
+   */
+  List<MetaStoreEventListener> getListeners();
 }
