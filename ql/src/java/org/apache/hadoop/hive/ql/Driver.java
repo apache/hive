@@ -2045,6 +2045,7 @@ public class Driver implements IDriver {
 
       SessionState ss = SessionState.get();
 
+      // TODO: should this use getUserFromAuthenticator?
       hookContext = new PrivateHookContext(plan, queryState, ctx.getPathToCS(), SessionState.get().getUserName(),
           ss.getUserIpAddress(), InetAddress.getLocalHost().getHostAddress(), operationId,
           ss.getSessionId(), Thread.currentThread().getName(), ss.isHiveServerQuery(), perfLogger, queryInfo, ctx);

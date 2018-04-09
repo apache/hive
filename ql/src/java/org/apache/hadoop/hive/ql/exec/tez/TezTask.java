@@ -155,12 +155,12 @@ public class TezTask extends Task<TezWork> {
       // We only need a username for UGI to use for groups; getGroups will fetch the groups
       // based on Hadoop configuration, as documented at
       // https://hadoop.apache.org/docs/r2.8.0/hadoop-project-dist/hadoop-common/GroupsMapping.html
-      String userName = ss.getUserName();
+      String userName = getUserNameForGroups(ss);
       List<String> groups = null;
       if (userName == null) {
         userName = "anonymous";
       } else {
-        groups = UserGroupInformation.createRemoteUser(ss.getUserName()).getGroups();
+        groups = UserGroupInformation.createRemoteUser(userName).getGroups();
       }
       MappingInput mi = new MappingInput(userName, groups,
           ss.getHiveVariables().get("wmpool"), ss.getHiveVariables().get("wmapp"));
@@ -313,6 +313,15 @@ public class TezTask extends Task<TezWork> {
       }
     }
     return rc;
+  }
+
+  private String getUserNameForGroups(SessionState ss) {
+    // This should be removed when authenticator and the 2-username mess is cleaned up.
+    if (ss.getAuthenticator() != null) {
+      String userName = ss.getAuthenticator().getUserName();
+      if (userName != null) return userName;
+    }
+    return ss.getUserName();
   }
 
   private void closeDagClientOnCancellation(DAGClient dagClient) {
