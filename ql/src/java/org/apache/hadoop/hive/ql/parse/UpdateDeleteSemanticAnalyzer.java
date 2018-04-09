@@ -1101,6 +1101,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     List<FieldSchema> partCols = targetTable.getPartCols();
     String valuesClause = getMatchedText((ASTNode)getWhenClauseOperation(whenNotMatchedClause).getChild(0));
     valuesClause = valuesClause.substring(1, valuesClause.length() - 1);//strip '(' and ')'
+    valuesClause = SemanticAnalyzer.replaceDefaultKeywordForMerge(valuesClause, targetTable);
 
     rewrittenQueryStr.append("INSERT INTO ").append(getFullTableNameForSQL(target));
     addPartitionColsToInsert(partCols, rewrittenQueryStr);
