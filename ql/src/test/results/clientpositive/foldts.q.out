@@ -45,7 +45,7 @@ POSTHOOK: query: select ctimestamp1, unix_timestamp(ctimestamp1), to_unix_timest
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
-1969-12-31 15:59:46.674	-13	-13
+1969-12-31 15:59:46.674	-28813	-28813
 PREHOOK: query: create temporary table src1orc stored as orc as select * from src1
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src1

@@ -26,7 +26,7 @@ import java.util.Deque;
 import java.util.List;
 
 import org.apache.hadoop.hive.serde2.fast.DeserializeRead;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VInt;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VLong;
@@ -303,7 +303,7 @@ public final class LazyBinaryDeserializeRead extends DeserializeRead {
       break;
     case TIMESTAMP:
       {
-        int length = TimestampWritable.getTotalLength(bytes, offset);
+        int length = TimestampWritableV2.getTotalLength(bytes, offset);
         int saveStart = offset;
         offset += length;
         // Last item -- ok to be at end.

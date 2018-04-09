@@ -18,12 +18,13 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import junit.framework.TestCase;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -31,8 +32,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-
-import java.sql.Date;
 
 public class TestGenericUDFGreatest extends TestCase {
 
@@ -210,7 +209,7 @@ public class TestGenericUDFGreatest extends TestCase {
     } else if (o instanceof Double) {
       return o != null ? new DoubleWritable((Double) o) : null;
     } else if (o instanceof Date) {
-      return o != null ? new DateWritable((Date) o) : null;
+      return o != null ? new DateWritableV2((Date) o) : null;
     } else if (o instanceof Byte) {
       return o != null ? new ByteWritable((Byte) o): null;
     } else if (o instanceof Short) {
@@ -231,8 +230,8 @@ public class TestGenericUDFGreatest extends TestCase {
       return ((IntWritable) o).get();
     } else if (o instanceof DoubleWritable) {
       return ((DoubleWritable) o).get();
-    } else if (o instanceof DateWritable) {
-      return ((DateWritable) o).get();
+    } else if (o instanceof DateWritableV2) {
+      return ((DateWritableV2) o).get();
     } else if (o instanceof ByteWritable) {
       return ((ByteWritable) o).get();
     } else if (o instanceof ShortWritable) {

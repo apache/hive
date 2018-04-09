@@ -100,7 +100,7 @@ POSTHOOK: query: select cast(t as string) from timestamp_3 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_3
 #### A masked pattern was here ####
-2011-04-29 20:46:56.4485
+2011-04-30 03:46:56.4485
 PREHOOK: query: select t, sum(t), count(*), sum(t)/count(*), avg(t) from timestamp_3 group by t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@timestamp_3
@@ -109,7 +109,7 @@ POSTHOOK: query: select t, sum(t), count(*), sum(t)/count(*), avg(t) from timest
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@timestamp_3
 #### A masked pattern was here ####
-2011-04-29 20:46:56.4485	1.3041352164485E9	1	1.3041352164485E9	1.3041352164485E9
+2011-04-30 03:46:56.4485	1.3041352164485E9	1	1.3041352164485E9	1.3041352164485E9
 PREHOOK: query: drop table timestamp_3
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@timestamp_3

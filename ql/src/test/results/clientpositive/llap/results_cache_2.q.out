@@ -103,7 +103,7 @@ group by c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-2012-01-01 01:02:03	10
+2012-01-01 09:02:03	10
 test.comment=Queries using non-deterministic functions should not use results cache
 PREHOOK: query: explain
 select c1, count(*)
@@ -139,7 +139,7 @@ STAGE PLANS:
                       Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
-                        keys: TIMESTAMP'2012-01-01 01:02:03.0' (type: timestamp)
+                        keys: TIMESTAMP'2012-01-01 09:02:03' (type: timestamp)
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
@@ -161,7 +161,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: TIMESTAMP'2012-01-01 01:02:03.0' (type: timestamp), _col1 (type: bigint)
+                  expressions: TIMESTAMP'2012-01-01 09:02:03' (type: timestamp), _col1 (type: bigint)
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator

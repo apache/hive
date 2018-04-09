@@ -35,7 +35,6 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.hbase.ColumnMappings.ColumnMapping;
 import org.apache.hadoop.hive.ql.exec.ExprNodeConstantEvaluator;
 import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -296,7 +295,7 @@ class HiveHBaseInputFormatUtil {
         timestamp = ((LongObjectInspector) inspector).get(value);
       } else {
         PrimitiveObjectInspector primitive = (PrimitiveObjectInspector) inspector;
-        timestamp = PrimitiveObjectInspectorUtils.getTimestamp(value, primitive).getTime();
+        timestamp = PrimitiveObjectInspectorUtils.getTimestamp(value, primitive).toEpochMilli();
       }
     } catch (HiveException e) {
       throw new IOException(e);

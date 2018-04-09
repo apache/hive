@@ -20,10 +20,8 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.util.Arrays;
 
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 
 public class CastTimestampToDouble extends VectorExpression {
   private static final long serialVersionUID = 1L;

@@ -22,8 +22,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.rmi.server.UID;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,12 +40,14 @@ import org.apache.avro.io.BinaryEncoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.avro.UnresolvedUnionException;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -295,13 +295,13 @@ class AvroDeserializer {
         throw new AvroSerdeException("Unexpected Avro schema for Date TypeInfo: " + recordSchema.getType());
       }
 
-      return new Date(DateWritable.daysToMillis((Integer)datum));
+      return Date.ofEpochMilli(DateWritableV2.daysToMillis((Integer)datum));
     case TIMESTAMP:
       if (recordSchema.getType() != Type.LONG) {
         throw new AvroSerdeException(
           "Unexpected Avro schema for Date TypeInfo: " + recordSchema.getType());
       }
-      return new Timestamp((Long)datum);
+      return Timestamp.ofEpochMilli((Long)datum);
     default:
       return datum;
     }

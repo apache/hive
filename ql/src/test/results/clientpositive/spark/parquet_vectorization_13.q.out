@@ -24,8 +24,8 @@ FROM     alltypesparquet
 WHERE    (((cfloat < 3569)
            AND ((10.175 >= cdouble)
                 AND (cboolean1 != 1)))
-          OR ((ctimestamp1 > 11)
-              AND ((ctimestamp2 != 12)
+          OR ((ctimestamp1 > -28789)
+              AND ((ctimestamp2 != -28788)
                    AND (ctinyint < 9763215.5639))))
 GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
@@ -57,8 +57,8 @@ FROM     alltypesparquet
 WHERE    (((cfloat < 3569)
            AND ((10.175 >= cdouble)
                 AND (cboolean1 != 1)))
-          OR ((ctimestamp1 > 11)
-              AND ((ctimestamp2 != 12)
+          OR ((ctimestamp1 > -28789)
+              AND ((ctimestamp2 != -28788)
                    AND (ctinyint < 9763215.5639))))
 GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
@@ -92,8 +92,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColLessDoubleScalar(col 4:float, val 3569.0), FilterDoubleColLessEqualDoubleScalar(col 5:double, val 10.175), FilterLongColNotEqualLongScalar(col 10:boolean, val 1)), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 13:double, val 11.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterDoubleColNotEqualDoubleScalar(col 13:double, val 12.0)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double), FilterDecimalColLessDecimalScalar(col 14:decimal(11,4), val 9763215.5639)(children: CastLongToDecimal(col 0:tinyint) -> 14:decimal(11,4))))
-                    predicate: (((UDFToDouble(ctimestamp1) > 11.0D) and (UDFToDouble(ctimestamp2) <> 12.0D) and (CAST( ctinyint AS decimal(11,4)) < 9763215.5639)) or ((cfloat < 3569) and (cdouble <= 10.175D) and (cboolean1 <> 1))) (type: boolean)
+                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColLessDoubleScalar(col 4:float, val 3569.0), FilterDoubleColLessEqualDoubleScalar(col 5:double, val 10.175), FilterLongColNotEqualLongScalar(col 10:boolean, val 1)), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 13:double, val -28789.0)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterDoubleColNotEqualDoubleScalar(col 13:double, val -28788.0)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double), FilterDecimalColLessDecimalScalar(col 14:decimal(11,4), val 9763215.5639)(children: CastLongToDecimal(col 0:tinyint) -> 14:decimal(11,4))))
+                    predicate: (((UDFToDouble(ctimestamp1) > -28789.0D) and (UDFToDouble(ctimestamp2) <> -28788.0D) and (CAST( ctinyint AS decimal(11,4)) < 9763215.5639)) or ((cfloat < 3569) and (cdouble <= 10.175D) and (cboolean1 <> 1))) (type: boolean)
                     Statistics: Num rows: 2730 Data size: 32760 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cboolean1 (type: boolean), ctinyint (type: tinyint), ctimestamp1 (type: timestamp), cfloat (type: float), cstring1 (type: string), UDFToDouble(cfloat) (type: double), (UDFToDouble(cfloat) * UDFToDouble(cfloat)) (type: double), UDFToDouble(ctinyint) (type: double), (UDFToDouble(ctinyint) * UDFToDouble(ctinyint)) (type: double)
@@ -268,8 +268,8 @@ FROM     alltypesparquet
 WHERE    (((cfloat < 3569)
            AND ((10.175 >= cdouble)
                 AND (cboolean1 != 1)))
-          OR ((ctimestamp1 > 11)
-              AND ((ctimestamp2 != 12)
+          OR ((ctimestamp1 > -28789)
+              AND ((ctimestamp2 != -28788)
                    AND (ctinyint < 9763215.5639))))
 GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
@@ -302,8 +302,8 @@ FROM     alltypesparquet
 WHERE    (((cfloat < 3569)
            AND ((10.175 >= cdouble)
                 AND (cboolean1 != 1)))
-          OR ((ctimestamp1 > 11)
-              AND ((ctimestamp2 != 12)
+          OR ((ctimestamp1 > -28789)
+              AND ((ctimestamp2 != -28788)
                    AND (ctinyint < 9763215.5639))))
 GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
@@ -377,8 +377,8 @@ FROM     alltypesparquet
 WHERE    (((cfloat < 3569)
            AND ((10.175 >= cdouble)
                 AND (cboolean1 != 1)))
-          OR ((ctimestamp1 > -1.388)
-              AND ((ctimestamp2 != -1.3359999999999999)
+          OR ((ctimestamp1 > -28801.388)
+              AND ((ctimestamp2 != -28801.3359999999999999)
                    AND (ctinyint < 9763215.5639))))
 GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
@@ -410,8 +410,8 @@ FROM     alltypesparquet
 WHERE    (((cfloat < 3569)
            AND ((10.175 >= cdouble)
                 AND (cboolean1 != 1)))
-          OR ((ctimestamp1 > -1.388)
-              AND ((ctimestamp2 != -1.3359999999999999)
+          OR ((ctimestamp1 > -28801.388)
+              AND ((ctimestamp2 != -28801.3359999999999999)
                    AND (ctinyint < 9763215.5639))))
 GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
@@ -444,8 +444,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColLessDoubleScalar(col 4:float, val 3569.0), FilterDoubleColLessEqualDoubleScalar(col 5:double, val 10.175), FilterLongColNotEqualLongScalar(col 10:boolean, val 1)), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 13:double, val -1.388)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterDoubleColNotEqualDoubleScalar(col 13:double, val -1.3359999999999999)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double), FilterDecimalColLessDecimalScalar(col 14:decimal(11,4), val 9763215.5639)(children: CastLongToDecimal(col 0:tinyint) -> 14:decimal(11,4))))
-                    predicate: (((UDFToDouble(ctimestamp1) > -1.388D) and (UDFToDouble(ctimestamp2) <> -1.3359999999999999D) and (CAST( ctinyint AS decimal(11,4)) < 9763215.5639)) or ((cfloat < 3569) and (cdouble <= 10.175D) and (cboolean1 <> 1))) (type: boolean)
+                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColLessDoubleScalar(col 4:float, val 3569.0), FilterDoubleColLessEqualDoubleScalar(col 5:double, val 10.175), FilterLongColNotEqualLongScalar(col 10:boolean, val 1)), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleScalar(col 13:double, val -28801.388)(children: CastTimestampToDouble(col 8:timestamp) -> 13:double), FilterDoubleColNotEqualDoubleScalar(col 13:double, val -28801.336)(children: CastTimestampToDouble(col 9:timestamp) -> 13:double), FilterDecimalColLessDecimalScalar(col 14:decimal(11,4), val 9763215.5639)(children: CastLongToDecimal(col 0:tinyint) -> 14:decimal(11,4))))
+                    predicate: (((UDFToDouble(ctimestamp1) > -28801.388D) and (UDFToDouble(ctimestamp2) <> -28801.336D) and (CAST( ctinyint AS decimal(11,4)) < 9763215.5639)) or ((cfloat < 3569) and (cdouble <= 10.175D) and (cboolean1 <> 1))) (type: boolean)
                     Statistics: Num rows: 2730 Data size: 32760 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: cboolean1 (type: boolean), ctinyint (type: tinyint), ctimestamp1 (type: timestamp), cfloat (type: float), cstring1 (type: string), UDFToDouble(cfloat) (type: double), (UDFToDouble(cfloat) * UDFToDouble(cfloat)) (type: double), UDFToDouble(ctinyint) (type: double), (UDFToDouble(ctinyint) * UDFToDouble(ctinyint)) (type: double)
@@ -596,8 +596,8 @@ FROM     alltypesparquet
 WHERE    (((cfloat < 3569)
            AND ((10.175 >= cdouble)
                 AND (cboolean1 != 1)))
-          OR ((ctimestamp1 > -1.388)
-              AND ((ctimestamp2 != -1.3359999999999999)
+          OR ((ctimestamp1 > -28801.388)
+              AND ((ctimestamp2 != -28801.3359999999999999)
                    AND (ctinyint < 9763215.5639))))
 GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16
@@ -630,8 +630,8 @@ FROM     alltypesparquet
 WHERE    (((cfloat < 3569)
            AND ((10.175 >= cdouble)
                 AND (cboolean1 != 1)))
-          OR ((ctimestamp1 > -1.388)
-              AND ((ctimestamp2 != -1.3359999999999999)
+          OR ((ctimestamp1 > -28801.388)
+              AND ((ctimestamp2 != -28801.3359999999999999)
                    AND (ctinyint < 9763215.5639))))
 GROUP BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1
 ORDER BY cboolean1, ctinyint, ctimestamp1, cfloat, cstring1, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15, c16

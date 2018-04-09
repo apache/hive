@@ -21,9 +21,7 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP;
 import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping.VOID_GROUP;
 
-import java.util.Calendar;
-import java.util.Date;
-
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -45,7 +43,6 @@ import org.apache.hadoop.io.IntWritable;
 public class GenericUDFQuarter extends GenericUDF {
   private transient Converter[] converters = new Converter[1];
   private transient PrimitiveCategory[] inputTypes = new PrimitiveCategory[1];
-  private final Calendar calendar = Calendar.getInstance();
   private final IntWritable output = new IntWritable();
 
   @Override
@@ -65,8 +62,7 @@ public class GenericUDFQuarter extends GenericUDF {
     if (date == null) {
       return null;
     }
-    calendar.setTime(date);
-    int month = calendar.get(Calendar.MONTH);
+    int month = date.getMonth() - 1;
     int quarter = (month + 3) / 3;
 
     output.set(quarter);
