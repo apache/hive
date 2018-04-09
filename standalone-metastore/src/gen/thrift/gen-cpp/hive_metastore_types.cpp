@@ -16979,11 +16979,6 @@ AllocateTableWriteIdsRequest::~AllocateTableWriteIdsRequest() throw() {
 }
 
 
-void AllocateTableWriteIdsRequest::__set_txnIds(const std::vector<int64_t> & val) {
-  this->txnIds = val;
-__isset.txnIds = true;
-}
-
 void AllocateTableWriteIdsRequest::__set_dbName(const std::string& val) {
   this->dbName = val;
 }
@@ -16992,14 +16987,19 @@ void AllocateTableWriteIdsRequest::__set_tableName(const std::string& val) {
   this->tableName = val;
 }
 
+void AllocateTableWriteIdsRequest::__set_txnIds(const std::vector<int64_t> & val) {
+  this->txnIds = val;
+__isset.txnIds = true;
+}
+
 void AllocateTableWriteIdsRequest::__set_replPolicy(const std::string& val) {
   this->replPolicy = val;
 __isset.replPolicy = true;
 }
 
-void AllocateTableWriteIdsRequest::__set_txnToWriteIdList(const std::vector<TxnToWriteId> & val) {
-  this->txnToWriteIdList = val;
-__isset.txnToWriteIdList = true;
+void AllocateTableWriteIdsRequest::__set_srcTxnToWriteIdList(const std::vector<TxnToWriteId> & val) {
+  this->srcTxnToWriteIdList = val;
+__isset.srcTxnToWriteIdList = true;
 }
 
 uint32_t AllocateTableWriteIdsRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
@@ -17026,6 +17026,22 @@ uint32_t AllocateTableWriteIdsRequest::read(::apache::thrift::protocol::TProtoco
     switch (fid)
     {
       case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->dbName);
+          isset_dbName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->tableName);
+          isset_tableName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->txnIds.clear();
@@ -17045,22 +17061,6 @@ uint32_t AllocateTableWriteIdsRequest::read(::apache::thrift::protocol::TProtoco
           xfer += iprot->skip(ftype);
         }
         break;
-      case 2:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->dbName);
-          isset_dbName = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 3:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->tableName);
-          isset_tableName = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
       case 4:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
           xfer += iprot->readString(this->replPolicy);
@@ -17072,19 +17072,19 @@ uint32_t AllocateTableWriteIdsRequest::read(::apache::thrift::protocol::TProtoco
       case 5:
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
-            this->txnToWriteIdList.clear();
+            this->srcTxnToWriteIdList.clear();
             uint32_t _size701;
             ::apache::thrift::protocol::TType _etype704;
             xfer += iprot->readListBegin(_etype704, _size701);
-            this->txnToWriteIdList.resize(_size701);
+            this->srcTxnToWriteIdList.resize(_size701);
             uint32_t _i705;
             for (_i705 = 0; _i705 < _size701; ++_i705)
             {
-              xfer += this->txnToWriteIdList[_i705].read(iprot);
+              xfer += this->srcTxnToWriteIdList[_i705].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
-          this->__isset.txnToWriteIdList = true;
+          this->__isset.srcTxnToWriteIdList = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -17110,8 +17110,16 @@ uint32_t AllocateTableWriteIdsRequest::write(::apache::thrift::protocol::TProtoc
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
   xfer += oprot->writeStructBegin("AllocateTableWriteIdsRequest");
 
+  xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->dbName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("tableName", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->tableName);
+  xfer += oprot->writeFieldEnd();
+
   if (this->__isset.txnIds) {
-    xfer += oprot->writeFieldBegin("txnIds", ::apache::thrift::protocol::T_LIST, 1);
+    xfer += oprot->writeFieldBegin("txnIds", ::apache::thrift::protocol::T_LIST, 3);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_I64, static_cast<uint32_t>(this->txnIds.size()));
       std::vector<int64_t> ::const_iterator _iter706;
@@ -17123,25 +17131,17 @@ uint32_t AllocateTableWriteIdsRequest::write(::apache::thrift::protocol::TProtoc
     }
     xfer += oprot->writeFieldEnd();
   }
-  xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->dbName);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("tableName", ::apache::thrift::protocol::T_STRING, 3);
-  xfer += oprot->writeString(this->tableName);
-  xfer += oprot->writeFieldEnd();
-
   if (this->__isset.replPolicy) {
     xfer += oprot->writeFieldBegin("replPolicy", ::apache::thrift::protocol::T_STRING, 4);
     xfer += oprot->writeString(this->replPolicy);
     xfer += oprot->writeFieldEnd();
   }
-  if (this->__isset.txnToWriteIdList) {
-    xfer += oprot->writeFieldBegin("txnToWriteIdList", ::apache::thrift::protocol::T_LIST, 5);
+  if (this->__isset.srcTxnToWriteIdList) {
+    xfer += oprot->writeFieldBegin("srcTxnToWriteIdList", ::apache::thrift::protocol::T_LIST, 5);
     {
-      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->txnToWriteIdList.size()));
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->srcTxnToWriteIdList.size()));
       std::vector<TxnToWriteId> ::const_iterator _iter707;
-      for (_iter707 = this->txnToWriteIdList.begin(); _iter707 != this->txnToWriteIdList.end(); ++_iter707)
+      for (_iter707 = this->srcTxnToWriteIdList.begin(); _iter707 != this->srcTxnToWriteIdList.end(); ++_iter707)
       {
         xfer += (*_iter707).write(oprot);
       }
@@ -17156,39 +17156,39 @@ uint32_t AllocateTableWriteIdsRequest::write(::apache::thrift::protocol::TProtoc
 
 void swap(AllocateTableWriteIdsRequest &a, AllocateTableWriteIdsRequest &b) {
   using ::std::swap;
-  swap(a.txnIds, b.txnIds);
   swap(a.dbName, b.dbName);
   swap(a.tableName, b.tableName);
+  swap(a.txnIds, b.txnIds);
   swap(a.replPolicy, b.replPolicy);
-  swap(a.txnToWriteIdList, b.txnToWriteIdList);
+  swap(a.srcTxnToWriteIdList, b.srcTxnToWriteIdList);
   swap(a.__isset, b.__isset);
 }
 
 AllocateTableWriteIdsRequest::AllocateTableWriteIdsRequest(const AllocateTableWriteIdsRequest& other708) {
-  txnIds = other708.txnIds;
   dbName = other708.dbName;
   tableName = other708.tableName;
+  txnIds = other708.txnIds;
   replPolicy = other708.replPolicy;
-  txnToWriteIdList = other708.txnToWriteIdList;
+  srcTxnToWriteIdList = other708.srcTxnToWriteIdList;
   __isset = other708.__isset;
 }
 AllocateTableWriteIdsRequest& AllocateTableWriteIdsRequest::operator=(const AllocateTableWriteIdsRequest& other709) {
-  txnIds = other709.txnIds;
   dbName = other709.dbName;
   tableName = other709.tableName;
+  txnIds = other709.txnIds;
   replPolicy = other709.replPolicy;
-  txnToWriteIdList = other709.txnToWriteIdList;
+  srcTxnToWriteIdList = other709.srcTxnToWriteIdList;
   __isset = other709.__isset;
   return *this;
 }
 void AllocateTableWriteIdsRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "AllocateTableWriteIdsRequest(";
-  out << "txnIds="; (__isset.txnIds ? (out << to_string(txnIds)) : (out << "<null>"));
-  out << ", " << "dbName=" << to_string(dbName);
+  out << "dbName=" << to_string(dbName);
   out << ", " << "tableName=" << to_string(tableName);
+  out << ", " << "txnIds="; (__isset.txnIds ? (out << to_string(txnIds)) : (out << "<null>"));
   out << ", " << "replPolicy="; (__isset.replPolicy ? (out << to_string(replPolicy)) : (out << "<null>"));
-  out << ", " << "txnToWriteIdList="; (__isset.txnToWriteIdList ? (out << to_string(txnToWriteIdList)) : (out << "<null>"));
+  out << ", " << "srcTxnToWriteIdList="; (__isset.srcTxnToWriteIdList ? (out << to_string(srcTxnToWriteIdList)) : (out << "<null>"));
   out << ")";
 }
 
@@ -24614,47 +24614,19 @@ void swap(Materialization &a, Materialization &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-Materialization::Materialization(const Materialization& other978) {
-  tablesUsed = other978.tablesUsed;
-  validTxnList = other978.validTxnList;
-  invalidationTime = other978.invalidationTime;
-  sourceTablesUpdateDeleteModified = other978.sourceTablesUpdateDeleteModified;
-  __isset = other978.__isset;
-}
-Materialization& Materialization::operator=(const Materialization& other979) {
-  tablesUsed = other979.tablesUsed;
-  validTxnList = other979.validTxnList;
-  invalidationTime = other979.invalidationTime;
-  sourceTablesUpdateDeleteModified = other979.sourceTablesUpdateDeleteModified;
-  __isset = other979.__isset;
-=======
-Materialization::Materialization(const Materialization& other994) {
-  tablesUsed = other994.tablesUsed;
-  validTxnList = other994.validTxnList;
-  invalidationTime = other994.invalidationTime;
-  __isset = other994.__isset;
-}
-Materialization& Materialization::operator=(const Materialization& other995) {
-  tablesUsed = other995.tablesUsed;
-  validTxnList = other995.validTxnList;
-  invalidationTime = other995.invalidationTime;
-  __isset = other995.__isset;
->>>>>>> HIVE-19089: Create/Replicate AllocWriteId Event
-=======
 Materialization::Materialization(const Materialization& other984) {
   tablesUsed = other984.tablesUsed;
   validTxnList = other984.validTxnList;
   invalidationTime = other984.invalidationTime;
+  sourceTablesUpdateDeleteModified = other984.sourceTablesUpdateDeleteModified;
   __isset = other984.__isset;
 }
 Materialization& Materialization::operator=(const Materialization& other985) {
   tablesUsed = other985.tablesUsed;
   validTxnList = other985.validTxnList;
   invalidationTime = other985.invalidationTime;
+  sourceTablesUpdateDeleteModified = other985.sourceTablesUpdateDeleteModified;
   __isset = other985.__isset;
->>>>>>> HIVE-19089: Create/Replicate AllocWriteId Event : Review comment fixes
   return *this;
 }
 void Materialization::printTo(std::ostream& out) const {

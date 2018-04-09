@@ -51,6 +51,7 @@ import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.dbcp.ConnectionFactory;
 import org.apache.commons.dbcp.DriverManagerConnectionFactory;
 import org.apache.commons.dbcp.PoolableConnectionFactory;
@@ -585,24 +586,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         stmt = dbConn.createStatement();
 
         if (rqst.isSetReplPolicy()) {
-          List<String> inQueries = new ArrayList<>();
-          StringBuilder prefix = new StringBuilder();
-          StringBuilder suffix = new StringBuilder();
-
-          prefix.append("select RTM_TARGET_TXN_ID from REPL_TXN_MAP where ");
-          suffix.append(" and RTM_REPL_POLICY = " + quoteString(rqst.getReplPolicy()));
-
-          TxnUtils.buildQueryWithINClause(conf, inQueries, prefix, suffix, rqst.getReplSrcTxnIds(),
-                  "RTM_SRC_TXN_ID", false, false);
-
-          for (String query : inQueries) {
-            LOG.debug("Going to execute select <" + query + ">");
-            rs = stmt.executeQuery(query);
-            if (rs.next()) {
-              LOG.info("Transactions " + rqst.getReplSrcTxnIds().toString() +
-                      " are already present for repl policy " + rqst.getReplPolicy());
-              return new OpenTxnsResponse(new ArrayList<>());
-            }
+          List<Long> targetTxnIdList = getTargetTxnIdList(rqst.getReplPolicy(), rqst.getReplSrcTxnIds(), stmt);
+          if (!targetTxnIdList.isEmpty()) {
+            LOG.info("Target transactions " + targetTxnIdList.toString() + " is present for repl policy :" +
+              rqst.getReplPolicy() + " and Source transaction id : " + rqst.getReplSrcTxnIds().toString());
+            return new OpenTxnsResponse(new ArrayList<>());
           }
         }
 
@@ -700,21 +688,27 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private Long getTargetTxnId(String replPolicy, long sourceTxnId, Statement stmt) throws SQLException {
+  private List<Long> getTargetTxnIdList(String replPolicy, List<Long> sourceTxnIdList, Statement stmt)
+          throws SQLException {
     ResultSet rs = null;
     try {
-      String s = "select RTM_TARGET_TXN_ID from REPL_TXN_MAP where RTM_SRC_TXN_ID = " + sourceTxnId +
-
-              " and RTM_REPL_POLICY = " + quoteString(replPolicy);
-      LOG.debug("Going to execute query <" + s + ">");
-      rs = stmt.executeQuery(s);
-      if (!rs.next()) {
-        LOG.info("Target txn is missing for the input source txn for ReplPolicy: " +
-                quoteString(replPolicy) + " , srcTxnId: " + sourceTxnId);
-        return -1L;
+      List<String> inQueries = new ArrayList<>();
+      StringBuilder prefix = new StringBuilder();
+      StringBuilder suffix = new StringBuilder();
+      List<Long> targetTxnIdList = new ArrayList<>();
+      prefix.append("select RTM_TARGET_TXN_ID from REPL_TXN_MAP where ");
+      suffix.append(" and RTM_REPL_POLICY = " + quoteString(replPolicy));
+      TxnUtils.buildQueryWithINClause(conf, inQueries, prefix, suffix, sourceTxnIdList,
+              "RTM_SRC_TXN_ID", false, false);
+      for (String query : inQueries) {
+        LOG.debug("Going to execute select <" + query + ">");
+        rs = stmt.executeQuery(query);
+        while (rs.next()) {
+          targetTxnIdList.add(rs.getLong(1));
+        }
       }
-      LOG.debug("targetTxnid for srcTxnId " + sourceTxnId + " is " + rs.getLong(1));
-      return rs.getLong(1);
+      LOG.debug("targetTxnid for srcTxnId " + sourceTxnIdList.toString() + " is " + targetTxnIdList.toString());
+      return targetTxnIdList;
     }  catch (SQLException e) {
       LOG.warn("failed to get target txn ids " + e.getMessage());
       throw e;
@@ -738,10 +732,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         if (rqst.isSetReplPolicy()) {
           sourceTxnId = rqst.getTxnid();
-          txnid = getTargetTxnId(rqst.getReplPolicy(), sourceTxnId, stmt);
-          if (txnid == -1) {
+          List<Long> targetTxnIds = getTargetTxnIdList(rqst.getReplPolicy(), Lists.newArrayList(sourceTxnId), stmt);
+          if (targetTxnIds.size() != 1) {
+            LOG.info("Target txn id is missing for source txn id : " + sourceTxnId +
+                    " and repl policy " + rqst.getReplPolicy());
             return;
           }
+          txnid = targetTxnIds.get(0);
         }
 
         if (abortTxns(dbConn, Collections.singletonList(txnid), true) != 1) {
@@ -881,10 +878,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         if (rqst.isSetReplPolicy()) {
           sourceTxnId = rqst.getTxnid();
-          txnid = getTargetTxnId(rqst.getReplPolicy(), sourceTxnId, stmt);
-          if (txnid == -1) {
+          List<Long> targetTxnIds = getTargetTxnIdList(rqst.getReplPolicy(), Lists.newArrayList(sourceTxnId), stmt);
+          if (targetTxnIds.size() != 1) {
+            LOG.info("Target txn id is missing for source txn id : " + sourceTxnId +
+                    " and repl policy " + rqst.getReplPolicy());
             return;
           }
+          txnid = targetTxnIds.get(0);
         }
 
         /**
@@ -1225,15 +1225,26 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private List<Long> getValidTxnIds(AllocateTableWriteIdsRequest rqst, Statement stmt, ResultSet rs)
+  private List<Long> checkAndGetTargetTxnIds(AllocateTableWriteIdsRequest rqst, Statement stmt, ResultSet rs)
           throws MetaException, SQLException {
     List<Long> txnIds = new ArrayList<>();
     String dbName = rqst.getDbName().toLowerCase();
     String tblName = rqst.getTableName().toLowerCase();
     Long validWriteId;
     Long largestWriteId, smallestWriteId;
-    List<TxnToWriteId> txnToWriteIds = rqst.getTxnToWriteIdList();
+    List<TxnToWriteId> txnToWriteIds = rqst.getSrcTxnToWriteIdList();
     assert (txnToWriteIds != null);
+
+    for (TxnToWriteId txnToWriteId :  txnToWriteIds) {
+      txnIds.add(txnToWriteId.getTxnId());
+    }
+
+    List<Long> targetTxnIds = getTargetTxnIdList(rqst.getReplPolicy(), txnIds, stmt);
+    if (targetTxnIds.size() != txnIds.size()) {
+      LOG.info("Target txn id is missing for source txn id : " + txnIds.toString() +
+              " and repl policy " + rqst.getReplPolicy());
+      return new ArrayList<>();
+    }
 
     // Get the next write id for the table and check if its in consistent with the input txntowriteids.
     String s = sqlGenerator.addForUpdateClause(
@@ -1244,36 +1255,36 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if (rs.next()) {
       validWriteId = rs.getLong(1);
     } else {
-      // All input write ids should be greater than this
-      validWriteId = 0L;
+      // All input write ids should be greater or equal than this
+      validWriteId = 1L;
+    }
+
+    // If first write id  is greater or equal then all other will be greater or equal, as its in ascending order.
+    if (txnToWriteIds.get(0).getWriteId() < validWriteId) {
+      //looks like a retry, so do a noop
+      LOG.info("Write Id " + txnToWriteIds.get(0).getWriteId() + " is less than valid write id : " +
+              validWriteId + "Looks like retry.");
+      return new ArrayList<>();
     }
 
     int size = txnToWriteIds.size();
-    for (TxnToWriteId txnToWriteId :  txnToWriteIds) {
-      Long targetTxnId = getTargetTxnId(rqst.getReplPolicy(), txnToWriteId.getTxnId(), stmt);
-      if (targetTxnId == -1) {
-        LOG.info("Transaction " + txnToWriteId.getTxnId() +
-                " is invalid, may be already committed/aborted. Ignoring the whole operation");
-        return new ArrayList<>();
-      }
-
-      Long writeId = txnToWriteId.getWriteId();
-      if (writeId <= validWriteId) {
-        //looks like a retry, so do a noop
-        LOG.info("Write Id " + writeId + " is less than valid write id : " + validWriteId + "Looks like retry.");
-        return new ArrayList<>();
-      }
-
-      if (writeId > (validWriteId + size)) {
-        //this should never happen in case of replication
-        LOG.info("Write Id " + writeId + " is out of range. Valid write id : " + validWriteId + " Size : " + size);
-        throw new MetaException("Write Id " + writeId + " is out of range. Valid write id : " +
-                validWriteId + " Size : " + size);
-      }
-      txnIds.add(targetTxnId);
+    Long writeId = txnToWriteIds.get(size-1).getWriteId();
+    // The last write id should be same as valid write id + number of write ids to be allocated, as we assume
+    // that the write ids are contiguous.
+    if (writeId != (validWriteId + size) - 1) {
+      //this should never happen in case of replication
+      LOG.info("Replaying allocation of write id failed as current writeid: " + writeId +
+              " is not replayed in sequence. Valid range is : " + (validWriteId + size) +
+              ". Probably, some of the allocate write id events are skipped or lost.");
+      throw new IllegalStateException("Replaying allocation of write id failed as current writeid: " + writeId +
+              " is not replayed in sequence. valid range is : " + (validWriteId + size) +
+              ". Probably, some of the allocate write id events are skipped or lost.");
     }
 
-    return txnIds;
+    // The in clause can return the txn ids in any order. The assumption is that the txnid list sent to
+    // alloc write id in source is sorted so here we will sort it again in the caller and will assume
+    // that it will map to the write ids list.
+    return targetTxnIds;
   }
 
   @Override
@@ -1293,19 +1304,41 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
+        long writeId;
+        String s;
+
+        handle = getMutexAPI().acquireLock(MUTEX_KEY.WriteIdAllocator.name());
 
         if (rqst.isSetReplPolicy()) {
-          txnIds = getValidTxnIds(rqst, stmt, rs);
+          assert (rqst.isSetSrcTxnToWriteIdList());
+          assert (!rqst.isSetTxnIds());
+          txnIds = checkAndGetTargetTxnIds(rqst, stmt, rs);
+          writeId = rqst.getSrcTxnToWriteIdList().get(0).getWriteId();
         } else {
+          assert (!rqst.isSetSrcTxnToWriteIdList());
+          assert (rqst.isSetTxnIds());
           txnIds = rqst.getTxnIds();
+
+          // Get the next write id for the given table and update it with new next write id.
+          // This is select for update query which takes a lock if the table entry is already there in NEXT_WRITE_ID
+          s = sqlGenerator.addForUpdateClause(
+                  "select nwi_next from NEXT_WRITE_ID where nwi_database = " + quoteString(dbName)
+                          + " and nwi_table = " + quoteString(tblName));
+          LOG.debug("Going to execute query <" + s + ">");
+          rs = stmt.executeQuery(s);
+          if (!rs.next()) {
+            writeId = 1;
+          } else {
+            writeId = rs.getLong(1);;
+          }
         }
 
         if (txnIds.size() == 0) {
-          // Idempotent case for replication flow, return the same txn2writeId list as in request message.
-          return new AllocateTableWriteIdsResponse(rqst.getTxnToWriteIdList());
+          // Idempotent case for replication flow.
+          return new AllocateTableWriteIdsResponse(new ArrayList<>());
         }
 
-        Collections.sort(txnIds); //easier to read logs
+        Collections.sort(txnIds); //easier to read logs and for assumption done in replication flow
 
         // Check if all the input txns are in open state. Write ID should be allocated only for open transactions.
         if (!isTxnsInOpenState(txnIds, stmt)) {
@@ -1315,7 +1348,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         List<Long> allocatedTxns = new ArrayList<>();
         long txnId;
-        long writeId;
         List<String> queries = new ArrayList<>();
         StringBuilder prefix = new StringBuilder();
         StringBuilder suffix = new StringBuilder();
@@ -1351,27 +1383,16 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           return new AllocateTableWriteIdsResponse(txnToWriteIds);
         }
 
-        handle = getMutexAPI().acquireLock(MUTEX_KEY.WriteIdAllocator.name());
-
-        // There are some txns in the list which has no write id allocated and hence go ahead and do it.
-        // Get the next write id for the given table and update it with new next write id.
-        // This is select for update query which takes a lock if the table entry is already there in NEXT_WRITE_ID
-        String s = sqlGenerator.addForUpdateClause(
-                "select nwi_next from NEXT_WRITE_ID where nwi_database = " + quoteString(dbName)
-                        + " and nwi_table = " + quoteString(tblName));
-        LOG.debug("Going to execute query <" + s + ">");
-        rs = stmt.executeQuery(s);
-        if (!rs.next()) {
+        // There are some txns in the list which does not have write id allocated and hence go ahead and do it.
+        if (writeId == 1) {
           // First allocation of write id should add the table to the next_write_id meta table
           // The initial value for write id should be 1 and hence we add 1 with number of write ids allocated here
           s = "insert into NEXT_WRITE_ID (nwi_database, nwi_table, nwi_next) values ("
                   + quoteString(dbName) + "," + quoteString(tblName) + "," + String.valueOf(numOfWriteIds + 1) + ")";
           LOG.debug("Going to execute insert <" + s + ">");
           stmt.execute(s);
-          writeId = 1;
         } else {
           // Update the NEXT_WRITE_ID for the given table after incrementing by number of write ids allocated
-          writeId = rs.getLong(1);
           s = "update NEXT_WRITE_ID set nwi_next = " + (writeId + numOfWriteIds)
                   + " where nwi_database = " + quoteString(dbName)
                   + " and nwi_table = " + quoteString(tblName);

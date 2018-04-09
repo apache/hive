@@ -21,10 +21,16 @@ package org.apache.hadoop.hive.ql.exec;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import java.util.List;
+import java.util.Map;
 
 /**
  * ReplTxnTask.
@@ -45,6 +51,30 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
       Utilities.FILE_OP_LOGGER.trace("Executing ReplTxnTask " + work.getOperationType().toString() +
               " for txn ids : " + work.getTxnIds().toString() + " replPolicy : " + replPolicy);
     }
+
+    String tableName = work.getTableName() == null || work.getTableName().isEmpty() ? null : work.getTableName();
+    if (tableName != null) {
+      Table tbl;
+      try {
+        tbl = Hive.get().getTable(work.getDbName(), tableName);
+        Map<String, String> params = tbl.getParameters();
+        if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
+          String replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+          if (Long.parseLong(replLastId) >= work.getEventId()) {
+            // if the event is already replayed, then no need to replay it again.
+            return 0;
+          }
+        }
+      } catch (InvalidTableException e) {
+        LOG.debug("Table does not exist so, ignoring the operation");
+        //TODO : need to return if table does not exist. Will be done once acid table replication is implemented.
+        //return 0;
+      } catch (HiveException e) {
+        LOG.error("Get table failed with exception " + e.getMessage());
+        return 1;
+      }
+    }
+
     try {
       HiveTxnManager txnManager = driverContext.getCtx().getHiveTxnManager();
       String user = UserGroupInformation.getCurrentUser().getUserName();

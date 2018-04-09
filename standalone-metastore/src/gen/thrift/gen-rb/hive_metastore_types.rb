@@ -2639,18 +2639,18 @@ end
 
 class AllocateTableWriteIdsRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
-  TXNIDS = 1
-  DBNAME = 2
-  TABLENAME = 3
+  DBNAME = 1
+  TABLENAME = 2
+  TXNIDS = 3
   REPLPOLICY = 4
-  TXNTOWRITEIDLIST = 5
+  SRCTXNTOWRITEIDLIST = 5
 
   FIELDS = {
-    TXNIDS => {:type => ::Thrift::Types::LIST, :name => 'txnIds', :element => {:type => ::Thrift::Types::I64}, :optional => true},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
+    TXNIDS => {:type => ::Thrift::Types::LIST, :name => 'txnIds', :element => {:type => ::Thrift::Types::I64}, :optional => true},
     REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true},
-    TXNTOWRITEIDLIST => {:type => ::Thrift::Types::LIST, :name => 'txnToWriteIdList', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TxnToWriteId}, :optional => true}
+    SRCTXNTOWRITEIDLIST => {:type => ::Thrift::Types::LIST, :name => 'srcTxnToWriteIdList', :element => {:type => ::Thrift::Types::STRUCT, :class => ::TxnToWriteId}, :optional => true}
   }
 
   def struct_fields; FIELDS; end

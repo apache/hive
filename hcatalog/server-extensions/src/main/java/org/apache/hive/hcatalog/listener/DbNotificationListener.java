@@ -466,7 +466,8 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   }
 
   @Override
-  public void onCommitTxn(CommitTxnEvent commitTxnEvent, Connection dbConn, SQLGenerator sqlGenerator) throws MetaException {
+  public void onCommitTxn(CommitTxnEvent commitTxnEvent, Connection dbConn, SQLGenerator sqlGenerator)
+          throws MetaException {
     NotificationEvent event =
             new NotificationEvent(0, now(), EventType.COMMIT_TXN.toString(), msgFactory.buildCommitTxnMessage(
                     commitTxnEvent.getTxnId())
@@ -480,7 +481,8 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   }
 
   @Override
-  public void onAbortTxn(AbortTxnEvent abortTxnEvent, Connection dbConn, SQLGenerator sqlGenerator) throws MetaException {
+  public void onAbortTxn(AbortTxnEvent abortTxnEvent, Connection dbConn, SQLGenerator sqlGenerator)
+          throws MetaException {
     NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ABORT_TXN.toString(), msgFactory.buildAbortTxnMessage(
             abortTxnEvent.getTxnId())
@@ -598,7 +600,8 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
    * @throws MetaException
    */
   @Override
-  public void onAllocWriteId(AllocWriteIdEvent allocWriteIdEvent, Connection dbConn, SQLGenerator sqlGenerator) throws MetaException {
+  public void onAllocWriteId(AllocWriteIdEvent allocWriteIdEvent, Connection dbConn, SQLGenerator sqlGenerator)
+          throws MetaException {
     String tableName = allocWriteIdEvent.getTableName();
     String dbName = allocWriteIdEvent.getDbName();
     NotificationEvent event =
@@ -628,8 +631,8 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     return "'" + input + "'";
   }
 
-  private void addNotificationLog(NotificationEvent event, ListenerEvent listenerEvent, Connection dbConn, SQLGenerator sqlGenerator)
-          throws MetaException, SQLException {
+  private void addNotificationLog(NotificationEvent event, ListenerEvent listenerEvent, Connection dbConn,
+                                  SQLGenerator sqlGenerator) throws MetaException, SQLException {
     if ((dbConn == null) || (sqlGenerator == null)) {
       LOG.info("connection or sql generator is not set so executing sql via DN");
       process(event, listenerEvent);

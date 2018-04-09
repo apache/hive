@@ -1546,70 +1546,127 @@ public class TestTxnHandler {
     Assert.assertTrue("regex should be retryable", result);
   }
 
-  private List<Long> openTxnForTest(int startId, int numTxn, String replPolicy)
-          throws MetaException, NoSuchTxnException {
+  private List<Long> replOpenTxnForTest(long startId, int numTxn, String replPolicy)
+          throws Exception {
     conf.setIntVar(HiveConf.ConfVars.HIVE_TXN_MAX_OPEN_BATCH, numTxn);
-    int lastId = startId + numTxn;
+    long lastId = startId + numTxn - 1;
     OpenTxnRequest rqst = new OpenTxnRequest(numTxn, "me", "localhost");
     rqst.setReplPolicy(replPolicy);
     rqst.setReplSrcTxnIds(LongStream.rangeClosed(startId, lastId)
             .boxed().collect(Collectors.toList()));
+    int numTxnPresentStart = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXNS");
     OpenTxnsResponse openedTxns = txnHandler.openTxns(rqst);
     List<Long> txnList = openedTxns.getTxn_ids();
     assertEquals(txnList.size(), numTxn);
-    for (long i = 0; i < numTxn; i++) {
-      long txnId = txnList.get((int) i);
-      assertEquals(i + startId, txnId);
-    }
+    int numTxnPresentNow = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXNS");
+    assertEquals(numTxn + numTxnPresentStart, numTxnPresentNow);
+
+    checkReplTxnForTest(startId, lastId, replPolicy, txnList);
     return txnList;
+  }
+
+  private void replAbortTxnForTest(List<Long> txnList, String replPolicy)
+          throws Exception {
+    for (Long txnId : txnList) {
+      AbortTxnRequest rqst = new AbortTxnRequest(txnId);
+      rqst.setReplPolicy(replPolicy);
+      txnHandler.abortTxn(rqst);
+    }
+    checkReplTxnForTest(txnList.get(0), txnList.get(txnList.size() - 1), replPolicy, new ArrayList<>());
+  }
+
+  private void checkReplTxnForTest(Long startTxnId, Long endTxnId, String replPolicy, List<Long> targetTxnId)
+          throws Exception {
+    int numReplTxns = TxnDbUtil.countQueryAgent(conf, "select count(*) from REPL_TXN_MAP where " +
+            " RTM_SRC_TXN_ID >=  " + startTxnId + "and RTM_SRC_TXN_ID <=  " + endTxnId +
+            " and RTM_REPL_POLICY = \'" + replPolicy + "\'");
+    assertEquals(numReplTxns, targetTxnId.size());
+
+    String[] output = TxnDbUtil.queryToString(conf, "select RTM_TARGET_TXN_ID from REPL_TXN_MAP where " +
+            " RTM_SRC_TXN_ID >=  " + startTxnId + "and RTM_SRC_TXN_ID <=  " + endTxnId +
+            " and RTM_REPL_POLICY = \'" + replPolicy + "\'").split("\n");
+
+    for (int idx = 1; idx < output.length; idx++) {
+      long txnId = Long.parseLong(output[idx].trim());
+      assertEquals(txnId, targetTxnId.get(idx-1).longValue());
+    }
   }
 
   @Test
   public void testReplOpenTxn() throws Exception {
     int numTxn = 50000;
-    List<Long> txnList = openTxnForTest(1, numTxn, "default.*");
+    int numTxnPresentStart = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXNS");
+    String[] output = TxnDbUtil.queryToString(conf, "select ntxn_next from NEXT_TXN_ID").split("\n");
+    long startTxnId = Long.parseLong(output[1].trim());
+    List<Long> txnList = replOpenTxnForTest(startTxnId, numTxn, "default.*");
     assert(txnList.size() == numTxn);
     txnHandler.abortTxns(new AbortTxnsRequest(txnList));
   }
 
   @Test
   public void testReplAllocWriteId() throws Exception {
-    int numTxn = 1000;
-    List<Long> txnList = openTxnForTest(1, numTxn, "default.*");
+    int numTxn = 10;
+    String[] output = TxnDbUtil.queryToString(conf, "select ntxn_next from NEXT_TXN_ID").split("\n");
+    long startTxnId = Long.parseLong(output[1].trim());
+    List<Long> txnList = replOpenTxnForTest(startTxnId, numTxn, "default.*");
     assert(txnList.size() == numTxn);
 
+    // Transaction is started as replication task and alloc write id as normal flow to get the txn to write id list
     List<TxnToWriteId> txnToWriteId;
     AllocateTableWriteIdsRequest allocMsg = new AllocateTableWriteIdsRequest("default", "tbl");
     allocMsg.setTxnIds(txnList);
     txnToWriteId = txnHandler.allocateTableWriteIds(allocMsg).getTxnToWriteIds();
     assert txnToWriteId.size() == numTxn;
 
-    // idempotent case for default db
+    // idempotent case for default db through repl task flow
     allocMsg = new AllocateTableWriteIdsRequest("default", "tbl");
     allocMsg.setReplPolicy("default.*");
-    allocMsg.setTxnToWriteIdList(txnToWriteId);
+    allocMsg.setSrcTxnToWriteIdList(txnToWriteId);
     List<TxnToWriteId> txnToWriteId1 = txnHandler.allocateTableWriteIds(allocMsg).getTxnToWriteIds();
-    assert (txnToWriteId.equals(txnToWriteId1));
+    assert (txnToWriteId1.isEmpty());
 
-    txnHandler.abortTxns(new AbortTxnsRequest(txnList));
-    txnList = openTxnForTest(numTxn+1, numTxn, "default1.*");
+    replAbortTxnForTest(txnList, "default.*");
+
+    output = TxnDbUtil.queryToString(conf, "select ntxn_next from NEXT_TXN_ID").split("\n");
+    startTxnId = Long.parseLong(output[1].trim());
+    txnList = replOpenTxnForTest(startTxnId, numTxn, "default1.*");
     assert(txnList.size() == numTxn);
     txnToWriteId = new ArrayList<>();
 
     for (int idx = 0; idx < txnList.size(); idx++) {
-      txnToWriteId.add(new TxnToWriteId(txnList.get(idx), idx+1));
+      txnToWriteId.add(new TxnToWriteId(startTxnId+idx, idx+1));
     }
     allocMsg = new AllocateTableWriteIdsRequest("default1", "tbl1");
     allocMsg.setReplPolicy("default1.*");
-    allocMsg.setTxnToWriteIdList(txnToWriteId);
+    allocMsg.setSrcTxnToWriteIdList(txnToWriteId);
     txnToWriteId1 = txnHandler.allocateTableWriteIds(allocMsg).getTxnToWriteIds();
-    assert (txnToWriteId.equals(txnToWriteId1));
+    for (int idx = 0; idx < txnList.size(); idx++) {
+      assertEquals(txnToWriteId1.get(idx).getWriteId(), txnToWriteId.get(idx).getWriteId());
+      assert txnToWriteId1.get(idx).getTxnId() == txnList.get(idx);
+    }
 
     // idempotent case for default1 db
     txnToWriteId1 = txnHandler.allocateTableWriteIds(allocMsg).getTxnToWriteIds();
-    assert (txnToWriteId.equals(txnToWriteId1));
+    assert (txnToWriteId1.isEmpty());
 
-    txnHandler.abortTxns(new AbortTxnsRequest(txnList));
+    //invalid case
+    boolean failed = false;
+    txnToWriteId = new ArrayList<>();
+    txnToWriteId.add(new TxnToWriteId(startTxnId, 2*numTxn+1));
+    allocMsg = new AllocateTableWriteIdsRequest("default1", "tbl2");
+    allocMsg.setReplPolicy("default1.*");
+    allocMsg.setSrcTxnToWriteIdList(txnToWriteId);
+    try {
+      txnHandler.allocateTableWriteIds(allocMsg).getTxnToWriteIds();
+    } catch (IllegalStateException e) {
+      failed = true;
+    }
+    assertEquals (true, failed);
+    replAbortTxnForTest(txnList, "default1.*");
+
+    // Test for aborted transactions
+    txnToWriteId1 = txnHandler.allocateTableWriteIds(allocMsg).getTxnToWriteIds();
+    assert (txnToWriteId1.isEmpty());
   }
 
   private void updateTxns(Connection conn) throws SQLException {

@@ -884,11 +884,13 @@ struct GetValidWriteIdsResponse {
 
 // Request msg to allocate table write ids for the given list of txns
 struct AllocateTableWriteIdsRequest {
-    1: optional list<i64> txnIds,
-    2: required string dbName,
-    3: required string tableName,
+    1: required string dbName,
+    2: required string tableName,
+    3: optional list<i64> txnIds,
     4: optional string replPolicy,
-    5: optional list<TxnToWriteId> txnToWriteIdList,
+    // The list is assumed to be soretd by txnids. The write id list is assumed to be sorted in ascending
+    //order and also to be contiguous.
+    5: optional list<TxnToWriteId> srcTxnToWriteIdList,
 }
 
 // Map for allocated write id against the txn for which it is allocated

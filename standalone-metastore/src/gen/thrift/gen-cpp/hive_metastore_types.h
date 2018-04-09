@@ -7115,10 +7115,10 @@ inline std::ostream& operator<<(std::ostream& out, const GetValidWriteIdsRespons
 }
 
 typedef struct _AllocateTableWriteIdsRequest__isset {
-  _AllocateTableWriteIdsRequest__isset() : txnIds(false), replPolicy(false), txnToWriteIdList(false) {}
+  _AllocateTableWriteIdsRequest__isset() : txnIds(false), replPolicy(false), srcTxnToWriteIdList(false) {}
   bool txnIds :1;
   bool replPolicy :1;
-  bool txnToWriteIdList :1;
+  bool srcTxnToWriteIdList :1;
 } _AllocateTableWriteIdsRequest__isset;
 
 class AllocateTableWriteIdsRequest {
@@ -7130,41 +7130,41 @@ class AllocateTableWriteIdsRequest {
   }
 
   virtual ~AllocateTableWriteIdsRequest() throw();
-  std::vector<int64_t>  txnIds;
   std::string dbName;
   std::string tableName;
+  std::vector<int64_t>  txnIds;
   std::string replPolicy;
-  std::vector<TxnToWriteId>  txnToWriteIdList;
+  std::vector<TxnToWriteId>  srcTxnToWriteIdList;
 
   _AllocateTableWriteIdsRequest__isset __isset;
-
-  void __set_txnIds(const std::vector<int64_t> & val);
 
   void __set_dbName(const std::string& val);
 
   void __set_tableName(const std::string& val);
 
+  void __set_txnIds(const std::vector<int64_t> & val);
+
   void __set_replPolicy(const std::string& val);
 
-  void __set_txnToWriteIdList(const std::vector<TxnToWriteId> & val);
+  void __set_srcTxnToWriteIdList(const std::vector<TxnToWriteId> & val);
 
   bool operator == (const AllocateTableWriteIdsRequest & rhs) const
   {
-    if (__isset.txnIds != rhs.__isset.txnIds)
-      return false;
-    else if (__isset.txnIds && !(txnIds == rhs.txnIds))
-      return false;
     if (!(dbName == rhs.dbName))
       return false;
     if (!(tableName == rhs.tableName))
+      return false;
+    if (__isset.txnIds != rhs.__isset.txnIds)
+      return false;
+    else if (__isset.txnIds && !(txnIds == rhs.txnIds))
       return false;
     if (__isset.replPolicy != rhs.__isset.replPolicy)
       return false;
     else if (__isset.replPolicy && !(replPolicy == rhs.replPolicy))
       return false;
-    if (__isset.txnToWriteIdList != rhs.__isset.txnToWriteIdList)
+    if (__isset.srcTxnToWriteIdList != rhs.__isset.srcTxnToWriteIdList)
       return false;
-    else if (__isset.txnToWriteIdList && !(txnToWriteIdList == rhs.txnToWriteIdList))
+    else if (__isset.srcTxnToWriteIdList && !(srcTxnToWriteIdList == rhs.srcTxnToWriteIdList))
       return false;
     return true;
   }

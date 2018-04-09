@@ -16920,10 +16920,6 @@ class AllocateTableWriteIdsRequest {
   static $_TSPEC;
 
   /**
-   * @var int[]
-   */
-  public $txnIds = null;
-  /**
    * @var string
    */
   public $dbName = null;
@@ -16932,18 +16928,30 @@ class AllocateTableWriteIdsRequest {
    */
   public $tableName = null;
   /**
+   * @var int[]
+   */
+  public $txnIds = null;
+  /**
    * @var string
    */
   public $replPolicy = null;
   /**
    * @var \metastore\TxnToWriteId[]
    */
-  public $txnToWriteIdList = null;
+  public $srcTxnToWriteIdList = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
         1 => array(
+          'var' => 'dbName',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'tableName',
+          'type' => TType::STRING,
+          ),
+        3 => array(
           'var' => 'txnIds',
           'type' => TType::LST,
           'etype' => TType::I64,
@@ -16951,20 +16959,12 @@ class AllocateTableWriteIdsRequest {
             'type' => TType::I64,
             ),
           ),
-        2 => array(
-          'var' => 'dbName',
-          'type' => TType::STRING,
-          ),
-        3 => array(
-          'var' => 'tableName',
-          'type' => TType::STRING,
-          ),
         4 => array(
           'var' => 'replPolicy',
           'type' => TType::STRING,
           ),
         5 => array(
-          'var' => 'txnToWriteIdList',
+          'var' => 'srcTxnToWriteIdList',
           'type' => TType::LST,
           'etype' => TType::STRUCT,
           'elem' => array(
@@ -16975,20 +16975,20 @@ class AllocateTableWriteIdsRequest {
         );
     }
     if (is_array($vals)) {
-      if (isset($vals['txnIds'])) {
-        $this->txnIds = $vals['txnIds'];
-      }
       if (isset($vals['dbName'])) {
         $this->dbName = $vals['dbName'];
       }
       if (isset($vals['tableName'])) {
         $this->tableName = $vals['tableName'];
       }
+      if (isset($vals['txnIds'])) {
+        $this->txnIds = $vals['txnIds'];
+      }
       if (isset($vals['replPolicy'])) {
         $this->replPolicy = $vals['replPolicy'];
       }
-      if (isset($vals['txnToWriteIdList'])) {
-        $this->txnToWriteIdList = $vals['txnToWriteIdList'];
+      if (isset($vals['srcTxnToWriteIdList'])) {
+        $this->srcTxnToWriteIdList = $vals['srcTxnToWriteIdList'];
       }
     }
   }
@@ -17013,6 +17013,20 @@ class AllocateTableWriteIdsRequest {
       switch ($fid)
       {
         case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->dbName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tableName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
           if ($ftype == TType::LST) {
             $this->txnIds = array();
             $_size544 = 0;
@@ -17029,20 +17043,6 @@ class AllocateTableWriteIdsRequest {
             $xfer += $input->skip($ftype);
           }
           break;
-        case 2:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->dbName);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 3:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->tableName);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
         case 4:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->replPolicy);
@@ -17052,7 +17052,7 @@ class AllocateTableWriteIdsRequest {
           break;
         case 5:
           if ($ftype == TType::LST) {
-            $this->txnToWriteIdList = array();
+            $this->srcTxnToWriteIdList = array();
             $_size550 = 0;
             $_etype553 = 0;
             $xfer += $input->readListBegin($_etype553, $_size550);
@@ -17061,7 +17061,7 @@ class AllocateTableWriteIdsRequest {
               $elem555 = null;
               $elem555 = new \metastore\TxnToWriteId();
               $xfer += $elem555->read($input);
-              $this->txnToWriteIdList []= $elem555;
+              $this->srcTxnToWriteIdList []= $elem555;
             }
             $xfer += $input->readListEnd();
           } else {
@@ -17081,11 +17081,21 @@ class AllocateTableWriteIdsRequest {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('AllocateTableWriteIdsRequest');
+    if ($this->dbName !== null) {
+      $xfer += $output->writeFieldBegin('dbName', TType::STRING, 1);
+      $xfer += $output->writeString($this->dbName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->tableName !== null) {
+      $xfer += $output->writeFieldBegin('tableName', TType::STRING, 2);
+      $xfer += $output->writeString($this->tableName);
+      $xfer += $output->writeFieldEnd();
+    }
     if ($this->txnIds !== null) {
       if (!is_array($this->txnIds)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('txnIds', TType::LST, 1);
+      $xfer += $output->writeFieldBegin('txnIds', TType::LST, 3);
       {
         $output->writeListBegin(TType::I64, count($this->txnIds));
         {
@@ -17098,30 +17108,20 @@ class AllocateTableWriteIdsRequest {
       }
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->dbName !== null) {
-      $xfer += $output->writeFieldBegin('dbName', TType::STRING, 2);
-      $xfer += $output->writeString($this->dbName);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->tableName !== null) {
-      $xfer += $output->writeFieldBegin('tableName', TType::STRING, 3);
-      $xfer += $output->writeString($this->tableName);
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->replPolicy !== null) {
       $xfer += $output->writeFieldBegin('replPolicy', TType::STRING, 4);
       $xfer += $output->writeString($this->replPolicy);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->txnToWriteIdList !== null) {
-      if (!is_array($this->txnToWriteIdList)) {
+    if ($this->srcTxnToWriteIdList !== null) {
+      if (!is_array($this->srcTxnToWriteIdList)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
       }
-      $xfer += $output->writeFieldBegin('txnToWriteIdList', TType::LST, 5);
+      $xfer += $output->writeFieldBegin('srcTxnToWriteIdList', TType::LST, 5);
       {
-        $output->writeListBegin(TType::STRUCT, count($this->txnToWriteIdList));
+        $output->writeListBegin(TType::STRUCT, count($this->srcTxnToWriteIdList));
         {
-          foreach ($this->txnToWriteIdList as $iter557)
+          foreach ($this->srcTxnToWriteIdList as $iter557)
           {
             $xfer += $iter557->write($output);
           }

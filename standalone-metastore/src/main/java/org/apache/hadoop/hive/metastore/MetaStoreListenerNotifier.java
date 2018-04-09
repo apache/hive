@@ -271,8 +271,8 @@ public class MetaStoreListenerNotifier {
   }
 
   /**
-   * Notify a list of listeners about a specific metastore event to be executed within a txn. Each listener notified might update
-   * the (ListenerEvent) event by setting a parameter key/value pair. These updated parameters will
+   * Notify a list of listeners about a specific metastore event to be executed within a txn. Each listener notified
+   * might update the (ListenerEvent) event by setting a parameter key/value pair. These updated parameters will
    * be returned to the caller.
    *
    * @param listeners List of MetaStoreEventListener listeners.
@@ -287,7 +287,7 @@ public class MetaStoreListenerNotifier {
   public static Map<String, String> notifyEventWithDirectSql(List<? extends MetaStoreEventListener> listeners,
                                                              EventType eventType,
                                                              ListenerEvent event,
-                                                             Connection dbConn, SQLGenerator sqlGenerator) throws MetaException {
+                                                   Connection dbConn, SQLGenerator sqlGenerator) throws MetaException {
 
     Preconditions.checkNotNull(listeners, "Listeners must not be null.");
     Preconditions.checkNotNull(event, "The event must not be null.");

@@ -11834,28 +11834,28 @@ class GetValidWriteIdsResponse:
 class AllocateTableWriteIdsRequest:
   """
   Attributes:
-   - txnIds
    - dbName
    - tableName
+   - txnIds
    - replPolicy
-   - txnToWriteIdList
+   - srcTxnToWriteIdList
   """
 
   thrift_spec = (
     None, # 0
-    (1, TType.LIST, 'txnIds', (TType.I64,None), None, ), # 1
-    (2, TType.STRING, 'dbName', None, None, ), # 2
-    (3, TType.STRING, 'tableName', None, None, ), # 3
+    (1, TType.STRING, 'dbName', None, None, ), # 1
+    (2, TType.STRING, 'tableName', None, None, ), # 2
+    (3, TType.LIST, 'txnIds', (TType.I64,None), None, ), # 3
     (4, TType.STRING, 'replPolicy', None, None, ), # 4
-    (5, TType.LIST, 'txnToWriteIdList', (TType.STRUCT,(TxnToWriteId, TxnToWriteId.thrift_spec)), None, ), # 5
+    (5, TType.LIST, 'srcTxnToWriteIdList', (TType.STRUCT,(TxnToWriteId, TxnToWriteId.thrift_spec)), None, ), # 5
   )
 
-  def __init__(self, txnIds=None, dbName=None, tableName=None, replPolicy=None, txnToWriteIdList=None,):
-    self.txnIds = txnIds
+  def __init__(self, dbName=None, tableName=None, txnIds=None, replPolicy=None, srcTxnToWriteIdList=None,):
     self.dbName = dbName
     self.tableName = tableName
+    self.txnIds = txnIds
     self.replPolicy = replPolicy
-    self.txnToWriteIdList = txnToWriteIdList
+    self.srcTxnToWriteIdList = srcTxnToWriteIdList
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -11867,6 +11867,16 @@ class AllocateTableWriteIdsRequest:
       if ftype == TType.STOP:
         break
       if fid == 1:
+        if ftype == TType.STRING:
+          self.dbName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.tableName = iprot.readString()
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
         if ftype == TType.LIST:
           self.txnIds = []
           (_etype547, _size544) = iprot.readListBegin()
@@ -11876,16 +11886,6 @@ class AllocateTableWriteIdsRequest:
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
-      elif fid == 2:
-        if ftype == TType.STRING:
-          self.dbName = iprot.readString()
-        else:
-          iprot.skip(ftype)
-      elif fid == 3:
-        if ftype == TType.STRING:
-          self.tableName = iprot.readString()
-        else:
-          iprot.skip(ftype)
       elif fid == 4:
         if ftype == TType.STRING:
           self.replPolicy = iprot.readString()
@@ -11893,12 +11893,12 @@ class AllocateTableWriteIdsRequest:
           iprot.skip(ftype)
       elif fid == 5:
         if ftype == TType.LIST:
-          self.txnToWriteIdList = []
+          self.srcTxnToWriteIdList = []
           (_etype553, _size550) = iprot.readListBegin()
           for _i554 in xrange(_size550):
             _elem555 = TxnToWriteId()
             _elem555.read(iprot)
-            self.txnToWriteIdList.append(_elem555)
+            self.srcTxnToWriteIdList.append(_elem555)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
@@ -11912,29 +11912,29 @@ class AllocateTableWriteIdsRequest:
       oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
       return
     oprot.writeStructBegin('AllocateTableWriteIdsRequest')
+    if self.dbName is not None:
+      oprot.writeFieldBegin('dbName', TType.STRING, 1)
+      oprot.writeString(self.dbName)
+      oprot.writeFieldEnd()
+    if self.tableName is not None:
+      oprot.writeFieldBegin('tableName', TType.STRING, 2)
+      oprot.writeString(self.tableName)
+      oprot.writeFieldEnd()
     if self.txnIds is not None:
-      oprot.writeFieldBegin('txnIds', TType.LIST, 1)
+      oprot.writeFieldBegin('txnIds', TType.LIST, 3)
       oprot.writeListBegin(TType.I64, len(self.txnIds))
       for iter556 in self.txnIds:
         oprot.writeI64(iter556)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
-    if self.dbName is not None:
-      oprot.writeFieldBegin('dbName', TType.STRING, 2)
-      oprot.writeString(self.dbName)
-      oprot.writeFieldEnd()
-    if self.tableName is not None:
-      oprot.writeFieldBegin('tableName', TType.STRING, 3)
-      oprot.writeString(self.tableName)
-      oprot.writeFieldEnd()
     if self.replPolicy is not None:
       oprot.writeFieldBegin('replPolicy', TType.STRING, 4)
       oprot.writeString(self.replPolicy)
       oprot.writeFieldEnd()
-    if self.txnToWriteIdList is not None:
-      oprot.writeFieldBegin('txnToWriteIdList', TType.LIST, 5)
-      oprot.writeListBegin(TType.STRUCT, len(self.txnToWriteIdList))
-      for iter557 in self.txnToWriteIdList:
+    if self.srcTxnToWriteIdList is not None:
+      oprot.writeFieldBegin('srcTxnToWriteIdList', TType.LIST, 5)
+      oprot.writeListBegin(TType.STRUCT, len(self.srcTxnToWriteIdList))
+      for iter557 in self.srcTxnToWriteIdList:
         iter557.write(oprot)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
@@ -11951,11 +11951,11 @@ class AllocateTableWriteIdsRequest:
 
   def __hash__(self):
     value = 17
-    value = (value * 31) ^ hash(self.txnIds)
     value = (value * 31) ^ hash(self.dbName)
     value = (value * 31) ^ hash(self.tableName)
+    value = (value * 31) ^ hash(self.txnIds)
     value = (value * 31) ^ hash(self.replPolicy)
-    value = (value * 31) ^ hash(self.txnToWriteIdList)
+    value = (value * 31) ^ hash(self.srcTxnToWriteIdList)
     return value
 
   def __repr__(self):
