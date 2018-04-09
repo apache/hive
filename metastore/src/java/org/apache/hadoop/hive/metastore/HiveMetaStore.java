@@ -407,6 +407,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return transactionalListeners;
     }
 
+    public List<MetaStoreEventListener> getListeners() {
+      return listeners;
+    }
+
     @Override
     public void init() throws MetaException {
       initListeners = MetaStoreUtils.getMetaStoreListeners(
@@ -4021,12 +4025,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         alterHandler.alterTable(getMS(), wh, dbname, name, newTable,
                 envContext, this);
         success = true;
-        if (!listeners.isEmpty()) {
-          MetaStoreListenerNotifier.notifyEvent(listeners,
-                                                EventType.ALTER_TABLE,
-                                                new AlterTableEvent(oldt, newTable, true, this),
-                                                envContext);
-        }
       } catch (NoSuchObjectException e) {
         // thrown when the table to be altered does not exist
         ex = e;
