@@ -472,6 +472,7 @@ public class TestDbNotificationListener {
     assertEquals(TableType.MANAGED_TABLE.toString(), alterTableMessage.getTableType());
 
     // Verify the eventID was passed to the non-transactional listener
+    MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.ALTER_TABLE, firstEventId + 2);
     MockMetaStoreEventListener.popAndVerifyLastEventId(EventType.CREATE_TABLE, firstEventId + 1);
 
     // When hive.metastore.transactional.event.listeners is set,
