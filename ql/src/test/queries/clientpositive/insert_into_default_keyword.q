@@ -114,3 +114,52 @@ INSERT INTO tpart partition(ds='1')(i,j) values(10, DEFAULT);
 SELECT * FROM tpart;
 TRUNCATE table tpart;
 DROP TABLE tpart;
+
+-- MEREGE
+set hive.mapred.mode=nonstrict;
+set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+
+create table nonacid (key int, a1 string, value string) stored as orc;
+insert into nonacid values(1, 'a11', 'val1');
+insert into nonacid values(2, 'a12', 'val2');
+
+create table acidTable(key int NOT NULL enable, a1 string DEFAULT 'a1', value string)
+clustered by (value) into 2 buckets stored as orc
+tblproperties ("transactional"="true");
+insert into acidTable values(1, 'a10','val100');
+
+-- only insert
+explain MERGE INTO acidTable as t using nonacid as s ON t.key = s.key
+WHEN NOT MATCHED THEN INSERT VALUES (s.key, DEFAULT, DEFAULT);
+
+MERGE INTO acidTable as t using nonacid as s ON t.key = s.key
+WHEN NOT MATCHED THEN INSERT VALUES (s.key, DEFAULT, DEFAULT);
+select * from acidTable;
+truncate table acidTable;
+insert into acidTable values(1, 'a10','val100');
+
+-- insert + update + delete
+explain MERGE INTO acidTable as t using nonacid as s ON t.key = s.key
+WHEN MATCHED AND s.key < 3 THEN DELETE
+WHEN MATCHED AND s.key > 3 THEN UPDATE set a1 = DEFAULT
+WHEN NOT MATCHED THEN INSERT VALUES (s.key, s.a1, DEFAULT);
+MERGE INTO acidTable as t using nonacid as s ON t.key = s.key
+WHEN MATCHED AND s.key < 3 THEN DELETE
+WHEN MATCHED AND s.key > 3 THEN UPDATE set a1 = DEFAULT
+WHEN NOT MATCHED THEN INSERT VALUES (s.key, s.a1, DEFAULT);
+select * from acidTable;
+truncate table acidTable;
+
+create table acidTable2(key int DEFAULT 404) clustered by (key) into 2 buckets stored as orc
+tblproperties ("transactional"="true");
+
+explain MERGE INTO acidTable2 as t using nonacid as s ON t.key = s.key
+WHEN NOT MATCHED THEN INSERT VALUES (DEFAULT);
+MERGE INTO acidTable2 as t using nonacid as s ON t.key = s.key
+WHEN NOT MATCHED THEN INSERT VALUES (DEFAULT);
+select * from acidTable2;
+
+DROP TABLE acidTable;
+DROP TABLE acidTable2;
+DROP TABLE nonacid;
