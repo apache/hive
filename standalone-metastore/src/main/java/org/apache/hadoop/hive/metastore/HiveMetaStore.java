@@ -498,6 +498,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public List<MetaStoreEventListener> getListeners() {
+      return listeners;
+    }
+
+    @Override
     public void init() throws MetaException {
       initListeners = MetaStoreUtils.getMetaStoreListeners(
           MetaStoreInitListener.class, conf, MetastoreConf.getVar(conf, ConfVars.INIT_HOOKS));
@@ -4846,31 +4851,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         alterHandler.alterTable(getMS(), wh, catName, dbname, name, newTable,
                 envContext, this);
         success = true;
-        if (!listeners.isEmpty()) {
-          if (oldt.getDbName().equalsIgnoreCase(newTable.getDbName())) {
-            MetaStoreListenerNotifier.notifyEvent(listeners,
-                    EventType.ALTER_TABLE,
-                    new AlterTableEvent(oldt, newTable, false, true, this),
-                    envContext);
-          } else {
-            MetaStoreListenerNotifier.notifyEvent(listeners,
-                    EventType.DROP_TABLE,
-                    new DropTableEvent(oldt, true, false, this),
-                    envContext);
-            MetaStoreListenerNotifier.notifyEvent(listeners,
-                    EventType.CREATE_TABLE,
-                    new CreateTableEvent(newTable, true, this),
-                    envContext);
-            if (newTable.getPartitionKeysSize() != 0) {
-              List<Partition> partitions = getMS().getPartitions(catName,
-                  newTable.getDbName(), newTable.getTableName(), -1);
-              MetaStoreListenerNotifier.notifyEvent(listeners,
-                      EventType.ADD_PARTITION,
-                      new AddPartitionEvent(newTable, partitions, true, this),
-                      envContext);
-            }
-          }
-        }
       } catch (NoSuchObjectException e) {
         // thrown when the table to be altered does not exist
         ex = e;
