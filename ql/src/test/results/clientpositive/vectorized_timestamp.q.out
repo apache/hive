@@ -76,7 +76,7 @@ POSTHOOK: query: SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test_n2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_n2
 #### A masked pattern was here ####
-0001-01-01 00:00:00	9999-12-31 23:59:59.999999999	3652060 23:59:59.999999999
+0001-01-01 00:00:00	9999-12-31 23:59:59.999999999	3652058 23:59:59.999999999
 PREHOOK: query: SELECT ts FROM test_n2 WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_n2
@@ -201,7 +201,7 @@ POSTHOOK: query: SELECT MIN(ts), MAX(ts), MAX(ts) - MIN(ts) FROM test_n2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_n2
 #### A masked pattern was here ####
-0001-01-01 00:00:00	9999-12-31 23:59:59.999999999	3652060 23:59:59.999999999
+0001-01-01 00:00:00	9999-12-31 23:59:59.999999999	3652058 23:59:59.999999999
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT ts FROM test_n2 WHERE ts IN (timestamp '0001-01-01 00:00:00.000000000', timestamp '0002-02-02 00:00:00.000000000')
 PREHOOK: type: QUERY
@@ -230,8 +230,8 @@ STAGE PLANS:
               Filter Vectorization:
                   className: VectorFilterOperator
                   native: true
-                  predicateExpression: FilterTimestampColumnInList(col 0:timestamp, values [0001-01-01 00:00:00.0, 0002-02-02 00:00:00.0])
-              predicate: (ts) IN (TIMESTAMP'0001-01-01 00:00:00.0', TIMESTAMP'0002-02-02 00:00:00.0') (type: boolean)
+                  predicateExpression: FilterTimestampColumnInList(col 0:timestamp, values [0001-01-02 16:00:00.0, 0002-02-03 16:00:00.0])
+              predicate: (ts) IN (TIMESTAMP'0001-01-01 00:00:00', TIMESTAMP'0002-02-02 00:00:00') (type: boolean)
               Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: ts (type: timestamp)
@@ -388,7 +388,7 @@ POSTHOOK: query: SELECT AVG(ts), CAST(AVG(ts) AS TIMESTAMP) FROM test_n2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_n2
 #### A masked pattern was here ####
-9.56332944E10	5000-07-01 13:00:00
+9.5633352E10	5000-07-02 12:00:00
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT variance(ts), var_pop(ts), var_samp(ts), std(ts), stddev(ts), stddev_pop(ts), stddev_samp(ts) FROM test_n2
 PREHOOK: type: QUERY
@@ -495,4 +495,4 @@ POSTHOOK: query: SELECT variance(ts), var_pop(ts), var_samp(ts), std(ts), stddev
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_n2
 #### A masked pattern was here ####
-2.489106846793884E22	2.489106846793884E22	4.978213693587768E22	1.577690352E11	1.577690352E11	1.577690352E11	2.2311910930235822E11
+2.4891041205457024E22	2.4891041205457024E22	4.978208241091405E22	1.577689488E11	1.577689488E11	1.577689488E11	2.2311898711430646E11

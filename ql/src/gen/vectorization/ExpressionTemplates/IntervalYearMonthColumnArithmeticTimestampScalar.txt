@@ -182,7 +182,7 @@ public class <ClassName> extends VectorExpression {
 
   @Override
   public String vectorExpressionParameters() {
-    return getColumnParamString(0, colNum) + ", val " + value.toString();
+    return getColumnParamString(0, colNum) + ", val " + TimestampUtils.timestampScalarTypeToString(value);
   }
 
   @Override

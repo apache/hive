@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 
 /**
  * To be used to cast timestamp to decimal.
@@ -40,6 +40,6 @@ public class CastTimestampToDate extends FuncTimestampToLong {
   @Override
   protected void func(LongColumnVector outV, TimestampColumnVector inV, int i) {
 
-    outV.vector[i] = DateWritable.millisToDays(inV.getTime(i));
+    outV.vector[i] = DateWritableV2.millisToDays(inV.getTime(i));
   }
 }

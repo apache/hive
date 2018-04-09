@@ -29,8 +29,10 @@ import static org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveO
 
 import java.math.BigDecimal;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.TimeZone;
 
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -59,12 +61,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
     + " Example:\n"
     + "  > SELECT _FUNC_('1997-02-28 10:30:00', '1996-10-30');\n 3.94959677")
 public class GenericUDFMonthsBetween extends GenericUDF {
+
   private transient Converter[] tsConverters = new Converter[2];
   private transient PrimitiveCategory[] tsInputTypes = new PrimitiveCategory[2];
   private transient Converter[] dtConverters = new Converter[2];
   private transient PrimitiveCategory[] dtInputTypes = new PrimitiveCategory[2];
-  private final Calendar cal1 = Calendar.getInstance();
-  private final Calendar cal2 = Calendar.getInstance();
+  private final Calendar cal1 = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+  private final Calendar cal2 = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
   private final DoubleWritable output = new DoubleWritable();
   private boolean isRoundOffNeeded = true;
 
@@ -103,31 +106,33 @@ public class GenericUDFMonthsBetween extends GenericUDF {
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     // the function should support both short date and full timestamp format
     // time part of the timestamp should not be skipped
-    Date date1 = getTimestampValue(arguments, 0, tsConverters);
+    Timestamp date1 = getTimestampValue(arguments, 0, tsConverters);
     if (date1 == null) {
-      date1 = getDateValue(arguments, 0, dtInputTypes, dtConverters);
-      if (date1 == null) {
+      Date date = getDateValue(arguments, 0, dtInputTypes, dtConverters);
+      if (date == null) {
         return null;
       }
+      date1 = Timestamp.ofEpochMilli(date.toEpochMilli());
     }
 
-    Date date2 = getTimestampValue(arguments, 1, tsConverters);
+    Timestamp date2 = getTimestampValue(arguments, 1, tsConverters);
     if (date2 == null) {
-      date2 = getDateValue(arguments, 1, dtInputTypes, dtConverters);
-      if (date2 == null) {
+      Date date = getDateValue(arguments, 1, dtInputTypes, dtConverters);
+      if (date == null) {
         return null;
       }
+      date2 = Timestamp.ofEpochMilli(date.toEpochMilli());
     }
 
-    cal1.setTime(date1);
-    cal2.setTime(date2);
+    cal1.setTimeInMillis(date1.toEpochMilli());
+    cal2.setTimeInMillis(date2.toEpochMilli());
 
     // skip day/time part if both dates are end of the month
     // or the same day of the month
     int monDiffInt = (cal1.get(YEAR) - cal2.get(YEAR)) * 12 + (cal1.get(MONTH) - cal2.get(MONTH));
     if (cal1.get(DATE) == cal2.get(DATE)
         || (cal1.get(DATE) == cal1.getActualMaximum(DATE) && cal2.get(DATE) == cal2
-            .getActualMaximum(DATE))) {
+        .getActualMaximum(DATE))) {
       output.set(monDiffInt);
       return output;
     }

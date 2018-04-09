@@ -19,19 +19,19 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import junit.framework.TestCase;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
-import java.sql.Timestamp;
 
 public class TestGenericUDFAddMonths extends TestCase {
 
@@ -151,41 +151,29 @@ public class TestGenericUDFAddMonths extends TestCase {
   }
 
   public void testWrongDateStr() throws HiveException {
-    boolean caught = false;
-    try {
-      GenericUDFAddMonths udf = new GenericUDFAddMonths();
-      ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-      ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
-      ObjectInspector[] arguments = { valueOI0, valueOI1 };
+    GenericUDFAddMonths udf = new GenericUDFAddMonths();
+    ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
+    ObjectInspector[] arguments = { valueOI0, valueOI1 };
 
-      udf.initialize(arguments);
-      runAndVerify("2014-02-30", 1, "2014-04-02", udf);
-      runAndVerify("2014-02-32", 1, "2014-04-04", udf);
-      runAndVerify("2014-01", 1, null, udf);
-    } catch (HiveException e) {
-      caught = true;
-    }
-    assertTrue(caught);
+    udf.initialize(arguments);
+    runAndVerify("2014-02-30", 1, "2014-04-02", udf);
+    runAndVerify("2014-02-32", 1, "2014-04-04", udf);
+    runAndVerify("2014-01", 1, null, udf);
   }
 
   public void testWrongTsStr() throws HiveException {
-    boolean caught = false;
-    try {
-      GenericUDFAddMonths udf = new GenericUDFAddMonths();
-      ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
-      ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
-      ObjectInspector[] arguments = { valueOI0, valueOI1 };
+    GenericUDFAddMonths udf = new GenericUDFAddMonths();
+    ObjectInspector valueOI0 = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+    ObjectInspector valueOI1 = PrimitiveObjectInspectorFactory.writableIntObjectInspector;
+    ObjectInspector[] arguments = { valueOI0, valueOI1 };
 
-      udf.initialize(arguments);
+    udf.initialize(arguments);
 
-      runAndVerify("2014-02-30 10:30:00", 1, "2014-04-02", udf);
-      runAndVerify("2014-02-32 10:30:00", 1, "2014-04-04", udf);
-      runAndVerify("2014/01/31 10:30:00", 1, null, udf);
-      runAndVerify("2014-01-31T10:30:00", 1, "2014-02-28", udf);
-    } catch (HiveException e) {
-      caught = true;
-    }
-    assertTrue(caught);
+    runAndVerify("2014-02-30 10:30:00", 1, "2014-04-02", udf);
+    runAndVerify("2014-02-32 10:30:00", 1, "2014-04-04", udf);
+    runAndVerify("2014/01/31 10:30:00", 1, null, udf);
+    runAndVerify("2014-01-31T10:30:00", 1, "2014-02-28", udf);
   }
 
   public void testAddMonthsShort() throws HiveException {
@@ -250,7 +238,7 @@ public class TestGenericUDFAddMonths extends TestCase {
 
   private void runAndVerify(Timestamp ts, int months, Text dateFormat, String expResult, GenericUDF udf)
       throws HiveException {
-    DeferredObject valueObj0 = new DeferredJavaObject(new TimestampWritable(ts));
+    DeferredObject valueObj0 = new DeferredJavaObject(new TimestampWritableV2(ts));
     DeferredObject valueObj1 = new DeferredJavaObject(new IntWritable(months));
     DeferredObject valueObj2 = new DeferredJavaObject(dateFormat);
     DeferredObject[] args = {valueObj0, valueObj1, valueObj2};

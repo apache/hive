@@ -223,7 +223,8 @@ public class OrcEncodedDataConsumer
     TreeReaderFactory.Context context = new TreeReaderFactory.ReaderContext()
             .setSchemaEvolution(evolution).skipCorrupt(skipCorrupt)
             .writerTimeZone(stripeMetadata.getWriterTimezone())
-            .fileFormat(fileMetadata == null ? null : fileMetadata.getFileVersion());
+            .fileFormat(fileMetadata == null ? null : fileMetadata.getFileVersion())
+            .useUTCTimestamp(true);
     this.batchSchemas = includes.getBatchReaderTypes(fileSchema);
     StructTreeReader treeReader = EncodedTreeReaderFactory.createRootTreeReader(
         batchSchemas, stripeMetadata.getEncodings(), batch, codec, context, useDecimal64ColumnVectors);

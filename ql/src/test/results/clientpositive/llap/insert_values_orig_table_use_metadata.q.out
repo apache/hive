@@ -170,7 +170,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	1                   
-	totalSize           	295583              
+	totalSize           	295638              
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -205,9 +205,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-                  Statistics: Num rows: 5864 Data size: 2955830 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 5865 Data size: 2956380 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 5864 Data size: 2955830 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 5865 Data size: 2956380 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -376,7 +376,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	1                   
-	totalSize           	1663                
+	totalSize           	1652                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -411,9 +411,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-                  Statistics: Num rows: 32 Data size: 16630 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 32 Data size: 16520 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 32 Data size: 16630 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 32 Data size: 16520 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -509,7 +509,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	2                   
-	totalSize           	3326                
+	totalSize           	3304                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -544,9 +544,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-                  Statistics: Num rows: 65 Data size: 33260 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 65 Data size: 33040 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 65 Data size: 33260 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 65 Data size: 33040 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash
@@ -638,7 +638,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 	numFiles            	3                   
-	totalSize           	298909              
+	totalSize           	298943              
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -673,9 +673,9 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: acid_ivot
-                  Statistics: Num rows: 5930 Data size: 2989090 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 5931 Data size: 2989430 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    Statistics: Num rows: 5930 Data size: 2989090 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 5931 Data size: 2989430 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
                       mode: hash

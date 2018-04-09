@@ -18,12 +18,12 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
-import org.apache.calcite.util.TimestampWithTimeZoneString;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -41,12 +41,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 
 /**
  * deterministic version of UDFUnixTimeStamp. enforces argument
@@ -83,6 +81,8 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
             " only takes string/date/timestamp types, got " + argument.getTypeName());
       }
     }
+
+    formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 
     PrimitiveObjectInspector arg1OI = (PrimitiveObjectInspector) arguments[0];
     switch (arg1OI.getPrimitiveCategory()) {
@@ -171,7 +171,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
   }
 
   protected static void setValueFromTs(LongWritable value, Timestamp timestamp) {
-    value.set(timestamp.getTime() / 1000);
+    value.set(timestamp.toEpochSecond());
   }
 
   @Override

@@ -43,7 +43,7 @@ SELECT key,
        reflect2(ts, "getHours"),
        reflect2(ts, "getMinutes"),
        reflect2(ts, "getSeconds"),
-       reflect2(ts, "getTime")
+       reflect2(ts, "toEpochMilli")
 FROM (select cast(key as int) key, value, cast('2013-02-15 19:41:20' as timestamp) ts from src) a LIMIT 5
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED
@@ -77,7 +77,7 @@ SELECT key,
        reflect2(ts, "getHours"),
        reflect2(ts, "getMinutes"),
        reflect2(ts, "getSeconds"),
-       reflect2(ts, "getTime")
+       reflect2(ts, "toEpochMilli")
 FROM (select cast(key as int) key, value, cast('2013-02-15 19:41:20' as timestamp) ts from src) a LIMIT 5
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
@@ -93,7 +93,7 @@ STAGE PLANS:
           Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
           GatherStats: false
           Select Operator
-            expressions: UDFToInteger(key) (type: int), reflect2(UDFToInteger(key),'byteValue') (type: tinyint), reflect2(UDFToInteger(key),'shortValue') (type: smallint), reflect2(UDFToInteger(key),'intValue') (type: int), reflect2(UDFToInteger(key),'longValue') (type: bigint), reflect2(UDFToInteger(key),'floatValue') (type: float), reflect2(UDFToInteger(key),'doubleValue') (type: double), reflect2(UDFToInteger(key),'toString') (type: string), value (type: string), reflect2(value,'concat','_concat') (type: string), reflect2(value,'contains','86') (type: boolean), reflect2(value,'startsWith','v') (type: boolean), reflect2(value,'endsWith','6') (type: boolean), reflect2(value,'equals','val_86') (type: boolean), reflect2(value,'equalsIgnoreCase','VAL_86') (type: boolean), reflect2(value,'getBytes') (type: binary), reflect2(value,'indexOf','1') (type: int), reflect2(value,'lastIndexOf','1') (type: int), reflect2(value,'replace','val','VALUE') (type: string), reflect2(value,'substring',1) (type: string), reflect2(value,'substring',1,5) (type: string), reflect2(value,'toUpperCase') (type: string), reflect2(value,'trim') (type: string), TIMESTAMP'2013-02-15 19:41:20.0' (type: timestamp), 113 (type: int), 1 (type: int), 5 (type: int), 19 (type: int), 41 (type: int), 20 (type: int), 1360986080000L (type: bigint)
+            expressions: UDFToInteger(key) (type: int), reflect2(UDFToInteger(key),'byteValue') (type: tinyint), reflect2(UDFToInteger(key),'shortValue') (type: smallint), reflect2(UDFToInteger(key),'intValue') (type: int), reflect2(UDFToInteger(key),'longValue') (type: bigint), reflect2(UDFToInteger(key),'floatValue') (type: float), reflect2(UDFToInteger(key),'doubleValue') (type: double), reflect2(UDFToInteger(key),'toString') (type: string), value (type: string), reflect2(value,'concat','_concat') (type: string), reflect2(value,'contains','86') (type: boolean), reflect2(value,'startsWith','v') (type: boolean), reflect2(value,'endsWith','6') (type: boolean), reflect2(value,'equals','val_86') (type: boolean), reflect2(value,'equalsIgnoreCase','VAL_86') (type: boolean), reflect2(value,'getBytes') (type: binary), reflect2(value,'indexOf','1') (type: int), reflect2(value,'lastIndexOf','1') (type: int), reflect2(value,'replace','val','VALUE') (type: string), reflect2(value,'substring',1) (type: string), reflect2(value,'substring',1,5) (type: string), reflect2(value,'toUpperCase') (type: string), reflect2(value,'trim') (type: string), TIMESTAMP'2013-02-15 19:41:20' (type: timestamp), 2013 (type: int), 2 (type: int), 15 (type: int), 19 (type: int), 41 (type: int), 20 (type: int), 1360957280000L (type: bigint)
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Limit
@@ -131,7 +131,7 @@ PREHOOK: query: SELECT key,
        reflect2(ts, "getHours"),
        reflect2(ts, "getMinutes"),
        reflect2(ts, "getSeconds"),
-       reflect2(ts, "getTime")
+       reflect2(ts, "toEpochMilli")
 FROM (select cast(key as int) key, value, cast('2013-02-15 19:41:20' as timestamp) ts from src) a LIMIT 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -166,13 +166,13 @@ POSTHOOK: query: SELECT key,
        reflect2(ts, "getHours"),
        reflect2(ts, "getMinutes"),
        reflect2(ts, "getSeconds"),
-       reflect2(ts, "getTime")
+       reflect2(ts, "toEpochMilli")
 FROM (select cast(key as int) key, value, cast('2013-02-15 19:41:20' as timestamp) ts from src) a LIMIT 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-238	-18	238	238	238	238.0	238.0	238	val_238	val_238_concat	false	true	false	false	false	val_238	-1	-1	VALUE_238	al_238	al_2	VAL_238	val_238	2013-02-15 19:41:20	113	1	5	19	41	20	1360986080000
-86	86	86	86	86	86.0	86.0	86	val_86	val_86_concat	true	true	true	true	true	val_86	-1	-1	VALUE_86	al_86	al_8	VAL_86	val_86	2013-02-15 19:41:20	113	1	5	19	41	20	1360986080000
-311	55	311	311	311	311.0	311.0	311	val_311	val_311_concat	false	true	false	false	false	val_311	5	6	VALUE_311	al_311	al_3	VAL_311	val_311	2013-02-15 19:41:20	113	1	5	19	41	20	1360986080000
-27	27	27	27	27	27.0	27.0	27	val_27	val_27_concat	false	true	false	false	false	val_27	-1	-1	VALUE_27	al_27	al_2	VAL_27	val_27	2013-02-15 19:41:20	113	1	5	19	41	20	1360986080000
-165	-91	165	165	165	165.0	165.0	165	val_165	val_165_concat	false	true	false	false	false	val_165	4	4	VALUE_165	al_165	al_1	VAL_165	val_165	2013-02-15 19:41:20	113	1	5	19	41	20	1360986080000
+238	-18	238	238	238	238.0	238.0	238	val_238	val_238_concat	false	true	false	false	false	val_238	-1	-1	VALUE_238	al_238	al_2	VAL_238	val_238	2013-02-15 19:41:20	2013	2	15	19	41	20	1360957280000
+86	86	86	86	86	86.0	86.0	86	val_86	val_86_concat	true	true	true	true	true	val_86	-1	-1	VALUE_86	al_86	al_8	VAL_86	val_86	2013-02-15 19:41:20	2013	2	15	19	41	20	1360957280000
+311	55	311	311	311	311.0	311.0	311	val_311	val_311_concat	false	true	false	false	false	val_311	5	6	VALUE_311	al_311	al_3	VAL_311	val_311	2013-02-15 19:41:20	2013	2	15	19	41	20	1360957280000
+27	27	27	27	27	27.0	27.0	27	val_27	val_27_concat	false	true	false	false	false	val_27	-1	-1	VALUE_27	al_27	al_2	VAL_27	val_27	2013-02-15 19:41:20	2013	2	15	19	41	20	1360957280000
+165	-91	165	165	165	165.0	165.0	165	val_165	val_165_concat	false	true	false	false	false	val_165	4	4	VALUE_165	al_165	al_1	VAL_165	val_165	2013-02-15 19:41:20	2013	2	15	19	41	20	1360957280000

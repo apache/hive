@@ -23,10 +23,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -36,7 +38,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -44,7 +45,6 @@ import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
 import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -237,11 +237,14 @@ public class VectorExtractRow {
               ((LongColumnVector) colVector).vector[adjustedIndex]);
           return primitiveWritable;
         case TIMESTAMP:
-          ((TimestampWritable) primitiveWritable).set(
-              ((TimestampColumnVector) colVector).asScratchTimestamp(adjustedIndex));
+          // From java.sql.Timestamp used by vectorization to serializable org.apache.hadoop.hive.common.type.Timestamp
+          java.sql.Timestamp ts =
+              ((TimestampColumnVector) colVector).asScratchTimestamp(adjustedIndex);
+          Timestamp serializableTS = Timestamp.ofEpochMilli(ts.getTime(), ts.getNanos());
+          ((TimestampWritableV2) primitiveWritable).set(serializableTS);
           return primitiveWritable;
         case DATE:
-          ((DateWritable) primitiveWritable).set(
+          ((DateWritableV2) primitiveWritable).set(
               (int) ((LongColumnVector) colVector).vector[adjustedIndex]);
           return primitiveWritable;
         case FLOAT:

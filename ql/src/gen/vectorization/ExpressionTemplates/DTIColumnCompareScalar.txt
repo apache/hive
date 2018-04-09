@@ -21,8 +21,8 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
-import java.sql.Date;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.common.type.Date;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 
 /**
  * Generated from template DTIColumnCompareScalar.txt, which covers comparison

@@ -14,79 +14,79 @@ PREHOOK: query: insert overwrite table partition_timestamp_1 partition(dt='2000-
   select * from src tablesample (10 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@partition_timestamp_1@dt=2000-01-01 01%3A00%3A00.0/region=1
+PREHOOK: Output: default@partition_timestamp_1@dt=2000-01-01 01%3A00%3A00/region=1
 POSTHOOK: query: insert overwrite table partition_timestamp_1 partition(dt='2000-01-01 01:00:00', region= '1')
   select * from src tablesample (10 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@partition_timestamp_1@dt=2000-01-01 01%3A00%3A00.0/region=1
-POSTHOOK: Lineage: partition_timestamp_1 PARTITION(dt=2000-01-01 01:00:00.0,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_timestamp_1 PARTITION(dt=2000-01-01 01:00:00.0,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@partition_timestamp_1@dt=2000-01-01 01%3A00%3A00/region=1
+POSTHOOK: Lineage: partition_timestamp_1 PARTITION(dt=2000-01-01 01:00:00,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_timestamp_1 PARTITION(dt=2000-01-01 01:00:00,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table partition_timestamp_1 partition(dt='2000-01-01 02:00:00', region= '2')
   select * from src tablesample (5 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@partition_timestamp_1@dt=2000-01-01 02%3A00%3A00.0/region=2
+PREHOOK: Output: default@partition_timestamp_1@dt=2000-01-01 02%3A00%3A00/region=2
 POSTHOOK: query: insert overwrite table partition_timestamp_1 partition(dt='2000-01-01 02:00:00', region= '2')
   select * from src tablesample (5 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@partition_timestamp_1@dt=2000-01-01 02%3A00%3A00.0/region=2
-POSTHOOK: Lineage: partition_timestamp_1 PARTITION(dt=2000-01-01 02:00:00.0,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_timestamp_1 PARTITION(dt=2000-01-01 02:00:00.0,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@partition_timestamp_1@dt=2000-01-01 02%3A00%3A00/region=2
+POSTHOOK: Lineage: partition_timestamp_1 PARTITION(dt=2000-01-01 02:00:00,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_timestamp_1 PARTITION(dt=2000-01-01 02:00:00,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table partition_timestamp_1 partition(dt='2001-01-01 01:00:00', region= '2020-20-20')
   select * from src tablesample (5 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@partition_timestamp_1@dt=2001-01-01 01%3A00%3A00.0/region=2020-20-20
+PREHOOK: Output: default@partition_timestamp_1@dt=2001-01-01 01%3A00%3A00/region=2020-20-20
 POSTHOOK: query: insert overwrite table partition_timestamp_1 partition(dt='2001-01-01 01:00:00', region= '2020-20-20')
   select * from src tablesample (5 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@partition_timestamp_1@dt=2001-01-01 01%3A00%3A00.0/region=2020-20-20
-POSTHOOK: Lineage: partition_timestamp_1 PARTITION(dt=2001-01-01 01:00:00.0,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_timestamp_1 PARTITION(dt=2001-01-01 01:00:00.0,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@partition_timestamp_1@dt=2001-01-01 01%3A00%3A00/region=2020-20-20
+POSTHOOK: Lineage: partition_timestamp_1 PARTITION(dt=2001-01-01 01:00:00,region=2020-20-20).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_timestamp_1 PARTITION(dt=2001-01-01 01:00:00,region=2020-20-20).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table partition_timestamp_1 partition(dt='2001-01-01 02:00:00', region= '1')
   select * from src tablesample (20 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@partition_timestamp_1@dt=2001-01-01 02%3A00%3A00.0/region=1
+PREHOOK: Output: default@partition_timestamp_1@dt=2001-01-01 02%3A00%3A00/region=1
 POSTHOOK: query: insert overwrite table partition_timestamp_1 partition(dt='2001-01-01 02:00:00', region= '1')
   select * from src tablesample (20 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@partition_timestamp_1@dt=2001-01-01 02%3A00%3A00.0/region=1
-POSTHOOK: Lineage: partition_timestamp_1 PARTITION(dt=2001-01-01 02:00:00.0,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_timestamp_1 PARTITION(dt=2001-01-01 02:00:00.0,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@partition_timestamp_1@dt=2001-01-01 02%3A00%3A00/region=1
+POSTHOOK: Lineage: partition_timestamp_1 PARTITION(dt=2001-01-01 02:00:00,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_timestamp_1 PARTITION(dt=2001-01-01 02:00:00,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table partition_timestamp_1 partition(dt='2001-01-01 03:00:00', region= '10')
   select * from src tablesample (11 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: default@partition_timestamp_1@dt=2001-01-01 03%3A00%3A00.0/region=10
+PREHOOK: Output: default@partition_timestamp_1@dt=2001-01-01 03%3A00%3A00/region=10
 POSTHOOK: query: insert overwrite table partition_timestamp_1 partition(dt='2001-01-01 03:00:00', region= '10')
   select * from src tablesample (11 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: default@partition_timestamp_1@dt=2001-01-01 03%3A00%3A00.0/region=10
-POSTHOOK: Lineage: partition_timestamp_1 PARTITION(dt=2001-01-01 03:00:00.0,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: partition_timestamp_1 PARTITION(dt=2001-01-01 03:00:00.0,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Output: default@partition_timestamp_1@dt=2001-01-01 03%3A00%3A00/region=10
+POSTHOOK: Lineage: partition_timestamp_1 PARTITION(dt=2001-01-01 03:00:00,region=10).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: partition_timestamp_1 PARTITION(dt=2001-01-01 03:00:00,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: select distinct dt from partition_timestamp_1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_timestamp_1
-PREHOOK: Input: default@partition_timestamp_1@dt=2000-01-01 01%3A00%3A00.0/region=1
-PREHOOK: Input: default@partition_timestamp_1@dt=2000-01-01 02%3A00%3A00.0/region=2
-PREHOOK: Input: default@partition_timestamp_1@dt=2001-01-01 01%3A00%3A00.0/region=2020-20-20
-PREHOOK: Input: default@partition_timestamp_1@dt=2001-01-01 02%3A00%3A00.0/region=1
-PREHOOK: Input: default@partition_timestamp_1@dt=2001-01-01 03%3A00%3A00.0/region=10
+PREHOOK: Input: default@partition_timestamp_1@dt=2000-01-01 01%3A00%3A00/region=1
+PREHOOK: Input: default@partition_timestamp_1@dt=2000-01-01 02%3A00%3A00/region=2
+PREHOOK: Input: default@partition_timestamp_1@dt=2001-01-01 01%3A00%3A00/region=2020-20-20
+PREHOOK: Input: default@partition_timestamp_1@dt=2001-01-01 02%3A00%3A00/region=1
+PREHOOK: Input: default@partition_timestamp_1@dt=2001-01-01 03%3A00%3A00/region=10
 #### A masked pattern was here ####
 POSTHOOK: query: select distinct dt from partition_timestamp_1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_timestamp_1
-POSTHOOK: Input: default@partition_timestamp_1@dt=2000-01-01 01%3A00%3A00.0/region=1
-POSTHOOK: Input: default@partition_timestamp_1@dt=2000-01-01 02%3A00%3A00.0/region=2
-POSTHOOK: Input: default@partition_timestamp_1@dt=2001-01-01 01%3A00%3A00.0/region=2020-20-20
-POSTHOOK: Input: default@partition_timestamp_1@dt=2001-01-01 02%3A00%3A00.0/region=1
-POSTHOOK: Input: default@partition_timestamp_1@dt=2001-01-01 03%3A00%3A00.0/region=10
+POSTHOOK: Input: default@partition_timestamp_1@dt=2000-01-01 01%3A00%3A00/region=1
+POSTHOOK: Input: default@partition_timestamp_1@dt=2000-01-01 02%3A00%3A00/region=2
+POSTHOOK: Input: default@partition_timestamp_1@dt=2001-01-01 01%3A00%3A00/region=2020-20-20
+POSTHOOK: Input: default@partition_timestamp_1@dt=2001-01-01 02%3A00%3A00/region=1
+POSTHOOK: Input: default@partition_timestamp_1@dt=2001-01-01 03%3A00%3A00/region=10
 #### A masked pattern was here ####
 2000-01-01 01:00:00
 2000-01-01 02:00:00

@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 
 public class CastDateToTimestamp extends VectorExpression {
   private static final long serialVersionUID = 1L;
@@ -45,7 +45,7 @@ public class CastDateToTimestamp extends VectorExpression {
   }
 
   private void setDays(TimestampColumnVector timestampColVector, long[] vector, int elementNum) {
-    timestampColVector.getScratchTimestamp().setTime(DateWritable.daysToMillis((int) vector[elementNum]));
+    timestampColVector.getScratchTimestamp().setTime(DateWritableV2.daysToMillis((int) vector[elementNum]));
     timestampColVector.setFromScratchTimestamp(elementNum);
   }
 

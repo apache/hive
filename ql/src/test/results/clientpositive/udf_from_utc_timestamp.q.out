@@ -27,7 +27,7 @@ STAGE PLANS:
           Row Limit Per Split: 1
           Statistics: Num rows: 1 Data size: 10 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
-            expressions: TIMESTAMP'2012-02-11 02:30:00.0' (type: timestamp)
+            expressions: TIMESTAMP'2012-02-11 02:30:00' (type: timestamp)
             outputColumnNames: _col0
             Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
@@ -94,4 +94,4 @@ from_utc_timestamp('2012-02-11-04:30:00', 'PST')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-NULL	NULL
+2012-02-11 00:00:00	2012-02-10 16:00:00

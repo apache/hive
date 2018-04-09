@@ -66,7 +66,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMin;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -180,7 +180,7 @@ public class StatsOptimizer extends Transform {
 
     enum DateSubType {
       DAYS {@Override
-        Object cast(long longValue) { return (new DateWritable((int)longValue)).get();}
+        Object cast(long longValue) { return (new DateWritableV2((int)longValue)).get();}
       };
       abstract Object cast(long longValue);
     }

@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazybinary.objectinspector.LazyBinaryObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -203,7 +203,7 @@ public final class LazyBinaryUtils {
         break;
       case TIMESTAMP:
         recordInfo.elementOffset = 0;
-        recordInfo.elementSize = TimestampWritable.getTotalLength(bytes, offset);
+        recordInfo.elementSize = TimestampWritableV2.getTotalLength(bytes, offset);
         break;
       case TIMESTAMPLOCALTZ:
         recordInfo.elementOffset = 0;

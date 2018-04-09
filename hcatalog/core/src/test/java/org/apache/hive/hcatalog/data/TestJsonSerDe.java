@@ -20,8 +20,6 @@ package org.apache.hive.hcatalog.data;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,9 +30,11 @@ import java.util.Properties;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -98,7 +98,7 @@ public class TestJsonSerDe extends TestCase {
     rlist.add(new HiveChar("hive\nchar", 10));
     rlist.add(new HiveVarchar("hive\nvarchar", 20));
     rlist.add(Date.valueOf("2014-01-07"));
-    rlist.add(new Timestamp(System.currentTimeMillis()));
+    rlist.add(Timestamp.ofEpochMilli(System.currentTimeMillis()));
     rlist.add("hive\nbinary".getBytes("UTF-8"));
 
     List<Object> nlist = new ArrayList<Object>(13);
