@@ -668,7 +668,12 @@ public class HiveServer2 extends CompositeService {
 
     if (!activePassiveHA) {
       LOG.info("HS2 interactive HA not enabled. Starting tez sessions..");
-      startOrReconnectTezSessions();
+      try {
+        startOrReconnectTezSessions();
+      } catch (Exception e) {
+        LOG.error("Error starting  Tez sessions: ", e);
+        throw new ServiceException(e);
+      }
     } else {
       LOG.info("HS2 interactive HA enabled. Tez sessions will be started/reconnected by the leader.");
     }
@@ -746,6 +751,8 @@ public class HiveServer2 extends CompositeService {
           LOG.warn("AM recovery for non-WM pool is not yet supported.");
         }
         tezSessionPoolManager.setupPool(hiveConf);
+      } else {
+        tezSessionPoolManager.setupNonPool(hiveConf);
       }
       tezSessionPoolManager.startPool(hiveConf, resourcePlan);
       LOG.info("Tez session pool manager initialized.");
