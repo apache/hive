@@ -519,31 +519,57 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
     Assert.assertTrue(metaStore.isPathExists(new Path(part.getSd().getLocation())));
   }
 
-  @Test(expected = AlreadyExistsException.class)
+  @Test
   public void testAddPartitionSpecPartAlreadyExists() throws Exception {
 
     createTable();
-    Partition partition = buildPartition(DB_NAME, TABLE_NAME, DEFAULT_YEAR_VALUE);
+    String tableLocation = metaStore.getWarehouseRoot() + "/" + TABLE_NAME;
+    Partition partition =
+        buildPartition(DB_NAME, TABLE_NAME, "2016", tableLocation + "/year=2016a");
     client.add_partition(partition);
 
-    Partition newPartition = buildPartition(DB_NAME, TABLE_NAME, DEFAULT_YEAR_VALUE);
+    List<Partition> partitions = buildPartitions(DB_NAME, TABLE_NAME,
+        Lists.newArrayList("2014", "2015", "2016", "2017", "2018"));
     PartitionSpecProxy partitionSpecProxy =
-        buildPartitionSpec(DB_NAME, TABLE_NAME, null, Lists.newArrayList(newPartition));
-    client.add_partitions_pspec(partitionSpecProxy);
+        buildPartitionSpec(DB_NAME, TABLE_NAME, null, partitions);
+
+    try {
+      client.add_partitions_pspec(partitionSpecProxy);
+      Assert.fail("AlreadyExistsException should have happened.");
+    } catch (AlreadyExistsException e) {
+      // Expected exception
+    }
+
+    List<Partition> parts = client.listPartitions(DB_NAME, TABLE_NAME, MAX);
+    Assert.assertNotNull(parts);
+    Assert.assertEquals(1, parts.size());
+    Assert.assertEquals(partition.getValues(), parts.get(0).getValues());
+    for (Partition part : partitions) {
+      Assert.assertFalse(metaStore.isPathExists(new Path(part.getSd().getLocation())));
+    }
   }
 
-  @Test(expected = MetaException.class)
+  @Test
   public void testAddPartitionSpecPartDuplicateInSpec() throws Exception {
 
     createTable();
-    Partition partition1 = buildPartition(DB_NAME, TABLE_NAME, DEFAULT_YEAR_VALUE);
-    Partition partition2 = buildPartition(DB_NAME, TABLE_NAME, DEFAULT_YEAR_VALUE);
-    List<Partition> partitions = new ArrayList<>();
-    partitions.add(partition1);
-    partitions.add(partition2);
+    List<Partition> partitions = buildPartitions(DB_NAME, TABLE_NAME,
+        Lists.newArrayList("2014", "2015", "2017", "2017", "2018", "2019"));
     PartitionSpecProxy partitionSpecProxy =
         buildPartitionSpec(DB_NAME, TABLE_NAME, null, partitions);
-    client.add_partitions_pspec(partitionSpecProxy);
+    try {
+      client.add_partitions_pspec(partitionSpecProxy);
+      Assert.fail("MetaException should have happened.");
+    } catch (MetaException e) {
+      // Expected exception
+    }
+
+    List<Partition> parts = client.listPartitions(DB_NAME, TABLE_NAME, MAX);
+    Assert.assertNotNull(parts);
+    Assert.assertTrue(parts.isEmpty());
+    for (Partition partition : partitions) {
+      Assert.assertFalse(metaStore.isPathExists(new Path(partition.getSd().getLocation())));
+    }
   }
 
   @Test(expected = MetaException.class)
@@ -672,20 +698,40 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
   @Test(expected=MetaException.class)
   public void testAddPartitionSpecForView() throws Exception {
 
-    Table table = new TableBuilder()
-        .setDbName(DB_NAME)
-        .setTableName(TABLE_NAME)
-        .setType("VIRTUAL_VIEW")
-        .addCol("test_id", "int", "test col id")
-        .addCol("test_value", DEFAULT_COL_TYPE, "test col value")
-        .addPartCol(YEAR_COL_NAME, DEFAULT_COL_TYPE)
-        .setLocation(null)
-        .create(client, metaStore.getConf());
-
-    Partition partition = buildPartition(DB_NAME, TABLE_NAME, DEFAULT_YEAR_VALUE);
+    String tableName = "test_add_partition_view";
+    createView(tableName);
+    Partition partition = buildPartition(DB_NAME, tableName, DEFAULT_YEAR_VALUE);
     PartitionSpecProxy partitionSpecProxy =
-        buildPartitionSpec(DB_NAME, TABLE_NAME, null, Lists.newArrayList(partition));
+        buildPartitionSpec(DB_NAME, tableName, null, Lists.newArrayList(partition));
     client.add_partitions_pspec(partitionSpecProxy);
+  }
+
+  @Test
+  public void testAddPartitionSpecForViewNullPartLocation() throws Exception {
+
+    String tableName = "test_add_partition_view";
+    createView(tableName);
+    Partition partition = buildPartition(DB_NAME, tableName, DEFAULT_YEAR_VALUE);
+    partition.getSd().setLocation(null);
+    PartitionSpecProxy partitionSpecProxy =
+        buildPartitionSpec(DB_NAME, tableName, null, Lists.newArrayList(partition));
+    client.add_partitions_pspec(partitionSpecProxy);
+    Partition part = client.getPartition(DB_NAME, tableName, "year=2017");
+    Assert.assertNull(part.getSd().getLocation());
+  }
+
+  @Test
+  public void testAddPartitionsForViewNullPartSd() throws Exception {
+
+    String tableName = "test_add_partition_view";
+    createView(tableName);
+    Partition partition = buildPartition(DB_NAME, tableName, DEFAULT_YEAR_VALUE);
+    partition.setSd(null);
+    PartitionSpecProxy partitionSpecProxy =
+        buildPartitionSpec(DB_NAME, tableName, null, Lists.newArrayList(partition));
+    client.add_partitions_pspec(partitionSpecProxy);
+    Partition part = client.getPartition(DB_NAME, tableName, "year=2017");
+    Assert.assertNull(part.getSd());
   }
 
   @Test
@@ -790,33 +836,104 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
   public void testAddPartitionSpecOneInvalid() throws Exception {
 
     createTable();
-    Partition partition1 = buildPartition(DB_NAME, TABLE_NAME, "2016");
-    Partition partition2 = buildPartition(DB_NAME, TABLE_NAME, "2017");
+    String tableLocation = metaStore.getWarehouseRoot() + "/" + TABLE_NAME;
+    Partition partition1 =
+        buildPartition(DB_NAME, TABLE_NAME, "2016", tableLocation + "/year=2016");
+    Partition partition2 =
+        buildPartition(DB_NAME, TABLE_NAME, "2017", tableLocation + "/year=2017");
     Partition partition3 =
         buildPartition(Lists.newArrayList("2015", "march"), getYearAndMonthPartCols(), 1);
-    partition3.getSd().setLocation(metaStore.getWarehouseRoot() + "/addparttest");
-    List<Partition> partitions = Lists.newArrayList(partition1, partition2, partition3);
+    partition3.getSd().setLocation(tableLocation + "/year=2015/month=march");
+    Partition partition4 =
+        buildPartition(DB_NAME, TABLE_NAME, "2018", tableLocation + "/year=2018");
+    Partition partition5 =
+        buildPartition(DB_NAME, TABLE_NAME, "2019", tableLocation + "/year=2019");
+    List<Partition> partitions =
+        Lists.newArrayList(partition1, partition2, partition3, partition4, partition5);
     PartitionSpecProxy partitionSpecProxy =
         buildPartitionSpec(DB_NAME, TABLE_NAME, null, partitions);
+
     try {
       client.add_partitions_pspec(partitionSpecProxy);
-      Assert.fail("MetaException should have occurred.");
+      Assert.fail("MetaException should have happened.");
     } catch (MetaException e) {
-      // This is expected
+      // Expected exception
     }
 
     List<Partition> parts = client.listPartitions(DB_NAME, TABLE_NAME, MAX);
     Assert.assertNotNull(parts);
     Assert.assertTrue(parts.isEmpty());
-    // TODO: This does not work correctly. None of the partitions is created, but the folder
-    // for the first two is created. It is because in HiveMetaStore.add_partitions_core when
-    // going through the partitions, the first two are already put and started in the thread
-    // pool when the exception occurs in the third one.
-    // When the exception occurs, we go to the finally part, but the map can be empty
-    // (it depends on the progress of the other threads) so the folders won't be deleted.
-    // Assert.assertTrue(metaStore.isPathExists(new Path(partition1.getSd().getLocation())));
-    // Assert.assertTrue(metaStore.isPathExists(new Path(partition2.getSd().getLocation())));
-    // Assert.assertTrue(metaStore.isPathExists(new Path(partition3.getSd().getLocation())));
+    for (Partition part : partitions) {
+      Assert.assertFalse(metaStore.isPathExists(new Path(part.getSd().getLocation())));
+    }
+  }
+
+  @Test
+  public void testAddPartitionSpecInvalidLocation() throws Exception {
+
+    createTable();
+    String tableLocation = metaStore.getWarehouseRoot() + "/" + TABLE_NAME;
+    Map<String, String> valuesAndLocations = new HashMap<>();
+    valuesAndLocations.put("2014", tableLocation + "/year=2014");
+    valuesAndLocations.put("2015", tableLocation + "/year=2015");
+    valuesAndLocations.put("2016", "invalidhost:80000/wrongfolder");
+    valuesAndLocations.put("2017", tableLocation + "/year=2017");
+    valuesAndLocations.put("2018", tableLocation + "/year=2018");
+    List<Partition> partitions = buildPartitions(DB_NAME, TABLE_NAME, valuesAndLocations);
+    PartitionSpecProxy partitionSpecProxy =
+        buildPartitionSpec(DB_NAME, TABLE_NAME, null, partitions);
+
+    try {
+      client.add_partitions_pspec(partitionSpecProxy);
+      Assert.fail("MetaException should have happened.");
+    } catch (MetaException e) {
+      // Expected exception
+    }
+
+    List<Partition> parts = client.listPartitions(DB_NAME, TABLE_NAME, MAX);
+    Assert.assertNotNull(parts);
+    Assert.assertTrue(parts.isEmpty());
+    for (Partition partition : partitions) {
+      if (!"invalidhost:80000/wrongfolder".equals(partition.getSd().getLocation())) {
+        Assert.assertFalse(metaStore.isPathExists(new Path(partition.getSd().getLocation())));
+      }
+    }
+  }
+
+  @Test
+  public void testAddPartitionSpecMoreThanThreadCountsOneFails() throws Exception {
+
+    createTable();
+    String tableLocation = metaStore.getWarehouseRoot() + "/" + TABLE_NAME;
+
+    List<Partition> partitions = new ArrayList<>();
+    for (int i = 0; i < 50; i++) {
+      String value = String.valueOf(2000 + i);
+      String location = tableLocation + "/year=" + value;
+      if (i == 30) {
+        location = "invalidhost:80000/wrongfolder";
+      }
+      Partition partition = buildPartition(DB_NAME, TABLE_NAME, value, location);
+      partitions.add(partition);
+    }
+    PartitionSpecProxy partitionSpecProxy =
+        buildPartitionSpec(DB_NAME, TABLE_NAME, null, partitions);
+
+    try {
+      client.add_partitions_pspec(partitionSpecProxy);
+      Assert.fail("MetaException should have happened.");
+    } catch (MetaException e) {
+      // Expected exception
+    }
+
+    List<Partition> parts = client.listPartitions(DB_NAME, TABLE_NAME, MAX);
+    Assert.assertNotNull(parts);
+    Assert.assertTrue(parts.isEmpty());
+    for (Partition partition : partitions) {
+      if (!"invalidhost:80000/wrongfolder".equals(partition.getSd().getLocation())) {
+        Assert.assertFalse(metaStore.isPathExists(new Path(partition.getSd().getLocation())));
+      }
+    }
   }
 
   // Helper methods
@@ -1048,5 +1165,44 @@ public class TestAddPartitionsFromPartSpec extends MetaStoreClientTest {
         metaStore.getWarehouseRoot() + "/" + TABLE_NAME + "/sharedSDTest/partwithoutsd" + index,
         sd.getLocation());
     Assert.assertTrue(metaStore.isPathExists(new Path(sd.getLocation())));
+  }
+
+  private List<Partition> buildPartitions(String dbName, String tableName, List<String> values)
+      throws MetaException {
+
+    String tableLocation = metaStore.getWarehouseRoot() + "/" + tableName;
+    List<Partition> partitions = new ArrayList<>();
+
+    for (String value : values) {
+      Partition partition =
+          buildPartition(dbName, tableName, value, tableLocation + "/year=" + value);
+      partitions.add(partition);
+    }
+    return partitions;
+  }
+
+  private List<Partition> buildPartitions(String dbName, String tableName,
+      Map<String, String> valuesAndLocations) throws MetaException {
+
+    List<Partition> partitions = new ArrayList<>();
+
+    for (Map.Entry<String, String> valueAndLocation : valuesAndLocations.entrySet()) {
+      Partition partition =
+          buildPartition(dbName, tableName, valueAndLocation.getKey(), valueAndLocation.getValue());
+      partitions.add(partition);
+    }
+    return partitions;
+  }
+
+  private void createView(String tableName) throws Exception {
+    new TableBuilder()
+        .setDbName(DB_NAME)
+        .setTableName(tableName)
+        .setType("VIRTUAL_VIEW")
+        .addCol("test_id", "int", "test col id")
+        .addCol("test_value", "string", "test col value")
+        .addPartCol(YEAR_COL_NAME, DEFAULT_COL_TYPE)
+        .setLocation(null)
+        .create(client, metaStore.getConf());
   }
 }
