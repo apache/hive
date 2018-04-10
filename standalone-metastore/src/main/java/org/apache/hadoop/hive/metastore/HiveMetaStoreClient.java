@@ -3323,6 +3323,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   @Override
   public void createFunction(Function func) throws TException {
+    if (func == null) {
+      throw new MetaException("Function cannot be null.");
+    }
     if (!func.isSetCatName()) {
       func.setCatName(getDefaultCatalog(conf));
     }
