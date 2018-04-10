@@ -37,9 +37,7 @@ import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.FunctionBuilder;
 import org.apache.hadoop.hive.metastore.minihms.AbstractMetaStoreService;
-import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
-import org.apache.thrift.transport.TTransportException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -208,74 +206,39 @@ public class TestFunctions extends MetaStoreClientTest {
     client.createFunction(function);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
+  public void testCreateFunctionNullFunction() throws Exception {
+    client.createFunction(null);
+  }
+
+  @Test(expected = MetaException.class)
   public void testCreateFunctionNullFunctionName() throws Exception {
     Function function = testFunctions[0];
     function.setFunctionName(null);
-
-    try {
-      client.createFunction(function);
-      // TODO: Should have a check on the server side. Embedded metastore throws
-      // NullPointerException, remote throws TTransportException
-      Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
-    } catch (NullPointerException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
-      // Expected exception - Remote MetaStore
-    }
+    client.createFunction(function);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testCreateFunctionNullDatabaseName() throws Exception {
     Function function = testFunctions[0];
     function.setDbName(null);
-
-    try {
-      client.createFunction(function);
-      // TODO: Should have a check on the server side. Embedded metastore throws
-      // NullPointerException, remote throws TTransportException
-      Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
-    } catch (NullPointerException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
-      // Expected exception - Remote MetaStore
-    }
+    client.createFunction(function);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testCreateFunctionNullOwnerType() throws Exception {
     Function function = testFunctions[0];
     function.setFunctionName("test_function_2");
     function.setOwnerType(null);
-
-    try {
-      client.createFunction(function);
-      // TODO: Should have a check on the server side. Embedded metastore throws
-      // NullPointerException, remote throws TTransportException
-      Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
-    } catch (NullPointerException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
-      // Expected exception - Remote MetaStore
-    }
+    client.createFunction(function);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testCreateFunctionNullFunctionType() throws Exception {
     Function function = testFunctions[0];
     function.setFunctionName("test_function_2");
     function.setFunctionType(null);
-
-    try {
-      client.createFunction(function);
-      // TODO: Should have a check on the server side. Embedded metastore throws
-      // NullPointerException, remote throws TTransportException
-      Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
-    } catch (NullPointerException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
-      // Expected exception - Remote MetaStore
-    }
+    client.createFunction(function);
   }
 
   @Test(expected = NoSuchObjectException.class)
@@ -331,18 +294,9 @@ public class TestFunctions extends MetaStoreClientTest {
     client.getFunction(OTHER_DATABASE, function.getFunctionName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testGetFunctionNullDatabase() throws Exception {
-    try {
-      client.getFunction(null, OTHER_DATABASE);
-      // TODO: Should have a check on the server side. Embedded metastore throws
-      // NullPointerException, remote throws MetaException
-      Assert.fail("Expected an NullPointerException or MetaException to be thrown");
-    } catch (NullPointerException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (MetaException exception) {
-      // Expected exception - Remote MetaStore
-    }
+    client.getFunction(null, OTHER_DATABASE);
   }
 
   @Test(expected = MetaException.class)
@@ -371,32 +325,14 @@ public class TestFunctions extends MetaStoreClientTest {
     client.dropFunction(OTHER_DATABASE, function.getFunctionName());
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testDropFunctionNullDatabase() throws Exception {
-    try {
-      client.dropFunction(null, "no_such_function");
-      // TODO: Should have a check on the server side. Embedded metastore throws
-      // NullPointerException, remote throws TTransportException
-      Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
-    } catch (NullPointerException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
-      // Expected exception - Remote MetaStore
-    }
+    client.dropFunction(null, "no_such_function");
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testDropFunctionNullFunctionName() throws Exception {
-    try {
-      client.dropFunction(DEFAULT_DATABASE, null);
-      // TODO: Should have a check on the server side. Embedded metastore throws
-      // NullPointerException, remote throws TTransportException
-      Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
-    } catch (NullPointerException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
-      // Expected exception - Remote MetaStore
-    }
+    client.dropFunction(DEFAULT_DATABASE, null);
   }
 
   @Test
@@ -601,190 +537,78 @@ public class TestFunctions extends MetaStoreClientTest {
     client.alterFunction(OTHER_DATABASE, originalFunction.getFunctionName(), newFunction);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAlterFunctionNullDatabase() throws Exception {
     Function newFunction = getNewFunction();
-
-    try {
-      client.alterFunction(null, OTHER_DATABASE, newFunction);
-      // TODO: Should have a check on the server side. Embedded metastore throws
-      // NullPointerException, remote throws TTransportException
-      Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
-    } catch (NullPointerException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
-      // Expected exception - Remote MetaStore
-    }
+    client.alterFunction(null, OTHER_DATABASE, newFunction);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAlterFunctionNullFunctionName() throws Exception {
     Function newFunction = getNewFunction();
-
-    try {
-      client.alterFunction(DEFAULT_DATABASE, null, newFunction);
-      // TODO: Should have a check on the server side. Embedded metastore throws
-      // NullPointerException, remote throws TTransportException
-      Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
-    } catch (NullPointerException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
-      // Expected exception - Remote MetaStore
-    }
+    client.alterFunction(DEFAULT_DATABASE, null, newFunction);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAlterFunctionNullFunction() throws Exception {
     Function originalFunction = testFunctions[1];
-
-    try {
-      client.alterFunction(DEFAULT_DATABASE, originalFunction.getFunctionName(), null);
-      // TODO: Should have a check on the server side. Embedded metastore throws
-      // NullPointerException, remote throws TTransportException
-      Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
-    } catch (NullPointerException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
-      // Expected exception - Remote MetaStore
-    }
+    client.alterFunction(DEFAULT_DATABASE, originalFunction.getFunctionName(), null);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAlterFunctionInvalidNameInNew() throws Exception {
     Function newFunction = getNewFunction();
     newFunction.setFunctionName("test_function_2;");
-
-    try {
-      client.alterFunction(DEFAULT_DATABASE, "test_function_to_find_2", newFunction);
-      // TODO: Should have a check on the server side. Embedded metastore throws
-      // InvalidObjectException, remote throws TApplicationException
-      Assert.fail("Expected an InvalidObjectException or TApplicationException to be thrown");
-    } catch (InvalidObjectException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (TApplicationException exception) {
-      // Expected exception - Remote MetaStore
-    }
+    client.alterFunction(DEFAULT_DATABASE, "test_function_to_find_2", newFunction);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAlterFunctionEmptyNameInNew() throws Exception {
     Function newFunction = getNewFunction();
     newFunction.setFunctionName("");
-
-    try {
-      client.alterFunction(DEFAULT_DATABASE, "test_function_to_find_2", newFunction);
-      // TODO: Should have a check on the server side. Embedded metastore throws
-      // InvalidObjectException, remote throws TApplicationException
-      Assert.fail("Expected an InvalidObjectException or TApplicationException to be thrown");
-    } catch (InvalidObjectException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (TApplicationException exception) {
-      // Expected exception - Remote MetaStore
-    }
+    client.alterFunction(DEFAULT_DATABASE, "test_function_to_find_2", newFunction);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAlterFunctionNullClassInNew() throws Exception {
     Function newFunction = getNewFunction();
     newFunction.setClassName(null);
-
-    try {
-      client.alterFunction(DEFAULT_DATABASE, "test_function_to_find_2", newFunction);
-      // TODO: Should have a check on the server side. Embedded metastore throws
-      // InvalidObjectException, remote throws TApplicationException
-      Assert.fail("Expected an InvalidObjectException or TApplicationException to be thrown");
-    } catch (InvalidObjectException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (TApplicationException exception) {
-      // Expected exception - Remote MetaStore
-    }
+    client.alterFunction(DEFAULT_DATABASE, "test_function_to_find_2", newFunction);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAlterFunctionNullFunctionNameInNew() throws Exception {
     Function newFunction = getNewFunction();
     newFunction.setFunctionName(null);
-
-    try {
-      client.alterFunction(DEFAULT_DATABASE, "test_function_to_find_2", newFunction);
-      // TODO: Should have a check on the server side. Embedded metastore throws
-      // NullPointerException, remote throws TTransportException
-      Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
-    } catch (NullPointerException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
-      // Expected exception - Remote MetaStore
-    }
+    client.alterFunction(DEFAULT_DATABASE, "test_function_to_find_2", newFunction);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAlterFunctionNullDatabaseNameInNew() throws Exception {
     Function newFunction = getNewFunction();
     newFunction.setDbName(null);
-
-    try {
-      client.alterFunction(DEFAULT_DATABASE, "test_function_to_find_2", newFunction);
-      // TODO: Should have a check on the server side. Embedded metastore throws
-      // NullPointerException, remote throws TTransportException
-      Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
-    } catch (NullPointerException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
-      // Expected exception - Remote MetaStore
-    }
+    client.alterFunction(DEFAULT_DATABASE, "test_function_to_find_2", newFunction);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAlterFunctionNullOwnerTypeInNew() throws Exception {
     Function newFunction = getNewFunction();
     newFunction.setOwnerType(null);
-
-    try {
-      client.alterFunction(DEFAULT_DATABASE, "test_function_to_find_2", newFunction);
-      // TODO: Should have a check on the server side. Embedded metastore throws
-      // NullPointerException, remote throws TTransportException
-      Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
-    } catch (NullPointerException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
-      // Expected exception - Remote MetaStore
-    }
+    client.alterFunction(DEFAULT_DATABASE, "test_function_to_find_2", newFunction);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAlterFunctionNullFunctionTypeInNew() throws Exception {
     Function newFunction = getNewFunction();
     newFunction.setFunctionType(null);
-
-    try {
-      client.alterFunction(DEFAULT_DATABASE, "test_function_to_find_2", newFunction);
-      // TODO: Should have a check on the server side. Embedded metastore throws
-      // NullPointerException, remote throws TTransportException
-      Assert.fail("Expected an NullPointerException or TTransportException to be thrown");
-    } catch (NullPointerException exception) {
-      // Expected exception - Embedded MetaStore
-    } catch (TTransportException exception) {
-      // Expected exception - Remote MetaStore
-    }
+    client.alterFunction(DEFAULT_DATABASE, "test_function_to_find_2", newFunction);
   }
 
-  @Test
+  @Test(expected = MetaException.class)
   public void testAlterFunctionNoSuchDatabaseInNew() throws Exception {
     Function newFunction = getNewFunction();
     newFunction.setDbName("no_such_database");
-
-    try {
-      client.alterFunction(DEFAULT_DATABASE, "test_function_to_find_2", newFunction);
-      // TODO: Should have a check on the server side. Embedded metastore throws
-      // InvalidObjectException, remote throws TApplicationException
-      Assert.fail("Expected an InvalidObjectException or TApplicationException to be thrown");
-    } catch (InvalidObjectException exception) {
-      // Expected exception - Embedded MetaStore
-      exception.printStackTrace();
-    } catch (TApplicationException exception) {
-      // Expected exception - Remote MetaStore
-      exception.printStackTrace();
-    }
+    client.alterFunction(DEFAULT_DATABASE, "test_function_to_find_2", newFunction);
   }
 
   @Test(expected = MetaException.class)
