@@ -60,7 +60,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:d       	Default Value:9223372036854775807L	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:e       	Default Value:3.4E38D	 
+Column Name:e       	Default Value:3.4E38	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
@@ -319,19 +319,19 @@ Storage Desc Params:
 # Default Constraints	 	 
 Table:              	default.table1      	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:d1      	Default Value:CURRENT_DATE()	 
+Column Name:d1      	Default Value:current_date()	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:d       	Default Value:DATE'2018-02-14'	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:t       	Default Value:TIMESTAMP'2016-02-22 12:45:07.0'	 
+Column Name:t       	Default Value:TIMESTAMP'2016-02-22 12:45:07.000000000'	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:t1      	Default Value:CURRENT_TIMESTAMP()	 
+Column Name:t1      	Default Value:current_timestamp()	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:tz      	Default Value:TIMESTAMPLOCALTZ'2016-01-03 12:26:34.0 America/Los_Angeles'	 
+Column Name:tz      	Default Value:TIMESTAMPLOCALTZ'2016-01-03 12:26:34 America/Los_Angeles'	 
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO table1(t) values ("1985-12-31 12:45:07")
 PREHOOK: type: QUERY
@@ -550,16 +550,16 @@ Storage Desc Params:
 # Default Constraints	 	 
 Table:              	default.table2      	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:j       	Default Value:CURRENT_USER()	 
+Column Name:j       	Default Value:current_user()	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:k       	Default Value:'Current_User()'	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:v       	Default Value:CAST( 'varchar_default_value' AS varchar(350))	 
+Column Name:v       	Default Value:cast('varchar_default_value' as varchar(350))	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:c       	Default Value:CAST( 'char_value' AS CHAR(20))	 
+Column Name:c       	Default Value:cast('char_value' as char(20))	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:i       	Default Value:'current_database()'	 
@@ -811,7 +811,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:b       	Default Value:true  	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:b1      	Default Value:CAST( 'bin' AS BINARY)	 
+Column Name:b1      	Default Value:cast('bin' as binary)	 
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO misc(b) values(false)
 PREHOOK: type: QUERY
@@ -1077,46 +1077,46 @@ Storage Desc Params:
 # Default Constraints	 	 
 Table:              	default.t11         	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:tz1     	Default Value:CAST( '2016-01-03 12:26:34 America/Los_Angeles' AS timestamp with local time zone)	 
+Column Name:tz1     	Default Value:cast('2016-01-03 12:26:34 America/Los_Angeles' as timestamp with local time zone)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:b1      	Default Value:UDFToBoolean('true')	 
+Column Name:b1      	Default Value:cast ('true' as boolean)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:i       	Default Value:UDFToInteger(UDFToDouble(4))	 
+Column Name:i       	Default Value:cast(cast(4 as double) as int)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:b2      	Default Value:UDFToInteger(5.67)	 
+Column Name:b2      	Default Value:cast (5.67 as int)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:j       	Default Value:CAST( CURRENT_TIMESTAMP() AS varchar(50))	 
+Column Name:j       	Default Value:cast(current_timestamp() as varchar(50))	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:b3      	Default Value:UDFToByte(45)	 
+Column Name:b3      	Default Value:cast (45 as tinyint)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:k       	Default Value:UDFToString(CAST( CURRENT_USER() AS varchar(50)))	 
+Column Name:k       	Default Value:cast(cast(current_user() as varchar(50)) as string)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:b4      	Default Value:UDFToFloat(45.4)	 
+Column Name:b4      	Default Value:cast (45.4 as float)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:b5      	Default Value:UDFToLong(567)	 
+Column Name:b5      	Default Value:cast (567 as bigint)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:b6      	Default Value:UDFToShort(88)	 
+Column Name:b6      	Default Value:cast (88 as smallint)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:c2      	Default Value:UDFToDouble(5)	 
+Column Name:c2      	Default Value:cast(5 as double)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:c4      	Default Value:CAST( CAST( 'ab' AS varchar(2)) AS CHAR(2))	 
+Column Name:c4      	Default Value:cast(cast(cast('ab' as string) as varchar(2)) as char(2))	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:ts      	Default Value:CAST( '2016-01-01 12:01:01' AS TIMESTAMP)	 
+Column Name:ts      	Default Value:cast('2016-01-01 12:01:01' as timestamp)	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:dc      	Default Value:CAST( 4.5 AS decimal(8,2))	 
+Column Name:dc      	Default Value:cast(4.5 as decimal(8,2))	 
 	 	 
 PREHOOK: query: EXPLAIN INSERT INTO t11(c4) values('vi')
 PREHOOK: type: QUERY
@@ -1365,7 +1365,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:d       	Default Value:9223372036854775807L	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:e       	Default Value:3.4E38D	 
+Column Name:e       	Default Value:3.4E38	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
@@ -1527,7 +1527,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:d       	Default Value:9223372036854775807L	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:e       	Default Value:3.4E38D	 
+Column Name:e       	Default Value:3.4E38	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
@@ -1701,7 +1701,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:d       	Default Value:9223372036854775807L	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:e       	Default Value:3.4E38D	 
+Column Name:e       	Default Value:3.4E38	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
@@ -1779,7 +1779,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:d       	Default Value:9223372036854775807L	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:e       	Default Value:3.4E38D	 
+Column Name:e       	Default Value:3.4E38	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
@@ -1954,7 +1954,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:d       	Default Value:9223372036854775807L	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:e       	Default Value:3.4E38D	 
+Column Name:e       	Default Value:3.4E38	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
@@ -2031,7 +2031,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:d       	Default Value:9223372036854775807L	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:e       	Default Value:3.4E38D	 
+Column Name:e       	Default Value:3.4E38	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
@@ -2109,7 +2109,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:d       	Default Value:9223372036854775807L	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:e       	Default Value:3.4E38D	 
+Column Name:e       	Default Value:3.4E38	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
@@ -2513,7 +2513,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:d       	Default Value:9223372036854775807L	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:e       	Default Value:3.4E38D	 
+Column Name:e       	Default Value:3.4E38	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
@@ -2675,7 +2675,7 @@ Constraint Name:    	#### A masked pattern was here ####
 Column Name:d       	Default Value:9223372036854775807L	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
-Column Name:e       	Default Value:3.4E38D	 
+Column Name:e       	Default Value:3.4E38	 
 	 	 
 Constraint Name:    	#### A masked pattern was here ####	 
 Column Name:f       	Default Value:1234567.89	 
