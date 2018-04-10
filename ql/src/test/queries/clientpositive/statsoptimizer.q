@@ -2,13 +2,13 @@ set hive.cbo.enable=false;
 set hive.compute.query.using.stats=true;
 
 EXPLAIN
-SELECT to_date(current_date()) as GROUP_BY_FIELD, count (*)  as src_cnt
+SELECT round(year(to_date(current_date())),-3) as GROUP_BY_FIELD, count (*)  as src_cnt
 from src
 WHERE 1=1
-group by to_date(current_date());
+group by round(year(to_date(current_date())),-3);
 
-SELECT to_date(current_date()) as GROUP_BY_FIELD, count (*)  as src_cnt
+SELECT round(year(to_date(current_date())),-3) as GROUP_BY_FIELD, count (*)  as src_cnt
 from src
 WHERE 1=1
-group by to_date(current_date());
+group by round(year(to_date(current_date())),-3);
 
