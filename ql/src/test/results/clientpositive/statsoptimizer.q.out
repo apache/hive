@@ -1,14 +1,14 @@
 PREHOOK: query: EXPLAIN
-SELECT to_date(current_date()) as GROUP_BY_FIELD, count (*)  as src_cnt
+SELECT round(year(to_date(current_date())),-3) as GROUP_BY_FIELD, count (*)  as src_cnt
 from src
 WHERE 1=1
-group by to_date(current_date())
+group by round(year(to_date(current_date())),-3)
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
-SELECT to_date(current_date()) as GROUP_BY_FIELD, count (*)  as src_cnt
+SELECT round(year(to_date(current_date())),-3) as GROUP_BY_FIELD, count (*)  as src_cnt
 from src
 WHERE 1=1
-group by to_date(current_date())
+group by round(year(to_date(current_date())),-3)
 POSTHOOK: type: QUERY
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -20,18 +20,18 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: SELECT to_date(current_date()) as GROUP_BY_FIELD, count (*)  as src_cnt
+PREHOOK: query: SELECT round(year(to_date(current_date())),-3) as GROUP_BY_FIELD, count (*)  as src_cnt
 from src
 WHERE 1=1
-group by to_date(current_date())
+group by round(year(to_date(current_date())),-3)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT to_date(current_date()) as GROUP_BY_FIELD, count (*)  as src_cnt
+POSTHOOK: query: SELECT round(year(to_date(current_date())),-3) as GROUP_BY_FIELD, count (*)  as src_cnt
 from src
 WHERE 1=1
-group by to_date(current_date())
+group by round(year(to_date(current_date())),-3)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-2018-04-04	500
+2000	500
