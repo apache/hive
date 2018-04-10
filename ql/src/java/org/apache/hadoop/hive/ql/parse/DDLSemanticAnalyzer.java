@@ -3155,7 +3155,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       case HiveParser.TOK_DEFAULT_VALUE:
         defaultConstraints = new ArrayList<>();
         processDefaultConstraints(catName, qualified[0], qualified[1], constraintChild,
-                                  ImmutableList.of(newColName), defaultConstraints, (ASTNode)ast.getChild(2));
+                                  ImmutableList.of(newColName), defaultConstraints, (ASTNode)ast.getChild(2),
+                                  this.ctx.getTokenRewriteStream());
         break;
       case HiveParser.TOK_NOT_NULL:
         notNullConstraints = new ArrayList<>();
