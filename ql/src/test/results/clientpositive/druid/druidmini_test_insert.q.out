@@ -148,6 +148,107 @@ POSTHOOK: query: DROP TABLE druid_alltypesorc
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@druid_alltypesorc
 POSTHOOK: Output: default@druid_alltypesorc
+PREHOOK: query: -- Test create then insert
+ 
+ create database druid_test_create_then_insert
+PREHOOK: type: CREATEDATABASE
+PREHOOK: Output: database:druid_test_create_then_insert
+POSTHOOK: query: -- Test create then insert
+ 
+ create database druid_test_create_then_insert
+POSTHOOK: type: CREATEDATABASE
+POSTHOOK: Output: database:druid_test_create_then_insert
+PREHOOK: query: use druid_test_create_then_insert
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:druid_test_create_then_insert
+POSTHOOK: query: use druid_test_create_then_insert
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:druid_test_create_then_insert
+PREHOOK: query: create table test_table(`timecolumn` timestamp, `userid` string, `num_l` float)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:druid_test_create_then_insert
+PREHOOK: Output: druid_test_create_then_insert@test_table
+POSTHOOK: query: create table test_table(`timecolumn` timestamp, `userid` string, `num_l` float)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:druid_test_create_then_insert
+POSTHOOK: Output: druid_test_create_then_insert@test_table
+PREHOOK: query: insert into test_table values ('2015-01-08 00:00:00', 'i1-start', 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_create_then_insert@test_table
+POSTHOOK: query: insert into test_table values ('2015-01-08 00:00:00', 'i1-start', 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_create_then_insert@test_table
+POSTHOOK: Lineage: test_table.num_l SCRIPT []
+POSTHOOK: Lineage: test_table.timecolumn SCRIPT []
+POSTHOOK: Lineage: test_table.userid SCRIPT []
+PREHOOK: query: insert into test_table values ('2015-01-08 23:59:59', 'i1-end', 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: druid_test_create_then_insert@test_table
+POSTHOOK: query: insert into test_table values ('2015-01-08 23:59:59', 'i1-end', 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: druid_test_create_then_insert@test_table
+POSTHOOK: Lineage: test_table.num_l SCRIPT []
+POSTHOOK: Lineage: test_table.timecolumn SCRIPT []
+POSTHOOK: Lineage: test_table.userid SCRIPT []
+PREHOOK: query: CREATE TABLE druid_table (`__time` timestamp with local time zone, `userid` string, `num_l` float)
+ STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
+ TBLPROPERTIES ("druid.segment.granularity" = "DAY")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:druid_test_create_then_insert
+PREHOOK: Output: druid_test_create_then_insert@druid_table
+POSTHOOK: query: CREATE TABLE druid_table (`__time` timestamp with local time zone, `userid` string, `num_l` float)
+ STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
+ TBLPROPERTIES ("druid.segment.granularity" = "DAY")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:druid_test_create_then_insert
+POSTHOOK: Output: druid_test_create_then_insert@druid_table
+PREHOOK: query: INSERT INTO TABLE druid_table
+ select cast(`timecolumn` as timestamp with local time zone) as `__time`, `userid`, `num_l` FROM test_table
+PREHOOK: type: QUERY
+PREHOOK: Input: druid_test_create_then_insert@test_table
+PREHOOK: Output: druid_test_create_then_insert@druid_table
+POSTHOOK: query: INSERT INTO TABLE druid_table
+ select cast(`timecolumn` as timestamp with local time zone) as `__time`, `userid`, `num_l` FROM test_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: druid_test_create_then_insert@test_table
+POSTHOOK: Output: druid_test_create_then_insert@druid_table
+PREHOOK: query: select count(*) FROM druid_table
+PREHOOK: type: QUERY
+PREHOOK: Input: druid_test_create_then_insert@druid_table
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) FROM druid_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: druid_test_create_then_insert@druid_table
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2
+PREHOOK: query: DROP TABLE  test_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: druid_test_create_then_insert@test_table
+PREHOOK: Output: druid_test_create_then_insert@test_table
+POSTHOOK: query: DROP TABLE  test_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: druid_test_create_then_insert@test_table
+POSTHOOK: Output: druid_test_create_then_insert@test_table
+PREHOOK: query: DROP TABLE druid_table
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: druid_test_create_then_insert@druid_table
+PREHOOK: Output: druid_test_create_then_insert@druid_table
+POSTHOOK: query: DROP TABLE druid_table
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: druid_test_create_then_insert@druid_table
+POSTHOOK: Output: druid_test_create_then_insert@druid_table
+PREHOOK: query: DROP DATABASE druid_test_create_then_insert
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:druid_test_create_then_insert
+PREHOOK: Output: database:druid_test_create_then_insert
+POSTHOOK: query: DROP DATABASE druid_test_create_then_insert
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:druid_test_create_then_insert
+POSTHOOK: Output: database:druid_test_create_then_insert
 PREHOOK: query: create database druid_test_dst
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:druid_test_dst
@@ -681,3 +782,11 @@ POSTHOOK: query: DROP TABLE druid_test_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: druid_test_dst@druid_test_table
 POSTHOOK: Output: druid_test_dst@druid_test_table
+PREHOOK: query: drop   database druid_test_dst
+PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:druid_test_dst
+PREHOOK: Output: database:druid_test_dst
+POSTHOOK: query: drop   database druid_test_dst
+POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:druid_test_dst
+POSTHOOK: Output: database:druid_test_dst

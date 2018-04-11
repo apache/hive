@@ -325,7 +325,7 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
 
   @Override
   public void close(Reporter reporter) throws IOException {
-    this.close(true);
+    this.close(false);
   }
 
 }
