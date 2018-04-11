@@ -299,14 +299,7 @@ public final class DruidStorageHandlerUtils {
     ImmutableList.Builder<DataSegment> publishedSegmentsBuilder = ImmutableList.builder();
     FileSystem fs = taskDir.getFileSystem(conf);
     FileStatus[] fss;
-    try {
-      fss = fs.listStatus(taskDir);
-    } catch (FileNotFoundException e) {
-      // This is a CREATE TABLE statement or query executed for CTAS/INSERT
-      // did not produce any result. We do not need to do anything, this is
-      // expected behavior.
-      return publishedSegmentsBuilder.build();
-    }
+    fss = fs.listStatus(taskDir);
     for (FileStatus fileStatus : fss) {
       final DataSegment segment = JSON_MAPPER
               .readValue((InputStream) fs.open(fileStatus.getPath()), DataSegment.class);
