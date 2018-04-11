@@ -79,23 +79,27 @@ public class HiveMaterializedViewRule {
       .build();
 
   public static final MaterializedViewProjectFilterRule INSTANCE_PROJECT_FILTER =
-      new MaterializedViewProjectFilterRule(HiveRelFactories.HIVE_BUILDER, true, PROGRAM, false);
+      new MaterializedViewProjectFilterRule(HiveRelFactories.HIVE_BUILDER,
+          true, PROGRAM, false);
 
   public static final MaterializedViewOnlyFilterRule INSTANCE_FILTER =
-      new MaterializedViewOnlyFilterRule(HiveRelFactories.HIVE_BUILDER, true, PROGRAM, false);
+      new MaterializedViewOnlyFilterRule(HiveRelFactories.HIVE_BUILDER,
+          true, PROGRAM, false);
 
   public static final MaterializedViewProjectJoinRule INSTANCE_PROJECT_JOIN =
-      new MaterializedViewProjectJoinRule(HiveRelFactories.HIVE_BUILDER, true, PROGRAM, false);
+      new MaterializedViewProjectJoinRule(HiveRelFactories.HIVE_BUILDER,
+          true, PROGRAM, false);
 
   public static final MaterializedViewOnlyJoinRule INSTANCE_JOIN =
-      new MaterializedViewOnlyJoinRule(HiveRelFactories.HIVE_BUILDER, true, PROGRAM, false);
+      new MaterializedViewOnlyJoinRule(HiveRelFactories.HIVE_BUILDER,
+          true, PROGRAM, false);
 
   public static final HiveMaterializedViewProjectAggregateRule INSTANCE_PROJECT_AGGREGATE =
-      new MaterializedViewProjectAggregateRule(HiveRelFactories.HIVE_BUILDER, true);
+      new HiveMaterializedViewProjectAggregateRule(HiveRelFactories.HIVE_BUILDER,
           true, PROGRAM);
 
   public static final HiveMaterializedViewOnlyAggregateRule INSTANCE_AGGREGATE =
-      new MaterializedViewOnlyAggregateRule(HiveRelFactories.HIVE_BUILDER, true);
+      new HiveMaterializedViewOnlyAggregateRule(HiveRelFactories.HIVE_BUILDER,
           true, PROGRAM);
 
 

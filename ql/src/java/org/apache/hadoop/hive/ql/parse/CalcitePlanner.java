@@ -83,6 +83,7 @@ import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.SetOp;
+import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.metadata.CachingRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.DefaultRelMetadataProvider;
@@ -2781,6 +2782,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
             fullyQualifiedTabName = tabMetaData.getTableName();
           }
 
+          RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
+              rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
+              partitionCache, colStatsCache, noColsMissingStats);
           
           final HiveTableScan hts = new HiveTableScan(cluster,
               cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
@@ -2826,11 +2830,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
           DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
               dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
               intervals, null, null);
-          RelOptHiveTable optTable = new RelOptHiveTable(relOptSchema, fullyQualifiedTabName,
-              rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-              partitionCache, colStatsCache, noColsMissingStats);
+
             tableRel = DruidQuery.create(cluster, cluster.traitSetOf(BindableConvention.INSTANCE),
-              optTable, druidTable, ImmutableList.<RelNode>of(scan));
+              optTable, druidTable, ImmutableList.<RelNode>of(hts));
           } else if (tableType == TableType.JDBC) {
             LOG.debug("JDBC is running");
             final String dataBaseType = tabMetaData.getProperty("hive.sql.database.type");
