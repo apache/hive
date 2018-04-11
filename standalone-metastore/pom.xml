@@ -422,6 +422,39 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+    <id>findbugs</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>findbugs-maven-plugin</artifactId>
+            <version>3.0.0</version>
+            <configuration>
+              <fork>true</fork>
+              <maxHeap>2048</maxHeap>
+              <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
+              <excludeFilterFile>${basedir}/findbugs/findbugs-exclude.xml</excludeFilterFile>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>findbugs-maven-plugin</artifactId>
+            <version>3.0.0</version>
+            <configuration>
+              <fork>true</fork>
+              <maxHeap>2048</maxHeap>
+              <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
+              <excludeFilterFile>${basedir}/findbugs/findbugs-exclude.xml</excludeFilterFile>
+            </configuration>
+          </plugin>
+        </plugins>
+      </reporting>
+    </profile>
       <!--
     <profile>
       <id>checkin</id>
@@ -592,7 +625,6 @@
           </execution>
         </executions>
       </plugin>
-      <!-- TODO MS-SPLIT findbugs plugin -->
       <!-- TODO MS-SPLIT javadoc plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -612,6 +644,29 @@
                 <descriptor>src/assembly/src.xml</descriptor>
               </descriptors>
               <tarLongFileMode>gnu</tarLongFileMode>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-banned-dependencies</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <bannedDependencies>
+                  <excludes>
+                    <!--LGPL licenced library-->
+                    <exclude>com.google.code.findbugs:annotations</exclude>
+                  </excludes>
+                </bannedDependencies>
+              </rules>
+              <fail>true</fail>
             </configuration>
           </execution>
         </executions>
