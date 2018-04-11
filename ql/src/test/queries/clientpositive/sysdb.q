@@ -3,6 +3,7 @@ set hive.strict.checks.cartesian.product=false;
 set hive.compute.query.using.stats=false;
 
 set hive.support.concurrency=true;
+set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
 set hive.cbo.enable=false;
 
@@ -41,10 +42,6 @@ select db_location_uri, name, owner_name, owner_type from dbs order by name;
 select grantor, principal_name from db_privs order by grantor, principal_name limit 5;
 
 select grantor, principal_name from global_privs order by grantor, principal_name limit 5;
-
-select index_name, index_handler_class from idxs order by index_name limit 5;
-
-select param_key, param_value from index_params order by param_key, param_value limit 5;
 
 select part_name from partitions order by part_name limit 5;
 
