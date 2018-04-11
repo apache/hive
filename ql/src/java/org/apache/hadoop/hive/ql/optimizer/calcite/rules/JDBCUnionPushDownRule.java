@@ -47,7 +47,7 @@ public class JDBCUnionPushDownRule extends RelOptRule {
 
   @Override
   public void onMatch(RelOptRuleCall call) {
-    LOG.debug("MyUnionPushDown has been called");
+    LOG.debug("JDBCUnionPushDown has been called");
     
     final HiveUnion union = call.rel(0);
     final HiveJdbcConverter converter1 = call.rel(1);

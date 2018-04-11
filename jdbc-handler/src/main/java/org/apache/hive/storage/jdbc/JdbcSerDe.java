@@ -67,7 +67,7 @@ public class JdbcSerDe extends AbstractSerDe {
       LOGGER.trace("Initializing the SerDe");
 
       if (tbl.containsKey(JdbcStorageConfig.DATABASE_TYPE.getPropertyName())) {
-        final boolean hive_query_execution = tbl.containsKey(Constants.HIVE_JDBC_QUERY);
+        final boolean hiveQueryExecution = tbl.containsKey(Constants.HIVE_JDBC_QUERY);
         
         Configuration tableConfig = JdbcStorageConfigManager.convertPropertiesToConfiguration(tbl);
 
@@ -75,7 +75,7 @@ public class JdbcSerDe extends AbstractSerDe {
         columnNames = dbAccessor.getColumnNames(tableConfig);
         numColumns = columnNames.size();
         List<String> hiveColumnNames;
-        if (hive_query_execution) {
+        if (hiveQueryExecution) {
           hiveColumnNames = columnNames;
           final List<String> columnTypes = dbAccessor.getColumnTypes(tableConfig);
           hiveColumnTypeArray = new String [columnTypes.size()];

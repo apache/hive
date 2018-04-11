@@ -46,7 +46,7 @@ public class JDBCSortPushDownRule extends RelOptRule {
   
   @Override
   public void onMatch(RelOptRuleCall call) {
-    LOG.debug("MySortPushDownRule has been called");
+    LOG.debug("JDBCSortPushDownRule has been called");
     
     final HiveSortLimit sort = call.rel(0);
     final HiveJdbcConverter converter = call.rel(1);

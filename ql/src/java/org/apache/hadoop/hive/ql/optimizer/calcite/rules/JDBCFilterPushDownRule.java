@@ -43,7 +43,7 @@ public class JDBCFilterPushDownRule extends RelOptRule {
 
   @Override
   public void onMatch(RelOptRuleCall call) {
-    LOG.debug("MyFilterPushDown has been called");
+    LOG.debug("JDBCFilterPushDown has been called");
 
     final HiveFilter filter = call.rel(0);
     final HiveJdbcConverter converter = call.rel(1);

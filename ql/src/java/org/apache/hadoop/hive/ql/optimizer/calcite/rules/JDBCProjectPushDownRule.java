@@ -46,7 +46,7 @@ public class JDBCProjectPushDownRule extends RelOptRule {
 
   @Override
   public void onMatch(RelOptRuleCall call) {
-    LOG.debug("MyProjectPushDownRule has been called");
+    LOG.debug("JDBCProjectPushDownRule has been called");
     
     final HiveProject project = call.rel(0);
     final HiveJdbcConverter converter = call.rel(1);
