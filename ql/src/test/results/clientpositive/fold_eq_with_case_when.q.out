@@ -42,10 +42,10 @@ STAGE PLANS:
             alias: lineitem
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (('RAIL' = l_shipmode) and (1996-03-30 = to_date(l_shipdate))) (type: boolean)
+              predicate: ((DATE'1996-03-30' = to_date(l_shipdate)) and (l_shipmode = 'RAIL')) (type: boolean)
               Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: l_orderkey (type: int), (UDFToDouble(l_partkey) / 1000000.0) (type: double)
+                expressions: l_orderkey (type: int), (UDFToDouble(l_partkey) / 1000000.0D) (type: double)
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 25 Data size: 2999 Basic stats: COMPLETE Column stats: NONE
                 Group By Operator

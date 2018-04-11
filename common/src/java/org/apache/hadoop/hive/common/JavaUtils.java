@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -150,12 +150,13 @@ public final class JavaUtils {
   public static String lockIdToString(long extLockId) {
     return "lockid:" + extLockId;
   }
-  /**
-   * Utility method for ACID to normalize logging info.  Matches
-   * org.apache.hadoop.hive.metastore.api.LockResponse#toString
-   */
+
   public static String txnIdToString(long txnId) {
     return "txnid:" + txnId;
+  }
+
+  public static String writeIdToString(long writeId) {
+    return "writeid:" + writeId;
   }
 
   public static String txnIdsToString(List<Long> txnIds) {
@@ -166,11 +167,11 @@ public final class JavaUtils {
     // prevent instantiation
   }
 
-  public static Long extractTxnId(Path file) {
+  public static Long extractWriteId(Path file) {
     String fileName = file.getName();
     String[] parts = fileName.split("_", 4);  // e.g. delta_0000001_0000001_0000 or base_0000022
     if (parts.length < 2 || !(DELTA_PREFIX.equals(parts[0]) || BASE_PREFIX.equals(parts[0]))) {
-      LOG.debug("Cannot extract transaction ID for a MM table: " + file
+      LOG.debug("Cannot extract write ID for a MM table: " + file
           + " (" + Arrays.toString(parts) + ")");
       return null;
     }
@@ -178,7 +179,7 @@ public final class JavaUtils {
     try {
       writeId = Long.parseLong(parts[1]);
     } catch (NumberFormatException ex) {
-      LOG.debug("Cannot extract transaction ID for a MM table: " + file
+      LOG.debug("Cannot extract write ID for a MM table: " + file
           + "; parsing " + parts[1] + " got " + ex.getMessage());
       return null;
     }
@@ -186,32 +187,24 @@ public final class JavaUtils {
   }
 
   public static class IdPathFilter implements PathFilter {
-    private String mmDirName;
-    private final boolean isMatch, isIgnoreTemp, isPrefix;
+    private String baseDirName, deltaDirName;
+    private final boolean isMatch, isIgnoreTemp, isDeltaPrefix;
 
     public IdPathFilter(long writeId, int stmtId, boolean isMatch) {
-      this(writeId, stmtId, isMatch, false, false);
+      this(writeId, stmtId, isMatch, false);
     }
+
     public IdPathFilter(long writeId, int stmtId, boolean isMatch, boolean isIgnoreTemp) {
-      this(writeId, stmtId, isMatch, isIgnoreTemp, false);
-    }
-    public IdPathFilter(long writeId, int stmtId, boolean isMatch, boolean isIgnoreTemp, boolean isBaseDir) {
-      String mmDirName = null;
-      if (!isBaseDir) {
-        mmDirName = DELTA_PREFIX + "_" + String.format(DELTA_DIGITS, writeId) + "_" +
-                String.format(DELTA_DIGITS, writeId) + "_";
-        if (stmtId >= 0) {
-          mmDirName += String.format(STATEMENT_DIGITS, stmtId);
-          isPrefix = false;
-        } else {
-          isPrefix = true;
-        }
-      } else {
-        mmDirName = BASE_PREFIX + "_" + String.format(DELTA_DIGITS, writeId);
-        isPrefix = false;
+      String deltaDirName = null;
+      deltaDirName = DELTA_PREFIX + "_" + String.format(DELTA_DIGITS, writeId) + "_" +
+              String.format(DELTA_DIGITS, writeId) + "_";
+      isDeltaPrefix = (stmtId < 0);
+      if (!isDeltaPrefix) {
+        deltaDirName += String.format(STATEMENT_DIGITS, stmtId);
       }
 
-      this.mmDirName = mmDirName;
+      this.baseDirName = BASE_PREFIX + "_" + String.format(DELTA_DIGITS, writeId);
+      this.deltaDirName = deltaDirName;
       this.isMatch = isMatch;
       this.isIgnoreTemp = isIgnoreTemp;
     }
@@ -219,7 +212,8 @@ public final class JavaUtils {
     @Override
     public boolean accept(Path path) {
       String name = path.getName();
-      if ((isPrefix && name.startsWith(mmDirName)) || (!isPrefix && name.equals(mmDirName))) {
+      if (name.equals(baseDirName) || (isDeltaPrefix && name.startsWith(deltaDirName))
+          || (!isDeltaPrefix && name.equals(deltaDirName))) {
         return isMatch;
       }
       if (isIgnoreTemp && name.length() > 0) {

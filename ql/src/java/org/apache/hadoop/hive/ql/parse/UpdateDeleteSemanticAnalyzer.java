@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -773,6 +773,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
           }
         }
         outputs.removeAll(toRemove);
+        // TODO: why is this like that?
         for(ReadEntity re : partitionsRead) {
           for(WriteEntity original : toRemove) {
             //since we may have both Update and Delete branches, Auth needs to know
@@ -1100,6 +1101,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     List<FieldSchema> partCols = targetTable.getPartCols();
     String valuesClause = getMatchedText((ASTNode)getWhenClauseOperation(whenNotMatchedClause).getChild(0));
     valuesClause = valuesClause.substring(1, valuesClause.length() - 1);//strip '(' and ')'
+    valuesClause = SemanticAnalyzer.replaceDefaultKeywordForMerge(valuesClause, targetTable);
 
     rewrittenQueryStr.append("INSERT INTO ").append(getFullTableNameForSQL(target));
     addPartitionColsToInsert(partCols, rewrittenQueryStr);

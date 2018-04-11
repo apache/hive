@@ -75,23 +75,23 @@ public class MetaStoreInit {
     if (connectUrl != null && !connectUrl.equals(currentUrl)) {
       LOG.error(
           String.format("Overriding %s with %s",
-              MetastoreConf.ConfVars.CONNECTURLKEY.toString(),
+              MetastoreConf.ConfVars.CONNECT_URL_KEY.toString(),
               connectUrl));
-      MetastoreConf.setVar(activeConf, ConfVars.CONNECTURLKEY, connectUrl);
+      MetastoreConf.setVar(activeConf, ConfVars.CONNECT_URL_KEY, connectUrl);
       return true;
     }
     return false;
   }
 
   static String getConnectionURL(Configuration conf) {
-    return MetastoreConf.getVar(conf, ConfVars.CONNECTURLKEY, "");
+    return MetastoreConf.getVar(conf, ConfVars.CONNECT_URL_KEY, "");
   }
 
   // Multiple threads could try to initialize at the same time.
   synchronized private static void initConnectionUrlHook(Configuration conf,
     MetaStoreInitData updateData) throws ClassNotFoundException {
 
-    String className = MetastoreConf.getVar(conf, ConfVars.CONNECTURLHOOK, "").trim();
+    String className = MetastoreConf.getVar(conf, ConfVars.CONNECT_URL_HOOK, "").trim();
     if (className.equals("")) {
       updateData.urlHookClassName = "";
       updateData.urlHook = null;

@@ -1,0 +1,64 @@
+PREHOOK: query: create table test_table(number int) stored as ORC
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_table
+POSTHOOK: query: create table test_table(number int) stored as ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_table
+PREHOOK: query: insert into table test_table VALUES (1)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_table
+POSTHOOK: query: insert into table test_table VALUES (1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_table
+POSTHOOK: Lineage: test_table.number SCRIPT []
+PREHOOK: query: insert into table test_table VALUES (2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_table
+POSTHOOK: query: insert into table test_table VALUES (2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_table
+POSTHOOK: Lineage: test_table.number SCRIPT []
+PREHOOK: query: select * from test_table
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_table
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table
+#### A masked pattern was here ####
+1
+2
+PREHOOK: query: select * from test_table where number = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_table where number = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table
+#### A masked pattern was here ####
+1
+PREHOOK: query: select * from test_table where number = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_table where number = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table
+#### A masked pattern was here ####
+2
+PREHOOK: query: select * from test_table where number = 1 union all select * from test_table where number = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_table where number = 1 union all select * from test_table where number = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_table
+#### A masked pattern was here ####
+1
+2

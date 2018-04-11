@@ -160,8 +160,10 @@ public class TableExport {
   }
 
   private boolean shouldExport() {
+    // Note: this is a temporary setting that is needed because replication does not support
+    //       ACID or MM tables at the moment. It will eventually be removed.
     if (conf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_INCLUDE_ACID_TABLES)
-        && AcidUtils.isAcidTable(tableSpec.tableHandle)) {
+        && AcidUtils.isTransactionalTable(tableSpec.tableHandle)) {
       return true;
     }
     return Utils.shouldReplicate(replicationSpec, tableSpec.tableHandle, conf);

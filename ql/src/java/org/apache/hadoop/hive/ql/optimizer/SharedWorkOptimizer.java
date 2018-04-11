@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -595,9 +594,10 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
     List<Entry<String, Long>> sortedTables =
-        new LinkedList<>(tableToTotalSize.entrySet());
+        new ArrayList<>(tableToTotalSize.entrySet());
     Collections.sort(sortedTables, Collections.reverseOrder(
         new Comparator<Map.Entry<String, Long>>() {
+          @Override
           public int compare(Map.Entry<String, Long> o1, Map.Entry<String, Long> o2) {
             return (o1.getValue()).compareTo(o2.getValue());
           }
@@ -634,9 +634,10 @@ public class SharedWorkOptimizer extends Transform {
           StatsUtils.safeMult(op.getChildOperators().size(), size));
     }
     List<Entry<Operator<?>, Long>> sortedOps =
-        new LinkedList<>(opToTotalSize.entrySet());
+        new ArrayList<>(opToTotalSize.entrySet());
     Collections.sort(sortedOps, Collections.reverseOrder(
         new Comparator<Map.Entry<Operator<?>, Long>>() {
+          @Override
           public int compare(Map.Entry<Operator<?>, Long> o1, Map.Entry<Operator<?>, Long> o2) {
             int valCmp = o1.getValue().compareTo(o2.getValue());
             if (valCmp == 0) {
@@ -648,6 +649,7 @@ public class SharedWorkOptimizer extends Transform {
     return sortedOps;
   }
 
+  // FIXME: probably this should also be integrated with isSame() logics
   private static boolean areMergeable(ParseContext pctx, SharedWorkOptimizerCache optimizerCache,
           TableScanOperator tsOp1, TableScanOperator tsOp2) throws SemanticException {
     // First we check if the two table scan operators can actually be merged

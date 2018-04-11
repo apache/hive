@@ -27,9 +27,10 @@ language: java
 jdk:
   - oraclejdk8
 
-cache:
-  directories:
-  - $HOME/.m2
+# disabling cache for /home/travis/.m2/repository/org/apache/hive/hive-jdbc/3.0.0-SNAPSHOT/hive-jdbc-3.0.0-SNAPSHOT-standalone.jar (Permission denied)
+#cache:
+#  directories:
+#  - $HOME/.m2
 
 env:
   MAVEN_SKIP_RC=true

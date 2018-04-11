@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -74,8 +74,7 @@ public class ExprNodeDescUtils {
     // for ExprNodeGenericFuncDesc, it should be deterministic and stateless
     if (origin instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) origin;
-      if (!FunctionRegistry.isDeterministic(func.getGenericUDF())
-          || FunctionRegistry.isStateful(func.getGenericUDF())) {
+      if (!FunctionRegistry.isConsistentWithinQuery(func.getGenericUDF())) {
         return null;
       }
       List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
@@ -487,7 +486,7 @@ public class ExprNodeDescUtils {
 
   private static ExprNodeConstantDesc foldConstant(ExprNodeGenericFuncDesc func) {
     GenericUDF udf = func.getGenericUDF();
-    if (!FunctionRegistry.isDeterministic(udf) || FunctionRegistry.isStateful(udf)) {
+    if (!FunctionRegistry.isConsistentWithinQuery(udf)) {
       return null;
     }
     try {
@@ -572,7 +571,7 @@ public class ExprNodeDescUtils {
     }
     if (value instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc func = (ExprNodeGenericFuncDesc) value;
-      if (!FunctionRegistry.isDeterministic(func.getGenericUDF())) {
+      if (!FunctionRegistry.isConsistentWithinQuery(func.getGenericUDF())) {
         return false;
       }
       for (ExprNodeDesc child : func.getChildren()) {

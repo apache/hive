@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -207,7 +207,7 @@ public class NotificationListener extends MetaStoreEventListener {
       Configuration conf = handler.getConf();
       Table newTbl;
       try {
-        newTbl = handler.get_table_core(tbl.getDbName(), tbl.getTableName())
+        newTbl = handler.get_table_core(tbl.getCatName(), tbl.getDbName(), tbl.getTableName())
           .deepCopy();
         newTbl.getParameters().put(
           HCatConstants.HCAT_MSGBUS_TOPIC_NAME,

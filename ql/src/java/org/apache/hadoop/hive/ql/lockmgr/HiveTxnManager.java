@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -27,7 +29,6 @@ import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
-
 import java.util.List;
 
 /**
@@ -45,6 +46,32 @@ public interface HiveTxnManager {
    * @throws LockException if a transaction is already open.
    */
   long openTxn(Context ctx, String user) throws LockException;
+
+  /**
+   * Open a new transaction in target cluster.
+   * @param replPolicy Replication policy to uniquely identify the source cluster.
+   * @param srcTxnIds The ids of the transaction at the source cluster
+   * @param user The user who has fired the repl load command
+   * @return The new transaction id.
+   * @throws LockException in case of failure to start the transaction.
+   */
+  List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user)  throws LockException;
+
+  /**
+   * Commit the transaction in target cluster.
+   * @param replPolicy Replication policy to uniquely identify the source cluster.
+   * @param srcTxnId The id of the transaction at the source cluster
+   * @throws LockException in case of failure to commit the transaction.
+   */
+  void replCommitTxn(String replPolicy, long srcTxnId)  throws LockException;
+
+ /**
+   * Abort the transaction in target cluster.
+   * @param replPolicy Replication policy to uniquely identify the source cluster.
+   * @param srcTxnId The id of the transaction at the source cluster
+   * @throws LockException in case of failure to abort the transaction.
+   */
+  void replRollbackTxn(String replPolicy, long srcTxnId)  throws LockException;
 
   /**
    * Get the lock manager.  This must be used rather than instantiating an
@@ -122,8 +149,7 @@ public interface HiveTxnManager {
 
   /**
    * Get the transactions that are currently valid.  The resulting
-   * {@link ValidTxnList} object is a thrift object and can
-   * be  passed to  the processing
+   * {@link ValidTxnList} object can be passed as string to the processing
    * tasks for use in the reading the data.  This call should be made once up
    * front by the planner and should never be called on the backend,
    * as this will violate the isolation level semantics.
@@ -131,6 +157,18 @@ public interface HiveTxnManager {
    * @throws LockException
    */
   ValidTxnList getValidTxns() throws LockException;
+
+  /**
+   * Get the table write Ids that are valid for the current transaction.  The resulting
+   * {@link ValidTxnWriteIdList} object can be passed as string to the processing
+   * tasks for use in the reading the data.  This call will return same results as long as validTxnString
+   * passed is same.
+   * @param tableList list of tables (<db_name>.<table_name>) read/written by current transaction.
+   * @param validTxnList snapshot of valid txns for the current txn
+   * @return list of valid table write Ids.
+   * @throws LockException
+   */
+  ValidTxnWriteIdList getValidWriteIds(List<String> tableList, String validTxnList) throws LockException;
 
   /**
    * Get the name for currently installed transaction manager.
@@ -202,7 +240,7 @@ public interface HiveTxnManager {
   boolean useNewShowLocksFormat();
 
   /**
-   * Indicate whether this transaction manager supports ACID operations
+   * Indicate whether this transaction manager supports ACID operations.
    * @return true if this transaction manager does ACID
    */
   boolean supportsAcid();
@@ -217,14 +255,29 @@ public interface HiveTxnManager {
   
   boolean isTxnOpen();
   /**
-   * if {@code isTxnOpen()}, returns the currently active transaction ID
+   * if {@code isTxnOpen()}, returns the currently active transaction ID.
    */
   long getCurrentTxnId();
+
+  /**
+   * if {@code isTxnOpen()}, returns the table write ID associated with current active transaction.
+   */
+  long getTableWriteId(String dbName, String tableName) throws LockException;
 
   /**
    * Should be though of more as a unique write operation ID in a given txn (at QueryPlan level).
    * Each statement writing data within a multi statement txn should have a unique WriteId.
    * Even a single statement, (e.g. Merge, multi-insert may generates several writes).
    */
-  int getWriteIdAndIncrement();
+  int getStmtIdAndIncrement();
+
+  /**
+   * Acquire the materialization rebuild lock for a given view. We need to specify the fully
+   * qualified name of the materialized view and the open transaction ID so we can identify
+   * uniquely the lock.
+   * @return the response from the metastore, where the lock id is equal to the txn id and
+   * the status can be either ACQUIRED or NOT ACQUIRED
+   */
+  LockResponse acquireMaterializationRebuildLock(String dbName, String tableName, long txnId)
+      throws LockException;
 }

@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.Arrays;
@@ -68,19 +69,18 @@ public class TestSparkClient {
   private static final long TIMEOUT = 20;
   private static final HiveConf HIVECONF = new HiveConf();
 
-  private Map<String, String> createConf(boolean local) {
+  static {
+    HIVECONF.set("hive.spark.client.connect.timeout", "30000ms");
+  }
+
+  private Map<String, String> createConf() {
     Map<String, String> conf = new HashMap<String, String>();
-    if (local) {
-      conf.put(SparkClientFactory.CONF_KEY_IN_PROCESS, "true");
-      conf.put("spark.master", "local");
-      conf.put("spark.app.name", "SparkClientSuite Local App");
-    } else {
-      String classpath = System.getProperty("java.class.path");
-      conf.put("spark.master", "local");
-      conf.put("spark.app.name", "SparkClientSuite Remote App");
-      conf.put("spark.driver.extraClassPath", classpath);
-      conf.put("spark.executor.extraClassPath", classpath);
-    }
+
+    String classpath = System.getProperty("java.class.path");
+    conf.put("spark.master", "local");
+    conf.put("spark.app.name", "SparkClientSuite Remote App");
+    conf.put("spark.driver.extraClassPath", classpath);
+    conf.put("spark.executor.extraClassPath", classpath);
 
     if (!Strings.isNullOrEmpty(System.getProperty("spark.home"))) {
       conf.put("spark.home", System.getProperty("spark.home"));
@@ -91,7 +91,7 @@ public class TestSparkClient {
 
   @Test
   public void testJobSubmission() throws Exception {
-    runTest(true, new TestFunction() {
+    runTest(new TestFunction() {
       @Override
       public void call(SparkClient client) throws Exception {
         JobHandle.Listener<String> listener = newListener();
@@ -112,7 +112,7 @@ public class TestSparkClient {
 
   @Test
   public void testSimpleSparkJob() throws Exception {
-    runTest(true, new TestFunction() {
+    runTest(new TestFunction() {
       @Override
       public void call(SparkClient client) throws Exception {
         JobHandle<Long> handle = client.submit(new SparkJob());
@@ -123,7 +123,7 @@ public class TestSparkClient {
 
   @Test
   public void testErrorJob() throws Exception {
-    runTest(true, new TestFunction() {
+    runTest(new TestFunction() {
       @Override
       public void call(SparkClient client) throws Exception {
         JobHandle.Listener<String> listener = newListener();
@@ -151,7 +151,7 @@ public class TestSparkClient {
 
   @Test
   public void testSyncRpc() throws Exception {
-    runTest(true, new TestFunction() {
+    runTest(new TestFunction() {
       @Override
       public void call(SparkClient client) throws Exception {
         Future<String> result = client.run(new SyncRpc());
@@ -161,19 +161,8 @@ public class TestSparkClient {
   }
 
   @Test
-  public void testRemoteClient() throws Exception {
-    runTest(false, new TestFunction() {
-      @Override
-      public void call(SparkClient client) throws Exception {
-        JobHandle<Long> handle = client.submit(new SparkJob());
-        assertEquals(Long.valueOf(5L), handle.get(TIMEOUT, TimeUnit.SECONDS));
-      }
-    });
-  }
-
-  @Test
   public void testMetricsCollection() throws Exception {
-    runTest(true, new TestFunction() {
+    runTest(new TestFunction() {
       @Override
       public void call(SparkClient client) throws Exception {
         JobHandle.Listener<Integer> listener = newListener();
@@ -202,7 +191,7 @@ public class TestSparkClient {
 
   @Test
   public void testAddJarsAndFiles() throws Exception {
-    runTest(true, new TestFunction() {
+    runTest(new TestFunction() {
       @Override
       public void call(SparkClient client) throws Exception {
         File jar = null;
@@ -256,7 +245,7 @@ public class TestSparkClient {
 
   @Test
   public void testCounters() throws Exception {
-    runTest(true, new TestFunction() {
+    runTest(new TestFunction() {
       @Override
       public void call(SparkClient client) throws Exception {
         JobHandle<?> job = client.submit(new CounterIncrementJob());
@@ -308,8 +297,8 @@ public class TestSparkClient {
     }).when(listener);
   }
 
-  private void runTest(boolean local, TestFunction test) throws Exception {
-    Map<String, String> conf = createConf(local);
+  private void runTest(TestFunction test) throws Exception {
+    Map<String, String> conf = createConf();
     SparkClientFactory.initialize(conf);
     SparkClient client = null;
     try {

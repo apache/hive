@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
+
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
 
@@ -33,16 +35,20 @@ public class DropDatabaseDesc extends DDLDesc implements Serializable {
   String databaseName;
   boolean ifExists;
   boolean cascade;
+  ReplicationSpec replicationSpec;
 
-  public DropDatabaseDesc(String databaseName, boolean ifExists) {
-    this(databaseName, ifExists, false);
+  public DropDatabaseDesc(String databaseName, boolean ifExists,
+      ReplicationSpec replicationSpec) {
+    this(databaseName, ifExists, false, replicationSpec);
   }
 
-  public DropDatabaseDesc(String databaseName, boolean ifExists, boolean cascade) {
+  public DropDatabaseDesc(String databaseName, boolean ifExists, boolean cascade,
+      ReplicationSpec replicationSpec) {
     super();
     this.databaseName = databaseName;
     this.ifExists = ifExists;
     this.cascade = cascade;
+    this.replicationSpec = replicationSpec;
   }
 
   @Explain(displayName = "database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
@@ -69,5 +75,9 @@ public class DropDatabaseDesc extends DDLDesc implements Serializable {
 
   public void setIsCascade(boolean cascade) {
     this.cascade = cascade;
+  }
+
+  public ReplicationSpec getReplicationSpec() {
+    return replicationSpec;
   }
 }

@@ -1,0 +1,1022 @@
+PREHOOK: query: create table emps (
+  empid int,
+  deptno int,
+  name varchar(256),
+  salary float,
+  commission int)
+stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@emps
+POSTHOOK: query: create table emps (
+  empid int,
+  deptno int,
+  name varchar(256),
+  salary float,
+  commission int)
+stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@emps
+PREHOOK: query: insert into emps values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
+  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@emps
+POSTHOOK: query: insert into emps values (100, 10, 'Bill', 10000, 1000), (200, 20, 'Eric', 8000, 500),
+  (150, 10, 'Sebastian', 7000, null), (110, 10, 'Theodore', 10000, 250)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@emps
+POSTHOOK: Lineage: emps.commission SCRIPT []
+POSTHOOK: Lineage: emps.deptno SCRIPT []
+POSTHOOK: Lineage: emps.empid SCRIPT []
+POSTHOOK: Lineage: emps.name SCRIPT []
+POSTHOOK: Lineage: emps.salary SCRIPT []
+PREHOOK: query: analyze table emps compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@emps
+PREHOOK: Output: default@emps
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table emps compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@emps
+POSTHOOK: Output: default@emps
+#### A masked pattern was here ####
+PREHOOK: query: create table depts (
+  deptno int,
+  name varchar(256),
+  locationid int)
+stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@depts
+POSTHOOK: query: create table depts (
+  deptno int,
+  name varchar(256),
+  locationid int)
+stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@depts
+PREHOOK: query: insert into depts values (10, 'Sales', 10), (30, 'Marketing', null), (20, 'HR', 20)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@depts
+POSTHOOK: query: insert into depts values (10, 'Sales', 10), (30, 'Marketing', null), (20, 'HR', 20)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@depts
+POSTHOOK: Lineage: depts.deptno SCRIPT []
+POSTHOOK: Lineage: depts.locationid SCRIPT []
+POSTHOOK: Lineage: depts.name SCRIPT []
+PREHOOK: query: analyze table depts compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@depts
+PREHOOK: Output: default@depts
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table depts compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@depts
+POSTHOOK: Output: default@depts
+#### A masked pattern was here ####
+PREHOOK: query: create table dependents (
+  empid int,
+  name varchar(256))
+stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@dependents
+POSTHOOK: query: create table dependents (
+  empid int,
+  name varchar(256))
+stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@dependents
+PREHOOK: query: insert into dependents values (10, 'Michael'), (10, 'Jane')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@dependents
+POSTHOOK: query: insert into dependents values (10, 'Michael'), (10, 'Jane')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@dependents
+POSTHOOK: Lineage: dependents.empid SCRIPT []
+POSTHOOK: Lineage: dependents.name SCRIPT []
+PREHOOK: query: analyze table dependents compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dependents
+PREHOOK: Output: default@dependents
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table dependents compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dependents
+POSTHOOK: Output: default@dependents
+#### A masked pattern was here ####
+PREHOOK: query: create table locations (
+  locationid int,
+  name varchar(256))
+stored as orc TBLPROPERTIES ('transactional'='true')
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@locations
+POSTHOOK: query: create table locations (
+  locationid int,
+  name varchar(256))
+stored as orc TBLPROPERTIES ('transactional'='true')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@locations
+PREHOOK: query: insert into locations values (10, 'San Francisco'), (10, 'San Diego')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@locations
+POSTHOOK: query: insert into locations values (10, 'San Francisco'), (10, 'San Diego')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@locations
+POSTHOOK: Lineage: locations.locationid SCRIPT []
+POSTHOOK: Lineage: locations.name SCRIPT []
+PREHOOK: query: analyze table locations compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@locations
+PREHOOK: Output: default@locations
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table locations compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@locations
+POSTHOOK: Output: default@locations
+#### A masked pattern was here ####
+PREHOOK: query: alter table emps add constraint pk1 primary key (empid) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table emps add constraint pk1 primary key (empid) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table depts add constraint pk2 primary key (deptno) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table depts add constraint pk2 primary key (deptno) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table dependents add constraint pk3 primary key (empid) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table dependents add constraint pk3 primary key (empid) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table locations add constraint pk4 primary key (locationid) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table locations add constraint pk4 primary key (locationid) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table emps add constraint fk1 foreign key (deptno) references depts(deptno) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table emps add constraint fk1 foreign key (deptno) references depts(deptno) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table depts add constraint fk2 foreign key (locationid) references locations(locationid) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table depts add constraint fk2 foreign key (locationid) references locations(locationid) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table emps change column deptno deptno int constraint nn1 not null disable novalidate rely
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@emps
+PREHOOK: Output: default@emps
+POSTHOOK: query: alter table emps change column deptno deptno int constraint nn1 not null disable novalidate rely
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@emps
+POSTHOOK: Output: default@emps
+PREHOOK: query: alter table depts change column locationid locationid int constraint nn2 not null disable novalidate rely
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@depts
+PREHOOK: Output: default@depts
+POSTHOOK: query: alter table depts change column locationid locationid int constraint nn2 not null disable novalidate rely
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@depts
+POSTHOOK: Output: default@depts
+PREHOOK: query: create materialized view mv1 enable rewrite as
+select depts.deptno, dependents.empid
+from depts
+join dependents on (depts.name = dependents.name)
+join locations on (locations.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno > 11
+group by depts.deptno, dependents.empid
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@dependents
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Input: default@locations
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1
+POSTHOOK: query: create materialized view mv1 enable rewrite as
+select depts.deptno, dependents.empid
+from depts
+join dependents on (depts.name = dependents.name)
+join locations on (locations.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno > 11
+group by depts.deptno, dependents.empid
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@dependents
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@locations
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1
+PREHOOK: query: analyze table mv1 compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv1
+PREHOOK: Output: default@mv1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv1
+POSTHOOK: Output: default@mv1
+#### A masked pattern was here ####
+PREHOOK: query: explain
+select dependents.empid, depts.deptno
+from depts
+join dependents on (depts.name = dependents.name)
+join locations on (locations.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno > 10
+group by dependents.empid, depts.deptno
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select dependents.empid, depts.deptno
+from depts
+join dependents on (depts.name = dependents.name)
+join locations on (locations.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno > 10
+group by dependents.empid, depts.deptno
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 10 <- Union 4 (CONTAINS)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Union 4 (CONTAINS)
+        Reducer 5 <- Union 4 (SIMPLE_EDGE)
+        Reducer 8 <- Map 7 (SIMPLE_EDGE), Map 9 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: dependents
+                  Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: name is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: empid (type: int), name (type: varchar(256))
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: varchar(256))
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: varchar(256))
+                        Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int)
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Map 10 
+            Map Operator Tree:
+                TableScan
+                  alias: default.mv1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: empid (type: int), deptno (type: int)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: _col0 (type: int), _col1 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: int)
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: locations
+                  Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: name is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: name (type: varchar(256))
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: varchar(256))
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: varchar(256))
+                        Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: depts
+                  Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((deptno <= 11) and (deptno > 10) and name is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptno (type: int), name (type: varchar(256))
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: varchar(256))
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Map 9 
+            Map Operator Tree:
+                TableScan
+                  alias: emps
+                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((deptno <= 11) and (deptno > 10)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptno (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                keys:
+                  0 _col1 (type: varchar(256))
+                  1 _col0 (type: varchar(256))
+                  2 _col1 (type: varchar(256))
+                outputColumnNames: _col0, _col3
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  keys: _col0 (type: int), _col3 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int), _col1 (type: int)
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int), KEY._col1 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  keys: _col0 (type: int), _col1 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int), _col1 (type: int)
+                    sort order: ++
+                    Map-reduce partition columns: _col0 (type: int), _col1 (type: int)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+        Reducer 5 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: int), KEY._col1 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 8 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col1 (type: varchar(256))
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: varchar(256))
+                  Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: int)
+        Union 4 
+            Vertex: Union 4
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select dependents.empid, depts.deptno
+from depts
+join dependents on (depts.name = dependents.name)
+join locations on (locations.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno > 10
+group by dependents.empid, depts.deptno
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dependents
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Input: default@locations
+PREHOOK: Input: default@mv1
+#### A masked pattern was here ####
+POSTHOOK: query: select dependents.empid, depts.deptno
+from depts
+join dependents on (depts.name = dependents.name)
+join locations on (locations.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno > 10
+group by dependents.empid, depts.deptno
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dependents
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@locations
+POSTHOOK: Input: default@mv1
+#### A masked pattern was here ####
+PREHOOK: query: drop materialized view mv1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv1
+PREHOOK: Output: default@mv1
+POSTHOOK: query: drop materialized view mv1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv1
+POSTHOOK: Output: default@mv1
+PREHOOK: query: create materialized view mv1 enable rewrite as
+select depts.deptno, dependents.empid, count(emps.salary) as s
+from depts
+join dependents on (depts.name = dependents.name)
+join locations on (locations.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno > 11 and depts.deptno < 19
+group by depts.deptno, dependents.empid
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@dependents
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Input: default@locations
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1
+POSTHOOK: query: create materialized view mv1 enable rewrite as
+select depts.deptno, dependents.empid, count(emps.salary) as s
+from depts
+join dependents on (depts.name = dependents.name)
+join locations on (locations.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno > 11 and depts.deptno < 19
+group by depts.deptno, dependents.empid
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@dependents
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@locations
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1
+PREHOOK: query: analyze table mv1 compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv1
+PREHOOK: Output: default@mv1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv1
+POSTHOOK: Output: default@mv1
+#### A masked pattern was here ####
+PREHOOK: query: explain
+select dependents.empid, count(emps.salary) + 1
+from depts
+join dependents on (depts.name = dependents.name)
+join locations on (locations.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno > 10 and depts.deptno < 20
+group by dependents.empid
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select dependents.empid, count(emps.salary) + 1
+from depts
+join dependents on (depts.name = dependents.name)
+join locations on (locations.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno > 10 and depts.deptno < 20
+group by dependents.empid
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 11 <- Map 10 (SIMPLE_EDGE), Union 4 (CONTAINS)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 6 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Union 4 (CONTAINS)
+        Reducer 5 <- Union 4 (SIMPLE_EDGE)
+        Reducer 8 <- Map 7 (SIMPLE_EDGE), Map 9 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: dependents
+                  Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: name is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: empid (type: int), name (type: varchar(256))
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: varchar(256))
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: varchar(256))
+                        Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int)
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Map 10 
+            Map Operator Tree:
+                TableScan
+                  alias: default.mv1
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: empid (type: int), s (type: bigint)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: $sum0(_col1)
+                      keys: _col0 (type: int)
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: locations
+                  Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: name is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: name (type: varchar(256))
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: varchar(256))
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: varchar(256))
+                        Statistics: Num rows: 2 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: emps
+                  Statistics: Num rows: 4 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (((deptno <= 11) or (deptno >= 19)) and (deptno < 20) and (deptno > 10)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptno (type: int), salary (type: float)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: float)
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Map 9 
+            Map Operator Tree:
+                TableScan
+                  alias: depts
+                  Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (((deptno <= 11) or (deptno >= 19)) and (deptno < 20) and (deptno > 10) and name is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptno (type: int), name (type: varchar(256))
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: varchar(256))
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Reducer 11 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: $sum0(VALUE._col0)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: $sum0(_col1)
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col1 (type: bigint)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                     Inner Join 0 to 2
+                keys:
+                  0 _col1 (type: varchar(256))
+                  1 _col0 (type: varchar(256))
+                  2 _col3 (type: varchar(256))
+                outputColumnNames: _col0, _col4
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: count(_col4)
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: $sum0(_col1)
+                  keys: _col0 (type: int)
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: int)
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: int)
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col1 (type: bigint)
+        Reducer 5 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: $sum0(VALUE._col0)
+                keys: KEY._col0 (type: int)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: int), (_col1 + 1L) (type: bigint)
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Reducer 8 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col1, _col3
+                Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col3 (type: varchar(256))
+                  sort order: +
+                  Map-reduce partition columns: _col3 (type: varchar(256))
+                  Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col1 (type: float)
+        Union 4 
+            Vertex: Union 4
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select dependents.empid, count(emps.salary) + 1
+from depts
+join dependents on (depts.name = dependents.name)
+join locations on (locations.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno > 10 and depts.deptno < 20
+group by dependents.empid
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dependents
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Input: default@locations
+PREHOOK: Input: default@mv1
+#### A masked pattern was here ####
+POSTHOOK: query: select dependents.empid, count(emps.salary) + 1
+from depts
+join dependents on (depts.name = dependents.name)
+join locations on (locations.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno > 10 and depts.deptno < 20
+group by dependents.empid
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dependents
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@locations
+POSTHOOK: Input: default@mv1
+#### A masked pattern was here ####
+PREHOOK: query: drop materialized view mv1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv1
+PREHOOK: Output: default@mv1
+POSTHOOK: query: drop materialized view mv1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv1
+POSTHOOK: Output: default@mv1
+PREHOOK: query: create materialized view mv1 enable rewrite as
+select depts.deptno, dependents.empid
+from depts
+join dependents on (depts.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno >= 10
+PREHOOK: type: CREATE_MATERIALIZED_VIEW
+PREHOOK: Input: default@dependents
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Output: database:default
+PREHOOK: Output: default@mv1
+POSTHOOK: query: create materialized view mv1 enable rewrite as
+select depts.deptno, dependents.empid
+from depts
+join dependents on (depts.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno >= 10
+POSTHOOK: type: CREATE_MATERIALIZED_VIEW
+POSTHOOK: Input: default@dependents
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@mv1
+PREHOOK: query: analyze table mv1 compute statistics for columns
+PREHOOK: type: QUERY
+PREHOOK: Input: default@mv1
+PREHOOK: Output: default@mv1
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table mv1 compute statistics for columns
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@mv1
+POSTHOOK: Output: default@mv1
+#### A masked pattern was here ####
+PREHOOK: query: explain
+select dependents.empid
+from depts
+join dependents on (depts.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno > 0
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select dependents.empid
+from depts
+join dependents on (depts.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno > 0
+POSTHOOK: type: QUERY
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 7 <- Union 4 (CONTAINS)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 5 (SIMPLE_EDGE)
+        Reducer 3 <- Map 6 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE), Union 4 (CONTAINS)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: depts
+                  Statistics: Num rows: 3 Data size: 279 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((deptno < 10) and (deptno > 0) and name is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptno (type: int), name (type: varchar(256))
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 93 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: varchar(256))
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: emps
+                  Statistics: Num rows: 4 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((deptno < 10) and (deptno > 0)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: deptno (type: int)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Map 6 
+            Map Operator Tree:
+                TableScan
+                  alias: dependents
+                  Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: name is not null (type: boolean)
+                    Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: empid (type: int), name (type: varchar(256))
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: varchar(256))
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: varchar(256))
+                        Statistics: Num rows: 2 Data size: 188 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int)
+            Execution mode: llap
+            LLAP IO: may be used (ACID table)
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: default.mv1
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: empid (type: int)
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: int)
+                  1 _col0 (type: int)
+                outputColumnNames: _col1
+                Statistics: Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col1 (type: varchar(256))
+                  sort order: +
+                  Map-reduce partition columns: _col1 (type: varchar(256))
+                  Statistics: Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: varchar(256))
+                  1 _col1 (type: varchar(256))
+                outputColumnNames: _col3
+                Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col3 (type: int)
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+        Union 4 
+            Vertex: Union 4
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select dependents.empid
+from depts
+join dependents on (depts.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno > 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dependents
+PREHOOK: Input: default@depts
+PREHOOK: Input: default@emps
+PREHOOK: Input: default@mv1
+#### A masked pattern was here ####
+POSTHOOK: query: select dependents.empid
+from depts
+join dependents on (depts.name = dependents.name)
+join emps on (emps.deptno = depts.deptno)
+where depts.deptno > 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dependents
+POSTHOOK: Input: default@depts
+POSTHOOK: Input: default@emps
+POSTHOOK: Input: default@mv1
+#### A masked pattern was here ####
+PREHOOK: query: drop materialized view mv1
+PREHOOK: type: DROP_MATERIALIZED_VIEW
+PREHOOK: Input: default@mv1
+PREHOOK: Output: default@mv1
+POSTHOOK: query: drop materialized view mv1
+POSTHOOK: type: DROP_MATERIALIZED_VIEW
+POSTHOOK: Input: default@mv1
+POSTHOOK: Output: default@mv1

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.cli.control;
 import static org.apache.hadoop.hive.cli.control.AbstractCliConfig.HIVE_ROOT;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.io.File;
 
 import org.apache.hadoop.hive.hbase.HBaseQTestUtil;
 import org.apache.hadoop.hive.hbase.HBaseTestSetup;
@@ -114,7 +116,7 @@ public class CoreHBaseCliDriver extends CliAdapter {
         return;
       }
 
-      qt.cliInit(fname, false);
+      qt.cliInit(new File(fpath), false);
 
       int ecode = qt.executeClient(fname);
       if (ecode != 0) {

@@ -18,10 +18,12 @@
 package org.apache.hive.spark.client.metrics;
 
 import java.io.Serializable;
-
-import org.apache.spark.executor.TaskMetrics;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+
+import org.apache.spark.executor.TaskMetrics;
+import org.apache.spark.scheduler.TaskInfo;
 
 /**
  * Metrics tracked during the execution of a job.
@@ -34,8 +36,12 @@ public class Metrics implements Serializable {
 
   /** Time taken on the executor to deserialize tasks. */
   public final long executorDeserializeTime;
+  /** CPU time taken on the executor to deserialize tasks. */
+  public final long executorDeserializeCpuTime;
   /** Time the executor spends actually running the task (including fetching shuffle data). */
   public final long executorRunTime;
+  /** CPU time the executor spends running the task (including fetching shuffle data). */
+  public final long executorCpuTime;
   /** The number of bytes sent back to the driver by tasks. */
   public final long resultSize;
   /** Amount of time the JVM spent in garbage collection while executing tasks. */
@@ -46,6 +52,8 @@ public class Metrics implements Serializable {
   public final long memoryBytesSpilled;
   /** The number of on-disk bytes spilled by tasks. */
   public final long diskBytesSpilled;
+  /** Amount of time spent executing tasks. */
+  public final long taskDurationTime;
   /** If tasks read from a HadoopRDD or from persisted data, metrics on how much data was read. */
   public final InputMetrics inputMetrics;
   /**
@@ -58,41 +66,50 @@ public class Metrics implements Serializable {
 
   private Metrics() {
     // For Serialization only.
-    this(0L, 0L, 0L, 0L, 0L, 0L, 0L, null, null, null);
+    this(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, null, null, null);
   }
 
   public Metrics(
       long executorDeserializeTime,
+      long executorDeserializeCpuTime,
       long executorRunTime,
+      long executorCpuTime,
       long resultSize,
       long jvmGCTime,
       long resultSerializationTime,
       long memoryBytesSpilled,
       long diskBytesSpilled,
+      long taskDurationTime,
       InputMetrics inputMetrics,
       ShuffleReadMetrics shuffleReadMetrics,
       ShuffleWriteMetrics shuffleWriteMetrics) {
     this.executorDeserializeTime = executorDeserializeTime;
+    this.executorDeserializeCpuTime = executorDeserializeCpuTime;
     this.executorRunTime = executorRunTime;
+    this.executorCpuTime = executorCpuTime;
     this.resultSize = resultSize;
     this.jvmGCTime = jvmGCTime;
     this.resultSerializationTime = resultSerializationTime;
     this.memoryBytesSpilled = memoryBytesSpilled;
     this.diskBytesSpilled = diskBytesSpilled;
+    this.taskDurationTime = taskDurationTime;
     this.inputMetrics = inputMetrics;
     this.shuffleReadMetrics = shuffleReadMetrics;
     this.shuffleWriteMetrics = shuffleWriteMetrics;
   }
 
-  public Metrics(TaskMetrics metrics) {
+  public Metrics(TaskMetrics metrics, TaskInfo taskInfo) {
     this(
       metrics.executorDeserializeTime(),
+      TimeUnit.NANOSECONDS.toMillis(metrics.executorDeserializeCpuTime()),
       metrics.executorRunTime(),
+      TimeUnit.NANOSECONDS.toMillis(metrics.executorCpuTime()),
       metrics.resultSize(),
       metrics.jvmGCTime(),
       metrics.resultSerializationTime(),
       metrics.memoryBytesSpilled(),
       metrics.diskBytesSpilled(),
+      taskInfo.duration(),
       optionalInputMetric(metrics),
       optionalShuffleReadMetric(metrics),
       optionalShuffleWriteMetrics(metrics));

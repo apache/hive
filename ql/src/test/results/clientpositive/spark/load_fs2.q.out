@@ -24,11 +24,11 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@loader
 PREHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result
 PREHOOK: type: LOAD
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: default@result
 POSTHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result
 POSTHOOK: type: LOAD
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: default@result
 PREHOOK: query: show table extended like result
 PREHOOK: type: SHOW_TABLESTATUS
@@ -36,6 +36,7 @@ POSTHOOK: query: show table extended like result
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:result
 #### A masked pattern was here ####
+location:hdfs://### HDFS PATH ###
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -57,11 +58,11 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@loader
 PREHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result
 PREHOOK: type: LOAD
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: default@result
 POSTHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result
 POSTHOOK: type: LOAD
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: default@result
 PREHOOK: query: show table extended like result
 PREHOOK: type: SHOW_TABLESTATUS
@@ -69,6 +70,7 @@ POSTHOOK: query: show table extended like result
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:result
 #### A masked pattern was here ####
+location:hdfs://### HDFS PATH ###
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}
@@ -90,11 +92,11 @@ POSTHOOK: type: LOAD
 POSTHOOK: Output: default@loader
 PREHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result
 PREHOOK: type: LOAD
-#### A masked pattern was here ####
+PREHOOK: Input: hdfs://### HDFS PATH ###
 PREHOOK: Output: default@result
 POSTHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result
 POSTHOOK: type: LOAD
-#### A masked pattern was here ####
+POSTHOOK: Input: hdfs://### HDFS PATH ###
 POSTHOOK: Output: default@result
 PREHOOK: query: show table extended like result
 PREHOOK: type: SHOW_TABLESTATUS
@@ -102,6 +104,7 @@ POSTHOOK: query: show table extended like result
 POSTHOOK: type: SHOW_TABLESTATUS
 tableName:result
 #### A masked pattern was here ####
+location:hdfs://### HDFS PATH ###
 inputformat:org.apache.hadoop.mapred.TextInputFormat
 outputformat:org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
 columns:struct columns { string key, string value}

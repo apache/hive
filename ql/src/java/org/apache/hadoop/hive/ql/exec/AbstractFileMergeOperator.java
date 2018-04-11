@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -260,7 +260,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
           // There's always just one file that we have merged.
           // The union/DP/etc. should already be account for in the path.
           Utilities.writeMmCommitManifest(Lists.newArrayList(outPath),
-              tmpPath.getParent(), fs, taskId, conf.getTxnId(), conf.getStmtId(), null, false);
+              tmpPath.getParent(), fs, taskId, conf.getWriteId(), conf.getStmtId(), null, false);
           LOG.info("Merged into " + finalPath + "(" + fss.getLen() + " bytes).");
         }
       }
@@ -322,7 +322,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
     try {
       Path outputDir = conf.getOutputPath();
       FileSystem fs = outputDir.getFileSystem(hconf);
-      Long mmWriteId = conf.getTxnId();
+      Long mmWriteId = conf.getWriteId();
       int stmtId = conf.getStmtId();
       if (!isMmTable) {
         Path backupPath = backupOutputPath(fs, outputDir);

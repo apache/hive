@@ -1,4 +1,4 @@
-SET hive.vectorized.execution.enabled=false;
+SET hive.vectorized.execution.enabled=true;
 SET hive.vectorized.execution.reduce.enabled=true;
 set hive.mapred.mode=nonstrict;
 set hive.map.aggr=true;

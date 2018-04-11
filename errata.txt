@@ -1,6 +1,7 @@
 Commits with the wrong or no JIRA referenced:
 
 git commit                               branch     jira       url
+233884620af67e6af72b60629f799a69f5823eb2 master     HIVE-18627 https://issues.apache.org/jira/browse/HIVE-18627
 eb0034c0cdcc5f10fd5d7382e2caf787a8003e7a master     HIVE-17420 https://issues.apache.org/jira/browse/HIVE-17420
 f1aae85f197de09d4b86143f7f13d5aa21d2eb85 master     HIVE-16431 https://issues.apache.org/jira/browse/HIVE-16431
 cbab5b29f26ceb3d4633ade9647ce8bcb2f020a0 master     HIVE-16422 https://issues.apache.org/jira/browse/HIVE-16422
@@ -93,3 +94,4 @@ d16d4f1bcc43d6ebcab0eaf5bc635fb88b60be5f master     HIVE-9423  https://issues.ap
 5facfbb863366d7a661c21c57011b8dbe43f52e0 master     HIVE-16307 https://issues.apache.org/jira/browse/HIVE-16307
 1c3039333ba71665e8b954fbee88188757bb4050 master     HIVE-16743 https://issues.apache.org/jira/browse/HIVE-16743
 e7081035bb9768bc014f0aba11417418ececbaf0 master     HIVE-17109 https://issues.apache.org/jira/browse/HIVE-17109
+f33db1f68c68b552b9888988f818c03879749461 master     HIVE-18617 https://issues.apache.org/jira/browse/HIVE-18617

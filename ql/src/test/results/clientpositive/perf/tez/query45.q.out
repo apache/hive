@@ -73,7 +73,7 @@ Stage-0
                     Select Operator [SEL_51] (rows=191667562 width=152)
                       Output:["_col3","_col7","_col8"]
                       Filter Operator [FIL_50] (rows=191667562 width=152)
-                        predicate:((substr(_col8, 1, 5)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792') or CASE WHEN ((_col14 = 0)) THEN (false) WHEN (_col17 is not null) THEN (true) WHEN (_col13 is null) THEN (null) WHEN ((_col15 < _col14)) THEN (null) ELSE (false) END)
+                        predicate:((substr(_col8, 1, 5)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792') or CASE WHEN ((_col14 = 0L)) THEN (false) WHEN (_col17 is not null) THEN (true) WHEN (_col13 is null) THEN (null) WHEN ((_col15 < _col14)) THEN (null) ELSE (false) END)
                         Select Operator [SEL_49] (rows=191667562 width=152)
                           Output:["_col3","_col7","_col8","_col13","_col14","_col15","_col17"]
                           Merge Join Operator [MERGEJOIN_87] (rows=191667562 width=152)

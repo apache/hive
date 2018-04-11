@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -130,6 +130,7 @@ public enum HiveOperationType {
   ALTERVIEW_AS,
   ALTER_MATERIALIZED_VIEW_REWRITE,
   ALTERTABLE_COMPACT,
+  ALTERTABLE_UPDATECOLUMNS,
   SHOW_COMPACTIONS,
   SHOW_TRANSACTIONS,
   ABORT_TRANSACTIONS,
@@ -147,6 +148,8 @@ public enum HiveOperationType {
   CREATE_MAPPING,
   ALTER_MAPPING,
   DROP_MAPPING,
+  LLAP_CLUSTER,
+  LLAP_CACHE,
 
   // ==== Hive command operation types starts here ==== //
   SET,

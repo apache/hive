@@ -39,12 +39,14 @@ import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
 
 public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
   protected static final String UPGRADE_FILE_PREFIX = "upgrade-";
-  private static final String INIT_FILE_PREFIX = "hive-schema-";
-  private static final String VERSION_UPGRADE_LIST = "upgrade.order";
-  private static final String PRE_UPGRADE_PREFIX = "pre-";
-  protected final String dbType;
+  protected static final String INIT_FILE_PREFIX = "hive-schema-";
+  protected static final String VERSION_UPGRADE_LIST = "upgrade.order";
+  protected static final String PRE_UPGRADE_PREFIX = "pre-";
+  protected static final String CREATE_USER_PREFIX = "create-user";
+
   private String[] hiveSchemaVersions;
-  private final String hiveHome;
+  private final String metastoreHome;
+  protected final String dbType;
 
   // Some version upgrades often don't change schema. So they are equivalent to
   // a version
@@ -57,8 +59,8 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
           "1.2.1", "1.2.0"
       );
 
-  public MetaStoreSchemaInfo(String hiveHome, String dbType) throws HiveMetaException {
-    this.hiveHome = hiveHome;
+  public MetaStoreSchemaInfo(String metastoreHome, String dbType) throws HiveMetaException {
+    this.metastoreHome = metastoreHome;
     this.dbType = dbType;
   }
 
@@ -137,13 +139,24 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
     return initScriptName;
   }
 
+  @Override
+  public String getCreateUserScript() throws HiveMetaException {
+    String createScript = CREATE_USER_PREFIX + "." + dbType + SQL_FILE_EXTENSION;
+    // check if the file exists
+    if (!(new File(getMetaStoreScriptDir() + File.separatorChar +
+        createScript).exists())) {
+      throw new HiveMetaException("Unable to find create user file, expected: " + createScript);
+    }
+    return createScript;
+  }
+
   /**
    * Find the directory of metastore scripts
    * @return
    */
   @Override
   public String getMetaStoreScriptDir() {
-    return  hiveHome + File.separatorChar +
+    return  metastoreHome + File.separatorChar +
      "scripts" + File.separatorChar + "metastore" +
     File.separatorChar + "upgrade" + File.separatorChar + dbType;
   }
@@ -205,19 +218,18 @@ public class MetaStoreSchemaInfo implements IMetaStoreSchemaInfo {
   }
 
   @Override
-  public String getMetaStoreSchemaVersion(MetaStoreConnectionInfo connectionInfo)
-      throws HiveMetaException {
+  public String getMetaStoreSchemaVersion(MetaStoreConnectionInfo connectionInfo) throws HiveMetaException {
     String versionQuery;
-    boolean needsQuotedIdentifier =
-        HiveSchemaHelper.getDbCommandParser(connectionInfo.getDbType()).needsQuotedIdentifier();
+    boolean needsQuotedIdentifier = HiveSchemaHelper.getDbCommandParser(connectionInfo.getDbType(),
+        connectionInfo.getMetaDbType(), false).needsQuotedIdentifier();
     if (needsQuotedIdentifier) {
       versionQuery = "select t.\"SCHEMA_VERSION\" from \"VERSION\" t";
     } else {
       versionQuery = "select t.SCHEMA_VERSION from VERSION t";
     }
-    try (Connection metastoreDbConnection =
-        HiveSchemaHelper.getConnectionToMetastore(connectionInfo); Statement stmt =
-        metastoreDbConnection.createStatement()) {
+    String schema = ( HiveSchemaHelper.DB_HIVE.equals(connectionInfo.getDbType()) ? "SYS" : null );
+    try (Connection metastoreDbConnection = HiveSchemaHelper.getConnectionToMetastore(connectionInfo, schema);
+        Statement stmt = metastoreDbConnection.createStatement()) {
       ResultSet res = stmt.executeQuery(versionQuery);
       if (!res.next()) {
         throw new HiveMetaException("Could not find version info in metastore VERSION table.");

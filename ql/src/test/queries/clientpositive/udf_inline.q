@@ -1,4 +1,5 @@
 set hive.fetch.task.conversion=more;
+SET hive.vectorized.execution.enabled=false;
 
 describe function inline;
 

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -197,33 +199,6 @@ public class OperatorUtils {
     return lastOp;
   }
 
-  /**
-   * Starting at the input operator, finds the last operator upstream that is
-   * an instance of the input class.
-   *
-   * @param op the starting operator
-   * @param clazz the class that the operator that we are looking for instantiates
-   * @return null if no such operator exists or multiple branches are found in
-   * the stream, the last operator otherwise
-   */
-  @SuppressWarnings("unchecked")
-  public static <T> T findLastOperatorUpstream(Operator<?> op, Class<T> clazz) {
-    Operator<?> currentOp = op;
-    T lastOp = null;
-    while (currentOp != null) {
-      if (clazz.isInstance(currentOp)) {
-        lastOp = (T) currentOp;
-      }
-      if (currentOp.getParentOperators().size() == 1) {
-        currentOp = currentOp.getParentOperators().get(0);
-      }
-      else {
-        currentOp = null;
-      }
-    }
-    return lastOp;
-  }
-
   public static void iterateParents(Operator<?> operator, Function<Operator<?>> function) {
     iterateParents(operator, function, new HashSet<Operator<?>>());
   }
@@ -238,10 +213,6 @@ public class OperatorUtils {
         iterateParents(parent, function, visited);
       }
     }
-  }
-
-  public static boolean sameRowSchema(Operator<?> operator1, Operator<?> operator2) {
-    return operator1.getSchema().equals(operator2.getSchema());
   }
 
   /**
@@ -454,5 +425,20 @@ public class OperatorUtils {
       }
     }
     return matchingOps;
+  }
+
+  public static Operator<?> findOperatorById(Operator<?> start, String opId) {
+    Deque<Operator<?>> queue = new ArrayDeque<>();
+    queue.add(start);
+    while (!queue.isEmpty()) {
+      Operator<?> op = queue.remove();
+      if (op.getOperatorId().equals(opId)) {
+        return op;
+      }
+      if (op.getChildOperators() != null) {
+        queue.addAll(op.getChildOperators());
+      }
+    }
+    return null;
   }
 }

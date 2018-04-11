@@ -17,8 +17,12 @@
  */
 package org.apache.hadoop.hive.metastore.client.builder;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Builder for {@link SQLNotNullConstraint}.  Only requires what {@link ConstraintBuilder} requires.
@@ -29,9 +33,20 @@ public class SQLNotNullConstraintBuilder extends ConstraintBuilder<SQLNotNullCon
     super.setChild(this);
   }
 
-  public SQLNotNullConstraint build() throws MetaException {
-    checkBuildable("not_null_constraint");
-    return new SQLNotNullConstraint(dbName, tableName, columnName, constraintName, enable,
-        validate, rely);
+  public SQLNotNullConstraintBuilder setColName(String colName) {
+    assert columns.isEmpty();
+    columns.add(colName);
+    return this;
+  }
+
+  public List<SQLNotNullConstraint> build(Configuration conf) throws MetaException {
+    checkBuildable("not_null_constraint", conf);
+    List<SQLNotNullConstraint> uc = new ArrayList<>(columns.size());
+    for (String column : columns) {
+      SQLNotNullConstraint c = new SQLNotNullConstraint(catName, dbName, tableName, columns.get(0),
+          constraintName, enable, validate, rely);
+      uc.add(c);
+    }
+    return uc;
   }
 }

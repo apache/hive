@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -66,6 +66,7 @@ public final class SemanticAnalyzerFactory {
         HiveOperation.ALTERTABLE_EXCHANGEPARTITION);
     commandType.put(HiveParser.TOK_ALTERTABLE_DROPCONSTRAINT, HiveOperation.ALTERTABLE_DROPCONSTRAINT);
     commandType.put(HiveParser.TOK_ALTERTABLE_ADDCONSTRAINT, HiveOperation.ALTERTABLE_ADDCONSTRAINT);
+    commandType.put(HiveParser.TOK_ALTERTABLE_UPDATECOLUMNS, HiveOperation.ALTERTABLE_UPDATECOLUMNS);
     commandType.put(HiveParser.TOK_SHOWDATABASES, HiveOperation.SHOWDATABASES);
     commandType.put(HiveParser.TOK_SHOWTABLES, HiveOperation.SHOWTABLES);
     commandType.put(HiveParser.TOK_SHOWCOLUMNS, HiveOperation.SHOWCOLUMNS);
@@ -74,7 +75,6 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_SHOW_CREATEDATABASE, HiveOperation.SHOW_CREATEDATABASE);
     commandType.put(HiveParser.TOK_SHOW_CREATETABLE, HiveOperation.SHOW_CREATETABLE);
     commandType.put(HiveParser.TOK_SHOWFUNCTIONS, HiveOperation.SHOWFUNCTIONS);
-    commandType.put(HiveParser.TOK_SHOWINDEXES, HiveOperation.SHOWINDEXES);
     commandType.put(HiveParser.TOK_SHOWPARTITIONS, HiveOperation.SHOWPARTITIONS);
     commandType.put(HiveParser.TOK_SHOWLOCKS, HiveOperation.SHOWLOCKS);
     commandType.put(HiveParser.TOK_SHOWDBLOCKS, HiveOperation.SHOWLOCKS);
@@ -90,10 +90,6 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_CREATE_MATERIALIZED_VIEW, HiveOperation.CREATE_MATERIALIZED_VIEW);
     commandType.put(HiveParser.TOK_DROPVIEW, HiveOperation.DROPVIEW);
     commandType.put(HiveParser.TOK_DROP_MATERIALIZED_VIEW, HiveOperation.DROP_MATERIALIZED_VIEW);
-    commandType.put(HiveParser.TOK_CREATEINDEX, HiveOperation.CREATEINDEX);
-    commandType.put(HiveParser.TOK_DROPINDEX, HiveOperation.DROPINDEX);
-    commandType.put(HiveParser.TOK_ALTERINDEX_REBUILD, HiveOperation.ALTERINDEX_REBUILD);
-    commandType.put(HiveParser.TOK_ALTERINDEX_PROPERTIES, HiveOperation.ALTERINDEX_PROPS);
     commandType.put(HiveParser.TOK_ALTERVIEW_PROPERTIES, HiveOperation.ALTERVIEW_PROPERTIES);
     commandType.put(HiveParser.TOK_ALTERVIEW_DROPPROPERTIES, HiveOperation.ALTERVIEW_PROPERTIES);
     commandType.put(HiveParser.TOK_ALTERVIEW_ADDPARTS, HiveOperation.ALTERTABLE_ADDPARTS);
@@ -247,6 +243,7 @@ public final class SemanticAnalyzerFactory {
           case HiveParser.TOK_ALTERTABLE_SKEWED:
           case HiveParser.TOK_ALTERTABLE_DROPCONSTRAINT:
           case HiveParser.TOK_ALTERTABLE_ADDCONSTRAINT:
+          case HiveParser.TOK_ALTERTABLE_UPDATECOLUMNS:
           queryState.setCommandType(commandType.get(child.getType()));
           return new DDLSemanticAnalyzer(queryState);
         }
@@ -282,8 +279,7 @@ public final class SemanticAnalyzerFactory {
           case HiveParser.TOK_ALTER_MATERIALIZED_VIEW_REBUILD:
             opType = commandType.get(child.getType());
             queryState.setCommandType(opType);
-            return HiveConf.getBoolVar(queryState.getConf(), HiveConf.ConfVars.HIVE_CBO_ENABLED) ?
-                new CalcitePlanner(queryState) : new SemanticAnalyzer(queryState);
+            return new MaterializedViewRebuildSemanticAnalyzer(queryState);
         }
         // Operation not recognized, set to null and let upper level handle this case
         queryState.setCommandType(null);
@@ -299,8 +295,6 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_DESCTABLE:
       case HiveParser.TOK_DESCFUNCTION:
       case HiveParser.TOK_MSCK:
-      case HiveParser.TOK_ALTERINDEX_REBUILD:
-      case HiveParser.TOK_ALTERINDEX_PROPERTIES:
       case HiveParser.TOK_SHOWDATABASES:
       case HiveParser.TOK_SHOWTABLES:
       case HiveParser.TOK_SHOWCOLUMNS:
@@ -310,7 +304,6 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_SHOW_CREATETABLE:
       case HiveParser.TOK_SHOWFUNCTIONS:
       case HiveParser.TOK_SHOWPARTITIONS:
-      case HiveParser.TOK_SHOWINDEXES:
       case HiveParser.TOK_SHOWLOCKS:
       case HiveParser.TOK_SHOWDBLOCKS:
       case HiveParser.TOK_SHOW_COMPACTIONS:
@@ -319,8 +312,6 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_SHOWCONF:
       case HiveParser.TOK_SHOWVIEWS:
       case HiveParser.TOK_SHOWMATERIALIZEDVIEWS:
-      case HiveParser.TOK_CREATEINDEX:
-      case HiveParser.TOK_DROPINDEX:
       case HiveParser.TOK_ALTERTABLE_CLUSTER_SORT:
       case HiveParser.TOK_LOCKTABLE:
       case HiveParser.TOK_UNLOCKTABLE:

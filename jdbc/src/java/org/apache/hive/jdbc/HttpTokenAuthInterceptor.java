@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,10 +32,10 @@ import org.apache.http.protocol.HttpContext;
 public class HttpTokenAuthInterceptor extends HttpRequestInterceptorBase {
   private String tokenStr;
   private static final String HIVE_DELEGATION_TOKEN_HEADER =  "X-Hive-Delegation-Token";
-  
+
   public HttpTokenAuthInterceptor(String tokenStr, CookieStore cookieStore, String cn,
-      boolean isSSL, Map<String, String> additionalHeaders) {
-    super(cookieStore, cn, isSSL, additionalHeaders);
+      boolean isSSL, Map<String, String> additionalHeaders, Map<String, String> customCookies) {
+    super(cookieStore, cn, isSSL, additionalHeaders, customCookies);
     this.tokenStr = tokenStr;
   }
 

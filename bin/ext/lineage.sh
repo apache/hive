@@ -33,6 +33,6 @@ lineage () {
 }
 
 lineage_help () {
-  echo "usage ./hive 'hql' "
+  echo "usage ./hive --service lineage 'hql' "
 } 
 

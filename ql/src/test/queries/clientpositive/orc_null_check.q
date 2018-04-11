@@ -1,3 +1,5 @@
+SET hive.vectorized.execution.enabled=false;
+
 create table listtable(l array<string>);
 create table listtable_orc(l array<string>) stored as orc;
 

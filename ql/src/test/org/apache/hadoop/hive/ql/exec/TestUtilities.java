@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -792,7 +792,7 @@ public class TestUtilities {
   }
 
   private Task<? extends Serializable> getDependencyCollectionTask(){
-    return TaskFactory.get(new DependencyCollectionWork(), new HiveConf());
+    return TaskFactory.get(new DependencyCollectionWork());
   }
 
   /**
@@ -911,7 +911,7 @@ public class TestUtilities {
   }
 
   private static Task<MapredWork> getMapredWork() {
-    return TaskFactory.get(MapredWork.class, new HiveConf());
+    return TaskFactory.get(MapredWork.class);
   }
 
   @Test

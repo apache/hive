@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -163,6 +163,14 @@ public class TestVectorizedListColumnReader extends VectorizedColumnReaderTestBa
     removeFile();
     writeListData(initWriterFromFile(), false, 1025);
     testUnRepeateStringWithoutNullListRead();
+    removeFile();
+  }
+
+  @Test
+  public void testVectorizedRowBatchSizeChange() throws Exception {
+    removeFile();
+    writeListData(initWriterFromFile(), false, 1200);
+    testVectorizedRowBatchSizeChangeListRead();
     removeFile();
   }
 
@@ -332,6 +340,31 @@ public class TestVectorizedListColumnReader extends VectorizedColumnReaderTestBa
       while (reader.next(NullWritable.get(), previous)) {
         ListColumnVector vector = (ListColumnVector) previous.cols[0];
         assertEquals((vector.offsets.length == 1),vector.isRepeating);
+      }
+    } finally {
+      reader.close();
+    }
+  }
+
+  private void testVectorizedRowBatchSizeChangeListRead() throws Exception {
+    Configuration conf = new Configuration();
+    conf.set(IOConstants.COLUMNS, "list_binary_field_for_repeat_test");
+    conf.set(IOConstants.COLUMNS_TYPES, "array<string>");
+    conf.setBoolean(ColumnProjectionUtils.READ_ALL_COLUMNS, false);
+    conf.set(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "0");
+    VectorizedParquetRecordReader reader = createTestParquetReader(
+        "message hive_schema {repeated binary list_binary_field_for_repeat_test;}", conf);
+    VectorizedRowBatch previous = reader.createValue();
+    try {
+      while (reader.next(NullWritable.get(), previous)) {
+        ListColumnVector vector = (ListColumnVector) previous.cols[0];
+        // When deal with big data, the VectorizedRowBatch will be used for the different file split
+        // to cache the data. Here is the situation: the first split only have 100 rows,
+        // and VectorizedRowBatch cache them, meanwhile, the size of VectorizedRowBatch will be
+        // updated to 100. The following code is to simulate the size change, but there will be no
+        // ArrayIndexOutOfBoundsException when process the next split which has more than 100 rows.
+        vector.lengths = new long[100];
+        vector.offsets = new long[100];
       }
     } finally {
       reader.close();

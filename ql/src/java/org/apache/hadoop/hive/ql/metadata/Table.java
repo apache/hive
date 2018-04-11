@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.BasicTxnInfo;
+import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -382,7 +382,9 @@ public class Table implements Serializable {
       if (spec.containsKey(fs.getName())) {
         ++columnsFound;
       }
-      if (columnsFound == spec.size()) break;
+      if (columnsFound == spec.size()) {
+        break;
+      }
     }
     if (columnsFound < spec.size()) {
       throw new ValidationFailureSemanticException("Partition spec " + spec + " contains non-partition columns");
@@ -846,7 +848,7 @@ public class Table implements Serializable {
   /**
    * @return the creation metadata (only for materialized views)
    */
-  public Map<String, BasicTxnInfo> getCreationMetadata() {
+  public CreationMetadata getCreationMetadata() {
     return tTable.getCreationMetadata();
   }
 
@@ -854,7 +856,7 @@ public class Table implements Serializable {
    * @param creationMetadata
    *          the creation metadata (only for materialized views)
    */
-  public void setCreationMetadata(Map<String, BasicTxnInfo> creationMetadata) {
+  public void setCreationMetadata(CreationMetadata creationMetadata) {
     tTable.setCreationMetadata(creationMetadata);
   }
 
@@ -871,13 +873,6 @@ public class Table implements Serializable {
 
   public boolean isMaterializedView() {
     return TableType.MATERIALIZED_VIEW.equals(getTableType());
-  }
-
-  /**
-   * @return whether this table is actually an index table
-   */
-  public boolean isIndexTable() {
-    return TableType.INDEX_TABLE.equals(getTableType());
   }
 
   /**
@@ -988,13 +983,20 @@ public class Table implements Serializable {
 
   public static boolean shouldStoreFieldsInMetastore(
       HiveConf conf, String serdeLib, Map<String, String> tableParams) {
-    if (hasMetastoreBasedSchema(conf, serdeLib))  return true;
-    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_LEGACY_SCHEMA_FOR_ALL_SERDES)) return true;
+    if (hasMetastoreBasedSchema(conf, serdeLib)) {
+      return true;
+    }
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_LEGACY_SCHEMA_FOR_ALL_SERDES)) {
+      return true;
+    }
     // Table may or may not be using metastore. Only the SerDe can tell us.
     AbstractSerDe deserializer = null;
     try {
       Class<?> clazz = conf.getClassByName(serdeLib);
-      if (!AbstractSerDe.class.isAssignableFrom(clazz)) return true; // The default.
+      if (!AbstractSerDe.class.isAssignableFrom(clazz))
+       {
+        return true; // The default.
+      }
       deserializer = ReflectionUtil.newInstance(
           conf.getClassByName(serdeLib).asSubclass(AbstractSerDe.class), conf);
     } catch (Exception ex) {

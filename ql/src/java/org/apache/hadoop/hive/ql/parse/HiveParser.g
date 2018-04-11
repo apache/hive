@@ -109,6 +109,8 @@ TOK_NOT_NULL;
 TOK_UNIQUE;
 TOK_PRIMARY_KEY;
 TOK_FOREIGN_KEY;
+TOK_DEFAULT_VALUE;
+TOK_CHECK_CONSTRAINT;
 TOK_VALIDATE;
 TOK_NOVALIDATE;
 TOK_RELY;
@@ -151,10 +153,6 @@ TOK_COLTYPELIST;
 TOK_CREATEDATABASE;
 TOK_CREATETABLE;
 TOK_TRUNCATETABLE;
-TOK_CREATEINDEX;
-TOK_CREATEINDEX_INDEXTBLNAME;
-TOK_DEFERRED_REBUILDINDEX;
-TOK_DROPINDEX;
 TOK_LIKETABLE;
 TOK_DESCTABLE;
 TOK_DESCFUNCTION;
@@ -189,8 +187,7 @@ TOK_ALTERTABLE_CLUSTER_SORT;
 TOK_ALTERTABLE_COMPACT;
 TOK_ALTERTABLE_DROPCONSTRAINT;
 TOK_ALTERTABLE_ADDCONSTRAINT;
-TOK_ALTERINDEX_REBUILD;
-TOK_ALTERINDEX_PROPERTIES;
+TOK_ALTERTABLE_UPDATECOLUMNS;
 TOK_MSCK;
 TOK_SHOWDATABASES;
 TOK_SHOWTABLES;
@@ -271,8 +268,6 @@ TOK_EXPLAIN_SQ_REWRITE;
 TOK_TABLESERIALIZER;
 TOK_TABLEPROPERTIES;
 TOK_TABLEPROPLIST;
-TOK_INDEXPROPERTIES;
-TOK_INDEXPROPLIST;
 TOK_TABTYPE;
 TOK_LIMIT;
 TOK_OFFSET;
@@ -310,7 +305,6 @@ TOK_PRIV_ALTER_METADATA;
 TOK_PRIV_ALTER_DATA;
 TOK_PRIV_DELETE;
 TOK_PRIV_DROP;
-TOK_PRIV_INDEX;
 TOK_PRIV_INSERT;
 TOK_PRIV_LOCK;
 TOK_PRIV_SELECT;
@@ -324,9 +318,7 @@ TOK_SHOW_ROLE_GRANT;
 TOK_SHOW_ROLES;
 TOK_SHOW_SET_ROLE;
 TOK_SHOW_ROLE_PRINCIPALS;
-TOK_SHOWINDEXES;
 TOK_SHOWDBLOCKS;
-TOK_INDEXCOMMENT;
 TOK_DESCDATABASE;
 TOK_DATABASEPROPERTIES;
 TOK_DATABASELOCATION;
@@ -608,6 +600,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_PLANS", "PLANS");
     xlateMap.put("KW_ACTIVATE", "ACTIVATE");
     xlateMap.put("KW_DEFAULT", "DEFAULT");
+    xlateMap.put("KW_CHECK", "CHECK");
     xlateMap.put("KW_POOL", "POOL");
     xlateMap.put("KW_MOVE", "MOVE");
     xlateMap.put("KW_DO", "DO");
@@ -784,14 +777,21 @@ explainStatement
 	: KW_EXPLAIN (
 	    explainOption* execStatement -> ^(TOK_EXPLAIN execStatement explainOption*)
         |
-        KW_REWRITE queryStatementExpression -> ^(TOK_EXPLAIN_SQ_REWRITE queryStatementExpression))
+        KW_REWRITE queryStatementExpression -> ^(TOK_EXPLAIN_SQ_REWRITE queryStatementExpression)
+      )
 	;
 
 explainOption
 @init { msgs.push("explain option"); }
 @after { msgs.pop(); }
-    : KW_EXTENDED|KW_FORMATTED|KW_DEPENDENCY|KW_LOGICAL|KW_AUTHORIZATION|KW_ANALYZE|
-      (KW_VECTORIZATION vectorizationOnly? vectorizatonDetail?)
+    : KW_EXTENDED
+    | KW_FORMATTED
+    | KW_DEPENDENCY
+    | KW_LOGICAL
+    | KW_AUTHORIZATION
+    | KW_ANALYZE
+    | KW_REOPTIMIZATION
+    | (KW_VECTORIZATION vectorizationOnly? vectorizatonDetail?)
     ;
 
 vectorizationOnly
@@ -903,11 +903,12 @@ replConfigsList
     ;
 
 replStatusStatement
-@init { pushMsg("replication load statement", state); }
+@init { pushMsg("replication status statement", state); }
 @after { popMsg(state); }
       : KW_REPL KW_STATUS
         (dbName=identifier) (DOT tblName=identifier)?
-      -> ^(TOK_REPL_STATUS $dbName $tblName?)
+        (KW_WITH replConf=replConfigs)?
+      -> ^(TOK_REPL_STATUS $dbName ^(TOK_TABNAME $tblName)? $replConf?)
       ;
 
 ddlStatement
@@ -929,8 +930,6 @@ ddlStatement
     | dropMaterializedViewStatement
     | createFunctionStatement
     | createMacroStatement
-    | createIndexStatement
-    | dropIndexStatement
     | dropFunctionStatement
     | reloadFunctionStatement
     | dropMacroStatement
@@ -1102,80 +1101,6 @@ truncateTableStatement
 @after { popMsg(state); }
     : KW_TRUNCATE KW_TABLE tablePartitionPrefix (KW_COLUMNS LPAREN columnNameList RPAREN)? -> ^(TOK_TRUNCATETABLE tablePartitionPrefix columnNameList?);
 
-createIndexStatement
-@init { pushMsg("create index statement", state);}
-@after {popMsg(state);}
-    : KW_CREATE KW_INDEX indexName=identifier
-      KW_ON KW_TABLE tab=tableName LPAREN indexedCols=columnNameList RPAREN
-      KW_AS typeName=StringLiteral
-      autoRebuild?
-      indexPropertiesPrefixed?
-      indexTblName?
-      tableRowFormat?
-      tableFileFormat?
-      tableLocation?
-      tablePropertiesPrefixed?
-      indexComment?
-    ->^(TOK_CREATEINDEX $indexName $typeName $tab $indexedCols
-        autoRebuild?
-        indexPropertiesPrefixed?
-        indexTblName?
-        tableRowFormat?
-        tableFileFormat?
-        tableLocation?
-        tablePropertiesPrefixed?
-        indexComment?)
-    ;
-
-indexComment
-@init { pushMsg("comment on an index", state);}
-@after {popMsg(state);}
-        :
-                KW_COMMENT comment=StringLiteral  -> ^(TOK_INDEXCOMMENT $comment)
-        ;
-
-autoRebuild
-@init { pushMsg("auto rebuild index", state);}
-@after {popMsg(state);}
-    : KW_WITH KW_DEFERRED KW_REBUILD
-    ->^(TOK_DEFERRED_REBUILDINDEX)
-    ;
-
-indexTblName
-@init { pushMsg("index table name", state);}
-@after {popMsg(state);}
-    : KW_IN KW_TABLE indexTbl=tableName
-    ->^(TOK_CREATEINDEX_INDEXTBLNAME $indexTbl)
-    ;
-
-indexPropertiesPrefixed
-@init { pushMsg("table properties with prefix", state); }
-@after { popMsg(state); }
-    :
-        KW_IDXPROPERTIES! indexProperties
-    ;
-
-indexProperties
-@init { pushMsg("index properties", state); }
-@after { popMsg(state); }
-    :
-      LPAREN indexPropertiesList RPAREN -> ^(TOK_INDEXPROPERTIES indexPropertiesList)
-    ;
-
-indexPropertiesList
-@init { pushMsg("index properties list", state); }
-@after { popMsg(state); }
-    :
-      keyValueProperty (COMMA keyValueProperty)* -> ^(TOK_INDEXPROPLIST keyValueProperty+)
-    ;
-
-dropIndexStatement
-@init { pushMsg("drop index statement", state);}
-@after {popMsg(state);}
-    : KW_DROP KW_INDEX ifExists? indexName=identifier KW_ON tab=tableName
-    ->^(TOK_DROPINDEX $indexName $tab ifExists?)
-    ;
-
 dropTableStatement
 @init { pushMsg("drop statement", state); }
 @after { popMsg(state); }
@@ -1190,7 +1115,6 @@ alterStatement
     | KW_ALTER KW_VIEW tableName KW_AS? alterViewStatementSuffix -> ^(TOK_ALTERVIEW tableName alterViewStatementSuffix)
     | KW_ALTER KW_MATERIALIZED KW_VIEW tableName alterMaterializedViewStatementSuffix
     -> ^(TOK_ALTER_MATERIALIZED_VIEW tableName alterMaterializedViewStatementSuffix)
-    | KW_ALTER KW_INDEX alterIndexStatementSuffix -> alterIndexStatementSuffix
     | KW_ALTER (KW_DATABASE|KW_SCHEMA) alterDatabaseStatementSuffix -> alterDatabaseStatementSuffix
     ;
 
@@ -1228,6 +1152,7 @@ alterTblPartitionStatementSuffix
   | alterStatementSuffixUpdateStats
   | alterStatementSuffixRenameCol
   | alterStatementSuffixAddCol
+  | alterStatementSuffixUpdateColumns
   ;
 
 alterStatementPartitionKeyType
@@ -1252,20 +1177,6 @@ alterMaterializedViewStatementSuffix
 @after { popMsg(state); }
     : alterMaterializedViewSuffixRewrite
     | alterMaterializedViewSuffixRebuild
-    ;
-
-alterIndexStatementSuffix
-@init { pushMsg("alter index statement", state); }
-@after { popMsg(state); }
-    : indexName=identifier KW_ON tableName partitionSpec?
-    (
-      KW_REBUILD
-      ->^(TOK_ALTERINDEX_REBUILD tableName $indexName partitionSpec?)
-    |
-      KW_SET KW_IDXPROPERTIES
-      indexProperties
-      ->^(TOK_ALTERINDEX_PROPERTIES tableName $indexName indexProperties)
-    )
     ;
 
 alterDatabaseStatementSuffix
@@ -1320,6 +1231,13 @@ alterStatementSuffixAddConstraint
    -> {fk != null}? ^(TOK_ALTERTABLE_ADDCONSTRAINT alterForeignKeyWithName)
    ->               ^(TOK_ALTERTABLE_ADDCONSTRAINT alterConstraintWithName)
    ;
+
+alterStatementSuffixUpdateColumns
+@init { pushMsg("update columns statement", state); }
+@after { popMsg(state); }
+    : KW_UPDATE KW_COLUMNS restrictOrCascade?
+    -> ^(TOK_ALTERTABLE_UPDATECOLUMNS restrictOrCascade?)
+    ;
 
 alterStatementSuffixDropConstraint
 @init { pushMsg("drop constraint statement", state); }
@@ -1634,8 +1552,8 @@ showStatement
     | KW_SHOW KW_TABLES ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWTABLES (TOK_FROM $db_name)? showStmtIdentifier?)
     | KW_SHOW KW_VIEWS ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWVIEWS (TOK_FROM $db_name)? showStmtIdentifier?)
     | KW_SHOW KW_MATERIALIZED KW_VIEWS ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?  -> ^(TOK_SHOWMATERIALIZEDVIEWS (TOK_FROM $db_name)? showStmtIdentifier?)
-    | KW_SHOW KW_COLUMNS (KW_FROM|KW_IN) tableName ((KW_FROM|KW_IN) db_name=identifier)?
-    -> ^(TOK_SHOWCOLUMNS tableName $db_name?)
+    | KW_SHOW KW_COLUMNS (KW_FROM|KW_IN) tableName ((KW_FROM|KW_IN) db_name=identifier)? (KW_LIKE showStmtIdentifier|showStmtIdentifier)?
+    -> ^(TOK_SHOWCOLUMNS tableName (TOK_FROM $db_name)? showStmtIdentifier?)
     | KW_SHOW KW_FUNCTIONS (KW_LIKE showFunctionIdentifier|showFunctionIdentifier)?  -> ^(TOK_SHOWFUNCTIONS KW_LIKE? showFunctionIdentifier?)
     | KW_SHOW KW_PARTITIONS tabName=tableName partitionSpec? -> ^(TOK_SHOWPARTITIONS $tabName partitionSpec?) 
     | KW_SHOW KW_CREATE (
@@ -1652,8 +1570,6 @@ showStatement
       |
       (parttype=partTypeExpr)? (isExtended=KW_EXTENDED)? -> ^(TOK_SHOWLOCKS $parttype? $isExtended?)
       )
-    | KW_SHOW (showOptions=KW_FORMATTED)? (KW_INDEX|KW_INDEXES) KW_ON showStmtIdentifier ((KW_FROM|KW_IN) db_name=identifier)?
-    -> ^(TOK_SHOWINDEXES showStmtIdentifier $showOptions? $db_name?)
     | KW_SHOW KW_COMPACTIONS -> ^(TOK_SHOW_COMPACTIONS)
     | KW_SHOW KW_TRANSACTIONS -> ^(TOK_SHOW_TRANSACTIONS)
     | KW_SHOW KW_CONF StringLiteral -> ^(TOK_SHOWCONF StringLiteral)
@@ -1839,7 +1755,6 @@ privilegeType
     | KW_UPDATE -> ^(TOK_PRIV_ALTER_DATA)
     | KW_CREATE -> ^(TOK_PRIV_CREATE)
     | KW_DROP -> ^(TOK_PRIV_DROP)
-    | KW_INDEX -> ^(TOK_PRIV_INDEX)
     | KW_LOCK -> ^(TOK_PRIV_LOCK)
     | KW_SELECT -> ^(TOK_PRIV_SELECT)
     | KW_SHOW_DATABASE -> ^(TOK_PRIV_SHOW_DATABASE)
@@ -2475,8 +2390,8 @@ colConstraint
 @after { popMsg(state); }
     : (KW_CONSTRAINT constraintName=identifier)? columnConstraintType constraintOptsCreate?
     -> {$constraintName.tree != null}?
-            ^(columnConstraintType ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsCreate?)
-    -> ^(columnConstraintType constraintOptsCreate?)
+            ^({$columnConstraintType.tree} ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsCreate?)
+    -> ^({$columnConstraintType.tree} constraintOptsCreate?)
     ;
 
 alterColumnConstraint[CommonTree fkColName]
@@ -2500,13 +2415,21 @@ alterColConstraint
 @after { popMsg(state); }
     : (KW_CONSTRAINT constraintName=identifier)? columnConstraintType constraintOptsAlter?
     -> {$constraintName.tree != null}?
-            ^(columnConstraintType ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsAlter?)
-    -> ^(columnConstraintType constraintOptsAlter?)
+            ^({$columnConstraintType.tree} ^(TOK_CONSTRAINT_NAME $constraintName) constraintOptsAlter?)
+    -> ^({$columnConstraintType.tree} constraintOptsAlter?)
     ;
 
 columnConstraintType
     : KW_NOT KW_NULL       ->    TOK_NOT_NULL
+    | KW_DEFAULT defaultVal->    ^(TOK_DEFAULT_VALUE defaultVal)
+    | KW_CHECK expression  ->    ^(TOK_CHECK_CONSTRAINT expression)
     | tableConstraintType
+    ;
+
+defaultVal
+    : constant
+    | function
+    | castExpression
     ;
 
 tableConstraintType

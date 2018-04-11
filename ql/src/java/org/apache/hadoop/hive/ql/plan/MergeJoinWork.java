@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -175,7 +175,7 @@ public class MergeJoinWork extends BaseWork {
   public boolean getLlapMode() {
     return getMainWork().getLlapMode();
   }
-  
+
   public void addDummyOp(HashTableDummyOperator dummyOp) {
     getMainWork().addDummyOp(dummyOp);
   }

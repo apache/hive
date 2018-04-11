@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -227,24 +227,25 @@ public class VectorPartitionDesc  {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("vector map operator read type ");
+    sb.append("(");
     sb.append(vectorMapOperatorReadType.name());
-    sb.append(", input file format class name ");
+    sb.append(", ");
     sb.append(inputFileFormatClassName);
     switch (vectorMapOperatorReadType) {
     case VECTORIZED_INPUT_FILE_FORMAT:
       break;
     case VECTOR_DESERIALIZE:
-      sb.append(", deserialize type ");
+      sb.append(", ");
       sb.append(vectorDeserializeType.name());
       break;
     case ROW_DESERIALIZE:
-      sb.append(", deserializer class name ");
+      sb.append(", ");
       sb.append(rowDeserializerClassName);
       break;
     default:
       throw new RuntimeException("Unexpected vector map operator read type " + vectorMapOperatorReadType.name());
     }
+    sb.append(")");
     return sb.toString();
   }
 

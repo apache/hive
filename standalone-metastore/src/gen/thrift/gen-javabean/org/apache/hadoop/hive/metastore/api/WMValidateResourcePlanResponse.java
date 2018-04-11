@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("WMValidateResourcePlanResponse");
 
   private static final org.apache.thrift.protocol.TField ERRORS_FIELD_DESC = new org.apache.thrift.protocol.TField("errors", org.apache.thrift.protocol.TType.LIST, (short)1);
+  private static final org.apache.thrift.protocol.TField WARNINGS_FIELD_DESC = new org.apache.thrift.protocol.TField("warnings", org.apache.thrift.protocol.TType.LIST, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -47,10 +48,12 @@ import org.slf4j.LoggerFactory;
   }
 
   private List<String> errors; // optional
+  private List<String> warnings; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    ERRORS((short)1, "errors");
+    ERRORS((short)1, "errors"),
+    WARNINGS((short)2, "warnings");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -67,6 +70,8 @@ import org.slf4j.LoggerFactory;
       switch(fieldId) {
         case 1: // ERRORS
           return ERRORS;
+        case 2: // WARNINGS
+          return WARNINGS;
         default:
           return null;
       }
@@ -107,11 +112,14 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final _Fields optionals[] = {_Fields.ERRORS};
+  private static final _Fields optionals[] = {_Fields.ERRORS,_Fields.WARNINGS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.ERRORS, new org.apache.thrift.meta_data.FieldMetaData("errors", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.WARNINGS, new org.apache.thrift.meta_data.FieldMetaData("warnings", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -129,6 +137,10 @@ import org.slf4j.LoggerFactory;
       List<String> __this__errors = new ArrayList<String>(other.errors);
       this.errors = __this__errors;
     }
+    if (other.isSetWarnings()) {
+      List<String> __this__warnings = new ArrayList<String>(other.warnings);
+      this.warnings = __this__warnings;
+    }
   }
 
   public WMValidateResourcePlanResponse deepCopy() {
@@ -138,6 +150,7 @@ import org.slf4j.LoggerFactory;
   @Override
   public void clear() {
     this.errors = null;
+    this.warnings = null;
   }
 
   public int getErrorsSize() {
@@ -178,6 +191,44 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public int getWarningsSize() {
+    return (this.warnings == null) ? 0 : this.warnings.size();
+  }
+
+  public java.util.Iterator<String> getWarningsIterator() {
+    return (this.warnings == null) ? null : this.warnings.iterator();
+  }
+
+  public void addToWarnings(String elem) {
+    if (this.warnings == null) {
+      this.warnings = new ArrayList<String>();
+    }
+    this.warnings.add(elem);
+  }
+
+  public List<String> getWarnings() {
+    return this.warnings;
+  }
+
+  public void setWarnings(List<String> warnings) {
+    this.warnings = warnings;
+  }
+
+  public void unsetWarnings() {
+    this.warnings = null;
+  }
+
+  /** Returns true if field warnings is set (has been assigned a value) and false otherwise */
+  public boolean isSetWarnings() {
+    return this.warnings != null;
+  }
+
+  public void setWarningsIsSet(boolean value) {
+    if (!value) {
+      this.warnings = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case ERRORS:
@@ -188,6 +239,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case WARNINGS:
+      if (value == null) {
+        unsetWarnings();
+      } else {
+        setWarnings((List<String>)value);
+      }
+      break;
+
     }
   }
 
@@ -195,6 +254,9 @@ import org.slf4j.LoggerFactory;
     switch (field) {
     case ERRORS:
       return getErrors();
+
+    case WARNINGS:
+      return getWarnings();
 
     }
     throw new IllegalStateException();
@@ -209,6 +271,8 @@ import org.slf4j.LoggerFactory;
     switch (field) {
     case ERRORS:
       return isSetErrors();
+    case WARNINGS:
+      return isSetWarnings();
     }
     throw new IllegalStateException();
   }
@@ -235,6 +299,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_warnings = true && this.isSetWarnings();
+    boolean that_present_warnings = true && that.isSetWarnings();
+    if (this_present_warnings || that_present_warnings) {
+      if (!(this_present_warnings && that_present_warnings))
+        return false;
+      if (!this.warnings.equals(that.warnings))
+        return false;
+    }
+
     return true;
   }
 
@@ -246,6 +319,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_errors);
     if (present_errors)
       list.add(errors);
+
+    boolean present_warnings = true && (isSetWarnings());
+    list.add(present_warnings);
+    if (present_warnings)
+      list.add(warnings);
 
     return list.hashCode();
   }
@@ -264,6 +342,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetErrors()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.errors, other.errors);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetWarnings()).compareTo(other.isSetWarnings());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetWarnings()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.warnings, other.warnings);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -294,6 +382,16 @@ import org.slf4j.LoggerFactory;
         sb.append("null");
       } else {
         sb.append(this.errors);
+      }
+      first = false;
+    }
+    if (isSetWarnings()) {
+      if (!first) sb.append(", ");
+      sb.append("warnings:");
+      if (this.warnings == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.warnings);
       }
       first = false;
     }
@@ -343,17 +441,35 @@ import org.slf4j.LoggerFactory;
           case 1: // ERRORS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list804 = iprot.readListBegin();
-                struct.errors = new ArrayList<String>(_list804.size);
-                String _elem805;
-                for (int _i806 = 0; _i806 < _list804.size; ++_i806)
+                org.apache.thrift.protocol.TList _list872 = iprot.readListBegin();
+                struct.errors = new ArrayList<String>(_list872.size);
+                String _elem873;
+                for (int _i874 = 0; _i874 < _list872.size; ++_i874)
                 {
-                  _elem805 = iprot.readString();
-                  struct.errors.add(_elem805);
+                  _elem873 = iprot.readString();
+                  struct.errors.add(_elem873);
                 }
                 iprot.readListEnd();
               }
               struct.setErrorsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 2: // WARNINGS
+            if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list875 = iprot.readListBegin();
+                struct.warnings = new ArrayList<String>(_list875.size);
+                String _elem876;
+                for (int _i877 = 0; _i877 < _list875.size; ++_i877)
+                {
+                  _elem876 = iprot.readString();
+                  struct.warnings.add(_elem876);
+                }
+                iprot.readListEnd();
+              }
+              struct.setWarningsIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -376,9 +492,23 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldBegin(ERRORS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.errors.size()));
-            for (String _iter807 : struct.errors)
+            for (String _iter878 : struct.errors)
             {
-              oprot.writeString(_iter807);
+              oprot.writeString(_iter878);
+            }
+            oprot.writeListEnd();
+          }
+          oprot.writeFieldEnd();
+        }
+      }
+      if (struct.warnings != null) {
+        if (struct.isSetWarnings()) {
+          oprot.writeFieldBegin(WARNINGS_FIELD_DESC);
+          {
+            oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.warnings.size()));
+            for (String _iter879 : struct.warnings)
+            {
+              oprot.writeString(_iter879);
             }
             oprot.writeListEnd();
           }
@@ -406,13 +536,25 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetErrors()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetWarnings()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
       if (struct.isSetErrors()) {
         {
           oprot.writeI32(struct.errors.size());
-          for (String _iter808 : struct.errors)
+          for (String _iter880 : struct.errors)
           {
-            oprot.writeString(_iter808);
+            oprot.writeString(_iter880);
+          }
+        }
+      }
+      if (struct.isSetWarnings()) {
+        {
+          oprot.writeI32(struct.warnings.size());
+          for (String _iter881 : struct.warnings)
+          {
+            oprot.writeString(_iter881);
           }
         }
       }
@@ -421,19 +563,32 @@ import org.slf4j.LoggerFactory;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, WMValidateResourcePlanResponse struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(1);
+      BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         {
-          org.apache.thrift.protocol.TList _list809 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.errors = new ArrayList<String>(_list809.size);
-          String _elem810;
-          for (int _i811 = 0; _i811 < _list809.size; ++_i811)
+          org.apache.thrift.protocol.TList _list882 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.errors = new ArrayList<String>(_list882.size);
+          String _elem883;
+          for (int _i884 = 0; _i884 < _list882.size; ++_i884)
           {
-            _elem810 = iprot.readString();
-            struct.errors.add(_elem810);
+            _elem883 = iprot.readString();
+            struct.errors.add(_elem883);
           }
         }
         struct.setErrorsIsSet(true);
+      }
+      if (incoming.get(1)) {
+        {
+          org.apache.thrift.protocol.TList _list885 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.warnings = new ArrayList<String>(_list885.size);
+          String _elem886;
+          for (int _i887 = 0; _i887 < _list885.size; ++_i887)
+          {
+            _elem886 = iprot.readString();
+            struct.warnings.add(_elem886);
+          }
+        }
+        struct.setWarningsIsSet(true);
       }
     }
   }

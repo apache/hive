@@ -127,12 +127,12 @@ STAGE PLANS:
           outputColumnNames: _col0
           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: (_col0 = 0) (type: boolean)
+            predicate: (_col0 = 0L) (type: boolean)
             Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                keys: 0 (type: bigint)
+                keys: 0L (type: bigint)
                 mode: hash
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE

@@ -1,0 +1,67 @@
+This file contains information for developers and testers.
+
+Running unit and checkin tests:
+By default only some of the tests in standalone-metastore are run.  This is 
+done to keep the runtime of the unit tests under 5 minutes.  These are referred
+to as the unit tests.  The remainder of the tests are referred to as checkin
+tests and are run by the CI process.  It is also advised that you run the
+checkin tests before loading a patch.
+
+To run just the checkin tests:
+'mvn test -Dtest.groups=org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest'
+
+To run all of the tests (exclusive of the databases tests, see below):
+'mvn test -Dtest.groups=""'.  At the moment this takes around 25 minutes.
+
+When adding a test, if you want it to run as part of the unit tests annotate it
+with MetastoreUnitTest.  To make it part of the checkin tests annotate it with
+MetastoreCheckinTest.  We want to keep the unit test runs as quick as possible.
+If you write a test that takes more than 5 seconds to run the whole test class
+please put it in the checkin tests.  If it tests something that needs to be 
+tested in unit test runs break it into multiple classes so that a
+quick test can be done for the unit tests and more in depth testing as part
+of the checkin tests.
+
+--------------------------------------------------------------------------------
+Testing metastore installation and upgrade against databases beyond Derby:
+There are integration tests for testing installation and upgrade of the
+metastore on MySQL (actually MariaDB is used), Oracle, Postgres, and SQLServer.
+These tests are not run by default because they take several minutes each and
+they require the developer to download the JDBC driver for Oracle.
+They are run in the integration-test phase.
+
+Each ITest runs two tests, one that installs the latest version of the
+database and one that installs the latest version minus one and then upgrades
+the database.
+
+To run one of the tests you will need to explicitly turn on integration testing,
+in the Oracle case specify the location of the JDBC driver, and optionally
+specify which test you want to run.  You'll need to download and start docker.
+Make sure docker's memory is set to more than 3.5GB.  To run all of the tests do:
+
+mvn verify -Ditest.jdbc.jars=_oracle_jar_path -DskipITests=false -Dtest=nosuch
+
+To run just one test, do
+
+mvn verify -DskipITests=false -Dit.test=ITestMysql -Dtest=nosuch
+
+You can download the Oracle driver at 
+http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html
+You should download Oracle 11g Release 1, ojdbc6.jar
+
+Logs for tests are located under standalone-metastore/target/failsafe-reports
+
+If you wish to use one of these containers to run your own tests against a
+non-Derby version of the metastore, you can do that as well.  You must specify
+that only the install test be run (change -Dit.test=ITestMysql in the example
+above to -Dit.test=ITestMysql#install) and tell it to leave the docker container
+running by adding -Dmetastore.itest.no.stop.container=true.  You will then need
+to stop and remove the container yourself once you have finished.  The container
+is recreated for each run of the test, so you cannot rerun the test until you
+have stopped and removed it.  You can construct the connection values to put in
+metastore-site.xml from the information in the appropriate ITest file (e.g.,
+from ITestMysql you can find that the JDBC URL is
+"jdbc:mysql://localhost:3306/hivedb", the JDBC driver is
+"org.mariadb.jdbc.Driver", and the password is "hivepassword".  The user is
+always "hiveuser".
+

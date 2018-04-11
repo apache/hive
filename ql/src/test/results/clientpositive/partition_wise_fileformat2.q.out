@@ -68,7 +68,7 @@ STAGE PLANS:
           alias: partition_test_partitioned
           Statistics: Num rows: 75 Data size: 548 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: ((UDFToDouble(dt) <= 102.0) and (UDFToDouble(dt) >= 100.0)) (type: boolean)
+            predicate: ((UDFToDouble(dt) <= 102.0D) and (UDFToDouble(dt) >= 100.0D)) (type: boolean)
             Statistics: Num rows: 8 Data size: 58 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string), dt (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint)
@@ -181,7 +181,7 @@ STAGE PLANS:
           alias: partition_test_partitioned
           Statistics: Num rows: 75 Data size: 548 Basic stats: COMPLETE Column stats: NONE
           Filter Operator
-            predicate: ((UDFToDouble(dt) <= 102.0) and (UDFToDouble(dt) >= 100.0)) (type: boolean)
+            predicate: ((UDFToDouble(dt) <= 102.0D) and (UDFToDouble(dt) >= 100.0D)) (type: boolean)
             Statistics: Num rows: 8 Data size: 58 Basic stats: COMPLETE Column stats: NONE
             Select Operator
               expressions: key (type: string), value (type: string), dt (type: string), BLOCK__OFFSET__INSIDE__FILE (type: bigint)

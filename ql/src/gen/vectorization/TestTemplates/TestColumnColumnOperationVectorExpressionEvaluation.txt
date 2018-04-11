@@ -48,9 +48,13 @@
         || inputColumnVector1.isRepeating && inputColumnVector2.isRepeating,
         outputColumnVector.isRepeating);
 
+    /*
+     We no longer set noNulls to the input ColumnVector's value since that doesn't work
+     for scratch column reuse.
     assertEquals(
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
+    */
 
     //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -59,7 +59,7 @@ public class LlapIoMemoryServlet extends HttpServlet {
         return;
       }
       PrintWriter writer = null;
- 
+
       try {
         response.setContentType("text/plain; charset=utf8");
         response.setHeader(ACCESS_CONTROL_ALLOW_METHODS, "GET");

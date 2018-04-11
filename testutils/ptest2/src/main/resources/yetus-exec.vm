@@ -21,8 +21,10 @@ date +"%Y-%m-%d %T.%3N"
 pushd ${workingDir}
 export JIRA_ISSUE=${jiraName}
 export JAVA_HOME=${javaHome}
+export PATH=$JAVA_HOME/bin/:$PATH
 ./dev-support/test-patch.sh ${patchFile} --jenkins --jira-base-url=${jiraUrl} --jira-user=${jiraUser} \
  --jira-password=${jiraPass} --patch-dir=${outputDir} --build-url=${buildUrl} --build-url-console=${buildUrlLog} \
- --build-url-artifacts=${buildUrlOutputDir} 2>&1 > ${logFile}
+ --build-url-artifacts=${buildUrlOutputDir} 2>&1 > ${logFile} || true
 popd
+rm -rf ${workingDir}
 

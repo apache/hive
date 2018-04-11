@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -25,25 +25,33 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
-import org.apache.hadoop.hive.metastore.events.AddIndexEvent;
 import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
+import org.apache.hadoop.hive.metastore.events.AddSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
-import org.apache.hadoop.hive.metastore.events.AlterIndexEvent;
+import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
+import org.apache.hadoop.hive.metastore.events.CreateISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.CreateTableEvent;
+import org.apache.hadoop.hive.metastore.events.DropCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.DropDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.DropFunctionEvent;
-import org.apache.hadoop.hive.metastore.events.DropIndexEvent;
+import org.apache.hadoop.hive.metastore.events.DropISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
+import org.apache.hadoop.hive.metastore.events.DropSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.InsertEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
+import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
+import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
+import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 
 import java.util.List;
 import java.util.Map;
@@ -137,24 +145,6 @@ public class MetaStoreListenerNotifier {
               listener.onDropFunction((DropFunctionEvent)event);
             }
           })
-          .put(EventType.CREATE_INDEX, new EventNotifier() {
-            @Override
-            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
-              listener.onAddIndex((AddIndexEvent)event);
-            }
-          })
-          .put(EventType.DROP_INDEX, new EventNotifier() {
-            @Override
-            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
-              listener.onDropIndex((DropIndexEvent)event);
-            }
-          })
-          .put(EventType.ALTER_INDEX, new EventNotifier() {
-            @Override
-            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
-              listener.onAlterIndex((AlterIndexEvent)event);
-            }
-          })
           .put(EventType.ADD_PRIMARYKEY, new EventNotifier() {
             @Override
             public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
@@ -177,6 +167,66 @@ public class MetaStoreListenerNotifier {
             @Override
             public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
               listener.onAddNotNullConstraint((AddNotNullConstraintEvent)event);
+            }
+          })
+          .put(EventType.CREATE_ISCHEMA, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+              listener.onCreateISchema((CreateISchemaEvent)event);
+            }
+          })
+          .put(EventType.ALTER_ISCHEMA, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+              listener.onAlterISchema((AlterISchemaEvent)event);
+            }
+          })
+          .put(EventType.DROP_ISCHEMA, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+              listener.onDropISchema((DropISchemaEvent)event);
+            }
+          })
+          .put(EventType.ADD_SCHEMA_VERSION, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+              listener.onAddSchemaVersion((AddSchemaVersionEvent) event);
+            }
+          })
+          .put(EventType.ALTER_SCHEMA_VERSION, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+              listener.onAlterSchemaVersion((AlterSchemaVersionEvent) event);
+            }
+          })
+          .put(EventType.DROP_SCHEMA_VERSION, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+              listener.onDropSchemaVersion((DropSchemaVersionEvent) event);
+            }
+          })
+          .put(EventType.CREATE_CATALOG,
+              (listener, event) -> listener.onCreateCatalog((CreateCatalogEvent)event))
+          .put(EventType.DROP_CATALOG,
+              (listener, event) -> listener.onDropCatalog((DropCatalogEvent)event))
+          .put(EventType.OPEN_TXN, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+              listener.onOpenTxn((OpenTxnEvent)event);
+            }
+          })
+          .put(EventType.COMMIT_TXN, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event)
+                throws MetaException {
+              listener.onCommitTxn((CommitTxnEvent) event);
+            }
+          })
+          .put(EventType.ABORT_TXN, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event)
+                throws MetaException {
+              listener.onAbortTxn((AbortTxnEvent) event);
             }
           })
           .build()

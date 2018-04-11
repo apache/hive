@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang.StringUtils.repeat;
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Array;
@@ -50,35 +51,36 @@ public class VerifyingObjectStore extends ObjectStore {
   }
 
   @Override
-  public List<Partition> getPartitionsByFilter(String dbName, String tblName, String filter,
-      short maxParts) throws MetaException, NoSuchObjectException {
+  public List<Partition> getPartitionsByFilter(String catName, String dbName, String tblName,
+                                               String filter, short maxParts)
+      throws MetaException, NoSuchObjectException {
     List<Partition> sqlResults = getPartitionsByFilterInternal(
-        dbName, tblName, filter, maxParts, true, false);
+        catName, dbName, tblName, filter, maxParts, true, false);
     List<Partition> ormResults = getPartitionsByFilterInternal(
-        dbName, tblName, filter, maxParts, false, true);
+        catName, dbName, tblName, filter, maxParts, false, true);
     verifyLists(sqlResults, ormResults, Partition.class);
     return sqlResults;
   }
 
   @Override
-  public List<Partition> getPartitionsByNames(String dbName, String tblName,
+  public List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
       List<String> partNames) throws MetaException, NoSuchObjectException {
     List<Partition> sqlResults = getPartitionsByNamesInternal(
-        dbName, tblName, partNames, true, false);
+        catName, dbName, tblName, partNames, true, false);
     List<Partition> ormResults = getPartitionsByNamesInternal(
-        dbName, tblName, partNames, false, true);
+        catName, dbName, tblName, partNames, false, true);
     verifyLists(sqlResults, ormResults, Partition.class);
     return sqlResults;
   }
 
   @Override
-  public boolean getPartitionsByExpr(String dbName, String tblName, byte[] expr,
+  public boolean getPartitionsByExpr(String catName, String dbName, String tblName, byte[] expr,
       String defaultPartitionName, short maxParts, List<Partition> result) throws TException {
     List<Partition> ormParts = new LinkedList<>();
     boolean sqlResult = getPartitionsByExprInternal(
-        dbName, tblName, expr, defaultPartitionName, maxParts, result, true, false);
+        catName, dbName, tblName, expr, defaultPartitionName, maxParts, result, true, false);
     boolean ormResult = getPartitionsByExprInternal(
-        dbName, tblName, expr, defaultPartitionName, maxParts, ormParts, false, true);
+        catName, dbName, tblName, expr, defaultPartitionName, maxParts, ormParts, false, true);
     if (sqlResult != ormResult) {
       String msg = "The unknown flag is different - SQL " + sqlResult + ", ORM " + ormResult;
       LOG.error(msg);
@@ -90,32 +92,32 @@ public class VerifyingObjectStore extends ObjectStore {
 
   @Override
   public List<Partition> getPartitions(
-      String dbName, String tableName, int maxParts) throws MetaException, NoSuchObjectException {
-    List<Partition> sqlResults = getPartitionsInternal(dbName, tableName, maxParts, true, false);
-    List<Partition> ormResults = getPartitionsInternal(dbName, tableName, maxParts, false, true);
+      String catName, String dbName, String tableName, int maxParts) throws MetaException, NoSuchObjectException {
+    List<Partition> sqlResults = getPartitionsInternal(catName, dbName, tableName, maxParts, true, false);
+    List<Partition> ormResults = getPartitionsInternal(catName, dbName, tableName, maxParts, false, true);
     verifyLists(sqlResults, ormResults, Partition.class);
     return sqlResults;
   }
 
   @Override
-  public ColumnStatistics getTableColumnStatistics(String dbName,
+  public ColumnStatistics getTableColumnStatistics(String catName, String dbName,
       String tableName, List<String> colNames) throws MetaException, NoSuchObjectException {
     ColumnStatistics sqlResult = getTableColumnStatisticsInternal(
-        dbName, tableName, colNames, true, false);
+        catName, dbName, tableName, colNames, true, false);
     ColumnStatistics jdoResult = getTableColumnStatisticsInternal(
-        dbName, tableName, colNames, false, true);
+        catName, dbName, tableName, colNames, false, true);
     verifyObjects(sqlResult, jdoResult, ColumnStatistics.class);
     return sqlResult;
   }
 
   @Override
-  public List<ColumnStatistics> getPartitionColumnStatistics(String dbName,
+  public List<ColumnStatistics> getPartitionColumnStatistics(String catName, String dbName,
       String tableName, List<String> partNames, List<String> colNames)
       throws MetaException, NoSuchObjectException {
     List<ColumnStatistics> sqlResult = getPartitionColumnStatisticsInternal(
-        dbName, tableName, partNames, colNames, true, false);
+        catName, dbName, tableName, partNames, colNames, true, false);
     List<ColumnStatistics> jdoResult = getPartitionColumnStatisticsInternal(
-        dbName, tableName, partNames, colNames,  false, true);
+        catName, dbName, tableName, partNames, colNames,  false, true);
     verifyLists(sqlResult, jdoResult, ColumnStatistics.class);
     return sqlResult;
   }

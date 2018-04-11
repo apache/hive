@@ -22,23 +22,32 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
-public class IfExprNullColumn extends IfExprConditionalFilter {
+public class IfExprNullColumn extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  public IfExprNullColumn(int arg1Column, int arg2Column, int outputColumn) {
-    super(arg1Column, -1, arg2Column, outputColumn);
+  private final int arg1Column;
+  private final int arg2Column;
+
+  public IfExprNullColumn(int arg1Column, int arg2Column, int outputColumnNum) {
+	super(outputColumnNum);
+    this.arg1Column = arg1Column;
+    this.arg2Column = arg2Column;
   }
 
   public IfExprNullColumn() {
     super();
+
+    // Dummy final assignments.
+    arg1Column = -1;
+    arg2Column = -1;
   }
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
 
     if (childExpressions != null) {
-      super.evaluateIfConditionalExpr(batch, childExpressions);
+      super.evaluateChildren(batch);
     }
 
     final LongColumnVector arg1ColVector = (LongColumnVector) batch.cols[arg1Column];
@@ -55,39 +64,132 @@ public class IfExprNullColumn extends IfExprConditionalFilter {
       return;
     }
 
-    arg2ColVector.flatten(batch.selectedInUse, sel, n);
+    // We do not need to do a column reset since we are carefully changing the output.
+    outputColVector.isRepeating = false;
 
+    /*
+     * Repeating IF expression?
+     */
     if (arg1ColVector.isRepeating) {
-      if (!null1[0] && vector1[0] == 1) {
+      if ((arg1ColVector.noNulls || !null1[0]) && vector1[0] == 1) {
+        outputColVector.isRepeating = true;
         outputColVector.noNulls = false;
         isNull[0] = true;
       } else {
-        outputColVector.setElement(0, 0, arg2ColVector);
+        arg2ColVector.copySelected(batch.selectedInUse, sel, n, outputColVector);
       }
       return;
     }
-    if (batch.selectedInUse) {
-      for (int j = 0; j < n; j++) {
-        int i = sel[j];
-        if (!null1[0] && vector1[i] == 1) {
-          outputColVector.noNulls = false;
-          isNull[i] = true;
+
+    /*
+     * Do careful maintenance of the outputColVector.noNulls flag.
+     */
+
+    if (arg1ColVector.noNulls) {
+
+      /*
+       * Repeating ELSE expression?
+       */
+      if (arg2ColVector.isRepeating) {
+        if (batch.selectedInUse) {
+          for (int j = 0; j < n; j++) {
+            int i = sel[j];
+            if (vector1[i] == 1) {
+              isNull[i] = true;
+              outputColVector.noNulls = false;
+            } else {
+              isNull[i] = false;
+              outputColVector.setElement(i, 0, arg2ColVector);
+            }
+          }
         } else {
-          outputColVector.setElement(i, i, arg2ColVector);
+          for (int i = 0; i < n; i++) {
+            if (vector1[i] == 1) {
+              isNull[i] = true;
+              outputColVector.noNulls = false;
+            } else {
+              isNull[i] = false;
+              outputColVector.setElement(i, 0, arg2ColVector);
+            }
+          }
+        }
+      } else {
+        if (batch.selectedInUse) {
+          for (int j = 0; j < n; j++) {
+            int i = sel[j];
+            if (vector1[i] == 1) {
+              isNull[i] = true;
+              outputColVector.noNulls = false;
+            } else {
+              isNull[i] = false;
+              outputColVector.setElement(i, i, arg2ColVector);
+            }
+          }
+        } else {
+          for (int i = 0; i < n; i++) {
+            if (vector1[i] == 1) {
+              isNull[i] = true;
+              outputColVector.noNulls = false;
+            } else {
+              isNull[i] = false;
+              outputColVector.setElement(i, i, arg2ColVector);
+            }
+          }
         }
       }
     } else {
-      for (int i = 0; i < n; i++) {
-        if (!null1[0] && vector1[i] == 1) {
-          outputColVector.noNulls = false;
-          isNull[i] = true;
+
+      /*
+       * Repeating ELSE expression?
+       */
+      if (arg2ColVector.isRepeating) {
+        if (batch.selectedInUse) {
+          for (int j = 0; j < n; j++) {
+            int i = sel[j];
+            if (!null1[i] && vector1[i] == 1) {
+              isNull[i] = true;
+              outputColVector.noNulls = false;
+            } else {
+              isNull[i] = false;
+              outputColVector.setElement(i, 0, arg2ColVector);
+            }
+          }
         } else {
-          outputColVector.setElement(i, i, arg2ColVector);
+          for (int i = 0; i < n; i++) {
+            if (!null1[i] && vector1[i] == 1) {
+              isNull[i] = true;
+              outputColVector.noNulls = false;
+            } else {
+              isNull[i] = false;
+              outputColVector.setElement(i, 0, arg2ColVector);
+            }
+          }
+        }
+      } else {
+        if (batch.selectedInUse) {
+          for (int j = 0; j < n; j++) {
+            int i = sel[j];
+            if (!null1[i] && vector1[i] == 1) {
+              isNull[i] = true;
+              outputColVector.noNulls = false;
+            } else {
+              isNull[i] = false;
+              outputColVector.setElement(i, i, arg2ColVector);
+            }
+          }
+        } else {
+          for (int i = 0; i < n; i++) {
+            if (!null1[i] && vector1[i] == 1) {
+              isNull[i] = true;
+              outputColVector.noNulls = false;
+            } else {
+              isNull[i] = false;
+              outputColVector.setElement(i, i, arg2ColVector);
+            }
+          }
         }
       }
     }
-
-    arg2ColVector.unFlatten();
   }
 
   @Override
@@ -95,4 +197,8 @@ public class IfExprNullColumn extends IfExprConditionalFilter {
     return getColumnParamString(0, arg1Column) + ", null, col "+ arg2Column;
   }
 
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    throw new UnsupportedOperationException("Undefined descriptor");
+  }
 }

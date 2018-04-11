@@ -25,6 +25,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -93,6 +95,8 @@ public class RemoteDriver {
     this.jcLock = new Object();
     this.shutdownLock = new Object();
     localTmpDir = Files.createTempDir();
+
+    addShutdownHook();
 
     SparkConf conf = new SparkConf();
     String serverAddress = null;
@@ -176,6 +180,17 @@ public class RemoteDriver {
     }
   }
 
+  private void addShutdownHook() {
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+      if (running) {
+        LOG.info("Received signal SIGTERM, attempting safe shutdown of Remote Spark Context");
+        protocol.sendErrorMessage("Remote Spark Context was shutdown because it received a SIGTERM " +
+                "signal. Most likely due to a kill request via YARN.");
+        shutdown(null);
+      }
+    }));
+  }
+
   private void run() throws InterruptedException {
     synchronized (shutdownLock) {
       while (running) {
@@ -247,7 +262,12 @@ public class RemoteDriver {
 
     void sendError(Throwable error) {
       LOG.debug("Send error to Client: {}", Throwables.getStackTraceAsString(error));
-      clientRpc.call(new Error(error));
+      clientRpc.call(new Error(Throwables.getStackTraceAsString(error)));
+    }
+
+    void sendErrorMessage(String cause) {
+      LOG.debug("Send error to Client: {}", cause);
+      clientRpc.call(new Error(cause));
     }
 
     <T extends Serializable> void jobFinished(String jobId, T result,
@@ -388,7 +408,7 @@ public class RemoteDriver {
         // Catch throwables in a best-effort to report job status back to the client. It's
         // re-thrown so that the executor can destroy the affected thread (or the JVM can
         // die or whatever would happen if the throwable bubbled up).
-        LOG.info("Failed to run job " + req.id, t);
+        LOG.error("Failed to run job " + req.id, t);
         protocol.jobFinished(req.id, null, t,
             sparkCounters != null ? sparkCounters.snapshot() : null);
         throw new ExecutionException(t);
@@ -476,7 +496,7 @@ public class RemoteDriver {
     public void onTaskEnd(SparkListenerTaskEnd taskEnd) {
       if (taskEnd.reason() instanceof org.apache.spark.Success$
           && !taskEnd.taskInfo().speculative()) {
-        Metrics metrics = new Metrics(taskEnd.taskMetrics());
+        Metrics metrics = new Metrics(taskEnd.taskMetrics(), taskEnd.taskInfo());
         Integer jobId;
         synchronized (stageToJobId) {
           jobId = stageToJobId.get(taskEnd.stageId());
@@ -513,8 +533,18 @@ public class RemoteDriver {
   }
 
   public static void main(String[] args) throws Exception {
-    new RemoteDriver(args).run();
+    RemoteDriver rd = new RemoteDriver(args);
+    try {
+      rd.run();
+    } catch (Exception e) {
+      // If the main thread throws an exception for some reason, propagate the exception to the
+      // client and initiate a safe shutdown
+      if (rd.running) {
+        rd.protocol.sendError(e);
+        rd.shutdown(null);
+      }
+      throw e;
+    }
   }
-
 }
 

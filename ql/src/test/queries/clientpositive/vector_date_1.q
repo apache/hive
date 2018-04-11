@@ -2,6 +2,7 @@ set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.vectorized.execution.enabled=true;
 set hive.fetch.task.conversion=none;
+set hive.cli.print.header=true;
 
 drop table if exists vector_date_1;
 create table vector_date_1 (dt1 date, dt2 date) stored as orc;
@@ -13,8 +14,10 @@ insert into table vector_date_1
 insert into table vector_date_1
   select date '2001-01-01', date '2001-06-01' from src limit 1;
 
+select * from vector_date_1 order by dt1, dt2;
+
 -- column-to-column comparison in select clause
-explain
+explain vectorization detail
 select
   dt1, dt2,
   -- should be all true
@@ -41,7 +44,7 @@ select
   dt2 > dt1
 from vector_date_1 order by dt1;
 
-explain
+explain vectorization detail
 select
   dt1, dt2,
   -- should be all false
@@ -69,7 +72,7 @@ select
 from vector_date_1 order by dt1;
 
 -- column-to-literal/literal-to-column comparison in select clause
-explain
+explain vectorization detail
 select
   dt1,
   -- should be all true
@@ -96,7 +99,7 @@ select
   date '1970-01-01' < dt1
 from vector_date_1 order by dt1;
 
-explain
+explain vectorization detail
 select
   dt1,
   -- should all be false
@@ -126,7 +129,7 @@ from vector_date_1 order by dt1;
 
 -- column-to-column comparisons in predicate
 -- all rows with non-null dt1 should be returned
-explain
+explain vectorization detail
 select
   dt1, dt2
 from vector_date_1
@@ -153,7 +156,7 @@ order by dt1;
 
 -- column-to-literal/literal-to-column comparison in predicate
 -- only a single row should be returned
-explain
+explain vectorization detail
 select
   dt1, dt2
 from vector_date_1
@@ -182,7 +185,7 @@ where
   and date '1970-01-01' <= dt1
 order by dt1;
 
-EXPLAIN VECTORIZATION EXPRESSION
+EXPLAIN VECTORIZATION DETAIL
 SELECT dt1 FROM vector_date_1 WHERE dt1 IN (date '1970-01-01', date '2001-01-01');
 
 SELECT dt1 FROM vector_date_1 WHERE dt1 IN (date '1970-01-01', date '2001-01-01');

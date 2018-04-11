@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -183,7 +183,7 @@ public class HiveIntersectRewriteRule extends RelOptRule {
           .makeCall(
               SqlFunctionConverter.getCalciteFn("=", calciteArgTypesBldr.build(),
                   TypeConverter.convert(TypeInfoFactory.longTypeInfo, cluster.getTypeFactory()),
-                  true), childRexNodeLst);
+                  true, false), childRexNodeLst);
     } catch (CalciteSemanticException e) {
       LOG.debug(e.toString());
       throw new RuntimeException(e);

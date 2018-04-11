@@ -21,8 +21,10 @@ package org.apache.hadoop.hive.metastore;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.util.StringUtils;
@@ -30,11 +32,13 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * Test long running request timeout functionality in MetaStore Server
  * HiveMetaStore.HMSHandler.create_database() is used to simulate a long running method.
  */
+@Category(MetastoreCheckinTest.class)
 public class TestHiveMetaStoreTimeout {
   protected static HiveMetaStoreClient client;
   protected static Configuration conf;
@@ -72,13 +76,9 @@ public class TestHiveMetaStoreTimeout {
     String dbName = "db";
     client.dropDatabase(dbName, true, true);
 
-    Database db = new Database();
-    db.setName(dbName);
-    try {
-      client.createDatabase(db);
-    } catch (MetaException e) {
-      Assert.fail("should not throw timeout exception: " + e.getMessage());
-    }
+    new DatabaseBuilder()
+        .setName(dbName)
+        .create(client, conf);
 
     client.dropDatabase(dbName, true, true);
   }
@@ -90,8 +90,9 @@ public class TestHiveMetaStoreTimeout {
     String dbName = "db";
     client.dropDatabase(dbName, true, true);
 
-    Database db = new Database();
-    db.setName(dbName);
+    Database db = new DatabaseBuilder()
+        .setName(dbName)
+        .build(conf);
     try {
       client.createDatabase(db);
       Assert.fail("should throw timeout exception.");
@@ -111,8 +112,9 @@ public class TestHiveMetaStoreTimeout {
 
     // no timeout before reset
     client.dropDatabase(dbName, true, true);
-    Database db = new Database();
-    db.setName(dbName);
+    Database db = new DatabaseBuilder()
+        .setName(dbName)
+        .build(conf);
     try {
       client.createDatabase(db);
     } catch (MetaException e) {

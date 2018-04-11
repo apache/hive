@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -80,14 +80,9 @@ public abstract class Operation {
   protected Operation(HiveSession parentSession, OperationType opType) {
     this(parentSession, null, opType);
   }
-  
-  protected Operation(HiveSession parentSession, Map<String, String> confOverlay,
-      OperationType opType) {
-    this(parentSession, confOverlay, opType, false);
-  }
 
   protected Operation(HiveSession parentSession,
-      Map<String, String> confOverlay, OperationType opType, boolean isAsyncQueryState) {
+      Map<String, String> confOverlay, OperationType opType) {
     this.parentSession = parentSession;
     this.opHandle = new OperationHandle(opType, parentSession.getProtocolVersion());
     beginTime = System.currentTimeMillis();
@@ -99,7 +94,6 @@ public abstract class Operation {
         MetricsConstant.COMPLETED_OPERATION_PREFIX, state);
     queryState = new QueryState.Builder()
                      .withConfOverlay(confOverlay)
-                     .withRunAsync(isAsyncQueryState)
                      .withGenerateNewQueryId(true)
                      .withHiveConf(parentSession.getHiveConf())
                      .build();
@@ -253,6 +247,10 @@ public abstract class Operation {
   }
 
   protected synchronized void cleanupOperationLog() {
+    // stop the appenders for the operation log
+    String queryId = queryState.getQueryId();
+    LogUtils.stopQueryAppender(LogDivertAppender.QUERY_ROUTING_APPENDER, queryId);
+    LogUtils.stopQueryAppender(LogDivertAppenderForTest.TEST_QUERY_ROUTING_APPENDER, queryId);
     if (isOperationLogEnabled) {
       if (opHandle == null) {
         LOG.warn("Operation seems to be in invalid state, opHandle is null");
@@ -265,11 +263,8 @@ public abstract class Operation {
       } else {
         operationLog.close();
       }
-      // stop the appenders for the operation log
-      String queryId = queryState.getQueryId();
-      LogUtils.stopQueryAppender(LogDivertAppender.QUERY_ROUTING_APPENDER, queryId);
-      LogUtils.stopQueryAppender(LogDivertAppenderForTest.TEST_QUERY_ROUTING_APPENDER, queryId);
     }
+
   }
 
   public abstract void cancel(OperationState stateAfterCancel) throws HiveSQLException;

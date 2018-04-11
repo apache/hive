@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -100,9 +100,12 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
     FileSplit fileSplit = (FileSplit) split;
     reporter.setStatus(fileSplit.toString());
     try {
-      List<Integer> includedCols = ColumnProjectionUtils.isReadAllColumns(job)
+      // At this entry point, we are going to assume that these are logical table columns.
+      // Perhaps we should go thru the code and clean this up to be more explicit; for now, we
+      // will start with this single assumption and maintain clear semantics from here.
+      List<Integer> tableIncludedCols = ColumnProjectionUtils.isReadAllColumns(job)
           ? null : ColumnProjectionUtils.getReadColumnIDs(job);
-      LlapRecordReader rr = LlapRecordReader.create(job, fileSplit, includedCols, hostName,
+      LlapRecordReader rr = LlapRecordReader.create(job, fileSplit, tableIncludedCols, hostName,
           cvp, executor, sourceInputFormat, sourceSerDe, reporter, daemonConf);
       if (rr == null) {
         // Reader-specific incompatibility like SMB or schema evolution.
@@ -110,8 +113,8 @@ public class LlapInputFormat implements InputFormat<NullWritable, VectorizedRowB
       }
       // For non-vectorized operator case, wrap the reader if possible.
       RecordReader<NullWritable, VectorizedRowBatch> result = rr;
-      if (!Utilities.getUseVectorizedInputFileFormat(job)) {
-        result = wrapLlapReader(includedCols, rr, split);
+      if (!Utilities.getIsVectorized(job)) {
+        result = wrapLlapReader(tableIncludedCols, rr, split);
         if (result == null) {
           // Cannot wrap a reader for non-vectorized pipeline.
           return sourceInputFormat.getRecordReader(split, job, reporter);

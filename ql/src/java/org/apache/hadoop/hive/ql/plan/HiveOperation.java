@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -71,7 +71,6 @@ public enum HiveOperation {
   SHOW_CREATEDATABASE("SHOW_CREATEDATABASE", new Privilege[]{Privilege.SELECT}, null),
   SHOW_CREATETABLE("SHOW_CREATETABLE", new Privilege[]{Privilege.SELECT}, null),
   SHOWFUNCTIONS("SHOWFUNCTIONS", null, null, true, false),
-  SHOWINDEXES("SHOWINDEXES", null, null, true, false),
   SHOWPARTITIONS("SHOWPARTITIONS", null, null),
   SHOWLOCKS("SHOWLOCKS", null, null, true, false),
   SHOWCONF("SHOWCONF", null, null),
@@ -89,9 +88,6 @@ public enum HiveOperation {
   DROP_MATERIALIZED_VIEW("DROP_MATERIALIZED_VIEW", null, new Privilege[]{Privilege.DROP}),
   ALTER_MATERIALIZED_VIEW_REWRITE("ALTER_MATERIALIZED_VIEW_REWRITE",
       new Privilege[]{Privilege.ALTER_METADATA}, null),
-  CREATEINDEX("CREATEINDEX", null, null),
-  DROPINDEX("DROPINDEX", null, null),
-  ALTERINDEX_REBUILD("ALTERINDEX_REBUILD", null, null),
   ALTERVIEW_PROPERTIES("ALTERVIEW_PROPERTIES", null, null),
   DROPVIEW_PROPERTIES("DROPVIEW_PROPERTIES", null, null),
   LOCKTABLE("LOCKTABLE",  new Privilege[]{Privilege.LOCK}, null),
@@ -114,7 +110,6 @@ public enum HiveOperation {
   TRUNCATETABLE("TRUNCATETABLE", null, new Privilege[]{Privilege.DROP}),
   CREATETABLE_AS_SELECT("CREATETABLE_AS_SELECT", new Privilege[]{Privilege.SELECT}, new Privilege[]{Privilege.CREATE}),
   QUERY("QUERY", new Privilege[]{Privilege.SELECT}, new Privilege[]{Privilege.ALTER_DATA, Privilege.CREATE}, true, false),
-  ALTERINDEX_PROPS("ALTERINDEX_PROPS",null, null),
   ALTERDATABASE("ALTERDATABASE", null, null),
   ALTERDATABASE_OWNER("ALTERDATABASE_OWNER", null, null),
   ALTERDATABASE_LOCATION("ALTERDATABASE_LOCATION", new Privilege[]{Privilege.ALTER_DATA}, null),
@@ -131,6 +126,8 @@ public enum HiveOperation {
   ALTERTABLE_DROPCONSTRAINT("ALTERTABLE_DROPCONSTRAINT",
       new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERTABLE_ADDCONSTRAINT("ALTERTABLE_ADDCONSTRAINT",
+      new Privilege[]{Privilege.ALTER_METADATA}, null),
+  ALTERTABLE_UPDATECOLUMNS("ALTERTABLE_UPDATECOLUMNS",
       new Privilege[]{Privilege.ALTER_METADATA}, null),
   ALTERVIEW_RENAME("ALTERVIEW_RENAME", new Privilege[] {Privilege.ALTER_METADATA}, null),
   ALTERVIEW_AS("ALTERVIEW_AS", new Privilege[] {Privilege.ALTER_METADATA}, null),

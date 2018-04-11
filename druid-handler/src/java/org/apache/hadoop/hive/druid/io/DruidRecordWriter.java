@@ -24,6 +24,7 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.base.Throwables;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import io.druid.data.input.Committer;
 import io.druid.data.input.InputRow;
@@ -78,11 +79,13 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
 
   private SegmentIdentifier currentOpenSegment = null;
 
-  private final Integer maxPartitionSize;
+  private final int maxPartitionSize;
 
   private final FileSystem fileSystem;
 
   private final Supplier<Committer> committerSupplier;
+
+  private final Granularity segmentGranularity;
 
   public DruidRecordWriter(
           DataSchema dataSchema,
@@ -106,12 +109,13 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
                     dataSegmentPusher, DruidStorageHandlerUtils.JSON_MAPPER,
                     DruidStorageHandlerUtils.INDEX_IO, DruidStorageHandlerUtils.INDEX_MERGER_V9
             );
-    Preconditions.checkArgument(maxPartitionSize > 0, "maxPartitionSize need to be greater than 0");
     this.maxPartitionSize = maxPartitionSize;
     appenderator.startJob(); // maybe we need to move this out of the constructor
     this.segmentsDescriptorDir = Preconditions
             .checkNotNull(segmentsDescriptorsDir, "segmentsDescriptorsDir is null");
     this.fileSystem = Preconditions.checkNotNull(fileSystem, "file system is null");
+    this.segmentGranularity = this.dataSchema.getGranularitySpec()
+        .getSegmentGranularity();
     committerSupplier = Suppliers.ofInstance(Committers.nil());
   }
 
@@ -125,10 +129,6 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
    * @return segmentIdentifier with of the truncatedTime and maybe push the current open segment.
    */
   private SegmentIdentifier getSegmentIdentifierAndMaybePush(long truncatedTime) {
-
-    final Granularity segmentGranularity = dataSchema.getGranularitySpec()
-            .getSegmentGranularity();
-
     final Interval interval = new Interval(
             new DateTime(truncatedTime),
             segmentGranularity.increment(new DateTime(truncatedTime))
@@ -136,14 +136,13 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
 
     SegmentIdentifier retVal;
     if (currentOpenSegment == null) {
-      retVal = new SegmentIdentifier(
+      currentOpenSegment = new SegmentIdentifier(
               dataSchema.getDataSource(),
               interval,
               tuningConfig.getVersioningPolicy().getVersion(interval),
               new LinearShardSpec(0)
       );
-      currentOpenSegment = retVal;
-      return retVal;
+      return currentOpenSegment;
     } else if (currentOpenSegment.getInterval().equals(interval)) {
       retVal = currentOpenSegment;
       int rowCount = appenderator.getRowCount(retVal);
@@ -238,22 +237,51 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
   @Override
   public void write(Writable w) throws IOException {
     DruidWritable record = (DruidWritable) w;
-    final long timestamp = (long) record.getValue().get(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN);
-    final long truncatedTime = (long) record.getValue()
-            .get(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME);
-
-    InputRow inputRow = new MapBasedInputRow(
-            timestamp,
-            dataSchema.getParser()
-                    .getParseSpec()
-                    .getDimensionsSpec()
-                    .getDimensionNames(),
-            record.getValue()
+    final long timestamp =
+        (long) record.getValue().get(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN);
+    final long truncatedTime =
+        (long) record.getValue().get(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME);
+    final int partitionNumber = Math.toIntExact(
+        (long) record.getValue().getOrDefault(Constants.DRUID_SHARD_KEY_COL_NAME, -1l));
+    final InputRow inputRow = new MapBasedInputRow(timestamp,
+        dataSchema.getParser().getParseSpec().getDimensionsSpec().getDimensionNames(),
+        record.getValue()
     );
 
     try {
-      appenderator
-              .add(getSegmentIdentifierAndMaybePush(truncatedTime), inputRow, committerSupplier);
+      if (partitionNumber != -1 && maxPartitionSize == -1) {
+        final Interval interval = new Interval(new DateTime(truncatedTime),
+            segmentGranularity.increment(new DateTime(truncatedTime))
+        );
+
+        if (currentOpenSegment != null) {
+          if (currentOpenSegment.getShardSpec().getPartitionNum() != partitionNumber
+              || !currentOpenSegment.getInterval().equals(interval)) {
+            pushSegments(ImmutableList.of(currentOpenSegment));
+            currentOpenSegment = new SegmentIdentifier(dataSchema.getDataSource(), interval,
+                tuningConfig.getVersioningPolicy().getVersion(interval),
+                new LinearShardSpec(partitionNumber)
+            );
+          }
+        } else if (currentOpenSegment == null) {
+          currentOpenSegment = new SegmentIdentifier(dataSchema.getDataSource(), interval,
+              tuningConfig.getVersioningPolicy().getVersion(interval),
+              new LinearShardSpec(partitionNumber)
+          );
+
+        }
+        appenderator.add(currentOpenSegment, inputRow, committerSupplier);
+
+      } else if (partitionNumber == -1 && maxPartitionSize != -1) {
+        appenderator
+            .add(getSegmentIdentifierAndMaybePush(truncatedTime), inputRow, committerSupplier);
+      } else {
+        throw new IllegalArgumentException(String.format(
+            "partitionNumber and  maxPartitionSize should be mutually exclusive got partitionNum [%s] and maxPartitionSize [%s]",
+            partitionNumber, maxPartitionSize
+        ));
+      }
+
     } catch (SegmentNotWritableException e) {
       throw new IOException(e);
     }

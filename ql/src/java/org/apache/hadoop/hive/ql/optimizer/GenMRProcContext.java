@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -439,7 +439,7 @@ public class GenMRProcContext implements NodeProcessorCtx {
     if (dependencyTaskForMultiInsert == null) {
       if (conf.getBoolVar(ConfVars.HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES)) {
         dependencyTaskForMultiInsert =
-            (DependencyCollectionTask) TaskFactory.get(new DependencyCollectionWork(), conf);
+            (DependencyCollectionTask) TaskFactory.get(new DependencyCollectionWork());
       }
     }
     return dependencyTaskForMultiInsert;

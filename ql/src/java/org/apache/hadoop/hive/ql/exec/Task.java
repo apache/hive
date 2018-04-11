@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -577,14 +577,6 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   public boolean requireLock() {
     return false;
-  }
-
-  public boolean ifRetryCmdWhenFail() {
-    return retryCmdWhenFail;
-  }
-
-  public void setRetryCmdWhenFail(boolean retryCmdWhenFail) {
-    this.retryCmdWhenFail = retryCmdWhenFail;
   }
 
   public QueryPlan getQueryPlan() {

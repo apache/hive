@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -147,8 +146,6 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         config.setOpIdToRuntimeNumRows(aggregateStats(config.getExplainRootPath()));
       } catch (IOException e1) {
         throw new SemanticException(e1);
-      } catch (CommandNeedRetryException e) {
-        throw new SemanticException(e);
       }
       ctx.resetOpContext();
       ctx.resetStream();
@@ -211,7 +208,7 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     work.setAppendTaskType(
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES));
 
-    ExplainTask explTask = (ExplainTask) TaskFactory.get(work, conf);
+    ExplainTask explTask = (ExplainTask) TaskFactory.get(work);
 
     fieldList = explTask.getResultSchema();
     rootTasks.add(explTask);

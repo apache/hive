@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -27,9 +27,11 @@ public abstract class CacheTran<KI extends WritableComparable, VI, KO extends Wr
   // whether to cache current RDD.
   private boolean caching = false;
   private JavaPairRDD<KO, VO> cachedRDD;
+  protected final String name;
 
-  protected CacheTran(boolean cache) {
+  protected CacheTran(boolean cache, String name) {
     this.caching = cache;
+    this.name = name;
   }
 
   @Override
@@ -40,9 +42,10 @@ public abstract class CacheTran<KI extends WritableComparable, VI, KO extends Wr
         cachedRDD = doTransform(input);
         cachedRDD.persist(StorageLevel.MEMORY_AND_DISK());
       }
-      return cachedRDD;
+      return cachedRDD.setName(this.name + " (" + cachedRDD.getNumPartitions() + ", cached)");
     } else {
-      return doTransform(input);
+      JavaPairRDD<KO, VO> rdd = doTransform(input);
+      return rdd.setName(this.name + " (" + rdd.getNumPartitions() + ")");
     }
   }
 
@@ -51,4 +54,9 @@ public abstract class CacheTran<KI extends WritableComparable, VI, KO extends Wr
   }
 
   protected abstract JavaPairRDD<KO, VO> doTransform(JavaPairRDD<KI, VI> input);
+
+  @Override
+  public String getName() {
+    return name;
+  }
 }

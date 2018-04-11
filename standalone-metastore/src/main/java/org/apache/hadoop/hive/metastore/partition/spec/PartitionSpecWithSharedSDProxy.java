@@ -49,6 +49,11 @@ public class PartitionSpecWithSharedSDProxy extends PartitionSpecProxy {
   }
 
   @Override
+  public void setCatName(String catName) {
+    partitionSpec.setCatName(catName);
+  }
+
+  @Override
   public void setDbName(String dbName) {
     partitionSpec.setDbName(dbName);
   }
@@ -56,6 +61,11 @@ public class PartitionSpecWithSharedSDProxy extends PartitionSpecProxy {
   @Override
   public void setTableName(String tableName) {
     partitionSpec.setTableName(tableName);
+  }
+
+  @Override
+  public String getCatName() {
+    return partitionSpec.getCatName();
   }
 
   @Override
@@ -121,7 +131,7 @@ public class PartitionSpecWithSharedSDProxy extends PartitionSpecProxy {
       StorageDescriptor partSD = new StorageDescriptor(pSpec.getSd());
       partSD.setLocation(partSD.getLocation() + partWithoutSD.getRelativePath());
 
-      return new Partition(
+      Partition p = new Partition(
           partWithoutSD.getValues(),
           partitionSpecWithSharedSDProxy.partitionSpec.getDbName(),
           partitionSpecWithSharedSDProxy.partitionSpec.getTableName(),
@@ -130,6 +140,13 @@ public class PartitionSpecWithSharedSDProxy extends PartitionSpecProxy {
           partSD,
           partWithoutSD.getParameters()
       );
+      p.setCatName(partitionSpecWithSharedSDProxy.partitionSpec.getCatName());
+      return p;
+    }
+
+    @Override
+    public String getCatName() {
+      return partitionSpecWithSharedSDProxy.partitionSpec.getCatName();
     }
 
     @Override

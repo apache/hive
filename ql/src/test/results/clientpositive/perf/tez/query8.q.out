@@ -267,7 +267,7 @@ Stage-0
                             Select Operator [SEL_41] (rows=1 width=1014)
                               Output:["_col0"]
                               Filter Operator [FIL_40] (rows=1 width=1014)
-                                predicate:(_col1 = 2)
+                                predicate:(_col1 = 2L)
                                 Group By Operator [GBY_39] (rows=6833333 width=1014)
                                   Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
                                 <-Union 9 [SIMPLE_EDGE]
@@ -286,7 +286,7 @@ Stage-0
                                               Select Operator [SEL_28] (rows=7333333 width=1014)
                                                 Output:["_col0"]
                                                 Filter Operator [FIL_27] (rows=7333333 width=1014)
-                                                  predicate:(_col1 > 10)
+                                                  predicate:(_col1 > 10L)
                                                   Group By Operator [GBY_26] (rows=22000000 width=1014)
                                                     Output:["_col0","_col1"],aggregations:["count(VALUE._col0)"],keys:KEY._col0
                                                   <-Reducer 13 [SIMPLE_EDGE]

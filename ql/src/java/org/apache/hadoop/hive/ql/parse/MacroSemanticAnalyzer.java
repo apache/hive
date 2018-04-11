@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -86,7 +86,7 @@ public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     List<FieldSchema> arguments =
-      BaseSemanticAnalyzer.getColumns((ASTNode)ast.getChild(1), true);
+      BaseSemanticAnalyzer.getColumns((ASTNode)ast.getChild(1), true, conf);
     boolean isNoArgumentMacro = arguments.size() == 0;
     RowResolver rowResolver = new RowResolver();
     ArrayList<String> macroColNames = new ArrayList<String>(arguments.size());
@@ -140,7 +140,7 @@ public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
         body = sa.genExprNodeDesc((ASTNode)ast.getChild(2), rowResolver);
     }
     CreateMacroDesc desc = new CreateMacroDesc(functionName, macroColNames, macroColTypes, body);
-    rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
+    rootTasks.add(TaskFactory.get(new FunctionWork(desc)));
 
     addEntities();
   }
@@ -164,7 +164,7 @@ public class MacroSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     DropMacroDesc desc = new DropMacroDesc(functionName);
-    rootTasks.add(TaskFactory.get(new FunctionWork(desc), conf));
+    rootTasks.add(TaskFactory.get(new FunctionWork(desc)));
 
     addEntities();
   }

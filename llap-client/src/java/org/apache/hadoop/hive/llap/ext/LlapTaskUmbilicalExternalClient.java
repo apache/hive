@@ -513,11 +513,12 @@ public class LlapTaskUmbilicalExternalClient implements Closeable {
     }
 
     @Override
-    public void nodeHeartbeat(
-        Text hostname, Text uniqueId, int port, TezAttemptArray aw) throws IOException {
+    public void nodeHeartbeat(Text hostname, Text uniqueId, int port, TezAttemptArray aw,
+        BooleanArray guaranteed) throws IOException {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Node heartbeat from " + hostname + ":" + port + ", " + uniqueId);
       }
+      // External client currently cannot use guaranteed.
       updateHeartbeatInfo(hostname.toString(), uniqueId.toString(), port, aw);
       // No need to propagate to this to the responder
     }

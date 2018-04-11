@@ -31,6 +31,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
@@ -58,10 +59,13 @@ import org.apache.hadoop.util.ReflectionUtils;
  * This class represents a warehouse where data of Hive tables is stored
  */
 public class Warehouse {
+  public static final String DEFAULT_CATALOG_NAME = "hive";
+  public static final String DEFAULT_CATALOG_COMMENT = "Default catalog, for Hive";
   public static final String DEFAULT_DATABASE_NAME = "default";
   public static final String DEFAULT_DATABASE_COMMENT = "Default Hive database";
   public static final String DEFAULT_SERIALIZATION_FORMAT = "1";
   public static final String DATABASE_WAREHOUSE_SUFFIX = ".db";
+  private static final String CAT_DB_TABLE_SEPARATOR = ".";
 
   private Path whRoot;
   private final Configuration conf;
@@ -154,14 +158,59 @@ public class Warehouse {
     return whRoot;
   }
 
+  /**
+   * Build the database path based on catalog name and database name.  This should only be used
+   * when a database is being created or altered.  If you just want to find out the path a
+   * database is already using call {@link #getDatabasePath(Database)}.  If the passed in
+   * database already has a path set that will be used.  If not the location will be built using
+   * catalog's path and the database name.
+   * @param cat catalog the database is in
+   * @param db database object
+   * @return Path representing the directory for the database
+   * @throws MetaException when the file path cannot be properly determined from the configured
+   * file system.
+   */
+  public Path determineDatabasePath(Catalog cat, Database db) throws MetaException {
+    if (db.isSetLocationUri()) {
+      return getDnsPath(new Path(db.getLocationUri()));
+    }
+    if (cat == null || cat.getName().equalsIgnoreCase(DEFAULT_CATALOG_NAME)) {
+      if (db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+        return getWhRoot();
+      } else {
+        return new Path(getWhRoot(), dbDirFromDbName(db));
+      }
+    } else {
+      return new Path(getDnsPath(new Path(cat.getLocationUri())), dbDirFromDbName(db));
+    }
+  }
+
+  private String dbDirFromDbName(Database db) throws MetaException {
+    return db.getName().toLowerCase() + DATABASE_WAREHOUSE_SUFFIX;
+  }
+
+  /**
+   * Get the path specified by the database.  In the case of the default database the root of the
+   * warehouse is returned.
+   * @param db database to get the path of
+   * @return path to the database directory
+   * @throws MetaException when the file path cannot be properly determined from the configured
+   * file system.
+   */
   public Path getDatabasePath(Database db) throws MetaException {
-    if (db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
+    if (db.getCatalogName().equalsIgnoreCase(DEFAULT_CATALOG_NAME) &&
+        db.getName().equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
       return getWhRoot();
     }
     return new Path(db.getLocationUri());
   }
 
   public Path getDefaultDatabasePath(String dbName) throws MetaException {
+    // TODO CAT - I am fairly certain that most calls to this are in error.  This should only be
+    // used when the database location is unset, which should never happen except when a
+    // new database is being created.  Once I have confirmation of this change calls of this to
+    // getDatabasePath(), since it does the right thing.  Also, merge this with
+    // determineDatabasePath() as it duplicates much of the logic.
     if (dbName.equalsIgnoreCase(DEFAULT_DATABASE_NAME)) {
       return getWhRoot();
     }
@@ -177,7 +226,8 @@ public class Warehouse {
    */
   public Path getDefaultTablePath(Database db, String tableName)
       throws MetaException {
-    return getDnsPath(new Path(getDatabasePath(db), MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
+    return getDnsPath(new Path(getDatabasePath(db),
+        MetaStoreUtils.encodeTableName(tableName.toLowerCase())));
   }
 
   public static String getQualifiedName(Table table) {
@@ -185,11 +235,35 @@ public class Warehouse {
   }
 
   public static String getQualifiedName(String dbName, String tableName) {
-    return dbName + "." + tableName;
+    return dbName + CAT_DB_TABLE_SEPARATOR + tableName;
   }
 
   public static String getQualifiedName(Partition partition) {
     return partition.getDbName() + "." + partition.getTableName() + partition.getValues();
+  }
+
+  /**
+   * Get table name in cat.db.table format.
+   * @param table table object
+   * @return fully qualified name.
+   */
+  public static String getCatalogQualifiedTableName(Table table) {
+    return getCatalogQualifiedTableName(table.getCatName(), table.getDbName(), table.getTableName());
+  }
+
+  /**
+   * Get table name in cat.db.table format.
+   * @param catName catalog name
+   * @param dbName database name
+   * @param tableName table name
+   * @return fully qualified name.
+   */
+  public static String getCatalogQualifiedTableName(String catName, String dbName, String tableName) {
+    return catName + CAT_DB_TABLE_SEPARATOR + dbName + CAT_DB_TABLE_SEPARATOR + tableName;
+  }
+
+  public static String getCatalogQualifiedDbName(String catName, String dbName) {
+    return catName + CAT_DB_TABLE_SEPARATOR + dbName;
   }
 
   public boolean mkdirs(Path f) throws MetaException {
@@ -220,7 +294,11 @@ public class Warehouse {
   }
 
   void addToChangeManagement(Path file) throws MetaException {
-    cm.recycle(file, RecycleType.COPY, true);
+    try {
+      cm.recycle(file, RecycleType.COPY, true);
+    } catch (IOException e) {
+      throw new MetaException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+    }
   }
 
   public boolean deleteDir(Path f, boolean recursive) throws MetaException {
@@ -228,14 +306,29 @@ public class Warehouse {
   }
 
   public boolean deleteDir(Path f, boolean recursive, boolean ifPurge) throws MetaException {
-    cm.recycle(f, RecycleType.MOVE, ifPurge);
+    return deleteDir(f, recursive, ifPurge, true);
+  }
+
+  public boolean deleteDir(Path f, boolean recursive, boolean ifPurge, boolean needCmRecycle) throws MetaException {
+    // no need to create the CM recycle file for temporary tables
+    if (needCmRecycle) {
+
+      try {
+        cm.recycle(f, RecycleType.MOVE, ifPurge);
+      } catch (IOException e) {
+        throw new MetaException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+      }
+    }
     FileSystem fs = getFs(f);
     return fsHandler.deleteDir(fs, f, recursive, ifPurge, conf);
   }
 
   public void recycleDirToCmPath(Path f, boolean ifPurge) throws MetaException {
-    cm.recycle(f, RecycleType.MOVE, ifPurge);
-    return;
+    try {
+      cm.recycle(f, RecycleType.MOVE, ifPurge);
+    } catch (IOException e) {
+      throw new MetaException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+    }
   }
 
   public boolean isEmpty(Path path) throws IOException, MetaException {
@@ -536,7 +629,7 @@ public class Warehouse {
    * @return array of FileStatus objects corresponding to the files
    * making up the passed storage description
    */
-  public FileStatus[] getFileStatusesForSD(StorageDescriptor desc)
+  public List<FileStatus> getFileStatusesForSD(StorageDescriptor desc)
       throws MetaException {
     return getFileStatusesForLocation(desc.getLocation());
   }
@@ -546,7 +639,7 @@ public class Warehouse {
    * @return array of FileStatus objects corresponding to the files
    * making up the passed storage description
    */
-  public FileStatus[] getFileStatusesForLocation(String location)
+  public List<FileStatus> getFileStatusesForLocation(String location)
       throws MetaException {
     try {
       Path path = new Path(location);
@@ -564,7 +657,7 @@ public class Warehouse {
    * @return array of FileStatus objects corresponding to the files making up the passed
    * unpartitioned table
    */
-  public FileStatus[] getFileStatusesForUnpartitionedTable(Database db, Table table)
+  public List<FileStatus> getFileStatusesForUnpartitionedTable(Database db, Table table)
       throws MetaException {
     Path tablePath = getDnsPath(new Path(table.getSd().getLocation()));
     try {

@@ -24,7 +24,8 @@ import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 
 public interface MutatorFactory {
 
-  Mutator newMutator(AcidOutputFormat<?, ?> outputFormat, long transactionId, Path partitionPath, int bucketId) throws IOException;
+  Mutator newMutator(AcidOutputFormat<?, ?> outputFormat, long writeId, Path partitionPath, int bucketId)
+          throws IOException;
   
   RecordInspector newRecordInspector();
   

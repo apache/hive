@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -210,12 +210,14 @@ public class VectorCopyRow {
 
       if (inColVector.isRepeating) {
         if (inColVector.noNulls || !inColVector.isNull[0]) {
+          outColVector.isNull[outBatchIndex] = false;
           outColVector.setElement(outBatchIndex, 0, inColVector);
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
         }
       } else {
         if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
+          outColVector.isNull[outBatchIndex] = false;
           outColVector.setElement(outBatchIndex, inBatchIndex, inColVector);
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
@@ -237,12 +239,14 @@ public class VectorCopyRow {
 
       if (inColVector.isRepeating) {
         if (inColVector.noNulls || !inColVector.isNull[0]) {
+          outColVector.isNull[outBatchIndex] = false;
           outColVector.setElement(outBatchIndex, 0, inColVector);
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);
         }
       } else {
         if (inColVector.noNulls || !inColVector.isNull[inBatchIndex]) {
+          outColVector.isNull[outBatchIndex] = false;
           outColVector.setElement(outBatchIndex, inBatchIndex, inColVector);
         } else {
           VectorizedBatchUtil.setNullColIsNullValue(outColVector, outBatchIndex);

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -132,7 +132,9 @@ public class DruidGroupByQueryRecordReader
     // Create new value
     DruidWritable value = new DruidWritable();
     // 1) The timestamp column
-    value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, currentRow.getTimestamp().getMillis());
+    value.getValue().put(DruidStorageHandlerUtils.EVENT_TIMESTAMP_COLUMN,
+        currentRow.getTimestamp().getMillis()
+    );
     // 2) The dimension columns
     value.getValue().putAll(currentEvent);
     return value;
@@ -144,7 +146,9 @@ public class DruidGroupByQueryRecordReader
       // Update value
       value.getValue().clear();
       // 1) The timestamp column
-      value.getValue().put(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN, currentRow.getTimestamp().getMillis());
+      value.getValue().put(DruidStorageHandlerUtils.EVENT_TIMESTAMP_COLUMN,
+          currentRow.getTimestamp().getMillis()
+      );
       // 2) The dimension columns
       value.getValue().putAll(currentEvent);
       return true;

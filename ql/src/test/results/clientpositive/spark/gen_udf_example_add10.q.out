@@ -75,11 +75,11 @@ STAGE PLANS:
 PREHOOK: query: select example_add10(x) as a,example_add10(y) as b from t1 order by a desc,b limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select example_add10(x) as a,example_add10(y) as b from t1 order by a desc,b limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 18	28.0
 18	38.0
 17	27.0

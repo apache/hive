@@ -1,3 +1,5 @@
+SET hive.vectorized.execution.enabled=false;
+
 CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE;
 
 LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1;

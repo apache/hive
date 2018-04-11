@@ -1,3 +1,4 @@
+set hive.query.reexecution.enabled=false;
 set hive.exec.pre.hooks="org.this.is.a.bad.class";
 
 EXPLAIN

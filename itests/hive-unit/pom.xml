@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive-it</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.1.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -468,6 +468,12 @@
       <version>${plexus.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>commons-dbcp</groupId>
+      <artifactId>commons-dbcp</artifactId>
+      <version>${commons-dbcp.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -544,6 +550,9 @@
                 <mkdir dir="${test.tmp.dir}/scripts/metastore" />
                 <copy todir="${test.tmp.dir}/scripts/metastore">
                   <fileset dir="${basedir}/${hive.path.to.root}/metastore/scripts/"/>
+                </copy>
+                <copy todir="${test.tmp.dir}/scripts/metastore/upgrade">
+                  <fileset dir="${basedir}/${hive.path.to.root}/standalone-metastore/src/main/sql/"/>
                 </copy>
               </target>
             </configuration>

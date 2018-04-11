@@ -379,34 +379,38 @@ STAGE PLANS:
             alias: t
             Statistics: Num rows: 29 Data size: 281 Basic stats: COMPLETE Column stats: NONE
             Select Operator
-              expressions: px (type: int), y (type: decimal(10,0)), x (type: decimal(10,0))
-              outputColumnNames: px, y, x
+              expressions: px (type: int), x (type: decimal(10,0)), y (type: decimal(10,0)), UDFToDouble(x) (type: double), (UDFToDouble(x) * UDFToDouble(x)) (type: double), UDFToDouble(y) (type: double), (UDFToDouble(y) * UDFToDouble(y)) (type: double)
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
               Statistics: Num rows: 29 Data size: 281 Basic stats: COMPLETE Column stats: NONE
               Group By Operator
-                aggregations: var_pop(x), var_pop(y), corr(y, x), covar_samp(y, x), covar_pop(y, x), regr_count(y, x), regr_slope(y, x), regr_intercept(y, x), regr_r2(y, x), regr_sxx(y, x), regr_syy(y, x), regr_sxy(y, x), regr_avgx(y, x), regr_avgy(y, x)
-                keys: px (type: int)
+                aggregations: sum(_col4), sum(_col3), count(_col1), sum(_col6), sum(_col5), count(_col2), corr(_col2, _col1), covar_samp(_col2, _col1), covar_pop(_col2, _col1), regr_count(_col2, _col1), regr_slope(_col2, _col1), regr_intercept(_col2, _col1), regr_r2(_col2, _col1), regr_sxx(_col2, _col1), regr_syy(_col2, _col1), regr_sxy(_col2, _col1), regr_avgx(_col2, _col1), regr_avgy(_col2, _col1)
+                keys: _col0 (type: int)
                 mode: hash
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
                 Statistics: Num rows: 29 Data size: 281 Basic stats: COMPLETE Column stats: NONE
                 Reduce Output Operator
                   key expressions: _col0 (type: int)
                   sort order: +
                   Map-reduce partition columns: _col0 (type: int)
                   Statistics: Num rows: 29 Data size: 281 Basic stats: COMPLETE Column stats: NONE
-                  value expressions: _col1 (type: struct<count:bigint,sum:double,variance:double>), _col2 (type: struct<count:bigint,sum:double,variance:double>), _col3 (type: struct<count:bigint,xavg:double,yavg:double,xvar:double,yvar:double,covar:double>), _col4 (type: struct<count:bigint,xavg:double,yavg:double,covar:double>), _col5 (type: struct<count:bigint,xavg:double,yavg:double,covar:double>), _col6 (type: bigint), _col7 (type: struct<count:bigint,xavg:double,yavg:double,xvar:double,yvar:double,covar:double>), _col8 (type: struct<count:bigint,xavg:double,yavg:double,xvar:double,yvar:double,covar:double>), _col9 (type: struct<count:bigint,xavg:double,yavg:double,xvar:double,yvar:double,covar:double>), _col10 (type: struct<count:bigint,sum:double,variance:double>), _col11 (type: struct<count:bigint,sum:double,variance:double>), _col12 (type: struct<count:bigint,xavg:double,yavg:double,xvar:double,yvar:double,covar:double>), _col13 (type: struct<count:bigint,sum:decimal(20,0),input:decimal(10,0)>), _col14 (type: struct<count:bigint,sum:decimal(20,0),input:decimal(10,0)>)
+                  value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: bigint), _col4 (type: double), _col5 (type: double), _col6 (type: bigint), _col7 (type: struct<count:bigint,xavg:double,yavg:double,xvar:double,yvar:double,covar:double>), _col8 (type: struct<count:bigint,xavg:double,yavg:double,covar:double>), _col9 (type: struct<count:bigint,xavg:double,yavg:double,covar:double>), _col10 (type: bigint), _col11 (type: struct<count:bigint,xavg:double,yavg:double,xvar:double,yvar:double,covar:double>), _col12 (type: struct<count:bigint,xavg:double,yavg:double,xvar:double,yvar:double,covar:double>), _col13 (type: struct<count:bigint,xavg:double,yavg:double,xvar:double,yvar:double,covar:double>), _col14 (type: struct<count:bigint,sum:double,variance:double>), _col15 (type: struct<count:bigint,sum:double,variance:double>), _col16 (type: struct<count:bigint,xavg:double,yavg:double,xvar:double,yvar:double,covar:double>), _col17 (type: struct<count:bigint,sum:decimal(20,0),input:decimal(10,0)>), _col18 (type: struct<count:bigint,sum:decimal(20,0),input:decimal(10,0)>)
       Reduce Operator Tree:
         Group By Operator
-          aggregations: var_pop(VALUE._col0), var_pop(VALUE._col1), corr(VALUE._col2), covar_samp(VALUE._col3), covar_pop(VALUE._col4), regr_count(VALUE._col5), regr_slope(VALUE._col6), regr_intercept(VALUE._col7), regr_r2(VALUE._col8), regr_sxx(VALUE._col9), regr_syy(VALUE._col10), regr_sxy(VALUE._col11), regr_avgx(VALUE._col12), regr_avgy(VALUE._col13)
+          aggregations: sum(VALUE._col0), sum(VALUE._col1), count(VALUE._col2), sum(VALUE._col3), sum(VALUE._col4), count(VALUE._col5), corr(VALUE._col6), covar_samp(VALUE._col7), covar_pop(VALUE._col8), regr_count(VALUE._col9), regr_slope(VALUE._col10), regr_intercept(VALUE._col11), regr_r2(VALUE._col12), regr_sxx(VALUE._col13), regr_syy(VALUE._col14), regr_sxy(VALUE._col15), regr_avgx(VALUE._col16), regr_avgy(VALUE._col17)
           keys: KEY._col0 (type: int)
           mode: mergepartial
-          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
+          outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18
           Statistics: Num rows: 14 Data size: 135 Basic stats: COMPLETE Column stats: NONE
-          File Output Operator
-            compressed: false
-            table:
-                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          Select Operator
+            expressions: _col0 (type: int), ((_col1 - ((_col2 * _col2) / _col3)) / _col3) (type: double), ((_col4 - ((_col5 * _col5) / _col6)) / _col6) (type: double), _col7 (type: double), _col8 (type: double), _col9 (type: double), _col10 (type: bigint), _col11 (type: double), _col12 (type: double), _col13 (type: double), _col14 (type: double), _col15 (type: double), _col16 (type: double), _col17 (type: decimal(14,4)), _col18 (type: decimal(14,4))
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
+            Statistics: Num rows: 14 Data size: 135 Basic stats: COMPLETE Column stats: NONE
+            File Output Operator
+              compressed: false
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
   Stage: Stage-2
     Map Reduce

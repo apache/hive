@@ -53,8 +53,8 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -81,10 +81,11 @@ public class PTestClient {
   private static final String PASSWORD = "password";
   private static final String PROFILE = "profile";
   private static final String PATCH = "patch";
-  private static final String JIRA = "jira";
+  public static final String JIRA = "jira";
   private static final String OUTPUT_DIR = "outputDir";
   private static final String TEST_HANDLE = "testHandle";
   private static final String CLEAR_LIBRARY_CACHE = "clearLibraryCache";
+  public static final String JENKINS_QUEUE_URL = "jenkinsQueueUrl";
   private static final int MAX_RETRIES = 10;
   private final String mApiEndPoint;
   private final String mLogsEndpoint;
@@ -242,7 +243,7 @@ public class PTestClient {
       request.abort();
     }
   }
-  private static class PTestHttpRequestRetryHandler implements HttpRequestRetryHandler {
+  public static class PTestHttpRequestRetryHandler implements HttpRequestRetryHandler {
     @Override
     public boolean retryRequest(IOException exception, int executionCount,
         HttpContext context) {
@@ -283,6 +284,8 @@ public class PTestClient {
     }
   }
   public static void main(String[] args) throws Exception {
+    //TODO This line can be removed once precommit jenkins jobs move to Java 8
+    System.setProperty("https.protocols", "TLSv1,TLSv1.1,TLSv1.2");
     CommandLineParser parser = new GnuParser();
     Options options = new Options();
     options.addOption(HELP_SHORT, HELP_LONG, false, "Display help text and exit");
@@ -296,6 +299,7 @@ public class PTestClient {
     options.addOption(null, OUTPUT_DIR, true, "Directory to download and save test-results.tar.gz to. (Optional for testStart)");
     options.addOption(null, CLEAR_LIBRARY_CACHE, false, "Before starting the test, delete the ivy and maven directories (Optional for testStart)");
     options.addOption(null, LOGS_ENDPOINT, true, "URL to get the logs");
+    options.addOption(null, JENKINS_QUEUE_URL, true, "URL for quering Jenkins job queue");
 
     CommandLine commandLine = parser.parse(options, args);
 
@@ -317,6 +321,14 @@ public class PTestClient {
           PROFILE,
           TEST_HANDLE
       });
+
+      boolean jiraAlreadyInQueue = JenkinsQueueUtil.isJiraAlreadyInQueue(commandLine);
+      if (jiraAlreadyInQueue) {
+        System.out.println("Skipping ptest execution, as " + commandLine.getOptionValue(JIRA) +
+                " is scheduled in " + "queue in " + "the future too.");
+        System.exit(0);
+      }
+
       result = client.testStart(commandLine.getOptionValue(PROFILE), commandLine.getOptionValue(TEST_HANDLE),
           commandLine.getOptionValue(JIRA), commandLine.getOptionValue(PATCH),
           commandLine.hasOption(CLEAR_LIBRARY_CACHE));
@@ -333,4 +345,5 @@ public class PTestClient {
       System.exit(1);
     }
   }
+
 }

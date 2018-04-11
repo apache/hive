@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -38,7 +38,7 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
   @JsonProperty("poolName")
   private String poolName;
   @JsonProperty("clusterFraction")
-  private double clusterFraction;
+  private Double clusterFraction;
   /**
    * The reason to kill an AM. Note that this is for the entire session, not just for a query.
    * Once set, this can never be unset because you can only kill the session once.
@@ -106,6 +106,13 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
 
   @Override
   void updateFromRegistry(TezAmInstance si, int ephSeqVersion) {
+    updateAmEndpointInfo(si, ephSeqVersion);
+    if (si != null) {
+      handleGuaranteedTasksChange(si.getGuaranteedCount());
+    }
+  }
+
+  public void updateAmEndpointInfo(TezAmInstance si, int ephSeqVersion) {
     AmPluginInfo info = si == null ? null : new AmPluginInfo(si.getHost(), si.getPluginPort(),
         si.getPluginToken(), si.getPluginTokenJobId());
     synchronized (amPluginInfoLock) {
@@ -131,6 +138,19 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
       }
     }
   }
+  
+
+  private void handleGuaranteedTasksChange(int guaranteedCount) {
+    boolean doNotify = false;
+    synchronized (actualState) {
+      // A noop if we are in process of sending or if we have the correct value.
+      if (actualState.sending != -1 || actualState.sent == guaranteedCount) return;
+      actualState.sent = guaranteedCount;
+      doNotify = actualState.target != guaranteedCount;
+    }
+    if (!doNotify) return;
+    wmParent.notifyOfInconsistentAllocation(this);
+  }
 
   @Override
   public AmPluginInfo getAmPluginInfo(Ref<Integer> version) {
@@ -154,24 +174,32 @@ public class WmTezSession extends TezSessionPoolSession implements AmPluginNode 
 
   void clearWm() {
     this.poolName = null;
-    this.clusterFraction = 0f;
+    this.clusterFraction = null;
+  }
+
+  public boolean hasClusterFraction() {
+    return this.clusterFraction != null;
   }
 
   public double getClusterFraction() {
     return this.clusterFraction;
   }
 
-  boolean setSendingGuaranteed(int intAlloc) {
-    assert intAlloc >= 0;
+  Integer setSendingGuaranteed(Integer intAlloc) {
+    assert intAlloc == null || intAlloc >= 0;
     synchronized (actualState) {
-      actualState.target = intAlloc;
-      if (actualState.sending != -1) return false; // The sender will take care of this.
-      if (actualState.sent == intAlloc) return false; // The value didn't change.
+      if (intAlloc != null) {
+        actualState.target = intAlloc;
+      } else {
+        intAlloc = actualState.target;
+      }
+      if (actualState.sending != -1) return null; // The sender will take care of this.
+      if (actualState.sent == intAlloc) return null; // The value didn't change.
       actualState.sending = intAlloc;
-      return true;
+      return intAlloc;
     }
   }
-
+  
   public String getAllocationState() {
     synchronized (actualState) {
       return "actual/target " + actualState.sent + "/" + actualState.target

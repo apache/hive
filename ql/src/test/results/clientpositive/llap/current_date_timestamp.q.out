@@ -55,7 +55,7 @@ STAGE PLANS:
           alias: alltypesorc
           GatherStats: false
           Select Operator
-            expressions: 2012-01-01 01:02:03.0 (type: timestamp)
+            expressions: TIMESTAMP'2012-01-01 01:02:03.0' (type: timestamp)
             outputColumnNames: _col0
             ListSink
 

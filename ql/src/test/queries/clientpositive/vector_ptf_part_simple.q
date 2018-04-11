@@ -531,19 +531,37 @@ count(*) over(partition by p_mfgr order by p_name) as cs
 from vector_ptf_part_simple_orc;
 
 
+explain vectorization detail
 select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr) as r
+from vector_ptf_part_simple_orc;
+
+select p_mfgr, p_retailprice,
+rank() over(partition by p_mfgr) as r
+from vector_ptf_part_simple_orc;
+
+explain vectorization detail
+select p_mfgr, p_retailprice,
+rank() over(partition by p_mfgr order by p_name) as r
 from vector_ptf_part_simple_orc;
 
 select p_mfgr, p_retailprice,
 rank() over(partition by p_mfgr order by p_name) as r
 from vector_ptf_part_simple_orc;
 
+explain vectorization detail
+select p_mfgr, p_name, p_retailprice,
+rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end order by p_name) as r
+from vector_ptf_part_simple_orc;
 
 select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end order by p_name) as r
 from vector_ptf_part_simple_orc;
 
+explain vectorization detail
+select p_mfgr, p_name, p_retailprice,
+rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end) as r
+from vector_ptf_part_simple_orc;
 
 select p_mfgr, p_name, p_retailprice,
 rank() over(partition by p_mfgr, case when p_mfgr == "Manufacturer#2" then timestamp "2000-01-01 00:00:00" end) as r

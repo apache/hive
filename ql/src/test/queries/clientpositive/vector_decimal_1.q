@@ -11,6 +11,9 @@ desc decimal_1;
 
 insert overwrite table decimal_1
   select cast('17.29' as decimal(4,2)), 3.1415926BD, 3115926.54321BD from src tablesample (1 rows);
+  
+-- Add a single NULL row that will come from ORC as isRepeated.
+insert into decimal_1 values (NULL, NULL, NULL);
 
 explain vectorization detail
 select cast(t as boolean) from decimal_1 order by t;

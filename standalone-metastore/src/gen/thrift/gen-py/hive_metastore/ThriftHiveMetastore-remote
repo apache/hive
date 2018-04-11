@@ -26,6 +26,10 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('Functions:')
   print('  string getMetaConf(string key)')
   print('  void setMetaConf(string key, string value)')
+  print('  void create_catalog(CreateCatalogRequest catalog)')
+  print('  GetCatalogResponse get_catalog(GetCatalogRequest catName)')
+  print('  GetCatalogsResponse get_catalogs()')
+  print('  void drop_catalog(DropCatalogRequest catName)')
   print('  void create_database(Database database)')
   print('  Database get_database(string name)')
   print('  void drop_database(string name, bool deleteData, bool cascade)')
@@ -42,12 +46,14 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('   get_schema_with_environment_context(string db_name, string table_name, EnvironmentContext environment_context)')
   print('  void create_table(Table tbl)')
   print('  void create_table_with_environment_context(Table tbl, EnvironmentContext environment_context)')
-  print('  void create_table_with_constraints(Table tbl,  primaryKeys,  foreignKeys,  uniqueConstraints,  notNullConstraints)')
+  print('  void create_table_with_constraints(Table tbl,  primaryKeys,  foreignKeys,  uniqueConstraints,  notNullConstraints,  defaultConstraints,  checkConstraints)')
   print('  void drop_constraint(DropConstraintRequest req)')
   print('  void add_primary_key(AddPrimaryKeyRequest req)')
   print('  void add_foreign_key(AddForeignKeyRequest req)')
   print('  void add_unique_constraint(AddUniqueConstraintRequest req)')
   print('  void add_not_null_constraint(AddNotNullConstraintRequest req)')
+  print('  void add_default_constraint(AddDefaultConstraintRequest req)')
+  print('  void add_check_constraint(AddCheckConstraintRequest req)')
   print('  void drop_table(string dbname, string name, bool deleteData)')
   print('  void drop_table_with_environment_context(string dbname, string name, bool deleteData, EnvironmentContext environment_context)')
   print('  void truncate_table(string dbName, string tableName,  partNames)')
@@ -61,6 +67,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  GetTableResult get_table_req(GetTableRequest req)')
   print('  GetTablesResult get_table_objects_by_name_req(GetTablesRequest req)')
   print('   get_materialization_invalidation_info(string dbname,  tbl_names)')
+  print('  void update_creation_metadata(string catName, string dbname, string tbl_name, CreationMetadata creation_metadata)')
   print('   get_table_names_by_filter(string dbname, string filter, i16 max_tables)')
   print('  void alter_table(string dbname, string tbl_name, Table new_tbl)')
   print('  void alter_table_with_environment_context(string dbname, string tbl_name, Table new_tbl, EnvironmentContext environment_context)')
@@ -108,16 +115,12 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('   partition_name_to_spec(string part_name)')
   print('  void markPartitionForEvent(string db_name, string tbl_name,  part_vals, PartitionEventType eventType)')
   print('  bool isPartitionMarkedForEvent(string db_name, string tbl_name,  part_vals, PartitionEventType eventType)')
-  print('  Index add_index(Index new_index, Table index_table)')
-  print('  void alter_index(string dbname, string base_tbl_name, string idx_name, Index new_idx)')
-  print('  bool drop_index_by_name(string db_name, string tbl_name, string index_name, bool deleteData)')
-  print('  Index get_index_by_name(string db_name, string tbl_name, string index_name)')
-  print('   get_indexes(string db_name, string tbl_name, i16 max_indexes)')
-  print('   get_index_names(string db_name, string tbl_name, i16 max_indexes)')
   print('  PrimaryKeysResponse get_primary_keys(PrimaryKeysRequest request)')
   print('  ForeignKeysResponse get_foreign_keys(ForeignKeysRequest request)')
   print('  UniqueConstraintsResponse get_unique_constraints(UniqueConstraintsRequest request)')
   print('  NotNullConstraintsResponse get_not_null_constraints(NotNullConstraintsRequest request)')
+  print('  DefaultConstraintsResponse get_default_constraints(DefaultConstraintsRequest request)')
+  print('  CheckConstraintsResponse get_check_constraints(CheckConstraintsRequest request)')
   print('  bool update_table_column_statistics(ColumnStatistics stats_obj)')
   print('  bool update_partition_column_statistics(ColumnStatistics stats_obj)')
   print('  ColumnStatistics get_table_column_statistics(string db_name, string tbl_name, string col_name)')
@@ -166,6 +169,8 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  void abort_txn(AbortTxnRequest rqst)')
   print('  void abort_txns(AbortTxnsRequest rqst)')
   print('  void commit_txn(CommitTxnRequest rqst)')
+  print('  GetValidWriteIdsResponse get_valid_write_ids(GetValidWriteIdsRequest rqst)')
+  print('  AllocateTableWriteIdsResponse allocate_table_write_ids(AllocateTableWriteIdsRequest rqst)')
   print('  LockResponse lock(LockRequest rqst)')
   print('  LockResponse check_lock(CheckLockRequest rqst)')
   print('  void unlock(UnlockRequest rqst)')
@@ -176,8 +181,6 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  CompactionResponse compact2(CompactionRequest rqst)')
   print('  ShowCompactResponse show_compact(ShowCompactRequest rqst)')
   print('  void add_dynamic_partitions(AddDynamicPartitions rqst)')
-  print('   get_last_completed_transaction_for_tables( db_names,  table_names, TxnsSnapshot txns_snapshot)')
-  print('  BasicTxnInfo get_last_completed_transaction_for_table(string db_name, string table_name, TxnsSnapshot txns_snapshot)')
   print('  NotificationEventResponse get_next_notification(NotificationEventRequest rqst)')
   print('  CurrentNotificationEventId get_current_notificationEventId()')
   print('  NotificationEventsCountResponse get_notification_events_count(NotificationEventsCountRequest rqst)')
@@ -207,6 +210,22 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
   print('  WMCreateOrUpdateMappingResponse create_or_update_wm_mapping(WMCreateOrUpdateMappingRequest request)')
   print('  WMDropMappingResponse drop_wm_mapping(WMDropMappingRequest request)')
   print('  WMCreateOrDropTriggerToPoolMappingResponse create_or_drop_wm_trigger_to_pool_mapping(WMCreateOrDropTriggerToPoolMappingRequest request)')
+  print('  void create_ischema(ISchema schema)')
+  print('  void alter_ischema(AlterISchemaRequest rqst)')
+  print('  ISchema get_ischema(ISchemaName name)')
+  print('  void drop_ischema(ISchemaName name)')
+  print('  void add_schema_version(SchemaVersion schemaVersion)')
+  print('  SchemaVersion get_schema_version(SchemaVersionDescriptor schemaVersion)')
+  print('  SchemaVersion get_schema_latest_version(ISchemaName schemaName)')
+  print('   get_schema_all_versions(ISchemaName schemaName)')
+  print('  void drop_schema_version(SchemaVersionDescriptor schemaVersion)')
+  print('  FindSchemasByColsResp get_schemas_by_cols(FindSchemasByColsRqst rqst)')
+  print('  void map_schema_version_to_serde(MapSchemaVersionToSerdeRequest rqst)')
+  print('  void set_schema_version_state(SetSchemaVersionStateRequest rqst)')
+  print('  void add_serde(SerDeInfo serde)')
+  print('  SerDeInfo get_serde(GetSerdeRequest rqst)')
+  print('  LockResponse get_lock_materialization_rebuild(string dbName, string tableName, i64 txnId)')
+  print('  bool heartbeat_lock_materialization_rebuild(string dbName, string tableName, i64 txnId)')
   print('  string getName()')
   print('  string getVersion()')
   print('  fb_status getStatus()')
@@ -287,6 +306,30 @@ elif cmd == 'setMetaConf':
     print('setMetaConf requires 2 args')
     sys.exit(1)
   pp.pprint(client.setMetaConf(args[0],args[1],))
+
+elif cmd == 'create_catalog':
+  if len(args) != 1:
+    print('create_catalog requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.create_catalog(eval(args[0]),))
+
+elif cmd == 'get_catalog':
+  if len(args) != 1:
+    print('get_catalog requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_catalog(eval(args[0]),))
+
+elif cmd == 'get_catalogs':
+  if len(args) != 0:
+    print('get_catalogs requires 0 args')
+    sys.exit(1)
+  pp.pprint(client.get_catalogs())
+
+elif cmd == 'drop_catalog':
+  if len(args) != 1:
+    print('drop_catalog requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.drop_catalog(eval(args[0]),))
 
 elif cmd == 'create_database':
   if len(args) != 1:
@@ -385,10 +428,10 @@ elif cmd == 'create_table_with_environment_context':
   pp.pprint(client.create_table_with_environment_context(eval(args[0]),eval(args[1]),))
 
 elif cmd == 'create_table_with_constraints':
-  if len(args) != 5:
-    print('create_table_with_constraints requires 5 args')
+  if len(args) != 7:
+    print('create_table_with_constraints requires 7 args')
     sys.exit(1)
-  pp.pprint(client.create_table_with_constraints(eval(args[0]),eval(args[1]),eval(args[2]),eval(args[3]),eval(args[4]),))
+  pp.pprint(client.create_table_with_constraints(eval(args[0]),eval(args[1]),eval(args[2]),eval(args[3]),eval(args[4]),eval(args[5]),eval(args[6]),))
 
 elif cmd == 'drop_constraint':
   if len(args) != 1:
@@ -419,6 +462,18 @@ elif cmd == 'add_not_null_constraint':
     print('add_not_null_constraint requires 1 args')
     sys.exit(1)
   pp.pprint(client.add_not_null_constraint(eval(args[0]),))
+
+elif cmd == 'add_default_constraint':
+  if len(args) != 1:
+    print('add_default_constraint requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.add_default_constraint(eval(args[0]),))
+
+elif cmd == 'add_check_constraint':
+  if len(args) != 1:
+    print('add_check_constraint requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.add_check_constraint(eval(args[0]),))
 
 elif cmd == 'drop_table':
   if len(args) != 3:
@@ -497,6 +552,12 @@ elif cmd == 'get_materialization_invalidation_info':
     print('get_materialization_invalidation_info requires 2 args')
     sys.exit(1)
   pp.pprint(client.get_materialization_invalidation_info(args[0],eval(args[1]),))
+
+elif cmd == 'update_creation_metadata':
+  if len(args) != 4:
+    print('update_creation_metadata requires 4 args')
+    sys.exit(1)
+  pp.pprint(client.update_creation_metadata(args[0],args[1],args[2],eval(args[3]),))
 
 elif cmd == 'get_table_names_by_filter':
   if len(args) != 3:
@@ -780,42 +841,6 @@ elif cmd == 'isPartitionMarkedForEvent':
     sys.exit(1)
   pp.pprint(client.isPartitionMarkedForEvent(args[0],args[1],eval(args[2]),eval(args[3]),))
 
-elif cmd == 'add_index':
-  if len(args) != 2:
-    print('add_index requires 2 args')
-    sys.exit(1)
-  pp.pprint(client.add_index(eval(args[0]),eval(args[1]),))
-
-elif cmd == 'alter_index':
-  if len(args) != 4:
-    print('alter_index requires 4 args')
-    sys.exit(1)
-  pp.pprint(client.alter_index(args[0],args[1],args[2],eval(args[3]),))
-
-elif cmd == 'drop_index_by_name':
-  if len(args) != 4:
-    print('drop_index_by_name requires 4 args')
-    sys.exit(1)
-  pp.pprint(client.drop_index_by_name(args[0],args[1],args[2],eval(args[3]),))
-
-elif cmd == 'get_index_by_name':
-  if len(args) != 3:
-    print('get_index_by_name requires 3 args')
-    sys.exit(1)
-  pp.pprint(client.get_index_by_name(args[0],args[1],args[2],))
-
-elif cmd == 'get_indexes':
-  if len(args) != 3:
-    print('get_indexes requires 3 args')
-    sys.exit(1)
-  pp.pprint(client.get_indexes(args[0],args[1],eval(args[2]),))
-
-elif cmd == 'get_index_names':
-  if len(args) != 3:
-    print('get_index_names requires 3 args')
-    sys.exit(1)
-  pp.pprint(client.get_index_names(args[0],args[1],eval(args[2]),))
-
 elif cmd == 'get_primary_keys':
   if len(args) != 1:
     print('get_primary_keys requires 1 args')
@@ -839,6 +864,18 @@ elif cmd == 'get_not_null_constraints':
     print('get_not_null_constraints requires 1 args')
     sys.exit(1)
   pp.pprint(client.get_not_null_constraints(eval(args[0]),))
+
+elif cmd == 'get_default_constraints':
+  if len(args) != 1:
+    print('get_default_constraints requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_default_constraints(eval(args[0]),))
+
+elif cmd == 'get_check_constraints':
+  if len(args) != 1:
+    print('get_check_constraints requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_check_constraints(eval(args[0]),))
 
 elif cmd == 'update_table_column_statistics':
   if len(args) != 1:
@@ -1128,6 +1165,18 @@ elif cmd == 'commit_txn':
     sys.exit(1)
   pp.pprint(client.commit_txn(eval(args[0]),))
 
+elif cmd == 'get_valid_write_ids':
+  if len(args) != 1:
+    print('get_valid_write_ids requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_valid_write_ids(eval(args[0]),))
+
+elif cmd == 'allocate_table_write_ids':
+  if len(args) != 1:
+    print('allocate_table_write_ids requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.allocate_table_write_ids(eval(args[0]),))
+
 elif cmd == 'lock':
   if len(args) != 1:
     print('lock requires 1 args')
@@ -1187,18 +1236,6 @@ elif cmd == 'add_dynamic_partitions':
     print('add_dynamic_partitions requires 1 args')
     sys.exit(1)
   pp.pprint(client.add_dynamic_partitions(eval(args[0]),))
-
-elif cmd == 'get_last_completed_transaction_for_tables':
-  if len(args) != 3:
-    print('get_last_completed_transaction_for_tables requires 3 args')
-    sys.exit(1)
-  pp.pprint(client.get_last_completed_transaction_for_tables(eval(args[0]),eval(args[1]),eval(args[2]),))
-
-elif cmd == 'get_last_completed_transaction_for_table':
-  if len(args) != 3:
-    print('get_last_completed_transaction_for_table requires 3 args')
-    sys.exit(1)
-  pp.pprint(client.get_last_completed_transaction_for_table(args[0],args[1],eval(args[2]),))
 
 elif cmd == 'get_next_notification':
   if len(args) != 1:
@@ -1373,6 +1410,102 @@ elif cmd == 'create_or_drop_wm_trigger_to_pool_mapping':
     print('create_or_drop_wm_trigger_to_pool_mapping requires 1 args')
     sys.exit(1)
   pp.pprint(client.create_or_drop_wm_trigger_to_pool_mapping(eval(args[0]),))
+
+elif cmd == 'create_ischema':
+  if len(args) != 1:
+    print('create_ischema requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.create_ischema(eval(args[0]),))
+
+elif cmd == 'alter_ischema':
+  if len(args) != 1:
+    print('alter_ischema requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.alter_ischema(eval(args[0]),))
+
+elif cmd == 'get_ischema':
+  if len(args) != 1:
+    print('get_ischema requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_ischema(eval(args[0]),))
+
+elif cmd == 'drop_ischema':
+  if len(args) != 1:
+    print('drop_ischema requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.drop_ischema(eval(args[0]),))
+
+elif cmd == 'add_schema_version':
+  if len(args) != 1:
+    print('add_schema_version requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.add_schema_version(eval(args[0]),))
+
+elif cmd == 'get_schema_version':
+  if len(args) != 1:
+    print('get_schema_version requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_schema_version(eval(args[0]),))
+
+elif cmd == 'get_schema_latest_version':
+  if len(args) != 1:
+    print('get_schema_latest_version requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_schema_latest_version(eval(args[0]),))
+
+elif cmd == 'get_schema_all_versions':
+  if len(args) != 1:
+    print('get_schema_all_versions requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_schema_all_versions(eval(args[0]),))
+
+elif cmd == 'drop_schema_version':
+  if len(args) != 1:
+    print('drop_schema_version requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.drop_schema_version(eval(args[0]),))
+
+elif cmd == 'get_schemas_by_cols':
+  if len(args) != 1:
+    print('get_schemas_by_cols requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_schemas_by_cols(eval(args[0]),))
+
+elif cmd == 'map_schema_version_to_serde':
+  if len(args) != 1:
+    print('map_schema_version_to_serde requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.map_schema_version_to_serde(eval(args[0]),))
+
+elif cmd == 'set_schema_version_state':
+  if len(args) != 1:
+    print('set_schema_version_state requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.set_schema_version_state(eval(args[0]),))
+
+elif cmd == 'add_serde':
+  if len(args) != 1:
+    print('add_serde requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.add_serde(eval(args[0]),))
+
+elif cmd == 'get_serde':
+  if len(args) != 1:
+    print('get_serde requires 1 args')
+    sys.exit(1)
+  pp.pprint(client.get_serde(eval(args[0]),))
+
+elif cmd == 'get_lock_materialization_rebuild':
+  if len(args) != 3:
+    print('get_lock_materialization_rebuild requires 3 args')
+    sys.exit(1)
+  pp.pprint(client.get_lock_materialization_rebuild(args[0],args[1],eval(args[2]),))
+
+elif cmd == 'heartbeat_lock_materialization_rebuild':
+  if len(args) != 3:
+    print('heartbeat_lock_materialization_rebuild requires 3 args')
+    sys.exit(1)
+  pp.pprint(client.heartbeat_lock_materialization_rebuild(args[0],args[1],eval(args[2]),))
 
 elif cmd == 'getName':
   if len(args) != 0:

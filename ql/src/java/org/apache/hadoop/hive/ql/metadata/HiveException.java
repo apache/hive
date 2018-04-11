@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public class HiveException extends Exception {
+
   /**
    * Standard predefined message with error code and possibly SQL State, etc.
    */

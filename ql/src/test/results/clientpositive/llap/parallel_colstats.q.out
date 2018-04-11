@@ -225,11 +225,11 @@ POSTHOOK: Lineage: src_b.value SIMPLE [(src)src.FieldSchema(name:value, type:str
 PREHOOK: query: select * from src_a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from src_a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 10	val_10
 100	val_100
@@ -542,11 +542,11 @@ POSTHOOK: Input: default@src_a
 PREHOOK: query: select * from src_b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from src_b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 10	val_10
 100	val_100
@@ -877,11 +877,11 @@ POSTHOOK: Lineage: src_b.value SIMPLE [(src)src.FieldSchema(name:value, type:str
 PREHOOK: query: select * from src_a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from src_a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 10	val_10
 100	val_100
@@ -1194,11 +1194,11 @@ POSTHOOK: Input: default@src_a
 PREHOOK: query: select * from src_b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from src_b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0	val_0
 10	val_10
 100	val_100

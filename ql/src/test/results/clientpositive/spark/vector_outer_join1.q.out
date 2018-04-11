@@ -89,11 +89,11 @@ POSTHOOK: Lineage: small_alltypesorc4a.ctinyint SIMPLE []
 PREHOOK: query: select * from small_alltypesorc1a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc1a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from small_alltypesorc1a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc1a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -64	-10462	626923679	NULL	-64.0	-10462.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:02.496	1969-12-31 16:00:00.164	true	NULL
 -64	-15920	528534767	NULL	-64.0	-15920.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:51.859	1969-12-31 16:00:14.468	true	NULL
 -64	-6907	253665376	NULL	-64.0	-6907.0	1cGVWH7n1QU	NULL	NULL	1969-12-31 15:59:53.66	true	NULL
@@ -102,11 +102,11 @@ POSTHOOK: Input: default@small_alltypesorc1a
 PREHOOK: query: select * from small_alltypesorc2a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc2a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from small_alltypesorc2a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc2a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -64	-7196	NULL	-1615920595	-64.0	-7196.0	NULL	X5rDjl	1969-12-31 16:00:11.912	1969-12-31 15:59:58.174	NULL	false
 -64	-7196	NULL	-1639157869	-64.0	-7196.0	NULL	IJ0Oj7qAiqNGsN7gn	1969-12-31 16:00:01.785	1969-12-31 15:59:58.174	NULL	false
 -64	-7196	NULL	-527203677	-64.0	-7196.0	NULL	JBE4H5RoK412Cs260I72	1969-12-31 15:59:50.184	1969-12-31 15:59:58.174	NULL	true
@@ -115,11 +115,11 @@ POSTHOOK: Input: default@small_alltypesorc2a
 PREHOOK: query: select * from small_alltypesorc3a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc3a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from small_alltypesorc3a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc3a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 NULL	NULL	-1015272448	-1887561756	NULL	NULL	jTQ68531mP	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 15:59:45.854	false	false
 NULL	NULL	-850295959	-1887561756	NULL	NULL	WMIgGA73	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:00.348	false	false
 NULL	NULL	-886426182	-1887561756	NULL	NULL	0i88xYq3gx1nW4vKjp7vBp3	4hA4KQj2vD3fI6gX82220d	NULL	1969-12-31 16:00:04.472	true	false
@@ -128,11 +128,11 @@ NULL	NULL	-971543377	-1645852809	NULL	NULL	uN803aW	xH7445Rals48VOulSyR5F	NULL	19
 PREHOOK: query: select * from small_alltypesorc4a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc4a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from small_alltypesorc4a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc4a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: create table small_alltypesorc_a stored as orc as select * from 
 (select * from (select * from small_alltypesorc1a) sq1
  union all
@@ -187,20 +187,20 @@ PREHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS FOR COLUMNS
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc_a
 PREHOOK: Output: default@small_alltypesorc_a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: ANALYZE TABLE small_alltypesorc_a COMPUTE STATISTICS FOR COLUMNS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a
 POSTHOOK: Output: default@small_alltypesorc_a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select * from small_alltypesorc_a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc_a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from small_alltypesorc_a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -64	-10462	626923679	NULL	-64.0	-10462.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:02.496	1969-12-31 16:00:00.164	true	NULL
 -64	-15920	528534767	NULL	-64.0	-15920.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:51.859	1969-12-31 16:00:14.468	true	NULL
 -64	-6907	253665376	NULL	-64.0	-6907.0	1cGVWH7n1QU	NULL	NULL	1969-12-31 15:59:53.66	true	NULL
@@ -249,7 +249,7 @@ STAGE PLANS:
                   Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
@@ -295,7 +295,7 @@ STAGE PLANS:
                   Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: ctinyint (type: tinyint), csmallint (type: smallint), cint (type: int), cbigint (type: bigint), cfloat (type: float), cdouble (type: double), cstring1 (type: string), cstring2 (type: string), ctimestamp1 (type: timestamp), ctimestamp2 (type: timestamp), cboolean1 (type: boolean), cboolean2 (type: boolean)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
@@ -317,7 +317,7 @@ STAGE PLANS:
                           bigTableValueColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
                           className: VectorMapJoinOuterLongOperator
                           native: true
-                          nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                          nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                           projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
                           smallTableMapping: [13, 14, 16, 17, 18, 19, 20, 21, 22, 23, 24]
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23
@@ -365,14 +365,14 @@ left outer join small_alltypesorc_a cd
   on cd.cint = c.cint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc_a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * 
 from small_alltypesorc_a c
 left outer join small_alltypesorc_a cd
   on cd.cint = c.cint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -64	-10462	626923679	NULL	-64.0	-10462.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:02.496	1969-12-31 16:00:00.164	true	NULL	-64	-10462	626923679	NULL	-64.0	-10462.0	821UdmGbkEf4j	NULL	1969-12-31 16:00:02.496	1969-12-31 16:00:00.164	true	NULL
 -64	-15920	528534767	NULL	-64.0	-15920.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:51.859	1969-12-31 16:00:14.468	true	NULL	-64	-15920	528534767	NULL	-64.0	-15920.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:51.859	1969-12-31 16:00:14.468	true	NULL
 -64	-15920	528534767	NULL	-64.0	-15920.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:51.859	1969-12-31 16:00:14.468	true	NULL	-64	-8080	528534767	NULL	-64.0	-8080.0	cvLH6Eat2yFsyy7p	NULL	1969-12-31 15:59:58.044	1969-12-31 15:59:48.655	true	NULL
@@ -425,7 +425,7 @@ STAGE PLANS:
                   Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: ctinyint (type: tinyint)
                     outputColumnNames: _col0
@@ -471,7 +471,7 @@ STAGE PLANS:
                   Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: ctinyint (type: tinyint)
                     outputColumnNames: _col0
@@ -492,7 +492,7 @@ STAGE PLANS:
                           bigTableValueColumnNums: [0]
                           className: VectorMapJoinOuterLongOperator
                           native: true
-                          nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                          nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                           projectedOutputColumnNums: [0]
                       outputColumnNames: _col0
                       input vertices:
@@ -539,14 +539,14 @@ left outer join small_alltypesorc_a hd
   on hd.ctinyint = c.ctinyint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc_a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select c.ctinyint 
 from small_alltypesorc_a c
 left outer join small_alltypesorc_a hd
   on hd.ctinyint = c.ctinyint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -64
 -64
 -64
@@ -691,7 +691,7 @@ STAGE PLANS:
                   Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: cint (type: int)
                     outputColumnNames: _col0
@@ -732,7 +732,7 @@ STAGE PLANS:
                   Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: ctinyint (type: tinyint)
                     outputColumnNames: _col0
@@ -780,7 +780,7 @@ STAGE PLANS:
                   Statistics: Num rows: 15 Data size: 3483 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
-                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                      vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
                   Select Operator
                     expressions: ctinyint (type: tinyint), cint (type: int)
                     outputColumnNames: _col0, _col1
@@ -801,7 +801,7 @@ STAGE PLANS:
                           bigTableValueColumnNums: [0]
                           className: VectorMapJoinOuterLongOperator
                           native: true
-                          nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                          nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                           projectedOutputColumnNums: [0]
                       outputColumnNames: _col0
                       input vertices:
@@ -819,7 +819,7 @@ STAGE PLANS:
                             bigTableValueColumnNums: [0]
                             className: VectorMapJoinOuterLongOperator
                             native: true
-                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                            nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, hive.execution.engine spark IN [tez, spark] IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                             projectedOutputColumnNums: [0]
                         outputColumnNames: _col0
                         input vertices:
@@ -919,7 +919,7 @@ left outer join small_alltypesorc_a hd
 ) t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@small_alltypesorc_a
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*), sum(t1.c_ctinyint) from (select c.ctinyint as c_ctinyint
 from small_alltypesorc_a c
 left outer join small_alltypesorc_a cd
@@ -929,5 +929,5 @@ left outer join small_alltypesorc_a hd
 ) t1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@small_alltypesorc_a
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 145	-8960

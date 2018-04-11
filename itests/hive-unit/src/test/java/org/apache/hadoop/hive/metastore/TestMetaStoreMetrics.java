@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -49,9 +49,7 @@ public class TestMetaStoreMetrics {
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
 
     //Increments one HMS connection
-    int port = MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf);
-
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
+    MetaStoreTestUtils.startMetaStoreWithRetry(hiveConf);
 
     //Increments one HMS connection (Hive.get())
     SessionState.start(new CliSessionState(hiveConf));
@@ -64,7 +62,7 @@ public class TestMetaStoreMetrics {
     driver.run("show databases");
 
     //one call by init, one called here.
-    Assert.assertEquals(2, Metrics.getRegistry().getTimers().get("api_get_all_databases").getCount());
+    Assert.assertEquals(2, Metrics.getRegistry().getTimers().get("api_get_databases").getCount());
   }
 
   @Test

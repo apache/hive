@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -174,7 +174,7 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.inputs = inputs;
     this.outputs = outputs;
     this.currentTask = (TezTask) TaskFactory.get(
-         new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID), conf), conf);
+        new TezWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID), conf));
     this.leafOperatorToFollowingWork = new LinkedHashMap<Operator<?>, BaseWork>();
     this.linkOpWithWorkMap = new LinkedHashMap<Operator<?>, Map<BaseWork, TezEdgeProperty>>();
     this.linkWorkWithReduceSinkMap = new LinkedHashMap<BaseWork, List<ReduceSinkOperator>>();
@@ -186,7 +186,7 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.currentMapJoinOperators = new LinkedHashSet<MapJoinOperator>();
     this.linkChildOpWithDummyOp = new LinkedHashMap<Operator<?>, List<Operator<?>>>();
     this.dependencyTask = (DependencyCollectionTask)
-        TaskFactory.get(new DependencyCollectionWork(), conf);
+    TaskFactory.get(new DependencyCollectionWork());
     this.unionWorkMap = new LinkedHashMap<Operator<?>, BaseWork>();
     this.rootUnionWorkMap = new LinkedHashMap<Operator<?>, UnionWork>();
     this.currentUnionOperators = new LinkedList<UnionOperator>();

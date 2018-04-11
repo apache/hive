@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -134,10 +134,8 @@ public class FosterStorageHandler extends DefaultStorageHandler {
         boolean isTransactionalTable = AcidUtils.isTablePropertyTransactional(tableProperties);
         AcidUtils.AcidOperationalProperties acidOperationalProperties =
                 AcidUtils.getAcidOperationalProperties(tableProperties);
-        if(acidOperationalProperties.isSplitUpdate()) {
-          AcidUtils.setAcidTableScan(jobProperties, isTransactionalTable);
-        }
-        AcidUtils.setAcidOperationalProperties(jobProperties, acidOperationalProperties);
+        AcidUtils.setAcidOperationalProperties(
+            jobProperties, isTransactionalTable, acidOperationalProperties);
       }
     } catch (IOException e) {
       throw new IllegalStateException("Failed to set output path", e);

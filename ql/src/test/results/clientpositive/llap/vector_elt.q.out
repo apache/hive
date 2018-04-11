@@ -31,7 +31,7 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterLongColGreaterLongScalar(col 0:tinyint, val 0)
-                    predicate: (ctinyint > 0) (type: boolean)
+                    predicate: (ctinyint > 0Y) (type: boolean)
                     Statistics: Num rows: 4096 Data size: 312018 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ((UDFToInteger(ctinyint) % 2) + 1) (type: int), cstring1 (type: string), cint (type: int), elt(((UDFToInteger(ctinyint) % 2) + 1), cstring1, cint) (type: string)

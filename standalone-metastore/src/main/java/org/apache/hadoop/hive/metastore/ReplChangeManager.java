@@ -163,104 +163,99 @@ public class ReplChangeManager {
    * @param ifPurge if the file should skip Trash when move/delete source file.
    *                This is referred only if type is MOVE.
    * @return int
-   * @throws MetaException
+   * @throws IOException
    */
-  int recycle(Path path, RecycleType type, boolean ifPurge) throws MetaException {
+  public int recycle(Path path, RecycleType type, boolean ifPurge) throws IOException {
     if (!enabled) {
       return 0;
     }
 
-    try {
-      int count = 0;
+    int count = 0;
+    if (fs.isDirectory(path)) {
+      FileStatus[] files = fs.listStatus(path, hiddenFileFilter);
+      for (FileStatus file : files) {
+        count += recycle(file.getPath(), type, ifPurge);
+      }
+    } else {
+      String fileCheckSum = checksumFor(path, fs);
+      Path cmPath = getCMPath(conf, path.getName(), fileCheckSum);
 
-      if (fs.isDirectory(path)) {
-        FileStatus[] files = fs.listStatus(path, hiddenFileFilter);
-        for (FileStatus file : files) {
-          count += recycle(file.getPath(), type, ifPurge);
-        }
+      // set timestamp before moving to cmroot, so we can
+      // avoid race condition CM remove the file before setting
+      // timestamp
+      long now = System.currentTimeMillis();
+      fs.setTimes(path, now, -1);
+
+      boolean success = false;
+      if (fs.exists(cmPath) && fileCheckSum.equalsIgnoreCase(checksumFor(cmPath, fs))) {
+        // If already a file with same checksum exists in cmPath, just ignore the copy/move
+        // Also, mark the operation is unsuccessful to notify that file with same name already
+        // exist which will ensure the timestamp of cmPath is updated to avoid clean-up by
+        // CM cleaner.
+        success = false;
       } else {
-        String fileCheckSum = checksumFor(path, fs);
-        Path cmPath = getCMPath(conf, path.getName(), fileCheckSum);
-
-        // set timestamp before moving to cmroot, so we can
-        // avoid race condition CM remove the file before setting
-        // timestamp
-        long now = System.currentTimeMillis();
-        fs.setTimes(path, now, -1);
-
-        boolean success = false;
-        if (fs.exists(cmPath) && fileCheckSum.equalsIgnoreCase(checksumFor(cmPath, fs))) {
-          // If already a file with same checksum exists in cmPath, just ignore the copy/move
-          // Also, mark the operation is unsuccessful to notify that file with same name already
-          // exist which will ensure the timestamp of cmPath is updated to avoid clean-up by
-          // CM cleaner.
-          success = false;
-        } else {
-          switch (type) {
-            case MOVE: {
-              if (LOG.isDebugEnabled()) {
-                LOG.debug("Moving {} to {}", path.toString(), cmPath.toString());
-              }
-              // Rename fails if the file with same name already exist.
-              success = fs.rename(path, cmPath);
-              break;
-            }
-            case COPY: {
-              if (LOG.isDebugEnabled()) {
-                LOG.debug("Copying {} to {}", path.toString(), cmPath.toString());
-              }
-              // It is possible to have a file with same checksum in cmPath but the content is
-              // partially copied or corrupted. In this case, just overwrite the existing file with
-              // new one.
-              success = FileUtils.copy(fs, path, fs, cmPath, false, true, conf);
-              break;
-            }
-            default:
-              // Operation fails as invalid input
-              break;
-          }
-        }
-
-        // Ignore if a file with same content already exist in cmroot
-        // We might want to setXAttr for the new location in the future
-        if (success) {
-          // set the file owner to hive (or the id metastore run as)
-          fs.setOwner(cmPath, msUser, msGroup);
-
-          // tag the original file name so we know where the file comes from
-          // Note we currently only track the last known trace as
-          // xattr has limited capacity. We shall revisit and store all original
-          // locations if orig-loc becomes important
-          try {
-            fs.setXAttr(cmPath, ORIG_LOC_TAG, path.toString().getBytes());
-          } catch (UnsupportedOperationException e) {
-            LOG.warn("Error setting xattr for {}", path.toString());
-          }
-
-          count++;
-        } else {
+        switch (type) {
+        case MOVE: {
           if (LOG.isDebugEnabled()) {
-            LOG.debug("A file with the same content of {} already exists, ignore", path.toString());
+            LOG.debug("Moving {} to {}", path.toString(), cmPath.toString());
           }
-          // Need to extend the tenancy if we saw a newer file with the same content
-          fs.setTimes(cmPath, now, -1);
+          // Rename fails if the file with same name already exist.
+          success = fs.rename(path, cmPath);
+          break;
         }
-
-        // Tag if we want to remain in trash after deletion.
-        // If multiple files share the same content, then
-        // any file claim remain in trash would be granted
-        if ((type == RecycleType.MOVE) && !ifPurge) {
-          try {
-            fs.setXAttr(cmPath, REMAIN_IN_TRASH_TAG, new byte[]{0});
-          } catch (UnsupportedOperationException e) {
-            LOG.warn("Error setting xattr for {}", cmPath.toString());
+        case COPY: {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Copying {} to {}", path.toString(), cmPath.toString());
           }
+          // It is possible to have a file with same checksum in cmPath but the content is
+          // partially copied or corrupted. In this case, just overwrite the existing file with
+          // new one.
+          success = FileUtils.copy(fs, path, fs, cmPath, false, true, conf);
+          break;
+        }
+        default:
+          // Operation fails as invalid input
+          break;
         }
       }
-      return count;
-    } catch (IOException e) {
-      throw new MetaException(StringUtils.stringifyException(e));
+
+      // Ignore if a file with same content already exist in cmroot
+      // We might want to setXAttr for the new location in the future
+      if (success) {
+        // set the file owner to hive (or the id metastore run as)
+        fs.setOwner(cmPath, msUser, msGroup);
+
+        // tag the original file name so we know where the file comes from
+        // Note we currently only track the last known trace as
+        // xattr has limited capacity. We shall revisit and store all original
+        // locations if orig-loc becomes important
+        try {
+          fs.setXAttr(cmPath, ORIG_LOC_TAG, path.toString().getBytes());
+        } catch (UnsupportedOperationException e) {
+          LOG.warn("Error setting xattr for {}", path.toString());
+        }
+
+        count++;
+      } else {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("A file with the same content of {} already exists, ignore", path.toString());
+        }
+        // Need to extend the tenancy if we saw a newer file with the same content
+        fs.setTimes(cmPath, now, -1);
+      }
+
+      // Tag if we want to remain in trash after deletion.
+      // If multiple files share the same content, then
+      // any file claim remain in trash would be granted
+      if ((type == RecycleType.MOVE) && !ifPurge) {
+        try {
+          fs.setXAttr(cmPath, REMAIN_IN_TRASH_TAG, new byte[] { 0 });
+        } catch (UnsupportedOperationException e) {
+          LOG.warn("Error setting xattr for {}", cmPath.toString());
+        }
+      }
     }
+    return count;
   }
 
   // Get checksum of a file
@@ -289,7 +284,7 @@ public class ReplChangeManager {
    * @param checkSum checksum of the file, can be retrieved by {@link #checksumFor(Path, FileSystem)}
    * @return Path
    */
-  static Path getCMPath(Configuration conf, String name, String checkSum) throws IOException, MetaException {
+  static Path getCMPath(Configuration conf, String name, String checkSum) {
     String newFileName = name + "_" + checkSum;
     int maxLength = conf.getInt(DFSConfigKeys.DFS_NAMENODE_MAX_COMPONENT_LENGTH_KEY,
         DFSConfigKeys.DFS_NAMENODE_MAX_COMPONENT_LENGTH_DEFAULT);

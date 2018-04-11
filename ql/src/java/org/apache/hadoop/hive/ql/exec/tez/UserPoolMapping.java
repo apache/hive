@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -34,7 +34,6 @@ class UserPoolMapping {
     USER, GROUP, APPLICATION
   }
 
-  // TODO# create commands for app mappings
   private final Map<String, Mapping> userMappings = new HashMap<>(),
       groupMappings = new HashMap<>(), appMappings = new HashMap<>();
   private final String defaultPoolPath;

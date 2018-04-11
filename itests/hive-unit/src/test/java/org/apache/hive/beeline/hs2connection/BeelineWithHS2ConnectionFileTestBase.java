@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -89,7 +89,7 @@ public abstract class BeelineWithHS2ConnectionFileTestBase {
     }
 
     @Override
-    public HS2ConnectionFileParser getUserHS2ConnFileParser() {
+    public UserHS2ConnectionFileParser getUserHS2ConnFileParser() {
       return testHs2ConfigFileManager;
     }
 

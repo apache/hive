@@ -37,6 +37,12 @@ public abstract class PartitionSpecProxy {
   public abstract int size();
 
   /**
+   * Set catalog name.
+   * @param catName catalog name.
+   */
+  public abstract void setCatName(String catName);
+
+  /**
    * Setter for name of the DB.
    * @param dbName The name of the DB.
    */
@@ -47,6 +53,12 @@ public abstract class PartitionSpecProxy {
    * @param tableName The name of the table.
    */
   public abstract void setTableName(String tableName);
+
+  /**
+   * Get catalog name.
+   * @return catalog name.
+   */
+  public abstract String getCatName();
 
   /**
    * Getter for name of the DB.
@@ -131,6 +143,12 @@ public abstract class PartitionSpecProxy {
     Partition getCurrent();
 
     /**
+     * Get the catalog name.
+     * @return catalog name.
+     */
+    String getCatName();
+
+    /**
      * Getter for the name of the DB.
      * @return Name of the DB.
      */
@@ -184,6 +202,7 @@ public abstract class PartitionSpecProxy {
     public SimplePartitionWrapperIterator(Partition partition) {this.partition = partition;}
 
     @Override public Partition getCurrent() { return partition; }
+    @Override public String getCatName() { return partition.getCatName(); }
     @Override public String getDbName() { return partition.getDbName(); }
     @Override public String getTableName() { return partition.getTableName(); }
     @Override public Map<String, String> getParameters() { return partition.getParameters(); }

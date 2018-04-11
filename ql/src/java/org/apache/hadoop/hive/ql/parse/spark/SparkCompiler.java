@@ -1,4 +1,4 @@
-/**
+/*
  *  Licensed to the Apache Software Foundation (ASF) under one
  *  or more contributor license agreements.  See the NOTICE file
  *  distributed with this work for additional information
@@ -209,7 +209,7 @@ public class SparkCompiler extends TaskCompiler {
     OperatorUtils.removeBranch(toRemove);
     // at this point we've found the fork in the op pipeline that has the pruning as a child plan.
     LOG.info("Disabling dynamic pruning for: "
-        + toRemove.getConf().getTableScan().toString() + ". Needed to break cyclic dependency");
+        + toRemove.getConf().getTableScanNames() + ". Needed to break cyclic dependency");
   }
 
   // Tarjan's algo
@@ -241,9 +241,12 @@ public class SparkCompiler extends TaskCompiler {
     if (o instanceof SparkPartitionPruningSinkOperator) {
       children = new ArrayList<>();
       children.addAll(o.getChildOperators());
-      TableScanOperator ts = ((SparkPartitionPruningSinkDesc) o.getConf()).getTableScan();
-      LOG.debug("Adding special edge: " + o.getName() + " --> " + ts.toString());
-      children.add(ts);
+      SparkPartitionPruningSinkDesc dppDesc = ((SparkPartitionPruningSinkOperator) o).getConf();
+      for (SparkPartitionPruningSinkDesc.DPPTargetInfo targetInfo : dppDesc.getTargetInfos()) {
+        TableScanOperator ts = targetInfo.tableScan;
+        LOG.debug("Adding special edge: " + o.getName() + " --> " + ts.toString());
+        children.add(ts);
+      }
     } else {
       children = o.getChildOperators();
     }
@@ -588,8 +591,7 @@ public class SparkCompiler extends TaskCompiler {
       LOG.debug("Skipping cross product analysis");
     }
 
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)
-        && ctx.getExplainAnalyze() == null) {
+    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
       (new Vectorizer()).resolve(physicalCtx);
     } else {
       LOG.debug("Skipping vectorization");

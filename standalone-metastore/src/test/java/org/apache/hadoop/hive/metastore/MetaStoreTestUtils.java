@@ -17,44 +17,41 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MetaStoreTestUtils {
+import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 
+public class MetaStoreTestUtils {
   private static final Logger LOG = LoggerFactory.getLogger(MetaStoreTestUtils.class);
   public static final int RETRY_COUNT = 10;
 
-  public static int startMetaStore() throws Exception {
-    return MetaStoreTestUtils.startMetaStore(HadoopThriftAuthBridge.getBridge(), null);
-  }
-
-  public static int startMetaStore(final HadoopThriftAuthBridge bridge, Configuration conf)
-      throws Exception {
-    int port = MetaStoreTestUtils.findFreePort();
-    MetaStoreTestUtils.startMetaStore(port, bridge, conf);
-    return port;
-  }
-
-  public static int startMetaStore(Configuration conf) throws Exception {
-    return startMetaStore(HadoopThriftAuthBridge.getBridge(), conf);
-  }
-
-  public static void startMetaStore(final int port, final HadoopThriftAuthBridge bridge) throws Exception {
-    MetaStoreTestUtils.startMetaStore(port, bridge, null);
-  }
-
+  /**
+   * Starts a MetaStore instance on get given port with the given configuration and Thrift bridge.
+   * Use it only it the port is definitely free. For tests use startMetaStoreWithRetry instead so
+   * the MetaStore will find an emtpy port eventually, so the different tests can be run on the
+   * same machine.
+   * @param port The port to start on
+   * @param bridge The bridge to use
+   * @param conf The configuration to use
+   * @throws Exception
+   */
   public static void startMetaStore(final int port,
       final HadoopThriftAuthBridge bridge, Configuration conf)
       throws Exception{
@@ -71,14 +68,14 @@ public class MetaStoreTestUtils {
           LOG.error("Metastore Thrift Server threw an exception...", e);
         }
       }
-    });
+    }, "MetaStoreThread-" + port);
     thread.setDaemon(true);
     thread.start();
     MetaStoreTestUtils.loopUntilHMSReady(port);
   }
 
   public static int startMetaStoreWithRetry(final HadoopThriftAuthBridge bridge) throws Exception {
-    return MetaStoreTestUtils.startMetaStoreWithRetry(bridge, null);
+    return MetaStoreTestUtils.startMetaStoreWithRetry(bridge, MetastoreConf.newMetastoreConf());
   }
 
   public static int startMetaStoreWithRetry(Configuration conf) throws Exception {
@@ -86,24 +83,38 @@ public class MetaStoreTestUtils {
   }
 
   public static int startMetaStoreWithRetry() throws Exception {
-    return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), null);
+    return MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(),
+        MetastoreConf.newMetastoreConf());
   }
 
-  public static int startMetaStoreWithRetry(final HadoopThriftAuthBridge bridge, Configuration conf)
-      throws Exception {
+  /**
+   * Starts a MetaStore instance with the given configuration and given bridge.
+   * Tries to find a free port, and use it. If failed tries another port so the tests will not
+   * fail if run parallel. Also adds the port to the warehouse dir, so the multiple MetaStore
+   * instances will use different warehouse directories.
+   * @param bridge The Thrift bridge to uses
+   * @param conf The configuration to use
+   * @return The port on which the MetaStore finally started
+   * @throws Exception
+   */
+  public static int startMetaStoreWithRetry(HadoopThriftAuthBridge bridge,
+                                            Configuration conf) throws Exception {
     Exception metaStoreException = null;
-    int metaStorePort = 0;
-
+    String warehouseDir = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE);
     for (int tryCount = 0; tryCount < MetaStoreTestUtils.RETRY_COUNT; tryCount++) {
       try {
-        metaStorePort = MetaStoreTestUtils.findFreePort();
+        int metaStorePort = findFreePort();
+        Path postfixedWarehouseDir = new Path(warehouseDir, String.valueOf(metaStorePort));
+        MetastoreConf.setVar(conf, ConfVars.WAREHOUSE, postfixedWarehouseDir.toString());
+        MetastoreConf.setVar(conf, ConfVars.THRIFT_URIS, "thrift://localhost:" + metaStorePort);
         MetaStoreTestUtils.startMetaStore(metaStorePort, bridge, conf);
+        LOG.error("MetaStore Thrift Server started on port: {} with warehouse dir: {}",
+            metaStorePort, postfixedWarehouseDir);
         return metaStorePort;
       } catch (ConnectException ce) {
         metaStoreException = ce;
       }
     }
-
     throw metaStoreException;
   }
 
@@ -111,7 +122,7 @@ public class MetaStoreTestUtils {
    * A simple connect test to make sure that the metastore is up
    * @throws Exception
    */
-  public static void loopUntilHMSReady(int port) throws Exception {
+  private static void loopUntilHMSReady(int port) throws Exception {
     int retries = 0;
     Exception exc = null;
     while (true) {
@@ -136,7 +147,7 @@ public class MetaStoreTestUtils {
     throw exc;
   }
 
-  public static String getAllThreadStacksAsString() {
+  private static String getAllThreadStacksAsString() {
     Map<Thread, StackTraceElement[]> threadStacks = Thread.getAllStackTraces();
     StringBuilder sb = new StringBuilder();
     for (Map.Entry<Thread, StackTraceElement[]> entry : threadStacks.entrySet()) {
@@ -148,7 +159,7 @@ public class MetaStoreTestUtils {
     return sb.toString();
   }
 
-  public static void addStackString(StackTraceElement[] stackElems, StringBuilder sb) {
+  private static void addStackString(StackTraceElement[] stackElems, StringBuilder sb) {
     sb.append(System.lineSeparator());
     for (StackTraceElement stackElem : stackElems) {
       sb.append(stackElem).append(System.lineSeparator());
@@ -198,11 +209,44 @@ public class MetaStoreTestUtils {
   /**
    * Setup a configuration file for standalone mode.  There are a few config variables that have
    * defaults that require parts of Hive that aren't present in standalone mode.  This method
-   * sets them to something that will work without the rest of Hive.
+   * sets them to something that will work without the rest of Hive.  It only changes them if
+   * they have not already been set, to avoid clobbering intentional changes.
    * @param conf Configuration object
    */
   public static void setConfForStandloneMode(Configuration conf) {
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.TASK_THREADS_ALWAYS,
-        EventCleanerTask.class.getName());
+    if (MetastoreConf.getVar(conf, ConfVars.TASK_THREADS_ALWAYS).equals(
+        ConfVars.TASK_THREADS_ALWAYS.getDefaultVal())) {
+      MetastoreConf.setVar(conf, ConfVars.TASK_THREADS_ALWAYS,
+          EventCleanerTask.class.getName());
+    }
+    if (MetastoreConf.getVar(conf, ConfVars.EXPRESSION_PROXY_CLASS).equals(
+        ConfVars.EXPRESSION_PROXY_CLASS.getDefaultVal())) {
+      MetastoreConf.setClass(conf, ConfVars.EXPRESSION_PROXY_CLASS,
+          DefaultPartitionExpressionProxy.class, PartitionExpressionProxy.class);
+    }
+  }
+
+
+  public static String getTestWarehouseDir(String name) {
+    File dir = new File(System.getProperty("java.io.tmpdir"), name);
+    dir.deleteOnExit();
+    return dir.getAbsolutePath();
+  }
+
+  /**
+   * There is no cascade option for dropping a catalog for security reasons.  But this in
+   * inconvenient in tests, so this method does it.
+   * @param client metastore client
+   * @param catName catalog to drop, cannot be the default catalog
+   * @throws TException from underlying client calls
+   */
+  public static void dropCatalogCascade(IMetaStoreClient client, String catName) throws TException {
+    if (catName != null && !catName.equals(DEFAULT_CATALOG_NAME)) {
+      List<String> databases = client.getAllDatabases(catName);
+      for (String db : databases) {
+        client.dropDatabase(catName, db, true, false, true);
+      }
+      client.dropCatalog(catName);
+    }
   }
 }

@@ -91,6 +91,16 @@ public class TestReplicationSemanticAnalyzer {
   public static class ReplDump {
 
     @Test
+    public void parseDbPattern() throws ParseException {
+      ASTNode root = parse("repl dump `*`");
+      assertEquals("TOK_REPL_DUMP", root.getText());
+      assertEquals(1, root.getChildCount());
+      ASTNode child = (ASTNode) root.getChild(0);
+      assertEquals("`*`", child.getText());
+      assertEquals(0, child.getChildCount());
+    }
+
+    @Test
     public void parseDb() throws ParseException {
       ASTNode root = parse("repl dump testDb");
       assertDatabase(1, root);
@@ -250,6 +260,39 @@ public class TestReplicationSemanticAnalyzer {
       assertEquals("TOK_DBNAME", child.getText());
       assertEquals(1, child.getChildCount());
       child = (ASTNode) child.getChild(0);
+      assertEquals("targetTestDbName", child.getText());
+      assertEquals(0, child.getChildCount());
+    }
+  }
+
+  public static class ReplStatus {
+
+    @Test
+    public void parseTargetDbName() throws ParseException {
+      ASTNode root = parse("repl status targetTestDbName");
+      assertTargetDatabaseName(root);
+    }
+
+    @Test
+    public void parseWithClause() throws ParseException {
+      ASTNode root = parse("repl status targetTestDbName with"
+          + "('hive.metastore.uris'='thrift://localhost:12341')");
+      assertTargetDatabaseName(root);
+
+      ASTNode child = (ASTNode) root.getChild(1);
+      assertEquals("TOK_REPL_CONFIG", child.getText());
+      assertEquals(1, child.getChildCount());
+      child = (ASTNode) child.getChild(0);
+      assertEquals("TOK_REPL_CONFIG_LIST", child.getText());
+      ASTNode configNode = (ASTNode) child.getChild(0);
+      assertEquals("TOK_TABLEPROPERTY", configNode.getText());
+      assertEquals(2, configNode.getChildCount());
+      assertEquals("'hive.metastore.uris'", configNode.getChild(0).getText());
+      assertEquals("'thrift://localhost:12341'", configNode.getChild(1).getText());
+    }
+
+    private void assertTargetDatabaseName(ASTNode root) {
+      ASTNode child = (ASTNode) root.getChild(0);
       assertEquals("targetTestDbName", child.getText());
       assertEquals(0, child.getChildCount());
     }

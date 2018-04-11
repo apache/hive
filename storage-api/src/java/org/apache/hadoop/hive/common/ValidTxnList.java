@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -45,13 +45,6 @@ public interface ValidTxnList {
    * @return true if valid, false otherwise
    */
   public boolean isTxnValid(long txnid);
-
-  /**
-   * Returns {@code true} if such base file can be used to materialize the snapshot represented by
-   * this {@code ValidTxnList}.
-   * @param txnid highest txn in a given base_xxxx file
-   */
-  public boolean isValidBase(long txnid);
 
   /**
    * Find out if a range of transaction ids are valid.  Note that valid may have different meanings

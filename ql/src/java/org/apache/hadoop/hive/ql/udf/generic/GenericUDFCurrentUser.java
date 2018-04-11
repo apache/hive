@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -28,7 +28,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
 
-@UDFType(deterministic = true)
+// This function is not a deterministic function, but a runtime constant.
+// The return value is constant within a query but can be different between queries.
+@UDFType(deterministic = false, runtimeConstant = true)
 @Description(name = "current_user", value = "_FUNC_() - Returns current user name", extended = "SessionState UserFromAuthenticator")
 @NDV(maxNdv = 1)
 public class GenericUDFCurrentUser extends GenericUDF {

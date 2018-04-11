@@ -430,6 +430,10 @@ ________________________________________________________________________________
 
 -- END ORC FILE DUMP --
 2	foo	0.8	1	1969-12-31 16:00:00
+PREHOOK: query: INSERT OVERWRITE DIRECTORY 'output' stored as orcfile select * from orc_split_elim
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_split_elim
+PREHOOK: Output: output
 PREHOOK: query: DROP TABLE orc_split_elim
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_split_elim

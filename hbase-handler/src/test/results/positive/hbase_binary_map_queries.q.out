@@ -61,7 +61,7 @@ PREHOOK: query: CREATE TABLE t_hbase_maps(key STRING,
                           boolean_map_col MAP<BOOLEAN, BOOLEAN>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-tinyint:,cf-smallint:,cf-int:,cf-bigint:,cf-float:,cf-double:,cf-string:,cf-boolean:")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t_hbase_maps
@@ -76,7 +76,7 @@ POSTHOOK: query: CREATE TABLE t_hbase_maps(key STRING,
                           boolean_map_col MAP<BOOLEAN, BOOLEAN>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-tinyint:,cf-smallint:,cf-int:,cf-bigint:,cf-float:,cf-double:,cf-string:,cf-boolean:")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_hbase_maps
@@ -165,7 +165,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps(key STRING,
                                        boolean_map_col MAP<BOOLEAN, BOOLEAN>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-tinyint:,cf-smallint:,cf-int:,cf-bigint:,cf-float:,cf-double:,cf-string:,cf-boolean:")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t_ext_hbase_maps
@@ -180,7 +180,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps(key STRING,
                                        boolean_map_col MAP<BOOLEAN, BOOLEAN>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-tinyint:,cf-smallint:,cf-int:,cf-bigint:,cf-float:,cf-double:,cf-string:,cf-boolean:")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_ext_hbase_maps
@@ -217,7 +217,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps_1(key STRING,
                                          boolean_map_col MAP<BOOLEAN, BOOLEAN>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key#b,cf-tinyint:#bi:bi,cf-smallint:#bin:bin,cf-int:#bina:bina,cf-bigint:#binar:binar,cf-float:#binary:binary,cf-double:#b:b,cf-string:#bi:bi,cf-boolean:#bin:bin")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t_ext_hbase_maps_1
@@ -232,7 +232,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps_1(key STRING,
                                          boolean_map_col MAP<BOOLEAN, BOOLEAN>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key#b,cf-tinyint:#bi:bi,cf-smallint:#bin:bin,cf-int:#bina:bina,cf-bigint:#binar:binar,cf-float:#binary:binary,cf-double:#b:b,cf-string:#bi:bi,cf-boolean:#bin:bin")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_ext_hbase_maps_1
@@ -270,7 +270,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps_2(key STRING,
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-tinyint:,cf-smallint:,cf-int:,cf-bigint:,cf-float:,cf-double:,cf-string:,cf-boolean:")
 TBLPROPERTIES (
-"hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps",
+"hbase.table.name"="t_hive_maps",
 "hbase.table.default.storage.type"="binary")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -287,7 +287,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps_2(key STRING,
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-tinyint:,cf-smallint:,cf-int:,cf-bigint:,cf-float:,cf-double:,cf-string:,cf-boolean:")
 TBLPROPERTIES (
-"hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps",
+"hbase.table.name"="t_hive_maps",
 "hbase.table.default.storage.type"="binary")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -325,7 +325,7 @@ PREHOOK: query: CREATE TABLE t_hbase_maps_1(key STRING,
                             boolean_map_col MAP<BOOLEAN, BOOLEAN>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key#b,cf-tinyint:#b:b,cf-smallint:#b:b,cf-int:#b:b,cf-bigint:#b:b,cf-float:#b:b,cf-double:#b:b,cf-string:#b:b,cf-boolean:#b:b")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps_1")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps_1")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t_hbase_maps_1
@@ -340,7 +340,7 @@ POSTHOOK: query: CREATE TABLE t_hbase_maps_1(key STRING,
                             boolean_map_col MAP<BOOLEAN, BOOLEAN>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key#b,cf-tinyint:#b:b,cf-smallint:#b:b,cf-int:#b:b,cf-bigint:#b:b,cf-float:#b:b,cf-double:#b:b,cf-string:#b:b,cf-boolean:#b:b")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps_1")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps_1")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_hbase_maps_1
@@ -429,7 +429,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps_3(key STRING,
                                          boolean_map_col MAP<BOOLEAN, BOOLEAN>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key#b,cf-tinyint:#bi:bi,cf-smallint:#bin:bin,cf-int:#bina:bina,cf-bigint:#binar:binar,cf-float:#binary:binary,cf-double:#b:b,cf-string:#bi:bi,cf-boolean:#bin:bin")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps_1")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps_1")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t_ext_hbase_maps_3
@@ -444,7 +444,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps_3(key STRING,
                                          boolean_map_col MAP<BOOLEAN, BOOLEAN>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key#b,cf-tinyint:#bi:bi,cf-smallint:#bin:bin,cf-int:#bina:bina,cf-bigint:#binar:binar,cf-float:#binary:binary,cf-double:#b:b,cf-string:#bi:bi,cf-boolean:#bin:bin")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps_1")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps_1")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_ext_hbase_maps_3
@@ -481,7 +481,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps_4(key STRING,
                                          boolean_map_col MAP<BOOLEAN, BOOLEAN>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-tinyint:,cf-smallint:,cf-int:,cf-bigint:,cf-float:,cf-double:,cf-string:,cf-boolean:")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps_1")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps_1")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@t_ext_hbase_maps_4
@@ -496,7 +496,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps_4(key STRING,
                                          boolean_map_col MAP<BOOLEAN, BOOLEAN>)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-tinyint:,cf-smallint:,cf-int:,cf-bigint:,cf-float:,cf-double:,cf-string:,cf-boolean:")
-TBLPROPERTIES ("hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps_1")
+TBLPROPERTIES ("hbase.table.name"="t_hive_maps_1")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t_ext_hbase_maps_4
@@ -534,7 +534,7 @@ PREHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps_5(key STRING,
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-tinyint:,cf-smallint:,cf-int:,cf-bigint:,cf-float:,cf-double:,cf-string:,cf-boolean:")
 TBLPROPERTIES (
-"hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps_1",
+"hbase.table.name"="t_hive_maps_1",
 "hbase.table.default.storage.type"="binary")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -551,7 +551,7 @@ POSTHOOK: query: CREATE EXTERNAL TABLE t_ext_hbase_maps_5(key STRING,
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping"=":key,cf-tinyint:,cf-smallint:,cf-int:,cf-bigint:,cf-float:,cf-double:,cf-string:,cf-boolean:")
 TBLPROPERTIES (
-"hbase.mapreduce.hfileoutputformat.table.name"="t_hive_maps_1",
+"hbase.table.name"="t_hive_maps_1",
 "hbase.table.default.storage.type"="binary")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

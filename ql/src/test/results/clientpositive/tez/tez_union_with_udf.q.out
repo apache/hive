@@ -3,13 +3,13 @@ union all
 select * from (select key + key from src limit 1) b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from (select key + key from src limit 1) a
 union all
 select * from (select key + key from src limit 1) b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 476.0
 476.0
 PREHOOK: query: create temporary function example_add as 'org.apache.hadoop.hive.udf.example.GenericUDFExampleAdd'
@@ -23,12 +23,12 @@ union all
 select example_add(key, key)from (select key from src limit 1) b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select example_add(key, key)from (select key from src limit 1) a
 union all
 select example_add(key, key)from (select key from src limit 1) b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 476.0
 476.0

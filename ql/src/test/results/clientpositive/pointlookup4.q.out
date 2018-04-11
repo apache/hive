@@ -216,6 +216,25 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: select key, value, ds1, ds2
+from pcr_t1
+where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-09' and key=2)
+order by key, value, ds1, ds2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
+PREHOOK: Input: default@pcr_t1@ds1=2000-04-09/ds2=2001-04-09
+#### A masked pattern was here ####
+POSTHOOK: query: select key, value, ds1, ds2
+from pcr_t1
+where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-09' and key=2)
+order by key, value, ds1, ds2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
+POSTHOOK: Input: default@pcr_t1@ds1=2000-04-09/ds2=2001-04-09
+#### A masked pattern was here ####
+2	val_2	2000-04-09	2001-04-09
 PREHOOK: query: explain extended
 select key, value, ds1, ds2
 from pcr_t1
@@ -392,6 +411,25 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: select key, value, ds1, ds2
+from pcr_t1
+where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-09' and key=2)
+order by key, value, ds1, ds2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@pcr_t1
+PREHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
+PREHOOK: Input: default@pcr_t1@ds1=2000-04-09/ds2=2001-04-09
+#### A masked pattern was here ####
+POSTHOOK: query: select key, value, ds1, ds2
+from pcr_t1
+where (ds1='2000-04-08' and ds2='2001-04-08' and key=1) or (ds1='2000-04-09' and ds2='2001-04-09' and key=2)
+order by key, value, ds1, ds2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@pcr_t1
+POSTHOOK: Input: default@pcr_t1@ds1=2000-04-08/ds2=2001-04-08
+POSTHOOK: Input: default@pcr_t1@ds1=2000-04-09/ds2=2001-04-09
+#### A masked pattern was here ####
+2	val_2	2000-04-09	2001-04-09
 PREHOOK: query: drop table pcr_t1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@pcr_t1

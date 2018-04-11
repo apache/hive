@@ -297,7 +297,7 @@ STAGE PLANS:
             Statistics: Num rows: 20 Data size: 4182 Basic stats: COMPLETE Column stats: NONE
             TableScan Vectorization:
                 native: true
-                vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<transactionid:bigint,bucketid:int,rowid:bigint>]
+                vectorizationSchemaColumns: [0:ctinyint:tinyint, 1:csmallint:smallint, 2:cint:int, 3:cbigint:bigint, 4:cfloat:float, 5:cdouble:double, 6:cstring1:string, 7:cstring2:string, 8:ctimestamp1:timestamp, 9:ctimestamp2:timestamp, 10:cboolean1:boolean, 11:cboolean2:boolean, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
             Select Operator
               expressions: cint (type: int), cbigint (type: bigint)
               outputColumnNames: _col0, _col1
@@ -317,7 +317,7 @@ STAGE PLANS:
                     bigTableValueExpressions: col 3:bigint
                     className: VectorMapJoinOperator
                     native: false
-                    nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                    nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                     nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                 outputColumnNames: _col1
                 Statistics: Num rows: 22 Data size: 4600 Basic stats: COMPLETE Column stats: NONE
@@ -332,7 +332,7 @@ STAGE PLANS:
                       bigTableValueExpressions: col 0:bigint
                       className: VectorMapJoinOperator
                       native: false
-                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Optimized Table and Supports Key Types IS true
+                      nativeConditionsMet: hive.mapjoin.optimized.hashtable IS true, hive.vectorized.execution.mapjoin.native.enabled IS true, One MapJoin Condition IS true, No nullsafe IS true, Small table vectorizes IS true, Outer Join has keys IS true, Optimized Table and Supports Key Types IS true
                       nativeConditionsNotMet: hive.execution.engine mr IN [tez, spark] IS false
                   outputColumnNames: _col1
                   Statistics: Num rows: 24 Data size: 5060 Basic stats: COMPLETE Column stats: NONE

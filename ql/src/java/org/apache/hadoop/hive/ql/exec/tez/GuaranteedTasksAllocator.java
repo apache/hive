@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -102,13 +102,20 @@ public class GuaranteedTasksAllocator implements QueryAllocationManager {
   }
 
   @Override
-  public void updateSessionsAsync(Double totalMaxAlloc, List<WmTezSession> sessionsToUpdate) {
+  public int translateAllocationToCpus(double allocation) {
+    // Do not make a remote call under any circumstances - this is supposed to be async.
+    return (int)Math.round(getExecutorCount(false) * allocation);
+  }
+
+  @Override
+  public int updateSessionsAsync(Double totalMaxAlloc, List<WmTezSession> sessionsToUpdate) {
     // Do not make a remote call under any circumstances - this is supposed to be async.
     int totalCount = getExecutorCount(false);
     int totalToDistribute = -1;
     if (totalMaxAlloc != null) {
       totalToDistribute = (int)Math.round(totalCount * totalMaxAlloc);
     }
+    int totalDistributed = 0;
     double lastDelta = 0;
     for (int i = 0; i < sessionsToUpdate.size(); ++i) {
       WmTezSession session = sessionsToUpdate.get(i);
@@ -122,6 +129,7 @@ public class GuaranteedTasksAllocator implements QueryAllocationManager {
         // we'd produce 2-2-2-2-0 as we round 1.6; whereas adding the last delta to the next query
         // we'd round 1.6-1.2-1.8-1.4-2.0 and thus give out 2-1-2-1-2, as intended.
         // Note that fractions don't have to all be the same like in this example.
+        assert session.hasClusterFraction();
         double fraction = session.getClusterFraction();
         double allocation = fraction * totalCount + lastDelta;
         double roundedAlloc = Math.round(allocation);
@@ -139,18 +147,25 @@ public class GuaranteedTasksAllocator implements QueryAllocationManager {
         totalToDistribute -= intAlloc;
       }
       // This will only send update if it's necessary.
+      totalDistributed += intAlloc;
       updateSessionAsync(session, intAlloc);
     }
+    return totalDistributed;
   }
 
-  private void updateSessionAsync(final WmTezSession session, final int intAlloc) {
-    boolean needsUpdate = session.setSendingGuaranteed(intAlloc);
-    if (!needsUpdate) return;
+  @Override
+  public void updateSessionAsync(WmTezSession session) {
+    updateSessionAsync(session, null); // Resend existing value if necessary.
+  }
+
+  private void updateSessionAsync(final WmTezSession session, final Integer intAlloc) {
+    Integer valueToSend = session.setSendingGuaranteed(intAlloc);
+    if (valueToSend == null) return;
     // Note: this assumes that the pattern where the same session object is reset with a different
     //       Tez client is not used. It was used a lot in the past but appears to be gone from most
     //       HS2 session pool paths, and this patch removes the last one (reopen).
     UpdateQueryRequestProto request = UpdateQueryRequestProto
-        .newBuilder().setGuaranteedTaskCount(intAlloc).build();
+        .newBuilder().setGuaranteedTaskCount(valueToSend.intValue()).build();
     LOG.info("Updating {} with {} guaranteed tasks", session.getSessionId(), intAlloc);
     amCommunicator.sendUpdateQuery(request, (AmPluginNode)session, new UpdateCallback(session));
   }

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -427,6 +427,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       Class itface = SessionState.get().getAuthorizerInterface();
       Object authorizer = AuthorizationFactory.create(delegate, itface,
           new AuthorizationFactory.AuthorizationExceptionHandler() {
+            @Override
             public void exception(Exception exception) {
               exceptions.add(exception.getMessage());
             }
@@ -1225,7 +1226,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return "EXPLAIN";
   }
 
-  public List<FieldSchema> getResultSchema() {
+  public static List<FieldSchema> getResultSchema() {
     FieldSchema tmpFieldSchema = new FieldSchema();
     List<FieldSchema> colList = new ArrayList<FieldSchema>();
 

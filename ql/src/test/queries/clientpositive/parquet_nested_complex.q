@@ -1,3 +1,7 @@
+-- Suppress vectorization due to known bug.  See HIVE-19016.
+set hive.vectorized.execution.enabled=false;
+set hive.test.vectorized.execution.enabled.override=none;
+
 -- start with the original nestedcomplex test
 
 create table nestedcomplex (

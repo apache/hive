@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.metastore.api.WMNullablePool;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -26,25 +27,44 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
 public class CreateOrAlterWMPoolDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 4872940135771213510L;
 
-  private WMPool pool;
+  private WMPool createPool;
+  private WMNullablePool alterPool;
   private String poolPath;
   private boolean update;
 
   public CreateOrAlterWMPoolDesc() {}
 
   public CreateOrAlterWMPoolDesc(WMPool pool, String poolPath, boolean update) {
-    this.pool = pool;
+    this.createPool = pool;
+    this.poolPath = poolPath;
+    this.update = update;
+  }
+
+  public CreateOrAlterWMPoolDesc(WMNullablePool pool, String poolPath, boolean update) {
+    this.alterPool = pool;
     this.poolPath = poolPath;
     this.update = update;
   }
 
   @Explain(displayName="pool", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-  public WMPool getPool() {
-    return pool;
+  public Object getPool() {
+    return createPool == null ? alterPool : createPool;
   }
 
-  public void setPool(WMPool pool) {
-    this.pool = pool;
+  public WMPool getCreatePool() {
+    return createPool;
+  }
+
+  public WMNullablePool getAlterPool() {
+    return alterPool;
+  }
+
+  public void setCreatePool(WMPool pool) {
+    this.createPool = pool;
+  }
+
+  public void setAlterPool(WMNullablePool pool) {
+    this.alterPool = pool;
   }
 
   @Explain(displayName="poolPath", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

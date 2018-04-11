@@ -6,13 +6,14 @@ drop table if exists hb_target;
 create table hb_target(key int, val string)
 stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 with serdeproperties ('hbase.columns.mapping' = ':key,cf:val')
-tblproperties ('hbase.mapreduce.hfileoutputformat.table.name' = 'positive_hbase_handler_bulk');
+tblproperties ('hbase.table.name' = 'positive_hbase_handler_bulk');
 
 set hive.hbase.generatehfiles=true;
 set hfile.family.path=/tmp/hb_target/cf;
 set mapreduce.input.fileinputformat.split.maxsize=200;
 set mapreduce.input.fileinputformat.split.minsize=200;
 set mapred.reduce.tasks=2;
+
 
 -- this should produce three files in /tmp/hb_target/cf
 insert overwrite table hb_target select distinct key, value from src cluster by key;
@@ -24,3 +25,23 @@ insert overwrite table hb_target select distinct key, value from src cluster by 
 
 drop table hb_target;
 dfs -rmr /tmp/hb_target/cf;
+
+
+create table hb_target(key int, val string)
+stored by 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+with serdeproperties ('hbase.columns.mapping' = ':key,cf:val')
+tblproperties ('hbase.table.name' = 'positive_hbase_handler_bulk');
+
+-- do it twice - regression test for HIVE-18607
+
+insert overwrite table hb_target select distinct key, value from src cluster by key;
+
+dfs -rmr /tmp/hb_target/cf;
+
+insert overwrite table hb_target select distinct key, value from src cluster by key;
+
+drop table hb_target;
+dfs -rmr /tmp/hb_target/cf;
+
+
+

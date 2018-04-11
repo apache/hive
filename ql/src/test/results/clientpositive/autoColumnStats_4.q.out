@@ -195,9 +195,7 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	2                   
-	numRows             	0                   
-	rawDataSize         	0                   
-	totalSize           	1798                
+	totalSize           	1862                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -239,9 +237,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	4                   
-	numRows             	0                   
-	rawDataSize         	0                   
-	totalSize           	2909                
+	totalSize           	3012                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####

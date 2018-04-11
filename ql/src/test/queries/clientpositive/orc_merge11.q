@@ -39,5 +39,9 @@ SET hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecOrcFileDump;
 select * from orcfile_merge1 limit 1;
 SET hive.exec.post.hooks=;
 
+SET mapreduce.job.reduces=2;
+
+INSERT OVERWRITE DIRECTORY 'output' stored as orcfile select * from orc_split_elim;
+
 DROP TABLE orc_split_elim;
 DROP TABLE orcfile_merge1;

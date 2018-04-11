@@ -15,6 +15,8 @@
 # limitations under the License.
 
 JIRA_ROOT_URL="https://issues.apache.org"
+JENKINS_URL="https://builds.apache.org"
+JENKINS_QUEUE_QUERY="/queue/api/json?tree=items[task[name],inQueueSince,actions[parameters[name,value]],why]"
 
 fail() {
   echo "$@" 1>&2

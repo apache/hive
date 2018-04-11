@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -444,6 +444,12 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
           new VectorizationCondition(
               vectorMapJoinDesc.getSmallTableExprVectorizes(),
               "Small table vectorizes"));
+      if (!mapJoinDesc.isNoOuterJoin()) {
+        conditionList.add(
+            new VectorizationCondition(
+                !vectorMapJoinDesc.getOuterJoinHasNoKeys(),
+                "Outer Join has keys"));
+      }
 
       if (isFastHashTableEnabled) {
         conditionList.add(
@@ -601,4 +607,5 @@ public class MapJoinDesc extends JoinDesc implements Serializable {
     }
     return false;
   }
+
 }

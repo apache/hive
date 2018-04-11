@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -57,9 +57,11 @@ public class QueryProperties {
   boolean mapJoinRemoved = false;
   boolean hasMapGroupBy = false;
 
+  private boolean hasLateralViews = false;
+  private boolean cboSupportedLateralViews = true;
+
   private int noOfJoins = 0;
   private int noOfOuterJoins = 0;
-  private boolean hasLateralViews;
 
   private boolean multiDestQuery;
   private boolean filterWithSubQuery;
@@ -140,6 +142,14 @@ public class QueryProperties {
 
   public boolean hasLateralViews() {
     return hasLateralViews;
+  }
+
+  public void setCBOSupportedLateralViews(boolean cboSupportedLateralViews) {
+    this.cboSupportedLateralViews = cboSupportedLateralViews;
+  }
+
+  public boolean isCBOSupportedLateralViews() {
+    return cboSupportedLateralViews;
   }
 
   public boolean hasGroupBy() {

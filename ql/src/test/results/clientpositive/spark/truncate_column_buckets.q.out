@@ -22,14 +22,14 @@ test_tab GROUP BY INPUT__FILE__NAME
 )a ORDER BY file_name DESC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_tab
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT cnt FROM (
 SELECT INPUT__FILE__NAME file_name, count(*) cnt FROM 
 test_tab GROUP BY INPUT__FILE__NAME
 )a ORDER BY file_name DESC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 258
 242
 PREHOOK: query: TRUNCATE TABLE test_tab COLUMNS (value)
@@ -46,13 +46,13 @@ test_tab GROUP BY INPUT__FILE__NAME
 )a ORDER BY file_name DESC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_tab
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT cnt FROM (
 SELECT INPUT__FILE__NAME file_name, count(*) cnt FROM 
 test_tab GROUP BY INPUT__FILE__NAME
 )a ORDER BY file_name DESC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_tab
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 258
 242

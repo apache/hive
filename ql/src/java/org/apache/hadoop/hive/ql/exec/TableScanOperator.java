@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -115,18 +115,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   @Override
   public void process(Object row, int tag) throws HiveException {
     if (rowLimit >= 0) {
-      if (vectorized) {
-        VectorizedRowBatch batch = (VectorizedRowBatch) row;
-        if (currCount >= rowLimit) {
-          setDone(true);
-          return;
-        }
-        if (currCount + batch.size > rowLimit) {
-          batch.size = rowLimit - currCount;
-        }
-        currCount += batch.size;
-      } else if (currCount++ >= rowLimit) {
-        setDone(true);
+      if (checkSetDone(row, tag)) {
         return;
       }
     }
@@ -134,6 +123,28 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       gatherStats(row);
     }
     forward(row, inputObjInspectors[tag], vectorized);
+  }
+
+  private boolean checkSetDone(Object row, int tag) {
+    if (row instanceof VectorizedRowBatch) {
+      // We need to check with 'instanceof' instead of just checking
+      // vectorized because the row can be a VectorizedRowBatch when
+      // FetchOptimizer kicks in even if the operator pipeline is not
+      // vectorized
+      VectorizedRowBatch batch = (VectorizedRowBatch) row;
+      if (currCount >= rowLimit) {
+        setDone(true);
+        return true;
+      }
+      if (currCount + batch.size > rowLimit) {
+        batch.size = rowLimit - currCount;
+      }
+      currCount += batch.size;
+    } else if (currCount++ >= rowLimit) {
+      setDone(true);
+      return true;
+    }
+    return false;
   }
 
   // Change the table partition for collecting stats

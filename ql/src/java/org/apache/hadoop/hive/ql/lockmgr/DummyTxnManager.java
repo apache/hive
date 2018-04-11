@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.lockmgr;
 
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -47,11 +48,18 @@ class DummyTxnManager extends HiveTxnManagerImpl {
 
   private HiveLockManager lockMgr;
 
+  private HiveLockManagerCtx lockManagerCtx;
+
   @Override
   public long openTxn(Context ctx, String user) throws LockException {
     // No-op
     return 0L;
   }
+  @Override
+  public List<Long> replOpenTxn(String replPolicy, List<Long> srcTxnIds, String user)  throws LockException {
+    return null;
+  }
+
   @Override
   public boolean isTxnOpen() {
     return false;
@@ -60,10 +68,13 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   public long getCurrentTxnId() {
     return 0L;
   }
-
   @Override
-  public int getWriteIdAndIncrement() {
+  public int getStmtIdAndIncrement() {
     return 0;
+  }
+  @Override
+  public long getTableWriteId(String dbName, String tableName) throws LockException {
+    return 0L;
   }
   @Override
   public HiveLockManager getLockManager() throws LockException {
@@ -81,7 +92,8 @@ class DummyTxnManager extends HiveTxnManagerImpl {
           LOG.info("Creating lock manager of type " + lockMgrName);
           lockMgr = (HiveLockManager)ReflectionUtils.newInstance(
               conf.getClassByName(lockMgrName), conf);
-          lockMgr.setContext(new HiveLockManagerCtx(conf));
+          lockManagerCtx = new HiveLockManagerCtx(conf);
+          lockMgr.setContext(lockManagerCtx);
         } catch (Exception e) {
           // set hiveLockMgr to null just in case this invalid manager got set to
           // next query's ctx.
@@ -103,6 +115,7 @@ class DummyTxnManager extends HiveTxnManagerImpl {
     }
     // Force a re-read of the configuration file.  This is done because
     // different queries in the session may be using the same lock manager.
+    lockManagerCtx.setConf(conf);
     lockMgr.refresh();
     return lockMgr;
   }
@@ -119,7 +132,9 @@ class DummyTxnManager extends HiveTxnManagerImpl {
 
     // If the lock manager is still null, then it means we aren't using a
     // lock manager
-    if (lockMgr == null) return;
+    if (lockMgr == null) {
+      return;
+    }
 
     List<HiveLockObj> lockObjects = new ArrayList<HiveLockObj>();
 
@@ -199,7 +214,17 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
+  public void replCommitTxn(String replPolicy, long srcTxnId) throws LockException {
+    // No-op
+  }
+
+  @Override
   public void rollbackTxn() throws LockException {
+    // No-op
+  }
+
+  @Override
+  public void replRollbackTxn(String replPolicy, long srcTxnId) throws LockException {
     // No-op
   }
 
@@ -211,6 +236,12 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   @Override
   public ValidTxnList getValidTxns() throws LockException {
     return new ValidReadTxnList();
+  }
+
+  @Override
+  public ValidTxnWriteIdList getValidWriteIds(List<String> tableList,
+                                              String validTxnList) throws LockException {
+    return new ValidTxnWriteIdList(getCurrentTxnId());
   }
 
   @Override
@@ -234,6 +265,7 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
 
+  @Override
   protected void destruct() {
     if (lockMgr != null) {
       try {

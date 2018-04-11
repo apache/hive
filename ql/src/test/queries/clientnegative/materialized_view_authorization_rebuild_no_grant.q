@@ -14,7 +14,4 @@ set user.name=user2;
 create materialized view amvrng_mat_view as select a, c from amvrng_table;
 
 set user.name=user1;
-revoke grant option for select on table amvrng_table from user user2;
-
-set user.name=user2;
 alter materialized view amvrng_mat_view rebuild;

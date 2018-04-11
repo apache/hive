@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -52,7 +52,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -101,7 +100,7 @@ import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StringInternUtils;
-import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -244,6 +243,7 @@ public final class Utilities {
   public static final String USE_VECTORIZED_INPUT_FILE_FORMAT = "USE_VECTORIZED_INPUT_FILE_FORMAT";
   public static final String MAPNAME = "Map ";
   public static final String REDUCENAME = "Reducer ";
+  public static final String ENSURE_OPERATORS_EXECUTED = "ENSURE_OPERATORS_EXECUTED";
 
   @Deprecated
   protected static final String DEPRECATED_MAPRED_DFSCLIENT_PARALLELISM_MAX = "mapred.dfsclient.parallelism.max";
@@ -361,7 +361,7 @@ public final class Utilities {
   }
 
   public static BaseWork getMergeWork(Configuration jconf) {
-    String currentMergePrefix = jconf.get(DagUtils.TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX); 
+    String currentMergePrefix = jconf.get(DagUtils.TEZ_MERGE_CURRENT_MERGE_FILE_PREFIX);
     if (StringUtils.isEmpty(currentMergePrefix)) {
       return null;
     }
@@ -1493,8 +1493,9 @@ public final class Utilities {
       }
 
       // Remove duplicates from tmpPath
-      FileStatus[] statuses = HiveStatsUtils.getFileStatusRecurse(
+      List<FileStatus> statusList = HiveStatsUtils.getFileStatusRecurse(
           tmpPath, ((dpCtx == null) ? 1 : dpCtx.getNumDPCols()), fs);
+      FileStatus[] statuses = statusList.toArray(new FileStatus[statusList.size()]);
       if(statuses != null && statuses.length > 0) {
         PerfLogger perfLogger = SessionState.getPerfLogger();
         Set<Path> filesKept = new HashSet<Path>();
@@ -1601,8 +1602,9 @@ public final class Utilities {
     if (path  == null) {
       return null;
     }
-    FileStatus[] stats = HiveStatsUtils.getFileStatusRecurse(path,
+    List<FileStatus> statusList = HiveStatsUtils.getFileStatusRecurse(path,
         ((dpCtx == null) ? 1 : dpCtx.getNumDPCols()), fs);
+    FileStatus[] stats = statusList.toArray(new FileStatus[statusList.size()]);
     return removeTempOrDuplicateFiles(fs, stats, dpCtx, conf, hconf, isBaseDir);
   }
 
@@ -1640,7 +1642,7 @@ public final class Utilities {
   }
 
   public static List<Path> removeTempOrDuplicateFiles(FileSystem fs, FileStatus[] fileStats,
-      String unionSuffix, int dpLevels, int numBuckets, Configuration hconf, Long txnId,
+      String unionSuffix, int dpLevels, int numBuckets, Configuration hconf, Long writeId,
       int stmtId, boolean isMmTable, Set<Path> filesKept, boolean isBaseDir) throws IOException {
     if (fileStats == null) {
       return null;
@@ -1660,7 +1662,7 @@ public final class Utilities {
 
         if (isMmTable) {
           Path mmDir = parts[i].getPath();
-          if (!mmDir.getName().equals(AcidUtils.baseOrDeltaSubdir(isBaseDir, txnId, txnId, stmtId))) {
+          if (!mmDir.getName().equals(AcidUtils.baseOrDeltaSubdir(isBaseDir, writeId, writeId, stmtId))) {
             throw new IOException("Unexpected non-MM directory name " + mmDir);
           }
 
@@ -1687,7 +1689,7 @@ public final class Utilities {
       if (fileStats.length == 0) {
         return result;
       }
-      Path mmDir = extractNonDpMmDir(txnId, stmtId, items, isBaseDir);
+      Path mmDir = extractNonDpMmDir(writeId, stmtId, items, isBaseDir);
       taskIDToFile = removeTempOrDuplicateFilesNonMm(
           fs.listStatus(new Path(mmDir, unionSuffix)), fs);
       if (filesKept != null && taskIDToFile != null) {
@@ -1705,7 +1707,7 @@ public final class Utilities {
           addFilesToPathSet(taskIDToFile.values(), filesKept);
         }
       } else {
-        Path mmDir = extractNonDpMmDir(txnId, stmtId, items, isBaseDir);
+        Path mmDir = extractNonDpMmDir(writeId, stmtId, items, isBaseDir);
         taskIDToFile = removeTempOrDuplicateFilesNonMm(fs.listStatus(mmDir), fs);
         if (filesKept != null && taskIDToFile != null) {
           addFilesToPathSet(taskIDToFile.values(), filesKept);
@@ -1717,12 +1719,12 @@ public final class Utilities {
     return result;
   }
 
-  private static Path extractNonDpMmDir(Long txnId, int stmtId, FileStatus[] items, boolean isBaseDir) throws IOException {
+  private static Path extractNonDpMmDir(Long writeId, int stmtId, FileStatus[] items, boolean isBaseDir) throws IOException {
     if (items.length > 1) {
       throw new IOException("Unexpected directories for non-DP MM: " + Arrays.toString(items));
     }
     Path mmDir = items[0].getPath();
-    if (!mmDir.getName().equals(AcidUtils.baseOrDeltaSubdir(isBaseDir, txnId, txnId, stmtId))) {
+    if (!mmDir.getName().equals(AcidUtils.baseOrDeltaSubdir(isBaseDir, writeId, writeId, stmtId))) {
       throw new IOException("Unexpected non-MM directory " + mmDir);
     }
       Utilities.FILE_OP_LOGGER.trace("removeTempOrDuplicateFiles processing files in MM directory {}", mmDir);
@@ -2588,14 +2590,14 @@ public final class Utilities {
     if (ctx != null) {
       ContentSummary cs = ctx.getCS(dirPath);
       if (cs != null) {
-        if (LOG.isInfoEnabled()) {
-          LOG.info("Content Summary {} length: {} num files: {}" +
-            " num directories: {}", dirPath, cs.getLength(), cs.getFileCount(),
-            cs.getDirectoryCount());
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Content Summary cached for {} length: {} num files: {} " +
+              "num directories: {}", dirPath, cs.getLength(), cs.getFileCount(),
+              cs.getDirectoryCount());
         }
         return (cs.getLength() == 0 && cs.getFileCount() == 0 && cs.getDirectoryCount() <= 1);
       } else {
-        LOG.info("Content Summary not cached for {}", dirPath);
+        LOG.debug("Content Summary not cached for {}", dirPath);
       }
     }
     return isEmptyPath(job, dirPath);
@@ -2624,6 +2626,10 @@ public final class Utilities {
 
   public static List<ExecDriver> getMRTasks(List<Task<? extends Serializable>> tasks) {
     return getTasks(tasks, new TaskFilterFunction<>(ExecDriver.class));
+  }
+
+  public static int getNumClusterJobs(List<Task<? extends Serializable>> tasks) {
+    return getMRTasks(tasks).size() + getTezTasks(tasks).size() + getSparkTasks(tasks).size();
   }
 
   static class TaskFilterFunction<T> implements DAGTraversal.Function {
@@ -2671,9 +2677,9 @@ public final class Utilities {
       Path loadPath = dpCtx.getRootPath();
       FileSystem fs = loadPath.getFileSystem(conf);
       int numDPCols = dpCtx.getNumDPCols();
-      FileStatus[] status = HiveStatsUtils.getFileStatusRecurse(loadPath, numDPCols, fs);
+      List<FileStatus> status = HiveStatsUtils.getFileStatusRecurse(loadPath, numDPCols, fs);
 
-      if (status.length == 0) {
+      if (status.isEmpty()) {
         LOG.warn("No partition is generated by dynamic partitioning");
         return null;
       }
@@ -2686,9 +2692,9 @@ public final class Utilities {
 
       // for each dynamically created DP directory, construct a full partition spec
       // and load the partition based on that
-      for (int i = 0; i < status.length; ++i) {
+      for (int i = 0; i < status.size(); ++i) {
         // get the dynamically created directory
-        Path partPath = status[i].getPath();
+        Path partPath = status.get(i).getPath();
         assert fs.getFileStatus(partPath).isDir() : "partitions " + partPath
             + " is not a directory !";
 
@@ -3246,6 +3252,20 @@ public final class Utilities {
   }
 
   /**
+   * Appends vertex name to specified counter name.
+   *
+   * @param counter counter to be appended with
+   * @param vertexName   vertex name
+   * @return counter name with vertex name appended
+   */
+  public static String getVertexCounterName(String counter, String vertexName) {
+    if (vertexName != null && !vertexName.isEmpty()) {
+      vertexName = "_" + vertexName.replace(" ", "_");
+    }
+    return counter + vertexName;
+  }
+
+  /**
    * Computes a list of all input paths needed to compute the given MapWork. All aliases
    * are considered and a merged list of input paths is returned. If any input path points
    * to an empty table or partition a dummy file in the scratch dir is instead created and
@@ -3549,11 +3569,6 @@ public final class Utilities {
     if (mWork.getInputformat() != null) {
       HiveConf.setVar(conf, var, mWork.getInputformat());
     }
-    if (mWork.getIndexIntermediateFile() != null) {
-      conf.set(ConfVars.HIVE_INDEX_COMPACT_FILE.varname, mWork.getIndexIntermediateFile());
-      conf.set(ConfVars.HIVE_INDEX_BLOCKFILTER_FILE.varname, mWork.getIndexIntermediateFile());
-    }
-
     // Intentionally overwrites anything the user may have put here
     conf.setBoolean("hive.input.format.sorted", mWork.isInputFormatSorted());
   }
@@ -3670,12 +3685,12 @@ public final class Utilities {
 
   /**
    * Returns true if a plan is both configured for vectorized execution
-   * and the node is vectorized and the Input File Format is marked VectorizedInputFileFormat.
+   * and the node is vectorized.
    *
    * The plan may be configured for vectorization
    * but vectorization disallowed eg. for FetchOperator execution.
    */
-  public static boolean getUseVectorizedInputFileFormat(Configuration conf) {
+  public static boolean getIsVectorized(Configuration conf) {
     if (conf.get(VECTOR_MODE) != null) {
       // this code path is necessary, because with HS2 and client
       // side split generation we end up not finding the map work.
@@ -3683,13 +3698,12 @@ public final class Utilities {
       // generation is multi-threaded - HS2 plan cache uses thread
       // locals).
       return
-          conf.getBoolean(VECTOR_MODE, false) &&
-          conf.getBoolean(USE_VECTORIZED_INPUT_FILE_FORMAT, false);
+          conf.getBoolean(VECTOR_MODE, false);
     } else {
       if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED) &&
         Utilities.getPlanPath(conf) != null) {
         MapWork mapWork = Utilities.getMapWork(conf);
-        return (mapWork.getVectorMode() && mapWork.getUseVectorizedInputFileFormat());
+        return mapWork.getVectorMode();
       } else {
         return false;
       }
@@ -3697,10 +3711,9 @@ public final class Utilities {
   }
 
 
-  public static boolean getUseVectorizedInputFileFormat(Configuration conf, MapWork mapWork) {
+  public static boolean getIsVectorized(Configuration conf, MapWork mapWork) {
     return HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED) &&
-        mapWork.getVectorMode() &&
-        mapWork.getUseVectorizedInputFileFormat();
+        mapWork.getVectorMode();
   }
 
   /**
@@ -4059,22 +4072,24 @@ public final class Utilities {
   }
 
   public static Path[] getMmDirectoryCandidates(FileSystem fs, Path path, int dpLevels,
-      int lbLevels, PathFilter filter, long txnId, int stmtId, Configuration conf, boolean isBaseDir)
-          throws IOException {
+      int lbLevels, PathFilter filter, long writeId, int stmtId, Configuration conf,
+      Boolean isBaseDir) throws IOException {
     int skipLevels = dpLevels + lbLevels;
     if (filter == null) {
-      filter = new JavaUtils.IdPathFilter(txnId, stmtId, true);
+      filter = new JavaUtils.IdPathFilter(writeId, stmtId, true, false);
     }
     if (skipLevels == 0) {
       return statusToPath(fs.listStatus(path, filter));
     }
     // TODO: for some reason, globStatus doesn't work for masks like "...blah/*/delta_0000007_0000007*"
     //       the last star throws it off. So, for now, if stmtId is missing use recursion.
-    if (stmtId < 0
+    //       For the same reason, we cannot use it if we don't know isBaseDir. Currently, we don't
+    //       /want/ to know isBaseDir because that is error prone; so, it ends up never being used. 
+    if (stmtId < 0 || isBaseDir == null
         || (HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_AVOID_GLOBSTATUS_ON_S3) && isS3(fs))) {
       return getMmDirectoryCandidatesRecursive(fs, path, skipLevels, filter);
     }
-    return getMmDirectoryCandidatesGlobStatus(fs, path, skipLevels, filter, txnId, stmtId, isBaseDir);
+    return getMmDirectoryCandidatesGlobStatus(fs, path, skipLevels, filter, writeId, stmtId, isBaseDir);
   }
 
   private static boolean isS3(FileSystem fs) {
@@ -4150,28 +4165,28 @@ public final class Utilities {
     return results.toArray(new Path[results.size()]);
   }
 
-  private static Path[] getMmDirectoryCandidatesGlobStatus(FileSystem fs,
-      Path path, int skipLevels, PathFilter filter, long txnId, int stmtId, boolean isBaseDir) throws IOException {
+  private static Path[] getMmDirectoryCandidatesGlobStatus(FileSystem fs, Path path, int skipLevels,
+      PathFilter filter, long writeId, int stmtId, boolean isBaseDir) throws IOException {
     StringBuilder sb = new StringBuilder(path.toUri().getPath());
     for (int i = 0; i < skipLevels; i++) {
       sb.append(Path.SEPARATOR).append('*');
     }
     if (stmtId < 0) {
       // Note: this does not work.
-      // sb.append(Path.SEPARATOR).append(AcidUtils.deltaSubdir(txnId, txnId)).append("_*");
+      // sb.append(Path.SEPARATOR).append(AcidUtils.deltaSubdir(writeId, writeId)).append("_*");
       throw new AssertionError("GlobStatus should not be called without a statement ID");
     } else {
-      sb.append(Path.SEPARATOR).append(AcidUtils.baseOrDeltaSubdir(isBaseDir, txnId, txnId, stmtId));
+      sb.append(Path.SEPARATOR).append(AcidUtils.baseOrDeltaSubdir(isBaseDir, writeId, writeId, stmtId));
     }
     Path pathPattern = new Path(path, sb.toString());
     return statusToPath(fs.globStatus(pathPattern, filter));
   }
 
   private static void tryDeleteAllMmFiles(FileSystem fs, Path specPath, Path manifestDir,
-                                          int dpLevels, int lbLevels, JavaUtils.IdPathFilter filter,
-                                          long txnId, int stmtId, Configuration conf, boolean isBaseDir) throws IOException {
+      int dpLevels, int lbLevels, JavaUtils.IdPathFilter filter, long writeId, int stmtId,
+      Configuration conf) throws IOException {
     Path[] files = getMmDirectoryCandidates(
-        fs, specPath, dpLevels, lbLevels, filter, txnId, stmtId, conf, isBaseDir);
+        fs, specPath, dpLevels, lbLevels, filter, writeId, stmtId, conf, null);
     if (files != null) {
       for (Path path : files) {
         Utilities.FILE_OP_LOGGER.info("Deleting {} on failure", path);
@@ -4184,12 +4199,12 @@ public final class Utilities {
 
 
   public static void writeMmCommitManifest(List<Path> commitPaths, Path specPath, FileSystem fs,
-      String taskId, Long txnId, int stmtId, String unionSuffix, boolean isInsertOverwrite) throws HiveException {
+      String taskId, Long writeId, int stmtId, String unionSuffix, boolean isInsertOverwrite) throws HiveException {
     if (commitPaths.isEmpty()) {
       return;
     }
     // We assume one FSOP per task (per specPath), so we create it in specPath.
-    Path manifestPath = getManifestDir(specPath, txnId, stmtId, unionSuffix, isInsertOverwrite);
+    Path manifestPath = getManifestDir(specPath, writeId, stmtId, unionSuffix, isInsertOverwrite);
     manifestPath = new Path(manifestPath, taskId + MANIFEST_EXTENSION);
     Utilities.FILE_OP_LOGGER.info("Writing manifest to {} with {}", manifestPath, commitPaths);
     try {
@@ -4208,9 +4223,11 @@ public final class Utilities {
     }
   }
 
-  private static Path getManifestDir(Path specPath, long txnId, int stmtId, String unionSuffix, boolean isInsertOverwrite) {
-    Path manifestPath = new Path(specPath, "_tmp." + 
-      AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, txnId, txnId, stmtId));
+  // TODO: we should get rid of isInsertOverwrite here too.
+  private static Path getManifestDir(
+      Path specPath, long writeId, int stmtId, String unionSuffix, boolean isInsertOverwrite) {
+    Path manifestPath = new Path(specPath, "_tmp." +
+      AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, writeId, writeId, stmtId));
 
     return (unionSuffix == null) ? manifestPath : new Path(manifestPath, unionSuffix);
   }
@@ -4227,18 +4244,19 @@ public final class Utilities {
   }
 
   public static void handleMmTableFinalPath(Path specPath, String unionSuffix, Configuration hconf,
-      boolean success, int dpLevels, int lbLevels, MissingBucketsContext mbc, long txnId, int stmtId,
-      Reporter reporter, boolean isMmTable, boolean isMmCtas, boolean isInsertOverwrite) throws IOException, HiveException {
+      boolean success, int dpLevels, int lbLevels, MissingBucketsContext mbc, long writeId, int stmtId,
+      Reporter reporter, boolean isMmTable, boolean isMmCtas, boolean isInsertOverwrite)
+          throws IOException, HiveException {
     FileSystem fs = specPath.getFileSystem(hconf);
-    Path manifestDir = getManifestDir(specPath, txnId, stmtId, unionSuffix, isInsertOverwrite);
+    Path manifestDir = getManifestDir(specPath, writeId, stmtId, unionSuffix, isInsertOverwrite);
     if (!success) {
-      JavaUtils.IdPathFilter filter = new JavaUtils.IdPathFilter(txnId, stmtId, true);
+      JavaUtils.IdPathFilter filter = new JavaUtils.IdPathFilter(writeId, stmtId, true);
       tryDeleteAllMmFiles(fs, specPath, manifestDir, dpLevels, lbLevels,
-          filter, txnId, stmtId, hconf, isInsertOverwrite);
+          filter, writeId, stmtId, hconf);
       return;
     }
 
-    Utilities.FILE_OP_LOGGER.debug("Looking for manifests in: {} ({})", manifestDir, txnId);
+    Utilities.FILE_OP_LOGGER.debug("Looking for manifests in: {} ({})", manifestDir, writeId);
     List<Path> manifests = new ArrayList<>();
     if (fs.exists(manifestDir)) {
       FileStatus[] manifestFiles = fs.listStatus(manifestDir);
@@ -4257,13 +4275,13 @@ public final class Utilities {
     }
 
     Utilities.FILE_OP_LOGGER.debug("Looking for files in: {}", specPath);
-    JavaUtils.IdPathFilter filter = new JavaUtils.IdPathFilter(txnId, stmtId, true, false, isInsertOverwrite);
+    JavaUtils.IdPathFilter filter = new JavaUtils.IdPathFilter(writeId, stmtId, true, false);
     if (isMmCtas && !fs.exists(specPath)) {
       Utilities.FILE_OP_LOGGER.info("Creating table directory for CTAS with no output at {}", specPath);
       FileUtils.mkdir(fs, specPath, hconf);
     }
     Path[] files = getMmDirectoryCandidates(
-        fs, specPath, dpLevels, lbLevels, filter, txnId, stmtId, hconf, isInsertOverwrite);
+        fs, specPath, dpLevels, lbLevels, filter, writeId, stmtId, hconf, isInsertOverwrite);
     ArrayList<Path> mmDirectories = new ArrayList<>();
     if (files != null) {
       for (Path path : files) {
@@ -4323,7 +4341,7 @@ public final class Utilities {
       finalResults[i] = new PathOnlyFileStatus(mmDirectories.get(i));
     }
     List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(fs, finalResults,
-        unionSuffix, dpLevels, mbc == null ? 0 : mbc.numBuckets, hconf, txnId, stmtId,
+        unionSuffix, dpLevels, mbc == null ? 0 : mbc.numBuckets, hconf, writeId, stmtId,
             isMmTable, null, isInsertOverwrite);
     // create empty buckets if necessary
     if (!emptyBuckets.isEmpty()) {
@@ -4377,7 +4395,7 @@ public final class Utilities {
    * if the entire directory is valid (has no uncommitted/temporary files).
    */
   public static List<Path> getValidMmDirectoriesFromTableOrPart(Path path, Configuration conf,
-      ValidTxnList validTxnList, int lbLevels) throws IOException {
+      ValidWriteIdList validWriteIdList, int lbLevels) throws IOException {
     Utilities.FILE_OP_LOGGER.trace("Looking for valid MM paths under {}", path);
     // NULL means this directory is entirely valid.
     List<Path> result = null;
@@ -4387,8 +4405,8 @@ public final class Utilities {
     for (int i = 0; i < children.length; ++i) {
       FileStatus file = children[i];
       Path childPath = file.getPath();
-      Long txnId = JavaUtils.extractTxnId(childPath);
-      if (!file.isDirectory() || txnId == null || !validTxnList.isTxnValid(txnId)) {
+      Long writeId = JavaUtils.extractWriteId(childPath);
+      if (!file.isDirectory() || writeId == null || !validWriteIdList.isWriteIdValid(writeId)) {
         Utilities.FILE_OP_LOGGER.debug("Skipping path {}", childPath);
         if (result == null) {
           result = new ArrayList<>(children.length - 1);
@@ -4427,5 +4445,34 @@ public final class Utilities {
   public static boolean isHiveManagedFile(Path path) {
     return AcidUtils.ORIGINAL_PATTERN.matcher(path.getName()).matches() ||
       AcidUtils.ORIGINAL_PATTERN_COPY.matcher(path.getName()).matches();
+  }
+
+  /**
+   * Checks if path passed in exists and has writable permissions.
+   * The path will be created if it does not exist.
+   * @param rootHDFSDirPath
+   * @param conf
+   */
+  public static void ensurePathIsWritable(Path rootHDFSDirPath, HiveConf conf) throws IOException {
+    FsPermission writableHDFSDirPermission = new FsPermission((short)00733);
+    FileSystem fs = rootHDFSDirPath.getFileSystem(conf);
+    if (!fs.exists(rootHDFSDirPath)) {
+      Utilities.createDirsWithPermission(conf, rootHDFSDirPath, writableHDFSDirPermission, true);
+    }
+    FsPermission currentHDFSDirPermission = fs.getFileStatus(rootHDFSDirPath).getPermission();
+    if (rootHDFSDirPath != null && rootHDFSDirPath.toUri() != null) {
+      String schema = rootHDFSDirPath.toUri().getScheme();
+      LOG.debug("HDFS dir: " + rootHDFSDirPath + " with schema " + schema + ", permission: " +
+          currentHDFSDirPermission);
+    } else {
+      LOG.debug(
+        "HDFS dir: " + rootHDFSDirPath + ", permission: " + currentHDFSDirPermission);
+    }
+    // If the root HDFS scratch dir already exists, make sure it is writeable.
+    if (!((currentHDFSDirPermission.toShort() & writableHDFSDirPermission
+        .toShort()) == writableHDFSDirPermission.toShort())) {
+      throw new RuntimeException("The dir: " + rootHDFSDirPath
+          + " on HDFS should be writable. Current permissions are: " + currentHDFSDirPermission);
+    }
   }
 }

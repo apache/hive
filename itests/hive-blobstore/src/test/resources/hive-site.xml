@@ -284,6 +284,11 @@
     <value>hdfs,pfile,file,s3,s3a,pblob</value>
   </property>
 
+  <property>
+    <name>hive.query.results.cache.enabled</name>
+    <value>false</value>
+  </property>
+
   <!--
   To run these tests:
   # Create a file blobstore-conf.xml  - DO NOT ADD TO REVISION CONTROL

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,28 +17,35 @@
  */
 package org.apache.hadoop.hive.druid;
 
-import com.fasterxml.jackson.databind.InjectableValues;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.fasterxml.jackson.dataformat.smile.SmileFactory;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
-import com.metamx.emitter.EmittingLogger;
-import com.metamx.emitter.core.NoopEmitter;
-import com.metamx.emitter.service.ServiceEmitter;
-import com.metamx.http.client.HttpClient;
-import com.metamx.http.client.response.InputStreamResponseHandler;
-import io.druid.common.utils.JodaUtils;
+import io.druid.data.input.impl.DimensionSchema;
+import io.druid.data.input.impl.StringDimensionSchema;
 import io.druid.jackson.DefaultObjectMapper;
+import io.druid.java.util.common.Pair;
+import io.druid.java.util.common.granularity.Granularity;
 import io.druid.math.expr.ExprMacroTable;
 import io.druid.metadata.MetadataStorageTablesConfig;
 import io.druid.metadata.SQLMetadataConnector;
 import io.druid.metadata.storage.mysql.MySQLConnector;
+import io.druid.query.expression.LikeExprMacro;
+import io.druid.query.expression.RegexpExtractExprMacro;
+import io.druid.query.expression.TimestampCeilExprMacro;
+import io.druid.query.expression.TimestampExtractExprMacro;
+import io.druid.query.expression.TimestampFloorExprMacro;
+import io.druid.query.expression.TimestampFormatExprMacro;
+import io.druid.query.expression.TimestampParseExprMacro;
+import io.druid.query.expression.TimestampShiftExprMacro;
+import io.druid.query.expression.TrimExprMacro;
 import io.druid.query.select.SelectQueryConfig;
 import io.druid.segment.IndexIO;
 import io.druid.segment.IndexMergerV9;
-import io.druid.segment.column.ColumnConfig;
+import io.druid.query.aggregation.AggregatorFactory;
+import io.druid.query.aggregation.DoubleSumAggregatorFactory;
+import io.druid.query.aggregation.LongSumAggregatorFactory;
+import io.druid.segment.IndexSpec;
+import io.druid.segment.data.ConciseBitmapSerdeFactory;
+import io.druid.segment.data.RoaringBitmapSerdeFactory;
+import io.druid.segment.indexing.granularity.GranularitySpec;
+import io.druid.segment.indexing.granularity.UniformGranularitySpec;
 import io.druid.segment.loading.DataSegmentPusher;
 import io.druid.segment.realtime.appenderator.SegmentIdentifier;
 import io.druid.storage.hdfs.HdfsDataSegmentPusher;
@@ -56,33 +63,50 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.Constants;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.druid.serde.HiveDruidSerializationModule;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.retry.RetryPolicies;
 import org.apache.hadoop.io.retry.RetryProxy;
 import org.apache.hadoop.util.StringUtils;
 
+import com.fasterxml.jackson.databind.InjectableValues;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
+import com.fasterxml.jackson.dataformat.smile.SmileFactory;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.google.common.io.CharStreams;
+import com.metamx.common.JodaUtils;
 import com.metamx.common.MapUtils;
+import com.metamx.emitter.EmittingLogger;
+import com.metamx.emitter.core.NoopEmitter;
+import com.metamx.emitter.service.ServiceEmitter;
+import com.metamx.http.client.HttpClient;
 import com.metamx.http.client.Request;
+import com.metamx.http.client.response.InputStreamResponseHandler;
 
 import org.jboss.netty.handler.codec.http.HttpHeaders;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.joda.time.chrono.ISOChronology;
-import org.skife.jdbi.v2.FoldController;
 import org.skife.jdbi.v2.Folder3;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.PreparedBatch;
 import org.skife.jdbi.v2.Query;
 import org.skife.jdbi.v2.ResultIterator;
-import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.exceptions.CallbackFailedException;
 import org.skife.jdbi.v2.tweak.HandleCallback;
 import org.skife.jdbi.v2.util.ByteArrayMapper;
@@ -100,12 +124,12 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
@@ -124,7 +148,10 @@ public final class DruidStorageHandlerUtils {
   private static final int DEFAULT_FS_BUFFER_SIZE = 1 << 18; // 256KB
   private static final int DEFAULT_STREAMING_RESULT_SIZE = 100;
   private static final String SMILE_CONTENT_TYPE = "application/x-jackson-smile";
+  //Druid storage timestamp column name
   public static final String DEFAULT_TIMESTAMP_COLUMN = "__time";
+  //Druid Json timestamp column name
+  public static final String EVENT_TIMESTAMP_COLUMN = "timestamp";
   public static final String INDEX_ZIP = "index.zip";
   public static final String DESCRIPTOR_JSON = "descriptor.json";
   public static final Interval DEFAULT_INTERVAL = new Interval(
@@ -145,8 +172,23 @@ public final class DruidStorageHandlerUtils {
   static {
     // This is needed for serde of PagingSpec as it uses JacksonInject for injecting SelectQueryConfig
     InjectableValues.Std injectableValues = new InjectableValues.Std()
-            .addValue(SelectQueryConfig.class, new SelectQueryConfig(false))
-            .addValue(ExprMacroTable.class, ExprMacroTable.nil());
+        .addValue(SelectQueryConfig.class, new SelectQueryConfig(false))
+        // Expressions macro table used when we deserialize the query from calcite plan
+        .addValue(ExprMacroTable.class, new ExprMacroTable(ImmutableList
+            .of(new LikeExprMacro(),
+                new RegexpExtractExprMacro(),
+                new TimestampCeilExprMacro(),
+                new TimestampExtractExprMacro(),
+                new TimestampFormatExprMacro(),
+                new TimestampParseExprMacro(),
+                new TimestampShiftExprMacro(),
+                new TimestampFloorExprMacro(),
+                new TrimExprMacro.BothTrimExprMacro(),
+                new TrimExprMacro.LeftTrimExprMacro(),
+                new TrimExprMacro.RightTrimExprMacro()
+            )))
+            .addValue(ObjectMapper.class, JSON_MAPPER);
+
     JSON_MAPPER.setInjectableValues(injectableValues);
     SMILE_MAPPER.setInjectableValues(injectableValues);
     HiveDruidSerializationModule hiveDruidSerializationModule = new HiveDruidSerializationModule();
@@ -154,6 +196,7 @@ public final class DruidStorageHandlerUtils {
     SMILE_MAPPER.registerModule(hiveDruidSerializationModule);
     // Register the shard sub type to be used by the mapper
     JSON_MAPPER.registerSubtypes(new NamedType(LinearShardSpec.class, "linear"));
+    JSON_MAPPER.registerSubtypes(new NamedType(NumberedShardSpec.class, "numbered"));
     // set the timezone of the object mapper
     // THIS IS NOT WORKING workaround is to set it as part of java opts -Duser.timezone="UTC"
     JSON_MAPPER.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -171,12 +214,7 @@ public final class DruidStorageHandlerUtils {
   /**
    * Used by druid to perform IO on indexes
    */
-  public static final IndexIO INDEX_IO = new IndexIO(JSON_MAPPER, new ColumnConfig() {
-    @Override
-    public int columnCacheSizeBytes() {
-      return 0;
-    }
-  });
+  public static final IndexIO INDEX_IO = new IndexIO(JSON_MAPPER, () -> 0);
 
   /**
    * Used by druid to merge indexes
@@ -262,7 +300,7 @@ public final class DruidStorageHandlerUtils {
     }
     for (FileStatus fileStatus : fss) {
       final DataSegment segment = JSON_MAPPER
-              .readValue(fs.open(fileStatus.getPath()), DataSegment.class);
+              .readValue((InputStream) fs.open(fileStatus.getPath()), DataSegment.class);
       publishedSegmentsBuilder.add(segment);
     }
     return publishedSegmentsBuilder.build();
@@ -327,19 +365,12 @@ public final class DruidStorageHandlerUtils {
                             metadataStorageTablesConfig.getSegmentsTable()
                     ))
                     .fold(Lists.<String>newArrayList(),
-                            new Folder3<ArrayList<String>, Map<String, Object>>() {
-                              @Override
-                              public ArrayList<String> fold(ArrayList<String> druidDataSources,
-                                      Map<String, Object> stringObjectMap,
-                                      FoldController foldController,
-                                      StatementContext statementContext
-                              ) throws SQLException {
-                                druidDataSources.add(
-                                        MapUtils.getString(stringObjectMap, "datasource")
-                                );
-                                return druidDataSources;
-                              }
-                            }
+                        (druidDataSources, stringObjectMap, foldController, statementContext) -> {
+                          druidDataSources.add(
+                                  MapUtils.getString(stringObjectMap, "datasource")
+                          );
+                          return druidDataSources;
+                        }
                     )
     );
   }
@@ -743,5 +774,101 @@ public final class DruidStorageHandlerUtils {
 
   public static Path getPath(DataSegment dataSegment) {
     return new Path(String.valueOf(dataSegment.getLoadSpec().get("path")));
+  }
+
+  public static GranularitySpec getGranularitySpec(Configuration configuration, Properties tableProperties) {
+    final String segmentGranularity =
+        tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY) != null ?
+            tableProperties.getProperty(Constants.DRUID_SEGMENT_GRANULARITY) :
+            HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_DRUID_INDEXING_GRANULARITY);
+    return new UniformGranularitySpec(
+        Granularity.fromString(segmentGranularity),
+        Granularity.fromString(
+            tableProperties.getProperty(Constants.DRUID_QUERY_GRANULARITY) == null
+                ? "NONE"
+                : tableProperties.getProperty(Constants.DRUID_QUERY_GRANULARITY)),
+        null
+    );
+  }
+
+  public static IndexSpec getIndexSpec(Configuration jc) {
+    IndexSpec indexSpec;
+    if ("concise".equals(HiveConf.getVar(jc, HiveConf.ConfVars.HIVE_DRUID_BITMAP_FACTORY_TYPE))) {
+      indexSpec = new IndexSpec(new ConciseBitmapSerdeFactory(), null, null, null);
+    } else {
+      indexSpec = new IndexSpec(new RoaringBitmapSerdeFactory(true), null, null, null);
+    }
+    return indexSpec;
+  }
+
+  public static Pair<List<DimensionSchema>, AggregatorFactory[]> getDimensionsAndAggregates(Configuration jc, List<String> columnNames,
+      List<TypeInfo> columnTypes) {
+    // Default, all columns that are not metrics or timestamp, are treated as dimensions
+    final List<DimensionSchema> dimensions = new ArrayList<>();
+    ImmutableList.Builder<AggregatorFactory> aggregatorFactoryBuilder = ImmutableList.builder();
+    final boolean approximationAllowed = HiveConf
+        .getBoolVar(jc, HiveConf.ConfVars.HIVE_DRUID_APPROX_RESULT);
+    for (int i = 0; i < columnTypes.size(); i++) {
+      final PrimitiveObjectInspector.PrimitiveCategory primitiveCategory = ((PrimitiveTypeInfo) columnTypes
+          .get(i)).getPrimitiveCategory();
+      AggregatorFactory af;
+      switch (primitiveCategory) {
+      case BYTE:
+      case SHORT:
+      case INT:
+      case LONG:
+        af = new LongSumAggregatorFactory(columnNames.get(i), columnNames.get(i));
+        break;
+      case FLOAT:
+      case DOUBLE:
+        af = new DoubleSumAggregatorFactory(columnNames.get(i), columnNames.get(i));
+        break;
+      case DECIMAL:
+        if (approximationAllowed) {
+          af = new DoubleSumAggregatorFactory(columnNames.get(i), columnNames.get(i));
+        } else {
+          throw new UnsupportedOperationException(
+              String.format("Druid does not support decimal column type." +
+                      "Either cast column [%s] to double or Enable Approximate Result for Druid by setting property [%s] to true",
+                  columnNames.get(i), HiveConf.ConfVars.HIVE_DRUID_APPROX_RESULT.varname));
+        }
+        break;
+      case TIMESTAMP:
+        // Granularity column
+        String tColumnName = columnNames.get(i);
+        if (!tColumnName.equals(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME) &&
+            !tColumnName.equals(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)) {
+          throw new IllegalArgumentException(
+              "Dimension " + tColumnName + " does not have STRING type: " +
+                  primitiveCategory);
+        }
+        continue;
+      case TIMESTAMPLOCALTZ:
+        // Druid timestamp column
+        String tLocalTZColumnName = columnNames.get(i);
+        if (!tLocalTZColumnName.equals(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN)) {
+          throw new IllegalArgumentException(
+              "Dimension " + tLocalTZColumnName + " does not have STRING type: " +
+                  primitiveCategory);
+        }
+        continue;
+      default:
+        // Dimension
+        String dColumnName = columnNames.get(i);
+        if (PrimitiveObjectInspectorUtils.getPrimitiveGrouping(primitiveCategory) !=
+            PrimitiveObjectInspectorUtils.PrimitiveGrouping.STRING_GROUP
+            && primitiveCategory != PrimitiveObjectInspector.PrimitiveCategory.BOOLEAN) {
+          throw new IllegalArgumentException(
+              "Dimension " + dColumnName + " does not have STRING type: " +
+                  primitiveCategory);
+        }
+        dimensions.add(new StringDimensionSchema(dColumnName));
+        continue;
+      }
+      aggregatorFactoryBuilder.add(af);
+    }
+    ImmutableList<AggregatorFactory> aggregatorFactories = aggregatorFactoryBuilder.build();
+    return Pair.of(dimensions,
+        aggregatorFactories.toArray(new AggregatorFactory[aggregatorFactories.size()]));
   }
 }

@@ -88,7 +88,7 @@ STAGE PLANS:
             alias: a
             Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (UDFToDouble(colnum) = 5.0) (type: boolean)
+              predicate: (UDFToDouble(colnum) = 5.0D) (type: boolean)
               Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 Statistics: Num rows: 1 Data size: 3 Basic stats: COMPLETE Column stats: NONE

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -24,19 +24,24 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.hadoop.hive.ql.exec.spark.SparkUtilities;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatistics;
 import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsBuilder;
+import org.apache.hadoop.hive.ql.exec.spark.Statistic.SparkStatisticsNames;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkJobStatus;
 import org.apache.hadoop.hive.ql.exec.spark.status.SparkStageProgress;
 import org.apache.hive.spark.client.MetricsCollection;
 import org.apache.hive.spark.client.metrics.Metrics;
 import org.apache.hive.spark.counter.SparkCounters;
+
 import org.apache.spark.JobExecutionStatus;
 import org.apache.spark.SparkJobInfo;
 import org.apache.spark.SparkStageInfo;
 import org.apache.spark.api.java.JavaFutureAction;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.executor.TaskMetrics;
+import org.apache.spark.scheduler.TaskInfo;
 
 public class LocalSparkJobStatus implements SparkJobStatus {
 
@@ -127,8 +132,7 @@ public class LocalSparkJobStatus implements SparkJobStatus {
     // add Hive operator level statistics.
     sparkStatisticsBuilder.add(sparkCounters);
     // add spark job metrics.
-    String jobIdentifier = "Spark Job[" + jobId + "] Metrics";
-    Map<Integer, List<TaskMetrics>> jobMetric = jobMetricsListener.getJobMetric(jobId);
+    Map<Integer, List<Map.Entry<TaskMetrics, TaskInfo>>> jobMetric = jobMetricsListener.getJobMetric(jobId);
     if (jobMetric == null) {
       return null;
     }
@@ -136,19 +140,34 @@ public class LocalSparkJobStatus implements SparkJobStatus {
     MetricsCollection metricsCollection = new MetricsCollection();
     Set<Integer> stageIds = jobMetric.keySet();
     for (int stageId : stageIds) {
-      List<TaskMetrics> taskMetrics = jobMetric.get(stageId);
-      for (TaskMetrics taskMetric : taskMetrics) {
-        Metrics metrics = new Metrics(taskMetric);
+      List<Map.Entry<TaskMetrics, TaskInfo>> taskMetrics = jobMetric.get(stageId);
+      for (Map.Entry<TaskMetrics, TaskInfo> taskMetric : taskMetrics) {
+        Metrics metrics = new Metrics(taskMetric.getKey(), taskMetric.getValue());
         metricsCollection.addMetrics(jobId, stageId, 0, metrics);
       }
     }
     Map<String, Long> flatJobMetric = SparkMetricsUtils.collectMetrics(metricsCollection
         .getAllMetrics());
     for (Map.Entry<String, Long> entry : flatJobMetric.entrySet()) {
-      sparkStatisticsBuilder.add(jobIdentifier, entry.getKey(), Long.toString(entry.getValue()));
+      sparkStatisticsBuilder.add(SparkStatisticsNames.SPARK_GROUP_NAME, entry.getKey(),
+              Long.toString(entry.getValue()));
     }
 
     return  sparkStatisticsBuilder.build();
+  }
+
+  @Override
+  public String getWebUIURL() {
+    try {
+      if (sparkContext.sc().uiWebUrl().isDefined()) {
+        return SparkUtilities.reverseDNSLookupURL(sparkContext.sc().uiWebUrl().get());
+      } else {
+        return "UNDEFINED";
+      }
+    } catch (Exception e) {
+      LOG.warn("Failed to get web UI URL.", e);
+    }
+    return "UNKNOWN";
   }
 
   @Override

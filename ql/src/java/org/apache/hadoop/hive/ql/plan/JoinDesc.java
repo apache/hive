@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,6 +30,7 @@ import java.util.Objects;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.MemoryMonitorInfo;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.optimizer.signature.Signature;
 import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 
@@ -229,6 +230,7 @@ public class JoinDesc extends AbstractOperatorDesc {
    * @return the keys in string form
    */
   @Explain(displayName = "keys")
+  @Signature
   public Map<Byte, String> getKeysString() {
     if (joinKeys == null) {
       return null;
@@ -266,6 +268,7 @@ public class JoinDesc extends AbstractOperatorDesc {
    * @return Map from alias to filters on the alias.
    */
   @Explain(displayName = "filter predicates")
+  @Signature
   public Map<Byte, String> getFiltersStringMap() {
     if (getFilters() == null || getFilters().size() == 0) {
       return null;
@@ -342,6 +345,7 @@ public class JoinDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "outputColumnNames")
+  @Signature
   public List<String> getOutputColumnNames() {
     return outputColumnNames;
   }
@@ -365,6 +369,7 @@ public class JoinDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "condition map", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
+  @Signature
   public List<JoinCondDesc> getCondsList() {
     if (conds == null) {
       return null;
@@ -386,7 +391,8 @@ public class JoinDesc extends AbstractOperatorDesc {
     }
     Map<String, String> explainColMap = new HashMap<>();
     for(String col:this.colExprMap.keySet()){
-      String taggedCol = this.reversedExprs.get(col) + ":" + this.colExprMap.get(col);
+      String taggedCol = this.reversedExprs.get(col) + ":"
+          + this.colExprMap.get(col).getExprString();
       explainColMap.put(col, taggedCol);
     }
     return explainColMap;
@@ -424,6 +430,7 @@ public class JoinDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "handleSkewJoin", displayOnlyOnTrue = true)
+  @Signature
   public boolean getHandleSkewJoin() {
     return handleSkewJoin;
   }
@@ -523,6 +530,7 @@ public class JoinDesc extends AbstractOperatorDesc {
   }
 
   @Explain(displayName = "nullSafes")
+  @Signature
   public String getNullSafeString() {
     if (nullsafes == null) {
       return null;
@@ -739,4 +747,5 @@ public class JoinDesc extends AbstractOperatorDesc {
     }
     return false;
   }
+
 }

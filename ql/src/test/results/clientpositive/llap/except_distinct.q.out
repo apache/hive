@@ -36,12 +36,12 @@ PREHOOK: query: select * from a except distinct select * from b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from a except distinct select * from b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 0
 PREHOOK: query: drop table a
 PREHOOK: type: DROPTABLE
@@ -99,105 +99,105 @@ PREHOOK: query: select * from a except distinct select * from b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from a except distinct select * from b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	3
 PREHOOK: query: select * from b except distinct select * from a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from b except distinct select * from a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	20
 PREHOOK: query: select * from b except distinct select * from a intersect distinct select * from b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from b except distinct select * from a intersect distinct select * from b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	20
 PREHOOK: query: select * from b except distinct select * from a except distinct select * from b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from b except distinct select * from a except distinct select * from b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select * from a except distinct select * from b union all select * from a except distinct select * from b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from a except distinct select * from b union all select * from a except distinct select * from b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	3
 PREHOOK: query: select * from a except distinct select * from b union select * from a except distinct select * from b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from a except distinct select * from b union select * from a except distinct select * from b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	3
 PREHOOK: query: select * from a except distinct select * from b except distinct select * from a except distinct select * from b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from a except distinct select * from b except distinct select * from a except distinct select * from b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select * from (select a.key, b.value from a join b on a.key=b.key)sub1 
 except distinct 
 select * from (select a.key, b.value from a join b on a.key=b.key)sub2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from (select a.key, b.value from a join b on a.key=b.key)sub1 
 except distinct 
 select * from (select a.key, b.value from a join b on a.key=b.key)sub2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: select * from (select a.key, b.value from a join b on a.key=b.key)sub1
 except distinct
 select * from (select b.value as key, a.key as value from a join b on a.key=b.key)sub2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from (select a.key, b.value from a join b on a.key=b.key)sub1
 except distinct
 select * from (select b.value as key, a.key as value from a join b on a.key=b.key)sub2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 2	3
 2	20
 1	2
@@ -275,7 +275,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string), 2 (type: bigint), _col2 (type: bigint)
+                  expressions: _col0 (type: string), _col1 (type: string), 2L (type: bigint), _col2 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -304,7 +304,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (((_col2 * 2) = _col3) and (_col2 > 0)) (type: boolean)
+                  predicate: (((_col2 * 2) = _col3) and (_col2 > 0L)) (type: boolean)
                   Statistics: Num rows: 41 Data size: 7954 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
@@ -327,7 +327,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string), 1 (type: bigint), _col2 (type: bigint)
+                  expressions: _col0 (type: string), _col1 (type: string), 1L (type: bigint), _col2 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -358,11 +358,11 @@ STAGE PLANS:
 PREHOOK: query: select * from src except distinct select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from src except distinct select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain select * from src except distinct select * from src except distinct select * from src except distinct select * from src
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from src except distinct select * from src except distinct select * from src except distinct select * from src
@@ -453,7 +453,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string), 1 (type: bigint), _col2 (type: bigint)
+                  expressions: _col0 (type: string), _col1 (type: string), 1L (type: bigint), _col2 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -482,7 +482,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string), 1 (type: bigint), _col2 (type: bigint)
+                  expressions: _col0 (type: string), _col1 (type: string), 1L (type: bigint), _col2 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -511,7 +511,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string), 2 (type: bigint), _col2 (type: bigint)
+                  expressions: _col0 (type: string), _col1 (type: string), 2L (type: bigint), _col2 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -540,7 +540,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (((_col2 * 2) = _col3) and (_col2 > 0)) (type: boolean)
+                  predicate: (((_col2 * 2) = _col3) and (_col2 > 0L)) (type: boolean)
                   Statistics: Num rows: 41 Data size: 7954 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
@@ -553,7 +553,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 41 Data size: 7626 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
-                        expressions: _col0 (type: string), _col1 (type: string), 2 (type: bigint), _col2 (type: bigint)
+                        expressions: _col0 (type: string), _col1 (type: string), 2L (type: bigint), _col2 (type: bigint)
                         outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 41 Data size: 7954 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
@@ -582,7 +582,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 145 Data size: 28130 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (((_col2 * 2) = _col3) and (_col2 > 0)) (type: boolean)
+                  predicate: (((_col2 * 2) = _col3) and (_col2 > 0L)) (type: boolean)
                   Statistics: Num rows: 24 Data size: 4656 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
@@ -595,7 +595,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 24 Data size: 4464 Basic stats: COMPLETE Column stats: COMPLETE
                       Select Operator
-                        expressions: _col0 (type: string), _col1 (type: string), 2 (type: bigint), _col2 (type: bigint)
+                        expressions: _col0 (type: string), _col1 (type: string), 2L (type: bigint), _col2 (type: bigint)
                         outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 24 Data size: 4656 Basic stats: COMPLETE Column stats: COMPLETE
                         Select Operator
@@ -624,7 +624,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 137 Data size: 26578 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (((_col2 * 2) = _col3) and (_col2 > 0)) (type: boolean)
+                  predicate: (((_col2 * 2) = _col3) and (_col2 > 0L)) (type: boolean)
                   Statistics: Num rows: 22 Data size: 4268 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string), _col1 (type: string)
@@ -647,7 +647,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string), 1 (type: bigint), _col2 (type: bigint)
+                  expressions: _col0 (type: string), _col1 (type: string), 1L (type: bigint), _col2 (type: bigint)
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 250 Data size: 48500 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
@@ -682,11 +682,11 @@ STAGE PLANS:
 PREHOOK: query: select * from src except distinct select * from src except distinct select * from src except distinct select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from src except distinct select * from src except distinct select * from src except distinct select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: explain select value from a group by value except distinct select key from b group by key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select value from a group by value except distinct select key from b group by key
@@ -762,7 +762,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: _col0 (type: int), 2 (type: bigint), _col1 (type: bigint)
+                    expressions: _col0 (type: int), 2L (type: bigint), _col1 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -791,7 +791,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2
                 Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: (((_col1 * 2) = _col2) and (_col1 > 0)) (type: boolean)
+                  predicate: (((_col1 * 2) = _col2) and (_col1 > 0L)) (type: boolean)
                   Statistics: Num rows: 1 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: int)
@@ -819,7 +819,7 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: _col0 (type: int), 1 (type: bigint), _col1 (type: bigint)
+                    expressions: _col0 (type: int), 1L (type: bigint), _col1 (type: bigint)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 2 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -851,10 +851,10 @@ PREHOOK: query: select value from a group by value except distinct select key fr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@a
 PREHOOK: Input: default@b
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select value from a group by value except distinct select key from b group by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@a
 POSTHOOK: Input: default@b
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 3

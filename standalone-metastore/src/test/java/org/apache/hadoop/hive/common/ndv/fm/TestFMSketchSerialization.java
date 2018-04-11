@@ -25,8 +25,11 @@ import java.io.IOException;
 import javolution.util.FastBitSet;
 
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimatorFactory;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+@Category(MetastoreUnitTest.class)
 public class TestFMSketchSerialization {
 
   private FastBitSet[] deserialize(String s, int numBitVectors) {

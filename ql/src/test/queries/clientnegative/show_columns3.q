@@ -3,5 +3,4 @@ USE test_db;
 CREATE TABLE foo(a INT);
 
 use default;
-SHOW COLUMNS from test_db.foo from test_db;
-
+SHOW COLUMNS from foo like "a*" from test_db;

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -31,7 +31,6 @@ import java.util.Random;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -50,7 +49,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -61,13 +59,6 @@ import org.apache.hadoop.util.hash.MurmurHash;
  **/
 public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     implements Serializable, TopNHash.BinaryCollector {
-
-  /**
-   * Counters.
-   */
-  public static enum Counter {
-    RECORDS_OUT_INTERMEDIATE
-  }
 
   private static final long serialVersionUID = 1L;
   private static final MurmurHash hash = (MurmurHash) MurmurHash.getInstance();
@@ -140,10 +131,8 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   // TODO: we only ever use one row of these at a time. Why do we need to cache multiple?
   protected transient Object[][] cachedKeys;
 
-  protected transient long numRows = 0;
   protected transient long cntr = 1;
   protected transient long logEveryNRows = 0;
-  private final transient LongWritable recordCounter = new LongWritable();
 
   /** Kryo ctor. */
   protected ReduceSinkOperator() {
@@ -162,8 +151,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       numRows = 0;
       cntr = 1;
       logEveryNRows = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVE_LOG_N_RECORDS);
-
-      statsMap.put(getCounterName(Counter.RECORDS_OUT_INTERMEDIATE, hconf), recordCounter);
 
       List<ExprNodeDesc> keys = conf.getKeyCols();
 
@@ -247,15 +234,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       throw new RuntimeException(e);
     }
   }
-
-  public String getCounterName(Counter counter, Configuration hconf) {
-    String context = hconf.get(Operator.CONTEXT_NAME_KEY, "");
-    if (context != null && !context.isEmpty()) {
-      context = "_" + context.replace(" ", "_");
-    }
-    return counter + context;
-  }
-
 
   /**
    * Initializes array of ExprNodeEvaluator. Adds Union field for distinct
@@ -371,7 +349,10 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       // if TopNHashes are active, proceed if not already excluded (i.e order by limit)
       final int firstIndex =
           (reducerHash != null) ? reducerHash.tryStoreKey(firstKey, partKeyNull) : TopNHash.FORWARD;
-      if (firstIndex == TopNHash.EXCLUDE) return; // Nothing to do.
+      if (firstIndex == TopNHash.EXCLUDE)
+       {
+        return; // Nothing to do.
+      }
       // Compute value and hashcode - we'd either store or forward them.
       BytesWritable value = makeValueWritable(row);
 
@@ -539,6 +520,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     if (!abort && reducerHash != null) {
       reducerHash.flush();
     }
+    runTimeNumRows = numRows;
     super.closeOp(abort);
     out = null;
     random = null;
@@ -546,7 +528,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     if (LOG.isTraceEnabled()) {
       LOG.info(toString() + ": records written - " + numRows);
     }
-    recordCounter.set(numRows);
   }
 
   /**

@@ -18,7 +18,7 @@ STAGE PLANS:
             alias: q0
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: l_discount BETWEEN 0.05 AND 0.07 (type: boolean)
+              predicate: l_discount BETWEEN 0.05D AND 0.07D (type: boolean)
               Statistics: Num rows: 11 Data size: 1319 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: l_extendedprice (type: double)
@@ -84,7 +84,7 @@ STAGE PLANS:
             alias: q1
             Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: l_discount BETWEEN 0.05 AND 0.07 (type: boolean)
+              predicate: l_discount BETWEEN 0.05D AND 0.07D (type: boolean)
               Statistics: Num rows: 11 Data size: 1319 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: l_extendedprice (type: double)

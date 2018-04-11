@@ -15,15 +15,15 @@
 package org.apache.hadoop.hive.llap.tezplugins;
 
 import org.apache.hadoop.hive.llap.tezplugins.LlapTaskSchedulerService.NodeInfo;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.io.Writable;
-
+import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol.BooleanArray;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol.TezAttemptArray;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -41,6 +41,7 @@ import com.google.common.collect.HashBiMap;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;
 import com.google.protobuf.ServiceException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -66,6 +67,7 @@ import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.hive.llap.tez.LlapProtocolClientProxy;
 import org.apache.hadoop.hive.llap.tezplugins.helpers.SourceStateTracker;
+import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.ipc.ProtocolSignature;
@@ -705,16 +707,21 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
   private final AtomicLong nodeNotFoundLogTime = new AtomicLong(0);
 
-  void nodePinged(String hostname, String uniqueId, int port, TezAttemptArray tasks) {
+  void nodePinged(String hostname, String uniqueId, int port,
+      TezAttemptArray tasks, BooleanArray guaranteed) {
     // TODO: do we ever need the port? we could just do away with nodeId altogether.
     LlapNodeId nodeId = LlapNodeId.getInstance(hostname, port);
     registerPingingNode(nodeId);
     BiMap<ContainerId, TezTaskAttemptID> biMap =
         entityTracker.getContainerAttemptMapForNode(nodeId);
     if (biMap != null) {
-      HashSet<TezTaskAttemptID> attempts = new HashSet<>();
-      for (Writable w : tasks.get()) {
-        attempts.add((TezTaskAttemptID)w);
+      HashMap<TezTaskAttemptID, Boolean> attempts = new HashMap<>();
+      for (int i = 0; i < tasks.get().length; ++i) {
+        boolean isGuaranteed = false;
+        if (guaranteed != null) {
+          isGuaranteed = ((BooleanWritable)guaranteed.get()[i]).get();
+        }
+        attempts.put((TezTaskAttemptID)tasks.get()[i], isGuaranteed);
       }
       String error = "";
       synchronized (biMap) {
@@ -729,8 +736,10 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
           // However, the next heartbeat(s) should get the value eventually and mark task as alive.
           // Also, we prefer a missed heartbeat over a stuck query in case of discrepancy in ET.
           if (taskNodeId != null && taskNodeId.equals(uniqueId)) {
-            if (attempts.contains(attemptId)) {
-              getContext().taskAlive(entry.getValue());
+            Boolean isGuaranteed = attempts.get(attemptId);
+            if (isGuaranteed != null) {
+              getContext().taskAlive(attemptId);
+              scheduler.taskInfoUpdated(attemptId, isGuaranteed.booleanValue());
             } else {
               error += (attemptId + ", ");
             }
@@ -835,12 +844,12 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     }
 
     @Override
-    public void nodeHeartbeat(
-        Text hostname, Text uniqueId, int port, TezAttemptArray aw) throws IOException {
+    public void nodeHeartbeat(Text hostname, Text uniqueId, int port,
+        TezAttemptArray aw, BooleanArray guaranteed) throws IOException {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Received heartbeat from [" + hostname + ":" + port +" (" + uniqueId +")]");
       }
-      nodePinged(hostname.toString(), uniqueId.toString(), port, aw);
+      nodePinged(hostname.toString(), uniqueId.toString(), port, aw, guaranteed);
     }
 
     @Override

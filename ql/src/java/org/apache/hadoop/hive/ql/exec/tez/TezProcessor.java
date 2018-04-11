@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,12 +18,16 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.tez.runtime.api.TaskFailureType;
+import org.apache.tez.runtime.api.events.CustomProcessorEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -154,7 +158,16 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
 
   @Override
   public void handleEvents(List<Event> arg0) {
-    //this is not called by tez, so nothing to be done here
+    // As of now only used for Bucket MapJoin, there is exactly one event in the list.
+    assert arg0.size() <= 1;
+    for (Event event : arg0) {
+      CustomProcessorEvent cpEvent = (CustomProcessorEvent) event;
+      ByteBuffer buffer = cpEvent.getPayload();
+      // Get int view of the buffer
+      IntBuffer intBuffer = buffer.asIntBuffer();
+      jobConf.setInt(Constants.LLAP_NUM_BUCKETS, intBuffer.get(0));
+      jobConf.setInt(Constants.LLAP_BUCKET_ID, intBuffer.get(1));
+    }
   }
 
   @Override

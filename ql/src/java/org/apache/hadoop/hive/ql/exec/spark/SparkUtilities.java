@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,12 +18,15 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.google.common.base.Preconditions;
@@ -46,16 +49,13 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.spark.OptimizeSparkProcContext;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hive.spark.client.SparkClientUtilities;
-import org.apache.spark.Dependency;
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.rdd.RDD;
-import org.apache.spark.rdd.UnionRDD;
-import scala.collection.JavaConversions;
+
 
 /**
  * Contains utilities methods used as part of Spark tasks.
@@ -129,43 +129,13 @@ public class SparkUtilities {
     // sessionConf and conf are different objects
     if (sessionConf.getSparkConfigUpdated() || conf.getSparkConfigUpdated()) {
       sparkSessionManager.closeSession(sparkSession);
-      sparkSession =  null;
+      sparkSession = null;
       conf.setSparkConfigUpdated(false);
       sessionConf.setSparkConfigUpdated(false);
     }
     sparkSession = sparkSessionManager.getSession(sparkSession, conf, true);
     SessionState.get().setSparkSession(sparkSession);
     return sparkSession;
-  }
-
-
-  public static String rddGraphToString(JavaPairRDD rdd) {
-    StringBuilder sb = new StringBuilder();
-    rddToString(rdd.rdd(), sb, "");
-    return sb.toString();
-  }
-
-  private static void rddToString(RDD rdd, StringBuilder sb, String offset) {
-    sb.append(offset).append(rdd.getClass().getCanonicalName()).append("[").append(rdd.hashCode()).append("]");
-    if (rdd.getStorageLevel().useMemory()) {
-      sb.append("(cached)");
-    }
-    sb.append("\n");
-    Collection<Dependency> dependencies = JavaConversions.asJavaCollection(rdd.dependencies());
-    if (dependencies != null) {
-      offset += "\t";
-      for (Dependency dependency : dependencies) {
-        RDD parentRdd = dependency.rdd();
-        rddToString(parentRdd, sb, offset);
-      }
-    } else if (rdd instanceof UnionRDD) {
-      UnionRDD unionRDD = (UnionRDD) rdd;
-      offset += "\t";
-      Collection<RDD> parentRdds = JavaConversions.asJavaCollection(unionRDD.rdds());
-      for (RDD parentRdd : parentRdds) {
-        rddToString(parentRdd, sb, offset);
-      }
-    }
   }
 
   /**
@@ -191,11 +161,11 @@ public class SparkUtilities {
 
   public static SparkTask createSparkTask(HiveConf conf) {
     return (SparkTask) TaskFactory.get(
-        new SparkWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID)), conf);
+        new SparkWork(conf.getVar(HiveConf.ConfVars.HIVEQUERYID)));
   }
 
   public static SparkTask createSparkTask(SparkWork work, HiveConf conf) {
-    return (SparkTask) TaskFactory.get(work, conf);
+    return (SparkTask) TaskFactory.get(work);
   }
 
   /**
@@ -263,6 +233,30 @@ public class SparkUtilities {
     currTask.removeFromChildrenTasks();
   }
 
+  // Find if there's any DPP sink branch of the branchingOP that is equivalent
+  // to the branch represented by the list.
+  public static SparkPartitionPruningSinkOperator findReusableDPPSink(
+      Operator<? extends OperatorDesc> branchingOP, List<Operator<? extends OperatorDesc>> list) {
+    for (Operator<? extends OperatorDesc> other : branchingOP.getChildOperators()) {
+      int i;
+      for (i = 0; i < list.size(); i++) {
+        if (other == list.get(i) || !other.logicalEquals(list.get(i))) {
+          break;
+        }
+        if (i != list.size() - 1) {
+          if (other.getChildOperators() == null || other.getChildOperators().size() != 1) {
+            break;
+          }
+          other = other.getChildOperators().get(0);
+        }
+      }
+      if (i == list.size()) {
+        return (SparkPartitionPruningSinkOperator) other;
+      }
+    }
+    return null;
+  }
+
   /**
    * For DPP sinks w/ common join, we'll split the tree and what's above the branching
    * operator is computed multiple times. Therefore it may not be good for performance to support
@@ -326,7 +320,7 @@ public class SparkUtilities {
   }
 
   // whether of pattern "SEL - GBY - DPP"
-  private static boolean isDirectDPPBranch(Operator<?> op) {
+  public static boolean isDirectDPPBranch(Operator<?> op) {
     if (op instanceof SelectOperator && op.getChildOperators() != null
         && op.getChildOperators().size() == 1) {
       op = op.getChildOperators().get(0);
@@ -337,5 +331,12 @@ public class SparkUtilities {
       }
     }
     return false;
+  }
+
+  public static String reverseDNSLookupURL(String url) throws UnknownHostException {
+    // Run a reverse DNS lookup on the URL
+    URI uri = URI.create(url);
+    InetAddress address = InetAddress.getByName(uri.getHost());
+    return uri.getScheme() + "://" + address.getCanonicalHostName() + ":" + uri.getPort();
   }
 }

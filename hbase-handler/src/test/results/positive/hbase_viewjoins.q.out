@@ -28,7 +28,7 @@ WITH SERDEPROPERTIES (
   'hbase.scan.cacheblocks'='false',
   'serialization.format'='1')
 TBLPROPERTIES (
-  'hbase.mapreduce.hfileoutputformat.table.name'='hbase_table_test_1',
+  'hbase.table.name'='hbase_table_test_1',
   'serialization.null.format'=''  )
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -47,7 +47,7 @@ WITH SERDEPROPERTIES (
   'hbase.scan.cacheblocks'='false',
   'serialization.format'='1')
 TBLPROPERTIES (
-  'hbase.mapreduce.hfileoutputformat.table.name'='hbase_table_test_1',
+  'hbase.table.name'='hbase_table_test_1',
   'serialization.null.format'=''  )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
@@ -79,7 +79,7 @@ WITH SERDEPROPERTIES (
   'hbase.scan.cacheblocks'='false',
   'serialization.format'='1')
 TBLPROPERTIES (
-  'hbase.mapreduce.hfileoutputformat.table.name'='hbase_table_test_2',
+  'hbase.table.name'='hbase_table_test_2',
   'serialization.null.format'='')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -98,7 +98,7 @@ WITH SERDEPROPERTIES (
   'hbase.scan.cacheblocks'='false',
   'serialization.format'='1')
 TBLPROPERTIES (
-  'hbase.mapreduce.hfileoutputformat.table.name'='hbase_table_test_2',
+  'hbase.table.name'='hbase_table_test_2',
   'serialization.null.format'='')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

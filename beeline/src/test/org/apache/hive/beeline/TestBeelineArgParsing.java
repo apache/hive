@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -252,6 +252,19 @@ public class TestBeelineArgParsing {
     TestBeeline bl = new TestBeeline();
     String args[] = new String[] {"-e", "myselect", "-f", "myscript"};
     Assert.assertEquals(1, bl.initArgs(args));
+  }
+
+  /**
+   * Test beeline with multiple initfiles in -i.
+   */
+  @Test
+  public void testMultipleInitFiles() {
+    TestBeeline bl = new TestBeeline();
+    String[] args = new String[] {"-i", "/url/to/file1", "-i", "/url/to/file2"};
+    Assert.assertEquals(0, bl.initArgs(args));
+    String[] files = bl.getOpts().getInitFiles();
+    Assert.assertEquals("/url/to/file1", files[0]);
+    Assert.assertEquals("/url/to/file2", files[1]);
   }
 
   /**

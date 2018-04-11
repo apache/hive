@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -40,19 +40,11 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -204,20 +196,20 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
     }
 
     @Override
-    public void insert(long currentTransaction, Object row) throws IOException {
-      out.println("insert " + path + " currTxn: " + currentTransaction +
+    public void insert(long currentWriteId, Object row) throws IOException {
+      out.println("insert " + path + " currWriteId: " + currentWriteId +
           " obj: " + stringifyObject(row, inspector));
     }
 
     @Override
-    public void update(long currentTransaction, Object row) throws IOException {
-      out.println("update " + path + " currTxn: " + currentTransaction +
+    public void update(long currentWriteId, Object row) throws IOException {
+      out.println("update " + path + " currWriteId: " + currentWriteId +
           " obj: " + stringifyObject(row, inspector));
     }
 
     @Override
-    public void delete(long currentTransaction, Object row) throws IOException {
-      out.println("delete " + path + " currTxn: " + currentTransaction + " obj: " + row);
+    public void delete(long currentWriteId, Object row) throws IOException {
+      out.println("delete " + path + " currWriteId: " + currentWriteId + " obj: " + row);
     }
 
     @Override
@@ -287,7 +279,7 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
         getRawRecordWriter(Path path, Options options) throws IOException {
     final Path filename = AcidUtils.createFilename(path, options);
     final OrcFile.WriterOptions opts =
-        OrcFile.writerOptions(options.getConfiguration());
+        OrcFile.writerOptions(options.getTableProperties(), options.getConfiguration());
     if (!options.isWritingBase()) {
       opts.bufferSize(OrcRecordUpdater.DELTA_BUFFER_SIZE)
           .stripeSize(OrcRecordUpdater.DELTA_STRIPE_SIZE)
@@ -300,6 +292,7 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
     opts.inspector(options.getInspector())
         .callback(watcher);
     final Writer writer = OrcFile.createWriter(filename, opts);
+    AcidUtils.OrcAcidVersion.setAcidVersionInDataFile(writer);
     return new org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter() {
       @Override
       public void write(Writable w) throws IOException {
@@ -307,7 +300,7 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
         watcher.addKey(
             ((IntWritable) orc.getFieldValue(OrcRecordUpdater.OPERATION)).get(),
             ((LongWritable)
-                orc.getFieldValue(OrcRecordUpdater.ORIGINAL_TRANSACTION)).get(),
+                orc.getFieldValue(OrcRecordUpdater.ORIGINAL_WRITEID)).get(),
             ((IntWritable) orc.getFieldValue(OrcRecordUpdater.BUCKET)).get(),
             ((LongWritable) orc.getFieldValue(OrcRecordUpdater.ROW_ID)).get());
         writer.addRow(w);

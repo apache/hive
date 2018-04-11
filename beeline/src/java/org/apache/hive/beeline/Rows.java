@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -29,6 +29,8 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.Iterator;
+
+import org.apache.hadoop.hive.common.cli.EscapeCRLFHelper;
 
 /**
  * Abstract base class representing a set of rows to be displayed.
@@ -166,6 +168,10 @@ abstract class Rows implements Iterator {
           value = convertBinaryArray ? new String((byte[])o) : Arrays.toString((byte[])o);
         } else {
           value = o.toString();
+        }
+
+        if (beeLine.getOpts().getEscapeCRLF()) {
+          value = EscapeCRLFHelper.escapeCRLF(value);
         }
 
         values[i] = value.intern();

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -33,7 +33,7 @@ public class HiveGroupingID extends SqlAbstractGroupFunction {
   private HiveGroupingID() {
     super(VirtualColumn.GROUPINGID.getName(),
             SqlKind.OTHER,
-            ReturnTypes.INTEGER,
+            ReturnTypes.BIGINT,
             InferTypes.BOOLEAN,
             OperandTypes.NILADIC,
             SqlFunctionCategory.SYSTEM);

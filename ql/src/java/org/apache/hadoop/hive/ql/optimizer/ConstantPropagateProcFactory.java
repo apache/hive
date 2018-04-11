@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
  * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
@@ -237,7 +237,7 @@ public final class ConstantPropagateProcFactory {
   public static ExprNodeDesc foldExpr(ExprNodeGenericFuncDesc funcDesc) {
 
     GenericUDF udf = funcDesc.getGenericUDF();
-    if (!isDeterministicUdf(udf, funcDesc.getChildren())) {
+    if (!isConstantFoldableUdf(udf, funcDesc.getChildren())) {
       return funcDesc;
     }
     return evaluateFunction(funcDesc.getGenericUDF(),funcDesc.getChildren(), funcDesc.getChildren());
@@ -355,7 +355,7 @@ public final class ConstantPropagateProcFactory {
       }
 
       // Don't evaluate nondeterministic function since the value can only calculate during runtime.
-      if (!isDeterministicUdf(udf, newExprs)) {
+      if (!isConstantFoldableUdf(udf, newExprs)) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Function " + udf.getClass() + " is undeterministic. Don't evaluate immediately.");
         }
@@ -414,7 +414,7 @@ public final class ConstantPropagateProcFactory {
       }
 
       // Don't evaluate nondeterministic function since the value can only calculate during runtime.
-      if (!isDeterministicUdf(udf, newExprs)) {
+      if (!isConstantFoldableUdf(udf, newExprs)) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Function " + udf.getClass() + " is undeterministic. Don't evaluate immediately.");
         }
@@ -465,12 +465,12 @@ public final class ConstantPropagateProcFactory {
     return desc;
   }
 
-  private static boolean isDeterministicUdf(GenericUDF udf,  List<ExprNodeDesc> children) {
-    UDFType udfType = udf.getClass().getAnnotation(UDFType.class);
-    if (udf instanceof GenericUDFBridge) {
-      udfType = ((GenericUDFBridge) udf).getUdfClass().getAnnotation(UDFType.class);
-    }
-    if (udfType.deterministic() == false) {
+  /**
+   * Can the UDF be used for constant folding.
+   */
+  private static boolean isConstantFoldableUdf(GenericUDF udf,  List<ExprNodeDesc> children) {
+    // Runtime constants + deterministic functions can be folded.
+    if (!FunctionRegistry.isConsistentWithinQuery(udf)) {
       if (udf.getClass().equals(GenericUDFUnixTimeStamp.class) 
           && children != null && children.size() > 0) {
         // unix_timestamp is polymorphic (ignore class annotations)

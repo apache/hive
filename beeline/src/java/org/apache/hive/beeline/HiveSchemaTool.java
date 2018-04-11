@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -61,6 +61,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -99,7 +100,7 @@ public class HiveSchemaTool {
     this.hiveConf = hiveConf;
     this.dbType = dbType;
     this.metaDbType = metaDbType;
-    this.needsQuotedIdentifier = getDbCommandParser(dbType).needsQuotedIdentifier();
+    this.needsQuotedIdentifier = getDbCommandParser(dbType, metaDbType).needsQuotedIdentifier();
     this.metaStoreSchemaInfo = MetaStoreSchemaInfoFactory.get(hiveConf, hiveHome, dbType);
   }
 
@@ -151,20 +152,14 @@ public class HiveSchemaTool {
     System.exit(1);
   }
 
-  Connection getConnectionToMetastore(boolean printInfo)
-      throws HiveMetaException {
-    return HiveSchemaHelper.getConnectionToMetastore(userName,
-        passWord, url, driver, printInfo, hiveConf);
+  Connection getConnectionToMetastore(boolean printInfo) throws HiveMetaException {
+    return HiveSchemaHelper.getConnectionToMetastore(userName, passWord, url, driver, printInfo, hiveConf,
+        null);
   }
 
   private NestedScriptParser getDbCommandParser(String dbType, String metaDbType) {
-    return HiveSchemaHelper.getDbCommandParser(dbType, dbOpts, userName,
-	passWord, hiveConf, metaDbType);
-  }
-
-  private NestedScriptParser getDbCommandParser(String dbType) {
-    return HiveSchemaHelper.getDbCommandParser(dbType, dbOpts, userName,
-	passWord, hiveConf, null);
+    return HiveSchemaHelper.getDbCommandParser(dbType, dbOpts, userName, passWord, hiveConf,
+        metaDbType, false);
   }
 
   /***
@@ -511,7 +506,7 @@ public class HiveSchemaTool {
 
   private MetaStoreConnectionInfo getConnectionInfo(boolean printInfo) {
     return new MetaStoreConnectionInfo(userName, passWord, url, driver, printInfo, hiveConf,
-        dbType);
+        dbType, metaDbType);
   }
   /**
    * Perform metastore schema upgrade
@@ -593,7 +588,7 @@ public class HiveSchemaTool {
     Connection conn = getConnectionToMetastore(false);
     boolean success = true;
     try {
-      if (validateSchemaVersions(conn)) {
+      if (validateSchemaVersions()) {
         System.out.println("[SUCCESS]\n");
       } else {
         success = false;
@@ -701,7 +696,7 @@ public class HiveSchemaTool {
     }
   }
 
-  boolean validateSchemaVersions(Connection conn) throws HiveMetaException {
+  boolean validateSchemaVersions() throws HiveMetaException {
     System.out.println("Validating schema version");
     try {
       String newSchemaVersion = metaStoreSchemaInfo.getMetaStoreSchemaVersion(getConnectionInfo(false));
@@ -745,9 +740,16 @@ public class HiveSchemaTool {
 
     LOG.debug("Validating tables in the schema for version " + version);
     try {
+      String schema = null;
+      try {
+        schema = hmsConn.getSchema();
+      } catch (SQLFeatureNotSupportedException e) {
+        LOG.debug("schema is not supported");
+      }
+      
       metadata       = conn.getMetaData();
       String[] types = {"TABLE"};
-      rs             = metadata.getTables(null, hmsConn.getSchema(), "%", types);
+      rs             = metadata.getTables(null, schema, "%", types);
       String table   = null;
 
       while (rs.next()) {
@@ -756,7 +758,7 @@ public class HiveSchemaTool {
         LOG.debug("Found table " + table + " in HMS dbstore");
       }
     } catch (SQLException e) {
-      throw new HiveMetaException("Failed to retrieve schema tables from Hive Metastore DB," + e.getMessage());
+      throw new HiveMetaException("Failed to retrieve schema tables from Hive Metastore DB", e);
     } finally {
       if (rs != null) {
         try {
@@ -804,7 +806,7 @@ public class HiveSchemaTool {
 
   private List<String> findCreateTable(String path, List<String> tableList)
       throws Exception {
-    NestedScriptParser sp           = HiveSchemaHelper.getDbCommandParser(dbType);
+    NestedScriptParser sp           = HiveSchemaHelper.getDbCommandParser(dbType, false);
     Matcher matcher                 = null;
     Pattern regexp                  = null;
     List<String> subs               = new ArrayList<String>();
@@ -989,7 +991,7 @@ public class HiveSchemaTool {
     private String[] argsWith(String password) throws IOException {
       return new String[]
         {
-          "-u", url == null ? HiveSchemaHelper.getValidConfVar(MetastoreConf.ConfVars.CONNECTURLKEY, hiveConf) : url,
+          "-u", url == null ? HiveSchemaHelper.getValidConfVar(MetastoreConf.ConfVars.CONNECT_URL_KEY, hiveConf) : url,
           "-d", driver == null ? HiveSchemaHelper.getValidConfVar(MetastoreConf.ConfVars.CONNECTION_DRIVER, hiveConf) : driver,
           "-n", userName,
           "-p", password,

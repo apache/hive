@@ -348,4 +348,14 @@
   <value>99</value>
 </property>
 
+<property>
+  <name>hive.query.results.cache.enabled</name>
+  <value>false</value>
+</property>
+
+<property>
+  <name>tez.counters.max</name>
+  <value>1024</value>
+</property>
+
 </configuration>

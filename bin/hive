@@ -131,8 +131,17 @@ if [ ! -f ${HIVE_LIB}/hive-cli-*.jar ]; then
   exit 3;
 fi
 
+# Hbase and Hadoop use their own log4j jars.  Including hives log4j jars can cause
+# log4j warnings.  So save hives log4j jars in LOG_JAR_CLASSPATH, and add it to classpath
+# after Hbase and Hadoop calls finish
+LOG_JAR_CLASSPATH="";
+
 for f in ${HIVE_LIB}/*.jar; do
-  CLASSPATH=${CLASSPATH}:$f;
+  if [[ $f == *"log4j"* ]]; then
+    LOG_JAR_CLASSPATH=${LOG_JAR_CLASSPATH}:$f;
+  else
+    CLASSPATH=${CLASSPATH}:$f;
+  fi
 done
 
 # add the auxillary jars such as serdes
@@ -339,6 +348,10 @@ if [[ "$SERVICE" =~ ^(hiveserver2|beeline|cli)$ ]] ; then
     export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Djline.terminal=jline.UnsupportedTerminal"
   fi
 fi
+
+# include the log4j jar that is used for hive into the classpath
+CLASSPATH="${CLASSPATH}:${LOG_JAR_CLASSPATH}"
+export HADOOP_CLASSPATH="${HADOOP_CLASSPATH}:${LOG_JAR_CLASSPATH}"
 
 if [ "$TORUN" = "" ] ; then
   echo "Service $SERVICE not found"

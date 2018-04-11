@@ -1,0 +1,9 @@
+{"namespace": "devmode",
+"type": "record",
+"name": "gradinfo",
+"fields": [
+{"name": "colX", "type": "string"},
+{"name": "colY", "type": "string"},
+{"name": "colZ", "type": "double"}
+]
+}

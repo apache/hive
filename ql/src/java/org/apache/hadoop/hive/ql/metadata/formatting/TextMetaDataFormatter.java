@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -43,7 +43,10 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMValidateResourcePlanResponse;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.metadata.CheckConstraint;
+import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -129,7 +132,8 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       boolean isFormatted, boolean isExt,
       boolean isOutputPadded, List<ColumnStatisticsObj> colStats,
       PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
-      UniqueConstraint ukInfo, NotNullConstraint nnInfo) throws HiveException {
+      UniqueConstraint ukInfo, NotNullConstraint nnInfo, DefaultConstraint dInfo, CheckConstraint cInfo)
+        throws HiveException {
     try {
       List<FieldSchema> partCols = tbl.isPartitioned() ? tbl.getPartCols() : null;
       String output = "";
@@ -154,7 +158,6 @@ class TextMetaDataFormatter implements MetaDataFormatter {
 
       if (colPath.equals(tableName)) {
         if ((partCols != null) && !partCols.isEmpty() && showPartColsSeparately) {
-
           mdt = new TextMetaDataTable();
           output += MetaDataFormatUtils.LINE_DELIM + "# Partition Information" + MetaDataFormatUtils.LINE_DELIM + "# ";
           mdt.addRow(MetaDataFormatUtils.getColumnsHeader(null));
@@ -164,7 +167,6 @@ class TextMetaDataFormatter implements MetaDataFormatter {
           output += mdt.renderTable(isOutputPadded);
         }
       } else {
-
         String statsState;
         if (tbl.getParameters() != null && (statsState = tbl.getParameters().get(StatsSetupConst.COLUMN_STATS_ACCURATE)) != null) {
           StringBuilder str = new StringBuilder();
@@ -188,8 +190,10 @@ class TextMetaDataFormatter implements MetaDataFormatter {
           if ((pkInfo != null && !pkInfo.getColNames().isEmpty()) ||
               (fkInfo != null && !fkInfo.getForeignKeys().isEmpty()) ||
               (ukInfo != null && !ukInfo.getUniqueConstraints().isEmpty()) ||
-              (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty())) {
-            output = MetaDataFormatUtils.getConstraintsInformation(pkInfo, fkInfo, ukInfo, nnInfo);
+              (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty()) ||
+              cInfo != null && !cInfo.getCheckConstraints().isEmpty() ||
+              dInfo != null && !dInfo.getDefaultConstraints().isEmpty()) {
+            output = MetaDataFormatUtils.getConstraintsInformation(pkInfo, fkInfo, ukInfo, nnInfo, dInfo, cInfo);
             outStream.write(output.getBytes("UTF-8"));
           }
         }
@@ -210,13 +214,16 @@ class TextMetaDataFormatter implements MetaDataFormatter {
             // show table information
             outStream.write(("Detailed Table Information").getBytes("UTF-8"));
             outStream.write(separator);
-            outStream.write(tbl.getTTable().toString().getBytes("UTF-8"));
+            String tableDesc = HiveStringUtils.escapeJava(tbl.getTTable().toString());
+            outStream.write(tableDesc.getBytes("UTF-8"));
             outStream.write(separator);
             outStream.write(terminator);
           }
           if ((pkInfo != null && !pkInfo.getColNames().isEmpty()) ||
               (fkInfo != null && !fkInfo.getForeignKeys().isEmpty()) ||
               (ukInfo != null && !ukInfo.getUniqueConstraints().isEmpty()) ||
+              (dInfo!= null && !dInfo.getDefaultConstraints().isEmpty()) ||
+              (cInfo != null && !cInfo.getCheckConstraints().isEmpty()) ||
               (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty())) {
             outStream.write(("Constraints").getBytes("UTF-8"));
             outStream.write(separator);
@@ -234,6 +241,14 @@ class TextMetaDataFormatter implements MetaDataFormatter {
             }
             if (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty()) {
               outStream.write(nnInfo.toString().getBytes("UTF-8"));
+              outStream.write(terminator);
+            }
+            if (dInfo != null && !dInfo.getDefaultConstraints().isEmpty()) {
+              outStream.write(dInfo.toString().getBytes("UTF-8"));
+              outStream.write(terminator);
+            }
+            if (cInfo != null && !cInfo.getCheckConstraints().isEmpty()) {
+              outStream.write(cInfo.toString().getBytes("UTF-8"));
               outStream.write(terminator);
             }
           }
@@ -559,13 +574,13 @@ class TextMetaDataFormatter implements MetaDataFormatter {
         if (plan.isSetQueryParallelism()) {
           out.write(Integer.toString(plan.getQueryParallelism()).getBytes(UTF_8));
         } else {
-          out.write("null".getBytes(UTF_8));
+          write(out, "null");
         }
         out.write(separator);
         if (plan.isSetDefaultPoolPath()) {
           out.write(plan.getDefaultPoolPath().getBytes(UTF_8));
         } else {
-          out.write("null".getBytes(UTF_8));
+          write(out, "null");
         }
         out.write(terminator);
       }
@@ -582,30 +597,64 @@ class TextMetaDataFormatter implements MetaDataFormatter {
    *       > <trigger_name>: if(<triggerExpression>){<actionExpression>}
    */
   private static class TextRPFormatter implements MetaDataFormatUtils.RPFormatter {
+    private static final byte[] INDENT = str("    ");
+    private static final byte[] INDENT2 = str(" |  ");
+    private static final byte[] INDENT_BRANCH = str(" +  ");
+
     private final DataOutputStream out;
+    private int indentLevel = 0;
 
     TextRPFormatter(DataOutputStream out) {
       this.out = out;
     }
 
     @Override
-    public void formatRP(String rpName, Object ... kvPairs) throws IOException {
-      out.write(rpName.getBytes(UTF_8));
+    public void startRP(String rpName, Object ... kvPairs) throws IOException {
+      write(out, rpName);
       writeFields(kvPairs);
       out.write(terminator);
     }
 
-    private static final byte[] INDENT = "    ".getBytes(UTF_8);
+    @Override
+    public void endRP() throws IOException {
+    }
 
     @Override
-    public void formatPool(String poolName, int indentLevel, Object ... kvPairs)
-        throws IOException {
-      for (int i = 0; i < indentLevel; ++i) {
-        out.write(INDENT);
-      }
-      out.write(poolName.getBytes(UTF_8));
+    public void startPools() throws IOException {
+    }
+
+    @Override
+    public void endPools() throws IOException {
+    }
+
+    @Override
+    public void startPool(String poolName, Object ... kvPairs) throws IOException {
+      ++indentLevel;
+      writeIndent(true);
+      write(out, poolName);
       writeFields(kvPairs);
       out.write(terminator);
+    }
+
+    @Override
+    public void endPool() throws IOException {
+      --indentLevel;
+    }
+
+    @Override
+    public void startTriggers() throws IOException {
+    }
+
+    @Override
+    public void startMappings() throws IOException {
+    }
+
+    @Override
+    public void endTriggers() throws IOException {
+    }
+
+    @Override
+    public void endMappings() throws IOException {
     }
 
     private void writeFields(Object ... kvPairs)
@@ -630,19 +679,52 @@ class TextMetaDataFormatter implements MetaDataFormatter {
     }
 
     @Override
-    public void formatTrigger(String triggerName, String actionExpression, String triggerExpression,
-        int indentLevel) throws IOException {
-      for (int i = 0; i < indentLevel; ++i) {
+    public void formatTrigger(
+        String triggerName, String actionExpression, String triggerExpression) throws IOException {
+      writeIndent(false);
+      write(out, "trigger ");
+      write(out, triggerName);
+      write(out, ": if (");
+      write(out, triggerExpression);
+      write(out, ") { ");
+      write(out, actionExpression);
+      write(out, " }");
+      out.write(terminator);
+    }
+
+    @Override
+    public void formatMappingType(String type, List<String> names) throws IOException {
+      final int maxList = 5;
+      writeIndent(false);
+      write(out, "mapped for ");
+      out.write(type.toLowerCase().getBytes(UTF_8));
+      if (!names.isEmpty()) {
+        write(out, "s: ");
+        int count = Math.min(maxList, names.size());
+        for (int i = 0; i < count; ++i) {
+          if (i != 0) {
+            write(out, ", ");
+          }
+          out.write(names.get(i).getBytes(UTF_8));
+        }
+        int remaining = names.size() - count;
+        if (remaining > 0) {
+          out.write((" and " + remaining + " others").getBytes(UTF_8));
+        }
+      }
+      out.write(terminator);
+    }
+
+    private void writeIndent(boolean isPool) throws IOException {
+      for (int i = 0; i < indentLevel - 1; ++i) {
         out.write(INDENT);
       }
-      out.write("  > ".getBytes(UTF_8));
-      out.write(triggerName.getBytes(UTF_8));
-      out.write(": if(".getBytes(UTF_8));
-      out.write(triggerExpression.getBytes(UTF_8));
-      out.write("){".getBytes(UTF_8));
-      out.write(actionExpression.getBytes(UTF_8));
-      out.write('}');
-      out.write(terminator);
+      if (isPool) {
+        out.write(INDENT_BRANCH);
+      } else {
+        out.write(INDENT);
+        out.write(INDENT2);
+      }
     }
   }
 
@@ -651,10 +733,24 @@ class TextMetaDataFormatter implements MetaDataFormatter {
     MetaDataFormatUtils.formatFullRP(new TextRPFormatter(out), fullResourcePlan);
   }
 
-  public void showErrors(DataOutputStream out, List<String> errors) throws HiveException {
+  private static byte[] str(String str) {
+    return str.getBytes(UTF_8);
+  }
+
+  private static void write(DataOutputStream out, String val) throws IOException {
+    out.write(str(val));
+  }
+
+  public void showErrors(DataOutputStream out, WMValidateResourcePlanResponse response)
+      throws HiveException {
     try {
-      for (String error : errors) {
-        out.write(error.getBytes("UTF-8"));
+      for (String error : response.getErrors()) {
+        write(out, error);
+        out.write(terminator);
+      }
+      for (String warning : response.getWarnings()) {
+        write(out, "warn: ");
+        write(out, warning);
         out.write(terminator);
       }
     } catch (IOException e) {

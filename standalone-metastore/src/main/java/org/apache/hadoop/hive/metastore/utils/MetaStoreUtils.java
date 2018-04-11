@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.utils;
 
+import org.apache.hadoop.hive.metastore.api.ISchemaName;
 import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
 
 import com.google.common.base.Predicates;
@@ -87,6 +88,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -115,6 +117,28 @@ public class MetaStoreUtils {
 
   private static final Charset ENCODING = StandardCharsets.UTF_8;
   private static final Logger LOG = LoggerFactory.getLogger(MetaStoreUtils.class);
+
+  // The following two are public for any external users who wish to use them.
+  /**
+   * This character is used to mark a database name as having a catalog name prepended.  This
+   * marker should be placed first in the String to make it easy to determine that this has both
+   * a catalog and a database name.  @ is chosen as it is not used in regular expressions.  This
+   * is only intended for use when making old Thrift calls that do not support catalog names.
+   */
+  public static final char CATALOG_DB_THRIFT_NAME_MARKER = '@';
+
+  /**
+   * This String is used to seaprate the catalog name from the database name.  This should only
+   * be used in Strings that are prepended with {@link #CATALOG_DB_THRIFT_NAME_MARKER}.  # is
+   * chosen because it is not used in regular expressions.  this is only intended for use when
+   * making old Thrift calls that do not support catalog names.
+   */
+  public static final String CATALOG_DB_SEPARATOR = "#";
+
+  /**
+   * Mark a database as being empty (as distinct from null).
+   */
+  public static final String DB_EMPTY_MARKER = "!";
 
   // Right now we only support one special character '/'.
   // More special characters can be added accordingly in the future.
@@ -213,83 +237,95 @@ public class MetaStoreUtils {
   }
 
 
-  // given a list of partStats, this function will give you an aggr stats
+  // Given a list of partStats, this function will give you an aggr stats
   public static List<ColumnStatisticsObj> aggrPartitionStats(List<ColumnStatistics> partStats,
-                                                             String dbName, String tableName, List<String> partNames, List<String> colNames,
-                                                             boolean useDensityFunctionForNDVEstimation, double ndvTuner)
+      String catName, String dbName, String tableName, List<String> partNames, List<String> colNames,
+      boolean areAllPartsFound, boolean useDensityFunctionForNDVEstimation, double ndvTuner)
       throws MetaException {
-    // 1. group by the stats by colNames
-    // map the colName to List<ColumnStatistics>
-    Map<String, List<ColumnStatistics>> map = new HashMap<>();
+    Map<ColumnStatsAggregator, List<ColStatsObjWithSourceInfo>> colStatsMap =
+        new HashMap<ColumnStatsAggregator, List<ColStatsObjWithSourceInfo>>();
+    // Group stats by colName for each partition
+    Map<String, ColumnStatsAggregator> aliasToAggregator =
+        new HashMap<String, ColumnStatsAggregator>();
     for (ColumnStatistics css : partStats) {
       List<ColumnStatisticsObj> objs = css.getStatsObj();
       for (ColumnStatisticsObj obj : objs) {
-        List<ColumnStatisticsObj> singleObj = new ArrayList<>();
-        singleObj.add(obj);
-        ColumnStatistics singleCS = new ColumnStatistics(css.getStatsDesc(), singleObj);
-        if (!map.containsKey(obj.getColName())) {
-          map.put(obj.getColName(), new ArrayList<>());
+        String partName = css.getStatsDesc().getPartName();
+        if (aliasToAggregator.get(obj.getColName()) == null) {
+          aliasToAggregator.put(obj.getColName(),
+              ColumnStatsAggregatorFactory.getColumnStatsAggregator(
+                  obj.getStatsData().getSetField(), useDensityFunctionForNDVEstimation, ndvTuner));
+          colStatsMap.put(aliasToAggregator.get(obj.getColName()),
+              new ArrayList<ColStatsObjWithSourceInfo>());
         }
-        map.get(obj.getColName()).add(singleCS);
+        colStatsMap.get(aliasToAggregator.get(obj.getColName()))
+            .add(new ColStatsObjWithSourceInfo(obj, catName, dbName, tableName, partName));
       }
     }
-    return aggrPartitionStats(map,dbName,tableName,partNames,colNames,useDensityFunctionForNDVEstimation, ndvTuner);
+    if (colStatsMap.size() < 1) {
+      LOG.debug("No stats data found for: tblName= {}, partNames= {}, colNames= {}",
+          Warehouse.getCatalogQualifiedTableName(catName, dbName, tableName), partNames, colNames);
+      return new ArrayList<ColumnStatisticsObj>();
+    }
+    return aggrPartitionStats(colStatsMap, partNames, areAllPartsFound,
+        useDensityFunctionForNDVEstimation, ndvTuner);
   }
 
   public static List<ColumnStatisticsObj> aggrPartitionStats(
-      Map<String, List<ColumnStatistics>> map, String dbName, String tableName,
-      final List<String> partNames, List<String> colNames,
-      final boolean useDensityFunctionForNDVEstimation,final double ndvTuner) throws MetaException {
-    List<ColumnStatisticsObj> colStats = new ArrayList<>();
-    // 2. Aggregate stats for each column in a separate thread
-    if (map.size()< 1) {
-      //stats are absent in RDBMS
-      LOG.debug("No stats data found for: dbName=" +dbName +" tblName=" + tableName +
-          " partNames= " + partNames + " colNames=" + colNames );
-      return colStats;
-    }
-    final ExecutorService pool = Executors.newFixedThreadPool(Math.min(map.size(), 16),
-        new ThreadFactoryBuilder().setDaemon(true).setNameFormat("aggr-col-stats-%d").build());
+      Map<ColumnStatsAggregator, List<ColStatsObjWithSourceInfo>> colStatsMap,
+      final List<String> partNames, final boolean areAllPartsFound,
+      final boolean useDensityFunctionForNDVEstimation, final double ndvTuner)
+      throws MetaException {
+    List<ColumnStatisticsObj> aggrColStatObjs = new ArrayList<ColumnStatisticsObj>();
+    int numProcessors = Runtime.getRuntime().availableProcessors();
+    final ExecutorService pool =
+        Executors.newFixedThreadPool(Math.min(colStatsMap.size(), numProcessors),
+            new ThreadFactoryBuilder().setDaemon(true).setNameFormat("aggr-col-stats-%d").build());
     final List<Future<ColumnStatisticsObj>> futures = Lists.newLinkedList();
-
+    LOG.debug("Aggregating column stats. Threads used: {}",
+        Math.min(colStatsMap.size(), numProcessors));
     long start = System.currentTimeMillis();
-    for (final Map.Entry<String, List<ColumnStatistics>> entry : map.entrySet()) {
+    for (final Entry<ColumnStatsAggregator, List<ColStatsObjWithSourceInfo>> entry : colStatsMap
+        .entrySet()) {
       futures.add(pool.submit(new Callable<ColumnStatisticsObj>() {
         @Override
-        public ColumnStatisticsObj call() throws Exception {
-          List<ColumnStatistics> css = entry.getValue();
-          ColumnStatsAggregator aggregator = ColumnStatsAggregatorFactory.getColumnStatsAggregator(css
-                  .iterator().next().getStatsObj().iterator().next().getStatsData().getSetField(),
-              useDensityFunctionForNDVEstimation, ndvTuner);
-          ColumnStatisticsObj statsObj = aggregator.aggregate(entry.getKey(), partNames, css);
-          return statsObj;
-        }}));
+        public ColumnStatisticsObj call() throws MetaException {
+          List<ColStatsObjWithSourceInfo> colStatWithSourceInfo = entry.getValue();
+          ColumnStatsAggregator aggregator = entry.getKey();
+          try {
+            ColumnStatisticsObj statsObj =
+                aggregator.aggregate(colStatWithSourceInfo, partNames, areAllPartsFound);
+            return statsObj;
+          } catch (MetaException e) {
+            LOG.debug(e.getMessage());
+            throw e;
+          }
+        }
+      }));
     }
     pool.shutdown();
-    for (Future<ColumnStatisticsObj> future : futures) {
-      try {
-        colStats.add(future.get());
-      } catch (InterruptedException | ExecutionException e) {
-        pool.shutdownNow();
-        LOG.debug(e.toString());
-        throw new MetaException(e.toString());
+    if (!futures.isEmpty()) {
+      for (Future<ColumnStatisticsObj> future : futures) {
+        try {
+          if (future.get() != null) {
+            aggrColStatObjs.add(future.get());
+          }
+        } catch (InterruptedException | ExecutionException e) {
+          LOG.debug(e.getMessage());
+          pool.shutdownNow();
+          throw new MetaException(e.toString());
+        }
+
       }
     }
     LOG.debug("Time for aggr col stats in seconds: {} Threads used: {}",
-        ((System.currentTimeMillis() - (double)start))/1000, Math.min(map.size(), 16));
-    return colStats;
+        ((System.currentTimeMillis() - (double) start)) / 1000,
+        Math.min(colStatsMap.size(), numProcessors));
+    return aggrColStatObjs;
   }
 
   public static double decimalToDouble(Decimal decimal) {
     return new BigDecimal(new BigInteger(decimal.getUnscaled()), decimal.getScale()).doubleValue();
-  }
-
-  public static String[] getQualifiedName(String defaultDbName, String tableName) {
-    String[] names = tableName.split("\\.");
-    if (names.length == 1) {
-      return new String[] { defaultDbName, tableName};
-    }
-    return names;
   }
 
   public static void validatePartitionNameCharacters(List<String> partVals,
@@ -325,7 +361,7 @@ public class MetaStoreUtils {
    * @param md message descriptor to use to generate the hash
    * @return the hash as a byte array
    */
-  public static byte[] hashStorageDescriptor(StorageDescriptor sd, MessageDigest md)  {
+  public static synchronized byte[] hashStorageDescriptor(StorageDescriptor sd, MessageDigest md)  {
     // Note all maps and lists have to be absolutely sorted.  Otherwise we'll produce different
     // results for hashes based on the OS or JVM being used.
     md.reset();
@@ -334,7 +370,9 @@ public class MetaStoreUtils {
       for (FieldSchema fs : sd.getCols()) {
         md.update(fs.getName().getBytes(ENCODING));
         md.update(fs.getType().getBytes(ENCODING));
-        if (fs.getComment() != null) md.update(fs.getComment().getBytes(ENCODING));
+        if (fs.getComment() != null) {
+          md.update(fs.getComment().getBytes(ENCODING));
+        }
       }
     }
     if (sd.getInputFormat() != null) {
@@ -363,7 +401,9 @@ public class MetaStoreUtils {
     }
     if (sd.getBucketCols() != null) {
       List<String> bucketCols = new ArrayList<>(sd.getBucketCols());
-      for (String bucket : bucketCols) md.update(bucket.getBytes(ENCODING));
+      for (String bucket : bucketCols) {
+        md.update(bucket.getBytes(ENCODING));
+      }
     }
     if (sd.getSortCols() != null) {
       SortedSet<Order> orders = new TreeSet<>(sd.getSortCols());
@@ -376,7 +416,9 @@ public class MetaStoreUtils {
       SkewedInfo skewed = sd.getSkewedInfo();
       if (skewed.getSkewedColNames() != null) {
         SortedSet<String> colnames = new TreeSet<>(skewed.getSkewedColNames());
-        for (String colname : colnames) md.update(colname.getBytes(ENCODING));
+        for (String colname : colnames) {
+          md.update(colname.getBytes(ENCODING));
+        }
       }
       if (skewed.getSkewedColValues() != null) {
         SortedSet<String> sortedOuterList = new TreeSet<>();
@@ -384,7 +426,9 @@ public class MetaStoreUtils {
           SortedSet<String> sortedInnerList = new TreeSet<>(innerList);
           sortedOuterList.add(org.apache.commons.lang.StringUtils.join(sortedInnerList, "."));
         }
-        for (String colval : sortedOuterList) md.update(colval.getBytes(ENCODING));
+        for (String colval : sortedOuterList) {
+          md.update(colval.getBytes(ENCODING));
+        }
       }
       if (skewed.getSkewedColValueLocationMaps() != null) {
         SortedMap<String, String> sortedMap = new TreeMap<>();
@@ -406,6 +450,15 @@ public class MetaStoreUtils {
   public static List<String> getColumnNamesForTable(Table table) {
     List<String> colNames = new ArrayList<>();
     Iterator<FieldSchema> colsIterator = table.getSd().getColsIterator();
+    while (colsIterator.hasNext()) {
+      colNames.add(colsIterator.next().getName());
+    }
+    return colNames;
+  }
+
+  public static List<String> getColumnNamesForPartition(Partition partition) {
+    List<String> colNames = new ArrayList<>();
+    Iterator<FieldSchema> colsIterator = partition.getSd().getColsIterator();
     while (colsIterator.hasNext()) {
       colNames.add(colsIterator.next().getName());
     }
@@ -464,7 +517,9 @@ public class MetaStoreUtils {
   }
 
   private static String validateColumnType(String type) {
-    if (type.equals(TYPE_FROM_DESERIALIZER)) return null;
+    if (type.equals(TYPE_FROM_DESERIALIZER)) {
+      return null;
+    }
     int last = 0;
     boolean lastAlphaDigit = isValidTypeChar(type.charAt(last));
     for (int i = 1; i <= type.length(); i++) {
@@ -501,7 +556,11 @@ public class MetaStoreUtils {
       return false;
     }
 
-    return "TRUE".equalsIgnoreCase(params.get("EXTERNAL"));
+    return isExternal(params);
+  }
+
+  public static boolean isExternal(Map<String, String> tableParams){
+    return "TRUE".equalsIgnoreCase(tableParams.get("EXTERNAL"));
   }
 
   // check if stats need to be (re)calculated
@@ -583,20 +642,16 @@ public class MetaStoreUtils {
     return false;
   }
 
-  public static boolean updateTableStatsFast(Database db, Table tbl, Warehouse wh,
-                                             boolean madeDir, EnvironmentContext environmentContext) throws MetaException {
-    return updateTableStatsFast(db, tbl, wh, madeDir, false, environmentContext);
-  }
-
-  public static boolean updateTableStatsFast(Database db, Table tbl, Warehouse wh,
-                                             boolean madeDir, boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
-    if (tbl.getPartitionKeysSize() == 0) {
-      // Update stats only when unpartitioned
-      FileStatus[] fileStatuses = wh.getFileStatusesForUnpartitionedTable(db, tbl);
-      return updateTableStatsFast(tbl, fileStatuses, madeDir, forceRecompute, environmentContext);
-    } else {
-      return false;
-    }
+  public static boolean updateTableStatsFast(Database db, Table tbl, Warehouse wh, boolean madeDir,
+      boolean forceRecompute, EnvironmentContext environmentContext, boolean isCreate) throws MetaException {
+    if (tbl.getPartitionKeysSize() != 0) return false;
+    // Update stats only when unpartitioned
+    // TODO: this is also invalid for ACID tables, except for the create case by coincidence;
+    //       because the methods in metastore get all the files in the table directory without
+    //       regard for ACID state.
+    List<FileStatus> fileStatuses = wh.getFileStatusesForUnpartitionedTable(db, tbl);
+    return updateTableStatsFast(
+        tbl, fileStatuses, madeDir, forceRecompute, environmentContext, isCreate);
   }
 
   /**
@@ -609,8 +664,9 @@ public class MetaStoreUtils {
    * these parameters set
    * @return true if the stats were updated, false otherwise
    */
-  public static boolean updateTableStatsFast(Table tbl, FileStatus[] fileStatus, boolean newDir,
-                                             boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
+  private static boolean updateTableStatsFast(Table tbl, List<FileStatus> fileStatus,
+      boolean newDir, boolean forceRecompute, EnvironmentContext environmentContext,
+      boolean isCreate) throws MetaException {
 
     Map<String,String> params = tbl.getParameters();
 
@@ -623,39 +679,43 @@ public class MetaStoreUtils {
       }
     }
 
-    boolean updated = false;
-    if (forceRecompute ||
-        params == null ||
-        !containsAllFastStats(params)) {
-      if (params == null) {
-        params = new HashMap<>();
-      }
-      if (!newDir) {
-        // The table location already exists and may contain data.
-        // Let's try to populate those stats that don't require full scan.
-        LOG.info("Updating table stats fast for " + tbl.getTableName());
-        populateQuickStats(fileStatus, params);
-        LOG.info("Updated size of table " + tbl.getTableName() +" to "+ params.get(StatsSetupConst.TOTAL_SIZE));
-        if (environmentContext != null
-            && environmentContext.isSetProperties()
-            && StatsSetupConst.TASK.equals(environmentContext.getProperties().get(
-            StatsSetupConst.STATS_GENERATED))) {
-          StatsSetupConst.setBasicStatsState(params, StatsSetupConst.TRUE);
-        } else {
-          StatsSetupConst.setBasicStatsState(params, StatsSetupConst.FALSE);
-        }
-      }
-      tbl.setParameters(params);
-      updated = true;
+    if (!forceRecompute && params != null && containsAllFastStats(params)) return false;
+    if (params == null) {
+      params = new HashMap<>();
     }
-    return updated;
+    if (!isCreate && MetaStoreUtils.isTransactionalTable(tbl.getParameters())) {
+      // TODO: we should use AcidUtils.getAcidFilesForStats, but cannot access it from metastore.
+      LOG.warn("Not updating fast stats for a transactional table " + tbl.getTableName());
+      tbl.setParameters(params);
+      return true;
+    }
+    if (!newDir) {
+      // The table location already exists and may contain data.
+      // Let's try to populate those stats that don't require full scan.
+      LOG.info("Updating table stats fast for " + tbl.getTableName());
+      populateQuickStats(fileStatus, params);
+      LOG.info("Updated size of table " + tbl.getTableName() +" to "+ params.get(StatsSetupConst.TOTAL_SIZE));
+      if (environmentContext != null
+          && environmentContext.isSetProperties()
+          && StatsSetupConst.TASK.equals(environmentContext.getProperties().get(
+          StatsSetupConst.STATS_GENERATED))) {
+        StatsSetupConst.setBasicStatsState(params, StatsSetupConst.TRUE);
+      } else {
+        StatsSetupConst.setBasicStatsState(params, StatsSetupConst.FALSE);
+      }
+    }
+    tbl.setParameters(params);
+    return true;
   }
 
-  public static void populateQuickStats(FileStatus[] fileStatus, Map<String, String> params) {
+  /** This method is invalid for MM and ACID tables unless fileStatus comes from AcidUtils. */
+  public static void populateQuickStats(List<FileStatus> fileStatus, Map<String, String> params) {
+    // Why is this even in metastore?
+    LOG.trace("Populating quick stats based on {} files", fileStatus.size());
     int numFiles = 0;
     long tableSize = 0L;
     for (FileStatus status : fileStatus) {
-      // don't take directories into account for quick stats
+      // don't take directories into account for quick stats TODO: wtf?
       if (!status.isDir()) {
         tableSize += status.getLen();
         numFiles += 1;
@@ -664,6 +724,12 @@ public class MetaStoreUtils {
     params.put(StatsSetupConst.NUM_FILES, Integer.toString(numFiles));
     params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(tableSize));
   }
+ 
+  public static void clearQuickStats(Map<String, String> params) {
+    params.remove(StatsSetupConst.NUM_FILES);
+    params.remove(StatsSetupConst.TOTAL_SIZE);
+  }
+ 
 
   public static boolean areSameColumns(List<FieldSchema> oldCols, List<FieldSchema> newCols) {
     return ListUtils.isEqualList(oldCols, newCols);
@@ -684,16 +750,6 @@ public class MetaStoreUtils {
     }
   }
 
-  public static boolean updatePartitionStatsFast(Partition part, Warehouse wh, EnvironmentContext environmentContext)
-      throws MetaException {
-    return updatePartitionStatsFast(part, wh, false, false, environmentContext);
-  }
-
-  public static boolean updatePartitionStatsFast(Partition part, Warehouse wh, boolean madeDir, EnvironmentContext environmentContext)
-      throws MetaException {
-    return updatePartitionStatsFast(part, wh, madeDir, false, environmentContext);
-  }
-
   /**
    * Updates the numFiles and totalSize parameters for the passed Partition by querying
    *  the warehouse if the passed Partition does not already have values for these parameters.
@@ -704,10 +760,11 @@ public class MetaStoreUtils {
    * these parameters set
    * @return true if the stats were updated, false otherwise
    */
-  public static boolean updatePartitionStatsFast(Partition part, Warehouse wh,
-                                                 boolean madeDir, boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
+  public static boolean updatePartitionStatsFast(Partition part, Table tbl, Warehouse wh,
+      boolean madeDir, boolean forceRecompute, EnvironmentContext environmentContext,
+      boolean isCreate) throws MetaException {
     return updatePartitionStatsFast(new PartitionSpecProxy.SimplePartitionWrapperIterator(part),
-        wh, madeDir, forceRecompute, environmentContext);
+        tbl, wh, madeDir, forceRecompute, environmentContext, isCreate);
   }
   /**
    * Updates the numFiles and totalSize parameters for the passed Partition by querying
@@ -719,29 +776,32 @@ public class MetaStoreUtils {
    * these parameters set
    * @return true if the stats were updated, false otherwise
    */
-  public static boolean updatePartitionStatsFast(PartitionSpecProxy.PartitionIterator part, Warehouse wh,
-                                                 boolean madeDir, boolean forceRecompute, EnvironmentContext environmentContext) throws MetaException {
+  public static boolean updatePartitionStatsFast(PartitionSpecProxy.PartitionIterator part,
+      Table table, Warehouse wh, boolean madeDir, boolean forceRecompute,
+      EnvironmentContext environmentContext, boolean isCreate) throws MetaException {
     Map<String,String> params = part.getParameters();
-    boolean updated = false;
-    if (forceRecompute ||
-        params == null ||
-        !containsAllFastStats(params)) {
-      if (params == null) {
-        params = new HashMap<>();
-      }
-      if (!madeDir) {
-        // The partition location already existed and may contain data. Lets try to
-        // populate those statistics that don't require a full scan of the data.
-        LOG.warn("Updating partition stats fast for: " + part.getTableName());
-        FileStatus[] fileStatus = wh.getFileStatusesForLocation(part.getLocation());
-        populateQuickStats(fileStatus, params);
-        LOG.warn("Updated size to " + params.get(StatsSetupConst.TOTAL_SIZE));
-        updateBasicState(environmentContext, params);
-      }
-      part.setParameters(params);
-      updated = true;
+    if (!forceRecompute && params != null && containsAllFastStats(params)) return false;
+    if (params == null) {
+      params = new HashMap<>();
     }
-    return updated;
+    if (!isCreate && MetaStoreUtils.isTransactionalTable(table.getParameters())) {
+      // TODO: implement?
+      LOG.warn("Not updating fast stats for a transactional table " + table.getTableName());
+      part.setParameters(params);
+      return true;
+    }
+    if (!madeDir) {
+      // The partition location already existed and may contain data. Lets try to
+      // populate those statistics that don't require a full scan of the data.
+      LOG.warn("Updating partition stats fast for: " + part.getTableName());
+      List<FileStatus> fileStatus = wh.getFileStatusesForLocation(part.getLocation());
+      // TODO: this is invalid for ACID tables, and we cannot access AcidUtils here.
+      populateQuickStats(fileStatus, params);
+      LOG.warn("Updated size to " + params.get(StatsSetupConst.TOTAL_SIZE));
+      updateBasicState(environmentContext, params);
+    }
+    part.setParameters(params);
+    return true;
   }
 
   /*
@@ -766,6 +826,12 @@ public class MetaStoreUtils {
     }
 
     return true;
+  }
+
+  /** Duplicates AcidUtils; used in a couple places in metastore. */
+  public static boolean isTransactionalTable(Map<String, String> params) {
+    String transactionalProp = params.get(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL);
+    return (transactionalProp != null && "true".equalsIgnoreCase(transactionalProp));
   }
 
   /** Duplicates AcidUtils; used in a couple places in metastore. */
@@ -848,13 +914,6 @@ public class MetaStoreUtils {
       return false;
     }
     return (table.getParameters().get(hive_metastoreConstants.META_TABLE_STORAGE) != null);
-  }
-
-  public static boolean isIndexTable(Table table) {
-    if (table == null) {
-      return false;
-    }
-    return TableType.INDEX_TABLE.toString().equals(table.getTableType());
   }
 
   /**
@@ -1562,7 +1621,6 @@ public class MetaStoreUtils {
     return cols;
   }
 
-
   public static boolean isValidSchedulingPolicy(String str) {
     try {
       parseSchedulingPolicy(str);
@@ -1573,9 +1631,156 @@ public class MetaStoreUtils {
   }
 
   public static WMPoolSchedulingPolicy parseSchedulingPolicy(String schedulingPolicy) {
-    if (schedulingPolicy == null) return WMPoolSchedulingPolicy.FAIR;
+    if (schedulingPolicy == null) {
+      return WMPoolSchedulingPolicy.FAIR;
+    }
     schedulingPolicy = schedulingPolicy.trim().toUpperCase();
-    if ("DEFAULT".equals(schedulingPolicy)) return WMPoolSchedulingPolicy.FAIR;
+    if ("DEFAULT".equals(schedulingPolicy)) {
+      return WMPoolSchedulingPolicy.FAIR;
+    }
     return Enum.valueOf(WMPoolSchedulingPolicy.class, schedulingPolicy);
+  }
+
+  // ColumnStatisticsObj with info about its db, table, partition (if table is partitioned)
+  public static class ColStatsObjWithSourceInfo {
+    private final ColumnStatisticsObj colStatsObj;
+    private final String catName;
+    private final String dbName;
+    private final String tblName;
+    private final String partName;
+
+    public ColStatsObjWithSourceInfo(ColumnStatisticsObj colStatsObj, String catName, String dbName, String tblName,
+        String partName) {
+      this.colStatsObj = colStatsObj;
+      this.catName = catName;
+      this.dbName = dbName;
+      this.tblName = tblName;
+      this.partName = partName;
+    }
+
+    public ColumnStatisticsObj getColStatsObj() {
+      return colStatsObj;
+    }
+
+    public String getCatName() {
+      return catName;
+    }
+
+    public String getDbName() {
+      return dbName;
+    }
+
+    public String getTblName() {
+      return tblName;
+    }
+
+    public String getPartName() {
+      return partName;
+    }
+  }
+
+  private static boolean hasCatalogName(String dbName) {
+    return dbName != null && dbName.length() > 0 &&
+        dbName.charAt(0) == CATALOG_DB_THRIFT_NAME_MARKER;
+  }
+
+  /**
+   * Given a catalog name and database name cram them together into one string.  This method can
+   * be used if you do not know the catalog name, in which case the default catalog will be
+   * retrieved from the conf object.  The resulting string can be parsed apart again via
+   * {@link #parseDbName(String, Configuration)}.
+   * @param catalogName catalog name, can be null if no known.
+   * @param dbName database name, can be null or empty.
+   * @param conf configuration object, used to determine default catalog if catalogName is null
+   * @return one string that contains both.
+   */
+  public static String prependCatalogToDbName(@Nullable String catalogName, @Nullable String dbName,
+                                              Configuration conf) {
+    if (catalogName == null) catalogName = getDefaultCatalog(conf);
+    StringBuilder buf = new StringBuilder()
+        .append(CATALOG_DB_THRIFT_NAME_MARKER)
+        .append(catalogName)
+        .append(CATALOG_DB_SEPARATOR);
+    if (dbName != null) {
+      if (dbName.isEmpty()) buf.append(DB_EMPTY_MARKER);
+      else buf.append(dbName);
+    }
+    return buf.toString();
+  }
+
+  /**
+   * Given a catalog name and database name, cram them together into one string.  These can be
+   * parsed apart again via {@link #parseDbName(String, Configuration)}.
+   * @param catalogName catalog name.  This cannot be null.  If this might be null use
+   *                    {@link #prependCatalogToDbName(String, String, Configuration)} instead.
+   * @param dbName database name.
+   * @return one string that contains both.
+   */
+  public static String prependNotNullCatToDbName(String catalogName, String dbName) {
+    assert catalogName != null;
+    return prependCatalogToDbName(catalogName, dbName, null);
+  }
+
+  /**
+   * Prepend the default 'hive' catalog onto the database name.
+   * @param dbName database name
+   * @param conf configuration object, used to determine default catalog
+   * @return one string with the 'hive' catalog name prepended.
+   */
+  public static String prependCatalogToDbName(String dbName, Configuration conf) {
+    return prependCatalogToDbName(null, dbName, conf);
+  }
+
+  private final static String[] nullCatalogAndDatabase = {null, null};
+
+  /**
+   * Parse the catalog name out of the database name.  If no catalog name is present then the
+   * default catalog (as set in configuration file) will be assumed.
+   * @param dbName name of the database.  This may or may not contain the catalog name.
+   * @param conf configuration object, used to determine the default catalog if it is not present
+   *            in the database name.
+   * @return an array of two elements, the first being the catalog name, the second the database
+   * name.
+   * @throws MetaException if the name is not either just a database name or a catalog plus
+   * database name with the proper delimiters.
+   */
+  public static String[] parseDbName(String dbName, Configuration conf) throws MetaException {
+    if (dbName == null) return nullCatalogAndDatabase;
+    if (hasCatalogName(dbName)) {
+      if (dbName.endsWith(CATALOG_DB_SEPARATOR)) {
+        // This means the DB name is null
+        return new String[] {dbName.substring(1, dbName.length() - 1), null};
+      } else if (dbName.endsWith(DB_EMPTY_MARKER)) {
+        // This means the DB name is empty
+        return new String[] {dbName.substring(1, dbName.length() - DB_EMPTY_MARKER.length() - 1), ""};
+      }
+      String[] names = dbName.substring(1).split(CATALOG_DB_SEPARATOR, 2);
+      if (names.length != 2) {
+        throw new MetaException(dbName + " is prepended with the catalog marker but does not " +
+            "appear to have a catalog name in it");
+      }
+      return names;
+    } else {
+      return new String[] {getDefaultCatalog(conf), dbName};
+    }
+  }
+
+  /**
+   * Position in the array returned by {@link #parseDbName} that has the catalog name.
+   */
+  public static final int CAT_NAME = 0;
+  /**
+   * Position in the array returned by {@link #parseDbName} that has the database name.
+   */
+  public static final int DB_NAME = 1;
+
+  public static String getDefaultCatalog(Configuration conf) {
+    if (conf == null) {
+      LOG.warn("Configuration is null, so going with default catalog.");
+      return Warehouse.DEFAULT_CATALOG_NAME;
+    }
+    String catName = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT);
+    if (catName == null || "".equals(catName)) catName = Warehouse.DEFAULT_CATALOG_NAME;
+    return catName;
   }
 }

@@ -126,17 +126,15 @@ POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: SELECT next_day('2015-02-02', 'VT'),
-       next_day('2015-02-30', 'WE'),
-       next_day('02/15/2015', 'WE')
+       next_day('2015-02-15', 'WE')
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT next_day('2015-02-02', 'VT'),
-       next_day('2015-02-30', 'WE'),
-       next_day('02/15/2015', 'WE')
+       next_day('2015-02-15', 'WE')
 FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-NULL	2015-03-04	NULL
+NULL	2015-02-18

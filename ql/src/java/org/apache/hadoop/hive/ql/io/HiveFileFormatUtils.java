@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -341,8 +341,8 @@ public final class HiveFileFormatUtils {
         .tableProperties(tableProp)
         .reporter(reporter)
         .writingBase(conf.getInsertOverwrite())
-        .minimumTransactionId(conf.getTransactionId())
-        .maximumTransactionId(conf.getTransactionId())
+        .minimumWriteId(conf.getTableWriteId())
+        .maximumWriteId(conf.getTableWriteId())
         .bucket(bucket)
         .inspector(inspector)
         .recordIdColumn(rowIdColNum)

@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -143,7 +143,7 @@ public class SimpleFetchOptimizer extends Transform {
     FetchData fetch = checkTree(aggressive, pctx, alias, source);
     if (fetch != null && checkThreshold(fetch, limit, pctx)) {
       FetchWork fetchWork = fetch.convertToWork();
-      FetchTask fetchTask = (FetchTask) TaskFactory.get(fetchWork, pctx.getConf());
+      FetchTask fetchTask = (FetchTask) TaskFactory.get(fetchWork);
       fetchWork.setSink(fetch.completed(pctx, fetchWork));
       fetchWork.setSource(source);
       fetchWork.setLimit(limit);

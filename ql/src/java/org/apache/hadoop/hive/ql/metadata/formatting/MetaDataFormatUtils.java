@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -32,29 +32,28 @@ import org.apache.hadoop.hive.metastore.api.Decimal;
 import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
+import org.apache.hadoop.hive.metastore.api.WMMapping;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMPoolTrigger;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMTrigger;
-import org.apache.hadoop.hive.ql.index.HiveIndex;
-import org.apache.hadoop.hive.ql.index.HiveIndex.IndexType;
+import org.apache.hadoop.hive.ql.metadata.CheckConstraint;
+import org.apache.hadoop.hive.ql.metadata.DefaultConstraint;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
 import org.apache.hadoop.hive.ql.metadata.ForeignKeyInfo.ForeignKeyCol;
-import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.plan.DescTableDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.ShowIndexesDesc;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hive.common.util.HiveStringUtils;
 
@@ -67,6 +66,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -134,47 +134,8 @@ public final class MetaDataFormatUtils {
     return null;
   }
 
-  public static String getIndexInformation(Index index, boolean isOutputPadded) {
-    StringBuilder indexInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
-
-    List<String> indexColumns = new ArrayList<String>();
-
-    indexColumns.add(index.getIndexName());
-    indexColumns.add(index.getOrigTableName());
-
-    // index key names
-    List<FieldSchema> indexKeys = index.getSd().getCols();
-    StringBuilder keyString = new StringBuilder();
-    boolean first = true;
-    for (FieldSchema key : indexKeys)
-    {
-      if (!first)
-      {
-        keyString.append(", ");
-      }
-      keyString.append(key.getName());
-      first = false;
-    }
-
-    indexColumns.add(keyString.toString());
-
-    indexColumns.add(index.getIndexTableName());
-
-    // index type
-    String indexHandlerClass = index.getIndexHandlerClass();
-    IndexType indexType = HiveIndex.getIndexTypeByClassName(indexHandlerClass);
-    indexColumns.add(indexType.getName());
-
-    String comment = HiveStringUtils.escapeJava(index.getParameters().get("comment"));
-    indexColumns.add(comment);
-
-    formatOutput(indexColumns.toArray(new String[0]), indexInfo, isOutputPadded, true);
-
-    return indexInfo.toString();
-  }
-
   public static String getConstraintsInformation(PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
-          UniqueConstraint ukInfo, NotNullConstraint nnInfo) {
+          UniqueConstraint ukInfo, NotNullConstraint nnInfo, DefaultConstraint dInfo, CheckConstraint cInfo) {
     StringBuilder constraintsInfo = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
 
     constraintsInfo.append(LINE_DELIM).append("# Constraints").append(LINE_DELIM);
@@ -193,6 +154,14 @@ public final class MetaDataFormatUtils {
     if (nnInfo != null && !nnInfo.getNotNullConstraints().isEmpty()) {
       constraintsInfo.append(LINE_DELIM).append("# Not Null Constraints").append(LINE_DELIM);
       getNotNullConstraintsInformation(constraintsInfo, nnInfo);
+    }
+    if (dInfo != null && !dInfo.getDefaultConstraints().isEmpty()) {
+      constraintsInfo.append(LINE_DELIM).append("# Default Constraints").append(LINE_DELIM);
+      getDefaultConstraintsInformation(constraintsInfo, dInfo);
+    }
+    if (cInfo != null && !cInfo.getCheckConstraints().isEmpty()) {
+      constraintsInfo.append(LINE_DELIM).append("# Check Constraints").append(LINE_DELIM);
+      getCheckConstraintsInformation(constraintsInfo, cInfo);
     }
     return constraintsInfo.toString();
   }
@@ -290,6 +259,74 @@ public final class MetaDataFormatUtils {
         formatOutput("Constraint Name:", me.getKey(), constraintsInfo);
         formatOutput("Column Name:", me.getValue(), constraintsInfo);
         constraintsInfo.append(LINE_DELIM);
+      }
+    }
+  }
+
+  private static void getDefaultConstraintColInformation(StringBuilder constraintsInfo,
+                                                        DefaultConstraint.DefaultConstraintCol ukCol) {
+    String[] fkcFields = new String[2];
+    fkcFields[0] = "Column Name:" + ukCol.colName;
+    fkcFields[1] = "Default Value:" + ukCol.defaultVal;
+    formatOutput(fkcFields, constraintsInfo);
+  }
+
+  private static void getCheckConstraintColInformation(StringBuilder constraintsInfo,
+                                                         CheckConstraint.CheckConstraintCol ukCol) {
+    String[] fkcFields = new String[2];
+    fkcFields[0] = "Column Name:" + ukCol.colName;
+    fkcFields[1] = "Check Value:" + ukCol.checkExpression;
+    formatOutput(fkcFields, constraintsInfo);
+  }
+
+  private static void getDefaultConstraintRelInformation(
+      StringBuilder constraintsInfo,
+      String constraintName,
+      List<DefaultConstraint.DefaultConstraintCol> ukRel) {
+    formatOutput("Constraint Name:", constraintName, constraintsInfo);
+    if (ukRel != null && ukRel.size() > 0) {
+      for (DefaultConstraint.DefaultConstraintCol ukc : ukRel) {
+        getDefaultConstraintColInformation(constraintsInfo, ukc);
+      }
+    }
+    constraintsInfo.append(LINE_DELIM);
+  }
+
+  private static void getCheckConstraintRelInformation(
+      StringBuilder constraintsInfo,
+      String constraintName,
+      List<CheckConstraint.CheckConstraintCol> ukRel) {
+    formatOutput("Constraint Name:", constraintName, constraintsInfo);
+    if (ukRel != null && ukRel.size() > 0) {
+      for (CheckConstraint.CheckConstraintCol ukc : ukRel) {
+        getCheckConstraintColInformation(constraintsInfo, ukc);
+      }
+    }
+    constraintsInfo.append(LINE_DELIM);
+  }
+
+  private static void getDefaultConstraintsInformation(StringBuilder constraintsInfo,
+                                                        DefaultConstraint dInfo) {
+    formatOutput("Table:",
+        dInfo.getDatabaseName() + "." + dInfo.getTableName(),
+        constraintsInfo);
+    Map<String, List<DefaultConstraint.DefaultConstraintCol>> defaultConstraints = dInfo.getDefaultConstraints();
+    if (defaultConstraints != null && defaultConstraints.size() > 0) {
+      for (Map.Entry<String, List<DefaultConstraint.DefaultConstraintCol>> me : defaultConstraints.entrySet()) {
+        getDefaultConstraintRelInformation(constraintsInfo, me.getKey(), me.getValue());
+      }
+    }
+  }
+
+  private static void getCheckConstraintsInformation(StringBuilder constraintsInfo,
+                                                       CheckConstraint dInfo) {
+    formatOutput("Table:",
+                 dInfo.getDatabaseName() + "." + dInfo.getTableName(),
+                 constraintsInfo);
+    Map<String, List<CheckConstraint.CheckConstraintCol>> checkConstraints = dInfo.getCheckConstraints();
+    if (checkConstraints != null && checkConstraints.size() > 0) {
+      for (Map.Entry<String, List<CheckConstraint.CheckConstraintCol>> me : checkConstraints.entrySet()) {
+        getCheckConstraintRelInformation(constraintsInfo, me.getKey(), me.getValue());
       }
     }
   }
@@ -711,12 +748,6 @@ public final class MetaDataFormatUtils {
     return DescTableDesc.getSchema(showColStats).split("#")[0].split(",");
   }
 
-  public static String getIndexColumnsHeader() {
-    StringBuilder indexCols = new StringBuilder(DEFAULT_STRINGBUILDER_SIZE);
-    formatOutput(ShowIndexesDesc.getSchema().split("#")[0].split(","), indexCols);
-    return indexCols.toString();
-  }
-
   public static MetaDataFormatter getFormatter(HiveConf conf) {
     if ("json".equals(conf.get(HiveConf.ConfVars.HIVE_DDL_OUTPUT_FORMAT.varname, "text"))) {
       return new JsonMetaDataFormatter();
@@ -729,49 +760,87 @@ public final class MetaDataFormatUtils {
    * Interface to implement actual conversion to text or json of a resource plan.
    */
   public interface RPFormatter {
-    void formatRP(String rpName, Object ... kvPairs) throws IOException;
-    void formatPool(String poolName, int indentLevel, Object ...kvPairs) throws IOException;
-    void formatTrigger(String triggerName, String actionExpression, String triggerExpression,
-        int indentLevel) throws IOException;
+    void startRP(String rpName, Object ... kvPairs) throws IOException;
+    void endRP() throws IOException;
+    void startPools() throws IOException;
+    void startPool(String poolName, Object ...kvPairs) throws IOException;
+    void endPool() throws IOException;
+    void endPools() throws IOException;
+    void startTriggers() throws IOException;
+    void formatTrigger(String triggerName,
+        String actionExpression, String triggerExpression) throws IOException;
+    void endTriggers() throws IOException;
+    void startMappings() throws IOException;
+    void formatMappingType(String type, List<String> names) throws IOException;
+    void endMappings() throws IOException;
   }
 
   /**
    * A n-ary tree for the pools, each node contains a pool and its children.
    */
   private static class PoolTreeNode {
+    private String nonPoolName;
     private WMPool pool;
     private final List<PoolTreeNode> children = new ArrayList<>();
     private final List<WMTrigger> triggers = new ArrayList<>();
+    private final HashMap<String, List<String>> mappings = new HashMap<>();
+    private boolean isDefault;
 
     private PoolTreeNode() {}
 
-    private void writePoolTreeNode(RPFormatter rpFormatter, int indentLevel) throws IOException {
-      String path = pool.getPoolPath();
-      int idx = path.lastIndexOf('.');
-      if (idx != -1) {
-        path = path.substring(idx + 1);
+    private void writePoolTreeNode(RPFormatter rpFormatter) throws IOException {
+      if (pool != null) {
+        String path = pool.getPoolPath();
+        int idx = path.lastIndexOf('.');
+        if (idx != -1) {
+          path = path.substring(idx + 1);
+        }
+        Double allocFraction = pool.getAllocFraction();
+        String schedulingPolicy = pool.isSetSchedulingPolicy() ? pool.getSchedulingPolicy() : null;
+        Integer parallelism = pool.getQueryParallelism();
+        rpFormatter.startPool(path, "allocFraction", allocFraction,
+            "schedulingPolicy", schedulingPolicy, "parallelism", parallelism);
+      } else {
+        rpFormatter.startPool(nonPoolName);
       }
-      Double allocFraction = pool.getAllocFraction();
-      String schedulingPolicy = pool.isSetSchedulingPolicy() ? pool.getSchedulingPolicy() : null;
-      Integer parallelism = pool.getQueryParallelism();
-
-      rpFormatter.formatPool(path, indentLevel, "allocFraction", allocFraction,
-          "schedulingPolicy", schedulingPolicy, "parallelism", parallelism);
+      rpFormatter.startTriggers();
       for (WMTrigger trigger : triggers) {
         rpFormatter.formatTrigger(trigger.getTriggerName(), trigger.getActionExpression(),
-            trigger.getTriggerExpression(), indentLevel);
+            trigger.getTriggerExpression());
       }
+      rpFormatter.endTriggers();
+      rpFormatter.startMappings();
+      for (Map.Entry<String, List<String>> mappingsOfType : mappings.entrySet()) {
+        mappingsOfType.getValue().sort(String::compareTo);
+        rpFormatter.formatMappingType(mappingsOfType.getKey(), mappingsOfType.getValue());
+      }
+      if (isDefault) {
+        rpFormatter.formatMappingType("default", Lists.<String>newArrayList());
+      }
+      rpFormatter.endMappings();
+      rpFormatter.startPools();
       for (PoolTreeNode node : children) {
-        node.writePoolTreeNode(rpFormatter, indentLevel + 1);
+        node.writePoolTreeNode(rpFormatter);
       }
+      rpFormatter.endPools();
+      rpFormatter.endPool();
     }
 
     private void sortChildren() {
-      children.sort((PoolTreeNode p1, PoolTreeNode p2) ->
-          Double.compare(p2.pool.getAllocFraction(), p1.pool.getAllocFraction()));
+      children.sort((PoolTreeNode p1, PoolTreeNode p2) -> {
+        if (p2.pool == null) {
+          return (p1.pool == null) ? 0 : -1;
+        }
+        if (p1.pool == null) {
+          return 1;
+        }
+        return Double.compare(p2.pool.getAllocFraction(), p1.pool.getAllocFraction());
+      });
       for (PoolTreeNode child : children) {
         child.sortChildren();
       }
+      triggers.sort((WMTrigger t1, WMTrigger t2)
+          -> t1.getTriggerName().compareTo(t2.getTriggerName()));
     }
 
     static PoolTreeNode makePoolTree(WMFullResourcePlan fullRp) {
@@ -786,6 +855,10 @@ public final class MetaDataFormatUtils {
           poolMap.put(path, curr);
         }
         curr.pool = pool;
+        if (fullRp.getPlan().isSetDefaultPoolPath()
+            && fullRp.getPlan().getDefaultPoolPath().equals(path)) {
+          curr.isDefault = true;
+        }
 
         // Add this node to the parent node.
         int ind = path.lastIndexOf('.');
@@ -803,12 +876,19 @@ public final class MetaDataFormatUtils {
         parent.children.add(curr);
       }
       Map<String, WMTrigger> triggerMap = new HashMap<>();
-      if (fullRp.getTriggers() != null) {
+      List<WMTrigger> unmanagedTriggers = new ArrayList<>();
+      HashSet<WMTrigger> unusedTriggers = new HashSet<>();
+      if (fullRp.isSetTriggers()) {
         for (WMTrigger trigger : fullRp.getTriggers()) {
           triggerMap.put(trigger.getTriggerName(), trigger);
+          if (trigger.isIsInUnmanaged()) {
+            unmanagedTriggers.add(trigger);
+          } else {
+            unusedTriggers.add(trigger);
+          }
         }
       }
-      if (fullRp.getPoolTriggers() != null) {
+      if (fullRp.isSetPoolTriggers()) {
         for (WMPoolTrigger pool2Trigger : fullRp.getPoolTriggers()) {
           PoolTreeNode node = poolMap.get(pool2Trigger.getPool());
           WMTrigger trigger = triggerMap.get(pool2Trigger.getTrigger());
@@ -816,31 +896,83 @@ public final class MetaDataFormatUtils {
             throw new IllegalStateException("Invalid trigger to pool: " + pool2Trigger.getPool() +
                 ", " + pool2Trigger.getTrigger());
           }
+          unusedTriggers.remove(trigger);
           node.triggers.add(trigger);
         }
       }
+      HashMap<String, List<String>> unmanagedMappings = new HashMap<>();
+      HashMap<String, List<String>> invalidMappings = new HashMap<>();
+      if (fullRp.isSetMappings()) {
+        for (WMMapping mapping : fullRp.getMappings()) {
+          if (mapping.isSetPoolPath()) {
+            PoolTreeNode destNode = poolMap.get(mapping.getPoolPath());
+            addMappingToMap((destNode == null) ? invalidMappings : destNode.mappings, mapping);
+          } else {
+            addMappingToMap(unmanagedMappings, mapping);
+          }
+        }
+      }
+
+      if (!unmanagedTriggers.isEmpty() || !unmanagedMappings.isEmpty()) {
+        PoolTreeNode curr = createNonPoolNode(poolMap, "unmanaged queries", root);
+        curr.triggers.addAll(unmanagedTriggers);
+        curr.mappings.putAll(unmanagedMappings);
+      }
+      // TODO: perhaps we should also summarize the triggers pointing to invalid pools.
+      if (!unusedTriggers.isEmpty()) {
+        PoolTreeNode curr = createNonPoolNode(poolMap, "unused triggers", root);
+        curr.triggers.addAll(unusedTriggers);
+      }
+      if (!invalidMappings.isEmpty()) {
+        PoolTreeNode curr = createNonPoolNode(poolMap, "invalid mappings", root);
+        curr.mappings.putAll(invalidMappings);
+      }
       return root;
     }
-  }
 
-  private static void writeRPLine(RPFormatter rpFormatter, WMResourcePlan plan)
-      throws IOException {
-    Integer parallelism = plan.isSetQueryParallelism() ? plan.getQueryParallelism() : null;
-    String defaultPool = plan.isSetDefaultPoolPath() ? plan.getDefaultPoolPath() : null;
-    rpFormatter.formatRP(plan.getName(), "status", plan.getStatus().toString(),
-         "parallelism", parallelism, "defaultPool", defaultPool);
+    private static PoolTreeNode createNonPoolNode(
+        Map<String, PoolTreeNode> poolMap, String name, PoolTreeNode root) {
+      PoolTreeNode result;
+      do {
+        name = "<" + name + ">";
+        result = poolMap.get(name);
+        // We expect this to never happen in practice. Can pool paths even have angled braces?
+      } while (result != null);
+      result = new PoolTreeNode();
+      result.nonPoolName = name;
+      poolMap.put(name, result);
+      root.children.add(result);
+      return result;
+    }
+
+    private static void addMappingToMap(HashMap<String, List<String>> map, WMMapping mapping) {
+      List<String> list = map.get(mapping.getEntityType());
+      if (list == null) {
+        list = new ArrayList<String>();
+        map.put(mapping.getEntityType(), list);
+      }
+      list.add(mapping.getEntityName());
+    }
   }
 
   public static void formatFullRP(RPFormatter rpFormatter, WMFullResourcePlan fullRp)
       throws HiveException {
     try {
       WMResourcePlan plan = fullRp.getPlan();
-      writeRPLine(rpFormatter, plan);
+      Integer parallelism = plan.isSetQueryParallelism() ? plan.getQueryParallelism() : null;
+      String defaultPool = plan.isSetDefaultPoolPath() ? plan.getDefaultPoolPath() : null;
+      rpFormatter.startRP(plan.getName(), "status", plan.getStatus().toString(),
+           "parallelism", parallelism, "defaultPool", defaultPool);
+      rpFormatter.startPools();
+
       PoolTreeNode root = PoolTreeNode.makePoolTree(fullRp);
       root.sortChildren();
       for (PoolTreeNode pool : root.children) {
-        pool.writePoolTreeNode(rpFormatter, 1);
+        pool.writePoolTreeNode(rpFormatter);
       }
+
+      rpFormatter.endPools();
+      rpFormatter.endRP();
     } catch (IOException e) {
       throw new HiveException(e);
     }

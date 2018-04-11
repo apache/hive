@@ -303,6 +303,7 @@ KW_COMPACTIONS: 'COMPACTIONS';
 KW_TRANSACTIONS: 'TRANSACTIONS';
 KW_REWRITE : 'REWRITE';
 KW_AUTHORIZATION: 'AUTHORIZATION';
+KW_REOPTIMIZATION: 'REOPTIMIZATION';
 KW_CONF: 'CONF';
 KW_VALUES: 'VALUES';
 KW_RELOAD: 'RELOAD';
@@ -359,6 +360,7 @@ KW_QUERY_PARALLELISM: 'QUERY_PARALLELISM';
 KW_PLANS: 'PLANS';
 KW_ACTIVATE: 'ACTIVATE';
 KW_DEFAULT: 'DEFAULT';
+KW_CHECK: 'CHECK';
 KW_POOL: 'POOL';
 KW_MOVE: 'MOVE';
 KW_DO: 'DO';
@@ -467,6 +469,21 @@ NumberLiteral
 ByteLengthLiteral
     :
     (Digit)+ ('b' | 'B' | 'k' | 'K' | 'm' | 'M' | 'g' | 'G')
+    ;
+
+TimeFullLiteral
+    :
+    (Digit)+ ('NS' | 'NSEC' | 'NSECS' | 'NANOSECOND' | 'NANOSECONDS' |
+          'US' | 'USEC' | 'USECS' | 'MICROSECOND' | 'MICROSECONDS' |
+          'MS' | 'MSEC' | 'MSECS' | 'MILLISECOND' | 'MILLISECONDS' |
+          'SEC' | 'SECS' | 'SECOND' | 'SECONDS' |
+          'MIN' | 'MINS' | 'MINUTE' | 'MINUTES' |
+          'HOUR' | 'HOURS' | 'DAY' | 'DAYS')
+    ;
+
+ByteLengthFullLiteral
+    :
+    (Digit)+ ('KB' | 'MB' | 'GB' | 'TB' | 'PB')
     ;
 
 Number

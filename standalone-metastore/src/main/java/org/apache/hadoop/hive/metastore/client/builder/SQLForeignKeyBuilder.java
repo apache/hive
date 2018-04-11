@@ -17,9 +17,14 @@
  */
 package org.apache.hadoop.hive.metastore.client.builder;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Builder for {@link SQLForeignKey}.  Requires what {@link ConstraintBuilder} requires, plus
@@ -27,11 +32,15 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
  * database, table, column and name.
  */
 public class SQLForeignKeyBuilder extends ConstraintBuilder<SQLForeignKeyBuilder> {
-  private String pkDb, pkTable, pkColumn, pkName;
+  private String pkDb, pkTable, pkName;
+  private List<String> pkColumns;
   private int updateRule, deleteRule;
 
   public SQLForeignKeyBuilder() {
+    super.setChild(this);
     updateRule = deleteRule = 0;
+    pkColumns = new ArrayList<>();
+    pkDb = Warehouse.DEFAULT_DATABASE_NAME;
   }
 
   public SQLForeignKeyBuilder setPkDb(String pkDb) {
@@ -44,8 +53,8 @@ public class SQLForeignKeyBuilder extends ConstraintBuilder<SQLForeignKeyBuilder
     return this;
   }
 
-  public SQLForeignKeyBuilder setPkColumn(String pkColumn) {
-    this.pkColumn = pkColumn;
+  public SQLForeignKeyBuilder addPkColumn(String pkColumn) {
+    pkColumns.add(pkColumn);
     return this;
   }
 
@@ -54,11 +63,11 @@ public class SQLForeignKeyBuilder extends ConstraintBuilder<SQLForeignKeyBuilder
     return this;
   }
 
-  public SQLForeignKeyBuilder setPrimaryKey(SQLPrimaryKey pk) {
-    pkDb = pk.getTable_db();
-    pkTable = pk.getTable_name();
-    pkColumn = pk.getColumn_name();
-    pkName = pk.getPk_name();
+  public SQLForeignKeyBuilder fromPrimaryKey(List<SQLPrimaryKey> pk) {
+    pkDb = pk.get(0).getTable_db();
+    pkTable = pk.get(0).getTable_name();
+    for (SQLPrimaryKey pkcol : pk) pkColumns.add(pkcol.getColumn_name());
+    pkName = pk.get(0).getPk_name();
     return this;
   }
 
@@ -72,12 +81,23 @@ public class SQLForeignKeyBuilder extends ConstraintBuilder<SQLForeignKeyBuilder
     return this;
   }
 
-  public SQLForeignKey build() throws MetaException {
-    checkBuildable("foreign_key");
-    if (pkDb == null || pkTable == null || pkColumn == null || pkName == null) {
-      throw new MetaException("You must provide the primary key database, table, column, and name");
+  public List<SQLForeignKey> build(Configuration conf) throws MetaException {
+    checkBuildable("to_" + pkTable + "_foreign_key", conf);
+    if (pkTable == null || pkColumns.isEmpty() || pkName == null) {
+      throw new MetaException("You must provide the primary key table, columns, and name");
     }
-    return new SQLForeignKey(pkDb, pkTable, pkColumn, dbName, tableName, columnName, keySeq,
-        updateRule, deleteRule, constraintName, pkName, enable, validate, rely);
+    if (columns.size() != pkColumns.size()) {
+      throw new MetaException("The number of foreign columns must match the number of primary key" +
+          " columns");
+    }
+    List<SQLForeignKey> fk = new ArrayList<>(columns.size());
+    for (int i = 0; i < columns.size(); i++) {
+      SQLForeignKey keyCol = new SQLForeignKey(pkDb, pkTable, pkColumns.get(i), dbName, tableName,
+          columns.get(i), getNextSeq(), updateRule, deleteRule, constraintName, pkName, enable,
+          validate, rely);
+      keyCol.setCatName(catName);
+      fk.add(keyCol);
+    }
+    return fk;
   }
 }

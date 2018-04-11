@@ -160,11 +160,11 @@ STAGE PLANS:
 PREHOOK: query: select count (*) from insert_into2 where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count (*) from insert_into2 where ds = '1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 100
 PREHOOK: query: INSERT INTO TABLE insert_into2 PARTITION (ds='1') SELECT * FROM src order by key limit 100
 PREHOOK: type: QUERY
@@ -195,11 +195,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT COUNT(*) FROM insert_into2 WHERE ds='1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT COUNT(*) FROM insert_into2 WHERE ds='1'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 200
 PREHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into2
@@ -207,14 +207,14 @@ PREHOOK: query: SELECT SUM(HASH(c)) FROM (
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into2
 PREHOOK: Input: default@insert_into2@ds=1
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into2
 ) t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into2
 POSTHOOK: Input: default@insert_into2@ds=1
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -39568181484
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE insert_into2 PARTITION (ds='2')
   SELECT * FROM src order by key LIMIT 100
@@ -354,7 +354,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into2
 PREHOOK: Input: default@insert_into2@ds=1
 PREHOOK: Input: default@insert_into2@ds=2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into2
 ) t
@@ -362,7 +362,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into2
 POSTHOOK: Input: default@insert_into2@ds=1
 POSTHOOK: Input: default@insert_into2@ds=2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -59352272126
 PREHOOK: query: explain
 SELECT COUNT(*) FROM insert_into2 WHERE ds='2'
@@ -383,11 +383,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT COUNT(*) FROM insert_into2 WHERE ds='2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT COUNT(*) FROM insert_into2 WHERE ds='2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 100
 PREHOOK: query: EXPLAIN INSERT OVERWRITE TABLE insert_into2 PARTITION (ds='2')
   SELECT * FROM src order by key LIMIT 50
@@ -527,7 +527,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into2
 PREHOOK: Input: default@insert_into2@ds=1
 PREHOOK: Input: default@insert_into2@ds=2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT SUM(HASH(c)) FROM (
     SELECT TRANSFORM(*) USING 'tr \t _' AS (c) FROM insert_into2
 ) t
@@ -535,7 +535,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into2
 POSTHOOK: Input: default@insert_into2@ds=1
 POSTHOOK: Input: default@insert_into2@ds=2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 -33609711132
 PREHOOK: query: explain
 SELECT COUNT(*) FROM insert_into2 WHERE ds='2'
@@ -556,11 +556,11 @@ STAGE PLANS:
 PREHOOK: query: SELECT COUNT(*) FROM insert_into2 WHERE ds='2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: SELECT COUNT(*) FROM insert_into2 WHERE ds='2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 50
 PREHOOK: query: insert into table insert_into2 partition (ds='2') values(1, 'abc')
 PREHOOK: type: QUERY
@@ -634,12 +634,12 @@ PREHOOK: query: select count(*) from insert_into2 where ds='2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@insert_into2
 PREHOOK: Input: default@insert_into2@ds=2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select count(*) from insert_into2 where ds='2'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@insert_into2
 POSTHOOK: Input: default@insert_into2@ds=2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 51
 PREHOOK: query: DROP TABLE insert_into2
 PREHOOK: type: DROPTABLE

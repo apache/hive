@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.conf;
 
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.conf.Configuration;
 import org.hamcrest.CoreMatchers;
@@ -25,8 +26,8 @@ import org.hamcrest.core.StringEndsWith;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +40,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+@Category(MetastoreUnitTest.class)
 public class TestMetastoreConf {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestMetastoreConf.class);
@@ -48,6 +50,7 @@ public class TestMetastoreConf {
 
   @After
   public void unsetProperties() {
+    MetastoreConf.setHiveSiteLocation(null);
     for (MetastoreConf.ConfVars var : MetastoreConf.dataNucleusAndJdoConfs) {
       System.getProperties().remove(var.getVarname());
     }

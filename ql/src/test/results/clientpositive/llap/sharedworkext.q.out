@@ -616,15 +616,15 @@ STAGE PLANS:
                 Statistics: Num rows: 404 Data size: 71912 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col1 (type: string)
-                  outputColumnNames: _col0
+                  outputColumnNames: _col1
                   Statistics: Num rows: 404 Data size: 71912 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions: 0 (type: int), _col0 (type: string)
+                    key expressions: 0 (type: int), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: 0 (type: int)
                     Statistics: Num rows: 404 Data size: 71912 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions: 0 (type: int), _col0 (type: string)
+                    key expressions: 0 (type: int), _col1 (type: string)
                     sort order: ++
                     Map-reduce partition columns: 0 (type: int)
                     Statistics: Num rows: 404 Data size: 71912 Basic stats: COMPLETE Column stats: COMPLETE
@@ -633,24 +633,24 @@ STAGE PLANS:
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string)
-                outputColumnNames: _col0
+                outputColumnNames: _col1
                 Statistics: Num rows: 404 Data size: 35148 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
                         input alias: ptf_0
-                        output shape: _col0: string
+                        output shape: _col1: string
                         type: WINDOWING
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col0 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: 0
                         raw input shape:
                         window functions:
                             window function definition
                               alias: rank_window_0
-                              arguments: _col0
+                              arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
@@ -691,24 +691,24 @@ STAGE PLANS:
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string)
-                outputColumnNames: _col0
+                outputColumnNames: _col1
                 Statistics: Num rows: 404 Data size: 35148 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
                       Input definition
                         input alias: ptf_0
-                        output shape: _col0: string
+                        output shape: _col1: string
                         type: WINDOWING
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col0 ASC NULLS FIRST
+                        order by: _col1 ASC NULLS FIRST
                         partition by: 0
                         raw input shape:
                         window functions:
                             window function definition
                               alias: rank_window_0
-                              arguments: _col0
+                              arguments: _col1
                               name: rank
                               window function: GenericUDAFRankEvaluator
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)

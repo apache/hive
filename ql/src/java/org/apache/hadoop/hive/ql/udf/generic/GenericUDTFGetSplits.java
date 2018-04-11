@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -41,6 +41,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.FieldDesc;
@@ -58,10 +60,10 @@ import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.security.LlapTokenLocalClient;
 import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryPlan;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -243,11 +245,11 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     // So initialize the new Driver with a new TxnManager so that it does not use the
     // Session TxnManager that is already in use.
     HiveTxnManager txnManager = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    Driver driver = new Driver(conf, txnManager);
+    Driver driver = new Driver(new QueryState.Builder().withHiveConf(conf).nonIsolated().build(), null, null, txnManager);
     DriverCleanup driverCleanup = new DriverCleanup(driver, txnManager, splitsAppId.toString());
     boolean needsCleanup = true;
     try {
-      CommandProcessorResponse cpr = driver.compileAndRespond(query);
+      CommandProcessorResponse cpr = driver.compileAndRespond(query, true);
       if (cpr.getResponseCode() != 0) {
         throw new HiveException("Failed to compile query: " + cpr.getException());
       }
@@ -268,14 +270,9 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
         String ctas = "create temporary table " + tableName + " as " + query;
         LOG.info("Materializing the query for LLAPIF; CTAS: " + ctas);
-
-        try {
-          driver.resetQueryState();
-          HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, originalMode);
-          cpr = driver.run(ctas, false);
-        } catch (CommandNeedRetryException e) {
-          throw new HiveException(e);
-        }
+        driver.releaseResources();
+        HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, originalMode);
+        cpr = driver.run(ctas, false);
 
         if(cpr.getResponseCode() != 0) {
           throw new HiveException("Failed to create temp table: " + cpr.getException());
@@ -283,7 +280,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
         HiveConf.setVar(conf, ConfVars.HIVE_EXECUTION_MODE, "llap");
         query = "select * from " + tableName;
-        cpr = driver.compileAndRespond(query);
+        cpr = driver.compileAndRespond(query, true);
         if(cpr.getResponseCode() != 0) {
           throw new HiveException("Failed to create temp table: "+cpr.getException());
         }
@@ -310,6 +307,18 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         // Attach the resources to the session cleanup.
         SessionState.get().addCleanupItem(driverCleanup);
         needsCleanup = false;
+      }
+
+      // Pass the ValidTxnList and ValidTxnWriteIdList snapshot configurations corresponding to the input query
+      HiveConf driverConf = driver.getConf();
+      String validTxnString = driverConf.get(ValidTxnList.VALID_TXNS_KEY);
+      if (validTxnString != null) {
+        jc.set(ValidTxnList.VALID_TXNS_KEY, validTxnString);
+      }
+      String validWriteIdString = driverConf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
+      if (validWriteIdString != null) {
+        assert  validTxnString != null;
+        jc.set(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY, validWriteIdString);
       }
 
       return new PlanFragment(tezWork, schema, jc);
@@ -345,7 +354,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     Path scratchDir = utils.createTezDir(ctx.getMRScratchDir(), job);
     FileSystem fs = scratchDir.getFileSystem(job);
     try {
-      LocalResource appJarLr = createJarLocalResource(utils.getExecJarPathLocal(), utils, job);
+      LocalResource appJarLr = createJarLocalResource(utils.getExecJarPathLocal(ctx.getConf()), utils, job);
 
       LlapCoordinator coordinator = LlapCoordinator.getInstance();
       if (coordinator == null) {

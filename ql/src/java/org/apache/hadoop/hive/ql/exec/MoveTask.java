@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -210,34 +211,36 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
   private void releaseLocks(LoadTableDesc ltd) throws HiveException {
     // nothing needs to be done
     if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY)) {
+      LOG.debug("No locks to release because Hive concurrency support is not enabled");
       return;
     }
 
     Context ctx = driverContext.getCtx();
-    if(ctx.getHiveTxnManager().supportsAcid()) {
+    if (ctx.getHiveTxnManager().supportsAcid()) {
       //Acid LM doesn't maintain getOutputLockObjects(); this 'if' just makes logic more explicit
       return;
     }
+
     HiveLockManager lockMgr = ctx.getHiveTxnManager().getLockManager();
     WriteEntity output = ctx.getLoadTableOutputMap().get(ltd);
     List<HiveLockObj> lockObjects = ctx.getOutputLockObjects().get(output);
-    if (lockObjects == null) {
+    if (CollectionUtils.isEmpty(lockObjects)) {
+      LOG.debug("No locks found to release");
       return;
     }
 
+    LOG.info("Releasing {} locks", lockObjects.size());
     for (HiveLockObj lockObj : lockObjects) {
       List<HiveLock> locks = lockMgr.getLocks(lockObj.getObj(), false, true);
       for (HiveLock lock : locks) {
         if (lock.getHiveLockMode() == lockObj.getMode()) {
           if (ctx.getHiveLocks().remove(lock)) {
-            LOG.info("about to release lock for output: {} lock: {}", output,
-              lock.getHiveLockObject().getName());
             try {
               lockMgr.unlock(lock);
             } catch (LockException le) {
               // should be OK since the lock is ephemeral and will eventually be deleted
               // when the query finishes and zookeeper session is closed.
-              LOG.warn("Could not release lock {}", lock.getHiveLockObject().getName());
+              LOG.warn("Could not release lock {}", lock.getHiveLockObject().getName(), le);
             }
           }
         }
@@ -294,8 +297,13 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             //'sourcePath' result of 'select ...' part of CTAS statement
             assert lfd.getIsDfsDir();
             FileSystem srcFs = sourcePath.getFileSystem(conf);
-            List<Path> newFiles = new ArrayList<>();
-            Hive.moveAcidFiles(srcFs, srcFs.globStatus(sourcePath), targetPath, newFiles);
+            FileStatus[] srcs = srcFs.globStatus(sourcePath);
+            if(srcs != null) {
+              List<Path> newFiles = new ArrayList<>();
+              Hive.moveAcidFiles(srcFs, srcs, targetPath, newFiles);
+            } else {
+              LOG.debug("No files found to move from " + sourcePath + " to " + targetPath);
+            }
           }
           else {
             moveFile(sourcePath, targetPath, lfd.getIsDfsDir());
@@ -346,22 +354,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       // Next we do this for tables and partitions
       LoadTableDesc tbd = work.getLoadTableWork();
       if (tbd != null) {
-        StringBuilder mesg = new StringBuilder("Loading data to table ")
-            .append( tbd.getTable().getTableName());
-        if (tbd.getPartitionSpec().size() > 0) {
-          mesg.append(" partition (");
-          Map<String, String> partSpec = tbd.getPartitionSpec();
-          for (String key: partSpec.keySet()) {
-            mesg.append(key).append('=').append(partSpec.get(key)).append(", ");
-          }
-          mesg.setLength(mesg.length()-2);
-          mesg.append(')');
-        }
-        String mesg_detail = " from " + tbd.getSourcePath();
-        if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
-          Utilities.FILE_OP_LOGGER.trace(mesg.toString() + " " + mesg_detail);
-        }
-        console.printInfo(mesg.toString(), mesg_detail);
+        logMessage(tbd);
         Table table = db.getTable(tbd.getTable().getTableName());
 
         checkFileFormats(db, tbd, table);
@@ -379,7 +372,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           }
           db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getLoadFileType(),
               work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isFullAcidOp, hasFollowingStatsTask(),
-              tbd.getTxnId(), tbd.getStmtId());
+              tbd.getWriteId(), tbd.getStmtId());
           if (work.getOutputs() != null) {
             DDLTask.addIfAbsentByName(new WriteEntity(table,
               getWriteType(tbd, work.getLoadTableWork().getWriteType())), work.getOutputs());
@@ -447,6 +440,25 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
   }
 
+  public void logMessage(LoadTableDesc tbd) {
+    StringBuilder mesg = new StringBuilder("Loading data to table ")
+        .append( tbd.getTable().getTableName());
+    if (tbd.getPartitionSpec().size() > 0) {
+      mesg.append(" partition (");
+      Map<String, String> partSpec = tbd.getPartitionSpec();
+      for (String key: partSpec.keySet()) {
+        mesg.append(key).append('=').append(partSpec.get(key)).append(", ");
+      }
+      mesg.setLength(mesg.length()-2);
+      mesg.append(')');
+    }
+    String mesg_detail = " from " + tbd.getSourcePath();
+    if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
+      Utilities.FILE_OP_LOGGER.trace(mesg.toString() + " " + mesg_detail);
+    }
+    console.printInfo(mesg.toString(), mesg_detail);
+  }
+
   private DataContainer handleStaticParts(Hive db, Table table, LoadTableDesc tbd,
       TaskInformation ti) throws HiveException, IOException, InvalidOperationException {
     List<String> partVals = MetaStoreUtils.getPvals(table.getPartCols(),  tbd.getPartitionSpec());
@@ -460,7 +472,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         tbd.getInheritTableSpecs(), isSkewedStoredAsDirs(tbd), work.isSrcLocal(),
         work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
             !tbd.isMmTable(),
-        hasFollowingStatsTask(), tbd.getTxnId(), tbd.getStmtId());
+        hasFollowingStatsTask(), tbd.getWriteId(), tbd.getStmtId());
     Partition partn = db.getPartition(table, tbd.getPartitionSpec(), false);
 
     // See the comment inside updatePartitionBucketSortColumns.
@@ -503,8 +515,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         (tbd.getLbCtx() == null) ? 0 : tbd.getLbCtx().calculateListBucketingLevel(),
         work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
             !tbd.isMmTable(),
-        work.getLoadTableWork().getTxnId(), tbd.getStmtId(), hasFollowingStatsTask(),
-        work.getLoadTableWork().getWriteType());
+        work.getLoadTableWork().getWriteId(),
+        tbd.getStmtId(),
+        hasFollowingStatsTask(),
+        work.getLoadTableWork().getWriteType(),
+        tbd.isInsertOverwrite());
 
     // publish DP columns to its subscribers
     if (dps != null && dps.size() > 0) {
@@ -675,7 +690,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
    * has done it's job before the query ran.
    */
   WriteEntity.WriteType getWriteType(LoadTableDesc tbd, AcidUtils.Operation operation) {
-    if (tbd.getLoadFileType() == LoadFileType.REPLACE_ALL) {
+    if (tbd.getLoadFileType() == LoadFileType.REPLACE_ALL || tbd.isInsertOverwrite()) {
       return WriteEntity.WriteType.INSERT_OVERWRITE;
     }
     switch (operation) {
@@ -718,13 +733,13 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       //       have the correct buckets. The existing code discards the inferred data when the
       //       reducers don't produce enough files; we'll do the same for MM tables for now.
       FileSystem fileSys = partn.getDataLocation().getFileSystem(conf);
-      FileStatus[] fileStatus = HiveStatsUtils.getFileStatusRecurse(
+      List<FileStatus> fileStatus = HiveStatsUtils.getFileStatusRecurse(
           partn.getDataLocation(), 1, fileSys);
       // Verify the number of buckets equals the number of files
       // This will not hold for dynamic partitions where not every reducer produced a file for
       // those partitions.  In this case the table is not bucketed as Hive requires a files for
       // each bucket.
-      if (fileStatus.length == numBuckets) {
+      if (fileStatus.size() == numBuckets) {
         List<String> newBucketCols = new ArrayList<String>();
         updateBucketCols = true;
         for (BucketCol bucketCol : bucketCols) {

@@ -265,4 +265,9 @@
   <value>org.apache.hadoop.hive.metastore.ObjectStore</value>
 </property>
 
+<property>
+  <name>hive.query.results.cache.enabled</name>
+  <value>false</value>
+</property>
+
 </configuration>

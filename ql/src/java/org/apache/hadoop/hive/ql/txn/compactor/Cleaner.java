@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -17,14 +17,15 @@
  */
 package org.apache.hadoop.hive.ql.txn.compactor;
 
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.ValidTxnList;
-import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -48,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A class to clean directories after compactions.  This will run in a separate thread.
@@ -55,12 +57,18 @@ import java.util.concurrent.TimeUnit;
 public class Cleaner extends CompactorThread {
   static final private String CLASS_NAME = Cleaner.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
-
   private long cleanerCheckInterval = 0;
 
+  private ReplChangeManager replChangeManager;
   // List of compactions to clean.
-  private Map<Long, Set<Long>> compactId2LockMap = new HashMap<Long, Set<Long>>();
-  private Map<Long, CompactionInfo> compactId2CompactInfoMap = new HashMap<Long, CompactionInfo>();
+  private Map<Long, Set<Long>> compactId2LockMap = new HashMap<>();
+  private Map<Long, CompactionInfo> compactId2CompactInfoMap = new HashMap<>();
+
+  @Override
+  public void init(AtomicBoolean stop, AtomicBoolean looped) throws MetaException {
+    super.init(stop, looped);
+    replChangeManager = ReplChangeManager.getInstance(conf);
+  }
 
   @Override
   public void run() {
@@ -243,25 +251,27 @@ public class Cleaner extends CompactorThread {
 
       /**
        * Each Compaction only compacts as far as the highest txn id such that all txns below it
-       * are resolved (i.e. not opened).  This is what "highestTxnId" tracks.  This is only tracked
-       * since Hive 1.3.0/2.0 - thus may be 0.  See ValidCompactorTxnList and uses for more info.
-       * 
-       * We only want to clean up to the highestTxnId - otherwise we risk deleteing deltas from
+       * are resolved (i.e. not opened).  This is what "highestWriteId" tracks.  This is only tracked
+       * since Hive 1.3.0/2.0 - thus may be 0.  See ValidCompactorWriteIdList and uses for more info.
+       *
+       * We only want to clean up to the highestWriteId - otherwise we risk deleting deltas from
        * under an active reader.
-       * 
+       *
        * Suppose we have deltas D2 D3 for table T, i.e. the last compaction created D3 so now there is a 
        * clean request for D2.  
        * Cleaner checks existing locks and finds none.
        * Between that check and removeFiles() a query starts (it will be reading D3) and another compaction
        * completes which creates D4.
        * Now removeFiles() (more specifically AcidUtils.getAcidState()) will declare D3 to be obsolete
-       * unless ValidTxnList is "capped" at highestTxnId.
+       * unless ValidWriteIdList is "capped" at highestWriteId.
        */
-      final ValidTxnList txnList = ci.highestTxnId > 0 ? 
-        new ValidReadTxnList(new long[0], new BitSet(), ci.highestTxnId) : new ValidReadTxnList();
+      final ValidWriteIdList validWriteIdList = (ci.highestWriteId > 0)
+          ? new ValidReaderWriteIdList(ci.getFullTableName(), new long[0], new BitSet(),
+          ci.highestWriteId)
+          : new ValidReaderWriteIdList();
 
       if (runJobAsSelf(ci.runAs)) {
-        removeFiles(location, txnList);
+        removeFiles(location, validWriteIdList);
       } else {
         LOG.info("Cleaning as user " + ci.runAs + " for " + ci.getFullPartitionName());
         UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
@@ -269,7 +279,7 @@ public class Cleaner extends CompactorThread {
         ugi.doAs(new PrivilegedExceptionAction<Object>() {
           @Override
           public Object run() throws Exception {
-            removeFiles(location, txnList);
+            removeFiles(location, validWriteIdList);
             return null;
           }
         });
@@ -288,8 +298,8 @@ public class Cleaner extends CompactorThread {
     }
   }
 
-  private void removeFiles(String location, ValidTxnList txnList) throws IOException {
-    AcidUtils.Directory dir = AcidUtils.getAcidState(new Path(location), conf, txnList);
+  private void removeFiles(String location, ValidWriteIdList writeIdList) throws IOException {
+    AcidUtils.Directory dir = AcidUtils.getAcidState(new Path(location), conf, writeIdList);
     List<FileStatus> obsoleteDirs = dir.getObsolete();
     List<Path> filesToDelete = new ArrayList<Path>(obsoleteDirs.size());
     for (FileStatus stat : obsoleteDirs) {
@@ -305,8 +315,8 @@ public class Cleaner extends CompactorThread {
 
     for (Path dead : filesToDelete) {
       LOG.debug("Going to delete path " + dead.toString());
+      replChangeManager.recycle(dead, ReplChangeManager.RecycleType.MOVE, true);
       fs.delete(dead, true);
     }
   }
-
 }

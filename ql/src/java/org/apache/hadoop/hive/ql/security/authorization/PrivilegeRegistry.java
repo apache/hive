@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -48,7 +48,6 @@ public class PrivilegeRegistry {
     Registry.put(Privilege.ALTER_METADATA.getPriv(), Privilege.ALTER_METADATA);
     Registry.put(Privilege.CREATE.getPriv(), Privilege.CREATE);
     Registry.put(Privilege.DROP.getPriv(), Privilege.DROP);
-    Registry.put(Privilege.INDEX.getPriv(), Privilege.INDEX);
     Registry.put(Privilege.LOCK.getPriv(), Privilege.LOCK);
     Registry.put(Privilege.SELECT.getPriv(), Privilege.SELECT);
     Registry.put(Privilege.SHOW_DATABASE.getPriv(),

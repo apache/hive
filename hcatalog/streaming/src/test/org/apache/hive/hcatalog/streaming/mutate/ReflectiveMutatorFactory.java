@@ -49,9 +49,9 @@ public class ReflectiveMutatorFactory implements MutatorFactory {
   }
 
   @Override
-  public Mutator newMutator(AcidOutputFormat<?, ?> outputFormat, long transactionId, Path partitionPath, int bucketId)
+  public Mutator newMutator(AcidOutputFormat<?, ?> outputFormat, long writeId, Path partitionPath, int bucketId)
     throws IOException {
-    return new MutatorImpl(configuration, recordIdColumn, objectInspector, outputFormat, transactionId, partitionPath,
+    return new MutatorImpl(configuration, recordIdColumn, objectInspector, outputFormat, writeId, partitionPath,
         bucketId);
   }
 

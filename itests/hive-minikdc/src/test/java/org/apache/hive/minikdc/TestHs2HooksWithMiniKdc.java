@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -55,8 +55,9 @@ public class TestHs2HooksWithMiniKdc {
     confOverlay.put(ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
         SemanticAnalysisHook.class.getName());
     confOverlay.put(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "" + Boolean.FALSE);
+
+    miniHiveKdc = new MiniHiveKdc();
     HiveConf hiveConf = new HiveConf();
-    miniHiveKdc = MiniHiveKdc.getMiniHiveKdc(hiveConf);
     miniHS2 = MiniHiveKdc.getMiniHS2WithKerb(miniHiveKdc, hiveConf);
     miniHS2.start(confOverlay);
   }

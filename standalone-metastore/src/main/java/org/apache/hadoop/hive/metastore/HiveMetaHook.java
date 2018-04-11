@@ -20,8 +20,13 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
+import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
+
+import com.google.common.collect.ImmutableList;
+
+import java.util.List;
 
 /**
  * HiveMetaHook defines notification methods which are invoked as part
@@ -36,6 +41,11 @@ import org.apache.hadoop.hive.metastore.api.Table;
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public interface HiveMetaHook {
+
+  public String ALTER_TABLE_OPERATION_TYPE = "alterTableOpType";
+
+  public List<String> allowedAlterTypes = ImmutableList.of("ADDPROPS", "DROPPROPS");
+
   /**
    * Called before a new table definition is added to the metastore
    * during CREATE TABLE.
@@ -92,4 +102,21 @@ public interface HiveMetaHook {
    */
   public void commitDropTable(Table table, boolean deleteData)
     throws MetaException;
+
+  /**
+   * Called before a table is altered in the metastore
+   * during ALTER TABLE.
+   *
+   * @param table new table definition
+   */
+  public default void preAlterTable(Table table, EnvironmentContext context) throws MetaException {
+    String alterOpType = context == null ? null : context.getProperties().get(ALTER_TABLE_OPERATION_TYPE);
+    // By default allow only ADDPROPS and DROPPROPS.
+    // alterOpType is null in case of stats update.
+    if (alterOpType != null && !allowedAlterTypes.contains(alterOpType)){
+      throw new MetaException(
+          "ALTER TABLE can not be used for " + alterOpType + " to a non-native table ");
+    }
+  }
+
 }

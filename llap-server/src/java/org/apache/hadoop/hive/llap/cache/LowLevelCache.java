@@ -1,4 +1,4 @@
-/**
+/*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -58,7 +58,7 @@ public interface LowLevelCache extends LlapOomDebugDump {
    *         the replacement chunks from cache are updated directly in the array.
    */
   long[] putFileData(Object fileKey, DiskRange[] ranges, MemoryBuffer[] chunks,
-      long baseOffset, Priority priority, LowLevelCacheCounters qfCounters);
+      long baseOffset, Priority priority, LowLevelCacheCounters qfCounters, String tag);
 
   /** Notifies the cache that a particular buffer should be removed due to eviction. */
   void notifyEvicted(MemoryBuffer buffer);

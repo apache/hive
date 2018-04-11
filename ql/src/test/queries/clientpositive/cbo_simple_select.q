@@ -54,3 +54,21 @@ select key from cbo_t1 where c_int = -6  or c_int = +6;
 
 -- 15. query referencing only partition columns
 select count(cbo_t1.dt) from cbo_t1 join cbo_t2 on cbo_t1.dt  = cbo_t2.dt  where cbo_t1.dt = '2014' ;
+
+
+-- IN expression rewrite
+
+EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int); -- c_int is not null
+EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (2*cbo_t2.c_int); -- c_int is 0
+EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) = (cbo_t2.c_int); -- c_int is not null
+EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (NULL); -- rewrite to NULL
+EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int, 2*cbo_t2.c_int); -- no rewrite
+EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int, 0); -- no rewrite
+
+select count(*) from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int); -- c_int is not null
+select count(*) from cbo_t2 where (cbo_t2.c_int) IN (2*cbo_t2.c_int); -- c_int is 0
+select count(*) from cbo_t2 where (cbo_t2.c_int) = (cbo_t2.c_int); -- c_int is not null
+select count(*) from cbo_t2 where (cbo_t2.c_int) IN (NULL); -- rewrite to NULL
+select count(*) from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int, 2*cbo_t2.c_int); -- no rewrite
+select count(*) from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int, 0); -- no rewrite
+

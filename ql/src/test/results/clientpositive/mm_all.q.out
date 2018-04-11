@@ -1637,10 +1637,10 @@ POSTHOOK: Output: default@multi1_mm@p=1
 POSTHOOK: Output: default@multi1_mm@p=455
 POSTHOOK: Output: default@multi1_mm@p=456
 POSTHOOK: Output: default@multi1_mm@p=457
-POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
-POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi1_mm PARTITION(p=1).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=455).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=455).key2 SIMPLE [(intermediate)intermediate.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: multi1_mm PARTITION(p=456).key SIMPLE [(intermediate)intermediate.FieldSchema(name:p, type:int, comment:null), ]
@@ -1829,7 +1829,6 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
 	numFiles            	1                   
 	numRows             	6                   
 	rawDataSize         	13                  
@@ -1879,7 +1878,6 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\"}}
 	numFiles            	2                   
 	numRows             	12                  
 	rawDataSize         	26                  
@@ -1937,7 +1935,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	COLUMN_STATS_ACCURATE	{}                  
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
