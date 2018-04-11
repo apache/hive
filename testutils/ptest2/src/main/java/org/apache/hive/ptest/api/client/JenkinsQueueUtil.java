@@ -20,6 +20,8 @@
 package org.apache.hive.ptest.api.client;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +29,9 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -49,7 +53,6 @@ public class JenkinsQueueUtil {
   private static final String JOB_NAME = "PreCommit-HIVE-Build";
   private static final String ISSUE_FIELD_KEY = "ISSUE_NUM";
   private static final String JIRA_KEY_PREFIX = "HIVE-";
-
 
   /**
    * Looks up the current queue of the precommit job on a jenkins instance (specified by
@@ -112,11 +115,15 @@ public class JenkinsQueueUtil {
 
   private static String httpGet(String url)
           throws IOException {
-    DefaultHttpClient httpClient = new DefaultHttpClient();
+
     HttpGet request = new HttpGet(url);
     try {
+      CloseableHttpClient httpClient = HttpClientBuilder
+              .create()
+              .setSslcontext(SSLContexts.custom().useProtocol("TLSv1.2").build())
+              .setRetryHandler(new PTestClient.PTestHttpRequestRetryHandler())
+              .build();
       request.addHeader("content-type", "application/json");
-      httpClient.setHttpRequestRetryHandler(new PTestClient.PTestHttpRequestRetryHandler());
       HttpResponse httpResponse = httpClient.execute(request);
       StatusLine statusLine = httpResponse.getStatusLine();
       if (statusLine.getStatusCode() != 200) {
@@ -124,6 +131,9 @@ public class JenkinsQueueUtil {
       }
       String response = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
       return response;
+    } catch (NoSuchAlgorithmException | KeyManagementException e) {
+      e.printStackTrace();
+      throw new IOException(e.getMessage());
     } finally {
       request.abort();
     }
