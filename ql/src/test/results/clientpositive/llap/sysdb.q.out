@@ -482,110 +482,6 @@ FROM
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: SYS@GLOBAL_PRIVS
 POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `IDXS` (
-  `INDEX_ID` bigint,
-  `CREATE_TIME` int,
-  `DEFERRED_REBUILD` boolean,
-  `INDEX_HANDLER_CLASS` string,
-  `INDEX_NAME` string,
-  `INDEX_TBL_ID` bigint,
-  `LAST_ACCESS_TIME` int,
-  `ORIG_TBL_ID` bigint,
-  `SD_ID` bigint,
-  CONSTRAINT `SYS_PK_IDXS` PRIMARY KEY (`INDEX_ID`) DISABLE
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-"hive.sql.database.type" = "METASTORE",
-"hive.sql.query" =
-"SELECT
-  \"INDEX_ID\",
-  \"CREATE_TIME\",
-  \"DEFERRED_REBUILD\",
-  \"INDEX_HANDLER_CLASS\",
-  \"INDEX_NAME\",
-  \"INDEX_TBL_ID\",
-  \"LAST_ACCESS_TIME\",
-  \"ORIG_TBL_ID\",
-  \"SD_ID\"
-FROM
-  \"IDXS\""
-)
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: SYS@IDXS
-PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `IDXS` (
-  `INDEX_ID` bigint,
-  `CREATE_TIME` int,
-  `DEFERRED_REBUILD` boolean,
-  `INDEX_HANDLER_CLASS` string,
-  `INDEX_NAME` string,
-  `INDEX_TBL_ID` bigint,
-  `LAST_ACCESS_TIME` int,
-  `ORIG_TBL_ID` bigint,
-  `SD_ID` bigint,
-  CONSTRAINT `SYS_PK_IDXS` PRIMARY KEY (`INDEX_ID`) DISABLE
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-"hive.sql.database.type" = "METASTORE",
-"hive.sql.query" =
-"SELECT
-  \"INDEX_ID\",
-  \"CREATE_TIME\",
-  \"DEFERRED_REBUILD\",
-  \"INDEX_HANDLER_CLASS\",
-  \"INDEX_NAME\",
-  \"INDEX_TBL_ID\",
-  \"LAST_ACCESS_TIME\",
-  \"ORIG_TBL_ID\",
-  \"SD_ID\"
-FROM
-  \"IDXS\""
-)
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: SYS@IDXS
-POSTHOOK: Output: database:sys
-PREHOOK: query: CREATE TABLE IF NOT EXISTS `INDEX_PARAMS` (
-  `INDEX_ID` bigint,
-  `PARAM_KEY` string,
-  `PARAM_VALUE` string,
-  CONSTRAINT `SYS_PK_INDEX_PARAMS` PRIMARY KEY (`INDEX_ID`,`PARAM_KEY`) DISABLE
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-"hive.sql.database.type" = "METASTORE",
-"hive.sql.query" =
-"SELECT
-  \"INDEX_ID\",
-  \"PARAM_KEY\",
-  \"PARAM_VALUE\"
-FROM
-  \"INDEX_PARAMS\""
-)
-PREHOOK: type: CREATETABLE
-PREHOOK: Output: SYS@INDEX_PARAMS
-PREHOOK: Output: database:sys
-POSTHOOK: query: CREATE TABLE IF NOT EXISTS `INDEX_PARAMS` (
-  `INDEX_ID` bigint,
-  `PARAM_KEY` string,
-  `PARAM_VALUE` string,
-  CONSTRAINT `SYS_PK_INDEX_PARAMS` PRIMARY KEY (`INDEX_ID`,`PARAM_KEY`) DISABLE
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-"hive.sql.database.type" = "METASTORE",
-"hive.sql.query" =
-"SELECT
-  \"INDEX_ID\",
-  \"PARAM_KEY\",
-  \"PARAM_VALUE\"
-FROM
-  \"INDEX_PARAMS\""
-)
-POSTHOOK: type: CREATETABLE
-POSTHOOK: Output: SYS@INDEX_PARAMS
-POSTHOOK: Output: database:sys
 PREHOOK: query: CREATE TABLE IF NOT EXISTS `PARTITIONS` (
   `PART_ID` bigint,
   `CREATE_TIME` int,
@@ -2133,6 +2029,7 @@ PREHOOK: query: CREATE TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
   `UPDATE_RULE` string,
   `DELETE_RULE` string,
   `ENABLE_VALIDATE_RELY` int,
+  `DEFAULT_VALUE` string,
   CONSTRAINT `SYS_PK_KEY_CONSTRAINTS` PRIMARY KEY (`CONSTRAINT_NAME`, `POSITION`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -2151,7 +2048,8 @@ TBLPROPERTIES (
   \"CONSTRAINT_TYPE\",
   \"UPDATE_RULE\",
   \"DELETE_RULE\",
-  \"ENABLE_VALIDATE_RELY\"
+  \"ENABLE_VALIDATE_RELY\",
+  \"DEFAULT_VALUE\"
 FROM
   \"KEY_CONSTRAINTS\""
 )
@@ -2172,6 +2070,7 @@ POSTHOOK: query: CREATE TABLE IF NOT EXISTS `KEY_CONSTRAINTS`
   `UPDATE_RULE` string,
   `DELETE_RULE` string,
   `ENABLE_VALIDATE_RELY` int,
+  `DEFAULT_VALUE` string,
   CONSTRAINT `SYS_PK_KEY_CONSTRAINTS` PRIMARY KEY (`CONSTRAINT_NAME`, `POSITION`) DISABLE
 )
 STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
@@ -2190,7 +2089,8 @@ TBLPROPERTIES (
   \"CONSTRAINT_TYPE\",
   \"UPDATE_RULE\",
   \"DELETE_RULE\",
-  \"ENABLE_VALIDATE_RELY\"
+  \"ENABLE_VALIDATE_RELY\",
+  \"DEFAULT_VALUE\"
 FROM
   \"KEY_CONSTRAINTS\""
 )
@@ -3303,7 +3203,7 @@ POSTHOOK: query: select count(*) from cds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@cds
 #### A masked pattern was here ####
-73
+71
 PREHOOK: query: select column_name, type_name, integer_idx from columns_v2 order by column_name, integer_idx limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@columns_v2
@@ -3348,22 +3248,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@global_privs
 #### A masked pattern was here ####
 admin	admin
-PREHOOK: query: select index_name, index_handler_class from idxs order by index_name limit 5
-PREHOOK: type: QUERY
-PREHOOK: Input: sys@idxs
-#### A masked pattern was here ####
-POSTHOOK: query: select index_name, index_handler_class from idxs order by index_name limit 5
-POSTHOOK: type: QUERY
-POSTHOOK: Input: sys@idxs
-#### A masked pattern was here ####
-PREHOOK: query: select param_key, param_value from index_params order by param_key, param_value limit 5
-PREHOOK: type: QUERY
-PREHOOK: Input: sys@index_params
-#### A masked pattern was here ####
-POSTHOOK: query: select param_key, param_value from index_params order by param_key, param_value limit 5
-POSTHOOK: type: QUERY
-POSTHOOK: Input: sys@index_params
-#### A masked pattern was here ####
 PREHOOK: query: select part_name from partitions order by part_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partitions
@@ -3457,7 +3341,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-79
+77
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -3474,11 +3358,11 @@ POSTHOOK: query: select sequence_name from sequence_table order by sequence_name
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sequence_table
 #### A masked pattern was here ####
+org.apache.hadoop.hive.metastore.model.MCatalog
 org.apache.hadoop.hive.metastore.model.MColumnDescriptor
 org.apache.hadoop.hive.metastore.model.MDatabase
 org.apache.hadoop.hive.metastore.model.MFunction
 org.apache.hadoop.hive.metastore.model.MGlobalPrivilege
-org.apache.hadoop.hive.metastore.model.MPartition
 PREHOOK: query: select name, slib from serdes order by name, slib limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@serdes
@@ -3683,8 +3567,8 @@ POSTHOOK: Input: sys@table_params
 POSTHOOK: Input: sys@table_stats_view
 #### A masked pattern was here ####
 {"BASIC_STATS":"true","COLUMN_STATS":{"key":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"alloc_fraction":"true","path":"true","query_parallelism":"true","rp_name":"true","scheduling_policy":"true"}}	0	0	0	0
-{"BASIC_STATS":"true","COLUMN_STATS":{"name":"true","serde_id":"true","slib":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"entity_name":"true","entity_type":"true","ordering":"true","pool_path":"true","rp_name":"true"}}	0	0	0	0
+{"BASIC_STATS":"true","COLUMN_STATS":{"integer_idx":"true","sd_id":"true","skewed_col_name":"true"}}	0	0	0	0
 #### A masked pattern was here ####
 {"BASIC_STATS":"true","COLUMN_STATS":{"db_id":"true","param_key":"true","param_value":"true"}}	0	0	0	0
 PREHOOK: query: select COLUMN_STATS_ACCURATE, NUM_FILES, NUM_ROWS, RAW_DATA_SIZE, TOTAL_SIZE FROM PARTITION_STATS_VIEW where COLUMN_STATS_ACCURATE is not null order by NUM_FILES, NUM_ROWS, RAW_DATA_SIZE limit 5
@@ -3858,8 +3742,6 @@ default	sys	db_version	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	dbs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	funcs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	global_privs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	sys	idxs	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	sys	index_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	key_constraints	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	mv_creation_metadata	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	mv_tables_used	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
