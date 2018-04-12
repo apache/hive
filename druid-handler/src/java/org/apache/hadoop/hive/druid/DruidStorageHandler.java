@@ -49,6 +49,7 @@ import io.druid.metadata.SQLMetadataConnector;
 import io.druid.metadata.storage.derby.DerbyConnector;
 import io.druid.metadata.storage.derby.DerbyMetadataStorage;
 import io.druid.metadata.storage.mysql.MySQLConnector;
+import io.druid.metadata.storage.mysql.MySQLConnectorConfig;
 import io.druid.metadata.storage.postgresql.PostgreSQLConnector;
 import io.druid.query.aggregation.AggregatorFactory;
 import io.druid.segment.IndexSpec;
@@ -335,6 +336,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
         inputParser,
         dimensionsAndAggregates.rhs,
         granularitySpec,
+        null,
         DruidStorageHandlerUtils.JSON_MAPPER
     );
 
@@ -880,7 +882,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     if (dbType.equals("mysql")) {
       connector = new MySQLConnector(storageConnectorConfigSupplier,
               Suppliers.ofInstance(getDruidMetadataStorageTablesConfig())
-      );
+          , new MySQLConnectorConfig());
     } else if (dbType.equals("postgresql")) {
       connector = new PostgreSQLConnector(storageConnectorConfigSupplier,
               Suppliers.ofInstance(getDruidMetadataStorageTablesConfig())
