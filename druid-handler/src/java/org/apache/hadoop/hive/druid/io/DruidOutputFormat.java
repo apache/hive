@@ -129,6 +129,7 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
             inputParser,
             dimensionsAndAggregates.rhs,
             granularitySpec,
+            null,
             DruidStorageHandlerUtils.JSON_MAPPER
     );
 
@@ -156,7 +157,8 @@ public class DruidOutputFormat<K, V> implements HiveOutputFormat<K, DruidWritabl
             0,
             true,
             null,
-            0L
+            0L,
+        null
     );
 
     LOG.debug(String.format("running with Data schema [%s] ", dataSchema));
