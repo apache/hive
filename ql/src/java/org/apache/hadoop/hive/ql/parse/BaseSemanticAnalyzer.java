@@ -121,7 +121,7 @@ public abstract class BaseSemanticAnalyzer {
   protected final Hive db;
   protected final HiveConf conf;
   protected final QueryState queryState;
-  protected List<Task<? extends Serializable>> rootTasks;
+  protected List<Task<?>> rootTasks;
   protected FetchTask fetchTask;
   protected final Logger LOG;
   protected final LogHelper console;
