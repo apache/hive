@@ -144,13 +144,14 @@ public class TestDruidRecordWriter {
             new UniformGranularitySpec(
                     Granularities.DAY, Granularities.NONE, ImmutableList.of(INTERVAL_FULL)
             ),
+        null,
             objectMapper
     );
 
     IndexSpec indexSpec = new IndexSpec(new RoaringBitmapSerdeFactory(true), null, null, null);
     RealtimeTuningConfig tuningConfig = new RealtimeTuningConfig(null, null, null,
             temporaryFolder.newFolder(), null, null, null, null, indexSpec, null, 0, 0, null, null,
-            0L
+            0L, null
     );
     LocalFileSystem localFileSystem = FileSystem.getLocal(config);
     DataSegmentPusher dataSegmentPusher = new LocalDataSegmentPusher(
@@ -198,6 +199,7 @@ public class TestDruidRecordWriter {
 
     Firehose firehose = new IngestSegmentFirehose(
             ImmutableList.of(new WindowedStorageAdapter(adapter, adapter.getInterval())),
+            null,
             ImmutableList.of("host"),
             ImmutableList.of("visited_sum", "unique_hosts"),
             null
@@ -228,7 +230,7 @@ public class TestDruidRecordWriter {
               actual.getTimestamp().getMillis()
       );
       Assert.assertEquals(expected.get("host"), actual.getDimension("host"));
-      Assert.assertEquals(expected.get("visited_sum"), actual.getLongMetric("visited_sum"));
+      Assert.assertEquals(expected.get("visited_sum"), actual.getMetric("visited_sum"));
       Assert.assertEquals(
               (Double) expected.get("unique_hosts"),
               (Double) HyperUniquesAggregatorFactory

@@ -24,11 +24,11 @@ import io.druid.segment.realtime.appenderator.AppenderatorConfig;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import io.druid.segment.writeout.SegmentWriteOutMediumFactory;
 import org.joda.time.Period;
 
+import javax.annotation.Nullable;
 import java.io.File;
 
 /**
@@ -129,6 +129,10 @@ public class KafkaTuningConfig implements AppenderatorConfig
   public File getBasePersistDirectory()
   {
     return basePersistDirectory;
+  }
+
+  @Nullable @Override public SegmentWriteOutMediumFactory getSegmentWriteOutMediumFactory() {
+    return null;
   }
 
   @Override
