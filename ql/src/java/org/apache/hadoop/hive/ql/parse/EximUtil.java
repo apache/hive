@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.DBSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.JsonWriter;
@@ -92,6 +93,7 @@ public class EximUtil {
     private List<Task<? extends Serializable>> tasks;
     private Logger LOG;
     private Context ctx;
+    private DumpType eventType = DumpType.EVENT_UNKNOWN;
 
     public HiveConf getConf() {
       return conf;
@@ -119,6 +121,14 @@ public class EximUtil {
 
     public Context getCtx() {
       return ctx;
+    }
+
+    public void setEventType(DumpType eventType) {
+      this.eventType = eventType;
+    }
+
+    public DumpType getEventType() {
+      return eventType;
     }
 
     public SemanticAnalyzerWrapperContext(HiveConf conf, Hive db,

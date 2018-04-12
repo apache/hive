@@ -47,12 +47,14 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.ImportTableDesc;
 import org.apache.hadoop.hive.ql.plan.DDLWork;
+import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
@@ -436,6 +438,13 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private static Task<?> createTableTask(ImportTableDesc tableDesc, EximUtil.SemanticAnalyzerWrapperContext x){
     return tableDesc.getCreateTableTask(x.getInputs(), x.getOutputs(), x.getConf());
+  }
+
+  private static Task<?> dropTableTask(Table table, EximUtil.SemanticAnalyzerWrapperContext x,
+                                       ReplicationSpec replicationSpec) {
+    DropTableDesc dropTblDesc = new DropTableDesc(table.getTableName(), table.getTableType(),
+            true, false, replicationSpec);
+    return TaskFactory.get(new DDLWork(x.getInputs(), x.getOutputs(), dropTblDesc), x.getConf());
   }
 
   private static Task<? extends Serializable> alterTableTask(ImportTableDesc tableDesc,
@@ -912,7 +921,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       UpdatedMetaDataTracker updatedMetadata)
       throws HiveException, URISyntaxException, IOException, MetaException {
 
-    Task<?> dr = null;
+    Task<?> dropTblTask = null;
     WriteEntity.WriteType lockType = WriteEntity.WriteType.DDL_NO_LOCK;
 
     // Normally, on import, trying to create a table or a partition in a db that does not yet exist
@@ -933,6 +942,15 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         x.getLOG().info("Table {}.{} is not replaced as it is newer than the update",
                 tblDesc.getDatabaseName(), tblDesc.getTableName());
         return;
+      }
+
+      // If the table exists and we found a valid create table event, then need to drop the table first
+      // and then create it. This case is possible if the event sequence is drop_table(t1) -> create_table(t1).
+      // We need to drop here to handle the case where the previous incremental load created the table but
+      // didn't set the last repl ID due to some failure.
+      if (x.getEventType() == DumpType.EVENT_CREATE_TABLE) {
+        dropTblTask = dropTableTask(table, x, replicationSpec);
+        table = null;
       }
     } else {
       // If table doesn't exist, allow creating a new one only if the database state is older than the update.
@@ -1000,8 +1018,15 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           t.addDependentTask(loadTable(fromURI, table, true, new Path(tblDesc.getLocation()), replicationSpec, x, writeId, stmtId, isSourceMm));
         }
       }
-      // Simply create
-      x.getTasks().add(t);
+
+      if (dropTblTask != null) {
+        // Drop first and then create
+        dropTblTask.addDependentTask(t);
+        x.getTasks().add(dropTblTask);
+      } else {
+        // Simply create
+        x.getTasks().add(t);
+      }
     } else {
       // Table existed, and is okay to replicate into, not dropping and re-creating.
       if (table.isPartitioned()) {
