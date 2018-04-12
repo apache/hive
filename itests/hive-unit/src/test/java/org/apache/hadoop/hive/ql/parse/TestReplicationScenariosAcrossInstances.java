@@ -620,4 +620,59 @@ public class TestReplicationScenariosAcrossInstances {
             .run("show functions like '" + replicatedDbName + "*'")
             .verifyResult(null);
   }
+
+  @Test
+  public void testIncrementalReplWithEventsBatchHavingDropCreateTable() throws Throwable {
+    // Bootstrap dump with empty db
+    WarehouseInstance.Tuple bootstrapTuple = primary.dump(primaryDbName, null);
+
+    // Bootstrap load in replica
+    replica.load(replicatedDbName, bootstrapTuple.dumpLocation)
+            .status(replicatedDbName)
+            .verifyResult(bootstrapTuple.lastReplicationId);
+
+    // First incremental dump
+    WarehouseInstance.Tuple firstIncremental = primary.run("use " + primaryDbName)
+            .run("create table table1 (i int)")
+            .run("create table table2 (id int) partitioned by (country string)")
+            .run("insert into table1 values (1)")
+            .run("insert into table2 partition(country='india') values(1)")
+            .dump(primaryDbName, bootstrapTuple.lastReplicationId);
+
+    // Second incremental dump
+    WarehouseInstance.Tuple secondIncremental = primary.run("use " + primaryDbName)
+            .run("drop table table1")
+            .run("drop table table2")
+            .run("create table table2 (id int) partitioned by (country string)")
+            .run("alter table table2 add partition(country='india')")
+            .run("alter table table2 drop partition(country='india')")
+            .run("insert into table2 partition(country='us') values(2)")
+            .run("create table table1 (i int)")
+            .run("insert into table1 values (2)")
+            .dump(primaryDbName, firstIncremental.lastReplicationId);
+
+    // First incremental load
+    replica.load(replicatedDbName, firstIncremental.dumpLocation)
+            .status(replicatedDbName)
+            .verifyResult(firstIncremental.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"table1", "table2"})
+            .run("select * from table1")
+            .verifyResults(new String[] {"1"})
+            .run("select id from table2 order by id")
+            .verifyResults(new String[] {"1"});
+
+    // Second incremental load
+    replica.load(replicatedDbName, secondIncremental.dumpLocation)
+            .status(replicatedDbName)
+            .verifyResult(secondIncremental.lastReplicationId)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"table1", "table2"})
+            .run("select * from table1")
+            .verifyResults(new String[] {"2"})
+            .run("select id from table2 order by id")
+            .verifyResults(new String[] {"2"});
+  }
 }
