@@ -71,7 +71,6 @@ public class SparkSessionImpl implements SparkSession {
   private HiveSparkClient hiveSparkClient;
   private Path scratchDir;
   private final Object dirLock = new Object();
-  private String matchedString = null;
 
   public SparkSessionImpl() {
     sessionId = makeSessionId();
@@ -195,6 +194,7 @@ public class SparkSessionImpl implements SparkSession {
   @VisibleForTesting
   HiveException getHiveException(Throwable e) {
     Throwable oe = e;
+    StringBuilder matchedString = new StringBuilder();
     while (e != null) {
       if (e instanceof TimeoutException) {
         return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_TIMEOUT);
@@ -202,31 +202,26 @@ public class SparkSessionImpl implements SparkSession {
         return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_INTERRUPTED, sessionId);
       } else if (e instanceof RuntimeException) {
         String sts = Throwables.getStackTraceAsString(e);
-        if (matches(sts, AM_TIMEOUT_ERR)) {
+        if (matches(sts, AM_TIMEOUT_ERR, matchedString)) {
           return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_TIMEOUT);
-        } else if (matches(sts, UNKNOWN_QUEUE_ERR) || matches(sts, STOPPED_QUEUE_ERR)) {
-          return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_INVALID_QUEUE, matchedString);
-        } else if (matches(sts, FULL_QUEUE_ERR)) {
-          return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_QUEUE_FULL, matchedString);
-        } else if (matches(sts, INVALILD_MEM_ERR) || matches(sts, INVALID_CORE_ERR)) {
+        } else if (matches(sts, UNKNOWN_QUEUE_ERR, matchedString) || matches(sts, STOPPED_QUEUE_ERR, matchedString)) {
+          return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_INVALID_QUEUE, matchedString.toString());
+        } else if (matches(sts, FULL_QUEUE_ERR, matchedString)) {
+          return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_QUEUE_FULL, matchedString.toString());
+        } else if (matches(sts, INVALILD_MEM_ERR, matchedString) || matches(sts, INVALID_CORE_ERR, matchedString)) {
           return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_INVALID_RESOURCE_REQUEST,
-              matchedString);
+              matchedString.toString());
         } else {
-          return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_ERROR, sessionId);
+          return new HiveException(e, ErrorMsg.SPARK_CREATE_CLIENT_ERROR, sessionId, Throwables.getRootCause(e).getMessage());
         }
       }
       e = e.getCause();
     }
 
-    return new HiveException(oe, ErrorMsg.SPARK_CREATE_CLIENT_ERROR, sessionId);
+    return new HiveException(oe, ErrorMsg.SPARK_CREATE_CLIENT_ERROR, sessionId, Throwables.getRootCause(oe).getMessage());
   }
 
-  @VisibleForTesting
-  String getMatchedString() {
-    return matchedString;
-  }
-
-  private boolean matches(String input, String regex) {
+  private boolean matches(String input, String regex, StringBuilder matchedString) {
     if (!errorPatterns.containsKey(regex)) {
       LOG.warn("No error pattern found for regex: {}", regex);
       return false;
@@ -235,7 +230,8 @@ public class SparkSessionImpl implements SparkSession {
     Matcher m = p.matcher(input);
     boolean result = m.find();
     if (result && m.groupCount() == 1) {
-      this.matchedString = m.group(1);
+      // assume matchedString is empty
+      matchedString.append(m.group(1));
     }
     return result;
   }

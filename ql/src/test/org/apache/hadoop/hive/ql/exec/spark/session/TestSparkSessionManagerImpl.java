@@ -183,8 +183,8 @@ public class TestSparkSessionManagerImpl {
         "initial executor number 5 must between min executor number10 and max executor number 50");
 
     // Other exceptions which defaults to SPARK_CREATE_CLIENT_ERROR
-    e = new Exception();
-    checkHiveException(ss, e, ErrorMsg.SPARK_CREATE_CLIENT_ERROR);
+    e = new Exception("Other exception");
+    checkHiveException(ss, e, ErrorMsg.SPARK_CREATE_CLIENT_ERROR, "Other exception");
   }
 
   private void checkHiveException(SparkSessionImpl ss, Throwable e, ErrorMsg expectedErrMsg) {
@@ -196,7 +196,7 @@ public class TestSparkSessionManagerImpl {
     HiveException he = ss.getHiveException(e);
     assertEquals(expectedErrMsg, he.getCanonicalErrorMsg());
     if (expectedMatchedStr != null) {
-      assertEquals(expectedMatchedStr, ss.getMatchedString());
+      assertTrue(he.getMessage().contains(expectedMatchedStr));
     }
   }
 
