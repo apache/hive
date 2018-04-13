@@ -102,7 +102,7 @@ public class SparkPlanGenerator {
 
   public SparkPlan generate(SparkWork sparkWork) throws Exception {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_BUILD_PLAN);
-    SparkPlan sparkPlan = new SparkPlan(this.sc.sc());
+    SparkPlan sparkPlan = new SparkPlan(this.jobConf, this.sc.sc());
     cloneToWork = sparkWork.getCloneToWork();
     workToTranMap.clear();
     workToParentWorkTranMap.clear();
@@ -145,7 +145,7 @@ public class SparkPlanGenerator {
       boolean toCache = cloneToWork.containsKey(work);
       List<BaseWork> parentWorks = sparkWork.getParents(work);
       SparkEdgeProperty sparkEdgeProperty = sparkWork.getEdgeProperty(parentWorks.get(0), work);
-      result = generate(sparkPlan, sparkEdgeProperty, toCache, work.getName());
+      result = generate(sparkPlan, sparkEdgeProperty, toCache, work.getName(), work);
       sparkPlan.addTran(result);
       for (BaseWork parentWork : parentWorks) {
         sparkPlan.connect(workToTranMap.get(parentWork), result);
@@ -216,12 +216,12 @@ public class SparkPlanGenerator {
             (toCache ? ", cached)" : ")");
 
     // Caching is disabled for MapInput due to HIVE-8920
-    MapInput result = new MapInput(sparkPlan, hadoopRDD, toCache, rddName);
+    MapInput result = new MapInput(sparkPlan, hadoopRDD, toCache, rddName, mapWork);
     return result;
   }
 
   private ShuffleTran generate(SparkPlan sparkPlan, SparkEdgeProperty edge, boolean toCache,
-                               String name) {
+                               String name, BaseWork work) {
 
     Preconditions.checkArgument(!edge.isShuffleNone(),
         "AssertionError: SHUFFLE_NONE should only be used for UnionWork.");
@@ -233,7 +233,7 @@ public class SparkPlanGenerator {
     } else {
       shuffler = new GroupByShuffler();
     }
-    return new ShuffleTran(sparkPlan, shuffler, edge.getNumPartitions(), toCache, name, edge);
+    return new ShuffleTran(sparkPlan, shuffler, edge.getNumPartitions(), toCache, name, edge, work);
   }
 
   private SparkTran generate(BaseWork work, SparkWork sparkWork) throws Exception {
@@ -257,12 +257,12 @@ public class SparkPlanGenerator {
               "Can't make path " + outputPath + " : " + e.getMessage());
         }
       }
-      MapTran mapTran = new MapTran(caching, work.getName());
+      MapTran mapTran = new MapTran(caching, work.getName(), work);
       HiveMapFunction mapFunc = new HiveMapFunction(confBytes, sparkReporter);
       mapTran.setMapFunction(mapFunc);
       return mapTran;
     } else if (work instanceof ReduceWork) {
-      ReduceTran reduceTran = new ReduceTran(caching, work.getName());
+      ReduceTran reduceTran = new ReduceTran(caching, work.getName(), work);
       HiveReduceFunction reduceFunc = new HiveReduceFunction(confBytes, sparkReporter);
       reduceTran.setReduceFunction(reduceFunc);
       return reduceTran;

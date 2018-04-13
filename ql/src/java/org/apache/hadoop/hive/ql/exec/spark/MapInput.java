@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableUtils;
@@ -37,17 +38,20 @@ public class MapInput implements SparkTran<WritableComparable, Writable,
   private boolean toCache;
   private final SparkPlan sparkPlan;
   private final String name;
+  private final BaseWork baseWork;
 
   public MapInput(SparkPlan sparkPlan, JavaPairRDD<WritableComparable, Writable> hadoopRDD) {
-    this(sparkPlan, hadoopRDD, false, "MapInput");
+    this(sparkPlan, hadoopRDD, false, "MapInput", null);
   }
 
   public MapInput(SparkPlan sparkPlan,
-      JavaPairRDD<WritableComparable, Writable> hadoopRDD, boolean toCache, String name) {
+                  JavaPairRDD<WritableComparable, Writable> hadoopRDD, boolean toCache, String
+                          name, BaseWork baseWork) {
     this.hadoopRDD = hadoopRDD;
     this.toCache = toCache;
     this.sparkPlan = sparkPlan;
     this.name = name;
+    this.baseWork = baseWork;
   }
 
   public void setToCache(boolean toCache) {
@@ -97,5 +101,10 @@ public class MapInput implements SparkTran<WritableComparable, Writable,
   @Override
   public Boolean isCacheEnable() {
     return new Boolean(toCache);
+  }
+
+  @Override
+  public BaseWork getBaseWork() {
+    return baseWork;
   }
 }

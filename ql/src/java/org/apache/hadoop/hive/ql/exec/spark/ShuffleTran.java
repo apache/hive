@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import org.apache.hadoop.hive.ql.io.HiveKey;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.SparkEdgeProperty;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -31,19 +32,21 @@ public class ShuffleTran implements SparkTran<HiveKey, BytesWritable, HiveKey, B
   private final SparkPlan sparkPlan;
   private final String name;
   private final SparkEdgeProperty edge;
+  private final BaseWork baseWork;
 
   public ShuffleTran(SparkPlan sparkPlan, SparkShuffler sf, int n) {
-    this(sparkPlan, sf, n, false, "Shuffle", null);
+    this(sparkPlan, sf, n, false, "Shuffle", null, null);
   }
 
   public ShuffleTran(SparkPlan sparkPlan, SparkShuffler sf, int n, boolean toCache, String name,
-                     SparkEdgeProperty edge) {
+                     SparkEdgeProperty edge, BaseWork baseWork) {
     shuffler = sf;
     numOfPartitions = n;
     this.toCache = toCache;
     this.sparkPlan = sparkPlan;
     this.name = name;
     this.edge = edge;
+    this.baseWork = baseWork;
   }
 
   @Override
@@ -69,6 +72,11 @@ public class ShuffleTran implements SparkTran<HiveKey, BytesWritable, HiveKey, B
   @Override
   public Boolean isCacheEnable() {
     return new Boolean(toCache);
+  }
+
+  @Override
+  public BaseWork getBaseWork() {
+    return baseWork;
   }
 
   public SparkShuffler getShuffler() {

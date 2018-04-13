@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import org.apache.hadoop.hive.ql.io.HiveKey;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
@@ -26,11 +27,11 @@ public class ReduceTran<V> extends CacheTran<HiveKey, V, HiveKey, BytesWritable>
   private HiveReduceFunction<V> reduceFunc;
 
   public ReduceTran() {
-    this(false, "Reduce");
+    this(false, "Reduce", null);
   }
 
-  public ReduceTran(boolean caching, String name) {
-    super(caching, name);
+  public ReduceTran(boolean caching, String name, BaseWork baseWork) {
+    super(caching, name, baseWork);
   }
 
   @Override

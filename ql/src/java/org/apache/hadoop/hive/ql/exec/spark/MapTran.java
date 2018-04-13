@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.spark;
 
 import org.apache.hadoop.hive.ql.io.HiveKey;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.spark.api.java.JavaPairRDD;
 
@@ -26,11 +27,11 @@ public class MapTran extends CacheTran<BytesWritable, BytesWritable, HiveKey, By
   private HiveMapFunction mapFunc;
 
   public MapTran() {
-    this(false, "MapTran");
+    this(false, "MapTran", null);
   }
 
-  public MapTran(boolean cache, String name) {
-    super(cache, name);
+  public MapTran(boolean cache, String name, BaseWork baseWork) {
+    super(cache, name, baseWork);
   }
 
   @Override
