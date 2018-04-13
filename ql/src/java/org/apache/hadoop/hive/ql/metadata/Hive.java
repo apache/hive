@@ -58,6 +58,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.jdo.JDODataStoreException;
 
 import com.google.common.collect.ImmutableList;
@@ -95,7 +96,6 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.hive.common.log.InPlaceUpdate;
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.io.HdfsUtils;
@@ -4166,35 +4166,36 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private IMetaStoreClient createMetaStoreClient(boolean allowEmbedded) throws MetaException {
 
     HiveMetaHookLoader hookLoader = new HiveMetaHookLoader() {
-        @Override
-        public HiveMetaHook getHook(
-          org.apache.hadoop.hive.metastore.api.Table tbl)
-          throws MetaException {
-
-          try {
-            if (tbl == null) {
-              return null;
-            }
-            HiveStorageHandler storageHandler =
-              HiveUtils.getStorageHandler(conf,
-                tbl.getParameters().get(META_TABLE_STORAGE));
-            if (storageHandler == null) {
-              return null;
-            }
-            return storageHandler.getMetaHook();
-          } catch (HiveException ex) {
-            LOG.error(StringUtils.stringifyException(ex));
-            throw new MetaException(
-              "Failed to load storage handler:  " + ex.getMessage());
-          }
-        }
-      };
+      @Override
+      public HiveMetaHook getHook(
+              org.apache.hadoop.hive.metastore.api.Table tbl)
+              throws MetaException {
+        HiveStorageHandler storageHandler = createStorageHandler(tbl);
+        return storageHandler == null ? null : storageHandler.getMetaHook();
+      }
+    };
 
     if (conf.getBoolVar(ConfVars.METASTORE_FASTPATH)) {
       return new SessionHiveMetaStoreClient(conf, hookLoader, allowEmbedded);
     } else {
       return RetryingMetaStoreClient.getProxy(conf, hookLoader, metaCallTimeMap,
           SessionHiveMetaStoreClient.class.getName(), allowEmbedded);
+    }
+  }
+
+  @Nullable
+  private HiveStorageHandler createStorageHandler(org.apache.hadoop.hive.metastore.api.Table tbl) throws MetaException {
+    try {
+      if (tbl == null) {
+        return null;
+      }
+      HiveStorageHandler storageHandler =
+              HiveUtils.getStorageHandler(conf, tbl.getParameters().get(META_TABLE_STORAGE));
+      return storageHandler;
+    } catch (HiveException ex) {
+      LOG.error(StringUtils.stringifyException(ex));
+      throw new MetaException(
+              "Failed to load storage handler:  " + ex.getMessage());
     }
   }
 
@@ -5115,4 +5116,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException(e);
     }
   }
-};
+
+  @Nullable
+  public StorageHandlerInfo getStorageHandlerInfo(Table table)
+      throws HiveException {
+    try {
+      HiveStorageHandler storageHandler = createStorageHandler(table.getTTable());
+      return storageHandler == null ? null : storageHandler.getStorageHandlerInfo(table.getTTable());
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+}
