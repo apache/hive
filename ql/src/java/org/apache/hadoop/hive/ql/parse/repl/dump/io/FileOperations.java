@@ -91,7 +91,7 @@ public class FileOperations {
   private void exportFilesAsList() throws SemanticException, IOException {
     try (BufferedWriter writer = writer()) {
       for (Path dataPath : dataPathList) {
-        writeFilesList(listFilesInDir(dataPath), writer, getAcidSubDir(dataPath));
+        writeFilesList(listFilesInDir(dataPath), writer, AcidUtils.getAcidSubDir(dataPath));
       }
     }
   }
@@ -115,16 +115,6 @@ public class FileOperations {
       String name = p.getName();
       return !name.startsWith("_") && !name.startsWith(".");
     });
-  }
-
-  private String getAcidSubDir(Path dataPath) {
-    String dataDir = dataPath.getName();
-    if (dataDir.startsWith(AcidUtils.BASE_PREFIX)
-            || dataDir.startsWith(AcidUtils.DELTA_PREFIX)
-            || dataDir.startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
-      return dataDir;
-    }
-    return null;
   }
 
   private BufferedWriter writer() throws IOException {

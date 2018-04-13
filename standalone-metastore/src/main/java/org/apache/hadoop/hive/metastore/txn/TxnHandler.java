@@ -1139,7 +1139,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           // The initial value for write id should be 1 and hence we add 1 with number of write ids allocated here
           s = "insert into NEXT_WRITE_ID (nwi_database, nwi_table, nwi_next) values ("
                   + quoteString(dbName) + "," + quoteString(tblName) + ","
-                  + String.valueOf(nextWriteId) + ")";
+                  + Long.toString(nextWriteId) + ")";
           LOG.debug("Going to execute insert <" + s + ">");
           stmt.execute(s);
         } else {
@@ -1411,7 +1411,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           // The initial value for write id should be 1 and hence we add 1 with number of write ids allocated here
           writeId = 1;
           s = "insert into NEXT_WRITE_ID (nwi_database, nwi_table, nwi_next) values ("
-                  + quoteString(dbName) + "," + quoteString(tblName) + "," + String.valueOf(numOfWriteIds + 1) + ")";
+                  + quoteString(dbName) + "," + quoteString(tblName) + "," + Long.toString(numOfWriteIds + 1) + ")";
           LOG.debug("Going to execute insert <" + s + ">");
           stmt.execute(s);
         } else {

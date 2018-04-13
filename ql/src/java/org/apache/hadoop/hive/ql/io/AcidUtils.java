@@ -1855,6 +1855,16 @@ public class AcidUtils {
     return pathList;
   }
 
+  public static String getAcidSubDir(Path dataPath) {
+    String dataDir = dataPath.getName();
+    if (dataDir.startsWith(AcidUtils.BASE_PREFIX)
+            || dataDir.startsWith(AcidUtils.DELTA_PREFIX)
+            || dataDir.startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
+      return dataDir;
+    }
+    return null;
+  }
+
   public static boolean isAcidEnabled(HiveConf hiveConf) {
     String txnMgr = hiveConf.getVar(HiveConf.ConfVars.HIVE_TXN_MANAGER);
     boolean concurrency =  hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);

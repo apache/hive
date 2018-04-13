@@ -72,12 +72,7 @@ public class ReplChangeManager {
     private String subDir;
 
     public FileInfo(FileSystem srcFs, Path sourcePath, String subDir) {
-      this.srcFs = srcFs;
-      this.sourcePath = sourcePath;
-      this.cmPath = null;
-      this.checkSum = null;
-      this.useSourcePath = true;
-      this.subDir = subDir;
+      this(srcFs, sourcePath, null, null, true, subDir);
     }
     public FileInfo(FileSystem srcFs, Path sourcePath, Path cmPath,
                     String checkSum, boolean useSourcePath, String subDir) {
@@ -343,10 +338,11 @@ public class ReplChangeManager {
   }
 
   /***
-   * Concatenate filename and checksum with "#"
+   * Concatenate filename, checksum  and subdirectory with "#"
    * @param fileUriStr Filename string
    * @param fileChecksum Checksum string
-   * @param encodedSubDir sub directory path into which this file belongs to
+   * @param encodedSubDir sub directory path into which this file belongs to. Here encoded means,
+   *                      the multiple levels of subdirectories are concatenated with path separator "/"
    * @return Concatenated Uri string
    */
   // TODO: this needs to be enhanced once change management based filesystem is implemented
