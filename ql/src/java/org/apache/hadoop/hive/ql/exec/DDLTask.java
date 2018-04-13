@@ -4522,6 +4522,12 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       // for dropping. Thus, we need a way to push this filter (replicationSpec.allowEventReplacementInto)
       // to the  metastore to allow it to do drop a partition or not, depending on a Predicate on the
       // parameter key values.
+
+      if (tbl == null) {
+        // If table is missing, then partitions are also would've been dropped. Just no-op.
+        return;
+      }
+
       for (DropTableDesc.PartSpec partSpec : dropTbl.getPartSpecs()){
         List<Partition> partitions = new ArrayList<>();
         try {
@@ -4551,7 +4557,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       console.printInfo("Dropped the partition " + partition.getName());
       // We have already locked the table, don't lock the partitions.
       addIfAbsentByName(new WriteEntity(partition, WriteEntity.WriteType.DDL_NO_LOCK));
-    };
+    }
   }
 
   private void dropTable(Hive db, Table tbl, DropTableDesc dropTbl) throws HiveException {
