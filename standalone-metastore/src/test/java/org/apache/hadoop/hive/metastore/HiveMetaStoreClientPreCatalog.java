@@ -2238,7 +2238,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public List<TxnToWriteId> replAllocateTableWriteIdsBatch(String dbName, String tableName,
-                                           String replPolicy, List<TxnToWriteId> srcTxnToWriteIdList) throws TException {
+                                         String replPolicy, List<TxnToWriteId> srcTxnToWriteIdList) throws TException {
     AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tableName);
     rqst.setReplPolicy(replPolicy);
     rqst.setSrcTxnToWriteIdList(srcTxnToWriteIdList);

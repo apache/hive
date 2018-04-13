@@ -24,6 +24,10 @@ import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import java.util.List;
 
+/**
+ * AllocWriteIdEvent.
+ * Event for allocating write id.
+ */
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public class AllocWriteIdEvent extends ListenerEvent {

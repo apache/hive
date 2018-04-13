@@ -253,8 +253,9 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       try {
         database = Hive.get().getDatabase(dbNameOrPattern);
       } catch (HiveException e) {
-        LOG.error("failed to get the database " + dbNameOrPattern);
-        throw new SemanticException(e);
+        //may be the db is getting created in this load
+        LOG.info("failed to get the database " + dbNameOrPattern);
+        return true;
       }
       String replLastId;
       Map<String, String> params = database.getParameters();
@@ -271,8 +272,9 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       try {
         tbl = Hive.get().getTable(dbNameOrPattern, tblNameOrPattern);
       } catch (HiveException e) {
-        LOG.error("failed to get the table " + dbNameOrPattern + "." + tblNameOrPattern);
-        throw new SemanticException(e);
+        // may be the table is getting created in this load
+        LOG.info("failed to get the table " + dbNameOrPattern + "." + tblNameOrPattern);
+        return true;
       }
       if (tbl != null) {
         Map<String, String> params = tbl.getParameters();

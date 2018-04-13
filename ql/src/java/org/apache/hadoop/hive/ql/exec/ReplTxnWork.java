@@ -21,6 +21,7 @@ import java.io.Serializable;
 
 import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import java.util.List;
@@ -37,7 +38,7 @@ public class ReplTxnWork implements Serializable {
   private String replPolicy;
   private List<Long> txnIds;
   private List<TxnToWriteId> txnToWriteIdList;
-  private Long eventId;
+  private ReplicationSpec replicationSpec;
 
   /**
    * OperationType.
@@ -50,27 +51,29 @@ public class ReplTxnWork implements Serializable {
   OperationType operation;
 
   public ReplTxnWork(String replPolicy, String dbName, String tableName, List<Long> txnIds, OperationType type,
-                     List<TxnToWriteId> txnToWriteIdList,  Long eventId) {
+                     List<TxnToWriteId> txnToWriteIdList, ReplicationSpec replicationSpec) {
     this.txnIds = txnIds;
     this.dbName = dbName;
     this.tableName = tableName;
     this.operation = type;
     this.replPolicy = replPolicy;
     this.txnToWriteIdList = txnToWriteIdList;
-    this.eventId = eventId;
+    this.replicationSpec = replicationSpec;
   }
 
-  public ReplTxnWork(String replPolicy, String dbName, String tableName, List<Long> txnIds, OperationType type, Long eventId) {
-    this(replPolicy, dbName, tableName, txnIds, type, null, eventId);
+  public ReplTxnWork(String replPolicy, String dbName, String tableName, List<Long> txnIds, OperationType type,
+                     ReplicationSpec replicationSpec) {
+    this(replPolicy, dbName, tableName, txnIds, type, null, replicationSpec);
   }
 
-  public ReplTxnWork(String replPolicy, String dbName, String tableName, Long txnId, OperationType type,  Long eventId) {
-    this(replPolicy, dbName, tableName, Lists.newArrayList(txnId), type, null, eventId);
+  public ReplTxnWork(String replPolicy, String dbName, String tableName, Long txnId,
+                     OperationType type, ReplicationSpec replicationSpec) {
+    this(replPolicy, dbName, tableName, Lists.newArrayList(txnId), type, null, replicationSpec);
   }
 
   public ReplTxnWork(String replPolicy, String dbName, String tableName, OperationType type,
-                     List<TxnToWriteId> txnToWriteIdList,  Long eventId) {
-    this(replPolicy, dbName, tableName, null, type, txnToWriteIdList, eventId);
+                     List<TxnToWriteId> txnToWriteIdList, ReplicationSpec replicationSpec) {
+    this(replPolicy, dbName, tableName, null, type, txnToWriteIdList, replicationSpec);
   }
 
   public List<Long> getTxnIds() {
@@ -97,7 +100,7 @@ public class ReplTxnWork implements Serializable {
     return txnToWriteIdList;
   }
 
-  public Long getEventId() {
-    return eventId;
+  public ReplicationSpec getReplicationSpec() {
+    return replicationSpec;
   }
 }

@@ -1577,15 +1577,10 @@ public class TestTxnHandler {
 
   private void checkReplTxnForTest(Long startTxnId, Long endTxnId, String replPolicy, List<Long> targetTxnId)
           throws Exception {
-    int numReplTxns = TxnDbUtil.countQueryAgent(conf, "select count(*) from REPL_TXN_MAP where " +
-            " RTM_SRC_TXN_ID >=  " + startTxnId + "and RTM_SRC_TXN_ID <=  " + endTxnId +
-            " and RTM_REPL_POLICY = \'" + replPolicy + "\'");
-    assertEquals(numReplTxns, targetTxnId.size());
-
     String[] output = TxnDbUtil.queryToString(conf, "select RTM_TARGET_TXN_ID from REPL_TXN_MAP where " +
             " RTM_SRC_TXN_ID >=  " + startTxnId + "and RTM_SRC_TXN_ID <=  " + endTxnId +
             " and RTM_REPL_POLICY = \'" + replPolicy + "\'").split("\n");
-
+    assertEquals(output.length - 1, targetTxnId.size());
     for (int idx = 1; idx < output.length; idx++) {
       long txnId = Long.parseLong(output[idx].trim());
       assertEquals(txnId, targetTxnId.get(idx-1).longValue());

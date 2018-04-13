@@ -44,7 +44,7 @@ public class CommitTxnHandler extends AbstractMessageHandler {
     CommitTxnMessage msg = deserializer.getCommitTxnMessage(context.dmd.getPayload());
     Task<ReplTxnWork> commitTxnTask = TaskFactory.get(
         new ReplTxnWork(HiveUtils.getReplPolicy(context.dbName, context.tableName), context.dbName, context.tableName,
-              msg.getTxnId(), ReplTxnWork.OperationType.REPL_COMMIT_TXN, context.dmd.getEventTo()),
+              msg.getTxnId(), ReplTxnWork.OperationType.REPL_COMMIT_TXN, context.eventOnlyReplicationSpec()),
         context.hiveConf
     );
     updatedMetadata.set(context.dmd.getEventTo().toString(), context.dbName, context.tableName, null);

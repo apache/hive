@@ -270,11 +270,11 @@ public interface HiveTxnManager {
    * @param dbName database name
    * @param tableName the name of the table to allocate the write id
    * @param replPolicy used by replication task to identify the source cluster
-   * @param txnToWriteIdList List of txn id to write id Map
+   * @param srcTxnToWriteIdList List of txn id to write id Map
    * @throws LockException
    */
   void replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
-                                      List<TxnToWriteId> txnToWriteIdList) throws LockException;
+                                      List<TxnToWriteId> srcTxnToWriteIdList) throws LockException;
 
   /**
    * Should be though of more as a unique write operation ID in a given txn (at QueryPlan level).

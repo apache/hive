@@ -588,9 +588,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         if (rqst.isSetReplPolicy()) {
           List<Long> targetTxnIdList = getTargetTxnIdList(rqst.getReplPolicy(), rqst.getReplSrcTxnIds(), stmt);
           if (!targetTxnIdList.isEmpty()) {
-            LOG.info("Target transactions " + targetTxnIdList.toString() + " is present for repl policy :" +
+            if (targetTxnIdList.size() != rqst.getReplSrcTxnIds().size()) {
+              LOG.warn("target txn id number " + targetTxnIdList.toString() +
+                      " is not matching with source txn id number " + rqst.getReplSrcTxnIds().toString());
+            }
+            LOG.info("Target transactions " + targetTxnIdList.toString() + " are present for repl policy :" +
               rqst.getReplPolicy() + " and Source transaction id : " + rqst.getReplSrcTxnIds().toString());
-            return new OpenTxnsResponse(new ArrayList<>());
+            return new OpenTxnsResponse(targetTxnIdList);
           }
         }
 
@@ -732,12 +736,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         if (rqst.isSetReplPolicy()) {
           sourceTxnId = rqst.getTxnid();
-          List<Long> targetTxnIds = getTargetTxnIdList(rqst.getReplPolicy(), Lists.newArrayList(sourceTxnId), stmt);
-          if (targetTxnIds.size() != 1) {
+          List<Long> targetTxnIds = getTargetTxnIdList(rqst.getReplPolicy(),
+                  Collections.singletonList(sourceTxnId), stmt);
+          if (targetTxnIds.isEmpty()) {
             LOG.info("Target txn id is missing for source txn id : " + sourceTxnId +
                     " and repl policy " + rqst.getReplPolicy());
             return;
           }
+          assert targetTxnIds.size() == 1;
           txnid = targetTxnIds.get(0);
         }
 
@@ -878,12 +884,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         if (rqst.isSetReplPolicy()) {
           sourceTxnId = rqst.getTxnid();
-          List<Long> targetTxnIds = getTargetTxnIdList(rqst.getReplPolicy(), Lists.newArrayList(sourceTxnId), stmt);
-          if (targetTxnIds.size() != 1) {
+          List<Long> targetTxnIds = getTargetTxnIdList(rqst.getReplPolicy(),
+                  Collections.singletonList(sourceTxnId), stmt);
+          if (targetTxnIds.isEmpty()) {
             LOG.info("Target txn id is missing for source txn id : " + sourceTxnId +
                     " and repl policy " + rqst.getReplPolicy());
             return;
           }
+          assert targetTxnIds.size() == 1;
           txnid = targetTxnIds.get(0);
         }
 
@@ -1329,7 +1337,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           if (!rs.next()) {
             writeId = 1;
           } else {
-            writeId = rs.getLong(1);;
+            writeId = rs.getLong(1);
           }
         }
 

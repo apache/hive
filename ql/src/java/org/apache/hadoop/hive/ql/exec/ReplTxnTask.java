@@ -57,18 +57,15 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
       Table tbl;
       try {
         tbl = Hive.get().getTable(work.getDbName(), tableName);
-        Map<String, String> params = tbl.getParameters();
-        if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
-          String replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
-          if (Long.parseLong(replLastId) >= work.getEventId()) {
-            // if the event is already replayed, then no need to replay it again.
-            return 0;
-          }
+        ReplicationSpec replicationSpec = work.getReplicationSpec();
+        if (replicationSpec != null && !replicationSpec.allowReplacementInto(tbl.getParameters())) {
+          // if the event is already replayed, then no need to replay it again.
+          LOG.debug("ReplTxnTask: Event is skipped as it is already replayed");
+          return 0;
         }
       } catch (InvalidTableException e) {
-        LOG.debug("Table does not exist so, ignoring the operation");
-        //TODO : need to return if table does not exist. Will be done once acid table replication is implemented.
-        //return 0;
+        LOG.info("Table does not exist so, ignoring the operation");
+        return 0;
       } catch (HiveException e) {
         LOG.error("Get table failed with exception " + e.getMessage());
         return 1;

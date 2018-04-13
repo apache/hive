@@ -78,8 +78,8 @@ class DummyTxnManager extends HiveTxnManagerImpl {
     return 0L;
   }
   @Override
-  public void replAllocateTableWriteIdsBatch(String dbName, String tableName,
-                                         String replPolicy, List<TxnToWriteId> txnToWriteIdList) throws LockException {
+  public void replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
+                                             List<TxnToWriteId> srcTxnToWriteIdList) throws LockException {
     return;
   }
   @Override

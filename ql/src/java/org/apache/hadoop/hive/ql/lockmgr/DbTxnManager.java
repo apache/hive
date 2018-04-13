@@ -1009,15 +1009,15 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   private boolean heartbeatMaterializationRebuildLock(String dbName, String tableName, long txnId) throws LockException {
     try {
       return getMS().heartbeatLockMaterializationRebuild(dbName, tableName, txnId);
-  } catch (TException e) {
+    } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }
   }
   
-  public void replAllocateTableWriteIdsBatch(String dbName, String tableName,
-                                         String replPolicy, List<TxnToWriteId> txnToWriteIdList) throws LockException {
+  public void replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
+                                             List<TxnToWriteId> srcTxnToWriteIdList) throws LockException {
     try {
-      getMS().replAllocateTableWriteIdsBatch(dbName, tableName, replPolicy, txnToWriteIdList);
+      getMS().replAllocateTableWriteIdsBatch(dbName, tableName, replPolicy, srcTxnToWriteIdList);
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }

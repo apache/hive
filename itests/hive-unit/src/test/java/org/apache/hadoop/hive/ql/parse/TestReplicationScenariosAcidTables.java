@@ -59,6 +59,7 @@ public class TestReplicationScenariosAcidTables {
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
         put("hive.support.concurrency", "true");
         put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+        put("hive.repl.dump.include.acid.tables", "true");
     }};
     primary = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
     replica = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
@@ -66,6 +67,7 @@ public class TestReplicationScenariosAcidTables {
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
         put("hive.support.concurrency", "false");
         put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
+        put("hive.repl.dump.include.acid.tables", "true");
     }};
     replicaNonAcid = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
   }
@@ -100,7 +102,8 @@ public class TestReplicationScenariosAcidTables {
             .verifyResult(bootStrapDump.lastReplicationId);
 
     // create table will start and coomit the transaction
-    primary.run("CREATE TABLE " + tableName +
+    primary.run("use " + primaryDbName)
+           .run("CREATE TABLE " + tableName +
             " (key int, value int) PARTITIONED BY (load_date date) " +
             "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')")
             .run("SHOW TABLES LIKE '" + tableName + "'")
@@ -114,6 +117,7 @@ public class TestReplicationScenariosAcidTables {
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(incrementalDump.lastReplicationId)
+            .run("use " + replicatedDbName)
             .run("SHOW TABLES LIKE '" + tableName + "'")
             .verifyResult(tableName);
 
@@ -121,6 +125,7 @@ public class TestReplicationScenariosAcidTables {
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(incrementalDump.lastReplicationId)
+            .run("use " + replicatedDbName)
             .run("SHOW TABLES LIKE '" + tableName + "'")
             .verifyResult(tableName);
   }
@@ -135,7 +140,8 @@ public class TestReplicationScenariosAcidTables {
             .verifyResult(bootStrapDump.lastReplicationId);
 
     // this should fail
-    primary.runFailure("CREATE TABLE " + tableNameFail +
+    primary.run("use " + primaryDbName)
+            .runFailure("CREATE TABLE " + tableNameFail +
             " (key int, value int) PARTITIONED BY (load_date date) " +
             "CLUSTERED BY(key) ('transactional'='true')")
             .run("SHOW TABLES LIKE '" + tableNameFail + "'")
@@ -146,6 +152,7 @@ public class TestReplicationScenariosAcidTables {
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(incrementalDump.lastReplicationId)
+            .run("use " + replicatedDbName)
             .run("SHOW TABLES LIKE '" + tableNameFail + "'")
             .verifyFailure(new String[]{tableNameFail});
 
@@ -153,6 +160,7 @@ public class TestReplicationScenariosAcidTables {
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(incrementalDump.lastReplicationId)
+            .run("use " + replicatedDbName)
             .run("SHOW TABLES LIKE '" + tableNameFail + "'")
             .verifyFailure(new String[]{tableNameFail});
   }
@@ -165,7 +173,8 @@ public class TestReplicationScenariosAcidTables {
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
 
-    primary.run("CREATE TABLE " + tableName +
+    primary.run("use " + primaryDbName)
+            .run("CREATE TABLE " + tableName +
             " (key int, value int) PARTITIONED BY (load_date date) " +
             "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')")
             .run("SHOW TABLES LIKE '" + tableName + "'")
