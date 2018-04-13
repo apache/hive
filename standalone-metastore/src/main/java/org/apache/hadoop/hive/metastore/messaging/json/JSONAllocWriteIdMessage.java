@@ -89,11 +89,6 @@ public class JSONAllocWriteIdMessage extends AllocWriteIdMessage {
   }
 
   @Override
-  public String getDbName() {
-    return dbName;
-  }
-
-  @Override
   public List<TxnToWriteId> getTxnToWriteIdList() {
     // after deserialization, need to recreate the txnToWriteIdList as its not under JsonProperty.
     if (txnToWriteIdList == null) {

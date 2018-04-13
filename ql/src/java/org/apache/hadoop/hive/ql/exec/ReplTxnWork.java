@@ -19,11 +19,11 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 
-import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -68,7 +68,7 @@ public class ReplTxnWork implements Serializable {
 
   public ReplTxnWork(String replPolicy, String dbName, String tableName, Long txnId,
                      OperationType type, ReplicationSpec replicationSpec) {
-    this(replPolicy, dbName, tableName, Lists.newArrayList(txnId), type, null, replicationSpec);
+    this(replPolicy, dbName, tableName, Collections.singletonList(txnId), type, null, replicationSpec);
   }
 
   public ReplTxnWork(String replPolicy, String dbName, String tableName, OperationType type,

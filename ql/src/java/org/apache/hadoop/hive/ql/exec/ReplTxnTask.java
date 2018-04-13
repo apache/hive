@@ -60,11 +60,12 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
         ReplicationSpec replicationSpec = work.getReplicationSpec();
         if (replicationSpec != null && !replicationSpec.allowReplacementInto(tbl.getParameters())) {
           // if the event is already replayed, then no need to replay it again.
-          LOG.debug("ReplTxnTask: Event is skipped as it is already replayed");
+          LOG.debug("ReplTxnTask: Event is skipped as it is already replayed. Event Id: " +
+                  replicationSpec.getReplicationState() + "Event Type: " + work.getOperationType());
           return 0;
         }
       } catch (InvalidTableException e) {
-        LOG.info("Table does not exist so, ignoring the operation");
+        LOG.info("Table does not exist so, ignoring the operation as it might be a retry(idempotent) case.");
         return 0;
       } catch (HiveException e) {
         LOG.error("Get table failed with exception " + e.getMessage());

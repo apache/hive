@@ -59,7 +59,6 @@ public class TestReplicationScenariosAcidTables {
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
         put("hive.support.concurrency", "true");
         put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
-        put("hive.repl.dump.include.acid.tables", "true");
     }};
     primary = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
     replica = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf);
@@ -67,7 +66,6 @@ public class TestReplicationScenariosAcidTables {
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
         put("hive.support.concurrency", "false");
         put("hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
-        put("hive.repl.dump.include.acid.tables", "true");
     }};
     replicaNonAcid = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
   }
@@ -116,18 +114,12 @@ public class TestReplicationScenariosAcidTables {
             primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
-            .verifyResult(incrementalDump.lastReplicationId)
-            .run("use " + replicatedDbName)
-            .run("SHOW TABLES LIKE '" + tableName + "'")
-            .verifyResult(tableName);
+            .verifyResult(incrementalDump.lastReplicationId);
 
     // Test the idempotent behavior of Open and Commit Txn
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
-            .verifyResult(incrementalDump.lastReplicationId)
-            .run("use " + replicatedDbName)
-            .run("SHOW TABLES LIKE '" + tableName + "'")
-            .verifyResult(tableName);
+            .verifyResult(incrementalDump.lastReplicationId);
   }
 
   @Test
@@ -151,18 +143,12 @@ public class TestReplicationScenariosAcidTables {
             primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
-            .verifyResult(incrementalDump.lastReplicationId)
-            .run("use " + replicatedDbName)
-            .run("SHOW TABLES LIKE '" + tableNameFail + "'")
-            .verifyFailure(new String[]{tableNameFail});
+            .verifyResult(incrementalDump.lastReplicationId);
 
     // Test the idempotent behavior of Abort Txn
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
-            .verifyResult(incrementalDump.lastReplicationId)
-            .run("use " + replicatedDbName)
-            .run("SHOW TABLES LIKE '" + tableNameFail + "'")
-            .verifyFailure(new String[]{tableNameFail});
+            .verifyResult(incrementalDump.lastReplicationId);
   }
 
   @Test

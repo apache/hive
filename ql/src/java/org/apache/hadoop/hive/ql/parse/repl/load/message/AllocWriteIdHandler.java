@@ -44,7 +44,7 @@ public class AllocWriteIdHandler extends AbstractMessageHandler {
     AllocWriteIdMessage msg =
         deserializer.getAllocWriteIdMessage(context.dmd.getPayload());
 
-    String dbName = (context.dbName != null && !context.dbName.isEmpty() ? context.dbName : msg.getDbName());
+    String dbName = (context.dbName != null && !context.dbName.isEmpty() ? context.dbName : msg.getDB());
 
     // The context table name can be null if repl load is done on a full db.
     // But we need table name for alloc write id and that is received from source.

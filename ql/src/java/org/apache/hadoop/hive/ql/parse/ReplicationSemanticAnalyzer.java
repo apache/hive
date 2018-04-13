@@ -244,6 +244,18 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  private boolean isEventNotReplayed(Map<String, String> params, FileStatus dir, DumpType dumpType) {
+    if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
+      String replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
+      if (Long.parseLong(replLastId) >= Long.parseLong(dir.getPath().getName())) {
+        LOG.debug("Event " + dumpType + " with replId " + Long.parseLong(dir.getPath().getName())
+                + " is already replayed. LastReplId - " +  Long.parseLong(replLastId));
+        return false;
+      }
+    }
+    return true;
+  }
+
   private boolean shouldReplayEvent(FileStatus dir, DumpType dumpType) throws SemanticException {
     // if database itself is null then we can not filter out anything.
     if (dbNameOrPattern == null || dbNameOrPattern.isEmpty()) {
@@ -252,43 +264,23 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       Database database;
       try {
         database = Hive.get().getDatabase(dbNameOrPattern);
+        return isEventNotReplayed(database.getParameters(), dir, dumpType);
       } catch (HiveException e) {
         //may be the db is getting created in this load
-        LOG.info("failed to get the database " + dbNameOrPattern);
+        LOG.debug("failed to get the database " + dbNameOrPattern);
         return true;
-      }
-      String replLastId;
-      Map<String, String> params = database.getParameters();
-      if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
-        replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
-        if (Long.parseLong(replLastId) >= Long.parseLong(dir.getPath().getName())) {
-          LOG.debug("Event " + dumpType + " with replId " + Long.parseLong(dir.getPath().getName())
-                  + " is already replayed. LastReplId - " +  Long.parseLong(replLastId));
-          return false;
-        }
       }
     } else {
       Table tbl;
       try {
         tbl = Hive.get().getTable(dbNameOrPattern, tblNameOrPattern);
+        return isEventNotReplayed(tbl.getParameters(), dir, dumpType);
       } catch (HiveException e) {
         // may be the table is getting created in this load
-        LOG.info("failed to get the table " + dbNameOrPattern + "." + tblNameOrPattern);
+        LOG.debug("failed to get the table " + dbNameOrPattern + "." + tblNameOrPattern);
         return true;
       }
-      if (tbl != null) {
-        Map<String, String> params = tbl.getParameters();
-        if (params != null && (params.containsKey(ReplicationSpec.KEY.CURR_STATE_ID.toString()))) {
-          String replLastId = params.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());
-          if (Long.parseLong(replLastId) >= Long.parseLong(dir.getPath().getName())) {
-            LOG.debug("Event " + dumpType + " with replId " + Long.parseLong(dir.getPath().getName())
-                    + " is already replayed. LastReplId - " +  Long.parseLong(replLastId));
-            return false;
-          }
-        }
-      }
     }
-    return true;
   }
 
   /*

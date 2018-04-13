@@ -2885,7 +2885,7 @@ public interface IMetaStoreClient {
    * @param dbName name of DB in which the table belongs.
    * @param tableName table to which the write ID to be allocated
    * @param replPolicy Used by replication task to identify the source cluster.
-   * @param srcTxnToWriteIdList List of txn to write id map.
+   * @param srcTxnToWriteIdList List of txn to write id map sent from the source cluster.
    * @throws TException
    */
   List<TxnToWriteId> replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,

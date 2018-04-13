@@ -886,10 +886,11 @@ struct GetValidWriteIdsResponse {
 struct AllocateTableWriteIdsRequest {
     1: required string dbName,
     2: required string tableName,
+    // Either txnIds or replPolicy+srcTxnToWriteIdList can exist in a call. txnIds is used by normal flow and
+    // replPolicy+srcTxnToWriteIdList is used by replication task.
     3: optional list<i64> txnIds,
     4: optional string replPolicy,
-    // The list is assumed to be soretd by txnids. The write id list is assumed to be sorted in ascending
-    //order and also to be contiguous.
+    // The list is assumed to be sorted by both txnids and write ids. The write id list is assumed to be contiguous.
     5: optional list<TxnToWriteId> srcTxnToWriteIdList,
 }
 
