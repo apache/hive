@@ -35,6 +35,7 @@ import com.metamx.http.client.HttpClientInit;
 import com.metamx.http.client.Request;
 import com.metamx.http.client.response.StatusResponseHandler;
 import com.metamx.http.client.response.StatusResponseHolder;
+
 import io.druid.data.input.impl.DimensionSchema;
 import io.druid.data.input.impl.DimensionsSpec;
 import io.druid.data.input.impl.InputRowParser;
@@ -59,6 +60,7 @@ import io.druid.segment.loading.SegmentLoadingException;
 import io.druid.storage.hdfs.HdfsDataSegmentPusher;
 import io.druid.storage.hdfs.HdfsDataSegmentPusherConfig;
 import io.druid.timeline.DataSegment;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -69,6 +71,7 @@ import org.apache.hadoop.hive.druid.io.DruidOutputFormat;
 import org.apache.hadoop.hive.druid.io.DruidQueryBasedInputFormat;
 import org.apache.hadoop.hive.druid.io.DruidRecordWriter;
 import org.apache.hadoop.hive.druid.json.KafkaSupervisorIOConfig;
+import org.apache.hadoop.hive.druid.json.KafkaSupervisorReport;
 import org.apache.hadoop.hive.druid.json.KafkaSupervisorSpec;
 import org.apache.hadoop.hive.druid.json.KafkaSupervisorTuningConfig;
 import org.apache.hadoop.hive.druid.security.KerberosHttpClient;
@@ -82,6 +85,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
@@ -94,6 +98,7 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.ShutdownHookManager;
+
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.joda.time.DateTime;
@@ -115,6 +120,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
 
 import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
 
@@ -454,7 +461,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
         console.printInfo("Druid Kafka Ingestion Reset successful.");
       } else {
         throw new IOException(String
-            .format("Unable to stop Kafka Ingestion Druid status [%d] full response [%s]",
+            .format("Unable to reset Kafka Ingestion Druid status [%d] full response [%s]",
                 response.getStatus().getCode(), response.getContent()));
       }
     } catch (Exception e) {
@@ -486,7 +493,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
 
   }
 
-  public KafkaSupervisorSpec fetchKafkaIngestionSpec(Table table) {
+  private KafkaSupervisorSpec fetchKafkaIngestionSpec(Table table) {
     // Stop Kafka Ingestion first
     final String overlordAddress = Preconditions.checkNotNull(HiveConf
             .getVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_OVERLORD_DEFAULT_ADDRESS),
@@ -512,7 +519,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
         return null;
       } else {
         throw new IOException(String
-            .format("Unable to stop Kafka Ingestion Druid status [%d] full response [%s]",
+            .format("Unable to fetch Kafka Ingestion Spec from Druid status [%d] full response [%s]",
                 response.getStatus().getCode(), response.getContent()));
       }
     } catch (Exception e) {
@@ -520,6 +527,46 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     }
   }
 
+  /**
+   * Fetches kafka supervisor status report from druid overlod.
+   * @param table
+   * @return kafka supervisor report or null when druid overlord is unreachable.
+   */
+  @Nullable
+  private KafkaSupervisorReport fetchKafkaSupervisorReport(Table table) {
+    final String overlordAddress = Preconditions.checkNotNull(HiveConf
+                    .getVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_OVERLORD_DEFAULT_ADDRESS),
+            "Druid Overlord Address is null");
+    String dataSourceName = Preconditions
+            .checkNotNull(getTableProperty(table, Constants.DRUID_DATA_SOURCE),
+                    "Druid Datasource name is null");
+    try {
+      StatusResponseHolder response = RetryUtils.retry(() -> getHttpClient().go(new Request(HttpMethod.GET,
+                      new URL(String
+                              .format("http://%s/druid/indexer/v1/supervisor/%s/status", overlordAddress,
+                                      dataSourceName))),
+              new StatusResponseHandler(
+                      Charset.forName("UTF-8"))).get(),
+              input -> input instanceof IOException,
+              getMaxRetryCount());
+      if (response.getStatus().equals(HttpResponseStatus.OK)) {
+        return DruidStorageHandlerUtils.JSON_MAPPER
+                .readValue(response.getContent(), KafkaSupervisorReport.class);
+        // Druid Returns 400 Bad Request when not found.
+      } else if (response.getStatus().equals(HttpResponseStatus.NOT_FOUND) || response.getStatus().equals(HttpResponseStatus.BAD_REQUEST)) {
+        LOG.info("No Kafka Supervisor found for datasource[%s]", dataSourceName);
+        return null;
+      } else {
+        LOG.error("Unable to fetch Kafka Supervisor status [%d] full response [%s]",
+                        response.getStatus().getCode(), response.getContent());
+        return null;
+      }
+    } catch (Exception e) {
+      LOG.error("Exception while fetching kafka ingestion spec from druid", e);
+      return null;
+    }
+  }
+  
   /**
    * Creates metadata moves then commit the Segment's metadata to Druid metadata store in one TxN
    *
@@ -995,6 +1042,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
       updateKafkaIngestion(table);
     }
   }
+
   private static <T> Boolean getBooleanProperty(Table table, String propertyName) {
     String val = getTableProperty(table, propertyName);
     if (val == null) {
@@ -1056,5 +1104,21 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
 
   private int getMaxRetryCount() {
     return HiveConf.getIntVar(getConf(), HiveConf.ConfVars.HIVE_DRUID_MAX_TRIES);
+  }
+
+  @Override
+  public StorageHandlerInfo getStorageHandlerInfo(Table table) throws MetaException {
+    if(isKafkaStreamingTable(table)){
+        KafkaSupervisorReport kafkaSupervisorReport = fetchKafkaSupervisorReport(table);
+        if(kafkaSupervisorReport == null){
+          return DruidStorageHandlerInfo.UNREACHABLE;
+        }
+        return new DruidStorageHandlerInfo(kafkaSupervisorReport);
+    }
+    else
+      // TODO: Currently we do not expose any runtime info for non-streaming tables.
+      // In future extend this add more information regarding table status.
+      // e.g. Total size of segments in druid, loadstatus of table on historical nodes etc.
+      return null;
   }
 }

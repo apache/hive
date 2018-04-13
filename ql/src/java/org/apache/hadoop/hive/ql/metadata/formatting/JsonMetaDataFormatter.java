@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
+import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.codehaus.jackson.JsonGenerator;
@@ -117,7 +118,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       boolean isOutputPadded, List<ColumnStatisticsObj> colStats,
       PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
       UniqueConstraint ukInfo, NotNullConstraint nnInfo, DefaultConstraint dInfo,
-                            CheckConstraint cInfo) throws HiveException {
+      CheckConstraint cInfo, StorageHandlerInfo storageHandlerInfo) throws HiveException {
     MapBuilder builder = MapBuilder.create();
     builder.put("columns", makeColsUnformatted(cols));
 
@@ -145,6 +146,9 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       }
       if (cInfo != null && !cInfo.getCheckConstraints().isEmpty()) {
         builder.put("checkConstraintInfo", cInfo);
+      }
+      if(storageHandlerInfo != null) {
+        builder.put("storageHandlerInfo", storageHandlerInfo.toString());
       }
     }
 
