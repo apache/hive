@@ -231,6 +231,11 @@ public class WarehouseInstance implements Closeable {
     return run(replLoadCmd);
   }
 
+  WarehouseInstance status(String replicatedDbName) throws Throwable {
+    String replStatusCmd = "REPL STATUS " + replicatedDbName;
+    return run(replStatusCmd);
+  }
+
   WarehouseInstance status(String replicatedDbName, List<String> withClauseOptions) throws Throwable {
     String replStatusCmd = "REPL STATUS " + replicatedDbName;
     if (!withClauseOptions.isEmpty()) {
