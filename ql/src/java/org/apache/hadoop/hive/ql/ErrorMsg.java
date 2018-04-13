@@ -576,7 +576,7 @@ public enum ErrorMsg {
   SPARK_CREATE_CLIENT_INTERRUPTED(30040,
       "Interrupted while creating Spark client for session {0}", true),
   SPARK_CREATE_CLIENT_ERROR(30041,
-      "Failed to create Spark client for Spark session {0}", true),
+      "Failed to create Spark client for Spark session {0}: {1}", true),
   SPARK_CREATE_CLIENT_INVALID_RESOURCE_REQUEST(30042,
       "Failed to create Spark client due to invalid resource request: {0}", true),
   SPARK_CREATE_CLIENT_CLOSED_SESSION(30043,
