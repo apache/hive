@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +28,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.ExplainTask;
+import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.parse.ExplainConfiguration;
+import org.apache.hadoop.hive.ql.plan.ExplainWork;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.util.CallSite;
 import org.slf4j.Logger;
@@ -50,9 +59,11 @@ public class SparkPlan {
   private final Map<SparkTran, List<SparkTran>> invertedTransGraph = new HashMap<SparkTran, List<SparkTran>>();
   private final Set<Integer> cachedRDDIds = new HashSet<Integer>();
 
+  private final JobConf jobConf;
   private final SparkContext sc;
 
-  SparkPlan(SparkContext sc) {
+  SparkPlan(JobConf jobConf, SparkContext sc) {
+    this.jobConf = jobConf;
     this.sc = sc;
   }
 
@@ -68,7 +79,7 @@ public class SparkPlan {
         // Root tran, it must be MapInput
         Preconditions.checkArgument(tran instanceof MapInput,
             "AssertionError: tran must be an instance of MapInput");
-        sc.setCallSite(CallSite.apply(tran.getName(), ""));
+        sc.setCallSite(CallSite.apply(tran.getName(), getLongFormCallSite(tran)));
         rdd = tran.transform(null);
       } else {
         for (SparkTran parent : parents) {
@@ -82,7 +93,7 @@ public class SparkPlan {
             rdd.setName("UnionRDD (" + rdd.getNumPartitions() + ")");
           }
         }
-        sc.setCallSite(CallSite.apply(tran.getName(), ""));
+        sc.setCallSite(CallSite.apply(tran.getName(), getLongFormCallSite(tran)));
         rdd = tran.transform(rdd);
       }
 
@@ -107,6 +118,46 @@ public class SparkPlan {
     LOG.info("\n\nSpark RDD Graph:\n\n" + finalRDD.toDebugString() + "\n");
 
     return finalRDD;
+  }
+
+  /**
+   * Takes a {@link SparkTran} object that creates the longForm for the RDD's {@link CallSite}.
+   * It does this my creating an {@link ExplainTask} and running it over the
+   * {@link SparkTran#getBaseWork()} object. The explain output is serialized to the string,
+   * which is logged and returned. If any errors are encountered while creating the explain plan,
+   * an error message is simply logged, but no {@link Exception} is thrown.
+   *
+   * @param tran the {@link SparkTran} to create the long call site for
+   *
+   * @return a {@link String} containing the explain plan for the given {@link SparkTran}
+   */
+  private String getLongFormCallSite(SparkTran tran) {
+    if (this.jobConf.getBoolean(HiveConf.ConfVars.HIVE_SPARK_LOG_EXPLAIN_WEBUI.varname, HiveConf
+            .ConfVars.HIVE_SPARK_LOG_EXPLAIN_WEBUI.defaultBoolVal)) {
+      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_CREATE_EXPLAIN_PLAN + tran.getName());
+
+      ExplainWork explainWork = new ExplainWork();
+      explainWork.setConfig(new ExplainConfiguration());
+      ExplainTask explainTask = new ExplainTask();
+      explainTask.setWork(explainWork);
+
+      String explainOutput = "";
+      try {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        explainTask.outputPlan(tran.getBaseWork(), new PrintStream(outputStream), false, false, 0,
+                null, this.jobConf.getBoolean(HiveConf.ConfVars.HIVE_IN_TEST.varname,
+                        HiveConf.ConfVars.HIVE_IN_TEST.defaultBoolVal));
+        explainOutput = StringUtils.abbreviate(tran.getName() + " Explain Plan:\n\n" + outputStream
+                .toString(), 100000);
+        LOG.debug(explainOutput);
+      } catch (Exception e) {
+        LOG.error("Error while generating explain plan for " + tran.getName(), e);
+      }
+
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_CREATE_EXPLAIN_PLAN + tran.getName());
+      return explainOutput;
+    }
+    return "";
   }
 
   public void addTran(SparkTran tran) {
