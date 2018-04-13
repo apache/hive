@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.metadata.StorageHandlerInfo;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,7 +133,8 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       boolean isFormatted, boolean isExt,
       boolean isOutputPadded, List<ColumnStatisticsObj> colStats,
       PrimaryKeyInfo pkInfo, ForeignKeyInfo fkInfo,
-      UniqueConstraint ukInfo, NotNullConstraint nnInfo, DefaultConstraint dInfo, CheckConstraint cInfo)
+      UniqueConstraint ukInfo, NotNullConstraint nnInfo, DefaultConstraint dInfo, CheckConstraint cInfo,
+      StorageHandlerInfo storageHandlerInfo)
         throws HiveException {
     try {
       List<FieldSchema> partCols = tbl.isPartitioned() ? tbl.getPartCols() : null;
@@ -251,6 +253,13 @@ class TextMetaDataFormatter implements MetaDataFormatter {
               outStream.write(cInfo.toString().getBytes("UTF-8"));
               outStream.write(terminator);
             }
+          }
+
+          if (storageHandlerInfo!= null) {
+            outStream.write(("StorageHandlerInfo").getBytes("UTF-8"));
+            outStream.write(terminator);
+            outStream.write(storageHandlerInfo.formatAsText().getBytes("UTF-8"));
+            outStream.write(terminator);
           }
         }
       }
