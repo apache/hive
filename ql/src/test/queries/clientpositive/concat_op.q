@@ -1,3 +1,4 @@
+--! qt:dataset:src
 explain select key || value from src;
 
 select concat('a','b','c');

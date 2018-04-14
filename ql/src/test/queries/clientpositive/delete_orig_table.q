@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 -- Suppress vectorization due to known bug.  See HIVE-19109.
 set hive.vectorized.execution.enabled=false;
 set hive.test.vectorized.execution.enabled.override=disable;
@@ -7,7 +8,7 @@ set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/delete_orig_table;
-dfs -copyFromLocal ../../data/files/alltypesorc ${system:test.tmp.dir}/delete_orig_table/00000_0; 
+dfs -copyFromLocal ../../data/files/alltypesorc ${system:test.tmp.dir}/delete_orig_table/00000_0;
 
 create table acid_dot(
     ctinyint TINYINT,

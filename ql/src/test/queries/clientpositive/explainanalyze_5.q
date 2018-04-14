@@ -1,3 +1,6 @@
+--! qt:dataset:src1
+--! qt:dataset:src
+--! qt:dataset:alltypesorc
 set hive.map.aggr=false;
 
 set hive.stats.column.autogather=true;

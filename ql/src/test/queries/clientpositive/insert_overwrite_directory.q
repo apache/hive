@@ -1,3 +1,4 @@
+--! qt:dataset:src
 insert overwrite directory '../../data/files/src_table_1'
 select * from src ;
 dfs -cat ../../data/files/src_table_1/000000_0;

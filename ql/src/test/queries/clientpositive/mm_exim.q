@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:part
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;

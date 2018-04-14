@@ -1,3 +1,4 @@
+--! qt:dataset:part
 DROP TABLE part_rc;
 
 CREATE TABLE part_rc( 

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 CREATE TABLE parquet_tbl(
   key int,
   ldate string)

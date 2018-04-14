@@ -1,3 +1,5 @@
+--! qt:dataset:src1
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 CREATE TABLE src1_rc(key STRING, value STRING) STORED AS RCFILE;
 INSERT OVERWRITE TABLE src1_rc SELECT * FROM src1;

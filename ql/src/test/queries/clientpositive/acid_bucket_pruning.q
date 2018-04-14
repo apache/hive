@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 set hive.mapred.mode=nonstrict;
 set hive.optimize.ppd=true;
 set hive.optimize.index.filter=true;

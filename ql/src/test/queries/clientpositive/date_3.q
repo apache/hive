@@ -1,3 +1,4 @@
+--! qt:dataset:src
 drop table date_3;
 
 create table date_3 (

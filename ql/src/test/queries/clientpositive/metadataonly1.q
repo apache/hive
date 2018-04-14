@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set hive.mapred.mode=nonstrict;
 set hive.optimize.metadataonly=true;
 CREATE TABLE TEST1(A INT, B DOUBLE) partitioned by (ds string);

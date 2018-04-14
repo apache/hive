@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 CREATE TABLE druid_partitioned_table_0
         STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
         TBLPROPERTIES (

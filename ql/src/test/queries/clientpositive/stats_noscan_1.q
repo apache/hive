@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set hive.explain.user=false;
 set datanucleus.cache.collections=false;
 set hive.stats.autogather=false;

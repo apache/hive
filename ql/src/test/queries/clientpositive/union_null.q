@@ -1,3 +1,5 @@
+--! qt:dataset:src1
+--! qt:dataset:src
 -- SORT_BEFORE_DIFF
 
 -- HIVE-2901

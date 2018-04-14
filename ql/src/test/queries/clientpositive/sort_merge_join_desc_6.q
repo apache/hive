@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:part
 
 
 set hive.exec.reducers.max = 1;

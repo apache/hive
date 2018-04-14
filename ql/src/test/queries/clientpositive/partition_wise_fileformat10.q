@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.input.format = org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 
 -- This tests that the schema can be changed for binary serde data

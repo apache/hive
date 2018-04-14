@@ -1,3 +1,4 @@
+--! qt:dataset:src
 create table orcstr (vcol varchar(20)) stored as orc;
 
 insert overwrite table orcstr select null from src;

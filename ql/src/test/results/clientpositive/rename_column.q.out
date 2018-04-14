@@ -142,28 +142,12 @@ POSTHOOK: query: DROP TABLE kv_rename_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@kv_rename_test
 POSTHOOK: Output: default@kv_rename_test
-PREHOOK: query: SHOW TABLES
+PREHOOK: query: SHOW TABLES LIKE "kv_rename_*"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES
+POSTHOOK: query: SHOW TABLES LIKE "kv_rename_*"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
-alltypesorc
-alltypesparquet
-cbo_t1
-cbo_t2
-cbo_t3
-lineitem
-part
-src
-src1
-src_cbo
-src_json
-src_sequencefile
-src_thrift
-srcbucket
-srcbucket2
-srcpart
 PREHOOK: query: CREATE DATABASE kv_rename_test_db
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:kv_rename_test_db
@@ -320,9 +304,9 @@ POSTHOOK: query: DROP TABLE kv_rename_test
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: kv_rename_test_db@kv_rename_test
 POSTHOOK: Output: kv_rename_test_db@kv_rename_test
-PREHOOK: query: SHOW TABLES
+PREHOOK: query: SHOW TABLES LIKE "kv_rename_*"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:kv_rename_test_db
-POSTHOOK: query: SHOW TABLES
+POSTHOOK: query: SHOW TABLES LIKE "kv_rename_*"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:kv_rename_test_db

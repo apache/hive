@@ -1,3 +1,4 @@
+--! qt:dataset:src
 CREATE TABLE hbase_ck_5(key struct<col1:string,col2:string,col3:string>, value string)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES (

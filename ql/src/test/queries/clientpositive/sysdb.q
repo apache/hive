@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 set hive.strict.checks.cartesian.product=false;
 
 set hive.compute.query.using.stats=false;

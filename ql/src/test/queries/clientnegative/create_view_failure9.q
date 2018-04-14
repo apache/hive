@@ -1,3 +1,4 @@
+--! qt:dataset:src
 DROP VIEW xxx18;
 
 -- should fail:  partitioning columns out of order

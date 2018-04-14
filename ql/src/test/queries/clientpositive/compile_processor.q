@@ -1,3 +1,4 @@
+--! qt:dataset:src
 
 compile `import org.apache.hadoop.hive.ql.exec.UDF \;
 public class Pyth extends UDF {

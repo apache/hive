@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.query.results.cache.enabled=true;
 
 create table rct (key string, value string);
