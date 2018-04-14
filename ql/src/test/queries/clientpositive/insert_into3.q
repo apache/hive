@@ -1,3 +1,4 @@
+--! qt:dataset:src
 DROP TABLE insert_into3a;
 DROP TABLE insert_into3b;
 

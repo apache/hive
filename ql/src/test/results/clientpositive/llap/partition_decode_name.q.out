@@ -1,4 +1,4 @@
-PREHOOK: query: create table sc_n0 as select * 
+PREHOOK: query: create table sc_n0 as select *
 from (select '2011-01-11', '2011-01-11+14:18:26' from src tablesample (1 rows)
       union all 
       select '2011-01-11', '2011-01-11+15:18:26' from src tablesample (1 rows)
@@ -8,7 +8,7 @@ PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
 PREHOOK: Output: database:default
 PREHOOK: Output: default@sc_n0
-POSTHOOK: query: create table sc_n0 as select * 
+POSTHOOK: query: create table sc_n0 as select *
 from (select '2011-01-11', '2011-01-11+14:18:26' from src tablesample (1 rows)
       union all 
       select '2011-01-11', '2011-01-11+15:18:26' from src tablesample (1 rows)

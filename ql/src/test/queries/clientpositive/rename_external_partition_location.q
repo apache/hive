@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:part
 set hive.mapred.mode=nonstrict;
 
 dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/ex_table;

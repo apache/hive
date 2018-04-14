@@ -1,3 +1,4 @@
+--! qt:dataset:src
 --HIVE 3226
 drop table array_valued_src;
 create table array_valued_src (key string, value array<string>);

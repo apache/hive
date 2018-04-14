@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:part
 
 set hive.cbo.enable=false;
 

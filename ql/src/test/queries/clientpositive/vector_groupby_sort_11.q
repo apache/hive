@@ -1,3 +1,5 @@
+--! qt:dataset:src
+
 SET hive.vectorized.execution.enabled=true;
 SET hive.vectorized.execution.reduce.enabled=true;
 set hive.mapred.mode=nonstrict;

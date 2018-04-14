@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 create table nzhang_part4 (key string) partitioned by (ds string, hr string, value string);
 
 set hive.exec.dynamic.partition=true;

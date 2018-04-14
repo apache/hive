@@ -1,3 +1,4 @@
+--! qt:dataset:src
 -- EXCLUDE_HADOOP_MAJOR_VERSIONS( 0.20S)
 
 

@@ -2767,7 +2767,7 @@ Manufacturer#5	almond antique medium spring khaki	6
 Manufacturer#5	almond antique sky peru orange	2
 Manufacturer#5	almond aquamarine dodger light gainsboro	46
 Manufacturer#5	almond azure blanched chiffon midnight	23
-PREHOOK: query: create view IF NOT EXISTS mfgr_price_view_n5 as 
+PREHOOK: query: create view IF NOT EXISTS mfgr_price_view_n5 as
 select p_mfgr, p_brand, 
 round(sum(p_retailprice),2) as s
 from part 
@@ -2776,7 +2776,7 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@part
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mfgr_price_view_n5
-POSTHOOK: query: create view IF NOT EXISTS mfgr_price_view_n5 as 
+POSTHOOK: query: create view IF NOT EXISTS mfgr_price_view_n5 as
 select p_mfgr, p_brand, 
 round(sum(p_retailprice),2) as s
 from part 
@@ -2791,7 +2791,7 @@ POSTHOOK: Lineage: mfgr_price_view_n5.s EXPRESSION [(part)part.FieldSchema(name:
 PREHOOK: query: explain
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1,2)  as s1
-from noop(on mfgr_price_view_n5 
+from noop(on mfgr_price_view_n5
 partition by p_mfgr 
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row)
@@ -2802,7 +2802,7 @@ PREHOOK: Input: default@part
 POSTHOOK: query: explain
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1,2)  as s1
-from noop(on mfgr_price_view_n5 
+from noop(on mfgr_price_view_n5
 partition by p_mfgr 
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row)
@@ -2929,7 +2929,7 @@ STAGE PLANS:
 
 PREHOOK: query: select p_mfgr, p_brand, s, 
 round(sum(s) over w1,2) as s1
-from noop(on mfgr_price_view_n5 
+from noop(on mfgr_price_view_n5
 partition by p_mfgr 
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row)
@@ -2939,7 +2939,7 @@ PREHOOK: Input: default@part
 #### A masked pattern was here ####
 POSTHOOK: query: select p_mfgr, p_brand, s, 
 round(sum(s) over w1,2) as s1
-from noop(on mfgr_price_view_n5 
+from noop(on mfgr_price_view_n5
 partition by p_mfgr 
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row)
@@ -2963,7 +2963,7 @@ Manufacturer#4	Brand#42	2581.68	7337.62
 Manufacturer#5	Brand#51	1611.66	1611.66
 Manufacturer#5	Brand#52	3254.17	4865.83
 Manufacturer#5	Brand#53	2806.83	7672.66
-PREHOOK: query: CREATE TABLE part_4_n2( 
+PREHOOK: query: CREATE TABLE part_4_n2(
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -2973,7 +2973,7 @@ s DOUBLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_4_n2
-POSTHOOK: query: CREATE TABLE part_4_n2( 
+POSTHOOK: query: CREATE TABLE part_4_n2(
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -2983,7 +2983,7 @@ s DOUBLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_4_n2
-PREHOOK: query: CREATE TABLE part_5_n2( 
+PREHOOK: query: CREATE TABLE part_5_n2(
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -2995,7 +2995,7 @@ fv1 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_5_n2
-POSTHOOK: query: CREATE TABLE part_5_n2( 
+POSTHOOK: query: CREATE TABLE part_5_n2(
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -3011,11 +3011,11 @@ PREHOOK: query: explain
 from noop(on part 
 partition by p_mfgr 
 order by p_name) 
-INSERT OVERWRITE TABLE part_4_n2 select p_mfgr, p_name, p_size, 
+INSERT OVERWRITE TABLE part_4_n2 select p_mfgr, p_name, p_size,
 rank() over (distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_name) as dr, 
 round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2)  as s
-INSERT OVERWRITE TABLE part_5_n2 select  p_mfgr,p_name, p_size,  
+INSERT OVERWRITE TABLE part_5_n2 select  p_mfgr,p_name, p_size,
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2,
 rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as dr, 
@@ -3030,11 +3030,11 @@ POSTHOOK: query: explain
 from noop(on part 
 partition by p_mfgr 
 order by p_name) 
-INSERT OVERWRITE TABLE part_4_n2 select p_mfgr, p_name, p_size, 
+INSERT OVERWRITE TABLE part_4_n2 select p_mfgr, p_name, p_size,
 rank() over (distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_name) as dr, 
 round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2)  as s
-INSERT OVERWRITE TABLE part_5_n2 select  p_mfgr,p_name, p_size,  
+INSERT OVERWRITE TABLE part_5_n2 select  p_mfgr,p_name, p_size,
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2,
 rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as dr, 
@@ -3369,11 +3369,11 @@ STAGE PLANS:
 PREHOOK: query: from noop(on part 
 partition by p_mfgr 
 order by p_name) 
-INSERT OVERWRITE TABLE part_4_n2 select p_mfgr, p_name, p_size, 
+INSERT OVERWRITE TABLE part_4_n2 select p_mfgr, p_name, p_size,
 rank() over (distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_name) as dr, 
 round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2)  as s
-INSERT OVERWRITE TABLE part_5_n2 select  p_mfgr,p_name, p_size,  
+INSERT OVERWRITE TABLE part_5_n2 select  p_mfgr,p_name, p_size,
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2,
 rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as dr, 
@@ -3387,11 +3387,11 @@ PREHOOK: Output: default@part_5_n2
 POSTHOOK: query: from noop(on part 
 partition by p_mfgr 
 order by p_name) 
-INSERT OVERWRITE TABLE part_4_n2 select p_mfgr, p_name, p_size, 
+INSERT OVERWRITE TABLE part_4_n2 select p_mfgr, p_name, p_size,
 rank() over (distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_name) as dr, 
 round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2)  as s
-INSERT OVERWRITE TABLE part_5_n2 select  p_mfgr,p_name, p_size,  
+INSERT OVERWRITE TABLE part_5_n2 select  p_mfgr,p_name, p_size,
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2,
 rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as dr, 

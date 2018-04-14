@@ -1,3 +1,4 @@
+--! qt:dataset:src_thrift
 FROM (
   FROM src_thrift
   SELECT TRANSFORM(src_thrift.lint, src_thrift.lintstring)

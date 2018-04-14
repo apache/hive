@@ -1,3 +1,5 @@
+--! qt:dataset:src1
+--! qt:dataset:src
 -- create testing table.
 create table alter_coltype(key string, value string) partitioned by (dt string, ts string);
 

@@ -1,3 +1,5 @@
+--! qt:dataset:src1
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 drop table if exists src2_n4;
 drop table if exists src_multi1_n3;

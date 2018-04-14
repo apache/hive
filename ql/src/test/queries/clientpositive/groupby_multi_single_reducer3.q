@@ -1,3 +1,4 @@
+--! qt:dataset:src
 -- HIVE-3849 Aliased column in where clause for multi-groupby single reducer cannot be resolved
 
 -- SORT_QUERY_RESULTS

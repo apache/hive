@@ -1,3 +1,4 @@
+--! qt:dataset:src
 SET hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 set hive.auto.convert.join=true;
@@ -33,12 +34,12 @@ set hive.auto.convert.join.noconditionaltask.size=400;
 EXPLAIN
 INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT a.key, a.key2, concat(a.value, b.value) 
-FROM test_table1_n3 a JOIN test_table2_n3 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1';
 
 INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT a.key, a.key2, concat(a.value, b.value) 
-FROM test_table1_n3 a JOIN test_table2_n3 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1';
 
 select * from test_table3_n3 tablesample (bucket 1 out of 2) s where ds = '1';
@@ -51,7 +52,7 @@ INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT subq1.key, subq1.key2, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1_n3 a JOIN test_table2_n3 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1;
 
@@ -59,7 +60,7 @@ INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT subq1.key, subq1.key2, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1_n3 a JOIN test_table2_n3 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1;
 
@@ -71,7 +72,7 @@ select * from test_table3_n3 tablesample (bucket 2 out of 2) s where ds = '1';
 EXPLAIN
 INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT a.key2, a.key, concat(a.value, b.value) 
-FROM test_table1_n3 a JOIN test_table2_n3 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1';
 
 -- Insert data into the bucketed table by selecting from another bucketed table
@@ -81,7 +82,7 @@ INSERT OVERWRITE TABLE test_table3_n3 PARTITION (ds = '1')
 SELECT subq1.key2, subq1.key, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1_n3 a JOIN test_table2_n3 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1;
 
@@ -94,7 +95,7 @@ SELECT subq2.key, subq2.key2, subq2.value from
 SELECT subq1.key2, subq1.key, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1_n3 a JOIN test_table2_n3 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2;
@@ -105,7 +106,7 @@ SELECT subq2.key, subq2.key2, subq2.value from
 SELECT subq1.key2, subq1.key, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1_n3 a JOIN test_table2_n3 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2;
@@ -122,7 +123,7 @@ SELECT subq2.k2, subq2.k1, subq2.value from
 SELECT subq1.key2 as k1, subq1.key as k2, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1_n3 a JOIN test_table2_n3 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2;
@@ -133,7 +134,7 @@ SELECT subq2.k2, subq2.k1, subq2.value from
 SELECT subq1.key2 as k1, subq1.key  as k2, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1_n3 a JOIN test_table2_n3 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2;
@@ -153,7 +154,7 @@ SELECT subq2.k2, subq2.k1, subq2.value from
 SELECT subq1.key2 as k1, subq1.key  as k2, subq1.value from
 (
 SELECT a.key, a.key2, concat(a.value, b.value) as value
-FROM test_table1_n3 a JOIN test_table2_n3 b 
+FROM test_table1_n3 a JOIN test_table2_n3 b
 ON a.key = b.key and a.key2 = b.key2 WHERE a.ds = '1' and b.ds = '1'
 )subq1
 )subq2;

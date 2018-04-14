@@ -1,3 +1,4 @@
+--! qt:dataset:src
 -- -*- mode:sql -*-
 
 drop table if exists hb_target;

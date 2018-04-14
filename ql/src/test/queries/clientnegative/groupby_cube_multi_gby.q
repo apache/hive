@@ -1,3 +1,4 @@
+--! qt:dataset:src
 create table t1 like src;
 create table t2 like src;
 

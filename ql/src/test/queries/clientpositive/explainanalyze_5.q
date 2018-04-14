@@ -1,3 +1,6 @@
+--! qt:dataset:src1
+--! qt:dataset:src
+--! qt:dataset:alltypesorc
 SET hive.vectorized.execution.enabled=false;
 set hive.map.aggr=false;
 
@@ -36,11 +39,11 @@ create table acid_uami_n2(i int,
                  de decimal(5,2),
                  vc varchar(128)) clustered by (i) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
 
-insert into table acid_uami_n2 values 
+insert into table acid_uami_n2 values
     (1, 109.23, 'mary had a little lamb'),
     (6553, 923.19, 'its fleece was white as snow');
 
-insert into table acid_uami_n2 values 
+insert into table acid_uami_n2 values
     (10, 119.23, 'and everywhere that mary went'),
     (65530, 823.19, 'the lamb was sure to go');
 

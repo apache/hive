@@ -812,7 +812,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Input: default@srcpart_date_n2
 #### A masked pattern was here ####
 1000
-PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -823,7 +823,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
@@ -1000,7 +1000,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -1011,7 +1011,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
@@ -1023,7 +1023,7 @@ POSTHOOK: Input: default@srcpart_date_n2
 POSTHOOK: Input: default@srcpart_hour_n0
 #### A masked pattern was here ####
 500
-PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -1034,7 +1034,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
@@ -1180,7 +1180,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -1191,7 +1191,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
@@ -3332,7 +3332,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11 and srcpart.hr = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -3341,7 +3341,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11 and srcpart.hr = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
@@ -3516,7 +3516,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11 and srcpart.hr = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -3525,7 +3525,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11 and srcpart.hr = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
@@ -3535,14 +3535,14 @@ POSTHOOK: Input: default@srcpart_date_n2
 POSTHOOK: Input: default@srcpart_hour_n0
 #### A masked pattern was here ####
 500
-PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart.hr = 13
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart.hr = 13
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
@@ -3687,14 +3687,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart.hr = 13
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart.hr = 13
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
@@ -4756,7 +4756,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 POSTHOOK: Input: default@srcpart_date_n2
 #### A masked pattern was here ####
 1000
-PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -4767,7 +4767,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
@@ -4928,7 +4928,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -4939,7 +4939,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
@@ -6010,7 +6010,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11 and srcpart.hr = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -6019,7 +6019,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11 and srcpart.hr = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
@@ -6178,7 +6178,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11 and srcpart.hr = 11
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -6187,7 +6187,7 @@ PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11 and srcpart.hr = 11
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
@@ -6197,14 +6197,14 @@ POSTHOOK: Input: default@srcpart_date_n2
 POSTHOOK: Input: default@srcpart_hour_n0
 #### A masked pattern was here ####
 500
-PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+PREHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart.hr = 13
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 #### A masked pattern was here ####
-POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+POSTHOOK: query: EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart.hr = 13
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
@@ -6334,14 +6334,14 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+PREHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart.hr = 13
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
 PREHOOK: Input: default@srcpart_date_n2
 PREHOOK: Input: default@srcpart_hour_n0
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+POSTHOOK: query: select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart.hr = 13
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart

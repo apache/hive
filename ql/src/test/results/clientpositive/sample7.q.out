@@ -7,14 +7,14 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dest1_n160
 PREHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE dest1_n160 SELECT s.* 
+INSERT OVERWRITE TABLE dest1_n160 SELECT s.*
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s
 WHERE s.key > 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket
 PREHOOK: Output: default@dest1_n160
 POSTHOOK: query: EXPLAIN EXTENDED
-INSERT OVERWRITE TABLE dest1_n160 SELECT s.* 
+INSERT OVERWRITE TABLE dest1_n160 SELECT s.*
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s
 WHERE s.key > 100
 POSTHOOK: type: QUERY
@@ -337,13 +337,13 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-PREHOOK: query: INSERT OVERWRITE TABLE dest1_n160 SELECT s.* 
+PREHOOK: query: INSERT OVERWRITE TABLE dest1_n160 SELECT s.*
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s
 WHERE s.key > 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcbucket
 PREHOOK: Output: default@dest1_n160
-POSTHOOK: query: INSERT OVERWRITE TABLE dest1_n160 SELECT s.* 
+POSTHOOK: query: INSERT OVERWRITE TABLE dest1_n160 SELECT s.*
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s
 WHERE s.key > 100
 POSTHOOK: type: QUERY

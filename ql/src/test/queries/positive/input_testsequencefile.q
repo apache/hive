@@ -1,3 +1,4 @@
+--! qt:dataset:src
 --
 -- Table dest4_sequencefile
 --

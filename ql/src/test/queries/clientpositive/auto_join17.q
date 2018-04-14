@@ -1,3 +1,5 @@
+--! qt:dataset:src1
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 
 set hive.auto.convert.join = true;

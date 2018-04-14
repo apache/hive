@@ -1,5 +1,5 @@
 --! qt:dataset:src
-create table sc_n0 as select * 
+create table sc_n0 as select *
 from (select '2011-01-11', '2011-01-11+14:18:26' from src tablesample (1 rows)
       union all 
       select '2011-01-11', '2011-01-11+15:18:26' from src tablesample (1 rows)

@@ -2,11 +2,9 @@ set hive.ddl.output.format=json;
 
 CREATE TABLE IF NOT EXISTS jsontable (key INT, value STRING) COMMENT 'json table' STORED AS TEXTFILE;
 
-SHOW TABLES;
+SHOW TABLES LIKE 'jsontab*';
 
-SHOW TABLES LIKE 'json*';
-
-SHOW TABLE EXTENDED LIKE 'json*';
+SHOW TABLE EXTENDED LIKE 'jsontab*';
 
 ALTER TABLE jsontable SET TBLPROPERTIES ('id' = 'jsontable');
 

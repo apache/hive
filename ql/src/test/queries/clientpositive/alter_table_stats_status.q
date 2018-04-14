@@ -1,3 +1,5 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src
 create database statsdb;
 use statsdb;
 create table srctable like default.src;

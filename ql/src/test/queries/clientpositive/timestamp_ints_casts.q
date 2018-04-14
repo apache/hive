@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 set hive.int.timestamp.conversion.in.seconds=false;
 
 explain

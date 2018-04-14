@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.groupby.orderby.position.alias=true;
 
 -- invalid position alias in order by

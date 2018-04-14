@@ -1,3 +1,4 @@
+--! qt:dataset:src
 SET hive.metastore.disallow.incompatible.col.type.changes=true;
 SELECT * FROM src LIMIT 1;
 CREATE TABLE test_table123 (a INT, b STRING) PARTITIONED BY (ds STRING) STORED AS SEQUENCEFILE;

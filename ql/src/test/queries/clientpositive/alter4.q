@@ -6,7 +6,7 @@ DESCRIBE EXTENDED set_bucketing_test;
 
 -- Cleanup
 DROP TABLE set_bucketing_test;
-SHOW TABLES;
+SHOW TABLES LIKE "set_bucketing_*";
 
 -- with non-default Database
 

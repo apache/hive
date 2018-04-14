@@ -1,3 +1,4 @@
+--! qt:dataset:src1
 set hive.mapred.mode=nonstrict;
 
 

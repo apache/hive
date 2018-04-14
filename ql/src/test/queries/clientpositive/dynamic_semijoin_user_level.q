@@ -1,3 +1,5 @@
+--! qt:dataset:srcpart
+--! qt:dataset:alltypesorc
 SET hive.vectorized.execution.enabled=false;
 set hive.explain.user=true;
 set hive.compute.query.using.stats=false;

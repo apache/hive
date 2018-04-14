@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:alltypesorc
 SET hive.vectorized.execution.enabled=false;
 set hive.explain.user=false;
 set hive.limit.pushdown.memory.usage=0.3f;

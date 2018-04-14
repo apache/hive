@@ -1,3 +1,4 @@
+--! qt:dataset:part
 set hive.vectorized.execution.enabled=false;
 
 DROP TABLE part_orc_n0;

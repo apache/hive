@@ -1,3 +1,5 @@
+--! qt:dataset:cbo_t3
+--! qt:dataset:alltypesorc
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=true;
 explain

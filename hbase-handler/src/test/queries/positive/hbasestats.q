@@ -1,3 +1,4 @@
+--! qt:dataset:src
 DROP TABLE users;
 
 CREATE EXTERNAL TABLE users(key string, state string, country string, country_id int)

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 CREATE EXTERNAL TABLE hbase_pushdown(key int, value string)
 STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string",

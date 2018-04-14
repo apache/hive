@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set hive.lock.numretries=0;
 
 create database lockneg2;

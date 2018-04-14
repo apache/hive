@@ -1,3 +1,4 @@
+--! qt:dataset:src
 SET hive.insert.into.multilevel.dirs=true;
 
 SET hive.output.file.extension=.txt;

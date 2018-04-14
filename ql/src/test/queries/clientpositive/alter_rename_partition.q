@@ -1,7 +1,6 @@
 -- Cleanup
 DROP TABLE alter_rename_partition_src;
 DROP TABLE alter_rename_partition;
-SHOW TABLES;
 
 create table alter_rename_partition_src ( col1 string ) stored as textfile ;
 load data local inpath '../../data/files/test.dat' overwrite into table alter_rename_partition_src ;
@@ -19,7 +18,6 @@ select * from alter_rename_partition where pcol1='new_part1:' and pcol2='new_par
 -- Cleanup
 DROP TABLE alter_rename_partition_src;
 DROP TABLE alter_rename_partition;
-SHOW TABLES;
 
 -- With non-default Database
 

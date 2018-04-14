@@ -1,3 +1,5 @@
+--! qt:dataset:src1
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.optimize.reducededuplication=true;
 set hive.optimize.reducededuplication.min.reducer=1;

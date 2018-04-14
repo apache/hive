@@ -1,3 +1,4 @@
+--! qt:dataset:part
 -- create database with multiple tables, views.
 -- Use both partitioned and non-partitioned tables, as well as
 -- tables with specific storage locations

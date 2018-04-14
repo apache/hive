@@ -1,3 +1,4 @@
+--! qt:dataset:src1
 set hive.spark.stage.max.tasks=1;
 
 add file ../../data/scripts/sleep.py;

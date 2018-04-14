@@ -1,3 +1,4 @@
+--! qt:dataset:src1
 set hive.input.format = org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 
 create table partition_test_partitioned_n3(key string, value string) partitioned by (dt string);

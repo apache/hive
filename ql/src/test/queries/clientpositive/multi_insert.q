@@ -1,3 +1,4 @@
+--! qt:dataset:src
 -- SORT_QUERY_RESULTS
 
 create table src_multi1_n5 like src;

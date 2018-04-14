@@ -1,3 +1,5 @@
+--! qt:dataset:srcbucket2
+--! qt:dataset:srcbucket
 set hive.mapred.mode=nonstrict;
 CREATE TABLE dest1_n27(key INT, value STRING) STORED AS TEXTFILE;
 

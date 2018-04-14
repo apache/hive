@@ -1,3 +1,6 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src
+--! qt:dataset:alltypesorc
 select current_timestamp = current_timestamp(), current_date = current_date() from src limit 5;
 
 set hive.test.currenttimestamp =2012-01-01 01:02:03;

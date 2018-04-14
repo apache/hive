@@ -1,3 +1,4 @@
+--! qt:dataset:part
 -- 1. testQueryLevelPartitionColsNotInSelect
 select p_size,
 sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row) as s1

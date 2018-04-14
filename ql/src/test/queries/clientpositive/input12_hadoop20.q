@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set mapred.job.tracker=localhost:58;
 set hive.exec.mode.local.auto=true;
 

@@ -1,3 +1,5 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src
 SET hive.vectorized.execution.enabled=false;
 set hive.map.aggr=false;
 

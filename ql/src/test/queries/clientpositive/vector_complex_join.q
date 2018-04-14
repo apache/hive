@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:alltypesorc
 set hive.cli.print.header=true;
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;

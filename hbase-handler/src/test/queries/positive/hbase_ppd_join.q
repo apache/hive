@@ -1,3 +1,4 @@
+--! qt:dataset:src
 --create hive hbase table 1
 drop table if exists hive1_tbl_data_hbase1;
 drop table if exists hive1_tbl_data_hbase2;

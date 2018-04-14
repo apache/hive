@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.explain.user=false;
 set mapred.job.name='test_parallel';
 set hive.exec.parallel=true;

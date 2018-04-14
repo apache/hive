@@ -1,3 +1,4 @@
+--! qt:dataset:src
 SET hive.vectorized.execution.enabled=false;
 
 create table listtable(l array<string>);
@@ -7,4 +8,3 @@ insert overwrite table listtable select array(null) from src;
 insert overwrite table listtable_orc select * from listtable;
 
 select size(l) from listtable_orc limit 10;
-

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 create table src_six_columns (k1 string, v1 string, k2 string, v2 string, k3 string, v3 string) stored as rcfile;
 insert overwrite table src_six_columns select value, value, key, value, value, value from src;
 create table src_two_columns (k1 string, v1 string) stored as rcfile;

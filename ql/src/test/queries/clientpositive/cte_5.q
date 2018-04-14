@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.optimize.cte.materialize.threshold=-1;
 set hive.explain.user=true;
@@ -10,7 +11,6 @@ insert into q1_n0 values (5, 'A');
 use default;
 
 show tables in mydb;
-show tables;
 
 explain
 with q1_n0 as (select * from src where key= '5')

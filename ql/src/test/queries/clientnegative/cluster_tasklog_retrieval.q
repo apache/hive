@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.vectorized.execution.enabled=false;
 
 -- TaskLog retrieval upon Null Pointer Exception in Cluster

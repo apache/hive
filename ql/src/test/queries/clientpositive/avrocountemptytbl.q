@@ -1,3 +1,4 @@
+--! qt:dataset:src
 -- SORT_QUERY_RESULTS
 
 drop table if exists emptyavro_n0;

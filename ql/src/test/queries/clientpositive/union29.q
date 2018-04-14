@@ -2,7 +2,7 @@
 create table union_subq_union_n1(key int, value string);
 
 explain
-insert overwrite table union_subq_union_n1 
+insert overwrite table union_subq_union_n1
 select * from (
   select key, value from src 
   union all 
@@ -15,7 +15,7 @@ select * from (
 ) a
 ;
 
-insert overwrite table union_subq_union_n1 
+insert overwrite table union_subq_union_n1
 select * from (
   select key, value from src 
   union all 

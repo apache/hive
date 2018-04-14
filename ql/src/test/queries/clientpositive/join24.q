@@ -1,3 +1,4 @@
+--! qt:dataset:src
 create table tst1(key STRING, cnt INT);
 
 INSERT OVERWRITE TABLE tst1

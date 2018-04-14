@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.exec.compress.output = true;
 set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 set mapred.min.split.size=256;

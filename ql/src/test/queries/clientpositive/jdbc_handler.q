@@ -1,3 +1,4 @@
+--! qt:dataset:src
 
 set hive.strict.checks.cartesian.product= false;
 
@@ -67,7 +68,7 @@ TBLPROPERTIES (
 
 
 select tables.name as tn, dbs.NAME as dn, tables.type as t
-from tables join dbs on (tables.db_id = dbs.DB_ID) order by tn, dn, t;
+from tables join dbs on (tables.db_id = dbs.DB_ID) WHERE tables.name IN ("src", "dbs", "tables") order by tn, dn, t;
 
 explain
 select
@@ -86,8 +87,7 @@ from
   join
   (select distinct key from src) t2
   on (t2.key-1) = t1.db_id
+  where t1.name IN ("src", "dbs", "tables")
 order by a,b;
-
-show tables;
 
 describe tables;

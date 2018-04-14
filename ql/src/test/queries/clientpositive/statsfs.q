@@ -1,3 +1,5 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src
 set hive.stats.dbclass=fs;
 
 -- stats computation on partitioned table with analyze command

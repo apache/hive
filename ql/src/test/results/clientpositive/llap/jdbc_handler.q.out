@@ -179,35 +179,19 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@dbs
 PREHOOK: query: select tables.name as tn, dbs.NAME as dn, tables.type as t
-from tables join dbs on (tables.db_id = dbs.DB_ID) order by tn, dn, t
+from tables join dbs on (tables.db_id = dbs.DB_ID) WHERE tables.name IN ("src", "dbs", "tables") order by tn, dn, t
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dbs
 PREHOOK: Input: default@tables
 #### A masked pattern was here ####
 POSTHOOK: query: select tables.name as tn, dbs.NAME as dn, tables.type as t
-from tables join dbs on (tables.db_id = dbs.DB_ID) order by tn, dn, t
+from tables join dbs on (tables.db_id = dbs.DB_ID) WHERE tables.name IN ("src", "dbs", "tables") order by tn, dn, t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dbs
 POSTHOOK: Input: default@tables
 #### A masked pattern was here ####
-alltypesorc	default	MANAGED_TABLE
-alltypesparquet	default	MANAGED_TABLE
-cbo_t1	default	MANAGED_TABLE
-cbo_t2	default	MANAGED_TABLE
-cbo_t3	default	MANAGED_TABLE
 dbs	default	EXTERNAL_TABLE
-ext_simple_derby_table	default	EXTERNAL_TABLE
-lineitem	default	MANAGED_TABLE
-part	default	MANAGED_TABLE
 src	default	MANAGED_TABLE
-src1	default	MANAGED_TABLE
-src_cbo	default	MANAGED_TABLE
-src_json	default	MANAGED_TABLE
-src_sequencefile	default	MANAGED_TABLE
-src_thrift	default	MANAGED_TABLE
-srcbucket	default	MANAGED_TABLE
-srcbucket2	default	MANAGED_TABLE
-srcpart	default	MANAGED_TABLE
 tables	default	EXTERNAL_TABLE
 Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain
@@ -339,7 +323,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[17][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[19][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select
   t1.name as a, t2.key as b
 from
@@ -347,6 +331,7 @@ from
   join
   (select distinct key from src) t2
   on (t2.key-1) = t1.db_id
+  where t1.name IN ("src", "dbs", "tables")
 order by a,b
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -359,55 +344,15 @@ from
   join
   (select distinct key from src) t2
   on (t2.key-1) = t1.db_id
+  where t1.name IN ("src", "dbs", "tables")
 order by a,b
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@tables
 #### A masked pattern was here ####
-alltypesorc	2
-alltypesparquet	2
-cbo_t1	2
-cbo_t2	2
-cbo_t3	2
 dbs	2
-ext_simple_derby_table	2
-lineitem	2
-part	2
 src	2
-src1	2
-src_cbo	2
-src_json	2
-src_sequencefile	2
-src_thrift	2
-srcbucket	2
-srcbucket2	2
-srcpart	2
 tables	2
-PREHOOK: query: show tables
-PREHOOK: type: SHOWTABLES
-PREHOOK: Input: database:default
-POSTHOOK: query: show tables
-POSTHOOK: type: SHOWTABLES
-POSTHOOK: Input: database:default
-alltypesorc
-alltypesparquet
-cbo_t1
-cbo_t2
-cbo_t3
-dbs
-ext_simple_derby_table
-lineitem
-part
-src
-src1
-src_cbo
-src_json
-src_sequencefile
-src_thrift
-srcbucket
-srcbucket2
-srcpart
-tables
 PREHOOK: query: describe tables
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@tables

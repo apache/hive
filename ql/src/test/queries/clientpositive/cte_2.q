@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:alltypesorc
 
 -- union test
 with q1 as (select * from src where key= '5'),

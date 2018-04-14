@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.script.operator.id.env.var = MY_ID;
 -- Same test as script_env_var1, but test setting the variable name
 SELECT count(1) FROM

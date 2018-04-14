@@ -1,3 +1,4 @@
+--! qt:dataset:src
 create table if not exists test_boolean(dummy tinyint);
 insert overwrite table test_boolean  select 1 from src tablesample (1 rows);
 

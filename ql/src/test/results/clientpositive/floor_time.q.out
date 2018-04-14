@@ -11,13 +11,13 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@extract_udf_n0
 PREHOOK: query: from (select * from src tablesample (1 rows)) s
-  insert overwrite table extract_udf_n0 
+  insert overwrite table extract_udf_n0
     select '2011-05-06 07:08:09.1234567'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@extract_udf_n0
 POSTHOOK: query: from (select * from src tablesample (1 rows)) s
-  insert overwrite table extract_udf_n0 
+  insert overwrite table extract_udf_n0
     select '2011-05-06 07:08:09.1234567'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src

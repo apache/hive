@@ -1,3 +1,5 @@
+--! qt:dataset:cbo_t2
+--! qt:dataset:cbo_t1
 set hive.mapred.mode=nonstrict;
 set hive.cbo.enable=true;
 set hive.cbo.returnpath.hiveop=true;

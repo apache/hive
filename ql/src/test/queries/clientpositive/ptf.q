@@ -1,3 +1,4 @@
+--! qt:dataset:part
 SET hive.vectorized.execution.enabled=true;
 set hive.explain.user=false;
 -- SORT_QUERY_RESULTS
@@ -282,7 +283,7 @@ order by p_name);
 
   
 -- 16. testViewAsTableInputToPTF
-create view IF NOT EXISTS mfgr_price_view_n5 as 
+create view IF NOT EXISTS mfgr_price_view_n5 as
 select p_mfgr, p_brand, 
 round(sum(p_retailprice),2) as s
 from part 
@@ -291,20 +292,20 @@ group by p_mfgr, p_brand;
 explain
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1,2)  as s1
-from noop(on mfgr_price_view_n5 
+from noop(on mfgr_price_view_n5
 partition by p_mfgr 
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row);
 
 select p_mfgr, p_brand, s, 
 round(sum(s) over w1,2) as s1
-from noop(on mfgr_price_view_n5 
+from noop(on mfgr_price_view_n5
 partition by p_mfgr 
 order by p_mfgr)  
 window w1 as ( partition by p_mfgr order by p_brand rows between 2 preceding and current row);
   
 -- 17. testMultipleInserts2SWQsWithPTF
-CREATE TABLE part_4_n2( 
+CREATE TABLE part_4_n2(
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -312,7 +313,7 @@ r INT,
 dr INT, 
 s DOUBLE);
 
-CREATE TABLE part_5_n2( 
+CREATE TABLE part_5_n2(
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -326,11 +327,11 @@ explain
 from noop(on part 
 partition by p_mfgr 
 order by p_name) 
-INSERT OVERWRITE TABLE part_4_n2 select p_mfgr, p_name, p_size, 
+INSERT OVERWRITE TABLE part_4_n2 select p_mfgr, p_name, p_size,
 rank() over (distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_name) as dr, 
 round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2)  as s
-INSERT OVERWRITE TABLE part_5_n2 select  p_mfgr,p_name, p_size,  
+INSERT OVERWRITE TABLE part_5_n2 select  p_mfgr,p_name, p_size,
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2,
 rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as dr, 
@@ -341,11 +342,11 @@ window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 precedi
 from noop(on part 
 partition by p_mfgr 
 order by p_name) 
-INSERT OVERWRITE TABLE part_4_n2 select p_mfgr, p_name, p_size, 
+INSERT OVERWRITE TABLE part_4_n2 select p_mfgr, p_name, p_size,
 rank() over (distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_name) as dr, 
 round(sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row),2)  as s
-INSERT OVERWRITE TABLE part_5_n2 select  p_mfgr,p_name, p_size,  
+INSERT OVERWRITE TABLE part_5_n2 select  p_mfgr,p_name, p_size,
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2,
 rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as dr, 

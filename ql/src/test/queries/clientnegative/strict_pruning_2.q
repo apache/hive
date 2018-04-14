@@ -1,4 +1,6 @@
+--! qt:dataset:srcpart
 reset hive.mapred.mode;
+set hive.cbo.enable=false;
 set hive.strict.checks.no.partition.filter=true;
 
 EXPLAIN

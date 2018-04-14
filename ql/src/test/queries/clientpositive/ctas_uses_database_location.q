@@ -1,3 +1,4 @@
+--! qt:dataset:src
 --TODO: reinstate this after we revert cdpd-3783 changes
 --set hive.metastore.warehouse.dir=invalid_scheme://${system:test.tmp.dir};
 

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.input.format = org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 
 -- This tests that a query can span multiple partitions which can not only have different file formats, but

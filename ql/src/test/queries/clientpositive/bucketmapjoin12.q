@@ -1,3 +1,4 @@
+--! qt:dataset:part
 SET hive.vectorized.execution.enabled=false;
 set hive.strict.checks.bucketing=false;
 
@@ -8,7 +9,7 @@ CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
 LOAD DATA LOCAL INPATH '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='1');
 LOAD DATA LOCAL INPATH '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_1 PARTITION (part='1');
 
-CREATE TABLE srcbucket_mapjoin_part_2_n0 (key INT, value STRING) PARTITIONED BY (part STRING) 
+CREATE TABLE srcbucket_mapjoin_part_2_n0 (key INT, value STRING) PARTITIONED BY (part STRING)
 CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE;
 LOAD DATA LOCAL INPATH '../../data/files/bmj/000000_0' INTO TABLE srcbucket_mapjoin_part_2_n0 PARTITION (part='1');
 LOAD DATA LOCAL INPATH '../../data/files/bmj/000001_0' INTO TABLE srcbucket_mapjoin_part_2_n0 PARTITION (part='1');

@@ -10,32 +10,32 @@ PREHOOK: query: DROP TABLE orcfile_merge1c_n0
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE orcfile_merge1c_n0
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE orcfile_merge1_n0 (key INT, value STRING) 
+PREHOOK: query: CREATE TABLE orcfile_merge1_n0 (key INT, value STRING)
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orcfile_merge1_n0
-POSTHOOK: query: CREATE TABLE orcfile_merge1_n0 (key INT, value STRING) 
+POSTHOOK: query: CREATE TABLE orcfile_merge1_n0 (key INT, value STRING)
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orcfile_merge1_n0
-PREHOOK: query: CREATE TABLE orcfile_merge1b_n0 (key INT, value STRING) 
+PREHOOK: query: CREATE TABLE orcfile_merge1b_n0 (key INT, value STRING)
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orcfile_merge1b_n0
-POSTHOOK: query: CREATE TABLE orcfile_merge1b_n0 (key INT, value STRING) 
+POSTHOOK: query: CREATE TABLE orcfile_merge1b_n0 (key INT, value STRING)
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@orcfile_merge1b_n0
-PREHOOK: query: CREATE TABLE orcfile_merge1c_n0 (key INT, value STRING) 
+PREHOOK: query: CREATE TABLE orcfile_merge1c_n0 (key INT, value STRING)
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@orcfile_merge1c_n0
-POSTHOOK: query: CREATE TABLE orcfile_merge1c_n0 (key INT, value STRING) 
+POSTHOOK: query: CREATE TABLE orcfile_merge1c_n0 (key INT, value STRING)
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default

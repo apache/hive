@@ -1,3 +1,5 @@
+--! qt:dataset:src1
+--! qt:dataset:src
 set hive.support.quoted.identifiers=none;
 -- TOK_ALLCOLREF
 explain select * from (select a.key, a.* from (select * from src) a join (select * from src1) b on (a.key = b.key)) t;

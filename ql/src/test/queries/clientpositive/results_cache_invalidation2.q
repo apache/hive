@@ -1,3 +1,5 @@
+--! qt:dataset:src
+
 set hive.metastore.event.listeners=org.apache.hive.hcatalog.listener.DbNotificationListener;
 
 set hive.query.results.cache.enabled=true;

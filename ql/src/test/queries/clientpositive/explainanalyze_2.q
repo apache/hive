@@ -1,3 +1,6 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src1
+--! qt:dataset:src
 SET hive.vectorized.execution.enabled=false;
 set hive.map.aggr=false;
 
@@ -151,7 +154,7 @@ FROM (
       select key, value from src s0
                              ) unionsrc_n3
 INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key
-INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) 
+INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5))
 GROUP BY unionsrc_n3.key, unionsrc_n3.value;
 
 explain analyze
@@ -161,5 +164,5 @@ FROM (
       select s2.key as key, s2.value as value, 'tst1' as value2 from src s2
                              ) unionsrc_n3
 INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key
-INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) 
+INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5))
 GROUP BY unionsrc_n3.key, unionsrc_n3.value;

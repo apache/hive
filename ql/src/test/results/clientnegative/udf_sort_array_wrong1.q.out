@@ -1,1 +1,1 @@
-FAILED: SemanticException [Error 10015]: Line 2:7 Arguments length mismatch '3': sortarray requires 1 argument(s), got 2
+FAILED: SemanticException [Error 10015]: Line 3:7 Arguments length mismatch '3': sortarray requires 1 argument(s), got 2

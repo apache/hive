@@ -25,7 +25,7 @@ describe extended alter3_like_renamed;
 DROP TABLE alter3_src;
 DROP TABLE alter3_renamed;
 DROP TABLE alter3_like_renamed;
-SHOW TABLES;
+SHOW TABLES LIKE "alter3_*";
 
 -- With non-default Database
 

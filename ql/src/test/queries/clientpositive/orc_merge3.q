@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
@@ -7,7 +8,7 @@ set hive.merge.sparkfiles=true;
 DROP TABLE orcfile_merge3a_n0;
 DROP TABLE orcfile_merge3b_n0;
 
-CREATE TABLE orcfile_merge3a_n0 (key int, value string) 
+CREATE TABLE orcfile_merge3a_n0 (key int, value string)
     PARTITIONED BY (ds string) STORED AS TEXTFILE;
 CREATE TABLE orcfile_merge3b_n0 (key int, value string) STORED AS ORC;
 

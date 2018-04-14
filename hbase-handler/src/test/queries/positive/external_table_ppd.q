@@ -1,3 +1,4 @@
+--! qt:dataset:src
 DROP TABLE t_hbase;
 
 CREATE EXTERNAL TABLE t_hbase(key STRING,

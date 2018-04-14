@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:part
 set hive.fetch.task.conversion=more;
 
 --HIVE-2608 Do not require AS a,b,c part in LATERAL VIEW

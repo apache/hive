@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesparquet
 set hive.vectorized.execution.enabled=false;
 
 -- This test makes sure that parquet can read older parquet files written by Hive <= 0.12

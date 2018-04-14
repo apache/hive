@@ -2,7 +2,7 @@
 CREATE TABLE lv_table_n0( c1 STRING,  c2 ARRAY<INT>, c3 INT, c4 CHAR(1));
 INSERT OVERWRITE TABLE lv_table_n0 SELECT 'abc  ', array(1,2,3), 100, 't' FROM src;
 
-CREATE OR REPLACE VIEW lv_view AS SELECT * FROM lv_table_n0; 
+CREATE OR REPLACE VIEW lv_view AS SELECT * FROM lv_table_n0;
 
 EXPLAIN SELECT * FROM lv_view LATERAL VIEW explode(array(1,2,3)) myTable AS myCol SORT BY c1 ASC, myCol ASC LIMIT 1;
 EXPLAIN SELECT myTable.* FROM lv_view LATERAL VIEW explode(array(1,2,3)) myTable AS myCol LIMIT 3;

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 use default;
 -- Test printf() UDF
 

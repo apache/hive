@@ -1,3 +1,4 @@
+--! qt:dataset:src
 ;
 set mapred.reduce.tasks = 16;
 

@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 -- Some tables might have extra columns and struct elements on the schema than the on Parquet schema;

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.exec.parallel=true;
 
 create table t_n25 as select * from src;

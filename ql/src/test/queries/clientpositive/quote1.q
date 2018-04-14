@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 CREATE TABLE dest1_n103(`location` INT, `type` STRING) PARTITIONED BY(`table` STRING) STORED AS TEXTFILE;
 

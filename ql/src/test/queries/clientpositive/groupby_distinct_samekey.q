@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 -- This test covers HIVE-2332
 -- SORT_QUERY_RESULTS

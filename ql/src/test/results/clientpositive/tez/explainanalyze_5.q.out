@@ -243,13 +243,13 @@ POSTHOOK: query: create table acid_uami_n2(i int,
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@acid_uami_n2
-PREHOOK: query: insert into table acid_uami_n2 values 
+PREHOOK: query: insert into table acid_uami_n2 values
     (1, 109.23, 'mary had a little lamb'),
     (6553, 923.19, 'its fleece was white as snow')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid_uami_n2
-POSTHOOK: query: insert into table acid_uami_n2 values 
+POSTHOOK: query: insert into table acid_uami_n2 values
     (1, 109.23, 'mary had a little lamb'),
     (6553, 923.19, 'its fleece was white as snow')
 POSTHOOK: type: QUERY
@@ -258,13 +258,13 @@ POSTHOOK: Output: default@acid_uami_n2
 POSTHOOK: Lineage: acid_uami_n2.de SCRIPT []
 POSTHOOK: Lineage: acid_uami_n2.i SCRIPT []
 POSTHOOK: Lineage: acid_uami_n2.vc SCRIPT []
-PREHOOK: query: insert into table acid_uami_n2 values 
+PREHOOK: query: insert into table acid_uami_n2 values
     (10, 119.23, 'and everywhere that mary went'),
     (65530, 823.19, 'the lamb was sure to go')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@acid_uami_n2
-POSTHOOK: query: insert into table acid_uami_n2 values 
+POSTHOOK: query: insert into table acid_uami_n2 values
     (10, 119.23, 'and everywhere that mary went'),
     (65530, 823.19, 'the lamb was sure to go')
 POSTHOOK: type: QUERY

@@ -1,3 +1,4 @@
+--! qt:dataset:part
 set hive.strict.checks.bucketing=false;
 
 set hive.mapred.mode=nonstrict;

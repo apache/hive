@@ -1,3 +1,4 @@
+--! qt:dataset:src
 SET hive.vectorized.execution.enabled=false;
 SET hive.auto.convert.join=true;
 SET hive.auto.convert.join.noconditionaltask=true;

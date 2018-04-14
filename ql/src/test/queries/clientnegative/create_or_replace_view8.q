@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 -- Can't update view to have a view cycle (2)
 
 drop view v;

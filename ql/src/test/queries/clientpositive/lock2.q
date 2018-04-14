@@ -1,3 +1,5 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src
 set hive.support.concurrency=true;
 
 drop table tstsrc;

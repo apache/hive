@@ -1,3 +1,4 @@
+--! qt:dataset:src
 
 set hive.query.results.cache.enabled=true;
 set hive.query.results.cache.nontransactional.tables.enabled=true;

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.fetch.task.conversion=more;
 set hive.optimize.constant.propagation=true;
 

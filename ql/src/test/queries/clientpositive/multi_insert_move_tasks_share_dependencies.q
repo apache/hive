@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.multi.insert.move.tasks.share.dependencies=true;
 set hive.stats.dbclass=fs;
 -- SORT_QUERY_RESULTS

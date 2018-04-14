@@ -1,3 +1,4 @@
+--! qt:dataset:src
 
 drop table if exists json_serde1_1;
 drop table if exists json_serde1_2;

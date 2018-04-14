@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.vectorized.execution.enabled=false;
 set hive.exec.mode.local.auto=false;
 set hive.exec.job.debug.capture.stacktraces=true;

@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 
 set hive.vectorized.execution.enabled=true;
 set hive.vectorized.execution.mapjoin.native.enabled=true;

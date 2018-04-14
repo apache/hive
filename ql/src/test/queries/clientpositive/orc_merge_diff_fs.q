@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:part
 set hive.vectorized.execution.enabled=false;
 set hive.compute.query.using.stats=false;
 set hive.mapred.mode=nonstrict;
@@ -23,11 +25,11 @@ DROP TABLE orcfile_merge1_n0;
 DROP TABLE orcfile_merge1b_n0;
 DROP TABLE orcfile_merge1c_n0;
 
-CREATE TABLE orcfile_merge1_n0 (key INT, value STRING) 
+CREATE TABLE orcfile_merge1_n0 (key INT, value STRING)
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC;
-CREATE TABLE orcfile_merge1b_n0 (key INT, value STRING) 
+CREATE TABLE orcfile_merge1b_n0 (key INT, value STRING)
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC;
-CREATE TABLE orcfile_merge1c_n0 (key INT, value STRING) 
+CREATE TABLE orcfile_merge1c_n0 (key INT, value STRING)
     PARTITIONED BY (ds STRING, part STRING) STORED AS ORC;
 
 -- merge disabled

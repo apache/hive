@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.cbo.enable=false;
 
 -- no agg, corr

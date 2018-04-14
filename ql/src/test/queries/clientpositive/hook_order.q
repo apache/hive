@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.query.reexecution.enabled=false;
 
 SET hive.exec.pre.hooks=org.apache.hadoop.hive.ql.hooks.VerifyHooksRunInOrder$RunFirst,org.apache.hadoop.hive.ql.hooks.VerifyHooksRunInOrder$RunSecond;

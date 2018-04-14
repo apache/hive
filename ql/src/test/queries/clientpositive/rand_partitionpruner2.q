@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 -- scanning partitioned data
 
 create table tmptable_n1(key string, value string, hr string, ds string);

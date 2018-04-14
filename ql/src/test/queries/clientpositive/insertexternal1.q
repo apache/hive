@@ -1,3 +1,4 @@
+--! qt:dataset:src
 
 
 create table texternal_n0(key string, val string) partitioned by (insertdate string);

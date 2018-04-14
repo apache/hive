@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.explain.user=false;
 set fs.defaultFS=file:///;
 

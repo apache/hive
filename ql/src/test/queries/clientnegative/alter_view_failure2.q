@@ -1,3 +1,4 @@
+--! qt:dataset:src
 DROP VIEW xxx4;
 CREATE VIEW xxx4 
 PARTITIONED ON (value)

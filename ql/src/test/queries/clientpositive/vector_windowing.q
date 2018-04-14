@@ -1,3 +1,4 @@
+--! qt:dataset:part
 set hive.cli.print.header=true;
 SET hive.vectorized.execution.enabled=true;
 set hive.vectorized.execution.ptf.enabled=true;

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.fetch.task.conversion=more;
 
 SELECT 1 IN (1, 2, 3),

@@ -1,3 +1,5 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.fetch.task.conversion=minimal;
 set hive.exec.submitviachild=false;

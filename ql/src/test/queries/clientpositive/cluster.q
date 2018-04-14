@@ -1,3 +1,4 @@
+--! qt:dataset:src
 EXPLAIN
 SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key;
 SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key;

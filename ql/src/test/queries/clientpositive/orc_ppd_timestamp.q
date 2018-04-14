@@ -1,9 +1,11 @@
+--! qt:dataset:src1
+--! qt:dataset:src
 set hive.vectorized.execution.enabled=false;
 SET hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 SET mapred.min.split.size=1000;
 SET mapred.max.split.size=5000;
 
-create table newtypesorc_n2(c char(10), v varchar(10), d decimal(5,3), ts timestamp) stored as orc tblproperties("orc.stripe.size"="16777216"); 
+create table newtypesorc_n2(c char(10), v varchar(10), d decimal(5,3), ts timestamp) stored as orc tblproperties("orc.stripe.size"="16777216");
 
 insert overwrite table newtypesorc_n2 select * from (select cast("apple" as char(10)), cast("bee" as varchar(10)), 0.22, cast("2011-01-01 01:01:01" as timestamp) from src src1 union all select cast("hello" as char(10)), cast("world" as varchar(10)), 11.22, cast("2011-01-20 01:01:01" as timestamp) from src src2) uniontbl;
 

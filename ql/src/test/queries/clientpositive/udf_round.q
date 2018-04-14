@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:lineitem
 set hive.fetch.task.conversion=more;
 DESCRIBE FUNCTION round;
 DESCRIBE FUNCTION EXTENDED round;

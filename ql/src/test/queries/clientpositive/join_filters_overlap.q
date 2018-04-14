@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS
 -- HIVE-3411 Filter predicates on outer join overlapped on single alias is not handled properly

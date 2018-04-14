@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.vectorized.execution.enabled=false;
 
 -- SORT_QUERY_RESULTS
@@ -11,7 +12,7 @@ INSERT OVERWRITE TABLE test_orc_n3 SELECT '' FROM src tablesample (10 rows);
 
 -- Test reading a column which is just empty strings
 
-SELECT * FROM test_orc_n3; 
+SELECT * FROM test_orc_n3;
 
 INSERT OVERWRITE TABLE test_orc_n3 SELECT IF (key % 3 = 0, key, '') FROM src tablesample (10 rows);
 

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 SET hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 -- SORT_QUERY_RESULTS

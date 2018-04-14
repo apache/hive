@@ -1,3 +1,4 @@
+--! qt:dataset:part
 -- corr and windowing 
 select p_mfgr, p_name, p_size 
 from part a 

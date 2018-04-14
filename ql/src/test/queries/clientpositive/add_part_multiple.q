@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 -- HIVE-5122 locations for 2nd, 3rd... partition are ignored
 

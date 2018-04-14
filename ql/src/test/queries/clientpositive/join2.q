@@ -1,3 +1,5 @@
+--! qt:dataset:src1
+--! qt:dataset:src
 -- due to testMTQueries1
 set hive.stats.column.autogather=false;
 set hive.mapred.mode=nonstrict;

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.optimize.point.lookup.min=31;
 set hive.mapred.mode=nonstrict;
 

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 -- Test that CREATE TABLE LIKE commands can take explicit table properties
 
 CREATE TABLE test_table_n15 LIKE src TBLPROPERTIES('key'='value');

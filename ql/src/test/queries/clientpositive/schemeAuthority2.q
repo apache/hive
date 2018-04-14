@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 dfs ${system:test.dfs.mkdir} file:///tmp/test_sa2;
 dfs ${system:test.dfs.mkdir} hdfs:///tmp/test_sa2;

@@ -1,3 +1,5 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src
 set hive.mapred.mode=strict;
 
 create table dest_sp (cnt int);

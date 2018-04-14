@@ -58,29 +58,29 @@ SELECT COUNT(*) FROM druid_alltypesorc;
 DROP TABLE druid_alltypesorc;
 
  -- Test create then insert
- 
+
  create database druid_test_create_then_insert;
  use druid_test_create_then_insert;
- 
+
  create table test_table_n9(`timecolumn` timestamp, `userid` string, `num_l` float);
- 
+
  insert into test_table_n9 values ('2015-01-08 00:00:00', 'i1-start', 4);
  insert into test_table_n9 values ('2015-01-08 23:59:59', 'i1-end', 1);
- 
+
  CREATE EXTERNAL TABLE druid_table_n1 (`__time` timestamp with local time zone, `userid` string, `num_l` float)
  STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
  TBLPROPERTIES ("druid.segment.granularity" = "DAY");
- 
- 
+
+
  INSERT INTO TABLE druid_table_n1
  select cast(`timecolumn` as timestamp with local time zone) as `__time`, `userid`, `num_l` FROM test_table_n9;
- 
+
  select count(*) FROM druid_table_n1;
- 
+
  DROP TABLE  test_table_n9;
  DROP TABLE druid_table_n1;
  DROP DATABASE druid_test_create_then_insert;
- 
+
 -- Day light saving time test insert into test
 
 create database druid_test_dst;

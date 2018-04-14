@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 SET hive.vectorized.execution.enabled=false;
 set hive.compute.query.using.stats=false;
 set hive.mapred.mode=nonstrict;
@@ -37,14 +38,14 @@ select count(*) from srcpart join srcpart_date_n2 on (day(srcpart.ds) = day(srcp
 set hive.tez.dynamic.partition.pruning=true;
 
 -- multiple sources, single key
-EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11;
-select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11;
 set hive.tez.dynamic.partition.pruning=false;
-EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11;
-select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11;
 set hive.tez.dynamic.partition.pruning=true;
 select count(*) from srcpart where hr = 11 and ds = '2008-04-08';
@@ -106,13 +107,13 @@ EXPLAIN select count(*) from srcpart_date_n2 left join srcpart on (srcpart.ds = 
 EXPLAIN select count(*) from srcpart full outer join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) where srcpart_date_n2.`date` = '2008-04-08';
 
 -- with static pruning
-EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11 and srcpart.hr = 11;
-select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11 and srcpart.hr = 11;
-EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart.hr = 13;
-select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart.hr = 13;
 
 -- union + subquery
@@ -137,9 +138,9 @@ EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (day(srcpart.ds) = 
 select count(*) from srcpart join srcpart_date_n2 on (day(srcpart.ds) = day(srcpart_date_n2.ds)) where srcpart_date_n2.`date` = '2008-04-08';
 
 -- multiple sources, single key
-EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11;
-select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11;
 select count(*) from srcpart where hr = 11 and ds = '2008-04-08';
 
@@ -176,14 +177,14 @@ EXPLAIN select count(*) from srcpart_date_n2 left join srcpart on (srcpart.ds = 
 EXPLAIN select count(*) from srcpart full outer join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) where srcpart_date_n2.`date` = '2008-04-08';
 
 -- with static pruning
-EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11 and srcpart.hr = 11;
-select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart_hour_n0.hour = 11 and srcpart.hr = 11;
-EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+EXPLAIN select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart.hr = 13;
 
-select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr) 
+select count(*) from srcpart join srcpart_date_n2 on (srcpart.ds = srcpart_date_n2.ds) join srcpart_hour_n0 on (srcpart.hr = srcpart_hour_n0.hr)
 where srcpart_date_n2.`date` = '2008-04-08' and srcpart.hr = 13;
 
 -- union + subquery

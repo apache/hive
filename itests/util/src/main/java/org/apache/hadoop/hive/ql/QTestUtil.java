@@ -176,6 +176,7 @@ public class QTestUtil {
    * The default Erasure Coding Policy to use in Erasure Coding tests.
    */
   public static final String DEFAULT_TEST_EC_POLICY = "RS-3-2-1024k";
+  public static final String TEST_HIVE_USER_PROPERTY = "test.hive.user";
 
   private String testWarehouse;
   @Deprecated
@@ -255,17 +256,11 @@ public class QTestUtil {
     srcTables = new HashSet<String>();
     // FIXME: moved default value to here...for now
     // i think this features is never really used from the command line
-    String defaultTestSrcTables = "src,src1,srcbucket,srcbucket2,src_json,src_thrift," +
-        "src_sequencefile,srcpart,alltypesorc,src_hbase,cbo_t1,cbo_t2,cbo_t3,src_cbo,part," +
-        "lineitem,alltypesparquet";
-    for (String srcTable : System.getProperty(TEST_SRC_TABLES_PROPERTY, defaultTestSrcTables).trim().split(",")) {
+    for (String srcTable : System.getProperty(TEST_SRC_TABLES_PROPERTY, "").trim().split(",")) {
       srcTable = srcTable.trim();
       if (!srcTable.isEmpty()) {
         srcTables.add(srcTable);
       }
-    }
-    if (srcTables.isEmpty()) {
-      throw new RuntimeException("Source tables cannot be empty");
     }
   }
 

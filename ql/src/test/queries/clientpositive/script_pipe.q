@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.explain.user=false;
 set hive.exec.script.allow.partial.consumption = true;
 -- Tests exception in ScriptOperator.close() by passing to the operator a small amount of data

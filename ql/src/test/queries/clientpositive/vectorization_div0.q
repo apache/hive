@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 set hive.cli.print.header=true;

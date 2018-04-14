@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:lineitem
 set hive.mapred.mode=nonstrict;
 explain
 SELECT  

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 dfs -put ../../data/scripts/newline.py /newline.py;
 add file hdfs:///newline.py;

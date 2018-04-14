@@ -1,3 +1,4 @@
+--! qt:dataset:src
 create database if not exists table_in_database_creation;
 create table table_in_database_creation.test1  as select * from src limit 1;
 create table `table_in_database_creation`.`test2` as select * from src limit 1;

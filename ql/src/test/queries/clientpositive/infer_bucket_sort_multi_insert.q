@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:part
 set hive.exec.infer.bucket.sort=true;
 set hive.exec.infer.bucket.sort.num.buckets.power.two=true;
 set hive.stats.dbclass=fs;

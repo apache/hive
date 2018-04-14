@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set hive.map.aggr = true;
 set hive.auto.convert.join=true;
 set hive.groupby.skewindata = true;

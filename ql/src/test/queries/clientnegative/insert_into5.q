@@ -1,3 +1,4 @@
+--! qt:dataset:src
 DROP TABLE if exists insert_into5_neg;
 
 CREATE TABLE insert_into5_neg (key int, value string) TBLPROPERTIES ("immutable"="true");

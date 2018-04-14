@@ -1,3 +1,4 @@
+--! qt:dataset:src
 SET hive.vectorized.execution.enabled=false;
 create table tx_n1(a int,f string);
 insert into tx_n1 values (1,'non_existent_file');

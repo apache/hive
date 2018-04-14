@@ -1,3 +1,5 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src
 -- SORT_QUERY_RESULTS
 
 DROP TABLE IF EXISTS table1_n14;

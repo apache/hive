@@ -1,3 +1,12 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src_cbo
+--! qt:dataset:src1
+--! qt:dataset:src
+--! qt:dataset:part
+--! qt:dataset:lineitem
+--! qt:dataset:cbo_t3
+--! qt:dataset:cbo_t2
+--! qt:dataset:cbo_t1
 set hive.vectorized.execution.enabled=false;
 set hive.strict.checks.bucketing=false;
 
@@ -119,7 +128,7 @@ having not exists
   )
 ;
 
-create view cv1_n5 as 
+create view cv1_n5 as
 select * 
 from src_cbo b 
 where exists
@@ -516,13 +525,13 @@ order by p_name
 ;
 
   
-explain create view IF NOT EXISTS mfgr_price_view_n3 as 
+explain create view IF NOT EXISTS mfgr_price_view_n3 as
 select p_mfgr, p_brand, 
 sum(p_retailprice) as s 
 from part 
 group by p_mfgr, p_brand;
 
-CREATE TABLE part_4_n1( 
+CREATE TABLE part_4_n1(
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -530,7 +539,7 @@ r INT,
 dr INT, 
 s DOUBLE);
 
-CREATE TABLE part_5_n1( 
+CREATE TABLE part_5_n1(
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -544,11 +553,11 @@ explain
 from noop(on part 
 partition by p_mfgr 
 order by p_name) 
-INSERT OVERWRITE TABLE part_4_n1 select p_mfgr, p_name, p_size, 
+INSERT OVERWRITE TABLE part_4_n1 select p_mfgr, p_name, p_size,
 rank() over (distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_name) as dr, 
 sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)  as s  
-INSERT OVERWRITE TABLE part_5_n1 select  p_mfgr,p_name, p_size,  
+INSERT OVERWRITE TABLE part_5_n1 select  p_mfgr,p_name, p_size,
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2,
 rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as dr, 

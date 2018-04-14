@@ -1,3 +1,5 @@
+--! qt:dataset:src_json
+--! qt:dataset:src
 set hive.fetch.task.conversion=more;
 
 DESCRIBE FUNCTION get_json_object;

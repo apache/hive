@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set hive.support.concurrency=true;
 
 set hive.lock.mapred.only.operation=true;

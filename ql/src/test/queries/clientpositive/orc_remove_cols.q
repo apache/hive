@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 set hive.vectorized.execution.enabled=false;
 SET hive.exec.schema.evolution=false;
 set hive.fetch.task.conversion=more;

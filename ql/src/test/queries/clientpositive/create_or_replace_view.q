@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 create database vt;
 
 create view vt.v as select * from srcpart;

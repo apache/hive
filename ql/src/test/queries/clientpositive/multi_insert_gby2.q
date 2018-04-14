@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 --HIVE-3699 Multiple insert overwrite into multiple tables query stores same results in all tables
 create table e1 (count int);

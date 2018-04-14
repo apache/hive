@@ -1,3 +1,4 @@
+--! qt:dataset:src
 select * from (select key + key from src limit 1) a
 union all
 select * from (select key + key from src limit 1) b;

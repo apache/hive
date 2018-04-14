@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.optimize.remove.identity.project=true;
 set hive.auto.convert.join=true;
 set hive.optimize.ppd=true;

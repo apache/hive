@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.vectorized.execution.enabled=false;
 set hive.exec.orc.dictionary.key.size.threshold=-1;
 
@@ -15,7 +16,7 @@ INSERT OVERWRITE TABLE test_orc_n5 SELECT key FROM src TABLESAMPLE (10 ROWS);
 
 -- Test reading the column back
 
-SELECT * FROM test_orc_n5; 
+SELECT * FROM test_orc_n5;
 
 ALTER TABLE test_orc_n5 SET SERDEPROPERTIES ('orc.stripe.size' = '1');
 

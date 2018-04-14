@@ -1,1 +1,1 @@
-FAILED: SemanticException 8:7 Duplicate definition of window w2 is not allowed. Error encountered near token 'w2'
+FAILED: SemanticException 9:7 Duplicate definition of window w2 is not allowed. Error encountered near token 'w2'

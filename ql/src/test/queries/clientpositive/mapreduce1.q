@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.explain.user=false;
 CREATE TABLE dest1_n120(key INT, ten INT, one INT, value STRING) STORED AS TEXTFILE;
 

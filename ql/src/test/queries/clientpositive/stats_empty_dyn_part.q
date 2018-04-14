@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:part
 -- This test verifies writing a query using dynamic partitions
 -- which results in no partitions actually being created with
 -- hive.stats.reliable set to true

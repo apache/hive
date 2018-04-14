@@ -1,3 +1,4 @@
+--! qt:dataset:src
 -- COMMENT
 select key from src limit 1;
 

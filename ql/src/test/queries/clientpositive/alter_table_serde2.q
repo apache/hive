@@ -1,3 +1,4 @@
+--! qt:dataset:src
 -- Tests that when overwriting a partition in a table after altering the serde properties
 -- the partition metadata is updated as well.
 

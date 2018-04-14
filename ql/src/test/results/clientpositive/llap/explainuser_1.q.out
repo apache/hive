@@ -2203,7 +2203,7 @@ Stage-0
                       TableScan [TS_6] (rows=500 width=178)
                         default@src_cbo,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
-PREHOOK: query: create view cv1_n5 as 
+PREHOOK: query: create view cv1_n5 as
 select * 
 from src_cbo b 
 where exists
@@ -2214,7 +2214,7 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@src_cbo
 PREHOOK: Output: database:default
 PREHOOK: Output: default@cv1_n5
-POSTHOOK: query: create view cv1_n5 as 
+POSTHOOK: query: create view cv1_n5 as
 select * 
 from src_cbo b 
 where exists
@@ -5445,7 +5445,7 @@ Stage-0
                           TableScan [TS_0] (rows=26 width=235)
                             default@part,part,Tbl:COMPLETE,Col:COMPLETE,Output:["p_mfgr","p_name","p_partkey","p_retailprice","p_size"]
 
-PREHOOK: query: explain create view IF NOT EXISTS mfgr_price_view_n3 as 
+PREHOOK: query: explain create view IF NOT EXISTS mfgr_price_view_n3 as
 select p_mfgr, p_brand, 
 sum(p_retailprice) as s 
 from part 
@@ -5454,7 +5454,7 @@ PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@part
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mfgr_price_view_n3
-POSTHOOK: query: explain create view IF NOT EXISTS mfgr_price_view_n3 as 
+POSTHOOK: query: explain create view IF NOT EXISTS mfgr_price_view_n3 as
 select p_mfgr, p_brand, 
 sum(p_retailprice) as s 
 from part 
@@ -5468,7 +5468,7 @@ Plan optimized by CBO.
 Stage-1
   Create View{"name:":"default.mfgr_price_view_n3","original text:":"select p_mfgr, p_brand, \nsum(p_retailprice) as s \nfrom part \ngroup by p_mfgr, p_brand"}
 
-PREHOOK: query: CREATE TABLE part_4_n1( 
+PREHOOK: query: CREATE TABLE part_4_n1(
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -5478,7 +5478,7 @@ s DOUBLE)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_4_n1
-POSTHOOK: query: CREATE TABLE part_4_n1( 
+POSTHOOK: query: CREATE TABLE part_4_n1(
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -5488,7 +5488,7 @@ s DOUBLE)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@part_4_n1
-PREHOOK: query: CREATE TABLE part_5_n1( 
+PREHOOK: query: CREATE TABLE part_5_n1(
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -5500,7 +5500,7 @@ fv1 INT)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@part_5_n1
-POSTHOOK: query: CREATE TABLE part_5_n1( 
+POSTHOOK: query: CREATE TABLE part_5_n1(
 p_mfgr STRING, 
 p_name STRING, 
 p_size INT, 
@@ -5516,11 +5516,11 @@ PREHOOK: query: explain
 from noop(on part 
 partition by p_mfgr 
 order by p_name) 
-INSERT OVERWRITE TABLE part_4_n1 select p_mfgr, p_name, p_size, 
+INSERT OVERWRITE TABLE part_4_n1 select p_mfgr, p_name, p_size,
 rank() over (distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_name) as dr, 
 sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)  as s  
-INSERT OVERWRITE TABLE part_5_n1 select  p_mfgr,p_name, p_size,  
+INSERT OVERWRITE TABLE part_5_n1 select  p_mfgr,p_name, p_size,
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2,
 rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as dr, 
@@ -5535,11 +5535,11 @@ POSTHOOK: query: explain
 from noop(on part 
 partition by p_mfgr 
 order by p_name) 
-INSERT OVERWRITE TABLE part_4_n1 select p_mfgr, p_name, p_size, 
+INSERT OVERWRITE TABLE part_4_n1 select p_mfgr, p_name, p_size,
 rank() over (distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_name) as dr, 
 sum(p_retailprice) over (distribute by p_mfgr sort by p_name rows between unbounded preceding and current row)  as s  
-INSERT OVERWRITE TABLE part_5_n1 select  p_mfgr,p_name, p_size,  
+INSERT OVERWRITE TABLE part_5_n1 select  p_mfgr,p_name, p_size,
 round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2,
 rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as r, 
 dense_rank() over (distribute by p_mfgr sort by p_mfgr, p_name) as dr, 

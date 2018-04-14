@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 
 create table nzhang_part1 (key string, value string) partitioned by (ds string, hr string);
 

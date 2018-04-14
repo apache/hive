@@ -1,3 +1,4 @@
+--! qt:dataset:src_hbase
 set fs.defaultFS=${hiveconf:hbase.rootdir};
 
 set hive.stats.column.autogather=true;

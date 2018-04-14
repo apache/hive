@@ -1,3 +1,6 @@
+--! qt:dataset:srcbucket
+--! qt:dataset:part
+--! qt:dataset:alltypesorc
 set hive.explain.user=false;
 set hive.fetch.task.conversion=none;
 set hive.mapred.mode=nonstrict;

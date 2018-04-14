@@ -1,3 +1,4 @@
+--! qt:dataset:srcbucket
 -- bucket column is the same as table sample
 -- No need for sample filter
 INSERT OVERWRITE TABLE dest1 SELECT s.*

@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set hive.archive.enabled = true;
 -- Tests creating a partition where the partition value will collide with the
 -- a intermediate directory

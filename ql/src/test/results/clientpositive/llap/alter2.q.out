@@ -198,28 +198,12 @@ POSTHOOK: query: DROP TABLE alter2
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@alter2
 POSTHOOK: Output: default@alter2
-PREHOOK: query: SHOW TABLES
+PREHOOK: query: SHOW TABLES LIKE "alter*"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES
+POSTHOOK: query: SHOW TABLES LIKE "alter*"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
-alltypesorc
-alltypesparquet
-cbo_t1
-cbo_t2
-cbo_t3
-lineitem
-part
-src
-src1
-src_cbo
-src_json
-src_sequencefile
-src_thrift
-srcbucket
-srcbucket2
-srcpart
 PREHOOK: query: CREATE DATABASE alter2_db
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:alter2_db
@@ -232,10 +216,10 @@ PREHOOK: Input: database:alter2_db
 POSTHOOK: query: USE alter2_db
 POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Input: database:alter2_db
-PREHOOK: query: SHOW TABLES
+PREHOOK: query: SHOW TABLES LIKE "alter*"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:alter2_db
-POSTHOOK: query: SHOW TABLES
+POSTHOOK: query: SHOW TABLES LIKE "alter*"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:alter2_db
 PREHOOK: query: CREATE TABLE alter2(a int, b int) PARTITIONED BY (insertdate string)

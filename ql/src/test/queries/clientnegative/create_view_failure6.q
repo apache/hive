@@ -1,3 +1,4 @@
+--! qt:dataset:src
 DROP VIEW xxx15;
 
 -- should fail:  baz is not a column

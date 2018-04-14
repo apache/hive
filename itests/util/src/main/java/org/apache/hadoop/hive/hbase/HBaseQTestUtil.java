@@ -64,14 +64,7 @@ public class HBaseQTestUtil extends QTestUtil {
 
     conf.setBoolean("hive.test.init.phase", true);
 
-    // create and load the input data into the hbase table
-    runCreateTableCmd(
-      "CREATE TABLE " + HBASE_SRC_NAME + "(key INT, value STRING)"
-        + "  STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'"
-        + "  WITH SERDEPROPERTIES ('hbase.columns.mapping' = ':key,cf:val')"
-        + "  TBLPROPERTIES ('hbase.table.name' = '" + HBASE_SRC_NAME + "')"
-    );
-    runCmd("INSERT OVERWRITE TABLE " + HBASE_SRC_NAME + " SELECT * FROM src");
+    initDataset(HBASE_SRC_NAME);
 
     // create a snapshot
     Admin admin = null;
@@ -89,9 +82,6 @@ public class HBaseQTestUtil extends QTestUtil {
   @Override
   public void cleanUp(String tname) throws Exception {
     super.cleanUp(tname);
-
-    // drop in case leftover from unsuccessful run
-    db.dropTable(Warehouse.DEFAULT_DATABASE_NAME, HBASE_SRC_NAME);
 
     Admin admin = null;
     try {

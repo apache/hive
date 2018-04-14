@@ -1,3 +1,4 @@
+--! qt:dataset:src
 
 create table dest1_din2(key int, value string) partitioned by (ds string);
 

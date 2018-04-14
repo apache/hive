@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 create table t1_n79 (id1 string, id2 string);
 create table t2_n48 (id string, d int);

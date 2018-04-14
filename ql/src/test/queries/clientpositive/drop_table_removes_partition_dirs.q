@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:part
 -- This test verifies that if a partition exists outside the table's current location when the
 -- table is dropped the partition's location is dropped as well.
 

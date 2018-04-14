@@ -3,7 +3,7 @@ drop table extract_udf_n0;
 
 create table extract_udf_n0 (t timestamp);
 from (select * from src tablesample (1 rows)) s
-  insert overwrite table extract_udf_n0 
+  insert overwrite table extract_udf_n0
     select '2011-05-06 07:08:09.1234567';
 
 select t

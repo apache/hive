@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:part
 -- This test verifies that writing an empty partition succeeds when
 -- hive.stats.reliable is set to true.
 

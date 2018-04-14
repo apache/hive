@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set mapreduce.framework.name=yarn;
 set mapreduce.jobtracker.address=localhost:58;

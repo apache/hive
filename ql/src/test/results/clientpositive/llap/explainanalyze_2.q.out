@@ -2048,7 +2048,7 @@ PREHOOK: query: FROM (
       select key, value from src s0
                              ) unionsrc_n3
 INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key
-INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) 
+INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5))
 GROUP BY unionsrc_n3.key, unionsrc_n3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -2063,7 +2063,7 @@ POSTHOOK: query: FROM (
       select key, value from src s0
                              ) unionsrc_n3
 INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key
-INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) 
+INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5))
 GROUP BY unionsrc_n3.key, unionsrc_n3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -2079,7 +2079,7 @@ FROM (
       select key, value from src s0
                              ) unionsrc_n3
 INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key
-INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) 
+INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5))
 GROUP BY unionsrc_n3.key, unionsrc_n3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -2095,7 +2095,7 @@ FROM (
       select key, value from src s0
                              ) unionsrc_n3
 INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key
-INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) 
+INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5))
 GROUP BY unionsrc_n3.key, unionsrc_n3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -2200,7 +2200,7 @@ PREHOOK: query: FROM (
       select s2.key as key, s2.value as value, 'tst1' as value2 from src s2
                              ) unionsrc_n3
 INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key
-INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) 
+INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5))
 GROUP BY unionsrc_n3.key, unionsrc_n3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -2212,7 +2212,7 @@ POSTHOOK: query: FROM (
       select s2.key as key, s2.value as value, 'tst1' as value2 from src s2
                              ) unionsrc_n3
 INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key
-INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) 
+INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5))
 GROUP BY unionsrc_n3.key, unionsrc_n3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -2225,7 +2225,7 @@ FROM (
       select s2.key as key, s2.value as value, 'tst1' as value2 from src s2
                              ) unionsrc_n3
 INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key
-INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) 
+INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5))
 GROUP BY unionsrc_n3.key, unionsrc_n3.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -2238,7 +2238,7 @@ FROM (
       select s2.key as key, s2.value as value, 'tst1' as value2 from src s2
                              ) unionsrc_n3
 INSERT OVERWRITE TABLE DEST1_n105 SELECT unionsrc_n3.key, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) GROUP BY unionsrc_n3.key
-INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5)) 
+INSERT OVERWRITE TABLE DEST2_n29 SELECT unionsrc_n3.key, unionsrc_n3.value, COUNT(DISTINCT SUBSTR(unionsrc_n3.value,5))
 GROUP BY unionsrc_n3.key, unionsrc_n3.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src

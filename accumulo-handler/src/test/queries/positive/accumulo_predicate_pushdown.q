@@ -1,4 +1,6 @@
-CREATE EXTERNAL TABLE accumulo_pushdown(key string, value string) 
+--! qt:dataset:src
+--! qt:dataset:part
+CREATE EXTERNAL TABLE accumulo_pushdown(key string, value string)
 STORED BY 'org.apache.hadoop.hive.accumulo.AccumuloStorageHandler'
 WITH SERDEPROPERTIES ("accumulo.columns.mapping" = ":rowid,cf:string")
 TBLPROPERTIES ("external.table.purge" = "true");

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.fetch.task.conversion=more;
 
 drop table if exists decimal_1_n0;

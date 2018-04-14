@@ -1,3 +1,4 @@
+--! qt:dataset:src
 -- SORT_QUERY_RESULTS
 
 CREATE TABLE dest1_n12(key INT, value STRING) STORED AS TEXTFILE;

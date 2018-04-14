@@ -1,3 +1,4 @@
+--! qt:dataset:src
 SET hive.vectorized.execution.enabled=false;
 set hive.spark.dynamic.partition.pruning=true;
 

@@ -1,3 +1,4 @@
+--! qt:dataset:part
 set hive.mapred.mode=nonstrict;
 explain select *
 from part p1 join part p2 join part p3 

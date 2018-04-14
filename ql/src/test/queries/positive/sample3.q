@@ -1,3 +1,4 @@
+--! qt:dataset:srcbucket
 -- sample columns not same as bucket columns
 -- no input pruning, sample filter
 INSERT OVERWRITE TABLE dest1 SELECT s.* -- here's another test

@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 set hive.vectorized.execution.enabled=false;
 
 create table concat_incompat like alltypesorc;

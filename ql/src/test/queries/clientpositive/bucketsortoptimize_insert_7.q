@@ -1,3 +1,4 @@
+--! qt:dataset:src
 SET hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 set hive.auto.convert.join=true;
@@ -36,13 +37,13 @@ INSERT OVERWRITE TABLE test_table2_n19 PARTITION (ds = '1') SELECT * where key <
 EXPLAIN
 INSERT OVERWRITE TABLE test_table3_n11 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
-FROM test_table1_n20 a JOIN test_table2_n19 b 
+FROM test_table1_n20 a JOIN test_table2_n19 b
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1'
 and (a.key = 0 or a.key = 5);
 
 INSERT OVERWRITE TABLE test_table3_n11 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
-FROM test_table1_n20 a JOIN test_table2_n19 b 
+FROM test_table1_n20 a JOIN test_table2_n19 b
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1'
 and (a.key = 0 or a.key = 5);
 
@@ -54,17 +55,17 @@ EXPLAIN
 INSERT OVERWRITE TABLE test_table3_n11 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM 
-(select key, value from test_table1_n20 where ds = '1' and (key = 0 or key = 5)) a 
+(select key, value from test_table1_n20 where ds = '1' and (key = 0 or key = 5)) a
 JOIN 
-(select key, value from test_table2_n19 where ds = '1' and (key = 0 or key = 5)) b 
+(select key, value from test_table2_n19 where ds = '1' and (key = 0 or key = 5)) b
 ON a.key = b.key;
 
 INSERT OVERWRITE TABLE test_table3_n11 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM 
-(select key, value from test_table1_n20 where ds = '1' and (key = 0 or key = 5)) a 
+(select key, value from test_table1_n20 where ds = '1' and (key = 0 or key = 5)) a
 JOIN 
-(select key, value from test_table2_n19 where ds = '1' and (key = 0 or key = 5)) b 
+(select key, value from test_table2_n19 where ds = '1' and (key = 0 or key = 5)) b
 ON a.key = b.key;
 
 select * from test_table3_n11 tablesample (bucket 1 out of 2) s where ds = '1';
@@ -75,18 +76,18 @@ EXPLAIN
 INSERT OVERWRITE TABLE test_table3_n11 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM 
-(select key, value from test_table1_n20 where ds = '1' and key < 8) a 
+(select key, value from test_table1_n20 where ds = '1' and key < 8) a
 JOIN 
-(select key, value from test_table2_n19 where ds = '1' and key < 8) b 
+(select key, value from test_table2_n19 where ds = '1' and key < 8) b
 ON a.key = b.key
 WHERE a.key = 0 or a.key = 5;
 
 INSERT OVERWRITE TABLE test_table3_n11 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM 
-(select key, value from test_table1_n20 where ds = '1' and key < 8) a 
+(select key, value from test_table1_n20 where ds = '1' and key < 8) a
 JOIN 
-(select key, value from test_table2_n19 where ds = '1' and key < 8) b 
+(select key, value from test_table2_n19 where ds = '1' and key < 8) b
 ON a.key = b.key
 WHERE a.key = 0 or a.key = 5;
 

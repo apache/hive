@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.stats.fetch.column.stats=true;
 drop table if exists decimal_1_n1;
 

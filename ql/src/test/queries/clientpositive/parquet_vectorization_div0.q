@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesparquet
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled = true;

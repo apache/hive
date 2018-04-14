@@ -1,3 +1,4 @@
+--! qt:dataset:src1
 set hive.mapred.mode=nonstrict;
 set hive.default.nulls.last=false;
 -- query from auto_sortmerge_join_9.q

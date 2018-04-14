@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set hive.optimize.constant.propagation=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
 

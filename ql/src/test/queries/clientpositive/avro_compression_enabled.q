@@ -1,3 +1,4 @@
+--! qt:dataset:src
 -- verify that new joins bring in correct schemas (including evolved schemas)
 
 CREATE TABLE doctors4_n0

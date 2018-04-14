@@ -1,3 +1,4 @@
+--! qt:dataset:src
 SET hive.vectorized.execution.enabled=false;
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.default.nulls.last=false;

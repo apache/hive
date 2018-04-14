@@ -1,3 +1,5 @@
+--! qt:dataset:src1
+--! qt:dataset:src
 set hive.vectorized.execution.enabled=false;
 set hive.test.vectorized.execution.enabled.override=disable;
 

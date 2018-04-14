@@ -1,3 +1,4 @@
+--! qt:dataset:src
 SET hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 set hive.auto.convert.join=true;
@@ -34,12 +35,12 @@ INSERT OVERWRITE TABLE test_table2_n15 PARTITION (ds = '1') SELECT * where key <
 EXPLAIN
 INSERT OVERWRITE TABLE test_table3_n8 PARTITION (ds = '1')
 SELECT a.key, a.key, concat(a.value, b.value) 
-FROM test_table1_n16 a JOIN test_table2_n15 b 
+FROM test_table1_n16 a JOIN test_table2_n15 b
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1';
 
 INSERT OVERWRITE TABLE test_table3_n8 PARTITION (ds = '1')
 SELECT a.key, a.key, concat(a.value, b.value) 
-FROM test_table1_n16 a JOIN test_table2_n15 b 
+FROM test_table1_n16 a JOIN test_table2_n15 b
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1';
 
 select * from test_table3_n8 tablesample (bucket 1 out of 2) s where ds = '1';
@@ -55,12 +56,12 @@ CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS;
 EXPLAIN
 INSERT OVERWRITE TABLE test_table3_n8 PARTITION (ds = '1')
 SELECT a.key, a.value
-FROM test_table1_n16 a JOIN test_table2_n15 b 
+FROM test_table1_n16 a JOIN test_table2_n15 b
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1';
 
 INSERT OVERWRITE TABLE test_table3_n8 PARTITION (ds = '1')
 SELECT a.key, a.value
-FROM test_table1_n16 a JOIN test_table2_n15 b 
+FROM test_table1_n16 a JOIN test_table2_n15 b
 ON a.key = b.key WHERE a.ds = '1' and b.ds = '1';
 
 select * from test_table3_n8 tablesample (bucket 1 out of 2) s where ds = '1';

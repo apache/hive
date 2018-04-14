@@ -71,7 +71,7 @@ drop table dp_mm;
 create table union_mm(id int)  tblproperties ("transactional"="true", "transactional_properties"="insert_only");
 insert into table union_mm 
 select temps.p from (
-select key as p from intermediate_n0 
+select key as p from intermediate_n0
 union all 
 select key + 1 as p from intermediate_n0 ) temps;
 
@@ -114,7 +114,7 @@ drop table union_mm;
 create table partunion_mm(id int) partitioned by (key int) tblproperties ("transactional"="true", "transactional_properties"="insert_only");
 insert into table partunion_mm partition(key)
 select temps.* from (
-select key as p, key from intermediate_n0 
+select key as p, key from intermediate_n0
 union all 
 select key + 1 as p, key + 1 from intermediate_n0 ) temps;
 

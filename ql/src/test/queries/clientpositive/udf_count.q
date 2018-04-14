@@ -1,3 +1,4 @@
+--! qt:dataset:src
 DESCRIBE FUNCTION count;
 DESCRIBE FUNCTION EXTENDED count;
 

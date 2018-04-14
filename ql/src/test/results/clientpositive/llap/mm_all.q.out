@@ -475,7 +475,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@union_mm
 PREHOOK: query: insert into table union_mm 
 select temps.p from (
-select key as p from intermediate_n0 
+select key as p from intermediate_n0
 union all 
 select key + 1 as p from intermediate_n0 ) temps
 PREHOOK: type: QUERY
@@ -486,7 +486,7 @@ PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@union_mm
 POSTHOOK: query: insert into table union_mm 
 select temps.p from (
-select key as p from intermediate_n0 
+select key as p from intermediate_n0
 union all 
 select key + 1 as p from intermediate_n0 ) temps
 POSTHOOK: type: QUERY
@@ -699,7 +699,7 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@partunion_mm
 PREHOOK: query: insert into table partunion_mm partition(key)
 select temps.* from (
-select key as p, key from intermediate_n0 
+select key as p, key from intermediate_n0
 union all 
 select key + 1 as p, key + 1 from intermediate_n0 ) temps
 PREHOOK: type: QUERY
@@ -710,7 +710,7 @@ PREHOOK: Input: default@intermediate_n0@p=457
 PREHOOK: Output: default@partunion_mm
 POSTHOOK: query: insert into table partunion_mm partition(key)
 select temps.* from (
-select key as p, key from intermediate_n0 
+select key as p, key from intermediate_n0
 union all 
 select key + 1 as p, key + 1 from intermediate_n0 ) temps
 POSTHOOK: type: QUERY

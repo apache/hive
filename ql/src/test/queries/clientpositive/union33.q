@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.groupby.skewindata=true;
 -- SORT_BEFORE_DIFF

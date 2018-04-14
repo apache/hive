@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set hive.mapred.mode=nonstrict;
 
 create table tmptable_n2(key string, value string, hr string, ds string);

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 drop table date_udf;
 drop table date_udf_string;
 drop table date_udf_flight;

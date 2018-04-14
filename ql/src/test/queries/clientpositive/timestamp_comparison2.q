@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 -- Test timestamp-to-numeric comparison
 select count(*) 
 FROM   alltypesorc

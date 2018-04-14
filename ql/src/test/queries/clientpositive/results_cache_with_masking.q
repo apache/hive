@@ -1,3 +1,4 @@
+--! qt:dataset:src
 
 set hive.mapred.mode=nonstrict;
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;

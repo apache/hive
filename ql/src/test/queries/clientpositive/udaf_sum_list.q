@@ -1,3 +1,4 @@
+--! qt:dataset:src
 -- HIVE-5279
 -- GenericUDAFSumList has Converter which does not have default constructor
 -- After

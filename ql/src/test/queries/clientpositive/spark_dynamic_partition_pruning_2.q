@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 SET hive.vectorized.execution.enabled=false;
 set hive.optimize.ppd=true;
 set hive.ppd.remove.duplicatefilters=true;

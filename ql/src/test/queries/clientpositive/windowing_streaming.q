@@ -42,7 +42,7 @@ where r < 2;
 
 -- over10k_n20 tests
 select * 
-from (select t, f, rank() over(partition by t order by f) r from over10k_n20) a 
+from (select t, f, rank() over(partition by t order by f) r from over10k_n20) a
 where r < 6 and t < 5;
 
 select *
@@ -56,7 +56,7 @@ explain
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5;
 
 drop table if exists sB_n0;
-create table sB_n0 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as  
+create table sB_n0 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5;
 
 select * from sB_n0
@@ -65,7 +65,7 @@ where ctinyint is null;
 set hive.vectorized.execution.enabled=true;
 set hive.limit.pushdown.memory.usage=0.8;
 drop table if exists sD_n0;
-create table sD_n0 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as  
+create table sD_n0 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','  STORED AS TEXTFILE as
 select * from (select ctinyint, cdouble, rank() over(partition by ctinyint order by cdouble) r from  alltypesorc) a where r < 5;
 
 select * from sD_n0

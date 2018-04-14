@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set hive.limit.optimize.enable=true;
 set hive.limit.row.max.size=12;
 set hive.mapred.mode=nonstrict;

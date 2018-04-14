@@ -1,3 +1,4 @@
+--! qt:dataset:src
 create table nzhang_test1 stored as sequencefile as select 'key1' as key, 'value
 1
 

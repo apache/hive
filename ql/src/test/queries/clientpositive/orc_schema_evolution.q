@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.vectorized.execution.enabled=false;
 set hive.fetch.task.conversion=none;
 SET hive.exec.schema.evolution=true;

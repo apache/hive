@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hivevar:key1=value1;
 
 EXPLAIN SELECT * FROM src where key="${key1}";

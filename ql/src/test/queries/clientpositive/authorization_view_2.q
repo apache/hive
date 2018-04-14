@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 
 create table src_autho_test_n13 as select * from src;

@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 set hive.cbo.enable=false;
 
 explain  

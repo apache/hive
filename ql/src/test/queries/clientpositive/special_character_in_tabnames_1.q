@@ -1,3 +1,9 @@
+--! qt:dataset:src1
+--! qt:dataset:src
+--! qt:dataset:lineitem
+--! qt:dataset:cbo_t3
+--! qt:dataset:cbo_t2
+--! qt:dataset:cbo_t1
 set hive.cbo.enable=true;
 set hive.exec.check.crossproducts=false;
 set hive.stats.fetch.column.stats=true;

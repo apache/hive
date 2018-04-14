@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.vectorized.execution.enabled=false;
 
 -- Create a table with one column, write to it, then add an additional column
