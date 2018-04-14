@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 set hive.stats.fetch.column.stats=true;
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;

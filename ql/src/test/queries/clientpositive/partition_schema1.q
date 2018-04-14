@@ -1,3 +1,4 @@
+--! qt:dataset:src1
 
 create table partition_schema1(key string, value string) partitioned by (dt string);
 

@@ -1,3 +1,5 @@
+--! qt:dataset:src1
+--! qt:dataset:src
 with src1 as (select key from src order by key limit 5)
 select * from src1;
 

@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set hive.exec.infer.bucket.sort=true;
 set hive.merge.mapfiles=false;
 set hive.merge.mapredfiles=false;

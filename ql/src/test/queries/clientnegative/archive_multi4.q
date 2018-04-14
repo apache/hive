@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set hive.archive.enabled = true;
 -- Tests trying to archive inner partition contained in archived partition group.
 -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.17, 0.18, 0.19)

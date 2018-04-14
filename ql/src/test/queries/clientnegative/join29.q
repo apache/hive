@@ -1,3 +1,5 @@
+--! qt:dataset:src1
+--! qt:dataset:src
 CREATE TABLE dest_j1(key STRING, cnt1 INT, cnt2 INT);
 set hive.cbo.enable=false;
 -- Mapjoin followed by group by is not supported.

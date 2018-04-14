@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 set hive.explain.user=false;
 set hive.exec.submitviachild=false;
 set hive.exec.submit.local.task.via.child=false;

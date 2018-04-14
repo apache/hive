@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set hive.strict.checks.bucketing=false; 
 
 DROP VIEW xxx7;

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.stats.autogather=false;
 set hive.optimize.union.remove=true;

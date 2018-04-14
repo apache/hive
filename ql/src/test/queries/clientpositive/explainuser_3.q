@@ -1,3 +1,6 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src
+--! qt:dataset:alltypesorc
 set hive.strict.checks.bucketing=false;
 
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;

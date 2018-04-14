@@ -41,28 +41,6 @@ POSTHOOK: query: show tables in mydb
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:mydb
 q1
-PREHOOK: query: show tables
-PREHOOK: type: SHOWTABLES
-PREHOOK: Input: database:default
-POSTHOOK: query: show tables
-POSTHOOK: type: SHOWTABLES
-POSTHOOK: Input: database:default
-alltypesorc
-alltypesparquet
-cbo_t1
-cbo_t2
-cbo_t3
-lineitem
-part
-src
-src1
-src_cbo
-src_json
-src_sequencefile
-src_thrift
-srcbucket
-srcbucket2
-srcpart
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain
 with q1 as (select * from src where key= '5')

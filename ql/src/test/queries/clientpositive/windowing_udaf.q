@@ -1,3 +1,4 @@
+--! qt:dataset:src1
 drop table over10k;
 
 create table over10k(

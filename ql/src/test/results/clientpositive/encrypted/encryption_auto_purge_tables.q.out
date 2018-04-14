@@ -18,14 +18,13 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@encrypted_table
 Encryption key created: 'key_128'
 Encryption zone created: '/build/ql/test/data/warehouse/default/encrypted_table' using key: 'key_128'
-PREHOOK: query: SHOW TABLES
+PREHOOK: query: SHOW TABLES LIKE "encrypted_*"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES
+POSTHOOK: query: SHOW TABLES LIKE "encrypted_*"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
 encrypted_table
-src
 PREHOOK: query: ALTER TABLE encrypted_table SET TBLPROPERTIES("auto.purge"="true")
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@encrypted_table
@@ -140,13 +139,12 @@ POSTHOOK: query: DROP TABLE encrypted_ext_table
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@encrypted_ext_table
 POSTHOOK: Output: default@encrypted_ext_table
-PREHOOK: query: SHOW TABLES
+PREHOOK: query: SHOW TABLES LIKE "encrypted_*"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: SHOW TABLES
+POSTHOOK: query: SHOW TABLES LIKE "encrypted_*"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
-src
 PREHOOK: query: DROP TABLE IF EXISTS encrypted_table PURGE
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS encrypted_table PURGE

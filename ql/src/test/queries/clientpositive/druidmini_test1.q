@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 CREATE TABLE druid_table
 STORED BY 'org.apache.hadoop.hive.druid.DruidStorageHandler'
 TBLPROPERTIES ("druid.segment.granularity" = "HOUR", "druid.query.granularity" = "MINUTE")

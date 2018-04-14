@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 
@@ -104,6 +105,9 @@ public class CoreParseNegative extends CliAdapter{
         qt.init(fname);
         firstRun = false;
       }
+
+      qt.cliInit(new File(fpath), false);
+
       ASTNode tree = qt.parseQuery(fname);
       List<Task<? extends Serializable>> tasks = qt.analyzeAST(tree);
       fail("Unexpected success for query: " + fname + debugHint);

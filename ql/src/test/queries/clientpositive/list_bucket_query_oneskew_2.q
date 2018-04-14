@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.optimize.listbucketing=true;
 set mapred.input.dir.recursive=true;	

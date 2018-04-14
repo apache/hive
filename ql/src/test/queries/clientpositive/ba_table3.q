@@ -1,3 +1,4 @@
+--! qt:dataset:src
 drop table ba_test;
 
 -- All the tests of ba_table1.q + test for a group-by and aggregation on a binary key.

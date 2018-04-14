@@ -1,3 +1,4 @@
+--! qt:dataset:src
 create table t1 as select cast(key as int) key, value from src;
 
 create table t2 as select cast(key as int) key, value from src;

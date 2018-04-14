@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 -- Can't combine IF NOT EXISTS and OR REPLACE.
 
 drop view v;

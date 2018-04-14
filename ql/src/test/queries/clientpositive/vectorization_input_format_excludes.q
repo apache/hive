@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 set hive.fetch.task.conversion=none;
 set hive.vectorized.use.row.serde.deserialize=true;
 set hive.vectorized.use.vector.serde.deserialize=true;

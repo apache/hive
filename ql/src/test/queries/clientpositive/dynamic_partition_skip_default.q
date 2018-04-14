@@ -1,3 +1,4 @@
+--! qt:dataset:src
 create table dynamic_part_table(intcol string) partitioned by (partcol1 string, partcol2 string);
 
 set hive.exec.dynamic.partition.mode=nonstrict;

@@ -1,3 +1,4 @@
+--! qt:dataset:part
 set hive.strict.checks.bucketing=false;
 
 -- small no part, 4 bucket & big no part, 2 bucket

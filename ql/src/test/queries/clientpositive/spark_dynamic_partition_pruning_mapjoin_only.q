@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 set hive.optimize.ppd=true;
 set hive.ppd.remove.duplicatefilters=true;
 set hive.optimize.metadataonly=false;

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 create table load_overwrite like src;
 
 insert overwrite table load_overwrite select * from src;

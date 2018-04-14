@@ -1,3 +1,4 @@
+--! qt:dataset:cbo_t1
 set hive.compute.query.using.stats=false;
 set hive.mapred.mode=nonstrict;
 set hive.cbo.enable=true;

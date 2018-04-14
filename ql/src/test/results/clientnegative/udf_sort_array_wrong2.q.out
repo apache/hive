@@ -1,1 +1,1 @@
-FAILED: SemanticException [Error 10016]: Line 2:18 Argument type mismatch '"Invalid"': Argument 1 of function SORT_ARRAY must be array, and element type should be either primitive, list, struct, or map, but string was found.
+FAILED: SemanticException [Error 10016]: Line 3:18 Argument type mismatch '"Invalid"': Argument 1 of function SORT_ARRAY must be array, and element type should be either primitive, list, struct, or map, but string was found.

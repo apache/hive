@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 
 create table mismatch_columns(key string, value string);
 

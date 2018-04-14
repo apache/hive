@@ -1,3 +1,6 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src1
+--! qt:dataset:src
 set hive.stats.column.autogather=false;
 set hive.exec.post.hooks = org.apache.hadoop.hive.ql.hooks.MapJoinCounterHook,org.apache.hadoop.hive.ql.hooks.PrintCompletedTasksHook;
 

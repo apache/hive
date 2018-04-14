@@ -1,3 +1,4 @@
+--! qt:dataset:srcpart
 --this has 4 groups of tests
 --Acid tables w/o bucketing
 --the tests with bucketing (make sure we get the same results)

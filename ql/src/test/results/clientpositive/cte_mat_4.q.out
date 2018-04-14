@@ -16,29 +16,13 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@q1
 POSTHOOK: Lineage: q1.a SCRIPT []
 POSTHOOK: Lineage: q1.b SCRIPT []
-PREHOOK: query: show tables
+PREHOOK: query: show tables like "q1"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: show tables
+POSTHOOK: query: show tables like "q1"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
-alltypesorc
-alltypesparquet
-cbo_t1
-cbo_t2
-cbo_t3
-lineitem
-part
 q1
-src
-src1
-src_cbo
-src_json
-src_sequencefile
-src_thrift
-srcbucket
-srcbucket2
-srcpart
 PREHOOK: query: explain
 with q1 as (select * from src where key= '5')
 select a.key
@@ -215,29 +199,13 @@ POSTHOOK: Output: default@q1
 5
 5
 5
-PREHOOK: query: show tables
+PREHOOK: query: show tables like "q1"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: show tables
+POSTHOOK: query: show tables like "q1"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
-alltypesorc
-alltypesparquet
-cbo_t1
-cbo_t2
-cbo_t3
-lineitem
-part
 q1
-src
-src1
-src_cbo
-src_json
-src_sequencefile
-src_thrift
-srcbucket
-srcbucket2
-srcpart
 PREHOOK: query: select * from q1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@q1
@@ -255,28 +223,12 @@ POSTHOOK: query: drop table q1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@q1
 POSTHOOK: Output: default@q1
-PREHOOK: query: show tables
+PREHOOK: query: show tables like "q1"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: show tables
+POSTHOOK: query: show tables like "q1"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
-alltypesorc
-alltypesparquet
-cbo_t1
-cbo_t2
-cbo_t3
-lineitem
-part
-src
-src1
-src_cbo
-src_json
-src_sequencefile
-src_thrift
-srcbucket
-srcbucket2
-srcpart
 PREHOOK: query: explain
 with q1 as (select * from src where key= '5')
 select a.key
@@ -453,25 +405,9 @@ POSTHOOK: Output: default@q1
 5
 5
 5
-PREHOOK: query: show tables
+PREHOOK: query: show tables like "q1"
 PREHOOK: type: SHOWTABLES
 PREHOOK: Input: database:default
-POSTHOOK: query: show tables
+POSTHOOK: query: show tables like "q1"
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Input: database:default
-alltypesorc
-alltypesparquet
-cbo_t1
-cbo_t2
-cbo_t3
-lineitem
-part
-src
-src1
-src_cbo
-src_json
-src_sequencefile
-src_thrift
-srcbucket
-srcbucket2
-srcpart

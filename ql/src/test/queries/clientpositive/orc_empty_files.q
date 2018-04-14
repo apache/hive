@@ -1,3 +1,4 @@
+--! qt:dataset:src
 CREATE TABLE test_orc (key STRING, cnt INT)
 CLUSTERED BY (key) INTO 3 BUCKETS
 ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde' 

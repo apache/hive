@@ -23,7 +23,7 @@ ALTER TABLE kv_rename_test CHANGE COLUMN a2 a INT AFTER b;
 DESCRIBE kv_rename_test;
 
 DROP TABLE kv_rename_test;
-SHOW TABLES;
+SHOW TABLES LIKE "kv_rename_*";
 
 -- Using non-default Database
 CREATE DATABASE kv_rename_test_db;
@@ -54,4 +54,4 @@ ALTER TABLE kv_rename_test CHANGE COLUMN a2 a INT AFTER b;
 DESCRIBE kv_rename_test;
 reset hive.metastore.disallow.incompatible.col.type.changes;
 DROP TABLE kv_rename_test;
-SHOW TABLES;
+SHOW TABLES LIKE "kv_rename_*";

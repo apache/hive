@@ -1,3 +1,12 @@
+--! qt:dataset:srcpart
+--! qt:dataset:src_cbo
+--! qt:dataset:src1
+--! qt:dataset:src
+--! qt:dataset:part
+--! qt:dataset:lineitem
+--! qt:dataset:cbo_t3
+--! qt:dataset:cbo_t2
+--! qt:dataset:cbo_t1
 set hive.strict.checks.bucketing=false;
 
 set hive.mapred.mode=nonstrict;

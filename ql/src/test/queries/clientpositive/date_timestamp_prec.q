@@ -1,3 +1,4 @@
+--! qt:dataset:src
 create table mytable (i integer, d date);
 
 insert overwrite table mytable 

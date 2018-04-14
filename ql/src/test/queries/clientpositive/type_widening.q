@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.fetch.task.conversion=more;
 -- Check for int, bigint automatic type widening conversions in UDFs, UNIONS

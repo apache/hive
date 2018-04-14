@@ -1,3 +1,4 @@
+--! qt:dataset:src
 
 
 CREATE TABLE table_test_output_format(key INT, value STRING) STORED AS

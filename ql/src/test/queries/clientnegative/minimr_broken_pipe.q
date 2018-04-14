@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 set hive.exec.script.allow.partial.consumption = false;
 -- Tests exception in ScriptOperator.close() by passing to the operator a small amount of data
