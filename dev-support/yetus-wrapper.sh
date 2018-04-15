@@ -91,6 +91,34 @@ if [[ $? != 0 ]]; then
 fi
 HIVE_PATCHPROCESS=${mytmpdir}
 
+CURLBIN=$(command -v curl)
+
+# Set FindBugs Home
+FINDBUGS_VERSION="3.0.1"
+if [[ ! -d "${HIVE_PATCHPROCESS}/findbugs-${FINDBUGS_VERSION}/" ]]; then
+  # Download FindBugs
+  FINDBUGS_BASEURL="http://prdownloads.sourceforge.net/findbugs/"
+  FINDBUGS_TARBALL="findbugs-${FINDBUGS_VERSION}.tar"
+
+  pushd "${HIVE_PATCHPROCESS}" >/dev/null
+  if [[ -n "${CURLBIN}" ]]; then
+    "${CURLBIN}" -f -s -L -O "${FINDBUGS_BASEURL}/${FINDBUGS_TARBALL}.gz"
+    if [[ $? != 0 ]]; then
+      yetus_error "ERROR: yetus-dl: unable to download ${FINDBUGS_BASEURL}/${FINDBUGS_TARBALL}.gz"
+      exit 1
+    fi
+  fi
+
+  gunzip -c "${FINDBUGS_TARBALL}.gz" | tar xpf -
+  if [[ $? != 0 ]]; then
+    yetus_error "ERROR: ${FINDBUGS_TARBALL}.gz is corrupt. Investigate and then remove ${HIVE_PATCHPROCESS} to try again."
+    exit 1
+  fi
+  popd >/dev/null
+fi
+
+export FINDBUGS_HOME=${HIVE_PATCHPROCESS}/findbugs-${FINDBUGS_VERSION}
+
 ##
 ## if we've already DL'd it, then short cut
 ##
@@ -102,11 +130,10 @@ fi
 ## need to DL, etc
 ##
 
-BASEURL="https://archive.apache.org/dist/yetus/${HIVE_YETUS_VERSION}/"
-TARBALL="yetus-${HIVE_YETUS_VERSION}-bin.tar"
+YETUS_BASEURL="https://archive.apache.org/dist/yetus/${HIVE_YETUS_VERSION}/"
+YETUS_TARBALL="yetus-${HIVE_YETUS_VERSION}-bin.tar"
 
 GPGBIN=$(command -v gpg)
-CURLBIN=$(command -v curl)
 
 pushd "${HIVE_PATCHPROCESS}" >/dev/null
 if [[ $? != 0 ]]; then
@@ -115,9 +142,9 @@ if [[ $? != 0 ]]; then
 fi
 
 if [[ -n "${CURLBIN}" ]]; then
-  "${CURLBIN}" -f -s -L -O "${BASEURL}/${TARBALL}.gz"
+  "${CURLBIN}" -f -s -L -O "${YETUS_BASEURL}/${YETUS_TARBALL}.gz"
   if [[ $? != 0 ]]; then
-    yetus_error "ERROR: yetus-dl: unable to download ${BASEURL}/${TARBALL}.gz"
+    yetus_error "ERROR: yetus-dl: unable to download ${YETUS_BASEURL}/${YETUS_TARBALL}.gz"
     exit 1
   fi
 else
@@ -141,9 +168,9 @@ if [[ -n "${GPGBIN}" ]]; then
     yetus_error "ERROR: yetus-dl: unable to fetch https://dist.apache.org/repos/dist/release/yetus/KEYS"
     exit 1
   fi
-  "${CURLBIN}" -s -L -O "${BASEURL}/${TARBALL}.gz.asc"
+  "${CURLBIN}" -s -L -O "${YETUS_BASEURL}/${YETUS_TARBALL}.gz.asc"
   if [[ $? != 0 ]]; then
-    yetus_error "ERROR: yetus-dl: unable to fetch ${BASEURL}/${TARBALL}.gz.asc"
+    yetus_error "ERROR: yetus-dl: unable to fetch ${YETUS_BASEURL}/${YETUS_TARBALL}.gz.asc"
     exit 1
   fi
   "${GPGBIN}" --homedir "${HIVE_PATCHPROCESS}/.gpg" --import "${HIVE_PATCHPROCESS}/KEYS_YETUS" >/dev/null 2>&1
@@ -151,16 +178,16 @@ if [[ -n "${GPGBIN}" ]]; then
     yetus_error "ERROR: yetus-dl: gpg unable to import ${HIVE_PATCHPROCESS}/KEYS_YETUS"
     exit 1
   fi
-  "${GPGBIN}" --homedir "${HIVE_PATCHPROCESS}/.gpg" --verify "${TARBALL}.gz.asc" >/dev/null 2>&1
+  "${GPGBIN}" --homedir "${HIVE_PATCHPROCESS}/.gpg" --verify "${YETUS_TARBALL}.gz.asc" >/dev/null 2>&1
    if [[ $? != 0 ]]; then
      yetus_error "ERROR: yetus-dl: gpg verify of tarball in ${HIVE_PATCHPROCESS} failed"
      exit 1
    fi
 fi
 
-gunzip -c "${TARBALL}.gz" | tar xpf -
+gunzip -c "${YETUS_TARBALL}.gz" | tar xpf -
 if [[ $? != 0 ]]; then
-  yetus_error "ERROR: ${TARBALL}.gz is corrupt. Investigate and then remove ${HIVE_PATCHPROCESS} to try again."
+  yetus_error "ERROR: ${YETUS_TARBALL}.gz is corrupt. Investigate and then remove ${HIVE_PATCHPROCESS} to try again."
   exit 1
 fi
 

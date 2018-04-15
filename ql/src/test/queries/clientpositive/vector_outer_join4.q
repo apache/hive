@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 set hive.explain.user=false;
 SET hive.vectorized.execution.enabled=true;
 SET hive.auto.convert.join=true;

@@ -26,7 +26,6 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.metamx.common.RetryUtils;
 import com.metamx.common.lifecycle.Lifecycle;
@@ -49,6 +48,7 @@ import io.druid.metadata.SQLMetadataConnector;
 import io.druid.metadata.storage.derby.DerbyConnector;
 import io.druid.metadata.storage.derby.DerbyMetadataStorage;
 import io.druid.metadata.storage.mysql.MySQLConnector;
+import io.druid.metadata.storage.mysql.MySQLConnectorConfig;
 import io.druid.metadata.storage.postgresql.PostgreSQLConnector;
 import io.druid.query.aggregation.AggregatorFactory;
 import io.druid.segment.IndexSpec;
@@ -116,6 +116,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.apache.hadoop.hive.druid.DruidStorageHandlerUtils.JSON_MAPPER;
 
 /**
  * DruidStorageHandler provides a HiveStorageHandler implementation for Druid.
@@ -328,13 +330,14 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
             null
         ), "UTF-8");
 
-    Map<String, Object> inputParser = DruidStorageHandlerUtils.JSON_MAPPER
+    Map<String, Object> inputParser = JSON_MAPPER
         .convertValue(inputRowParser, Map.class);
     final DataSchema dataSchema = new DataSchema(
         dataSourceName,
         inputParser,
         dimensionsAndAggregates.rhs,
         granularitySpec,
+        null,
         DruidStorageHandlerUtils.JSON_MAPPER
     );
 
@@ -412,7 +415,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
 
   private static void updateKafkaIngestionSpec(String overlordAddress, KafkaSupervisorSpec spec) {
     try {
-      String task = DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(spec);
+      String task = JSON_MAPPER.writeValueAsString(spec);
       console.printInfo("submitting kafka Spec {}", task);
       LOG.info("submitting kafka Supervisor Spec {}", task);
 
@@ -420,7 +423,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
               new URL(String.format("http://%s/druid/indexer/v1/supervisor", overlordAddress)))
               .setContent(
                   "application/json",
-                  DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsBytes(spec)),
+                  JSON_MAPPER.writeValueAsBytes(spec)),
           new StatusResponseHandler(
               Charset.forName("UTF-8"))).get();
       if (response.getStatus().equals(HttpResponseStatus.OK)) {
@@ -502,7 +505,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
           input -> input instanceof IOException,
           getMaxRetryCount());
       if (response.getStatus().equals(HttpResponseStatus.OK)) {
-        return DruidStorageHandlerUtils.JSON_MAPPER
+        return JSON_MAPPER
             .readValue(response.getContent(), KafkaSupervisorSpec.class);
         // Druid Returns 400 Bad Request when not found.
       } else if (response.getStatus().equals(HttpResponseStatus.NOT_FOUND) || response.getStatus().equals(HttpResponseStatus.BAD_REQUEST)) {
@@ -520,38 +523,47 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
 
 
   protected void loadDruidSegments(Table table, boolean overwrite) throws MetaException {
-    // at this point we have Druid segments from reducers but we need to atomically
-    // rename and commit to metadata
-    final String dataSourceName = table.getParameters().get(Constants.DRUID_DATA_SOURCE);
-    final List<DataSegment> segmentList = Lists.newArrayList();
-    final Path tableDir = getSegmentDescriptorDir();
-    // Read the created segments metadata from the table staging directory
-    try {
-      segmentList.addAll(DruidStorageHandlerUtils.getCreatedSegments(tableDir, getConf()));
-    } catch (IOException e) {
-      LOG.error("Failed to load segments descriptor from directory {}", tableDir.toString());
-      Throwables.propagate(e);
-      cleanWorkingDir();
-    }
-    // Moving Druid segments and committing to druid metadata as one transaction.
-    final HdfsDataSegmentPusherConfig hdfsSegmentPusherConfig = new HdfsDataSegmentPusherConfig();
-    List<DataSegment> publishedDataSegmentList = Lists.newArrayList();
-    final String segmentDirectory =
-            table.getParameters().get(Constants.DRUID_SEGMENT_DIRECTORY) != null
-                    ? table.getParameters().get(Constants.DRUID_SEGMENT_DIRECTORY)
-                    : HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY);
-    LOG.info(String.format(
-            "Moving [%s] Druid segments from staging directory [%s] to Deep storage [%s]",
-            segmentList.size(),
-            getStagingWorkingDir(),
-            segmentDirectory
 
-            ));
-    hdfsSegmentPusherConfig.setStorageDirectory(segmentDirectory);
+    final String dataSourceName = table.getParameters().get(Constants.DRUID_DATA_SOURCE);
+    final Path segmentDescriptorDir = getSegmentDescriptorDir();
     try {
+      if (!segmentDescriptorDir.getFileSystem(getConf()).exists(segmentDescriptorDir)) {
+        LOG.info(
+            "Directory {} does not exist, ignore this if it is create statement or inserts of 0 rows,"
+                + " no Druid segments to move, cleaning working directory {}",
+            segmentDescriptorDir.getName(), getStagingWorkingDir().getName()
+        );
+        cleanWorkingDir();
+        return;
+      }
+    } catch (IOException e) {
+      LOG.error("Failed to load segments descriptor from directory {}", segmentDescriptorDir.toString());
+      cleanWorkingDir();
+      Throwables.propagate(e);
+    }
+
+    try {
+      // at this point we have Druid segments from reducers but we need to atomically
+      // rename and commit to metadata
+      // Moving Druid segments and committing to druid metadata as one transaction.
+      List<DataSegment> segmentList = DruidStorageHandlerUtils.getCreatedSegments(segmentDescriptorDir, getConf());
+      final HdfsDataSegmentPusherConfig hdfsSegmentPusherConfig = new HdfsDataSegmentPusherConfig();
+      List<DataSegment> publishedDataSegmentList;
+      final String segmentDirectory =
+          table.getParameters().get(Constants.DRUID_SEGMENT_DIRECTORY) != null
+              ? table.getParameters().get(Constants.DRUID_SEGMENT_DIRECTORY)
+              : HiveConf.getVar(getConf(), HiveConf.ConfVars.DRUID_SEGMENT_DIRECTORY);
+      LOG.info(String.format(
+          "Moving [%s] Druid segments from staging directory [%s] to Deep storage [%s]",
+          segmentList.size(),
+          getStagingWorkingDir(),
+          segmentDirectory
+
+      ));
+      hdfsSegmentPusherConfig.setStorageDirectory(segmentDirectory);
       DataSegmentPusher dataSegmentPusher = new HdfsDataSegmentPusher(hdfsSegmentPusherConfig,
               getConf(),
-              DruidStorageHandlerUtils.JSON_MAPPER
+              JSON_MAPPER
       );
       publishedDataSegmentList = DruidStorageHandlerUtils.publishSegmentsAndCommit(
               getConnector(),
@@ -562,7 +574,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
               getConf(),
               dataSegmentPusher
       );
-
+      checkLoadStatus(publishedDataSegmentList);
     } catch (CallbackFailedException | IOException e) {
       LOG.error("Failed to move segments from staging directory");
       if (e instanceof CallbackFailedException) {
@@ -572,7 +584,6 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     } finally {
       cleanWorkingDir();
     }
-      checkLoadStatus(publishedDataSegmentList);
   }
 
   /**
@@ -880,7 +891,7 @@ public class DruidStorageHandler extends DefaultHiveMetaHook implements HiveStor
     if (dbType.equals("mysql")) {
       connector = new MySQLConnector(storageConnectorConfigSupplier,
               Suppliers.ofInstance(getDruidMetadataStorageTablesConfig())
-      );
+          , new MySQLConnectorConfig());
     } else if (dbType.equals("postgresql")) {
       connector = new PostgreSQLConnector(storageConnectorConfigSupplier,
               Suppliers.ofInstance(getDruidMetadataStorageTablesConfig())

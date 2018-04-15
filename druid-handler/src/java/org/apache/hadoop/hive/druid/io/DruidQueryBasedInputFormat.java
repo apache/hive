@@ -22,9 +22,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -53,7 +51,6 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.jboss.netty.handler.codec.http.HttpMethod;
-import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,8 +61,6 @@ import com.google.common.collect.Lists;
 import com.metamx.http.client.Request;
 
 import io.druid.query.BaseQuery;
-import io.druid.query.Druids;
-import io.druid.query.Druids.SelectQueryBuilder;
 import io.druid.query.LocatedSegmentDescriptor;
 import io.druid.query.Query;
 import io.druid.query.SegmentDescriptor;
@@ -133,7 +128,7 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
         throw new IOException("Druid data source cannot be empty or null");
       }
       //@FIXME https://issues.apache.org/jira/browse/HIVE-19023 use scan instead of Select
-      druidQuery = createSelectStarQuery(dataSource);
+      druidQuery = DruidStorageHandlerUtils.createSelectStarQuery(dataSource);
       druidQueryType = Query.SELECT;
     } else {
       druidQueryType = conf.get(Constants.DRUID_QUERY_TYPE);
@@ -167,19 +162,6 @@ public class DruidQueryBasedInputFormat extends InputFormat<NullWritable, DruidW
     default:
         throw new IOException("Druid query type not recognized");
     }
-  }
-
-  private static String createSelectStarQuery(String dataSource) throws IOException {
-    // Create Select query
-    SelectQueryBuilder builder = new Druids.SelectQueryBuilder();
-    builder.dataSource(dataSource);
-    final List<Interval> intervals = Arrays.asList(DruidStorageHandlerUtils.DEFAULT_INTERVAL);
-    builder.intervals(intervals);
-    builder.pagingSpec(PagingSpec.newSpec(1));
-    Map<String, Object> context = new HashMap<>();
-    context.put(Constants.DRUID_QUERY_FETCH, false);
-    builder.context(context);
-    return DruidStorageHandlerUtils.JSON_MAPPER.writeValueAsString(builder.build());
   }
 
   /* New method that distributes the Select query by creating splits containing

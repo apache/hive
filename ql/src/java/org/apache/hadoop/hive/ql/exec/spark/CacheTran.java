@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.storage.StorageLevel;
@@ -28,10 +29,12 @@ public abstract class CacheTran<KI extends WritableComparable, VI, KO extends Wr
   private boolean caching = false;
   private JavaPairRDD<KO, VO> cachedRDD;
   protected final String name;
+  private final BaseWork baseWork;
 
-  protected CacheTran(boolean cache, String name) {
+  protected CacheTran(boolean cache, String name, BaseWork baseWork) {
     this.caching = cache;
     this.name = name;
+    this.baseWork = baseWork;
   }
 
   @Override
@@ -58,5 +61,10 @@ public abstract class CacheTran<KI extends WritableComparable, VI, KO extends Wr
   @Override
   public String getName() {
     return name;
+  }
+
+  @Override
+  public BaseWork getBaseWork() {
+    return baseWork;
   }
 }

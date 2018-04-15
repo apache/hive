@@ -76,6 +76,7 @@ public class PerfLogger {
   public static final String SPARK_SUBMIT_TO_RUNNING = "SparkSubmitToRunning";
   public static final String SPARK_BUILD_PLAN = "SparkBuildPlan";
   public static final String SPARK_BUILD_RDD_GRAPH = "SparkBuildRDDGraph";
+  public static final String SPARK_CREATE_EXPLAIN_PLAN = "SparkCreateExplainPlan.";
   public static final String SPARK_SUBMIT_JOB = "SparkSubmitJob";
   public static final String SPARK_RUN_JOB = "SparkRunJob";
   public static final String SPARK_CREATE_TRAN = "SparkCreateTran.";

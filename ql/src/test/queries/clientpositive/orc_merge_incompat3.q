@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 create table concat_incompat like alltypesorc;
 
 load data local inpath '../../data/files/alltypesorc' into table concat_incompat;

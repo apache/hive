@@ -1,3 +1,4 @@
+--! qt:dataset:src
 SET hive.vectorized.execution.enabled=false;
 set hive.mapred.mode=nonstrict;
 create table clustergroupby(key string, value string) partitioned by(ds string);

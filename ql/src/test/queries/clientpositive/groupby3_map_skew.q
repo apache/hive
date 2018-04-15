@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.cbo.enable=false;
 set hive.mapred.mode=nonstrict;
 set hive.map.aggr=true;
@@ -33,4 +34,3 @@ INSERT OVERWRITE TABLE dest1 SELECT
 
 SELECT ROUND(c1, 1), ROUND(c2, 3), ROUND(c3, 5), ROUND(c4, 1), ROUND(c5, 1), ROUND(c6, 5),
 ROUND(c7,5), ROUND(c8, 5), ROUND(c9, 5) FROM dest1;
-

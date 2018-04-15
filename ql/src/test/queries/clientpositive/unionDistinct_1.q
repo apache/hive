@@ -1,3 +1,7 @@
+--! qt:dataset:srcpart
+--! qt:dataset:srcbucket
+--! qt:dataset:src1
+--! qt:dataset:src
 set hive.llap.execution.mode=auto;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;

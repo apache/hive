@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 create table interval_arithmetic_1 (dateval date, tsval timestamp);
 insert overwrite table interval_arithmetic_1
   select cast(ctimestamp1 as date), ctimestamp1 from alltypesorc;

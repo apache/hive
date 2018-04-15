@@ -29,6 +29,7 @@ import com.google.common.collect.Lists;
 import io.druid.data.input.Committer;
 import io.druid.data.input.InputRow;
 import io.druid.data.input.MapBasedInputRow;
+import io.druid.java.util.common.DateTimes;
 import io.druid.java.util.common.granularity.Granularity;
 import io.druid.segment.indexing.DataSchema;
 import io.druid.segment.indexing.RealtimeTuningConfig;
@@ -110,7 +111,7 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
                     DruidStorageHandlerUtils.INDEX_IO, DruidStorageHandlerUtils.INDEX_MERGER_V9
             );
     this.maxPartitionSize = maxPartitionSize;
-    appenderator.startJob(); // maybe we need to move this out of the constructor
+    appenderator.startJob();
     this.segmentsDescriptorDir = Preconditions
             .checkNotNull(segmentsDescriptorsDir, "segmentsDescriptorsDir is null");
     this.fileSystem = Preconditions.checkNotNull(fileSystem, "file system is null");
@@ -129,10 +130,12 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
    * @return segmentIdentifier with of the truncatedTime and maybe push the current open segment.
    */
   private SegmentIdentifier getSegmentIdentifierAndMaybePush(long truncatedTime) {
-    final Interval interval = new Interval(
-            new DateTime(truncatedTime),
-            segmentGranularity.increment(new DateTime(truncatedTime))
-    );
+
+    DateTime truncatedDateTime = segmentGranularity.bucketStart(DateTimes.utc(truncatedTime));
+      final Interval interval = new Interval(
+          truncatedDateTime,
+          segmentGranularity.increment(truncatedDateTime)
+      );
 
     SegmentIdentifier retVal;
     if (currentOpenSegment == null) {
@@ -239,8 +242,6 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
     DruidWritable record = (DruidWritable) w;
     final long timestamp =
         (long) record.getValue().get(DruidStorageHandlerUtils.DEFAULT_TIMESTAMP_COLUMN);
-    final long truncatedTime =
-        (long) record.getValue().get(Constants.DRUID_TIMESTAMP_GRANULARITY_COL_NAME);
     final int partitionNumber = Math.toIntExact(
         (long) record.getValue().getOrDefault(Constants.DRUID_SHARD_KEY_COL_NAME, -1l));
     final InputRow inputRow = new MapBasedInputRow(timestamp,
@@ -249,9 +250,17 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
     );
 
     try {
+
       if (partitionNumber != -1 && maxPartitionSize == -1) {
-        final Interval interval = new Interval(new DateTime(truncatedTime),
-            segmentGranularity.increment(new DateTime(truncatedTime))
+        /*
+        Case data is sorted by time and an extra hashing dimension see DRUID_SHARD_KEY_COL_NAME
+        Thus use DRUID_SHARD_KEY_COL_NAME as segment partition in addition to time dimension
+        Data with the same DRUID_SHARD_KEY_COL_NAME and Time interval will end in the same segment
+        */
+        DateTime truncatedDateTime = segmentGranularity.bucketStart(DateTimes.utc(timestamp));
+        final Interval interval = new Interval(
+            truncatedDateTime,
+            segmentGranularity.increment(truncatedDateTime)
         );
 
         if (currentOpenSegment != null) {
@@ -273,8 +282,9 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
         appenderator.add(currentOpenSegment, inputRow, committerSupplier);
 
       } else if (partitionNumber == -1 && maxPartitionSize != -1) {
+        /*Case we are partitioning the segments based on time and max row per segment maxPartitionSize*/
         appenderator
-            .add(getSegmentIdentifierAndMaybePush(truncatedTime), inputRow, committerSupplier);
+            .add(getSegmentIdentifierAndMaybePush(timestamp), inputRow, committerSupplier);
       } else {
         throw new IllegalArgumentException(String.format(
             "partitionNumber and  maxPartitionSize should be mutually exclusive got partitionNum [%s] and maxPartitionSize [%s]",
@@ -315,7 +325,7 @@ public class DruidRecordWriter implements RecordWriter<NullWritable, DruidWritab
 
   @Override
   public void close(Reporter reporter) throws IOException {
-    this.close(true);
+    this.close(false);
   }
 
 }

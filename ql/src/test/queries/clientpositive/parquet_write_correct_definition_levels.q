@@ -1,3 +1,4 @@
+--! qt:dataset:src
 CREATE TABLE text_tbl (a STRUCT<b:STRUCT<c:INT>>)
 STORED AS TEXTFILE;
 

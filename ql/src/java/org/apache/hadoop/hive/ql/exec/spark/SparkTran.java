@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.spark;
 
+import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.spark.api.java.JavaPairRDD;
 
@@ -27,6 +28,8 @@ public interface SparkTran<KI extends WritableComparable, VI, KO extends Writabl
       JavaPairRDD<KI, VI> input);
 
   public String getName();
+
+  public BaseWork getBaseWork();
 
   public Boolean isCacheEnable();
 }

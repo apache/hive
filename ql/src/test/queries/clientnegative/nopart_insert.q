@@ -1,3 +1,4 @@
+--! qt:dataset:src
 
 CREATE TABLE nopart_insert(a STRING, b STRING) PARTITIONED BY (ds STRING);
 

@@ -1,3 +1,4 @@
+--! qt:dataset:alltypesorc
 SET hive.vectorized.execution.enabled=true;
 
 SET hive.llap.io.enabled=false;

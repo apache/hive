@@ -1,3 +1,4 @@
+--! qt:dataset:src
 
 add jar ${system:maven.local.repository}/org/apache/hive/hcatalog/hive-hcatalog-core/${system:hive.version}/hive-hcatalog-core-${system:hive.version}.jar;
 

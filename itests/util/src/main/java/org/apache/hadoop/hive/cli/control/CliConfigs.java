@@ -56,6 +56,7 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "disabled.query.files");
         excludesFrom(testConfigProps, "localSpark.only.query.files");
         excludesFrom(testConfigProps, "druid.query.files");
+        excludesFrom(testConfigProps, "druid.kafka.query.files");
 
         setResultsDir("ql/src/test/results/clientpositive");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");

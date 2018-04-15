@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 set hive.optimize.metadataonly=true;
 drop table partition_timestamp2_1;

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 
 
 create table if not exists nzhang_part5 (key string) partitioned by (value string);

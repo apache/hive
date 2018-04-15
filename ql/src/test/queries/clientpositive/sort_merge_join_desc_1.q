@@ -1,3 +1,4 @@
+--! qt:dataset:src
 drop table table_desc1;
 drop table table_desc2;
 

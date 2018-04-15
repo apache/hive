@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:part
 set hive.mapred.mode=nonstrict;
 set hive.merge.rcfile.block.level=true;
 set mapred.max.split.size=100;

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 CREATE TABLE lv_table( c1 STRING,  c2 ARRAY<INT>, c3 INT, c4 CHAR(1));
 INSERT OVERWRITE TABLE lv_table SELECT 'abc  ', array(1,2,3), 100, 't' FROM src;
 

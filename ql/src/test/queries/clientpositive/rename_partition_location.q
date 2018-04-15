@@ -1,3 +1,5 @@
+--! qt:dataset:src
+--! qt:dataset:part
 -- This test verifies that if the tables location changes, renaming a partition will not change
 -- the partition location accordingly
 

@@ -1,3 +1,4 @@
+--! qt:dataset:src
 -- EXCLUDE_HADOOP_MAJOR_VERSIONS(0.20S)
 create table tst1(key string, value string) partitioned by (ds string) clustered by (key) into 10 buckets;
 

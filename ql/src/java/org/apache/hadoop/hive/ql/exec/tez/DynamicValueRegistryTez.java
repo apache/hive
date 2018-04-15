@@ -61,6 +61,11 @@ public class DynamicValueRegistryTez implements DynamicValueRegistry {
     }
   }
 
+  static class NullValue {
+  }
+
+  static final NullValue NULL_VALUE = new NullValue();
+
   protected Map<String, Object> values = new ConcurrentHashMap<>();
 
   public DynamicValueRegistryTez() {
@@ -71,11 +76,21 @@ public class DynamicValueRegistryTez implements DynamicValueRegistry {
     if (!values.containsKey(key)) {
       throw new NoDynamicValuesException("Value does not exist in registry: " + key);
     }
-    return values.get(key);
+    Object val = values.get(key);
+
+    if (val == NULL_VALUE) {
+      return null;
+    }
+    return val;
   }
 
   protected void setValue(String key, Object value) {
-    values.put(key, value);
+    if (value == null) {
+      // ConcurrentHashMap does not allow null - use a substitute value.
+      values.put(key, NULL_VALUE);
+    } else {
+      values.put(key, value);
+    }
   }
 
   @Override

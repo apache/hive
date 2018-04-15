@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.cli.control;
 
-import static org.apache.hadoop.hive.cli.control.AbstractCliConfig.HIVE_ROOT;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 

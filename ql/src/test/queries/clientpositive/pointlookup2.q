@@ -1,3 +1,4 @@
+--! qt:dataset:src
 set hive.mapred.mode=nonstrict;
 drop table pcr_t1;
 drop table pcr_t2;

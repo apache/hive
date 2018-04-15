@@ -1,3 +1,4 @@
+--! qt:dataset:src1
 set hive.cbo.enable=false;
 
 -- SORT_QUERY_RESULTS

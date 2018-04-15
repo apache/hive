@@ -45,7 +45,6 @@ import java.util.regex.Pattern;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -57,7 +56,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.Ignore;
 
 /**
  * TestBeeLineWithArgs - executes tests of the command-line arguments to BeeLine
@@ -71,7 +69,6 @@ public class TestBeeLineWithArgs {
   // Default location of HiveServer2
   private static final String tableName = "TestBeelineTable1";
   private static final String tableComment = "Test table comment";
-  private static final String escapeCRLFTableName = "TestBeelineEscapeCRLFTable";
   private static MiniHS2 miniHS2;
   private static final String userName = System.getProperty("user.name");
 
@@ -124,7 +121,6 @@ public class TestBeeLineWithArgs {
     HiveConf conf = new HiveConf();
     String dataFileDir = conf.get("test.data.files").replace('\\', '/')
         .replace("c:", "");
-
     Path dataFilePath = new Path(dataFileDir, "kv1.txt");
     // drop table. ignore error.
     try {
@@ -205,26 +201,6 @@ public class TestBeeLineWithArgs {
   }
 
   /**
-   * Attempt to execute a simple script file with the -f and -i option to
-   * BeeLine to test for presence of an expected pattern in the output (stdout
-   * or stderr), fail if not found. Print PASSED or FAILED
-   *
-   * @param expectedRegex
-   *          Text to look for in command output (stdout)
-   * @param regExFlags
-   *          flags for Pattern.matcher
-   * @throws Exception
-   *           on command execution error
-   */
-  private void testScriptFile(String scriptText, List<String> argList, String expectedRegex,
-      int regExFlags) throws Throwable {
-    testScriptFile(scriptText, argList, OutStream.OUT,
-        Collections.singletonList(new Tuple<>(expectedRegex, true)),
-        regExFlags
-    );
-  }
-
-  /**
    * Attempt to execute a simple script file with the -f and -i option
    * to BeeLine to test for presence of an expected pattern
    * in the output (stdout or stderr), fail if not found.
@@ -243,21 +219,9 @@ public class TestBeeLineWithArgs {
   }
 
   private void testScriptFile(String scriptText, List<String> argList, OutStream streamType,
-      List<Tuple<String>> expectedMatches, int regExFlags) throws Throwable {
-    testScriptFile(scriptText, argList, streamType, expectedMatches,
-        Arrays.asList(Modes.values()), regExFlags);
-  }
-
-  private void testScriptFile(String scriptText, List<String> argList, OutStream streamType,
       List<Tuple<String>> expectedMatches) throws Throwable {
     testScriptFile(scriptText, argList, streamType, expectedMatches,
         Arrays.asList(Modes.values()));
-  }
-
-  private void testScriptFile(String scriptText, List<String> argList,
-      OutStream streamType, List<Tuple<String>> expectedMatches, List<Modes> modes)
-      throws Throwable {
-    testScriptFile(scriptText, argList, streamType, expectedMatches, modes, Pattern.DOTALL);
   }
 
   /**
@@ -273,7 +237,7 @@ public class TestBeeLineWithArgs {
    * @throws Exception on command execution error
    */
   private void testScriptFile(String scriptText, List<String> argList,
-      OutStream streamType, List<Tuple<String>> expectedMatches, List<Modes> modes, int regExFlags)
+      OutStream streamType, List<Tuple<String>> expectedMatches, List<Modes> modes)
       throws Throwable {
     // Put the script content in a temp file
     File scriptFile = File.createTempFile(this.getClass().getSimpleName(), "temp");
@@ -283,66 +247,30 @@ public class TestBeeLineWithArgs {
     os.print(scriptText);
     os.close();
 
-    if (regExFlags == 0) {
-
-      // No patterns -- just match on equality.
-      for (Modes mode : modes) {
-        String output = mode.output(scriptFile, argList, streamType);
-        for (Tuple<String> expectedMatch : expectedMatches) {
-          boolean matches = output.equals(expectedMatch.pattern);;
-          if (expectedMatch.shouldMatch != matches) {
-            //failed
-            byte[] bytes = output.getBytes();
-            fail("Output (length " + output.length() + ")\n\"" + output + "\" " +
-                "bytes \"" + displayBytes(bytes, 0, bytes.length) + "\" " +
-                "should" + (expectedMatch.shouldMatch ? "" : " not") +
-                " equals \n" + expectedMatch.pattern);
+    List<Tuple<Pattern>> patternsToBeMatched = Lists.transform(expectedMatches,
+        new Function<Tuple<String>, Tuple<Pattern>>() {
+          @Override
+          public Tuple<Pattern> apply(Tuple<String> tuple) {
+            return new Tuple<>(
+                Pattern.compile(".*" + tuple.pattern + ".*", Pattern.DOTALL),
+                tuple.shouldMatch
+            );
           }
-        }
-      }
-    } else {
+        });
 
-      List<Tuple<Pattern>> patternsToBeMatched = Lists.transform(expectedMatches,
-          new Function<Tuple<String>, Tuple<Pattern>>() {
-            @Override
-            public Tuple<Pattern> apply(Tuple<String> tuple) {
-              return new Tuple<>(
-                  Pattern.compile(".*" + tuple.pattern + ".*", regExFlags),
-                  tuple.shouldMatch
-              );
-            }
-          });
-
-      for (Modes mode : modes) {
-        String output = mode.output(scriptFile, argList, streamType);
-        for (Tuple<Pattern> patternToMatch : patternsToBeMatched) {
-          Matcher m = patternToMatch.pattern.matcher(output);
-          boolean matches = m.matches();
-          if (patternToMatch.shouldMatch != matches) {
-            //failed
-            byte[] bytes = output.getBytes();
-            fail("Output (length " + output.length() + ")\n\"" + output + "\" " +
-                "bytes \"" + displayBytes(bytes, 0, bytes.length) + "\" " +
-                "should" + (patternToMatch.shouldMatch ? "" : " not") +
-                " contain\n" + patternToMatch.pattern.pattern());
-          }
+    for (Modes mode : modes) {
+      String output = mode.output(scriptFile, argList, streamType);
+      for (Tuple<Pattern> patternToMatch : patternsToBeMatched) {
+        Matcher m = patternToMatch.pattern.matcher(output);
+        boolean matches = m.matches();
+        if (patternToMatch.shouldMatch != matches) {
+          //failed
+          fail("Output" + output + " should" + (patternToMatch.shouldMatch ? "" : " not") +
+              " contain " + patternToMatch.pattern.pattern());
         }
       }
     }
     scriptFile.delete();
-  }
-
-  public static String displayBytes(byte[] bytes, int start, int length) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = start; i < start + length; i++) {
-      char ch = (char) bytes[i];
-      if (ch < ' ' || ch > '~') {
-        sb.append(String.format("\\%03d", bytes[i] & 0xff));
-      } else {
-        sb.append(ch);
-      }
-    }
-    return sb.toString();
   }
 
   /*
@@ -744,94 +672,6 @@ public class TestBeeLineWithArgs {
   }
 
   /**
-   * Test writing output using Escape CRLF (false), DSV format, with custom delimiter ";"
-   */
-  @Test
-  public void testEscapeCRLFOffInDSVOutput() throws Throwable {
-    String SCRIPT_TEXT = getFormatEscapeCRLFTestQuery();
-    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
-    argList.add("--outputformat=dsv");
-    argList.add("--delimiterForDSV=;");
-    argList.add("--showHeader=false");
-    // Don't specify "--escapeCRLF"
-
-    // Use MULTILINE regex's beginning of line ^ anchor.
-    // NOTE: trailing blanks get removed from the output...
-    final String EXPECTED_PATTERN =
-       "^no cr lf;a cr\nand a lf\n" +
-       "^word word end CRLF\n" +
-       "^\n";
-
-    testScriptFile(SCRIPT_TEXT, argList, EXPECTED_PATTERN, Pattern.MULTILINE);
-  }
-
-  /**
-   * Test writing output using Escape CRLF, DSV format, with custom delimiter ";"
-   */
-  @Test
-  public void testEscapeCRLFInDSVOutput() throws Throwable {
-    String SCRIPT_TEXT = getFormatEscapeCRLFTestQuery();
-    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
-    argList.add("--outputformat=dsv");
-    argList.add("--delimiterForDSV=;");
-    argList.add("--showHeader=false");
-    argList.add("--escapeCRLF");
-
-    // Just compare for equals and avoid Pattern regex issues.
-    final String EQUALS_STRING =
-        "no cr lf;a cr\\nand a lf\\nword word end CRLF\\n\n";
-    testScriptFile(SCRIPT_TEXT, argList, EQUALS_STRING, /* equals */ 0);
-  }
-
-  /**
-   * Test writing output using Escape CRLF, TSV (new) format
-   */
-  @Test
-  public void testEscapeCRLFInTSV2Output() throws Throwable {
-    String SCRIPT_TEXT = getFormatEscapeCRLFTestQuery();
-    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
-    argList.add("--outputformat=tsv2");
-    argList.add("--showHeader=false");
-    argList.add("--escapeCRLF");
-
-    // Just compare for equals and avoid Pattern regex issues.
-    final String EQUALS_STRING =
-        "no cr lf\ta cr\\nand a lf\\nword word end CRLF\\n\n";
-    testScriptFile(SCRIPT_TEXT, argList, EQUALS_STRING, /* equals */ 0);
-  }
-
-  /**
-   * Test writing output using Escape CRLF, CSV deprecated format
-   */
-  @Test
-  public void testEscapeCRLFInCSVOutput() throws Throwable {
-    String SCRIPT_TEXT = getFormatEscapeCRLFTestQuery();
-    List<String> argList = getBaseArgs(miniHS2.getBaseJdbcURL());
-    argList.add("--outputformat=csv");
-    argList.add("--showHeader=false");
-    argList.add("--escapeCRLF");
-
-    // Just compare for equals and avoid Pattern regex issues.
-    final String EQUALS_STRING =
-        "'no cr lf','a cr\\nand a lf\\nword word end CRLF\\n'\n";
-    testScriptFile(SCRIPT_TEXT, argList, EQUALS_STRING, /* equals */ 0);
-  }
-
-  private String getFormatEscapeCRLFTestQuery() {
-
-    // Drop/create table for escape CRLF testing, populate, and query.
-    String queryString =
-        "set hive.support.concurrency = false;\n" +
-        "drop table if exists " + escapeCRLFTableName + ";\n" +
-        "create table " + escapeCRLFTableName +
-        "  (no_crlf string, has_crlf string) stored as sequencefile;\n" +
-        "insert into table " + escapeCRLFTableName +
-        "  values(\"no cr lf\", \"a cr \r and a lf \n word word end CRLF \r\n\");\n" +
-        "select * from " + escapeCRLFTableName + " limit 1 ;\n";
-    return queryString;
-  }
-
-  /**
    * Select null from table , check if setting null to empty string works - Using beeling cmd line
    *  argument.
    * Original beeline/sqlline used to print nulls as empty strings
@@ -928,7 +768,6 @@ public class TestBeeLineWithArgs {
    * Test Beeline could show the query progress for time-consuming query.
    * @throws Throwable
    */
-  @Ignore("Broken tests -- HIVE-18806")
   @Test
   public void testQueryProgress() throws Throwable {
     final String SCRIPT_TEXT =
@@ -956,7 +795,6 @@ public class TestBeeLineWithArgs {
    *
    * @throws Throwable
    */
-  @Ignore("Broken tests -- HIVE-18806")
   @Test
   public void testQueryProgressParallel() throws Throwable {
     final String SCRIPT_TEXT = "set hive.support.concurrency = false;\n" +

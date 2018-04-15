@@ -1,3 +1,4 @@
+--! qt:dataset:src
 -- -*- mode:sql -*-
 
 DROP TABLE IF EXISTS hbase_bulk;

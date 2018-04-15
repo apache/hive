@@ -1,3 +1,6 @@
+--! qt:dataset:src1
+--! qt:dataset:src
+--! qt:dataset:alltypesorc
 set hive.stats.column.autogather=false;
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;

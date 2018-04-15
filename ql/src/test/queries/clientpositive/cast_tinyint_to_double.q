@@ -1,3 +1,4 @@
+--! qt:dataset:src
 drop table t;
 CREATE TABLE t(c tinyint);
 insert overwrite table t select 10 from src limit 1;
