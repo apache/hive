@@ -357,12 +357,12 @@ public class LoadSemanticAnalyzer extends BaseSemanticAnalyzer {
     int stmtId = -1;
     if (AcidUtils.isTransactionalTable(ts.tableHandle)) {
       try {
-        writeId = SessionState.get().getTxnMgr().getTableWriteId(ts.tableHandle.getDbName(),
+        writeId = getTxnMgr().getTableWriteId(ts.tableHandle.getDbName(),
                 ts.tableHandle.getTableName());
       } catch (LockException ex) {
         throw new SemanticException("Failed to allocate the write id", ex);
       }
-      stmtId = SessionState.get().getTxnMgr().getStmtIdAndIncrement();
+      stmtId = getTxnMgr().getStmtIdAndIncrement();
     }
 
     // Note: this sets LoadFileType incorrectly for ACID; is that relevant for load?

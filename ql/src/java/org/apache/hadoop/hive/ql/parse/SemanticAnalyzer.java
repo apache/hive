@@ -7167,7 +7167,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Map<String, String> partSpec = null;
     boolean isMmTable = false, isMmCtas = false;
     Long writeId = null;
-    HiveTxnManager txnMgr = SessionState.get().getTxnMgr();
+    HiveTxnManager txnMgr = getTxnMgr();
 
     switch (dest_type.intValue()) {
     case QBMetaData.DEST_TABLE: {

@@ -4330,7 +4330,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     List<Path> srcs = new ArrayList<>(), tgts = new ArrayList<>();
     long mmWriteId = 0;
     try {
-      HiveTxnManager txnManager = SessionState.get().getTxnMgr();
+      HiveTxnManager txnManager = getTxnMgr();
       if (txnManager.isTxnOpen()) {
         mmWriteId = txnManager.getTableWriteId(tbl.getDbName(), tbl.getTableName());
       } else {
