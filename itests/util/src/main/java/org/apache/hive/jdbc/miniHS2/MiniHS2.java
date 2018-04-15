@@ -27,6 +27,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.SettableFuture;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -414,6 +416,14 @@ public class MiniHS2 extends AbstractHiveService {
 
   public boolean isLeader() {
     return hiveServer2.isLeader();
+  }
+
+  public SettableFuture<Boolean> getIsLeaderTestFuture() {
+    return hiveServer2.getIsLeaderTestFuture();
+  }
+
+  public SettableFuture<Boolean> getNotLeaderTestFuture() {
+    return hiveServer2.getNotLeaderTestFuture();
   }
 
   public void setPamAuthenticator(final PamAuthenticator pamAuthenticator) {
