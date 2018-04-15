@@ -328,11 +328,17 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
   private LlapServiceInstance getServiceInstance(JobConf job, LlapInputSplit llapSplit) throws IOException {
     LlapRegistryService registryService = LlapRegistryService.getClient(job);
-    String host = llapSplit.getLocations()[0];
+    LlapServiceInstance serviceInstance = null;
+    String[] hosts = llapSplit.getLocations();
+    if (hosts != null && hosts.length > 0) {
+      String host = llapSplit.getLocations()[0];
+      serviceInstance = getServiceInstanceForHost(registryService, host);
+      if (serviceInstance == null) {
+        LOG.info("No service instances found for " + host + " in registry.");
+      }
+    }
 
-    LlapServiceInstance serviceInstance = getServiceInstanceForHost(registryService, host);
     if (serviceInstance == null) {
-      LOG.info("No service instances found for " + host + " in registry.");
       serviceInstance = getServiceInstanceRandom(registryService);
       if (serviceInstance == null) {
         throw new IOException("No service instances found in registry");

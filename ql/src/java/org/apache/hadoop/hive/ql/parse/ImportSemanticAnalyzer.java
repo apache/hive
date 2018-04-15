@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
@@ -154,7 +155,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           isLocationSet, isExternalSet, isPartSpecSet, waitOnPrecursor,
           parsedLocation, parsedTableName, parsedDbName, parsedPartSpec, fromTree.getText(),
           new EximUtil.SemanticAnalyzerWrapperContext(conf, db, inputs, outputs, rootTasks, LOG, ctx),
-          null);
+          null, getTxnMgr());
 
     } catch (SemanticException e) {
       throw e;
@@ -200,7 +201,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       String parsedLocation, String parsedTableName, String overrideDBName,
       LinkedHashMap<String, String> parsedPartSpec,
       String fromLocn, EximUtil.SemanticAnalyzerWrapperContext x,
-      UpdatedMetaDataTracker updatedMetadata
+      UpdatedMetaDataTracker updatedMetadata, HiveTxnManager txnMgr
   ) throws IOException, MetaException, HiveException, URISyntaxException {
 
     // initialize load path
@@ -331,7 +332,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
             || AcidUtils.isTablePropertyTransactional(tblDesc.getTblProps())) {
       // Explain plan doesn't open a txn and hence no need to allocate write id.
       if (x.getCtx().getExplainConfig() == null) {
-        writeId = SessionState.get().getTxnMgr().getTableWriteId(tblDesc.getDatabaseName(), tblDesc.getTableName());
+        writeId = txnMgr.getTableWriteId(tblDesc.getDatabaseName(), tblDesc.getTableName());
       }
     }
     int stmtId = 0;

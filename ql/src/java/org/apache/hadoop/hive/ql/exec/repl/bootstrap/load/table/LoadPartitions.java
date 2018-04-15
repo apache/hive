@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.Context;
 import org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.util.PathUtils;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -76,16 +77,19 @@ public class LoadPartitions {
 
   private final ImportTableDesc tableDesc;
   private Table table;
+  private final HiveTxnManager txnMgr;
 
   public LoadPartitions(Context context, ReplLogger replLogger, TaskTracker tableTracker,
                         TableEvent event, String dbNameToLoadIn,
-                        TableContext tableContext) throws HiveException, IOException {
-    this(context, replLogger, tableContext, tableTracker, event, dbNameToLoadIn, null);
+                        TableContext tableContext,
+                        HiveTxnManager txnMgr) throws HiveException, IOException {
+    this(context, replLogger, tableContext, tableTracker, event, dbNameToLoadIn, null, txnMgr);
   }
 
   public LoadPartitions(Context context, ReplLogger replLogger, TableContext tableContext,
                         TaskTracker limiter, TableEvent event, String dbNameToLoadIn,
-                        AddPartitionDesc lastReplicatedPartition) throws HiveException, IOException {
+                        AddPartitionDesc lastReplicatedPartition,
+                        HiveTxnManager txnMgr) throws HiveException, IOException {
     this.tracker = new TaskTracker(limiter);
     this.event = event;
     this.context = context;
@@ -95,6 +99,7 @@ public class LoadPartitions {
 
     this.tableDesc = tableContext.overrideProperties(event.tableDesc(dbNameToLoadIn));
     this.table = ImportSemanticAnalyzer.tableIfExists(tableDesc, context.hiveDb);
+    this.txnMgr = txnMgr;
   }
 
   private String location() throws MetaException, HiveException {
@@ -244,7 +249,7 @@ public class LoadPartitions {
     LoadTableDesc loadTableWork = new LoadTableDesc(
         tmpPath, Utilities.getTableDesc(table), partSpec.getPartSpec(),
         event.replicationSpec().isReplace() ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING,
-        SessionState.get().getTxnMgr().getCurrentTxnId()
+        txnMgr.getCurrentTxnId()
     );
     loadTableWork.setInheritTableSpecs(false);
     MoveWork work = new MoveWork(new HashSet<>(), new HashSet<>(), loadTableWork, null, false);

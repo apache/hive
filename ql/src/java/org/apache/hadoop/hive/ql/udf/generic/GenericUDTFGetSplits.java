@@ -249,7 +249,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     DriverCleanup driverCleanup = new DriverCleanup(driver, txnManager, splitsAppId.toString());
     boolean needsCleanup = true;
     try {
-      CommandProcessorResponse cpr = driver.compileAndRespond(query, true);
+      CommandProcessorResponse cpr = driver.compileAndRespond(query, false);
       if (cpr.getResponseCode() != 0) {
         throw new HiveException("Failed to compile query: " + cpr.getException());
       }
@@ -508,6 +508,10 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
   private SplitLocationInfo[] makeLocationHints(TaskLocationHint hint) {
     Set<String> hosts = hint.getHosts();
+    if (hosts == null) {
+      LOG.warn("No hosts");
+      return new SplitLocationInfo[0];
+    }
     if (hosts.size() != 1) {
       LOG.warn("Bad # of locations: " + hosts.size());
     }

@@ -80,7 +80,7 @@ public class MaterializedViewRebuildSemanticAnalyzer extends CalcitePlanner {
         // Acquire lock for the given materialized view. Only one rebuild per materialized
         // view can be triggered at a given time, as otherwise we might produce incorrect
         // results if incremental maintenance is triggered.
-        HiveTxnManager txnManager = SessionState.get().getTxnMgr();
+        HiveTxnManager txnManager = getTxnMgr();
         LockState state;
         try {
           state = txnManager.acquireMaterializationRebuildLock(
