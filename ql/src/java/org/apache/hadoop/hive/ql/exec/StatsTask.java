@@ -112,6 +112,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       }
     } catch (Exception e) {
       LOG.error("Failed to run stats task", e);
+      setException(e);
       return 1;
     }
     return 0;

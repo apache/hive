@@ -465,9 +465,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           jc.close();
         }
       } catch (Exception e) {
-	LOG.warn("Failed while cleaning up ", e);
+        LOG.warn("Failed while cleaning up ", e);
       } finally {
-	HadoopJobExecHelper.runningJobs.remove(rj);
+        HadoopJobExecHelper.runningJobs.remove(rj);
       }
     }
 

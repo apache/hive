@@ -38,11 +38,13 @@ import org.apache.hadoop.hive.ql.parse.SubQueryDiagnostic;
 import org.apache.hadoop.hive.ql.plan.ExplainSQRewriteWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.io.IOUtils;
-import org.apache.hadoop.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class ExplainSQRewriteTask extends Task<ExplainSQRewriteWork> implements Serializable {
   private static final long serialVersionUID = 1L;
+  private final Logger LOG = LoggerFactory.getLogger(this.getClass().getName());
 
   @Override
   public StageType getType() {
@@ -76,8 +78,8 @@ public class ExplainSQRewriteTask extends Task<ExplainSQRewriteWork> implements 
       return (0);
     }
     catch (Exception e) {
-      console.printError("Failed with exception " + e.getMessage(),
-          "\n" + StringUtils.stringifyException(e));
+      setException(e);
+      LOG.error(org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (1);
     }
     finally {
