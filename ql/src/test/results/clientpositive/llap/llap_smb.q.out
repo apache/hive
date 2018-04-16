@@ -146,7 +146,7 @@ PREHOOK: Input: default@orc_a@y=2001/q=7
 PREHOOK: Input: default@orc_a@y=2001/q=8
 PREHOOK: Input: default@orc_a@y=2001/q=9
 PREHOOK: Input: default@orc_b
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select y,q,count(*) from orc_a a join orc_b b on a.id=b.id group by y,q
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_a
@@ -171,7 +171,7 @@ POSTHOOK: Input: default@orc_a@y=2001/q=7
 POSTHOOK: Input: default@orc_a@y=2001/q=8
 POSTHOOK: Input: default@orc_a@y=2001/q=9
 POSTHOOK: Input: default@orc_b
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 2000	2	6578
 2001	8	9438
 2000	3	6149
@@ -234,7 +234,7 @@ STAGE PLANS:
                         0 id (type: bigint)
                         1 id (type: bigint)
                       outputColumnNames: _col2, _col3
-                      Statistics: Num rows: 987 Data size: 7896 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 988 Data size: 7904 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         keys: _col2 (type: int), _col3 (type: smallint)
@@ -295,7 +295,7 @@ PREHOOK: Input: default@orc_a@y=2001/q=7
 PREHOOK: Input: default@orc_a@y=2001/q=8
 PREHOOK: Input: default@orc_a@y=2001/q=9
 PREHOOK: Input: default@orc_b
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select y,q,count(*) from orc_a a join orc_b b on a.id=b.id group by y,q
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_a
@@ -320,7 +320,7 @@ POSTHOOK: Input: default@orc_a@y=2001/q=7
 POSTHOOK: Input: default@orc_a@y=2001/q=8
 POSTHOOK: Input: default@orc_a@y=2001/q=9
 POSTHOOK: Input: default@orc_b
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 2000	2	6578
 2001	8	9438
 2000	3	6149
