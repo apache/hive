@@ -23,9 +23,8 @@ import org.apache.hive.spark.client.metrics.Metrics;
 import org.apache.hive.spark.client.rpc.RpcDispatcher;
 import org.apache.hive.spark.counter.SparkCounters;
 
-import com.google.common.base.Throwables;
 
-abstract class BaseProtocol extends RpcDispatcher {
+public abstract class BaseProtocol extends RpcDispatcher {
 
   protected static class CancelJob implements Serializable {
 
@@ -97,17 +96,17 @@ abstract class BaseProtocol extends RpcDispatcher {
 
   }
 
-  protected static class JobResult<T extends Serializable> implements Serializable {
+  public static class JobResult<T extends Serializable> implements Serializable {
 
     final String id;
     final T result;
-    final String error;
+    final Throwable error;
     final SparkCounters sparkCounters;
 
     JobResult(String id, T result, Throwable error, SparkCounters sparkCounters) {
       this.id = id;
       this.result = result;
-      this.error = error != null ? Throwables.getStackTraceAsString(error) : null;
+      this.error = error;
       this.sparkCounters = sparkCounters;
     }
 
@@ -115,6 +114,15 @@ abstract class BaseProtocol extends RpcDispatcher {
       this(null, null, null, null);
     }
 
+    @Override
+    public String toString() {
+      return "JobResult{" +
+              "id='" + id + '\'' +
+              ", result=" + result +
+              ", error=" + error +
+              ", sparkCounters=" + sparkCounters +
+              '}';
+    }
   }
 
   protected static class JobStarted implements Serializable {

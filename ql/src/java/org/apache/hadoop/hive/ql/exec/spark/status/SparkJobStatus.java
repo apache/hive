@@ -47,7 +47,9 @@ public interface SparkJobStatus {
 
   void cleanup();
 
-  Throwable getError();
+  Throwable getMonitorError();
 
-  void setError(Throwable e);
+  void setMonitorError(Throwable e);
+
+  Throwable getSparkJobException();
 }

@@ -133,8 +133,36 @@ public class TestSparkClient {
           handle.get(TIMEOUT, TimeUnit.SECONDS);
           fail("Should have thrown an exception.");
         } catch (ExecutionException ee) {
-          assertTrue(ee.getCause() instanceof SparkException);
-          assertTrue(ee.getCause().getMessage().contains("IllegalStateException: Hello"));
+          assertTrue(ee.getCause() instanceof IllegalStateException);
+          assertTrue(ee.getCause().getMessage().contains("Hello"));
+        }
+
+        // Try an invalid state transition on the handle. This ensures that the actual state
+        // change we're interested in actually happened, since internally the handle serializes
+        // state changes.
+        assertFalse(((JobHandleImpl<String>)handle).changeState(JobHandle.State.SENT));
+
+        verify(listener).onJobQueued(handle);
+        verify(listener).onJobStarted(handle);
+        verify(listener).onJobFailed(same(handle), any(Throwable.class));
+      }
+    });
+  }
+
+  @Test
+  public void testErrorJobNotSerializable() throws Exception {
+    runTest(new TestFunction() {
+      @Override
+      public void call(SparkClient client) throws Exception {
+        JobHandle.Listener<String> listener = newListener();
+        List<JobHandle.Listener<String>> listeners = Lists.newArrayList(listener);
+        JobHandle<String> handle = client.submit(new ErrorJobNotSerializable(), listeners);
+        try {
+          handle.get(TIMEOUT, TimeUnit.SECONDS);
+          fail("Should have thrown an exception.");
+        } catch (ExecutionException ee) {
+          assertTrue(ee.getCause() instanceof RuntimeException);
+          assertTrue(ee.getCause().getMessage().contains("Hello"));
         }
 
         // Try an invalid state transition on the handle. This ensures that the actual state
@@ -329,6 +357,35 @@ public class TestSparkClient {
       throw new IllegalStateException("Hello");
     }
 
+  }
+
+  private static class ErrorJobNotSerializable implements Job<String> {
+
+    private static final class NonSerializableException extends Exception {
+
+      private static final long serialVersionUID = 2548414562750016219L;
+
+      private final NonSerializableObject nonSerializableObject;
+
+      private NonSerializableException(String content) {
+        super("Hello");
+        this.nonSerializableObject = new NonSerializableObject(content);
+      }
+    }
+
+    private static final class NonSerializableObject {
+
+      String content;
+
+      private NonSerializableObject(String content) {
+        this.content = content;
+      }
+    }
+
+    @Override
+    public String call(JobContext jc) throws NonSerializableException {
+      throw new NonSerializableException("Hello");
+    }
   }
 
   private static class SparkJob implements Job<Long> {

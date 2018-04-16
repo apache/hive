@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.base.Throwables;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -181,10 +183,17 @@ public class LocalSparkJobStatus implements SparkJobStatus {
   }
 
   @Override
-  public Throwable getError() {
-    if (error != null) {
-      return error;
-    }
+  public Throwable getMonitorError() {
+    return error;
+  }
+
+  @Override
+  public void setMonitorError(Throwable e) {
+    this.error = e;
+  }
+
+  @Override
+  public Throwable getSparkJobException() {
     if (future.isDone()) {
       try {
         future.get();
@@ -193,11 +202,6 @@ public class LocalSparkJobStatus implements SparkJobStatus {
       }
     }
     return null;
-  }
-
-  @Override
-  public void setError(Throwable e) {
-    this.error = e;
   }
 
   private SparkJobInfo getJobInfo() {
