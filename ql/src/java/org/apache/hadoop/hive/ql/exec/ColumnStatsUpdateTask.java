@@ -300,6 +300,7 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       Hive db = getHive();
       return persistColumnStats(db);
     } catch (Exception e) {
+      setException(e);
       LOG.info("Failed to persist stats in metastore", e);
     }
     return 1;

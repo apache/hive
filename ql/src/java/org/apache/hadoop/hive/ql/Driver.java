@@ -2389,7 +2389,11 @@ public class Driver implements IDriver {
     if(downstreamError != null) {
       //here we assume that upstream code may have parametrized the msg from ErrorMsg
       //so we want to keep it
-      errorMessage += ". " + downstreamError.getMessage();
+      if (downstreamError.getMessage() != null) {
+        errorMessage += ". " + downstreamError.getMessage();
+      } else {
+        errorMessage += ". " + org.apache.hadoop.util.StringUtils.stringifyException(downstreamError);
+      }
     }
     else {
       ErrorMsg em = ErrorMsg.getErrorMsg(exitVal);
