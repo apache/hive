@@ -97,6 +97,7 @@
         <include>spark-client/**/*</include>
         <include>storage-api/**/*</include>
         <include>standalone-metastore/**/*</include>
+        <include>streaming/**/*</include>
         <include>testutils/**/*</include>
         <include>vector-code-gen/**/*</include>
         <include>kryo-registrator/**/*</include>
