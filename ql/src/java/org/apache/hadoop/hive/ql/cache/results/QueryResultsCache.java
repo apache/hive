@@ -43,6 +43,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Supplier;
 
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
@@ -52,17 +53,21 @@ import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
 import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsVariable;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.Entity.Type;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
 import org.apache.hadoop.hive.ql.parse.TableAccessInfo;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
+import org.apache.hive.common.util.TxnIdUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,10 +81,12 @@ public final class QueryResultsCache {
 
   public static class LookupInfo {
     private String queryText;
+    private Supplier<ValidTxnWriteIdList> txnWriteIdListProvider;
 
-    public LookupInfo(String queryText) {
+    public LookupInfo(String queryText, Supplier<ValidTxnWriteIdList> txnWriteIdListProvider) {
       super();
       this.queryText = queryText;
+      this.txnWriteIdListProvider = txnWriteIdListProvider;
     }
 
     public String getQueryText() {
@@ -174,6 +181,7 @@ public final class QueryResultsCache {
     private AtomicInteger readers = new AtomicInteger(0);
     private ScheduledFuture<?> invalidationFuture = null;
     private volatile CacheEntryStatus status = CacheEntryStatus.PENDING;
+    private ValidTxnWriteIdList txnWriteIdList;
 
     public void releaseReader() {
       int readerCount = 0;
@@ -389,15 +397,20 @@ public final class QueryResultsCache {
 
     LOG.debug("QueryResultsCache lookup for query: {}", request.queryText);
 
-	boolean foundPending = false;
+    boolean foundPending = false;
+    // Cannot entries while we currently hold read lock, so keep track of them to delete later.
+    Set<CacheEntry> entriesToRemove = new HashSet<CacheEntry>();
     Lock readLock = rwLock.readLock();
     try {
+      // Note: ReentrantReadWriteLock deos not allow upgrading a read lock to a write lock.
+      // Care must be taken while under read lock, to make sure we do not perform any actions
+      // which attempt to take a write lock.
       readLock.lock();
       Set<CacheEntry> candidates = queryMap.get(request.queryText);
       if (candidates != null) {
         CacheEntry pendingResult = null;
         for (CacheEntry candidate : candidates) {
-          if (entryMatches(request, candidate)) {
+          if (entryMatches(request, candidate, entriesToRemove)) {
             CacheEntryStatus entryStatus = candidate.status;
             if (entryStatus == CacheEntryStatus.VALID) {
               result = candidate;
@@ -420,6 +433,11 @@ public final class QueryResultsCache {
       }
     } finally {
       readLock.unlock();
+    }
+
+    // Now that we have exited read lock it is safe to remove any invalid entries.
+    for (CacheEntry invalidEntry : entriesToRemove) {
+      removeEntry(invalidEntry);
     }
 
     LOG.debug("QueryResultsCache lookup result: {}", result);
@@ -477,7 +495,7 @@ public final class QueryResultsCache {
    * @param fetchWork
    * @return
    */
-  public boolean setEntryValid(CacheEntry cacheEntry, FetchWork fetchWork) {
+  public boolean setEntryValid(CacheEntry cacheEntry, FetchWork fetchWork, ValidTxnWriteIdList txnWriteIdList) {
     String queryText = cacheEntry.getQueryText();
     boolean dataDirMoved = false;
     Path queryResultsPath = null;
@@ -527,6 +545,7 @@ public final class QueryResultsCache {
         cacheEntry.size = resultSize;
         this.cacheSize += resultSize;
         cacheEntry.createTime = System.currentTimeMillis();
+        cacheEntry.txnWriteIdList = txnWriteIdList;
 
         cacheEntry.setStatus(CacheEntryStatus.VALID);
         // Mark this entry as being in use. Caller will need to release later.
@@ -601,7 +620,15 @@ public final class QueryResultsCache {
   private static final float LRU_LOAD_FACTOR = 0.75f;
   private static final CacheEntry[] EMPTY_CACHEENTRY_ARRAY = {};
 
-  private boolean entryMatches(LookupInfo lookupInfo, CacheEntry entry) {
+  /**
+   * Check that the cache entry matches the lookupInfo.
+   * @param lookupInfo
+   * @param entry
+   * @param entriesToRemove Set of entries to be removed after exiting read lock section.
+   *                        If the entry is found to be invalid it will be added to this set.
+   * @return
+   */
+  private boolean entryMatches(LookupInfo lookupInfo, CacheEntry entry, Set<CacheEntry> entriesToRemove) {
     QueryInfo queryInfo = entry.getQueryInfo();
     for (ReadEntity readEntity : queryInfo.getInputs()) {
       // Check that the tables used do not resolve to temp tables.
@@ -613,6 +640,34 @@ public final class QueryResultsCache {
           LOG.info("{} resolves to a temporary table in the current session. This query cannot use the cache.",
               tableUsed.getTableName());
           return false;
+        }
+
+        // Has the table changed since the query was cached?
+        // For transactional tables, can compare the table writeIDs of the current/cached query.
+        if (AcidUtils.isTransactionalTable(tableUsed)) {
+          boolean writeIdCheckPassed = false;
+          String tableName = tableUsed.getFullyQualifiedName();
+          ValidTxnWriteIdList currentTxnWriteIdList = lookupInfo.txnWriteIdListProvider.get();
+          ValidWriteIdList currentWriteIdForTable =
+              currentTxnWriteIdList.getTableValidWriteIdList(tableName);
+          ValidWriteIdList cachedWriteIdForTable = entry.txnWriteIdList.getTableValidWriteIdList(tableName);
+
+          LOG.debug("Checking writeIds for table {}: currentWriteIdForTable {}, cachedWriteIdForTable {}",
+              tableName, currentWriteIdForTable, cachedWriteIdForTable);
+          if (currentWriteIdForTable != null && cachedWriteIdForTable != null) {
+            if (TxnIdUtils.checkEquivalentWriteIds(currentWriteIdForTable, cachedWriteIdForTable)) {
+              writeIdCheckPassed = true;
+            }
+          }
+
+          if (!writeIdCheckPassed) {
+            LOG.debug("Cached query no longer valid due to table {}", tableUsed.getFullyQualifiedName());
+            // We can invalidate the entry now, but calling removeEntry() requires a write lock
+            // and we may already have read lock taken now. Add to entriesToRemove to delete later.
+            entriesToRemove.add(entry);
+            entry.invalidate();
+            return false;
+          }
         }
       }
     }

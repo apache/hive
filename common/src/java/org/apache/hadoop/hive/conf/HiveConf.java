@@ -4268,6 +4268,10 @@ public class HiveConf extends Configuration {
         "If the query results cache is enabled. This will keep results of previously executed queries " +
         "to be reused if the same query is executed again."),
 
+    HIVE_QUERY_RESULTS_CACHE_NONTRANSACTIONAL_TABLES_ENABLED("hive.query.results.cache.nontransactional.tables.enabled", false,
+        "If the query results cache is enabled for queries involving non-transactional tables." +
+        "Users who enable this setting should be willing to tolerate some amount of stale results in the cache."),
+
     HIVE_QUERY_RESULTS_CACHE_WAIT_FOR_PENDING_RESULTS("hive.query.results.cache.wait.for.pending.results", true,
         "Should a query wait for the pending results of an already running query, " +
         "in order to use the cached result when it becomes ready"),

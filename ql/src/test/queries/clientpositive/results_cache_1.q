@@ -1,5 +1,6 @@
 
 set hive.query.results.cache.enabled=true;
+set hive.query.results.cache.nontransactional.tables.enabled=true;
 
 explain
 select count(*) from src a join src b on (a.key = b.key);

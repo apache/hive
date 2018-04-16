@@ -1,5 +1,6 @@
 
 set hive.query.results.cache.enabled=true;
+set hive.query.results.cache.nontransactional.tables.enabled=true;
 set hive.fetch.task.conversion=more;
 
 -- Test 1: fetch task
