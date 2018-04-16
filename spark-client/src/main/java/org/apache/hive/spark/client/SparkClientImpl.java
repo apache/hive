@@ -38,7 +38,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.Writer;
 import java.net.URI;
@@ -64,7 +63,6 @@ import org.apache.hive.spark.client.rpc.Rpc;
 import org.apache.hive.spark.client.rpc.RpcConfiguration;
 import org.apache.hive.spark.client.rpc.RpcServer;
 import org.apache.spark.SparkContext;
-import org.apache.spark.SparkException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -592,7 +590,7 @@ class SparkClientImpl implements SparkClient {
       if (handle != null) {
         LOG.info("Received result for {}", msg.id);
         handle.setSparkCounters(msg.sparkCounters);
-        Throwable error = msg.error != null ? new SparkException(msg.error) : null;
+        Throwable error = msg.error;
         if (error == null) {
           handle.setSuccess(msg.result);
         } else {

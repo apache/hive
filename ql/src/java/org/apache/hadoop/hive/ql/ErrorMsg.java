@@ -584,8 +584,8 @@ public enum ErrorMsg {
 
   //========================== 40000 range starts here ========================//
 
-  SPARK_JOB_RUNTIME_ERROR(40001,
-      "Spark job failed during runtime. Please check stacktrace for the root cause.")
+  SPARK_JOB_RUNTIME_ERROR(40001, "Spark job failed due to: {0}", true),
+  SPARK_TASK_RUNTIME_ERROR(40002, "Spark job failed due to task failures: {0}", true)
   ;
 
   private int errorCode;
