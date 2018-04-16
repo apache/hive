@@ -2132,58 +2132,92 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     try {
       HiveMetaStoreChecker checker = new HiveMetaStoreChecker(db);
       String[] names = Utilities.getDbTableName(msckDesc.getTableName());
+
+      // checkMetastore call will fill in result with partitions that are present in filesystem
+      // and missing in metastore - accessed through getPartitionsNotInMs
+      // And partitions that are not present in filesystem and metadata exists in metastore -
+      // accessed through getPartitionNotOnFS
       checker.checkMetastore(names[0], names[1], msckDesc.getPartSpecs(), result);
       Set<CheckResult.PartitionResult> partsNotInMs = result.getPartitionsNotInMs();
-      if (msckDesc.isRepairPartitions() && !partsNotInMs.isEmpty()) {
-        AbstractList<String> vals = null;
-        String settingStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION);
-        boolean doValidate = !("ignore".equals(settingStr));
-        boolean doSkip = doValidate && "skip".equals(settingStr);
-        // The default setting is "throw"; assume doValidate && !doSkip means throw.
-        if (doValidate) {
-          // Validate that we can add partition without escaping. Escaping was originally intended
-          // to avoid creating invalid HDFS paths; however, if we escape the HDFS path (that we
-          // deem invalid but HDFS actually supports - it is possible to create HDFS paths with
-          // unprintable characters like ASCII 7), metastore will create another directory instead
-          // of the one we are trying to "repair" here.
-          Iterator<CheckResult.PartitionResult> iter = partsNotInMs.iterator();
-          while (iter.hasNext()) {
-            CheckResult.PartitionResult part = iter.next();
-            try {
-              vals = Warehouse.makeValsFromName(part.getPartitionName(), vals);
-            } catch (MetaException ex) {
-              throw new HiveException(ex);
-            }
-            for (String val : vals) {
-              String escapedPath = FileUtils.escapePathName(val);
-              assert escapedPath != null;
-              if (escapedPath.equals(val)) {
-                continue;
+      Set<CheckResult.PartitionResult> partsNotInFs = result.getPartitionsNotOnFs();
+
+      if (msckDesc.isRepairPartitions()) {
+        // Repair metadata in HMS
+
+        Table table = db.getTable(msckDesc.getTableName());
+        int maxRetries = conf.getIntVar(ConfVars.HIVE_MSCK_REPAIR_BATCH_MAX_RETRIES);
+        int decayingFactor = 2;
+
+        if (msckDesc.isAddPartitions() && !partsNotInMs.isEmpty()) {
+          // MSCK called to add missing paritions into metastore and there are
+          // missing partitions.
+
+          int batchSize = conf.getIntVar(ConfVars.HIVE_MSCK_REPAIR_BATCH_SIZE);
+          if (batchSize == 0) {
+            //batching is not enabled. Try to add all the partitions in one call
+            batchSize = partsNotInMs.size();
+          }
+
+          AbstractList<String> vals = null;
+          String settingStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_MSCK_PATH_VALIDATION);
+          boolean doValidate = !("ignore".equals(settingStr));
+          boolean doSkip = doValidate && "skip".equals(settingStr);
+          // The default setting is "throw"; assume doValidate && !doSkip means throw.
+          if (doValidate) {
+            // Validate that we can add partition without escaping. Escaping was originally intended
+            // to avoid creating invalid HDFS paths; however, if we escape the HDFS path (that we
+            // deem invalid but HDFS actually supports - it is possible to create HDFS paths with
+            // unprintable characters like ASCII 7), metastore will create another directory instead
+            // of the one we are trying to "repair" here.
+            Iterator<CheckResult.PartitionResult> iter = partsNotInMs.iterator();
+            while (iter.hasNext()) {
+              CheckResult.PartitionResult part = iter.next();
+              try {
+                vals = Warehouse.makeValsFromName(part.getPartitionName(), vals);
+              } catch (MetaException ex) {
+                throw new HiveException(ex);
               }
-              String errorMsg = "Repair: Cannot add partition " + msckDesc.getTableName()
-                  + ':' + part.getPartitionName() + " due to invalid characters in the name";
-              if (doSkip) {
-                repairOutput.add(errorMsg);
-                iter.remove();
-              } else {
-                throw new HiveException(errorMsg);
+              for (String val : vals) {
+                String escapedPath = FileUtils.escapePathName(val);
+                assert escapedPath != null;
+                if (escapedPath.equals(val)) {
+                  continue;
+                }
+                String errorMsg = "Repair: Cannot add partition " + msckDesc.getTableName() + ':' +
+                    part.getPartitionName() + " due to invalid characters in the name";
+                if (doSkip) {
+                  repairOutput.add(errorMsg);
+                  iter.remove();
+                } else {
+                  throw new HiveException(errorMsg);
+                }
               }
             }
           }
+          try {
+            createPartitionsInBatches(db, repairOutput, partsNotInMs, table, batchSize,
+                decayingFactor, maxRetries);
+          } catch (Exception e) {
+            throw new HiveException(e);
+          }
         }
-        Table table = db.getTable(msckDesc.getTableName());
-        int batchSize = conf.getIntVar(ConfVars.HIVE_MSCK_REPAIR_BATCH_SIZE);
-        int maxRetries = conf.getIntVar(ConfVars.HIVE_MSCK_REPAIR_BATCH_MAX_RETRIES);
-        int decayingFactor = 2;
-        if (batchSize == 0) {
-          //batching is not enabled. Try to add all the partitions in one call
-          batchSize = partsNotInMs.size();
-        }
-        try {
-          createPartitionsInBatches(db, repairOutput, partsNotInMs, table, batchSize,
-              decayingFactor, maxRetries);
-        } catch (Exception e) {
-          throw new HiveException(e);
+
+        if (msckDesc.isDropPartitions() && !partsNotInFs.isEmpty()) {
+          // MSCK called to drop stale paritions from metastore and there are
+          // stale partitions.
+
+          int batchSize = conf.getIntVar(ConfVars.HIVE_MSCK_REPAIR_BATCH_SIZE);
+          if (batchSize == 0) {
+            //batching is not enabled. Try to drop all the partitions in one call
+            batchSize = partsNotInFs.size();
+          }
+
+          try {
+            dropPartitionsInBatches(db, repairOutput, partsNotInFs, table, batchSize,
+                decayingFactor, maxRetries);
+          } catch (Exception e) {
+            throw new HiveException(e);
+          }
         }
       }
     } catch (HiveException e) {
@@ -2267,6 +2301,67 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           // if last batch is successful remove it from partsNotInMs
           batchWork.removeAll(lastBatch);
           repairOutput.addAll(addMsgs);
+        }
+        return null;
+      }
+    }.run();
+  }
+
+  // Drops partitions in batches.  partNotInFs is split into batches based on batchSize
+  // and dropped.  The dropping will be through RetryUtilities which will retry when there is a
+  // failure after reducing the batchSize by decayingFactor.  Retrying will cease when maxRetries
+  // limit is reached or batchSize reduces to 0, whichever comes earlier.
+  @VisibleForTesting
+  void dropPartitionsInBatches(Hive db, List<String> repairOutput,
+      Set<CheckResult.PartitionResult> partsNotInFs, Table table, int batchSize, int decayingFactor,
+      int maxRetries) throws Exception {
+    String dropMsgFormat =
+        "Repair: Dropped partition from metastore " + table.getFullyQualifiedName() + ":%s";
+    // Copy of partitions that will be split into batches
+    Set<CheckResult.PartitionResult> batchWork = new HashSet<>(partsNotInFs);
+
+    new RetryUtilities.ExponentiallyDecayingBatchWork<Void>(batchSize, decayingFactor, maxRetries) {
+      @Override
+      public Void execute(int size) throws Exception {
+        while (!batchWork.isEmpty()) {
+          int currentBatchSize = size;
+
+          // to store the partitions that are currently being processed
+          List<CheckResult.PartitionResult> lastBatch = new ArrayList<>(currentBatchSize);
+
+          // drop messages for the dropped partitions
+          List<String> dropMsgs = new ArrayList<>(currentBatchSize);
+
+          // Partitions to be dropped
+          List<String> dropParts = new ArrayList<>(currentBatchSize);
+
+          for (CheckResult.PartitionResult part : batchWork) {
+            // This batch is full: break out of for loop to execute
+            if (currentBatchSize == 0) {
+              break;
+            }
+
+            dropParts.add(part.getPartitionName());
+
+            // Add the part to lastBatch to track the parition being dropped
+            lastBatch.add(part);
+
+            // Update messages
+            dropMsgs.add(String.format(dropMsgFormat, part.getPartitionName()));
+
+            // Decrement batch size.  When this gets to 0, the batch will be executed
+            currentBatchSize--;
+          }
+
+          // this call is deleting partitions that are already missing from filesystem
+          // so 3rd parameter (deleteData) is set to false
+          // msck is doing a clean up of hms.  if for some reason the partition is already
+          // deleted, then it is good.  So, the last parameter ifexists is set to true
+          db.dropPartitions(table, dropParts, false, true);
+
+          // if last batch is successful remove it from partsNotInFs
+          batchWork.removeAll(lastBatch);
+          repairOutput.addAll(dropMsgs);
         }
         return null;
       }
