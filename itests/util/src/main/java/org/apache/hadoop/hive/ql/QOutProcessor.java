@@ -110,7 +110,8 @@ public class QOutProcessor {
       ".*at com\\.jolbox.*",
       ".*at com\\.zaxxer.*",
       "org\\.apache\\.hadoop\\.hive\\.metastore\\.model\\.MConstraint@([0-9]|[a-z])*",
-      "^Repair: Added partition to metastore.*"
+      "^Repair: Added partition to metastore.*",
+      "^Repair: Dropped partition from metastore.*"
   });
 
   public QOutProcessor(FsType fsType) {
