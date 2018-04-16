@@ -3,6 +3,7 @@ set hive.mapred.mode=nonstrict;
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
 
 set hive.query.results.cache.enabled=true;
+set hive.query.results.cache.nontransactional.tables.enabled=true;
 
 create table masking_test as select cast(key as int) as key, value from src;
 

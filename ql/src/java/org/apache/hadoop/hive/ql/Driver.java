@@ -1977,9 +1977,14 @@ public class Driver implements IDriver {
         PerfLogger perfLogger = SessionState.getPerfLogger();
         perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SAVE_TO_RESULTS_CACHE);
 
+        ValidTxnWriteIdList txnWriteIdList = null;
+        if (plan.hasAcidResourcesInQuery()) {
+          txnWriteIdList = AcidUtils.getValidTxnWriteIdList(conf);
+        }
         boolean savedToCache = QueryResultsCache.getInstance().setEntryValid(
             cacheUsage.getCacheEntry(),
-            plan.getFetchTask().getWork());
+            plan.getFetchTask().getWork(),
+            txnWriteIdList);
         LOG.info("savedToCache: {}", savedToCache);
         if (savedToCache) {
           useFetchFromCache(cacheUsage.getCacheEntry());

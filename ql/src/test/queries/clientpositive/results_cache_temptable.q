@@ -1,4 +1,5 @@
 set hive.query.results.cache.enabled=true;
+set hive.query.results.cache.nontransactional.tables.enabled=true;
 
 create table rct (key string, value string);
 load data local inpath '../../data/files/kv1.txt' overwrite into table rct;
