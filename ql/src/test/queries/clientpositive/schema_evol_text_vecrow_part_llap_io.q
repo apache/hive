@@ -40,12 +40,12 @@ select insert_num,part,a,b from part_add_int_permute_select;
 select insert_num,part,a,b from part_add_int_permute_select;
 
 -- Table-Non-Cascade ADD COLUMNS ...
---** alter table part_add_int_permute_select add columns(c int);
+alter table part_add_int_permute_select add columns(c int);
 
---** insert into table part_add_int_permute_select partition(part=1) VALUES (2, 2222, 'new', 3333);
+insert into table part_add_int_permute_select partition(part=1) VALUES (2, 2222, 'new', 3333);
 
---** explain vectorization detail
---** select insert_num,part,a,b from part_add_int_permute_select;
+explain vectorization detail
+select insert_num,part,a,b from part_add_int_permute_select;
 
 -- SELECT permutation columns to make sure NULL defaulting works right
 --** select insert_num,part,a,b from part_add_int_permute_select;
@@ -68,12 +68,12 @@ select insert_num,part,a,b from part_add_int_string_permute_select;
 select insert_num,part,a,b from part_add_int_string_permute_select;
 
 -- Table-Non-Cascade ADD COLUMNS ...
---** alter table part_add_int_string_permute_select add columns(c int, d string);
+alter table part_add_int_string_permute_select add columns(c int, d string);
 
---** insert into table part_add_int_string_permute_select partition(part=1) VALUES (2, 2222, 'new', 3333, '4444');
+insert into table part_add_int_string_permute_select partition(part=1) VALUES (2, 2222, 'new', 3333, '4444');
 
---** explain vectorization detail
---** select insert_num,part,a,b from part_add_int_string_permute_select;
+explain vectorization detail
+select insert_num,part,a,b from part_add_int_string_permute_select;
 
 -- SELECT permutation columns to make sure NULL defaulting works right
 --** select insert_num,part,a,b from part_add_int_string_permute_select;
@@ -105,12 +105,12 @@ select insert_num,part,c1,c2,c3,b from part_change_string_group_double;
 select insert_num,part,c1,c2,c3,b from part_change_string_group_double;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
---** alter table part_change_string_group_double replace columns (insert_num int, c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, b STRING);
+alter table part_change_string_group_double replace columns (insert_num int, c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, b STRING);
 
---** insert into table part_change_string_group_double partition(part=1) SELECT insert_num, double1, double1, double1, 'new' FROM schema_evolution_data WHERE insert_num = 111;
+insert into table part_change_string_group_double partition(part=1) SELECT insert_num, double1, double1, double1, 'new' FROM schema_evolution_data WHERE insert_num = 111;
 
---** explain vectorization detail
---** select insert_num,part,c1,c2,c3,b from part_change_string_group_double;
+explain vectorization detail
+select insert_num,part,c1,c2,c3,b from part_change_string_group_double;
 
 --** select insert_num,part,c1,c2,c3,b from part_change_string_group_double;
 
@@ -133,12 +133,12 @@ select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_date_gr
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_date_group_string_group_date_timestamp;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
---** alter table part_change_date_group_string_group_date_timestamp replace columns(insert_num int, c1 STRING, c2 CHAR(50), c3 CHAR(15), c4 VARCHAR(50), c5 VARCHAR(15), c6 STRING, c7 CHAR(50), c8 CHAR(15), c9 VARCHAR(50), c10 VARCHAR(15), b STRING);
+alter table part_change_date_group_string_group_date_timestamp replace columns(insert_num int, c1 STRING, c2 CHAR(50), c3 CHAR(15), c4 VARCHAR(50), c5 VARCHAR(15), c6 STRING, c7 CHAR(50), c8 CHAR(15), c9 VARCHAR(50), c10 VARCHAR(15), b STRING);
 
---** insert into table part_change_date_group_string_group_date_timestamp partition(part=1) VALUES (111, 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'new');
+insert into table part_change_date_group_string_group_date_timestamp partition(part=1) VALUES (111, 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'new');
 
---** explain vectorization detail
---** select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_date_group_string_group_date_timestamp;
+explain vectorization detail
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_date_group_string_group_date_timestamp;
 
 --** select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_date_group_string_group_date_timestamp;
 
@@ -176,20 +176,20 @@ select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c1
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
---** alter table part_change_numeric_group_string_group_multi_ints_string_group replace columns (insert_num int,
---**              c1 STRING, c2 STRING, c3 STRING, c4 STRING,
---**              c5 CHAR(50), c6 CHAR(50), c7 CHAR(50), c8 CHAR(50), c9 CHAR(5), c10 CHAR(5), c11 CHAR(5), c12 CHAR(5),
---**              c13 VARCHAR(50), c14 VARCHAR(50), c15 VARCHAR(50), c16 VARCHAR(50), c17 VARCHAR(5), c18 VARCHAR(5), c19 VARCHAR(5), c20 VARCHAR(5),
---**              b STRING) ;
+alter table part_change_numeric_group_string_group_multi_ints_string_group replace columns (insert_num int,
+             c1 STRING, c2 STRING, c3 STRING, c4 STRING,
+             c5 CHAR(50), c6 CHAR(50), c7 CHAR(50), c8 CHAR(50), c9 CHAR(5), c10 CHAR(5), c11 CHAR(5), c12 CHAR(5),
+             c13 VARCHAR(50), c14 VARCHAR(50), c15 VARCHAR(50), c16 VARCHAR(50), c17 VARCHAR(5), c18 VARCHAR(5), c19 VARCHAR(5), c20 VARCHAR(5),
+             b STRING) ;
 
---** insert into table part_change_numeric_group_string_group_multi_ints_string_group partition(part=1) VALUES (111,
---**             'filler', 'filler', 'filler', 'filler',
---**             'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
---**             'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
---**             'new');
+insert into table part_change_numeric_group_string_group_multi_ints_string_group partition(part=1) VALUES (111,
+            'filler', 'filler', 'filler', 'filler',
+            'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
+            'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
+            'new');
 
---** explain vectorization detail
---** select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group;
+explain vectorization detail
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group;
 
 --** select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from part_change_numeric_group_string_group_multi_ints_string_group;
 
@@ -222,20 +222,20 @@ select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
---** alter table part_change_numeric_group_string_group_floating_string_group replace columns (insert_num int,
---**               c1 STRING, c2 STRING, c3 STRING,
---**               c4 CHAR(50), c5 CHAR(50), c6 CHAR(50), c7 CHAR(7), c8 CHAR(7), c9 CHAR(7),
---**               c10 VARCHAR(50), c11 VARCHAR(50), c12 VARCHAR(50), c13 VARCHAR(7), c14 VARCHAR(7), c15 VARCHAR(7),
---**               b STRING);
+alter table part_change_numeric_group_string_group_floating_string_group replace columns (insert_num int,
+              c1 STRING, c2 STRING, c3 STRING,
+              c4 CHAR(50), c5 CHAR(50), c6 CHAR(50), c7 CHAR(7), c8 CHAR(7), c9 CHAR(7),
+              c10 VARCHAR(50), c11 VARCHAR(50), c12 VARCHAR(50), c13 VARCHAR(7), c14 VARCHAR(7), c15 VARCHAR(7),
+              b STRING);
 
---** insert into table part_change_numeric_group_string_group_floating_string_group partition(part=1) VALUES (111,
---**              'filler', 'filler', 'filler',
---**              'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
---**              'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
---**              'new');
+insert into table part_change_numeric_group_string_group_floating_string_group partition(part=1) VALUES (111,
+             'filler', 'filler', 'filler',
+             'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
+             'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
+             'new');
 
---** explain vectorization detail
---** select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group;
+explain vectorization detail
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group;
 
 --** select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from part_change_numeric_group_string_group_floating_string_group;
 
@@ -268,19 +268,19 @@ select insert_num,part,c1,c2,c3,c4,b from part_change_string_group_string_group_
 select insert_num,part,c1,c2,c3,c4,b from part_change_string_group_string_group_string;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
---** alter table part_change_string_group_string_group_string replace columns (insert_num int,
---**            c1 CHAR(50), c2 CHAR(9), c3 VARCHAR(50), c4 CHAR(9),
---**            c5 VARCHAR(50), c6 VARCHAR(9), c7 STRING,
---**            c8 CHAR(50), c9 CHAR(9), c10 STRING, b STRING) ;
+alter table part_change_string_group_string_group_string replace columns (insert_num int,
+           c1 CHAR(50), c2 CHAR(9), c3 VARCHAR(50), c4 CHAR(9),
+           c5 VARCHAR(50), c6 VARCHAR(9), c7 STRING,
+           c8 CHAR(50), c9 CHAR(9), c10 STRING, b STRING) ;
 
---** insert into table part_change_string_group_string_group_string partition(part=1) VALUES (111,
---**           'filler', 'filler', 'filler', 'filler',
---**           'filler', 'filler', 'filler',
---**           'filler', 'filler', 'filler',
---**           'new');
+insert into table part_change_string_group_string_group_string partition(part=1) VALUES (111,
+          'filler', 'filler', 'filler', 'filler',
+          'filler', 'filler', 'filler',
+          'filler', 'filler', 'filler',
+          'new');
 
---** explain vectorization detail
---** select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_string_group_string_group_string;
+explain vectorization detail
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_string_group_string_group_string;
 
 --** select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from part_change_string_group_string_group_string;
 
@@ -318,22 +318,22 @@ select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c1
 select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
---** alter table part_change_lower_to_higher_numeric_group_tinyint_to_bigint replace columns (insert_num int,
---**              c1 SMALLINT, c2 INT, c3 BIGINT, c4 decimal(38,18), c5 FLOAT, c6 DOUBLE,
---**              c7 INT, c8 BIGINT, c9 decimal(38,18), c10 FLOAT, c11 DOUBLE,
---**              c12 BIGINT, c13 decimal(38,18), c14 FLOAT, c15 DOUBLE,
---**              c16 decimal(38,18), c17 FLOAT, c18 DOUBLE,
---**              b STRING) ;
+alter table part_change_lower_to_higher_numeric_group_tinyint_to_bigint replace columns (insert_num int,
+             c1 SMALLINT, c2 INT, c3 BIGINT, c4 decimal(38,18), c5 FLOAT, c6 DOUBLE,
+             c7 INT, c8 BIGINT, c9 decimal(38,18), c10 FLOAT, c11 DOUBLE,
+             c12 BIGINT, c13 decimal(38,18), c14 FLOAT, c15 DOUBLE,
+             c16 decimal(38,18), c17 FLOAT, c18 DOUBLE,
+             b STRING) ;
 
---** insert into table part_change_lower_to_higher_numeric_group_tinyint_to_bigint partition(part=1) VALUES (111,
---**             7000, 80000, 90000000, 1234.5678, 9876.543, 789.321,
---**             80000, 90000000, 1234.5678, 9876.543, 789.321,
---**             90000000, 1234.5678, 9876.543, 789.321,
---**             1234.5678, 9876.543, 789.321,
---**            'new');
+insert into table part_change_lower_to_higher_numeric_group_tinyint_to_bigint partition(part=1) VALUES (111,
+            7000, 80000, 90000000, 1234.5678, 9876.543, 789.321,
+            80000, 90000000, 1234.5678, 9876.543, 789.321,
+            90000000, 1234.5678, 9876.543, 789.321,
+            1234.5678, 9876.543, 789.321,
+           'new');
 
---** explain vectorization detail
---** select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint;
+explain vectorization detail
+select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint;
 
 --** select insert_num,part,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,b from part_change_lower_to_higher_numeric_group_tinyint_to_bigint;
 
@@ -362,12 +362,12 @@ select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group
 select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float;
 
 -- Table-Non-Cascade CHANGE COLUMNS ...
---** alter table part_change_lower_to_higher_numeric_group_decimal_to_float replace columns (insert_num int, c1 float, c2 double, c3 DOUBLE, b STRING) ;
+alter table part_change_lower_to_higher_numeric_group_decimal_to_float replace columns (insert_num int, c1 float, c2 double, c3 DOUBLE, b STRING) ;
 
---** insert into table part_change_lower_to_higher_numeric_group_decimal_to_float partition(part=1) VALUES (111, 1234.5678, 9876.543, 1234.5678, 'new');
+insert into table part_change_lower_to_higher_numeric_group_decimal_to_float partition(part=1) VALUES (111, 1234.5678, 9876.543, 1234.5678, 'new');
 
---** explain vectorization detail
---** select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float;
+explain vectorization detail
+select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float;
 
 --** select insert_num,part,c1,c2,c3,b from part_change_lower_to_higher_numeric_group_decimal_to_float;
 
