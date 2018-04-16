@@ -50,6 +50,7 @@
     <module>serde</module>
     <module>service-rpc</module>
     <module>service</module>
+    <module>streaming</module>
     <module>llap-common</module>
     <module>llap-client</module>
     <module>llap-ext-client</module>
