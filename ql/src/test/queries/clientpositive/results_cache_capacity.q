@@ -1,5 +1,6 @@
 
 set hive.query.results.cache.enabled=true;
+set hive.query.results.cache.nontransactional.tables.enabled=true;
 
 -- Allow results cache to hold entries up to 125 bytes
 -- The single row queries are small enough to fit in the cache (103 bytes)
