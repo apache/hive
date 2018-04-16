@@ -110,6 +110,25 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
       "highestWriteId:" + highestWriteId;
   }
 
+  @Override
+  public int hashCode() {
+    int result = 17;
+    result = 31 * result + this.getFullPartitionName().hashCode();
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == this) {
+      return true;
+    }
+    if (!(obj instanceof CompactionInfo)) {
+      return false;
+    }
+    CompactionInfo info = (CompactionInfo) obj;
+    return this.compareTo(info) == 0;
+  }
+
   /**
    * loads object from a row in Select * from COMPACTION_QUEUE
    * @param rs ResultSet after call to rs.next()

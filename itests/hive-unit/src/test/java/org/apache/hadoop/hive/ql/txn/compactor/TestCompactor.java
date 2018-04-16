@@ -1311,6 +1311,24 @@ public class TestCompactor {
         3141, orcReader.getCompressionSize());
   }
 
+  @Test
+  public void testCompactionInfoEquals() {
+    CompactionInfo compactionInfo = new CompactionInfo("dbName", "tableName", "partName", CompactionType.MINOR);
+    CompactionInfo compactionInfo1 = new CompactionInfo("dbName", "tableName", "partName", CompactionType.MINOR);
+    Assert.assertTrue("The object must be equal", compactionInfo.equals(compactionInfo));
+
+    Assert.assertFalse("The object must be not equal", compactionInfo.equals(new Object()));
+    Assert.assertTrue("The object must be equal", compactionInfo.equals(compactionInfo1));
+  }
+
+  @Test
+  public void testCompactionInfoHashCode() {
+    CompactionInfo compactionInfo = new CompactionInfo("dbName", "tableName", "partName", CompactionType.MINOR);
+    CompactionInfo compactionInfo1 = new CompactionInfo("dbName", "tableName", "partName", CompactionType.MINOR);
+
+    Assert.assertEquals("The hash codes must be equal", compactionInfo.hashCode(), compactionInfo1.hashCode());
+  }
+
   private void writeBatch(StreamingConnection connection, DelimitedInputWriter writer,
                           boolean closeEarly)
       throws InterruptedException, StreamingException {
