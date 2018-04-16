@@ -28,6 +28,7 @@ import static org.apache.hadoop.hive.conf.Constants.MATERIALIZED_VIEW_REWRITING_
 
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
+import static org.apache.hadoop.hive.ql.parse.DDLSemanticAnalyzer.makeBinaryPredicate;
 import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 
@@ -182,6 +183,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAugmentMateri
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.plan.AddPartitionDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.session.CreateTableAutomaticGrant;
@@ -189,6 +192,8 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.InputFormat;
@@ -2733,6 +2738,81 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (Exception e) {
       throw new HiveException(e.getMessage(), e);
     }
+  }
+
+  /**
+   * drop the partitions specified as directory names associated with the table.
+   *
+   * @param table object for which partition is needed
+   * @param partDirNames partition directories that need to be dropped
+   * @param deleteData whether data should be deleted from file system
+   * @param ifExists check for existence before attempting delete
+   *
+   * @return list of partition objects that were deleted
+   *
+   * @throws HiveException
+   */
+  public List<Partition> dropPartitions(Table table, List<String>partDirNames,
+      boolean deleteData, boolean ifExists) throws HiveException {
+    // partitions to be dropped in this batch
+    List<DropTableDesc.PartSpec> partSpecs = new ArrayList<>(partDirNames.size());
+
+    // parts of the partition
+    String[] parts = null;
+
+    // Expression splits of each part of the partition
+    String[] partExprParts = null;
+
+    // Column Types of all partitioned columns.  Used for generating partition specification
+    Map<String, String> colTypes = new HashMap<String, String>();
+    for (FieldSchema fs : table.getPartitionKeys()) {
+      colTypes.put(fs.getName(), fs.getType());
+    }
+
+    // Key to be used to save the partition to be dropped in partSpecs
+    int partSpecKey = 0;
+
+    for (String partDir : partDirNames) {
+      // The expression to identify the partition to be dropped
+      ExprNodeGenericFuncDesc expr = null;
+
+      // Split by "/" to identify partition parts
+      parts = partDir.split("/");
+
+      // Loop through the partitions and form the expression
+      for (String part : parts) {
+        // Split the partition predicate to identify column and value
+        partExprParts = part.split("=");
+
+        // Only two elements expected in partExprParts partition column name and partition value
+        assert partExprParts.length == 2;
+
+        // Partition Column
+        String partCol = partExprParts[0];
+
+        // Column Type
+        PrimitiveTypeInfo pti = TypeInfoFactory.getPrimitiveTypeInfo(colTypes.get(partCol));
+
+        // Form the expression node corresponding to column
+        ExprNodeColumnDesc column = new ExprNodeColumnDesc(pti, partCol, null, true);
+
+        // Build the expression based on the partition predicate
+        ExprNodeGenericFuncDesc op =
+            makeBinaryPredicate("=", column, new ExprNodeConstantDesc(pti, partExprParts[1]));
+
+        // the multiple parts to partition predicate are joined using and
+        expr = (expr == null) ? op : makeBinaryPredicate("and", expr, op);
+      }
+
+      // Add the expression to partition specification
+      partSpecs.add(new DropTableDesc.PartSpec(expr, partSpecKey));
+
+      // Increment dropKey to get a new key for hash map
+      ++partSpecKey;
+    }
+
+    String[] names = Utilities.getDbTableName(table.getFullyQualifiedName());
+    return dropPartitions(names[0], names[1], partSpecs, deleteData, ifExists);
   }
 
   public List<Partition> dropPartitions(String tblName, List<DropTableDesc.PartSpec> partSpecs,
