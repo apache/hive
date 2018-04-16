@@ -120,6 +120,97 @@ insert_num	a	b
 103	NULL	original
 104	203332	original
 105	-999992	original
+PREHOOK: query: alter table table_add_int_permute_select add columns(c int)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@table_add_int_permute_select
+PREHOOK: Output: default@table_add_int_permute_select
+POSTHOOK: query: alter table table_add_int_permute_select add columns(c int)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@table_add_int_permute_select
+POSTHOOK: Output: default@table_add_int_permute_select
+PREHOOK: query: insert into table table_add_int_permute_select VALUES (111, 80000, 'new', 80000)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table_add_int_permute_select
+POSTHOOK: query: insert into table table_add_int_permute_select VALUES (111, 80000, 'new', 80000)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table_add_int_permute_select
+POSTHOOK: Lineage: table_add_int_permute_select.a SCRIPT []
+POSTHOOK: Lineage: table_add_int_permute_select.b SCRIPT []
+POSTHOOK: Lineage: table_add_int_permute_select.c SCRIPT []
+POSTHOOK: Lineage: table_add_int_permute_select.insert_num SCRIPT []
+col1	col2	col3	col4
+PREHOOK: query: explain vectorization detail
+select insert_num,a,b from table_add_int_permute_select
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select insert_num,a,b from table_add_int_permute_select
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: table_add_int_permute_select
+                  Statistics: Num rows: 6 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:a:int, 2:b:string, 3:c:int, 4:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: insert_num (type: int), a (type: int), b (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2]
+                    Statistics: Num rows: 6 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 6 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    includeColumns: [0, 1, 2]
+                    dataColumns: insert_num:int, a:int, b:string, c:int
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: drop table table_add_int_permute_select
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_add_int_permute_select
@@ -232,6 +323,98 @@ insert_num	a	b
 103	NULL	original
 104	203332	original
 105	-999992	original
+PREHOOK: query: alter table table_add_int_string_permute_select add columns(c int, d string)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@table_add_int_string_permute_select
+PREHOOK: Output: default@table_add_int_string_permute_select
+POSTHOOK: query: alter table table_add_int_string_permute_select add columns(c int, d string)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@table_add_int_string_permute_select
+POSTHOOK: Output: default@table_add_int_string_permute_select
+PREHOOK: query: insert into table table_add_int_string_permute_select VALUES (111, 80000, 'new', 80000, 'filler')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table_add_int_string_permute_select
+POSTHOOK: query: insert into table table_add_int_string_permute_select VALUES (111, 80000, 'new', 80000, 'filler')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table_add_int_string_permute_select
+POSTHOOK: Lineage: table_add_int_string_permute_select.a SCRIPT []
+POSTHOOK: Lineage: table_add_int_string_permute_select.b SCRIPT []
+POSTHOOK: Lineage: table_add_int_string_permute_select.c SCRIPT []
+POSTHOOK: Lineage: table_add_int_string_permute_select.d SCRIPT []
+POSTHOOK: Lineage: table_add_int_string_permute_select.insert_num SCRIPT []
+col1	col2	col3	col4	col5
+PREHOOK: query: explain vectorization detail
+select insert_num,a,b from table_add_int_string_permute_select
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select insert_num,a,b from table_add_int_string_permute_select
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: table_add_int_string_permute_select
+                  Statistics: Num rows: 6 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:a:int, 2:b:string, 3:c:int, 4:d:string, 5:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: insert_num (type: int), a (type: int), b (type: string)
+                    outputColumnNames: _col0, _col1, _col2
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2]
+                    Statistics: Num rows: 6 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 6 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 5
+                    includeColumns: [0, 1, 2]
+                    dataColumns: insert_num:int, a:int, b:string, c:int, d:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: drop table table_add_int_string_permute_select
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_add_int_string_permute_select
@@ -346,6 +529,98 @@ insert_num	c1	c2	c3	b
 103		                                                  		original
 104	30.774	30.774                                            	30.774	original
 105	46114.28	46114.28                                          	46114.28	original
+PREHOOK: query: alter table table_change_string_group_double replace columns (insert_num int, c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, b STRING)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@table_change_string_group_double
+PREHOOK: Output: default@table_change_string_group_double
+POSTHOOK: query: alter table table_change_string_group_double replace columns (insert_num int, c1 DOUBLE, c2 DOUBLE, c3 DOUBLE, b STRING)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@table_change_string_group_double
+POSTHOOK: Output: default@table_change_string_group_double
+PREHOOK: query: insert into table table_change_string_group_double VALUES (111, 789.321, 789.321, 789.321, 'new')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table_change_string_group_double
+POSTHOOK: query: insert into table table_change_string_group_double VALUES (111, 789.321, 789.321, 789.321, 'new')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table_change_string_group_double
+POSTHOOK: Lineage: table_change_string_group_double.b SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_double.c1 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_double.c2 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_double.c3 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_double.insert_num SCRIPT []
+_col0	_col1	_col2	_col3	_col4
+PREHOOK: query: explain vectorization detail
+select insert_num,c1,c2,c3,b from table_change_string_group_double
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select insert_num,c1,c2,c3,b from table_change_string_group_double
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: table_change_string_group_double
+                  Statistics: Num rows: 6 Data size: 720 Basic stats: COMPLETE Column stats: PARTIAL
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:double, 2:c2:double, 3:c3:double, 4:b:string, 5:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: insert_num (type: int), c1 (type: double), c2 (type: double), c3 (type: double), b (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 3, 4]
+                    Statistics: Num rows: 6 Data size: 720 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 6 Data size: 720 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 5
+                    includeColumns: [0, 1, 2, 3, 4]
+                    dataColumns: insert_num:int, c1:double, c2:double, c3:double, b:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: drop table table_change_string_group_double
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_string_group_double
@@ -467,6 +742,105 @@ insert_num	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	b
 103	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	original
 104	2021-09-24	2021-09-24	2021-09-24	2021-09-24	2021-09-24	1978-08-02 06:34:14	1978-08-02 06:34:14	1978-08-02 06:34:14	1978-08-02 06:34:14	1978-08-02 06:34:14	original
 105	2024-11-11	2024-11-11	2024-11-11	2024-11-11	2024-11-11	1991-01-06 16:20:39.72036854	1991-01-06 16:20:39.72036854	1991-01-06 16:20:39.72036854	1991-01-06 16:20:39.72036854	1991-01-06 16:20:39.72036854	original
+PREHOOK: query: alter table table_change_date_group_string_group_date_group replace columns(insert_num int, c1 STRING, c2 CHAR(50), c3 CHAR(15), c4 VARCHAR(50), c5 VARCHAR(15), c6 STRING, c7 CHAR(50), c8 CHAR(15), c9 VARCHAR(50), c10 VARCHAR(15), b STRING)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@table_change_date_group_string_group_date_group
+PREHOOK: Output: default@table_change_date_group_string_group_date_group
+POSTHOOK: query: alter table table_change_date_group_string_group_date_group replace columns(insert_num int, c1 STRING, c2 CHAR(50), c3 CHAR(15), c4 VARCHAR(50), c5 VARCHAR(15), c6 STRING, c7 CHAR(50), c8 CHAR(15), c9 VARCHAR(50), c10 VARCHAR(15), b STRING)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@table_change_date_group_string_group_date_group
+POSTHOOK: Output: default@table_change_date_group_string_group_date_group
+PREHOOK: query: insert into table table_change_date_group_string_group_date_group VALUES (111, 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'new')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table_change_date_group_string_group_date_group
+POSTHOOK: query: insert into table table_change_date_group_string_group_date_group VALUES (111, 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'new')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table_change_date_group_string_group_date_group
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.b SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c1 SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c10 SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c2 SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c3 SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c4 SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c5 SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c6 SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c7 SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c8 SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.c9 SCRIPT []
+POSTHOOK: Lineage: table_change_date_group_string_group_date_group.insert_num SCRIPT []
+_col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11
+PREHOOK: query: explain vectorization detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from table_change_date_group_string_group_date_group
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,b from table_change_date_group_string_group_date_group
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: table_change_date_group_string_group_date_group
+                  Statistics: Num rows: 6 Data size: 8928 Basic stats: COMPLETE Column stats: NONE
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:char(50), 3:c3:char(15), 4:c4:varchar(50), 5:c5:varchar(15), 6:c6:string, 7:c7:char(50), 8:c8:char(15), 9:c9:varchar(50), 10:c10:varchar(15), 11:b:string, 12:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: insert_num (type: int), c1 (type: string), c2 (type: char(50)), c3 (type: char(15)), c4 (type: varchar(50)), c5 (type: varchar(15)), c6 (type: string), c7 (type: char(50)), c8 (type: char(15)), c9 (type: varchar(50)), c10 (type: varchar(15)), b (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                    Statistics: Num rows: 6 Data size: 8928 Basic stats: COMPLETE Column stats: NONE
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 6 Data size: 8928 Basic stats: COMPLETE Column stats: NONE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 12
+                    includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                    dataColumns: insert_num:int, c1:string, c2:char(50), c3:char(15), c4:varchar(50), c5:varchar(15), c6:string, c7:char(50), c8:char(15), c9:varchar(50), c10:varchar(15), b:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: drop table table_change_date_group_string_group_date_group
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_date_group_string_group_date_group
@@ -614,6 +988,131 @@ insert_num	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	c19	c2
 103	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	original
 104	23	834	203332	888888857923222	23	834	203332	888888857923222	23	834	203332	888888857923222	23	834	203332	888888857923222	23	834	203332	888888857923222	original
 105	-99	-28300	-999992	-222282153733	-99	-28300	-999992	-222282153733	-99	-28300	-999992	-222282153733	-99	-28300	-999992	-222282153733	-99	-28300	-999992	-222282153733	original
+PREHOOK: query: alter table table_change_numeric_group_string_group_multi_ints_string_group replace columns (insert_num int,
+             c1 STRING, c2 STRING, c3 STRING, c4 STRING,
+             c5 CHAR(50), c6 CHAR(50), c7 CHAR(50), c8 CHAR(50), c9 CHAR(5), c10 CHAR(5), c11 CHAR(5), c12 CHAR(5),
+             c13 VARCHAR(50), c14 VARCHAR(50), c15 VARCHAR(50), c16 VARCHAR(50), c17 VARCHAR(5), c18 VARCHAR(5), c19 VARCHAR(5), c20 VARCHAR(5),
+             b STRING)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_string_group
+PREHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_string_group
+POSTHOOK: query: alter table table_change_numeric_group_string_group_multi_ints_string_group replace columns (insert_num int,
+             c1 STRING, c2 STRING, c3 STRING, c4 STRING,
+             c5 CHAR(50), c6 CHAR(50), c7 CHAR(50), c8 CHAR(50), c9 CHAR(5), c10 CHAR(5), c11 CHAR(5), c12 CHAR(5),
+             c13 VARCHAR(50), c14 VARCHAR(50), c15 VARCHAR(50), c16 VARCHAR(50), c17 VARCHAR(5), c18 VARCHAR(5), c19 VARCHAR(5), c20 VARCHAR(5),
+             b STRING)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_string_group
+POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_string_group
+PREHOOK: query: insert into table table_change_numeric_group_string_group_multi_ints_string_group VALUES (111,
+            'filler', 'filler', 'filler', 'filler',
+            'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
+            'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
+            'new')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_string_group
+POSTHOOK: query: insert into table table_change_numeric_group_string_group_multi_ints_string_group VALUES (111,
+            'filler', 'filler', 'filler', 'filler',
+            'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
+            'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
+            'new')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table_change_numeric_group_string_group_multi_ints_string_group
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.b SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c1 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c10 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c11 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c12 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c13 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c14 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c15 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c16 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c17 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c18 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c19 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c2 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c20 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c3 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c4 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c5 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c6 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c7 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c8 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.c9 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_multi_ints_string_group.insert_num SCRIPT []
+_col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14	_col15	_col16	_col17	_col18	_col19	_col20	_col21
+PREHOOK: query: explain vectorization detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from table_change_numeric_group_string_group_multi_ints_string_group
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,c16,c17,c18,c19,c20,b from table_change_numeric_group_string_group_multi_ints_string_group
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: table_change_numeric_group_string_group_multi_ints_string_group
+                  Statistics: Num rows: 6 Data size: 15696 Basic stats: COMPLETE Column stats: PARTIAL
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:string, 3:c3:string, 4:c4:string, 5:c5:char(50), 6:c6:char(50), 7:c7:char(50), 8:c8:char(50), 9:c9:char(5), 10:c10:char(5), 11:c11:char(5), 12:c12:char(5), 13:c13:varchar(50), 14:c14:varchar(50), 15:c15:varchar(50), 16:c16:varchar(50), 17:c17:varchar(5), 18:c18:varchar(5), 19:c19:varchar(5), 20:c20:varchar(5), 21:b:string, 22:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: insert_num (type: int), c1 (type: string), c2 (type: string), c3 (type: string), c4 (type: string), c5 (type: char(50)), c6 (type: char(50)), c7 (type: char(50)), c8 (type: char(50)), c9 (type: char(5)), c10 (type: char(5)), c11 (type: char(5)), c12 (type: char(5)), c13 (type: varchar(50)), c14 (type: varchar(50)), c15 (type: varchar(50)), c16 (type: varchar(50)), c17 (type: varchar(5)), c18 (type: varchar(5)), c19 (type: varchar(5)), c20 (type: varchar(5)), b (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+                    Statistics: Num rows: 6 Data size: 15696 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 6 Data size: 15696 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 22
+                    includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+                    dataColumns: insert_num:int, c1:string, c2:string, c3:string, c4:string, c5:char(50), c6:char(50), c7:char(50), c8:char(50), c9:char(5), c10:char(5), c11:char(5), c12:char(5), c13:varchar(50), c14:varchar(50), c15:varchar(50), c16:varchar(50), c17:varchar(5), c18:varchar(5), c19:varchar(5), c20:varchar(5), b:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: drop table table_change_numeric_group_string_group_multi_ints_string_group
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_numeric_group_string_group_multi_ints_string_group
@@ -756,6 +1255,126 @@ insert_num	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	b
 103	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	original
 104	66475.561431000000000000	-100.35978	30.774	66475.561431000000000000	-100.35978	30.774	66475.561431000000000000	-100.35978	30.774	66475.561431000000000000	-100.35978	30.774	66475.561431000000000000	-100.35978	30.774	original
 105	9250340.750000000000000000	NULL	46114.28	9250340.750000000000000000	NULL	46114.28	9250340.750000000000000000	NULL	46114.28	9250340.750000000000000000	NULL	46114.28	9250340.750000000000000000	NULL	46114.28	original
+PREHOOK: query: alter table table_change_numeric_group_string_group_floating_string_group replace columns (insert_num int,
+              c1 STRING, c2 STRING, c3 STRING,
+              c4 CHAR(50), c5 CHAR(50), c6 CHAR(50), c7 CHAR(7), c8 CHAR(7), c9 CHAR(7),
+              c10 VARCHAR(50), c11 VARCHAR(50), c12 VARCHAR(50), c13 VARCHAR(7), c14 VARCHAR(7), c15 VARCHAR(7),
+              b STRING)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
+PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
+POSTHOOK: query: alter table table_change_numeric_group_string_group_floating_string_group replace columns (insert_num int,
+              c1 STRING, c2 STRING, c3 STRING,
+              c4 CHAR(50), c5 CHAR(50), c6 CHAR(50), c7 CHAR(7), c8 CHAR(7), c9 CHAR(7),
+              c10 VARCHAR(50), c11 VARCHAR(50), c12 VARCHAR(50), c13 VARCHAR(7), c14 VARCHAR(7), c15 VARCHAR(7),
+              b STRING)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
+POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
+PREHOOK: query: insert into table table_change_numeric_group_string_group_floating_string_group VALUES (111,
+             'filler', 'filler', 'filler',
+             'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
+             'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
+             'new')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
+POSTHOOK: query: insert into table table_change_numeric_group_string_group_floating_string_group VALUES (111,
+             'filler', 'filler', 'filler',
+             'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
+             'filler', 'filler', 'filler', 'filler', 'filler', 'filler',
+             'new')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table_change_numeric_group_string_group_floating_string_group
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.b SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c1 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c10 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c11 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c12 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c13 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c14 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c15 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c2 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c3 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c4 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c5 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c6 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c7 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c8 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.c9 SCRIPT []
+POSTHOOK: Lineage: table_change_numeric_group_string_group_floating_string_group.insert_num SCRIPT []
+_col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14	_col15	_col16
+PREHOOK: query: explain vectorization detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from table_change_numeric_group_string_group_floating_string_group
+PREHOOK: type: QUERY
+POSTHOOK: query: explain vectorization detail
+select insert_num,c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14,c15,b from table_change_numeric_group_string_group_floating_string_group
+POSTHOOK: type: QUERY
+Explain
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: table_change_numeric_group_string_group_floating_string_group
+                  Statistics: Num rows: 6 Data size: 10884 Basic stats: COMPLETE Column stats: PARTIAL
+                  TableScan Vectorization:
+                      native: true
+                      vectorizationSchemaColumns: [0:insert_num:int, 1:c1:string, 2:c2:string, 3:c3:string, 4:c4:char(50), 5:c5:char(50), 6:c6:char(50), 7:c7:char(7), 8:c8:char(7), 9:c9:char(7), 10:c10:varchar(50), 11:c11:varchar(50), 12:c12:varchar(50), 13:c13:varchar(7), 14:c14:varchar(7), 15:c15:varchar(7), 16:b:string, 17:ROW__ID:struct<writeid:bigint,bucketid:int,rowid:bigint>]
+                  Select Operator
+                    expressions: insert_num (type: int), c1 (type: string), c2 (type: string), c3 (type: string), c4 (type: char(50)), c5 (type: char(50)), c6 (type: char(50)), c7 (type: char(7)), c8 (type: char(7)), c9 (type: char(7)), c10 (type: varchar(50)), c11 (type: varchar(50)), c12 (type: varchar(50)), c13 (type: varchar(7)), c14 (type: varchar(7)), c15 (type: varchar(7)), b (type: string)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                    Statistics: Num rows: 6 Data size: 10884 Basic stats: COMPLETE Column stats: PARTIAL
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 6 Data size: 10884 Basic stats: COMPLETE Column stats: PARTIAL
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.row.serde.deserialize IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.mapred.TextInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 17
+                    includeColumns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+                    dataColumns: insert_num:int, c1:string, c2:string, c3:string, c4:char(50), c5:char(50), c6:char(50), c7:char(7), c8:char(7), c9:char(7), c10:varchar(50), c11:varchar(50), c12:varchar(50), c13:varchar(7), c14:varchar(7), c15:varchar(7), b:string
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: drop table table_change_numeric_group_string_group_floating_string_group
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_numeric_group_string_group_floating_string_group
@@ -891,6 +1510,49 @@ insert_num	c1	c2	c3	c4	b
 103					original
 104	I cooked	I cooked	I cooked	I cooked	original
 105	200	200	200	200	original
+PREHOOK: query: alter table table_change_string_group_string_group_string replace columns (insert_num int,
+           c1 CHAR(50), c2 CHAR(9), c3 VARCHAR(50), c4 CHAR(9),
+           c5 VARCHAR(50), c6 VARCHAR(9), c7 STRING,
+           c8 CHAR(50), c9 CHAR(9), c10 STRING, b STRING)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@table_change_string_group_string_group_string
+PREHOOK: Output: default@table_change_string_group_string_group_string
+POSTHOOK: query: alter table table_change_string_group_string_group_string replace columns (insert_num int,
+           c1 CHAR(50), c2 CHAR(9), c3 VARCHAR(50), c4 CHAR(9),
+           c5 VARCHAR(50), c6 VARCHAR(9), c7 STRING,
+           c8 CHAR(50), c9 CHAR(9), c10 STRING, b STRING)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@table_change_string_group_string_group_string
+POSTHOOK: Output: default@table_change_string_group_string_group_string
+PREHOOK: query: insert into table table_change_string_group_string_group_string VALUES (111,
+          'filler', 'filler', 'filler', 'filler',
+          'filler', 'filler', 'filler',
+          'filler', 'filler', 'filler',
+          'new')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table_change_string_group_string_group_string
+POSTHOOK: query: insert into table table_change_string_group_string_group_string VALUES (111,
+          'filler', 'filler', 'filler', 'filler',
+          'filler', 'filler', 'filler',
+          'filler', 'filler', 'filler',
+          'new')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table_change_string_group_string_group_string
+POSTHOOK: Lineage: table_change_string_group_string_group_string.b SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.c1 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.c10 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.c2 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.c3 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.c4 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.c5 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.c6 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.c7 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.c8 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.c9 SCRIPT []
+POSTHOOK: Lineage: table_change_string_group_string_group_string.insert_num SCRIPT []
+_col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11
 PREHOOK: query: drop table table_change_string_group_string_group_string
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_string_group_string_group_string
@@ -1040,6 +1702,63 @@ insert_num	c1	c2	c3	c4	c5	c6	c7	c8	c9	c10	c11	c12	c13	c14	c15	c16	c17	c18	b
 103	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	original
 104	23	23	23	23	23	23	834	834	834	834	834	203332	203332	203332	203332	888888857923222	888888857923222	888888857923222	original
 105	-99	-99	-99	-99	-99	-99	-28300	-28300	-28300	-28300	-28300	-999992	-999992	-999992	-999992	-222282153733	-222282153733	-222282153733	original
+PREHOOK: query: alter table table_change_lower_to_higher_numeric_group_tinyint_to_bigint replace columns (insert_num int,
+             c1 SMALLINT, c2 INT, c3 BIGINT, c4 decimal(38,18), c5 FLOAT, c6 DOUBLE,
+             c7 INT, c8 BIGINT, c9 decimal(38,18), c10 FLOAT, c11 DOUBLE,
+             c12 BIGINT, c13 decimal(38,18), c14 FLOAT, c15 DOUBLE,
+             c16 decimal(38,18), c17 FLOAT, c18 DOUBLE,
+             b STRING)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint_to_bigint
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_tinyint_to_bigint
+POSTHOOK: query: alter table table_change_lower_to_higher_numeric_group_tinyint_to_bigint replace columns (insert_num int,
+             c1 SMALLINT, c2 INT, c3 BIGINT, c4 decimal(38,18), c5 FLOAT, c6 DOUBLE,
+             c7 INT, c8 BIGINT, c9 decimal(38,18), c10 FLOAT, c11 DOUBLE,
+             c12 BIGINT, c13 decimal(38,18), c14 FLOAT, c15 DOUBLE,
+             c16 decimal(38,18), c17 FLOAT, c18 DOUBLE,
+             b STRING)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint_to_bigint
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_tinyint_to_bigint
+PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_tinyint_to_bigint VALUES (111,
+            7000, 80000, 90000000, 1234.5678, 9876.543, 789.321,
+            80000, 90000000, 1234.5678, 9876.543, 789.321,
+            90000000, 1234.5678, 9876.543, 789.321,
+            1234.5678, 9876.543, 789.321,
+           'new')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_tinyint_to_bigint
+POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_tinyint_to_bigint VALUES (111,
+            7000, 80000, 90000000, 1234.5678, 9876.543, 789.321,
+            80000, 90000000, 1234.5678, 9876.543, 789.321,
+            90000000, 1234.5678, 9876.543, 789.321,
+            1234.5678, 9876.543, 789.321,
+           'new')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_tinyint_to_bigint
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.b SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c1 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c10 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c11 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c12 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c13 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c14 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c15 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c16 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c17 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c18 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c2 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c3 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c4 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c5 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c6 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c7 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c8 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.c9 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_tinyint_to_bigint.insert_num SCRIPT []
+_col0	_col1	_col2	_col3	_col4	_col5	_col6	_col7	_col8	_col9	_col10	_col11	_col12	_col13	_col14	_col15	_col16	_col17	_col18	_col19
 PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_tinyint_to_bigint
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_tinyint_to_bigint
@@ -1166,6 +1885,28 @@ insert_num	c1	c2	c3	b
 103	NULL	NULL	NULL	original
 104	66475.561431000000000000	66475.561431000000000000	-100.35978	original
 105	9250340.750000000000000000	9250340.750000000000000000	NULL	original
+PREHOOK: query: alter table table_change_lower_to_higher_numeric_group_decimal_to_float replace columns (insert_num int, c1 float, c2 double, c3 DOUBLE, b STRING)
+PREHOOK: type: ALTERTABLE_REPLACECOLS
+PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal_to_float
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal_to_float
+POSTHOOK: query: alter table table_change_lower_to_higher_numeric_group_decimal_to_float replace columns (insert_num int, c1 float, c2 double, c3 DOUBLE, b STRING)
+POSTHOOK: type: ALTERTABLE_REPLACECOLS
+POSTHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal_to_float
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal_to_float
+PREHOOK: query: insert into table table_change_lower_to_higher_numeric_group_decimal_to_float VALUES (111, 1234.5678, 9876.543, 1234.5678, 'new')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal_to_float
+POSTHOOK: query: insert into table table_change_lower_to_higher_numeric_group_decimal_to_float VALUES (111, 1234.5678, 9876.543, 1234.5678, 'new')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@table_change_lower_to_higher_numeric_group_decimal_to_float
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.b SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.c1 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.c2 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.c3 SCRIPT []
+POSTHOOK: Lineage: table_change_lower_to_higher_numeric_group_decimal_to_float.insert_num SCRIPT []
+_col0	_col1	_col2	_col3	_col4
 PREHOOK: query: drop table table_change_lower_to_higher_numeric_group_decimal_to_float
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_change_lower_to_higher_numeric_group_decimal_to_float

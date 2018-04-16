@@ -1507,6 +1507,18 @@ public class Vectorizer implements PhysicalPlanResolver {
       return false;
     }
 
+    private void setValidateInputFormatAndSchemaEvolutionExplain(MapWork mapWork,
+        Set<String> inputFileFormatClassNameSet,
+        Map<VectorPartitionDesc, VectorPartitionDesc> vectorPartitionDescMap,
+        Set<String> enabledConditionsMetSet, ArrayList<String> enabledConditionsNotMetList) {
+      mapWork.setVectorizationInputFileFormatClassNameSet(inputFileFormatClassNameSet);
+      ArrayList<VectorPartitionDesc> vectorPartitionDescList = new ArrayList<VectorPartitionDesc>();
+      vectorPartitionDescList.addAll(vectorPartitionDescMap.keySet());
+      mapWork.setVectorPartitionDescList(vectorPartitionDescList);
+      mapWork.setVectorizationEnabledConditionsMet(new ArrayList(enabledConditionsMetSet));
+      mapWork.setVectorizationEnabledConditionsNotMet(enabledConditionsNotMetList);
+    }
+
     private ImmutablePair<Boolean, Boolean> validateInputFormatAndSchemaEvolution(MapWork mapWork, String alias,
         TableScanOperator tableScanOperator, VectorTaskColumnInfo vectorTaskColumnInfo)
             throws SemanticException {
@@ -1569,24 +1581,22 @@ public class Vectorizer implements PhysicalPlanResolver {
           continue;
         }
         Set<Support> newSupportSet = new TreeSet<Support>();
-        if (!verifyAndSetVectorPartDesc(
-            partDesc, isFullAcidTable,
-            inputFileFormatClassNameSet,
-            vectorPartitionDescMap,
-            enabledConditionsMetSet, enabledConditionsNotMetList,
-            newSupportSet)) {
+        final boolean isVerifiedVectorPartDesc =
+            verifyAndSetVectorPartDesc(
+              partDesc, isFullAcidTable,
+              inputFileFormatClassNameSet,
+              vectorPartitionDescMap,
+              enabledConditionsMetSet, enabledConditionsNotMetList,
+              newSupportSet);
+
+        if (!isVerifiedVectorPartDesc) {
 
           // Always set these so EXPLAIN can see.
-          mapWork.setVectorizationInputFileFormatClassNameSet(inputFileFormatClassNameSet);
-          ArrayList<VectorPartitionDesc> vectorPartitionDescList = new ArrayList<VectorPartitionDesc>();
-          vectorPartitionDescList.addAll(vectorPartitionDescMap.keySet());
-          mapWork.setVectorPartitionDescList(vectorPartitionDescList);
-          mapWork.setVectorizationEnabledConditionsMet(new ArrayList(enabledConditionsMetSet));
-          mapWork.setVectorizationEnabledConditionsNotMet(enabledConditionsNotMetList);
+          setValidateInputFormatAndSchemaEvolutionExplain(
+              mapWork, inputFileFormatClassNameSet, vectorPartitionDescMap,
+              enabledConditionsMetSet, enabledConditionsNotMetList);
 
           // We consider this an enable issue, not a not vectorized issue.
-          LOG.info("Cannot enable vectorization because input file format(s) " + inputFileFormatClassNameSet +
-              " do not met conditions " + VectorizationCondition.addBooleans(enabledConditionsNotMetList, false));
           return new ImmutablePair<Boolean,Boolean>(false, true);
         }
 
@@ -1596,7 +1606,11 @@ public class Vectorizer implements PhysicalPlanResolver {
 
         if (isFirst) {
 
-          // Determine the data and partition columns using the first partition descriptor.
+          /*
+           * Determine the data and partition columns using the first partition descriptor's
+           * partition count.  In other words, how to split the schema columns -- the
+           * allColumnNameList and allTypeInfoList variables -- into the data and partition columns.
+           */
 
           LinkedHashMap<String, String> partSpec = partDesc.getPartSpec();
           if (partSpec != null && partSpec.size() > 0) {
@@ -1636,13 +1650,17 @@ public class Vectorizer implements PhysicalPlanResolver {
          * implicitly defaulted to null.
          */
         if (nextDataColumnList.size() > tableDataColumnList.size()) {
-          setOperatorIssue(
+          enabledConditionsNotMetList.add(
               String.format(
-                  "Could not vectorize partition %s " +
-                  "(deserializer " + deserializer.getClass().getName() + ")" +
-                  "The partition column names %d is greater than the number of table columns %d",
-                  path, nextDataColumnList.size(), tableDataColumnList.size()));
-          return new ImmutablePair<Boolean,Boolean>(false, false);
+                  "Could not enable vectorization due to " +
+                  "partition column names size %d is greater than the number of table column names size %d",
+                  nextDataColumnList.size(), tableDataColumnList.size()));
+
+          // Always set these so EXPLAIN can see.
+          setValidateInputFormatAndSchemaEvolutionExplain(
+              mapWork, inputFileFormatClassNameSet, vectorPartitionDescMap,
+              enabledConditionsMetSet, enabledConditionsNotMetList);
+          return new ImmutablePair<Boolean,Boolean>(false, true);
         }
         if (!(deserializer instanceof NullStructSerDe)) {
 
@@ -1651,33 +1669,79 @@ public class Vectorizer implements PhysicalPlanResolver {
             String nextColumnName = nextDataColumnList.get(i);
             String tableColumnName = tableDataColumnList.get(i);
             if (!nextColumnName.equals(tableColumnName)) {
-              setOperatorIssue(
+              enabledConditionsNotMetList.add(
                   String.format(
-                      "Could not vectorize partition %s " +
-                      "(deserializer " + deserializer.getClass().getName() + ")" +
-                      "The partition column name %s is does not match table column name %s",
-                      path, nextColumnName, tableColumnName));
-              return new ImmutablePair<Boolean,Boolean>(false, false);
+                      "Could not enable vectorization due to " +
+                      "partition column name %s does not match table column name %s",
+                      nextColumnName, tableColumnName));
+
+              // Always set these so EXPLAIN can see.
+              setValidateInputFormatAndSchemaEvolutionExplain(
+                  mapWork, inputFileFormatClassNameSet, vectorPartitionDescMap,
+                  enabledConditionsMetSet, enabledConditionsNotMetList);
+              return new ImmutablePair<Boolean,Boolean>(false, true);
             }
           }
         }
 
+        boolean isPartitionRowConversion = false;
         List<TypeInfo> nextDataTypeInfoList;
         if (vectorPartDesc.getIsInputFileFormatSelfDescribing()) {
 
           /*
-           * Self-Describing Input Format will convert its data to the table schema.
+           * Self-Describing Input Format will convert its data to the table schema. So, there
+           * will be no VectorMapOperator conversion needed.
            */
           nextDataTypeInfoList = tableDataTypeInfoList;
 
         } else {
           String nextDataTypesString = ObjectInspectorUtils.getFieldTypes(partObjectInspector);
 
-          // We convert to an array of TypeInfo using a library routine since it parses the information
-          // and can handle use of different separators, etc.  We cannot use the raw type string
-          // for comparison in the map because of the different separators used.
+          /*
+           * We convert to an array of TypeInfo using a library routine since it parses the
+           * information and can handle use of different separators, etc.  We cannot use the
+           * raw type string for comparison in the map because of the different separators used.
+           */
           nextDataTypeInfoList =
               TypeInfoUtils.getTypeInfosFromTypeString(nextDataTypesString);
+
+          final int nextDataTypeInfoSize = nextDataTypeInfoList.size();
+          if (nextDataTypeInfoSize > tableDataTypeInfoList.size()) {
+            enabledConditionsNotMetList.add(
+                String.format(
+                    "Could not enable vectorization due to " +
+                    "partition column types size %d is greater than the number of table column types size %d",
+                    nextDataTypeInfoSize, tableDataTypeInfoList.size()));
+
+            // Always set these so EXPLAIN can see.
+            setValidateInputFormatAndSchemaEvolutionExplain(
+                mapWork, inputFileFormatClassNameSet, vectorPartitionDescMap,
+                enabledConditionsMetSet, enabledConditionsNotMetList);
+            return new ImmutablePair<Boolean,Boolean>(false, true);
+          }
+          for (int i = 0; i < nextDataTypeInfoSize; i++) {
+            TypeInfo tableDataTypeInfo = tableDataTypeInfoList.get(i);
+            TypeInfo nextDataTypeInfo = nextDataTypeInfoList.get(i);
+
+            // FUTURE: We be more sophisticated in our conversion check.
+            if (!tableDataTypeInfo.equals(nextDataTypeInfo)) {
+              isPartitionRowConversion = true;
+              break;
+            }
+          }
+        }
+        if (isPartitionRowConversion && isLlapIoEnabled) {
+          enabledConditionsNotMetList.add(
+              "Could not enable vectorization. " +
+              "LLAP I/O is enabled wbich automatically deserializes into " +
+              "VECTORIZED_INPUT_FILE_FORMAT. " +
+              "A partition requires data type conversion and that is not supported");
+
+          // Always set these so EXPLAIN can see.
+          setValidateInputFormatAndSchemaEvolutionExplain(
+              mapWork, inputFileFormatClassNameSet, vectorPartitionDescMap,
+              enabledConditionsMetSet, enabledConditionsNotMetList);
+          return new ImmutablePair<Boolean,Boolean>(false, true);
         }
 
         vectorPartDesc.setDataTypeInfos(nextDataTypeInfoList);
@@ -2283,6 +2347,10 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
     }
 
+    /*
+     * Notice the default value for LLAP_IO_ENABLED is overridden to be whether we are
+     * executing under LLAP.
+     */
     isLlapIoEnabled =
         HiveConf.getBoolVar(hiveConf,
             HiveConf.ConfVars.LLAP_IO_ENABLED,

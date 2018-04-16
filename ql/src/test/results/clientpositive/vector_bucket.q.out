@@ -47,7 +47,9 @@ STAGE PLANS:
                     value expressions: _col0 (type: int), _col1 (type: string)
       Map Vectorization:
           enabled: false
-#### A masked pattern was here ####
+          enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+          enabledConditionsNotMet: Could not enable vectorization due to partition column names size 1 is greater than the number of table column names size 0 IS false
+          inputFileFormats: org.apache.hadoop.hive.ql.io.NullRowsInputFormat
       Reduce Vectorization:
           enabled: false
           enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true
