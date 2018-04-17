@@ -38,7 +38,12 @@ public class JDBCUnionPushDownRule extends RelOptRule {
     final HiveJdbcConverter converter1 = call.rel(1);
     final HiveJdbcConverter converter2 = call.rel(2);
     
-    if (converter1.getJdbcConvention().equals(converter2.getJdbcConvention()) == false) {
+    //TODO:The actual check should be the compare of the connection string of the external tables
+    /*if (converter1.getJdbcConvention().equals(converter2.getJdbcConvention()) == false) {
+      return false;
+    }*/
+    
+    if (converter1.getJdbcConvention().getName().equals(converter2.getJdbcConvention().getName()) == false) {
       return false;
     }
     
