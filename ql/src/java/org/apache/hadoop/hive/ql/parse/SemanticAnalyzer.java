@@ -14582,7 +14582,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private QueryResultsCache.QueryInfo createCacheQueryInfoForQuery(QueryResultsCache.LookupInfo lookupInfo) {
-    return new QueryResultsCache.QueryInfo(lookupInfo, queryState.getHiveOperation(),
+    long queryTime = SessionState.get().getQueryCurrentTimestamp().getTime();
+    return new QueryResultsCache.QueryInfo(queryTime, lookupInfo, queryState.getHiveOperation(),
         resultSchema, getTableAccessInfo(), getColumnAccessInfo(), inputs);
   }
 

@@ -91,6 +91,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveMaterializedViewsRegistry;
 import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.events.NotificationEventPoll;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ParseDriver;
@@ -1050,6 +1051,7 @@ public class QTestUtil {
     }
 
     // Remove any cached results from the previous test.
+    NotificationEventPoll.shutdown();
     QueryResultsCache.cleanupInstance();
 
     // allocate and initialize a new conf since a test can
@@ -2235,5 +2237,9 @@ public class QTestUtil {
 
   public QOutProcessor getQOutProcessor() {
     return qOutProcessor;
+  }
+
+  public static void initEventNotificationPoll() throws Exception {
+    NotificationEventPoll.initialize(SessionState.get().getConf());
   }
 }
