@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.parse.repl.load.message.TruncateTableHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.OpenTxnHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.CommitTxnHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.AbortTxnHandler;
+import org.apache.hadoop.hive.ql.parse.repl.load.message.AllocWriteIdHandler;
 
 public enum DumpType {
 
@@ -203,6 +204,12 @@ public enum DumpType {
     @Override
     public MessageHandler handler() {
       return new AbortTxnHandler();
+    }
+  },
+  EVENT_ALLOC_WRITE_ID("EVENT_ALLOC_WRITE_ID") {
+    @Override
+    public MessageHandler handler() {
+      return new AllocWriteIdHandler();
     }
   };
 

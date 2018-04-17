@@ -19,9 +19,11 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 
-import com.google.common.collect.Lists;
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -33,38 +35,49 @@ public class ReplTxnWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private String dbName;
   private String tableName;
+  private String replPolicy;
   private List<Long> txnIds;
+  private List<TxnToWriteId> txnToWriteIdList;
+  private ReplicationSpec replicationSpec;
 
   /**
    * OperationType.
    * Different kind of events supported for replaying.
    */
   public enum OperationType {
-    REPL_OPEN_TXN, REPL_ABORT_TXN, REPL_COMMIT_TXN
+    REPL_OPEN_TXN, REPL_ABORT_TXN, REPL_COMMIT_TXN, REPL_ALLOC_WRITE_ID
   }
 
   OperationType operation;
 
-  public ReplTxnWork(String dbName, String tableName, List<Long> txnIds, OperationType type) {
+  public ReplTxnWork(String replPolicy, String dbName, String tableName, List<Long> txnIds, OperationType type,
+                     List<TxnToWriteId> txnToWriteIdList, ReplicationSpec replicationSpec) {
     this.txnIds = txnIds;
     this.dbName = dbName;
     this.tableName = tableName;
     this.operation = type;
+    this.replPolicy = replPolicy;
+    this.txnToWriteIdList = txnToWriteIdList;
+    this.replicationSpec = replicationSpec;
   }
 
-  public ReplTxnWork(String dbName, String tableName, Long txnId, OperationType type) {
-    this.txnIds = Lists.newArrayList(txnId);
-    this.dbName = dbName;
-    this.tableName = tableName;
-    this.operation = type;
+  public ReplTxnWork(String replPolicy, String dbName, String tableName, List<Long> txnIds, OperationType type,
+                     ReplicationSpec replicationSpec) {
+    this(replPolicy, dbName, tableName, txnIds, type, null, replicationSpec);
+  }
+
+  public ReplTxnWork(String replPolicy, String dbName, String tableName, Long txnId,
+                     OperationType type, ReplicationSpec replicationSpec) {
+    this(replPolicy, dbName, tableName, Collections.singletonList(txnId), type, null, replicationSpec);
+  }
+
+  public ReplTxnWork(String replPolicy, String dbName, String tableName, OperationType type,
+                     List<TxnToWriteId> txnToWriteIdList, ReplicationSpec replicationSpec) {
+    this(replPolicy, dbName, tableName, null, type, txnToWriteIdList, replicationSpec);
   }
 
   public List<Long> getTxnIds() {
     return txnIds;
-  }
-
-  public Long getTxnId(int idx) {
-    return txnIds.get(idx);
   }
 
   public String getDbName() {
@@ -75,17 +88,19 @@ public class ReplTxnWork implements Serializable {
     return tableName;
   }
 
-  public String getReplPolicy() {
-    if ((dbName == null) || (dbName.isEmpty())) {
-      return null;
-    } else if ((tableName == null) || (tableName.isEmpty())) {
-      return dbName.toLowerCase() + ".*";
-    } else {
-      return dbName.toLowerCase() + "." + tableName.toLowerCase();
-    }
+  public String getReplPolicy()  {
+    return replPolicy;
   }
 
   public OperationType getOperationType() {
     return operation;
+  }
+
+  public List<TxnToWriteId> getTxnToWriteIdList() {
+    return txnToWriteIdList;
+  }
+
+  public ReplicationSpec getReplicationSpec() {
+    return replicationSpec;
   }
 }
