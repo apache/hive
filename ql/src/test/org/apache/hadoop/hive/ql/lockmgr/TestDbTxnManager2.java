@@ -1031,9 +1031,9 @@ public class TestDbTxnManager2 {
     //update stmt has p=blah, thus nothing is actually update and we generate empty dyn part list
     Assert.assertEquals(0, TxnDbUtil.countQueryAgent(conf, "select count(*) from WRITE_SET"));
 
-    AllocateTableWriteIdsResponse writeIds
-            = txnHandler.allocateTableWriteIds(new AllocateTableWriteIdsRequest(Collections.singletonList(txnMgr2.getCurrentTxnId()),
-            "default", "tab2"));
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest("default", "tab2");
+    rqst.setTxnIds(Collections.singletonList(txnMgr2.getCurrentTxnId()));
+    AllocateTableWriteIdsResponse writeIds = txnHandler.allocateTableWriteIds(rqst);
     Assert.assertEquals(txnMgr2.getCurrentTxnId(), writeIds.getTxnToWriteIds().get(0).getTxnId());
 
     AddDynamicPartitions adp = new AddDynamicPartitions(txnMgr2.getCurrentTxnId(), writeIds.getTxnToWriteIds().get(0).getWriteId(),
@@ -1054,8 +1054,9 @@ public class TestDbTxnManager2 {
     //update stmt has p=blah, thus nothing is actually update and we generate empty dyn part list
     Assert.assertEquals(0, TxnDbUtil.countQueryAgent(conf, "select count(*) from WRITE_SET"));
 
-    writeIds = txnHandler.allocateTableWriteIds(new AllocateTableWriteIdsRequest(Collections.singletonList(txnMgr2.getCurrentTxnId()),
-            "default", "tab2"));
+    rqst = new AllocateTableWriteIdsRequest("default", "tab2");
+    rqst.setTxnIds(Collections.singletonList(txnMgr2.getCurrentTxnId()));
+    writeIds = txnHandler.allocateTableWriteIds(rqst);
     Assert.assertEquals(txnMgr2.getCurrentTxnId(), writeIds.getTxnToWriteIds().get(0).getTxnId());
 
     adp = new AddDynamicPartitions(txnMgr2.getCurrentTxnId(), writeIds.getTxnToWriteIds().get(0).getWriteId(),
@@ -1074,8 +1075,9 @@ public class TestDbTxnManager2 {
     checkCmdOnDriver(driver.compileAndRespond("update TAB2 set b = 17 where a = 1", true));//no rows match
     txnMgr.acquireLocks(driver.getPlan(), ctx, "Long Running");
 
-    writeIds = txnHandler.allocateTableWriteIds(new AllocateTableWriteIdsRequest(Collections.singletonList(txnMgr.getCurrentTxnId()),
-            "default", "tab2"));
+    rqst = new AllocateTableWriteIdsRequest("default", "tab2");
+    rqst.setTxnIds(Collections.singletonList(txnMgr.getCurrentTxnId()));
+    writeIds = txnHandler.allocateTableWriteIds(rqst);
     Assert.assertEquals(txnMgr.getCurrentTxnId(), writeIds.getTxnToWriteIds().get(0).getTxnId());
 
     //so generate empty Dyn Part call
@@ -1119,8 +1121,9 @@ public class TestDbTxnManager2 {
     checkLock(LockType.SHARED_WRITE, LockState.WAITING, "default", "TAB_PART", "p=blah", locks);
     txnMgr.rollbackTxn();
 
-    AllocateTableWriteIdsResponse writeIds
-            = txnHandler.allocateTableWriteIds(new AllocateTableWriteIdsRequest(Collections.singletonList(txnId), "default", "TAB_PART"));
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest("default", "TAB_PART");
+    rqst.setTxnIds(Collections.singletonList(txnId));
+    AllocateTableWriteIdsResponse writeIds = txnHandler.allocateTableWriteIds(rqst);
     Assert.assertEquals(txnId, writeIds.getTxnToWriteIds().get(0).getTxnId());
 
     AddDynamicPartitions adp = new AddDynamicPartitions(txnId, writeIds.getTxnToWriteIds().get(0).getWriteId(),

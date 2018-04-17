@@ -62,7 +62,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import javax.jdo.JDOException;
@@ -88,6 +87,7 @@ import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
+import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
@@ -177,7 +177,6 @@ import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
-import org.iq80.leveldb.DB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7106,7 +7105,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     @Override
     public AllocateTableWriteIdsResponse allocate_table_write_ids(
             AllocateTableWriteIdsRequest rqst) throws TException {
-      return getTxnHandler().allocateTableWriteIds(rqst);
+      AllocateTableWriteIdsResponse response = getTxnHandler().allocateTableWriteIds(rqst);
+      if (listeners != null && !listeners.isEmpty()) {
+        MetaStoreListenerNotifier.notifyEvent(listeners, EventType.ALLOC_WRITE_ID,
+                new AllocWriteIdEvent(response.getTxnToWriteIds(), rqst.getDbName(),
+                        rqst.getTableName(), this));
+      }
+      return response;
     }
 
     @Override

@@ -53,6 +53,7 @@ public class EventHandlerFactory {
     register(MessageFactory.OPEN_TXN_EVENT, OpenTxnHandler.class);
     register(MessageFactory.COMMIT_TXN_EVENT, CommitTxnHandler.class);
     register(MessageFactory.ABORT_TXN_EVENT, AbortTxnHandler.class);
+    register(MessageFactory.ALLOC_WRITE_ID_EVENT, AllocWriteIdHandler.class);
   }
 
   static void register(String event, Class<? extends EventHandler> handlerClazz) {

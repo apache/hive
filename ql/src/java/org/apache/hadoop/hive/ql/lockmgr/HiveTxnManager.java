@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver.LockedDriverState;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -263,6 +264,17 @@ public interface HiveTxnManager {
    * if {@code isTxnOpen()}, returns the table write ID associated with current active transaction.
    */
   long getTableWriteId(String dbName, String tableName) throws LockException;
+
+  /**
+   * Allocates write id for each transaction in the list.
+   * @param dbName database name
+   * @param tableName the name of the table to allocate the write id
+   * @param replPolicy used by replication task to identify the source cluster
+   * @param srcTxnToWriteIdList List of txn id to write id Map
+   * @throws LockException
+   */
+  void replAllocateTableWriteIdsBatch(String dbName, String tableName, String replPolicy,
+                                      List<TxnToWriteId> srcTxnToWriteIdList) throws LockException;
 
   /**
    * Should be though of more as a unique write operation ID in a given txn (at QueryPlan level).
