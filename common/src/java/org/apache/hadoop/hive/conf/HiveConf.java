@@ -4295,6 +4295,16 @@ public class HiveConf extends Configuration {
         (long) 10 * 1024 * 1024,
         "Maximum size in bytes that a single query result is allowed to use in the results cache directory"),
 
+    HIVE_NOTFICATION_EVENT_POLL_INTERVAL("hive.notification.event.poll.interval", "60s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "How often the notification log is polled for new NotificationEvents from the metastore." +
+        "A nonpositive value means the notification log is never polled."),
+
+    HIVE_NOTFICATION_EVENT_CONSUMERS("hive.notification.event.consumers",
+        "org.apache.hadoop.hive.ql.cache.results.QueryResultsCache$InvalidationEventConsumer",
+        "Comma-separated list of class names extending EventConsumer," +
+         "to handle the NotificationEvents retreived by the notification event poll."),
+
     /* BLOBSTORE section */
 
     HIVE_BLOBSTORE_SUPPORTED_SCHEMES("hive.blobstore.supported.schemes", "s3,s3a,s3n",
