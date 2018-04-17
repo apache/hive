@@ -181,6 +181,11 @@ public abstract class MessageDeserializer {
    */
   public abstract AbortTxnMessage getAbortTxnMessage(String messageBody);
 
+  /*
+   * Method to de-serialize AllocWriteIdMessage instance.
+   */
+  public abstract AllocWriteIdMessage getAllocWriteIdMessage(String messageBody);
+
   // Protection against construction.
   protected MessageDeserializer() {}
 }

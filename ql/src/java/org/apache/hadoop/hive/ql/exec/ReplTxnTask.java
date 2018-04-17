@@ -18,8 +18,14 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.InvalidTableException;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
@@ -44,11 +50,32 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
       Utilities.FILE_OP_LOGGER.trace("Executing ReplTxnTask " + work.getOperationType().toString() +
               " for txn ids : " + work.getTxnIds().toString() + " replPolicy : " + replPolicy);
     }
+
+    String tableName = work.getTableName() == null || work.getTableName().isEmpty() ? null : work.getTableName();
+    if (tableName != null) {
+      Table tbl;
+      try {
+        tbl = Hive.get().getTable(work.getDbName(), tableName);
+        ReplicationSpec replicationSpec = work.getReplicationSpec();
+        if (replicationSpec != null && !replicationSpec.allowReplacementInto(tbl.getParameters())) {
+          // if the event is already replayed, then no need to replay it again.
+          LOG.debug("ReplTxnTask: Event is skipped as it is already replayed. Event Id: " +
+                  replicationSpec.getReplicationState() + "Event Type: " + work.getOperationType());
+          return 0;
+        }
+      } catch (InvalidTableException e) {
+        LOG.info("Table does not exist so, ignoring the operation as it might be a retry(idempotent) case.");
+        return 0;
+      } catch (HiveException e) {
+        LOG.error("Get table failed with exception " + e.getMessage());
+        return 1;
+      }
+    }
+
     try {
       HiveTxnManager txnManager = driverContext.getCtx().getHiveTxnManager();
       String user = UserGroupInformation.getCurrentUser().getUserName();
-      LOG.debug("Replaying " + work.getOperationType().toString() + " Event for policy " +
-              replPolicy + " with srcTxn " + work.getTxnIds().toString());
+      LOG.debug("Replaying " + work.getOperationType().toString() + " Event for policy " + replPolicy);
       switch(work.getOperationType()) {
       case REPL_OPEN_TXN:
         List<Long> txnIds = txnManager.replOpenTxn(replPolicy, work.getTxnIds(), user);
@@ -67,6 +94,15 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
           txnManager.replCommitTxn(replPolicy, txnId);
           LOG.info("Replayed CommitTxn Event for policy " + replPolicy + " with srcTxn " + txnId);
         }
+        return 0;
+      case REPL_ALLOC_WRITE_ID:
+        assert work.getTxnToWriteIdList() != null;
+        String dbName = work.getDbName();
+        String tblName = work.getTableName();
+        List <TxnToWriteId> txnToWriteIdList = work.getTxnToWriteIdList();
+        txnManager.replAllocateTableWriteIdsBatch(dbName, tblName, replPolicy, txnToWriteIdList);
+        LOG.info("Replayed alloc write Id Event for repl policy: " + replPolicy + " db Name : " + dbName +
+                " txnToWriteIdList: " +txnToWriteIdList.toString() + " table name: " + tblName);
         return 0;
       default:
         LOG.error("Operation Type " + work.getOperationType() + " is not supported ");

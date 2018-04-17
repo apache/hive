@@ -428,4 +428,14 @@ public final class HiveUtils {
 
     return null;
   }
+
+  public static String getReplPolicy(String dbName, String tableName) {
+    if ((dbName == null) || (dbName.isEmpty())) {
+      return null;
+    } else if ((tableName == null) || (tableName.isEmpty())) {
+      return dbName.toLowerCase() + ".*";
+    } else {
+      return dbName.toLowerCase() + "." + tableName.toLowerCase();
+    }
+  }
 }
