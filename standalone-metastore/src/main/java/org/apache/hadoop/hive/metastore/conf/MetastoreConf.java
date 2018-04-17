@@ -301,6 +301,11 @@ public class MetastoreConf {
          "This can be used in conjunction with hive.metastore.cached.rawstore.cached.object.whitelist. \n" +
          "Example: db2.*, db3\\.tbl1, db3\\..*. The last item can potentially override patterns specified before. \n" +
          "The blacklist also overrides the whitelist."),
+    CACHED_RAW_STORE_MAX_CACHE_MEMORY("metastore.cached.rawstore.max.cache.memory",
+        "hive.metastore.cached.rawstore.max.cache.memory", "1Gb", new SizeValidator(),
+        "The maximum memory in bytes that the cached objects can use. "
+        + "Memory used is calculated based on estimated size of tables and partitions in the cache. "
+        + "Setting it to a negative value disables memory estimation."),
     CAPABILITY_CHECK("metastore.client.capability.check",
         "hive.metastore.client.capability.check", true,
         "Whether to check client capabilities for potentially breaking API usage."),
@@ -1359,6 +1364,10 @@ public class MetastoreConf {
     conf.setDouble(var.varname, val);
   }
 
+  public static long getSizeVar(Configuration conf, ConfVars var) {
+    return SizeValidator.toSizeBytes(getVar(conf, var));
+  }
+
   /**
    * Get a class instance based on a configuration value
    * @param conf configuration file to retrieve it from
@@ -1626,5 +1635,4 @@ public class MetastoreConf {
     buf.append("Finished MetastoreConf object.\n");
     return buf.toString();
   }
-
 }
