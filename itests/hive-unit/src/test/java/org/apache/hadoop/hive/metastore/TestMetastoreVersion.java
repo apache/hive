@@ -142,6 +142,7 @@ public class TestMetastoreVersion extends TestCase {
 
     ObjectStore.setSchemaVerified(false);
     hiveConf.setBoolVar(HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION, true);
+    hiveConf = new HiveConf(this.getClass());
     setVersion(hiveConf, metastoreSchemaInfo.getHiveSchemaVersion());
     driver = DriverFactory.newDriver(hiveConf);
     CommandProcessorResponse proc = driver.run("show tables");
@@ -191,37 +192,34 @@ public class TestMetastoreVersion extends TestCase {
   }
 
   //  write the given version to metastore
-  private String getVersion(HiveConf conf) throws HiveMetaException {
+  private String getVersion(HiveConf conf) throws Exception {
     return getMetaStoreVersion();
   }
 
   //  write the given version to metastore
-  private void setVersion(HiveConf conf, String version) throws HiveMetaException {
+  private void setVersion(HiveConf conf, String version) throws Exception {
     setMetaStoreVersion(version, "setVersion test");
   }
 
   // Load the version stored in the metastore db
-  public String getMetaStoreVersion() throws HiveMetaException {
-    ObjectStore objStore = new ObjectStore();
-    objStore.setConf(hiveConf);
+  public String getMetaStoreVersion() throws HiveMetaException, MetaException {
+    RawStore ms = HiveMetaStore.HMSHandler.getMSForConf(hiveConf);
     try {
-      return objStore.getMetaStoreSchemaVersion();
+      return ms.getMetaStoreSchemaVersion();
     } catch (MetaException e) {
       throw new HiveMetaException("Failed to get version", e);
     }
   }
 
   // Store the given version and comment in the metastore
-  public void setMetaStoreVersion(String newVersion, String comment) throws HiveMetaException {
-    ObjectStore objStore = new ObjectStore();
-    objStore.setConf(hiveConf);
+  public void setMetaStoreVersion(String newVersion, String comment)
+      throws HiveMetaException, MetaException {
+    RawStore ms = HiveMetaStore.HMSHandler.getMSForConf(hiveConf);
     try {
-      objStore.setMetaStoreSchemaVersion(newVersion, comment);
+      ms.setMetaStoreSchemaVersion(newVersion, comment);
     } catch (MetaException e) {
       throw new HiveMetaException("Failed to set version", e);
     }
   }
-
-
 }
 
