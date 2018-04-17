@@ -52,10 +52,11 @@ import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
-
+import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
+import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
+import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
-
 import static org.apache.hadoop.hive.metastore.MetaStoreEventListenerConstants.HIVE_METASTORE_TRANSACTION_ACTIVE;
 import static org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 
@@ -209,27 +210,35 @@ public class MetaStoreListenerNotifier {
               (listener, event) -> listener.onCreateCatalog((CreateCatalogEvent)event))
           .put(EventType.DROP_CATALOG,
               (listener, event) -> listener.onDropCatalog((DropCatalogEvent)event))
-          .put(EventType.OPEN_TXN, new EventNotifier() {
-            @Override
-            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
-              listener.onOpenTxn((OpenTxnEvent)event);
-            }
-          })
-          .put(EventType.COMMIT_TXN, new EventNotifier() {
-            @Override
-            public void notify(MetaStoreEventListener listener, ListenerEvent event)
-                throws MetaException {
-              listener.onCommitTxn((CommitTxnEvent) event);
-            }
-          })
-          .put(EventType.ABORT_TXN, new EventNotifier() {
-            @Override
-            public void notify(MetaStoreEventListener listener, ListenerEvent event)
-                throws MetaException {
-              listener.onAbortTxn((AbortTxnEvent) event);
-            }
-          })
+          .put(EventType.OPEN_TXN,
+              (listener, event) -> listener.onOpenTxn((OpenTxnEvent) event, null, null))
+          .put(EventType.COMMIT_TXN,
+              (listener, event) -> listener.onCommitTxn((CommitTxnEvent) event, null, null))
+          .put(EventType.ABORT_TXN,
+              (listener, event) -> listener.onAbortTxn((AbortTxnEvent) event, null, null))
+          .put(EventType.ALLOC_WRITE_ID,
+              (listener, event) -> listener.onAllocWriteId((AllocWriteIdEvent) event, null, null))
           .build()
+  );
+
+
+  private interface TxnEventNotifier {
+    void notify(MetaStoreEventListener listener, ListenerEvent event, Connection dbConn, SQLGenerator sqlGenerator)
+            throws MetaException;
+  }
+
+  private static Map<EventType, TxnEventNotifier> txnNotificationEvents = Maps.newHashMap(
+    ImmutableMap.<EventType, TxnEventNotifier>builder()
+      .put(EventType.OPEN_TXN,
+        (listener, event, dbConn, sqlGenerator) -> listener.onOpenTxn((OpenTxnEvent) event, dbConn, sqlGenerator))
+      .put(EventType.COMMIT_TXN,
+        (listener, event, dbConn, sqlGenerator) -> listener.onCommitTxn((CommitTxnEvent) event, dbConn, sqlGenerator))
+      .put(EventType.ABORT_TXN,
+        (listener, event, dbConn, sqlGenerator) -> listener.onAbortTxn((AbortTxnEvent) event, dbConn, sqlGenerator))
+      .put(EventType.ALLOC_WRITE_ID,
+        (listener, event, dbConn, sqlGenerator) ->
+                listener.onAllocWriteId((AllocWriteIdEvent) event, dbConn, sqlGenerator))
+      .build()
   );
 
   /**
@@ -253,6 +262,38 @@ public class MetaStoreListenerNotifier {
 
     for (MetaStoreEventListener listener : listeners) {
         notificationEvents.get(eventType).notify(listener, event);
+    }
+
+    // Each listener called above might set a different parameter on the event.
+    // This write permission is allowed on the listener side to avoid breaking compatibility if we change the API
+    // method calls.
+    return event.getParameters();
+  }
+
+  /**
+   * Notify a list of listeners about a specific metastore event to be executed within a txn. Each listener notified
+   * might update the (ListenerEvent) event by setting a parameter key/value pair. These updated parameters will
+   * be returned to the caller.
+   *
+   * @param listeners List of MetaStoreEventListener listeners.
+   * @param eventType Type of the notification event.
+   * @param event The ListenerEvent with information about the event.
+   * @param dbConn The JDBC connection to the remote meta store db.
+   * @param sqlGenerator The helper class to generate db specific SQL string.
+   * @return A list of key/value pair parameters that the listeners set. The returned object will return an empty
+   *         map if no parameters were updated or if no listeners were notified.
+   * @throws MetaException If an error occurred while calling the listeners.
+   */
+  public static Map<String, String> notifyEventWithDirectSql(List<? extends MetaStoreEventListener> listeners,
+                                                             EventType eventType,
+                                                             ListenerEvent event,
+                                                   Connection dbConn, SQLGenerator sqlGenerator) throws MetaException {
+
+    Preconditions.checkNotNull(listeners, "Listeners must not be null.");
+    Preconditions.checkNotNull(event, "The event must not be null.");
+
+    for (MetaStoreEventListener listener : listeners) {
+      txnNotificationEvents.get(eventType).notify(listener, event, dbConn, sqlGenerator);
     }
 
     // Each listener called above might set a different parameter on the event.

@@ -53,6 +53,9 @@ import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
+import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
+import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
+import java.sql.Connection;
 
 /**
  * This abstract class needs to be extended to  provide implementation of actions that needs
@@ -234,26 +237,45 @@ public abstract class MetaStoreEventListener implements Configurable {
 
   /**
    * This will be called when a new transaction is started.
-   * @param openTxnEvent
+   * @param openTxnEvent event to be processed
+   * @param dbConn jdbc connection to remote meta store db.
+   * @param sqlGenerator helper class to generate db specific sql string.
    * @throws MetaException
    */
-  public void onOpenTxn(OpenTxnEvent openTxnEvent) throws MetaException {
+  public void onOpenTxn(OpenTxnEvent openTxnEvent, Connection dbConn, SQLGenerator sqlGenerator) throws MetaException {
   }
 
   /**
    * This will be called to commit a transaction.
-   * @param commitTxnEvent
+   * @param commitTxnEvent event to be processed
+   * @param dbConn jdbc connection to remote meta store db.
+   * @param sqlGenerator helper class to generate db specific sql string.
    * @throws MetaException
    */
-  public void onCommitTxn(CommitTxnEvent commitTxnEvent) throws MetaException {
+  public void onCommitTxn(CommitTxnEvent commitTxnEvent, Connection dbConn, SQLGenerator sqlGenerator) throws
+          MetaException {
   }
 
   /**
    * This will be called to abort a transaction.
-   * @param abortTxnEvent
+   * @param abortTxnEvent event to be processed
+   * @param dbConn jdbc connection to remote meta store db.
+   * @param sqlGenerator helper class to generate db specific sql string.
    * @throws MetaException
    */
-  public void onAbortTxn(AbortTxnEvent abortTxnEvent) throws MetaException {
+  public void onAbortTxn(AbortTxnEvent abortTxnEvent, Connection dbConn, SQLGenerator sqlGenerator)
+          throws MetaException {
+  }
+
+  /**
+   * This will be called to alloc a new write id.
+   * @param allocWriteIdEvent event to be processed
+   * @param dbConn jdbc connection to remote meta store db.
+   * @param sqlGenerator helper class to generate db specific sql string.
+   * @throws MetaException
+   */
+  public void onAllocWriteId(AllocWriteIdEvent allocWriteIdEvent, Connection dbConn, SQLGenerator sqlGenerator)
+          throws MetaException {
   }
 
   @Override
