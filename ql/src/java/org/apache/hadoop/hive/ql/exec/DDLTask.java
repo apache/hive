@@ -3181,6 +3181,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       os.write(separator);
       os.writeBytes("State");
       os.write(separator);
+      os.writeBytes("Hostname");
+      os.write(separator);
       os.writeBytes("Worker");
       os.write(separator);
       os.writeBytes("Start Time");
@@ -3206,7 +3208,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
           os.writeBytes(e.getState());
           os.write(separator);
           String wid = e.getWorkerid();
-          os.writeBytes(wid == null ? noVal : wid);
+          os.writeBytes(wid == null ? noVal : wid.split("-")[0]);
+          os.write(separator);
+          os.writeBytes(wid == null ? noVal : wid.split("-")[1]);
           os.write(separator);
           os.writeBytes(e.isSetStart() ? Long.toString(e.getStart()) : noVal);
           os.write(separator);
