@@ -2762,7 +2762,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
 
         // 4. Build operator
-        if (tableType == TableType.DRUID || tableType == TableType.JDBC) {
+        if (tableType == TableType.DRUID || (tableType == TableType.JDBC && tabMetaData.getProperty("hive.sql.table") != null)) {
           // Create case sensitive columns list
           List<String> originalColumnNames =
                   ((StandardStructObjectInspector)rowObjectInspector).getOriginalColumnNames();
@@ -2847,7 +2847,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             SqlDialect jdbcDialect = JdbcSchema.createDialect(SqlDialectFactoryImpl.INSTANCE, ds);
             JdbcConvention jc = JdbcConvention.of(jdbcDialect, null, dataBaseType);
             JdbcSchema schema = new JdbcSchema(ds, jc.dialect, jc, null/*catalog */, null/*schema */);
-            JdbcTable jt = (JdbcTable) schema.getTable(tableName.toLowerCase());
+            JdbcTable jt = (JdbcTable) schema.getTable(tableName);
             if (jt == null) {
               throw new SemanticException ("Table " + tableName + " was not found in the database");
             }
