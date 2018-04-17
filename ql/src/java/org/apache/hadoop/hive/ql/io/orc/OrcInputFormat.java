@@ -458,9 +458,12 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       include[readerSchema.getId()] = true;
     }
     else {
+      int fieldId=0;
       String columnName = columnPath[postion];
-      int columnID = readerSchema.getFieldNames().indexOf(columnName);
-      TypeDescription childSchema = readerSchema.getChildren().get(columnID);
+      while(!columnName.equalsIgnoreCase(readerSchema.getFieldNames().get(fieldId))) {
+        fieldId++;
+      }
+      TypeDescription childSchema = readerSchema.getChildren().get(fieldId);
       include = setIncludeForNestedColumns(columnPath,++postion,childSchema,include);
       include[childSchema.getId()] = true;
     }
