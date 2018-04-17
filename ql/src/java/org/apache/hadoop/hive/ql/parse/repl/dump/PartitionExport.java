@@ -124,7 +124,7 @@ class PartitionExport {
   private List<Path> getDataPathList(Partition partition, ReplicationSpec replicationSpec) throws IOException {
     Path fromPath = partition.getDataLocation();
     if (replicationSpec.isTransactionalTableDump()) {
-      return AcidUtils.getAcidPathsForReplDump(fromPath, hiveConf, replicationSpec.getValidWriteIdList());
+      return AcidUtils.getValidDataPaths(fromPath, hiveConf, replicationSpec.getValidWriteIdList());
     } else {
       return Collections.singletonList(fromPath);
     }

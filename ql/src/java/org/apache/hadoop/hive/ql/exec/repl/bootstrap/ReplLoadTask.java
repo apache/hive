@@ -72,8 +72,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   protected int execute(DriverContext driverContext) {
     try {
       int maxTasks = conf.getIntVar(HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS);
-      Context context = new Context(conf, getHive(), work.sessionStateLineageState,
-          work.currentTransactionId, driverContext.getCtx());
+      Context context = new Context(conf, getHive(), work.sessionStateLineageState, driverContext.getCtx());
       TaskTracker loadTaskTracker = new TaskTracker(maxTasks);
       /*
           for now for simplicity we are doing just one directory ( one database ), come back to use

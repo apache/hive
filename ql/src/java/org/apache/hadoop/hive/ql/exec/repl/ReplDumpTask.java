@@ -298,7 +298,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private String getValidTxnsList() throws LockException {
     String validTxnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
     if ((validTxnString == null) || validTxnString.isEmpty()) {
-      ValidTxnList txnList = work.getTxnManager().getValidTxns();
+      ValidTxnList txnList = getTxnMgr().getValidTxns();
       validTxnString = txnList.toString();
     }
     return validTxnString;
@@ -309,7 +309,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       return null;
     }
     String fullTableName = AcidUtils.getFullTableName(dbName, tblName);
-    ValidWriteIdList validWriteIds = work.getTxnManager()
+    ValidWriteIdList validWriteIds = getTxnMgr()
             .getValidWriteIds(Collections.singletonList(fullTableName), validTxnString)
             .getTableValidWriteIdList(fullTableName);
     return ((validWriteIds != null) ? validWriteIds.toString() : null);

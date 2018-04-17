@@ -163,7 +163,7 @@ public class TableExport {
   private List<Path> getDataPathList() throws IOException {
     Path fromPath = tableSpec.tableHandle.getDataLocation();
     if (replicationSpec.isTransactionalTableDump()) {
-      return AcidUtils.getAcidPathsForReplDump(fromPath, conf, replicationSpec.getValidWriteIdList());
+      return AcidUtils.getValidDataPaths(fromPath, conf, replicationSpec.getValidWriteIdList());
     } else {
       return Collections.singletonList(fromPath);
     }

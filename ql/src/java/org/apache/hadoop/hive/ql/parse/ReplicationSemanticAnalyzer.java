@@ -186,8 +186,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
               eventTo,
               ErrorMsg.INVALID_PATH.getMsg(ast),
               maxEventLimit,
-              ctx.getResFile().toUri().toString(),
-              txnManager
+              ctx.getResFile().toUri().toString()
       ), conf);
       rootTasks.add(replDumpWorkTask);
       if (dbNameOrPattern != null) {
@@ -369,9 +368,8 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       if ((!evDump) && (tblNameOrPattern != null) && !(tblNameOrPattern.isEmpty())) {
-        ReplLoadWork replLoadWork =
-            new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern, tblNameOrPattern,
-                queryState.getLineageState(), getTxnMgr().getCurrentTxnId());
+        ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern,
+                tblNameOrPattern, queryState.getLineageState());
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
         return;
       }
@@ -402,7 +400,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         }
 
         ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), dbNameOrPattern,
-            queryState.getLineageState(), getTxnMgr().getCurrentTxnId());
+                queryState.getLineageState());
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
         //
         //        for (FileStatus dir : dirsInLoadPath) {

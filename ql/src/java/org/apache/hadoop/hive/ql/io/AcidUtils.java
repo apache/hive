@@ -1832,14 +1832,16 @@ public class AcidUtils {
     return fileList;
   }
 
-  public static List<Path> getAcidPathsForReplDump(Path dataPath, Configuration conf, String validWriteIdStr)
+  public static List<Path> getValidDataPaths(Path dataPath, Configuration conf, String validWriteIdStr)
           throws IOException {
     List<Path> pathList = new ArrayList<>();
     if ((validWriteIdStr == null) || validWriteIdStr.isEmpty()) {
-      // if Non-Acid case, then all files would be in the base data path. So, just return it.
+      // If Non-Acid case, then all files would be in the base data path. So, just return it.
       pathList.add(dataPath);
       return pathList;
     }
+
+    // If ACID/MM tables, then need to find the valid state wrt to given ValidWriteIdList.
     ValidWriteIdList validWriteIdList = new ValidReaderWriteIdList(validWriteIdStr);
     Directory acidInfo = AcidUtils.getAcidState(dataPath, conf, validWriteIdList);
 
