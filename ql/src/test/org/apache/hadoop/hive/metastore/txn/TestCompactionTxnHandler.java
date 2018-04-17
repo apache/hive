@@ -481,8 +481,9 @@ public class TestCompactionTxnHandler {
     OpenTxnsResponse openTxns = txnHandler.openTxns(new OpenTxnRequest(1, "me", "localhost"));
     long txnId = openTxns.getTxn_ids().get(0);
 
-    AllocateTableWriteIdsResponse writeIds
-            = txnHandler.allocateTableWriteIds(new AllocateTableWriteIdsRequest(openTxns.getTxn_ids(), dbName, tableName));
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tableName);
+    rqst.setTxnIds(openTxns.getTxn_ids());
+    AllocateTableWriteIdsResponse writeIds = txnHandler.allocateTableWriteIds(rqst);
     long writeId = writeIds.getTxnToWriteIds().get(0).getWriteId();
     assertEquals(txnId, writeIds.getTxnToWriteIds().get(0).getTxnId());
     assertEquals(1, writeId);

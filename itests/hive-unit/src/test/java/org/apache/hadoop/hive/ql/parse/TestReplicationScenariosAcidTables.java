@@ -100,7 +100,8 @@ public class TestReplicationScenariosAcidTables {
             .verifyResult(bootStrapDump.lastReplicationId);
 
     // create table will start and coomit the transaction
-    primary.run("CREATE TABLE " + tableName +
+    primary.run("use " + primaryDbName)
+           .run("CREATE TABLE " + tableName +
             " (key int, value int) PARTITIONED BY (load_date date) " +
             "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')")
             .run("SHOW TABLES LIKE '" + tableName + "'")
@@ -113,16 +114,12 @@ public class TestReplicationScenariosAcidTables {
             primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
-            .verifyResult(incrementalDump.lastReplicationId)
-            .run("SHOW TABLES LIKE '" + tableName + "'")
-            .verifyResult(tableName);
+            .verifyResult(incrementalDump.lastReplicationId);
 
     // Test the idempotent behavior of Open and Commit Txn
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
-            .verifyResult(incrementalDump.lastReplicationId)
-            .run("SHOW TABLES LIKE '" + tableName + "'")
-            .verifyResult(tableName);
+            .verifyResult(incrementalDump.lastReplicationId);
   }
 
   @Test
@@ -135,7 +132,8 @@ public class TestReplicationScenariosAcidTables {
             .verifyResult(bootStrapDump.lastReplicationId);
 
     // this should fail
-    primary.runFailure("CREATE TABLE " + tableNameFail +
+    primary.run("use " + primaryDbName)
+            .runFailure("CREATE TABLE " + tableNameFail +
             " (key int, value int) PARTITIONED BY (load_date date) " +
             "CLUSTERED BY(key) ('transactional'='true')")
             .run("SHOW TABLES LIKE '" + tableNameFail + "'")
@@ -145,16 +143,12 @@ public class TestReplicationScenariosAcidTables {
             primary.dump(primaryDbName, bootStrapDump.lastReplicationId);
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
-            .verifyResult(incrementalDump.lastReplicationId)
-            .run("SHOW TABLES LIKE '" + tableNameFail + "'")
-            .verifyFailure(new String[]{tableNameFail});
+            .verifyResult(incrementalDump.lastReplicationId);
 
     // Test the idempotent behavior of Abort Txn
     replica.load(replicatedDbName, incrementalDump.dumpLocation)
             .run("REPL STATUS " + replicatedDbName)
-            .verifyResult(incrementalDump.lastReplicationId)
-            .run("SHOW TABLES LIKE '" + tableNameFail + "'")
-            .verifyFailure(new String[]{tableNameFail});
+            .verifyResult(incrementalDump.lastReplicationId);
   }
 
   @Test
@@ -165,7 +159,8 @@ public class TestReplicationScenariosAcidTables {
             .run("REPL STATUS " + replicatedDbName)
             .verifyResult(bootStrapDump.lastReplicationId);
 
-    primary.run("CREATE TABLE " + tableName +
+    primary.run("use " + primaryDbName)
+            .run("CREATE TABLE " + tableName +
             " (key int, value int) PARTITIONED BY (load_date date) " +
             "CLUSTERED BY(key) INTO 3 BUCKETS STORED AS ORC TBLPROPERTIES ('transactional'='true')")
             .run("SHOW TABLES LIKE '" + tableName + "'")
