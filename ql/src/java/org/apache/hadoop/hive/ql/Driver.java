@@ -701,12 +701,15 @@ public class Driver implements IDriver {
         }
       }
 
-      if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
+      if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)
+          || conf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT)) {
         String explainOutput = getExplainOutput(sem, plan, tree);
         if (explainOutput != null) {
-          LOG.info("EXPLAIN output for queryid " + queryId + " : "
-            + explainOutput);
-          if (conf.isWebUiQueryInfoCacheEnabled()) {
+          if (conf.getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
+            LOG.info("EXPLAIN output for queryid " + queryId + " : " + explainOutput);
+          }
+          if (conf.isWebUiQueryInfoCacheEnabled()
+              && conf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT)) {
             queryDisplay.setExplainPlan(explainOutput);
           }
         }
