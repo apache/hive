@@ -93,8 +93,10 @@ public class CopyWork implements Serializable {
     return errorOnSrcEmpty;
   }
 
-  /** Whether the copy should ignore MM directories in the source, and copy their content to
-   * destination directly, rather than copying the directories themselves. */
+  /**
+   *  Whether the copy should ignore MM directories in the source, and copy their content to
+   * destination directly, rather than copying the directories themselves.
+   * */
   public void setSkipSourceMmDirs(boolean isMm) {
     this.isSkipMmDirs = isMm;
   }

@@ -249,15 +249,14 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     } catch (Exception e) {
       throw new HiveException(e);
     }
-    boolean isSourceMm = AcidUtils.isInsertOnlyTable(tblDesc.getTblProps());
 
     if ((replicationSpec != null) && replicationSpec.isInReplicationScope()){
       tblDesc.setReplicationSpec(replicationSpec);
       StatsSetupConst.setBasicStatsState(tblDesc.getTblProps(), StatsSetupConst.FALSE);
     }
 
-    if (isExternalSet){
-      if (isSourceMm) {
+    if (isExternalSet) {
+      if (AcidUtils.isInsertOnlyTable(tblDesc.getTblProps())) {
         throw new SemanticException("Cannot import an MM table as external");
       }
       tblDesc.setExternal(isExternalSet);
@@ -328,32 +327,28 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     Long writeId = 0L; // Initialize with 0 for non-ACID and non-MM tables.
-    if (((table != null) && AcidUtils.isTransactionalTable(table))
-            || AcidUtils.isTablePropertyTransactional(tblDesc.getTblProps())) {
+    int stmtId = 0;
+    if ((tableExists && AcidUtils.isTransactionalTable(table))
+            || (!tableExists && AcidUtils.isTablePropertyTransactional(tblDesc.getTblProps()))) {
+      //if importing into existing transactional table or will create a new transactional table
+      //(because Export was done from transactional table), need a writeId
       // Explain plan doesn't open a txn and hence no need to allocate write id.
       if (x.getCtx().getExplainConfig() == null) {
         writeId = txnMgr.getTableWriteId(tblDesc.getDatabaseName(), tblDesc.getTableName());
+        stmtId = txnMgr.getStmtIdAndIncrement();
       }
     }
-    int stmtId = 0;
 
-    // TODO [MM gap?]: bad merge; tblDesc is no longer CreateTableDesc, but ImportTableDesc.
-    //                 We need to verify the tests to see if this works correctly.
-    /*
-    if (isAcid(writeId)) {
-      tblDesc.setInitialMmWriteId(writeId);
-    }
-    */
     if (!replicationSpec.isInReplicationScope()) {
       createRegularImportTasks(
           tblDesc, partitionDescs,
           isPartSpecSet, replicationSpec, table,
-          fromURI, fs, wh, x, writeId, stmtId, isSourceMm);
+          fromURI, fs, wh, x, writeId, stmtId);
     } else {
       createReplImportTasks(
           tblDesc, partitionDescs,
           replicationSpec, waitOnPrecursor, table,
-          fromURI, fs, wh, x, writeId, stmtId, isSourceMm, updatedMetadata);
+          fromURI, fs, wh, x, writeId, stmtId, updatedMetadata);
     }
     return tableExists;
   }
@@ -385,17 +380,27 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     return tblDesc;
   }
 
-
   private static Task<?> loadTable(URI fromURI, Table table, boolean replace, Path tgtPath,
       ReplicationSpec replicationSpec, EximUtil.SemanticAnalyzerWrapperContext x,
       Long writeId, int stmtId, boolean isSourceMm) {
+    assert table != null;
+    assert table.getParameters() != null;
     Path dataPath = new Path(fromURI.toString(), EximUtil.DATA_PATH_NAME);
     Path destPath = null, loadPath = null;
     LoadFileType lft;
-    if (AcidUtils.isInsertOnlyTable(table)) {
+    if (AcidUtils.isTransactionalTable(table)) {
       String mmSubdir = replace ? AcidUtils.baseDir(writeId)
           : AcidUtils.deltaSubdir(writeId, writeId, stmtId);
       destPath = new Path(tgtPath, mmSubdir);
+      /**
+       * CopyTask below will copy files from the 'archive' to a delta_x_x in the table/partition
+       * directory, i.e. the final destination for these files.  This has to be a copy to preserve
+       * the archive.  MoveTask is optimized to do a 'rename' if files are on the same FileSystem.
+       * So setting 'loadPath' this way will make
+       * {@link Hive#loadTable(Path, String, LoadFileType, boolean, boolean, boolean,
+       * boolean, Long, int)}
+       * skip the unnecessary file (rename) operation but it will perform other things.
+       */
       loadPath = tgtPath;
       lft = LoadFileType.KEEP_EXISTING;
     } else {
@@ -406,8 +411,12 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       Utilities.FILE_OP_LOGGER.trace("adding import work for table with source location: " +
-        dataPath + "; table: " + tgtPath + "; copy destination " + destPath + "; mm " + writeId +
-        " (src " + isSourceMm + ") for " + (table == null ? "a new table" : table.getTableName()));
+          dataPath + "; table: " + tgtPath + "; copy destination " + destPath + "; mm " + writeId +
+          " for " + table.getTableName() + ": " +
+              (AcidUtils.isFullAcidTable(table) ? "acid" :
+                  (AcidUtils.isInsertOnlyTable(table) ? "mm" : "flat")
+              )
+      );
     }
 
     Task<?> copyTask = null;
@@ -422,19 +431,13 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     LoadTableDesc loadTableWork = new LoadTableDesc(
         loadPath, Utilities.getTableDesc(table), new TreeMap<>(), lft, writeId);
     loadTableWork.setStmtId(stmtId);
+    //if Importing into existing table, FileFormat is checked by
+    // ImportSemanticAnalzyer.checked checkTable()
     MoveWork mv = new MoveWork(x.getInputs(), x.getOutputs(), loadTableWork, null, false);
     Task<?> loadTableTask = TaskFactory.get(mv, x.getConf());
     copyTask.addDependentTask(loadTableTask);
     x.getTasks().add(copyTask);
     return loadTableTask;
-  }
-
-  /**
-   * todo: this is odd: write id allocated for all write operations on ACID tables.  what is this supposed to check?
-   */
-  @Deprecated
-  private static boolean isAcid(Long writeId) {
-    return (writeId != null) && (writeId != 0);
   }
 
   private static Task<?> createTableTask(ImportTableDesc tableDesc, EximUtil.SemanticAnalyzerWrapperContext x){
@@ -496,15 +499,19 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           + partSpecToString(partSpec.getPartSpec())
           + " with source location: " + srcLocation);
       Path tgtLocation = new Path(partSpec.getLocation());
-      Path destPath = !AcidUtils.isInsertOnlyTable(table.getParameters()) ? x.getCtx().getExternalTmpPath(tgtLocation)
+      Path destPath = !AcidUtils.isTransactionalTable(table.getParameters()) ?
+          x.getCtx().getExternalTmpPath(tgtLocation)
           : new Path(tgtLocation, AcidUtils.deltaSubdir(writeId, writeId, stmtId));
-      Path moveTaskSrc =  !AcidUtils.isInsertOnlyTable(table.getParameters()) ? destPath : tgtLocation;
+      Path moveTaskSrc =  !AcidUtils.isTransactionalTable(table.getParameters()) ? destPath : tgtLocation;
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("adding import work for partition with source location: "
           + srcLocation + "; target: " + tgtLocation + "; copy dest " + destPath + "; mm "
-          + writeId + " (src " + isSourceMm + ") for " + partSpecToString(partSpec.getPartSpec()));
+          + writeId + " for " + partSpecToString(partSpec.getPartSpec()) + ": " +
+            (AcidUtils.isFullAcidTable(table) ? "acid" :
+                (AcidUtils.isInsertOnlyTable(table) ? "mm" : "flat")
+            )
+        );
       }
-
 
       Task<?> copyTask = null;
       if (replicationSpec.isInReplicationScope()) {
@@ -601,7 +608,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     return sb.toString();
   }
 
-  public static void checkTable(Table table, ImportTableDesc tableDesc,
+  private static void checkTable(Table table, ImportTableDesc tableDesc,
       ReplicationSpec replicationSpec, HiveConf conf)
       throws SemanticException, URISyntaxException {
     // This method gets called only in the scope that a destination table already exists, so
@@ -634,7 +641,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     //    table in the statement, if a destination partitioned table exists, so long as it is actually
     //    not external itself. Is that the case? Why?
     {
-      if ( (tableDesc.isExternal()) // IMPORT statement speicified EXTERNAL
+      if ((tableDesc.isExternal()) // IMPORT statement specified EXTERNAL
           && (!table.isPartitioned() || !table.getTableType().equals(TableType.EXTERNAL_TABLE))
           ){
         throw new SemanticException(ErrorMsg.INCOMPATIBLE_SCHEMA.getMsg(
@@ -824,8 +831,10 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
   private static void createRegularImportTasks(
       ImportTableDesc tblDesc, List<AddPartitionDesc> partitionDescs, boolean isPartSpecSet,
       ReplicationSpec replicationSpec, Table table, URI fromURI, FileSystem fs, Warehouse wh,
-      EximUtil.SemanticAnalyzerWrapperContext x, Long writeId, int stmtId, boolean isSourceMm)
-      throws HiveException, URISyntaxException, IOException, MetaException {
+      EximUtil.SemanticAnalyzerWrapperContext x, Long writeId, int stmtId)
+      throws HiveException, IOException, MetaException {
+
+    final boolean isSourceMm = AcidUtils.isInsertOnlyTable(tblDesc.getTblProps());
 
     if (table != null) {
       if (table.isPartitioned()) {
@@ -851,7 +860,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
         Path tgtPath = new Path(table.getDataLocation().toString());
         FileSystem tgtFs = FileSystem.get(tgtPath.toUri(), x.getConf());
         checkTargetLocationEmpty(tgtFs, tgtPath, replicationSpec, x.getLOG());
-        loadTable(fromURI, table, false, tgtPath, replicationSpec, x, writeId, stmtId, isSourceMm);
+        loadTable(fromURI, table, false, tgtPath, replicationSpec, x, writeId, stmtId,
+            isSourceMm);
       }
       // Set this to read because we can't overwrite any existing partitions
       x.getOutputs().add(new WriteEntity(table, WriteEntity.WriteType.DDL_NO_LOCK));
@@ -859,7 +869,8 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       x.getLOG().debug("table " + tblDesc.getTableName() + " does not exist");
 
       Task<?> t = createTableTask(tblDesc, x);
-      table = new Table(tblDesc.getDatabaseName(), tblDesc.getTableName());
+      table = createNewTableMetadataObject(tblDesc);
+
       Database parentDb = x.getHive().getDatabase(tblDesc.getDatabaseName());
 
       // Since we are going to be creating a new table in a db, we should mark that db as a write entity
@@ -889,17 +900,24 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           FileSystem tgtFs = FileSystem.get(tablePath.toUri(), x.getConf());
           checkTargetLocationEmpty(tgtFs, tablePath, replicationSpec,x.getLOG());
-          if (isSourceMm) { // since target table doesn't exist, it should inherit soruce table's properties
-            Map<String, String> tblproperties = table.getParameters();
-            tblproperties.put("transactional", "true");
-            tblproperties.put("transactional_properties", "insert_only");
-            table.setParameters(tblproperties);
-          }
-          t.addDependentTask(loadTable(fromURI, table, false, tablePath, replicationSpec, x, writeId, stmtId, isSourceMm));
+          t.addDependentTask(loadTable(fromURI, table, false, tablePath, replicationSpec, x,
+              writeId, stmtId, isSourceMm));
         }
       }
       x.getTasks().add(t);
     }
+  }
+
+  private static Table createNewTableMetadataObject(ImportTableDesc tblDesk)
+      throws SemanticException {
+    Table newTable = new Table(tblDesk.getDatabaseName(), tblDesk.getTableName());
+    //so that we know the type of table we are creating: acid/MM to match what was exported
+    newTable.setParameters(tblDesk.getTblProps());
+    if(tblDesk.isExternal() && AcidUtils.isTransactionalTable(newTable)) {
+      throw new SemanticException("External tables may not be transactional: " +
+          Warehouse.getQualifiedName(tblDesk.getDatabaseName(), tblDesk.getTableName()));
+    }
+    return newTable;
   }
 
   private static Task<?> createImportCommitTask(
@@ -918,11 +936,12 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       List<AddPartitionDesc> partitionDescs,
       ReplicationSpec replicationSpec, boolean waitOnPrecursor,
       Table table, URI fromURI, FileSystem fs, Warehouse wh,
-      EximUtil.SemanticAnalyzerWrapperContext x, Long writeId, int stmtId, boolean isSourceMm,
+      EximUtil.SemanticAnalyzerWrapperContext x, Long writeId, int stmtId,
       UpdatedMetaDataTracker updatedMetadata)
       throws HiveException, URISyntaxException, IOException, MetaException {
 
     Task<?> dropTblTask = null;
+    final boolean isSourceMm = AcidUtils.isInsertOnlyTable(tblDesc.getTblProps());
     WriteEntity.WriteType lockType = WriteEntity.WriteType.DDL_NO_LOCK;
 
     // Normally, on import, trying to create a table or a partition in a db that does not yet exist
@@ -999,7 +1018,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       Task t = createTableTask(tblDesc, x);
-      table = new Table(tblDesc.getDatabaseName(), tblDesc.getTableName());
+      table = createNewTableMetadataObject(tblDesc);
 
       if (!replicationSpec.isMetadataOnly()) {
         if (isPartitioned(tblDesc)) {

@@ -78,6 +78,7 @@ import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.SessionHiveMetaStoreClient;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
@@ -116,9 +117,10 @@ public class SessionState {
   static final String LOCK_FILE_NAME = "inuse.lck";
   static final String INFO_FILE_NAME = "inuse.info";
 
-  private final Map<String, Map<String, Table>> tempTables = new HashMap<String, Map<String, Table>>();
+  private final Map<String, Map<String, Table>> tempTables = new HashMap<>();
   private final Map<String, Map<String, ColumnStatisticsObj>> tempTableColStats =
       new HashMap<String, Map<String, ColumnStatisticsObj>>();
+  private final Map<String, SessionHiveMetaStoreClient.TempTable> tempPartitions = new HashMap<>();
 
   protected ClassLoader parentLoader;
 
@@ -535,7 +537,8 @@ public class SessionState {
    * Singleton Session object per thread.
    *
    **/
-  private static ThreadLocal<SessionStates> tss = new ThreadLocal<SessionStates>() {
+  private static InheritableThreadLocal<SessionStates> tss =
+      new InheritableThreadLocal<SessionStates>() {
     @Override
     protected SessionStates initialValue() {
       return new SessionStates();
@@ -1865,6 +1868,9 @@ public class SessionState {
 
   public Map<String, Map<String, Table>> getTempTables() {
     return tempTables;
+  }
+  public Map<String, SessionHiveMetaStoreClient.TempTable> getTempPartitions() {
+    return tempPartitions;
   }
 
   public Map<String, Map<String, ColumnStatisticsObj>> getTempTableColStats() {

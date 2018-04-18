@@ -1423,11 +1423,18 @@ public abstract class BaseSemanticAnalyzer {
 
     public TableSpec(Hive db, String tableName, Map<String, String> partSpec)
         throws HiveException {
+      this(db, tableName, partSpec, false);
+    }
+    public TableSpec(Hive db, String tableName, Map<String, String> partSpec, boolean allowPartialPartitionsSpec)
+        throws HiveException {
       Table table = db.getTable(tableName);
       tableHandle = table;
       this.tableName = table.getDbName() + "." + table.getTableName();
       if (partSpec == null) {
         specType = SpecType.TABLE_ONLY;
+      } else if(allowPartialPartitionsSpec) {
+        partitions = db.getPartitions(table, partSpec);
+        specType = SpecType.STATIC_PARTITION;
       } else {
         Partition partition = db.getPartition(table, partSpec, false);
         if (partition == null) {
