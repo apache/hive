@@ -798,6 +798,9 @@ public class BeeLine implements Closeable {
     if(!connSuccessful && !exit) {
       connSuccessful = defaultBeelineConnect(cl);
     }
+    if (exit) {
+      return 1;
+    }
 
     int code = 0;
     if (cl.getOptionValues('e') != null) {
@@ -1189,7 +1192,8 @@ public class BeeLine implements Closeable {
             }
           }
         } finally {
-          exit = false;
+          //exit beeline if there is initScript failure and --force is not set
+          exit = exitOnError && executionResult != ERRNO_OK;
         }
       }
     }
